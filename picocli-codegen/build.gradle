@@ -8,6 +8,8 @@ plugins {
 group 'info.picocli'
 description 'Picocli Code Generation - Tools to generate documentation, configuration, source code and other files from a picocli model.'
 version "$projectVersion"
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
 
 dependencies {
     compile rootProject

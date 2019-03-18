@@ -58,7 +58,7 @@ public class PicocliTestUtil {
         clear.setAccessible(true);
         clear.invoke(interpreter); // initializes the interpreter instance
 
-        Field parseResultField = c.getDeclaredField("parseResult");
+        Field parseResultField = c.getDeclaredField("parseResultBuilder");
         parseResultField.setAccessible(true);
         Field nowProcessing = CommandLine.ParseResult.Builder.class.getDeclaredField("nowProcessing");
         nowProcessing.setAccessible(true);

@@ -848,7 +848,7 @@ public class CommandLineTest {
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLineTest$CompactFields.recursive of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field java.io.File picocli.CommandLineTest$CompactFields.outputFile of type class java.io.File to null.%n" +
                         "[picocli DEBUG] Set initial value for field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles of type class [Ljava.io.File; to null.%n" +
-                        "[picocli DEBUG] Initializing %1$s$CompactFields: 3 options, 1 positional parameters, 0 required, 0 subcommands.%n" +
+                        "[picocli DEBUG] Initializing %1$s$CompactFields: 3 options, 1 positional parameters, 0 required, 0 groups, 0 subcommands.%n" +
                         "[picocli DEBUG] Processing argument '-oout'. Remainder=[--, -r, -v, p1, p2]%n" +
                         "[picocli DEBUG] '-oout' cannot be separated into <option>=<option-parameter>%n" +
                         "[picocli DEBUG] Trying to process '-oout' as clustered short options%n" +
@@ -857,22 +857,22 @@ public class CommandLineTest {
                         "[picocli INFO] Setting field java.io.File picocli.CommandLineTest$CompactFields.outputFile to 'out' (was 'null') for option -o%n" +
                         "[picocli DEBUG] Processing argument '--'. Remainder=[-r, -v, p1, p2]%n" +
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
-                        "[picocli DEBUG] Processing next arg as a positional parameter at index=0. Remainder=[-r, -v, p1, p2]%n" +
-                        "[picocli DEBUG] Position 0 is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
+                        "[picocli DEBUG] Processing next arg as a positional parameter. Command-local position=0. Remainder=[-r, -v, p1, p2]%n" +
+                        "[picocli DEBUG] Position 0 (command-local) is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
                         "[picocli INFO] Adding [-r] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 0%n" +
-                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving position to index 1.%n" +
-                        "[picocli DEBUG] Processing next arg as a positional parameter at index=1. Remainder=[-v, p1, p2]%n" +
-                        "[picocli DEBUG] Position 1 is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
+                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 1.%n" +
+                        "[picocli DEBUG] Processing next arg as a positional parameter. Command-local position=1. Remainder=[-v, p1, p2]%n" +
+                        "[picocli DEBUG] Position 1 (command-local) is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
                         "[picocli INFO] Adding [-v] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 1%n" +
-                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving position to index 2.%n" +
-                        "[picocli DEBUG] Processing next arg as a positional parameter at index=2. Remainder=[p1, p2]%n" +
-                        "[picocli DEBUG] Position 2 is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
+                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 2.%n" +
+                        "[picocli DEBUG] Processing next arg as a positional parameter. Command-local position=2. Remainder=[p1, p2]%n" +
+                        "[picocli DEBUG] Position 2 (command-local) is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
                         "[picocli INFO] Adding [p1] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 2%n" +
-                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving position to index 3.%n" +
-                        "[picocli DEBUG] Processing next arg as a positional parameter at index=3. Remainder=[p2]%n" +
-                        "[picocli DEBUG] Position 3 is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
+                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 3.%n" +
+                        "[picocli DEBUG] Processing next arg as a positional parameter. Command-local position=3. Remainder=[p2]%n" +
+                        "[picocli DEBUG] Position 3 (command-local) is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
                         "[picocli INFO] Adding [p2] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 3%n" +
-                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving position to index 4.%n",
+                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 4.%n",
                 CommandLineTest.class.getName(),
                 new File("/home/rpopma/picocli"),
                 CommandLine.versionString());
@@ -1766,7 +1766,7 @@ public class CommandLineTest {
                         "[picocli DEBUG] Set initial value for field java.io.File picocli.Demo$Git.gitDir of type class java.io.File to null.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLine$AutoHelpMixin.helpRequested of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLine$AutoHelpMixin.versionRequested of type boolean to false.%n" +
-                        "[picocli DEBUG] Initializing %1$s$Git: 3 options, 0 positional parameters, 0 required, 12 subcommands.%n" +
+                        "[picocli DEBUG] Initializing %1$s$Git: 3 options, 0 positional parameters, 0 required, 0 groups, 12 subcommands.%n" +
                         "[picocli DEBUG] Processing argument '--git-dir=/home/rpopma/picocli'. Remainder=[commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Separated '--git-dir' option from '/home/rpopma/picocli' option parameter%n" +
                         "[picocli DEBUG] Found option named '--git-dir': field java.io.File %1$s$Git.gitDir, arity=1%n" +
@@ -1782,25 +1782,25 @@ public class CommandLineTest {
                         "[picocli DEBUG] Set initial value for field java.io.File picocli.Demo$GitCommit.file of type class java.io.File to null.%n" +
                         "[picocli DEBUG] Set initial value for field java.util.List<String> picocli.Demo$GitCommit.message of type interface java.util.List to [].%n" +
                         "[picocli DEBUG] Set initial value for field java.util.List<java.io.File> picocli.Demo$GitCommit.files of type interface java.util.List to [].%n" +
-                        "[picocli DEBUG] Initializing %1$s$GitCommit: 8 options, 1 positional parameters, 0 required, 0 subcommands.%n" +
+                        "[picocli DEBUG] Initializing %1$s$GitCommit: 8 options, 1 positional parameters, 0 required, 0 groups, 0 subcommands.%n" +
                         "[picocli DEBUG] Processing argument '-m'. Remainder=[\"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] '-m' cannot be separated into <option>=<option-parameter>%n" +
                         "[picocli DEBUG] Found option named '-m': field java.util.List<String> %1$s$GitCommit.message, arity=1%n" +
                         "[picocli INFO] Adding [\"Fixed typos\"] to field java.util.List<String> picocli.Demo$GitCommit.message for option -m%n" +
                         "[picocli DEBUG] Processing argument '--'. Remainder=[src1.java, src2.java, src3.java]%n" +
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
-                        "[picocli DEBUG] Processing next arg as a positional parameter at index=0. Remainder=[src1.java, src2.java, src3.java]%n" +
-                        "[picocli DEBUG] Position 0 is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
+                        "[picocli DEBUG] Processing next arg as a positional parameter. Command-local position=0. Remainder=[src1.java, src2.java, src3.java]%n" +
+                        "[picocli DEBUG] Position 0 (command-local) is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
                         "[picocli INFO] Adding [src1.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 0%n" +
-                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving position to index 1.%n" +
-                        "[picocli DEBUG] Processing next arg as a positional parameter at index=1. Remainder=[src2.java, src3.java]%n" +
-                        "[picocli DEBUG] Position 1 is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
+                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 1.%n" +
+                        "[picocli DEBUG] Processing next arg as a positional parameter. Command-local position=1. Remainder=[src2.java, src3.java]%n" +
+                        "[picocli DEBUG] Position 1 (command-local) is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
                         "[picocli INFO] Adding [src2.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 1%n" +
-                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving position to index 2.%n" +
-                        "[picocli DEBUG] Processing next arg as a positional parameter at index=2. Remainder=[src3.java]%n" +
-                        "[picocli DEBUG] Position 2 is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
+                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 2.%n" +
+                        "[picocli DEBUG] Processing next arg as a positional parameter. Command-local position=2. Remainder=[src3.java]%n" +
+                        "[picocli DEBUG] Position 2 (command-local) is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
                         "[picocli INFO] Adding [src3.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 2%n" +
-                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving position to index 3.%n",
+                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 3.%n",
                 Demo.class.getName(),
                 new File("/home/rpopma/picocli"),
                 CommandLine.versionString());
@@ -3506,14 +3506,9 @@ public class CommandLineTest {
         @Command class App {
             @Unmatched String unmatched;
         }
-        try {
-            new CommandLine(new App());
-            fail("Expected exception");
-        } catch (InitializationException ex) {
-            String pattern = "Invalid type for %s: must be either String[] or List<String>";
-            Field f = App.class.getDeclaredField("unmatched");
-            assertEquals(format(pattern, f), ex.getMessage());
-        }
+        Object app = new App();
+        Field f = App.class.getDeclaredField("unmatched");
+        assertInvalidUnmatchedFieldType(app, f);
     }
 
     @Test
@@ -3521,12 +3516,17 @@ public class CommandLineTest {
         @Command class App {
             @Unmatched List<Object> unmatched;
         }
+        Object app = new App();
+        Field f = App.class.getDeclaredField("unmatched");
+        assertInvalidUnmatchedFieldType(app, f);
+    }
+
+    private void assertInvalidUnmatchedFieldType(Object app, Field f) {
         try {
-            new CommandLine(new App());
+            new CommandLine(app);
             fail("Expected exception");
         } catch (InitializationException ex) {
             String pattern = "Invalid type for %s: must be either String[] or List<String>";
-            Field f = App.class.getDeclaredField("unmatched");
             assertEquals(format(pattern, f), ex.getMessage());
         }
     }
@@ -3540,7 +3540,7 @@ public class CommandLineTest {
             new CommandLine(new App());
             fail("Expected exception");
         } catch (InitializationException ex) {
-            String pattern = "A member cannot have both @Unmatched and @Option or @Parameters annotations, but '%s' has both.";
+            String pattern = "A member cannot have both @Unmatched and @Option annotations, but '%s' has both.";
             Field f = App.class.getDeclaredField("unmatched");
             assertEquals(format(pattern, f), ex.getMessage());
         }
@@ -3555,7 +3555,7 @@ public class CommandLineTest {
             new CommandLine(new App());
             fail("Expected exception");
         } catch (InitializationException ex) {
-            String pattern = "A member cannot have both @Unmatched and @Option or @Parameters annotations, but '%s' has both.";
+            String pattern = "A member cannot have both @Unmatched and @Parameters annotations, but '%s' has both.";
             Field f = App.class.getDeclaredField("unmatched");
             assertEquals(format(pattern, f), ex.getMessage());
         }
@@ -3570,7 +3570,7 @@ public class CommandLineTest {
             new CommandLine(new App());
             fail("Expected exception");
         } catch (InitializationException ex) {
-            String pattern = "A member cannot be both a @Mixin command and an @Unmatched but '%s' is both.";
+            String pattern = "A member cannot have both @Mixin and @Unmatched annotations, but '%s' has both.";
             Field f = App.class.getDeclaredField("unmatched");
             assertEquals(format(pattern, f), ex.getMessage());
         }
@@ -3585,7 +3585,7 @@ public class CommandLineTest {
             new CommandLine(new App());
             fail("Expected exception");
         } catch (InitializationException ex) {
-            String pattern = "A member cannot be both a @Mixin command and an @Option or @Parameters, but '%s' is both.";
+            String pattern = "A member cannot have both @Mixin and @Option annotations, but '%s' has both.";
             Field f = App.class.getDeclaredField("unmatched");
             assertEquals(format(pattern, f), ex.getMessage());
         }
@@ -3600,7 +3600,7 @@ public class CommandLineTest {
             new CommandLine(new App());
             fail("Expected exception");
         } catch (InitializationException ex) {
-            String pattern = "A member cannot be both a @Mixin command and an @Option or @Parameters, but '%s' is both.";
+            String pattern = "A member cannot have both @Mixin and @Parameters annotations, but '%s' has both.";
             Field f = App.class.getDeclaredField("unmatched");
             assertEquals(format(pattern, f), ex.getMessage());
         }
@@ -3864,6 +3864,7 @@ public class CommandLineTest {
             System.setOut(new PrintStream(baos));
             System.setIn(new ByteArrayInputStream("123".getBytes()));
 
+            HelpTestUtil.setTraceLevel("DEBUG");
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             cmd.parse("987");

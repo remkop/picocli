@@ -1,146 +1,102 @@
 package picocli;
 
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.rules.TestRule;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Help;
 import picocli.CommandLine.InitializationException;
 import picocli.CommandLine.MissingParameterException;
-import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.ArgGroupSpec;
+import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.MutuallyExclusiveArgsException;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ParseResult;
+import picocli.CommandLine.ParseResult.MatchedGroup;
+import picocli.CommandLine.ParseResult.MatchedGroupMultiple;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
 public class ArgGroupTest {
-    static OptionSpec OPTION = OptionSpec.builder("-x").groupNames("AAA", "BBB", "A", "B").build();
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
+    // allows tests to set any kind of properties they like, without having to individually roll them back
+    @Rule
+    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+
+    static final OptionSpec OPTION   = OptionSpec.builder("-x").required(true).build();
+    static final OptionSpec OPTION_A = OptionSpec.builder("-a").required(true).build();
+    static final OptionSpec OPTION_B = OptionSpec.builder("-b").required(true).build();
+    static final OptionSpec OPTION_C = OptionSpec.builder("-c").required(true).build();
 
     @Test
     public void testArgSpecHaveNoGroupsByDefault() {
-        assertTrue(OptionSpec.builder("-x").build().groupNames().isEmpty());
-        assertTrue(PositionalParamSpec.builder().build().groupNames().isEmpty());
+        assertNull(OptionSpec.builder("-x").build().group());
+        assertNull(PositionalParamSpec.builder().build().group());
     }
 
+    @Ignore
     @Test
-    public void testArgSpecBuilderHasNoGroupsByDefault() {
-        assertTrue(OptionSpec.builder("-x").groupNames().isEmpty());
-        assertTrue(PositionalParamSpec.builder().groupNames().isEmpty());
+    public void testArgSpecBuilderHasNoExcludesByDefault() {
+//        assertTrue(OptionSpec.builder("-x").excludes().isEmpty());
+//        assertTrue(PositionalParamSpec.builder().excludes().isEmpty());
+        fail(); // TODO
     }
 
+    @Ignore
     @Test
-    public void testOptionSpecBuilderGroupNamesMutable() {
-        OptionSpec.Builder builder = OptionSpec.builder("-x");
-        assertTrue(builder.groupNames().isEmpty());
-
-        builder.groupNames("AAA").build();
-        assertEquals(1, builder.groupNames().size());
-        assertEquals("AAA", builder.groupNames().get(0));
+    public void testOptionSpecBuilderExcludesMutable() {
+//        OptionSpec.Builder builder = OptionSpec.builder("-x");
+//        assertTrue(builder.excludes().isEmpty());
+//
+//        builder.excludes("AAA").build();
+//        assertEquals(1, builder.excludes().size());
+//        assertEquals("AAA", builder.excludes().get(0));
+        fail(); // TODO
     }
 
+    @Ignore
     @Test
-    public void testPositionalParamSpecBuilderGroupNamesMutable() {
-        PositionalParamSpec.Builder builder = PositionalParamSpec.builder();
-        assertTrue(builder.groupNames().isEmpty());
-
-        builder.groupNames("AAA").build();
-        assertEquals(1, builder.groupNames().size());
-        assertEquals("AAA", builder.groupNames().get(0));
-    }
-
-    @Test
-    public void testGroupSpec_builderFactoryMethodSetsName() {
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("AAA");
-        builder.addArg(OPTION);
-
-        assertEquals("AAA", builder.name());
-        assertEquals("AAA", builder.build().name());
-    }
-
-    @Test
-    public void testGroupSpecBuilderNameMutable() {
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("AAA");
-        assertEquals("AAA", builder.name());
-        builder.name("BBB");
-        assertEquals("BBB", builder.name());
-
-        builder.addArg(OPTION);
-        assertEquals("BBB", builder.build().name());
-    }
-
-    @Test
-    public void testGroupSpecBuilderNullNameDisallowed() {
-        try {
-            ArgGroupSpec.builder((String) null);
-            fail("Expected exception");
-        } catch (NullPointerException ok) {
-        }
-
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder(""); // TODO empty name ok?
-        try {
-            builder.name(null);
-            fail("Expected exception");
-        } catch (NullPointerException ok) {
-        }
-    }
-
-    @Test
-    public void testGroupSpecBuilderNullAnnotationDisallowed() {
-        try {
-            ArgGroupSpec.builder((ArgGroup) null);
-            fail("Expected exception");
-        } catch (NullPointerException ok) {
-        }
-    }
-
-
-    @Test
-    public void testGroupSpecBuilderFromAnnotationFailsIfNoOptionsOrSubgroups() {
-        @Command(argGroups =
-        @ArgGroup(name = "abc",
-                exclusive = false, validate = false, multiplicity = "1",
-                headingKey = "headingKeyXXX", heading = "headingXXX", order = 123))
-        class App {
-        }
-        Command command = App.class.getAnnotation(Command.class);
-        ArgGroup annotation = command.argGroups()[0];
-        try {
-            ArgGroupSpec.builder(annotation).build();
-            fail("Expected exception");
-        } catch (InitializationException ex) {
-            assertEquals("ArgGroup 'abc' has no options or positional parameters, and no subgroups", ex.getMessage());
-        }
+    public void testPositionalParamSpecBuilderExcludesMutable() {
+//        PositionalParamSpec.Builder builder = PositionalParamSpec.builder();
+//        assertTrue(builder.excludes().isEmpty());
+//
+//        builder.excludes("AAA").build();
+//        assertEquals(1, builder.excludes().size());
+//        assertEquals("AAA", builder.excludes().get(0));
+        fail();
     }
 
     @Test
     public void testGroupSpecBuilderFromAnnotation() {
-        @Command(argGroups =
-        @ArgGroup(name = "abc",
-                exclusive = false, validate = false, multiplicity = "1",
-                headingKey = "headingKeyXXX", heading = "headingXXX", order = 123))
+        class Args {
+            @Option(names = "-x") int x;
+        }
         class App {
-            @Option(names = "-x", groups = "abc")
-            int x;
+            @ArgGroup(exclusive = false, validate = false, multiplicity = "1",
+                    headingKey = "headingKeyXXX", heading = "headingXXX", order = 123)
+            Args args;
         }
 
-        CommandLine commandLine = new CommandLine(new App());
+        CommandLine commandLine = new CommandLine(new App(), new InnerClassFactory(this));
         assertEquals(1, commandLine.getCommandSpec().argGroups().size());
-        ArgGroupSpec group = commandLine.getCommandSpec().argGroups().get("abc");
+        ArgGroupSpec group = commandLine.getCommandSpec().argGroups().get(0);
         assertNotNull(group);
 
-        assertEquals("abc", group.name());
         assertEquals(false, group.exclusive());
         assertEquals(false, group.validate());
         assertEquals(CommandLine.Range.valueOf("1"), group.multiplicity());
@@ -152,19 +108,18 @@ public class ArgGroupTest {
         assertEquals(1, group.args().size());
         OptionSpec option = (OptionSpec) group.args().iterator().next();
         assertEquals("-x", option.shortestName());
-        assertEquals(Arrays.asList("abc"), option.groupNames());
-        assertEquals(1, option.groupNames().size());
-        assertEquals(Arrays.asList("abc"), option.groupNames());
+        assertSame(group, option.group());
+        assertSame(option, commandLine.getCommandSpec().findOption("-x"));
     }
 
     @Test
     public void testGroupSpecBuilderExclusiveTrueByDefault() {
-        assertTrue(ArgGroupSpec.builder("A").exclusive());
+        assertTrue(ArgGroupSpec.builder().exclusive());
     }
 
     @Test
     public void testGroupSpecBuilderExclusiveMutable() {
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("A");
+        ArgGroupSpec.Builder builder = ArgGroupSpec.builder();
         assertTrue(builder.exclusive());
         builder.exclusive(false);
         assertFalse(builder.exclusive());
@@ -172,12 +127,12 @@ public class ArgGroupTest {
 
     @Test
     public void testGroupSpecBuilderRequiredFalseByDefault() {
-        assertEquals(CommandLine.Range.valueOf("0..1"), ArgGroupSpec.builder("A").multiplicity());
+        assertEquals(CommandLine.Range.valueOf("0..1"), ArgGroupSpec.builder().multiplicity());
     }
 
     @Test
     public void testGroupSpecBuilderRequiredMutable() {
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("A");
+        ArgGroupSpec.Builder builder = ArgGroupSpec.builder();
         assertEquals(CommandLine.Range.valueOf("0..1"), builder.multiplicity());
         builder.multiplicity("1");
         assertEquals(CommandLine.Range.valueOf("1"), builder.multiplicity());
@@ -185,57 +140,50 @@ public class ArgGroupTest {
 
     @Test
     public void testGroupSpecBuilderValidatesTrueByDefault() {
-        assertTrue(ArgGroupSpec.builder("A").validate());
+        assertTrue(ArgGroupSpec.builder().validate());
     }
 
     @Test
     public void testGroupSpecBuilderValidateMutable() {
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("A");
+        ArgGroupSpec.Builder builder = ArgGroupSpec.builder();
         assertTrue(builder.validate());
         builder.validate(false);
         assertFalse(builder.validate());
     }
 
     @Test
-    public void testGroupSpecBuilderGroupNamesEmptyByDefault() {
-        assertTrue(ArgGroupSpec.builder("A").subgroupNames().isEmpty());
+    public void testGroupSpecBuilderSubgroupsEmptyByDefault() {
+        assertTrue(ArgGroupSpec.builder().subgroups().isEmpty());
     }
 
     @Test
-    public void testGroupSpecBuilderGroupNamesMutable() {
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("A");
-        assertTrue(builder.subgroupNames().isEmpty());
-        builder.subgroupNames().add("B");
-        builder.subgroupNames().add("C");
-        assertEquals(Arrays.asList("B", "C"), builder.subgroupNames());
+    public void testGroupSpecBuilderSubgroupsMutable() {
+        ArgGroupSpec.Builder builder = ArgGroupSpec.builder();
+        assertTrue(builder.subgroups().isEmpty());
 
-        builder.subgroupNames(Arrays.asList("X", "Y"));
-        assertEquals(Arrays.asList("X", "Y"), builder.subgroupNames());
+        ArgGroupSpec b = ArgGroupSpec.builder().addArg(PositionalParamSpec.builder().build()).build();
+        ArgGroupSpec c = ArgGroupSpec.builder().addArg(OptionSpec.builder("-t").build()).build();
+
+        builder.subgroups().add(b);
+        builder.subgroups().add(c);
+        assertEquals(Arrays.asList(b, c), builder.subgroups());
+
+        ArgGroupSpec x = ArgGroupSpec.builder().addArg(PositionalParamSpec.builder().build()).build();
+        ArgGroupSpec y = ArgGroupSpec.builder().addArg(OptionSpec.builder("-y").build()).build();
+
+        builder.subgroups().clear();
+        builder.addSubgroup(x).addSubgroup(y);
+        assertEquals(Arrays.asList(x, y), builder.subgroups());
     }
-
-    // TODO
-//    @Test
-//    public void testGroupSpecBuilderGroupsEmptyByDefault() {
-//        assertTrue(ArgGroupSpec.builder("A").groups().isEmpty());
-//    }
-//
-//    @Test
-//    public void testGroupSpecBuilderGroupsMutable() {
-//        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("A");
-//        assertTrue(builder.groups().isEmpty());
-//        builder.groups().add(ArgGroupSpec.builder("B").build());
-//        builder.groups().add(ArgGroupSpec.builder("C").build());
-//        assertEquals(2, builder.groups().size());
-//    }
 
     @Test
     public void testGroupSpecBuilderOrderMinusOneByDefault() {
-        assertEquals(ArgGroupSpec.DEFAULT_ORDER, ArgGroupSpec.builder("A").order());
+        assertEquals(ArgGroupSpec.DEFAULT_ORDER, ArgGroupSpec.builder().order());
     }
 
     @Test
     public void testGroupSpecBuilderOrderMutable() {
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("A");
+        ArgGroupSpec.Builder builder = ArgGroupSpec.builder();
         assertEquals(ArgGroupSpec.DEFAULT_ORDER, builder.order());
         builder.order(34);
         assertEquals(34, builder.order());
@@ -243,12 +191,12 @@ public class ArgGroupTest {
 
     @Test
     public void testGroupSpecBuilderHeadingNullByDefault() {
-        assertNull(ArgGroupSpec.builder("A").heading());
+        assertNull(ArgGroupSpec.builder().heading());
     }
 
     @Test
     public void testGroupSpecBuilderHeadingMutable() {
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("A");
+        ArgGroupSpec.Builder builder = ArgGroupSpec.builder();
         assertNull(builder.heading());
         builder.heading("This is a header");
         assertEquals("This is a header", builder.heading());
@@ -256,40 +204,50 @@ public class ArgGroupTest {
 
     @Test
     public void testGroupSpecBuilderHeadingKeyNullByDefault() {
-        assertNull(ArgGroupSpec.builder("A").headingKey());
+        assertNull(ArgGroupSpec.builder().headingKey());
     }
 
     @Test
     public void testGroupSpecBuilderHeadingKeyMutable() {
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("A");
+        ArgGroupSpec.Builder builder = ArgGroupSpec.builder();
         assertNull(builder.headingKey());
         builder.headingKey("KEY");
         assertEquals("KEY", builder.headingKey());
     }
 
-    // TODO
-//    @Test
-//    public void testGroupSpecBuilderBuildDisallowsDuplidateGroups() {
-//        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("A");
-//        builder.groups().add(ArgGroupSpec.builder("B").build());
-//        builder.groups().add(ArgGroupSpec.builder("B").heading("x").build());
-//
-//        try {
-//            builder.build();
-//            fail("Expected exception");
-//        } catch (DuplicateNameException ex) {
-//            assertEquals("Different ArgGroups should not use the same name 'B'", ex.getMessage());
-//        }
-//    }
+    @Test
+    public void testGroupSpecBuilderBuildDisallowsEmptyGroups() {
+        try {
+            ArgGroupSpec.builder().build();
+        } catch (InitializationException ok) {
+            assertEquals("ArgGroup has no options or positional parameters, and no subgroups", ok.getMessage());
+        }
+    }
+
+    @Test
+    public void testAnOptionCannotBeInMultipleGroups() {
+        ArgGroupSpec.Builder builder = ArgGroupSpec.builder();
+        builder.subgroups().add(ArgGroupSpec.builder().addArg(OPTION).build());
+        builder.subgroups().add(ArgGroupSpec.builder().multiplicity("1..*").addArg(OPTION).build());
+
+        ArgGroupSpec group = builder.build();
+        assertEquals(2, group.subgroups().size());
+        CommandSpec spec = CommandSpec.create();
+        try {
+            spec.addArgGroup(group);
+            fail("Expected exception");
+        } catch (CommandLine.DuplicateNameException ex) {
+            assertEquals("An option cannot be in multiple groups but -x is in (-x)... and [-x]. " +
+                    "Refactor to avoid this. For example, (-a | (-a -b)) can be rewritten " +
+                    "as (-a [-b]), and (-a -b | -a -c) can be rewritten as (-a (-b | -c)).", ex.getMessage());
+        }
+    }
 
     @Test
     public void testGroupSpecBuilderBuildCopiesBuilderAttributes() {
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("A");
+        ArgGroupSpec.Builder builder = ArgGroupSpec.builder();
         builder.addArg(OPTION);
         ArgGroupSpec group = builder.build();
-
-        assertEquals("A", group.name());
-        assertEquals(builder.name(), group.name());
 
         assertTrue(group.exclusive());
         assertEquals(builder.exclusive(), group.exclusive());
@@ -309,30 +267,25 @@ public class ArgGroupTest {
         assertNull(group.headingKey());
         assertEquals(builder.headingKey(), group.headingKey());
 
-        // TODO
-//        assertTrue(group.groups().isEmpty());
-//        assertEquals(builder.groupNames(), group.groupNames());
-
         assertTrue(group.subgroups().isEmpty());
-        // TODO assertEquals(builder.groups().isEmpty(), group.groups().isEmpty());
+        assertEquals(builder.subgroups(), group.subgroups());
+
+        assertNull(group.parentGroup());
     }
 
     @Test
     public void testGroupSpecBuilderBuildCopiesBuilderAttributesNonDefault() {
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("A");
+        ArgGroupSpec.Builder builder = ArgGroupSpec.builder();
         builder.heading("my heading");
         builder.headingKey("my headingKey");
         builder.order(123);
         builder.exclusive(false);
         builder.validate(false);
         builder.multiplicity("1");
-        builder.addSubgroup(ArgGroupSpec.builder("B").addArg(OPTION).subgroupNames("A").build());
+        builder.addSubgroup(ArgGroupSpec.builder().addArg(OPTION).build());
 
         builder.addArg(OPTION);
         ArgGroupSpec group = builder.build();
-
-        assertEquals("A", group.name());
-        assertEquals(builder.name(), group.name());
 
         assertFalse(group.exclusive());
         assertEquals(builder.exclusive(), group.exclusive());
@@ -353,40 +306,45 @@ public class ArgGroupTest {
         assertEquals(builder.headingKey(), group.headingKey());
 
         assertEquals(1, group.subgroups().size());
-        assertEquals("B", group.subgroups().get("B").name());
+        //assertEquals("B", group.subgroups().get("B").name());
         // TODO assertEquals(builder.groups(), new ArrayList<ArgGroupSpec>(group.groups().values()));
     }
 
     @Test
     public void testGroupSpecToString() {
-        String expected = "ArgGroup[A, exclusive=true, multiplicity=0..1, validate=true, order=-1, args=[-x], subgroups=[], headingKey=null, heading=null]";
-        assertEquals(expected, ArgGroupSpec.builder("A").addArg(OPTION).build().toString());
+        String expected = "ArgGroup[exclusive=true, multiplicity=0..1, validate=true, order=-1, args=[-x], headingKey=null, heading=null, subgroups=[]]";
+        ArgGroupSpec b = ArgGroupSpec.builder().addArg(OPTION).build();
+        assertEquals(expected, b.toString());
 
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("A");
+        ArgGroupSpec.Builder builder = ArgGroupSpec.builder();
         builder.heading("my heading");
         builder.headingKey("my headingKey");
         builder.order(123);
         builder.exclusive(false);
         builder.validate(false);
         builder.multiplicity("1");
-        builder.addSubgroup(ArgGroupSpec.builder("B").subgroupNames("A").addArg(OPTION).build());
-        builder.addArg(PositionalParamSpec.builder().index("0..1").paramLabel("FILE").groupNames("A").build());
+        builder.addSubgroup(ArgGroupSpec.builder().addSubgroup(b).addArg(OPTION_A).build());
+        builder.addArg(PositionalParamSpec.builder().index("0..1").paramLabel("FILE").build());
 
-        String expected2 = "ArgGroup[A, exclusive=false, multiplicity=1, validate=false, order=123, args=[params[0..1]=FILE], subgroups=[B], headingKey='my headingKey', heading='my heading']";
+        String expected2 = "ArgGroup[exclusive=false, multiplicity=1, validate=false, order=123, args=[params[0..1]=FILE], headingKey='my headingKey', heading='my heading'," +
+                " subgroups=[ArgGroup[exclusive=true, multiplicity=0..1, validate=true, order=-1, args=[-a], headingKey=null, heading=null," +
+                " subgroups=[ArgGroup[exclusive=true, multiplicity=0..1, validate=true, order=-1, args=[-x], headingKey=null, heading=null, subgroups=[]]]" +
+                "]]" +
+                "]";
         assertEquals(expected2, builder.build().toString());
     }
 
     @Test
     public void testGroupSpecEquals() {
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("A");
+        ArgGroupSpec.Builder builder = ArgGroupSpec.builder();
         builder.addArg(OPTION);
         ArgGroupSpec a = builder.build();
         assertEquals(a, a);
-        assertNotSame(a, ArgGroupSpec.builder("A").addArg(OPTION).build());
-        assertEquals(a, ArgGroupSpec.builder("A").addArg(OPTION).build());
+        assertNotSame(a, ArgGroupSpec.builder().addArg(OPTION).build());
+        assertEquals(a, ArgGroupSpec.builder().addArg(OPTION).build());
 
-        OptionSpec otherOption = OptionSpec.builder("-y").groupNames("A").build();
-        assertNotEquals(a, ArgGroupSpec.builder("A").addArg(OPTION).addArg(otherOption).build());
+        OptionSpec otherOption = OptionSpec.builder("-y").build();
+        assertNotEquals(a, ArgGroupSpec.builder().addArg(OPTION).addArg(otherOption).build());
 
         builder.heading("my heading");
         assertNotEquals(a, builder.build());
@@ -412,21 +370,21 @@ public class ArgGroupTest {
         assertNotEquals(a, builder.build());
         assertEquals(builder.build(), builder.build());
 
-        builder.addSubgroup(ArgGroupSpec.builder("B").addArg(OPTION).build());
+        builder.addSubgroup(ArgGroupSpec.builder().addArg(OPTION).build());
         assertNotEquals(a, builder.build());
         assertEquals(builder.build(), builder.build());
     }
 
     @Test
     public void testGroupSpecHashCode() {
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("A");
+        ArgGroupSpec.Builder builder = ArgGroupSpec.builder();
         builder.addArg(OPTION);
         ArgGroupSpec a = builder.build();
         assertEquals(a.hashCode(), a.hashCode());
-        assertEquals(a.hashCode(), ArgGroupSpec.builder("A").addArg(OPTION).build().hashCode());
+        assertEquals(a.hashCode(), ArgGroupSpec.builder().addArg(OPTION).build().hashCode());
 
         OptionSpec otherOption = OptionSpec.builder("-y").build();
-        assertNotEquals(a.hashCode(), ArgGroupSpec.builder("A").addArg(OPTION).addArg(otherOption).build().hashCode());
+        assertNotEquals(a.hashCode(), ArgGroupSpec.builder().addArg(OPTION).addArg(otherOption).build().hashCode());
 
         builder.heading("my heading");
         assertNotEquals(a.hashCode(), builder.build().hashCode());
@@ -452,26 +410,26 @@ public class ArgGroupTest {
         assertNotEquals(a.hashCode(), builder.build().hashCode());
         assertEquals(builder.build().hashCode(), builder.build().hashCode());
 
-        builder.subgroups().add(ArgGroupSpec.builder("B").addArg(OPTION).build());
+        builder.subgroups().add(ArgGroupSpec.builder().addArg(OPTION).build());
         assertNotEquals(a.hashCode(), builder.build().hashCode());
         assertEquals(builder.build().hashCode(), builder.build().hashCode());
     }
 
     @Test
     public void testReflection() {
-        @Command(argGroups = @ArgGroup(name = "AAA"))
-        class App {
-            @Option(names = "-x", groups = "AAA")
-            int x;
-            @Option(names = "-y", groups = "AAA")
-            int y;
+        class All {
+            @Option(names = "-x", required = true) int x;
+            @Option(names = "-y", required = true) int y;
         }
-        CommandLine cmd = new CommandLine(new App());
+        class App {
+            @ArgGroup All all;
+        }
+        CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
         CommandSpec spec = cmd.getCommandSpec();
-        Map<String, ArgGroupSpec> groups = spec.argGroups();
+        List<ArgGroupSpec> groups = spec.argGroups();
         assertEquals(1, groups.size());
 
-        ArgGroupSpec group = groups.get("AAA");
+        ArgGroupSpec group = groups.get(0);
         assertNotNull(group);
 
         List<ArgSpec> options = new ArrayList<ArgSpec>(group.args());
@@ -479,43 +437,55 @@ public class ArgGroupTest {
         assertEquals("-x", ((OptionSpec) options.get(0)).shortestName());
         assertEquals("-y", ((OptionSpec) options.get(1)).shortestName());
 
-        assertEquals(1, options.get(0).groupNames().size());
-        assertEquals(Arrays.asList("AAA"), options.get(0).groupNames());
+        assertNotNull(options.get(0).group());
+        assertSame(group, options.get(0).group());
 
-        assertEquals(1, options.get(1).groupNames().size());
-        assertEquals(Arrays.asList("AAA"), options.get(1).groupNames());
+        assertNotNull(options.get(1).group());
+        assertSame(group, options.get(1).group());
     }
 
     @Test
     public void testProgrammatic() {
         CommandSpec spec = CommandSpec.create();
-        spec.addOption(OptionSpec.builder("-x").build());
-        spec.addOption(OptionSpec.builder("-y").build());
-        spec.addOption(OptionSpec.builder("-z").build());
 
-        ArgGroupSpec exclusive = ArgGroupSpec.builder("EXCL")
-                .addArg(spec.findOption("-x"))
-                .addArg(spec.findOption("-y")).build();
-        ArgGroupSpec cooccur = ArgGroupSpec.builder("ALL")
-                .addArg(spec.findOption("-z"))
-                .addSubgroup(exclusive).build();
-        spec.addArgGroup(exclusive);
+        ArgGroupSpec exclusiveSub = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-x").required(true).build())
+                .addArg(OptionSpec.builder("-y").required(true).build()).build();
+        ArgGroupSpec cooccur = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-z").required(true).build())
+                .addSubgroup(exclusiveSub).build();
         spec.addArgGroup(cooccur);
+        assertNull(cooccur.parentGroup());
+        assertEquals(1, cooccur.subgroups().size());
+        assertSame(exclusiveSub, cooccur.subgroups().get(0));
+        assertEquals(1, cooccur.args().size());
 
-        Map<String, ArgGroupSpec> groups = spec.argGroups();
+        assertNotNull(exclusiveSub.parentGroup());
+        assertSame(cooccur, exclusiveSub.parentGroup());
+        assertEquals(0, exclusiveSub.subgroups().size());
+        assertEquals(2, exclusiveSub.args().size());
+
+        ArgGroupSpec exclusive = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-a").required(true).build())
+                .addArg(OptionSpec.builder("-b").required(true).build()).build();
+        spec.addArgGroup(exclusive);
+        assertNull(exclusive.parentGroup());
+        assertTrue(exclusive.subgroups().isEmpty());
+        assertEquals(2, exclusive.args().size());
+
+        List<ArgGroupSpec> groups = spec.argGroups();
+        assertEquals(2, groups.size());
+        assertSame(cooccur, groups.get(0));
+        assertSame(exclusive, groups.get(1));
     }
-
-    static final OptionSpec OPTION_A = OptionSpec.builder("-a").build();
-    static final OptionSpec OPTION_B = OptionSpec.builder("-b").build();
-    static final OptionSpec OPTION_C = OptionSpec.builder("-c").build();
 
     @Test
     public void testValidationNonRequiredExclusive_ActualTwo() {
-        ArgGroupSpec group = ArgGroupSpec.builder("blah").addArg(OPTION_A).addArg(OPTION_B).build();
+        ArgGroupSpec group = ArgGroupSpec.builder().addArg(OPTION_A).addArg(OPTION_B).build();
         CommandLine cmd = new CommandLine(CommandSpec.create());
 
         try {
-            group.validateConstraints(cmd, Arrays.<ArgSpec>asList(OPTION_A, OPTION_B));
+            group.validateConstraints(parseResult(cmd), Arrays.<ArgSpec>asList(OPTION_A, OPTION_B));
             fail("Expected exception");
         } catch (MutuallyExclusiveArgsException ex) {
             assertEquals("Error: -a, -b are mutually exclusive (specify only one)", ex.getMessage());
@@ -524,13 +494,16 @@ public class ArgGroupTest {
 
     @Test
     public void testReflectionValidationNonRequiredExclusive_ActualTwo() {
-        @Command(argGroups = @CommandLine.ArgGroup(name = "X"))
+        class All {
+            @Option(names = "-a", required = true) boolean a;
+            @Option(names = "-b", required = true) boolean b;
+        }
         class App {
-            @Option(names = "-a", groups = "X") boolean a;
-            @Option(names = "-b", groups = "X") boolean b;
+            @ArgGroup(exclusive = true, multiplicity = "0..1")
+            All all;
         }
         try {
-            CommandLine.populateCommand(new App(), "-a", "-b");
+            new CommandLine(new App(), new InnerClassFactory(this)).parseArgs("-a", "-b");
             fail("Expected exception");
         } catch (MutuallyExclusiveArgsException ex) {
             assertEquals("Error: -a, -b are mutually exclusive (specify only one)", ex.getMessage());
@@ -539,30 +512,33 @@ public class ArgGroupTest {
 
     @Test
     public void testValidationNonRequiredExclusive_ActualZero() {
-        ArgGroupSpec group = ArgGroupSpec.builder("blah").addArg(OPTION_A).addArg(OPTION_B).build();
+        ArgGroupSpec group = ArgGroupSpec.builder().addArg(OPTION_A).addArg(OPTION_B).build();
         CommandLine cmd = new CommandLine(CommandSpec.create());
 
-        group.validateConstraints(cmd, Collections.<ArgSpec>emptyList());
+        group.validateConstraints(parseResult(cmd), Collections.<ArgSpec>emptyList());
     }
 
     @Test
     public void testReflectionValidationNonRequiredExclusive_ActualZero() {
-        @Command(argGroups = @ArgGroup(name = "X"))
+        class All {
+            @Option(names = "-a", required = true) boolean a;
+            @Option(names = "-b", required = true) boolean b;
+        }
         class App {
-            @Option(names = "-a", groups = "X") boolean a;
-            @Option(names = "-b", groups = "X") boolean b;
+            @ArgGroup(exclusive = true, multiplicity = "0..1")
+            All all;
         }
         // no errors
-        CommandLine.populateCommand(new App());
+        new CommandLine(new App(), new InnerClassFactory(this)).parseArgs();
     }
 
     @Test
     public void testValidationRequiredExclusive_ActualZero() {
-        ArgGroupSpec group = ArgGroupSpec.builder("blah").multiplicity("1").addArg(OPTION_A).addArg(OPTION_B).build();
+        ArgGroupSpec group = ArgGroupSpec.builder().multiplicity("1").addArg(OPTION_A).addArg(OPTION_B).build();
         CommandLine cmd = new CommandLine(CommandSpec.create());
 
         try {
-            group.validateConstraints(cmd, Collections.<ArgSpec>emptyList());
+            group.validateConstraints(parseResult(cmd), Collections.<ArgSpec>emptyList());
             fail("Expected exception");
         } catch (MissingParameterException ex) {
             assertEquals("Error: Missing required argument (specify one of these): -a, -b", ex.getMessage());
@@ -571,13 +547,16 @@ public class ArgGroupTest {
 
     @Test
     public void testReflectionValidationRequiredExclusive_ActualZero() {
-        @Command(argGroups = @CommandLine.ArgGroup(name = "X", multiplicity = "1"))
+        class All {
+            @Option(names = "-a", required = true) boolean a;
+            @Option(names = "-b", required = true) boolean b;
+        }
         class App {
-            @Option(names = "-a", groups = "X") boolean a;
-            @Option(names = "-b", groups = "X") boolean b;
+            @ArgGroup(exclusive = true, multiplicity = "1")
+            All all;
         }
         try {
-            CommandLine.populateCommand(new App());
+            new CommandLine(new App(), new InnerClassFactory(this)).parseArgs();
             fail("Expected exception");
         } catch (MissingParameterException ex) {
             assertEquals("Error: Missing required argument (specify one of these): -a, -b", ex.getMessage());
@@ -586,31 +565,38 @@ public class ArgGroupTest {
 
     @Test
     public void testValidationNonRequiredNonExclusive_All() {
-        ArgGroupSpec group = ArgGroupSpec.builder("blah").exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
+        ArgGroupSpec group = ArgGroupSpec.builder().exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
         CommandLine cmd = new CommandLine(CommandSpec.create());
 
         // no error
-        group.validateConstraints(cmd, Arrays.<ArgSpec>asList(OPTION_A, OPTION_B, OPTION_C));
+        group.validateConstraints(parseResult(cmd), Arrays.<ArgSpec>asList(OPTION_A, OPTION_B, OPTION_C));
     }
 
     @Test
     public void testReflectionValidationNonRequiredNonExclusive_All() {
-        @Command(argGroups = @ArgGroup(name = "X", exclusive = false))
-        class App {
-            @Option(names = "-a", groups = "X") boolean a;
-            @Option(names = "-b", groups = "X") boolean b;
-            @Option(names = "-c", groups = "X") boolean c;
+        class All {
+            @Option(names = "-a", required = true) boolean a;
+            @Option(names = "-b", required = true) boolean b;
+            @Option(names = "-c", required = true) boolean c;
         }
-        CommandLine.populateCommand(new App(), "-a", "-b", "-c");
+        class App {
+            @ArgGroup(exclusive = false)
+            All all;
+        }
+        new CommandLine(new App(), new InnerClassFactory(this)).parseArgs("-a", "-b", "-c");
+    }
+
+    private static ParseResult parseResult(CommandLine cmd) {
+        return ParseResult.builder(cmd.getCommandSpec()).build();
     }
 
     @Test
     public void testValidationNonRequiredNonExclusive_Partial() {
-        ArgGroupSpec group = ArgGroupSpec.builder("blah").exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
+        ArgGroupSpec group = ArgGroupSpec.builder().exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
         CommandLine cmd = new CommandLine(CommandSpec.create());
 
         try {
-            group.validateConstraints(cmd, Arrays.<ArgSpec>asList(OPTION_A, OPTION_B));
+            group.validateConstraints(parseResult(cmd), Arrays.<ArgSpec>asList(OPTION_A, OPTION_B));
             fail("Expected exception");
         } catch (MissingParameterException ex) {
             assertEquals("Error: Missing required argument(s): -c", ex.getMessage());
@@ -619,14 +605,17 @@ public class ArgGroupTest {
 
     @Test
     public void testReflectionValidationNonRequiredNonExclusive_Partial() {
-        @Command(argGroups = @ArgGroup(name = "X", exclusive = false))
+        class All {
+            @Option(names = "-a", required = true) boolean a;
+            @Option(names = "-b", required = true) boolean b;
+            @Option(names = "-c", required = true) boolean c;
+        }
         class App {
-            @Option(names = "-a", groups = "X") boolean a;
-            @Option(names = "-b", groups = "X") boolean b;
-            @Option(names = "-c", groups = "X") boolean c;
+            @ArgGroup(exclusive = false)
+            All all;
         }
         try {
-            CommandLine.populateCommand(new App(), "-a", "-b");
+            new CommandLine(new App(), new InnerClassFactory(this)).parseArgs("-a", "-b");
             fail("Expected exception");
         } catch (MissingParameterException ex) {
             assertEquals("Error: Missing required argument(s): -c", ex.getMessage());
@@ -635,51 +624,48 @@ public class ArgGroupTest {
 
     @Test
     public void testValidationNonRequiredNonExclusive_Zero() {
-        ArgGroupSpec group = ArgGroupSpec.builder("blah").exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
+        ArgGroupSpec group = ArgGroupSpec.builder().exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
         CommandLine cmd = new CommandLine(CommandSpec.create());
 
         // no error
-        group.validateConstraints(cmd, Collections.<ArgSpec>emptyList());
+        group.validateConstraints(parseResult(cmd), Collections.<ArgSpec>emptyList());
     }
 
     @Test
     public void testReflectionValidationNonRequiredNonExclusive_Zero() {
-        @Command(argGroups = @CommandLine.ArgGroup(name = "X", exclusive = false))
-        class App {
-            @Option(names = "-a", groups = "X") boolean a;
-            @Option(names = "-b", groups = "X") boolean b;
-            @Option(names = "-c", groups = "X") boolean c;
+        class All {
+            @Option(names = "-a", required = true) boolean a;
+            @Option(names = "-b", required = true) boolean b;
+            @Option(names = "-c", required = true) boolean c;
         }
-        CommandLine.populateCommand(new App());
-    }
-
-    @Test
-    public void testValidationRequiredNonExclusive_All() {
-        ArgGroupSpec group = ArgGroupSpec.builder("blah").multiplicity("1").exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
-        CommandLine cmd = new CommandLine(CommandSpec.create());
-
-        // no error
-        group.validateConstraints(cmd, Arrays.<ArgSpec>asList(OPTION_A, OPTION_B, OPTION_C));
+        class App {
+            @ArgGroup(exclusive = false)
+            All all;
+        }
+        new CommandLine(new App(), new InnerClassFactory(this)).parseArgs();
     }
 
     @Test
     public void testReflectionValidationRequiredNonExclusive_All() {
-        @Command(argGroups = @CommandLine.ArgGroup(name = "X", exclusive = false, multiplicity = "1"))
-        class App {
-            @Option(names = "-a", groups = "X") boolean a;
-            @Option(names = "-b", groups = "X") boolean b;
-            @Option(names = "-c", groups = "X") boolean c;
+        class All {
+            @Option(names = "-a", required = true) boolean a;
+            @Option(names = "-b", required = true) boolean b;
+            @Option(names = "-c", required = true) boolean c;
         }
-        CommandLine.populateCommand(new App(), "-a", "-b", "-c");
+        class App {
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            All all;
+        }
+        new CommandLine(new App(), new InnerClassFactory(this)).parseArgs("-a", "-b", "-c");
     }
 
     @Test
     public void testValidationRequiredNonExclusive_Partial() {
-        ArgGroupSpec group = ArgGroupSpec.builder("blah").multiplicity("1").exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
+        ArgGroupSpec group = ArgGroupSpec.builder().multiplicity("1").exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
         CommandLine cmd = new CommandLine(CommandSpec.create());
 
         try {
-            group.validateConstraints(cmd, Arrays.<ArgSpec>asList(OPTION_B));
+            group.validateConstraints(parseResult(cmd), Arrays.<ArgSpec>asList(OPTION_B));
             fail("Expected exception");
         } catch (MissingParameterException ex) {
             assertEquals("Error: Missing required argument(s): -a, -c", ex.getMessage());
@@ -688,14 +674,17 @@ public class ArgGroupTest {
 
     @Test
     public void testReflectionValidationRequiredNonExclusive_Partial() {
-        @Command(argGroups = @ArgGroup(name = "X", exclusive = false, multiplicity = "1"))
+        class All {
+            @Option(names = "-a", required = true) boolean a;
+            @Option(names = "-b", required = true) boolean b;
+            @Option(names = "-c", required = true) boolean c;
+        }
         class App {
-            @Option(names = "-a", groups = "X") boolean a;
-            @Option(names = "-b", groups = "X") boolean b;
-            @Option(names = "-c", groups = "X") boolean c;
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            All all;
         }
         try {
-            CommandLine.populateCommand(new App(), "-b");
+            new CommandLine(new App(), new InnerClassFactory(this)).parseArgs("-b");
             fail("Expected exception");
         } catch (MissingParameterException ex) {
             assertEquals("Error: Missing required argument(s): -a, -c", ex.getMessage());
@@ -704,12 +693,12 @@ public class ArgGroupTest {
 
     @Test
     public void testValidationRequiredNonExclusive_Zero() {
-        ArgGroupSpec group = ArgGroupSpec.builder("blah").multiplicity("1").exclusive(false)
+        ArgGroupSpec group = ArgGroupSpec.builder().multiplicity("1").exclusive(false)
                 .addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
         CommandLine cmd = new CommandLine(CommandSpec.create());
 
         try {
-            group.validateConstraints(cmd, Collections.<ArgSpec>emptyList());
+            group.validateConstraints(parseResult(cmd), Collections.<ArgSpec>emptyList());
             fail("Expected exception");
         } catch (MissingParameterException ex) {
             assertEquals("Error: Missing required argument(s): -a, -b, -c", ex.getMessage());
@@ -718,80 +707,83 @@ public class ArgGroupTest {
 
     @Test
     public void testReflectionValidationRequiredNonExclusive_Zero() {
-        @Command(argGroups = @ArgGroup(name = "X", exclusive = false, multiplicity = "1"))
+        class All {
+            @Option(names = "-a", required = true) boolean a;
+            @Option(names = "-b", required = true) boolean b;
+            @Option(names = "-c", required = true) boolean c;
+        }
         class App {
-            @Option(names = "-a", groups = "X") boolean a;
-            @Option(names = "-b", groups = "X") boolean b;
-            @Option(names = "-c", groups = "X") boolean c;
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            All all;
         }
         try {
-            CommandLine.populateCommand(new App());
+            new CommandLine(new App(), new InnerClassFactory(this)).parseArgs();
             fail("Expected exception");
         } catch (MissingParameterException ex) {
             assertEquals("Error: Missing required argument(s): -a, -b, -c", ex.getMessage());
         }
     }
 
+    static class Excl {
+        @Option(names = "-x", required = true) boolean x;
+        @Option(names = "-y", required = true) boolean y;
+    }
+    static class All {
+        @Option(names = "-a", required = true) boolean a;
+        @Option(names = "-b", required = true) boolean b;
+    }
+    static class Composite {
+        @ArgGroup(exclusive = false, multiplicity = "0..1")
+        All all = new All();
+
+        @ArgGroup(exclusive = true, multiplicity = "1")
+        Excl excl = new Excl();
+    }
+    static class CompositeApp {
+        // SYNOPSIS: ([-a -b] | (-x | -y))
+        @ArgGroup(exclusive = true, multiplicity = "1")
+        Composite composite = new Composite();
+    }
     @Test
     public void testReflectionValidationCompositeRequiredGroup() {
-        @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "0..1"),
-                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "1"),
-                @ArgGroup(name = "COMPOSITE", exclusive = true, multiplicity = "1",
-                        subgroups = {"ALL", "EXCL"})
-        })
-        class App {
-            @Option(names = "-x", groups = "EXCL") boolean x;
-            @Option(names = "-y", groups = "EXCL") boolean y;
-            @Option(names = "-a", groups = "ALL") boolean a;
-            @Option(names = "-b", groups = "ALL") boolean b;
-        }
-        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-a");
-        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-b");
-        validateInput(new App(), MutuallyExclusiveArgsException.class, "Error: -x, -y are mutually exclusive (specify only one)",                "-x", "-y");
-        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-x", "-a");
-        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-x", "-b");
-        validateInput(new App(), MutuallyExclusiveArgsException.class, "Error: ([-a -b] | (-x | -y)) are mutually exclusive (specify only one)", "-a", "-x", "-b");
-        validateInput(new App(), MutuallyExclusiveArgsException.class, "Error: ([-a -b] | (-x | -y)) are mutually exclusive (specify only one)", "-a", "-y", "-b");
+        validateInput(new CompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-a");
+        validateInput(new CompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-b");
+        validateInput(new CompositeApp(), MutuallyExclusiveArgsException.class, "Error: -x, -y are mutually exclusive (specify only one)",                "-x", "-y");
+        validateInput(new CompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-x", "-a");
+        validateInput(new CompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-x", "-b");
+        validateInput(new CompositeApp(), MutuallyExclusiveArgsException.class, "Error: ([-a -b] | (-x | -y)) are mutually exclusive (specify only one)", "-a", "-x", "-b");
+        validateInput(new CompositeApp(), MutuallyExclusiveArgsException.class, "Error: ([-a -b] | (-x | -y)) are mutually exclusive (specify only one)", "-a", "-y", "-b");
 
         // no input
-        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument (specify one of these): ([-a -b] | (-x | -y))");
+        validateInput(new CompositeApp(), MissingParameterException.class,      "Error: Missing required argument (specify one of these): ([-a -b] | (-x | -y))");
 
         // no error
-        validateInput(new App(), null, null, "-a", "-b");
-        validateInput(new App(), null, null, "-x");
-        validateInput(new App(), null, null, "-y");
+        validateInput(new CompositeApp(), null, null, "-a", "-b");
+        validateInput(new CompositeApp(), null, null, "-x");
+        validateInput(new CompositeApp(), null, null, "-y");
     }
 
+    static class OptionalCompositeApp {
+        @ArgGroup(exclusive = true, multiplicity = "0..1")
+        Composite composite = new Composite();
+    }
     @Test
     public void testReflectionValidationCompositeNonRequiredGroup() {
-        @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "0..1"),
-                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "1"),
-                @ArgGroup(name = "COMPOSITE", exclusive = true, multiplicity = "0..1",
-                        subgroups = {"ALL", "EXCL"})
-        })
-        class App {
-            @Option(names = "-x", groups = "EXCL") boolean x;
-            @Option(names = "-y", groups = "EXCL") boolean y;
-            @Option(names = "-a", groups = "ALL") boolean a;
-            @Option(names = "-b", groups = "ALL") boolean b;
-        }
-        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-a");
-        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-b");
-        validateInput(new App(), MutuallyExclusiveArgsException.class, "Error: -x, -y are mutually exclusive (specify only one)",                "-x", "-y");
-        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-x", "-a");
-        validateInput(new App(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-x", "-b");
-        validateInput(new App(), MutuallyExclusiveArgsException.class, "Error: [[-a -b] | (-x | -y)] are mutually exclusive (specify only one)", "-a", "-x", "-b");
-        validateInput(new App(), MutuallyExclusiveArgsException.class, "Error: [[-a -b] | (-x | -y)] are mutually exclusive (specify only one)", "-a", "-y", "-b");
+        validateInput(new OptionalCompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-a");
+        validateInput(new OptionalCompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-b");
+        validateInput(new OptionalCompositeApp(), MutuallyExclusiveArgsException.class, "Error: -x, -y are mutually exclusive (specify only one)",                "-x", "-y");
+        validateInput(new OptionalCompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-x", "-a");
+        validateInput(new OptionalCompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-x", "-b");
+        validateInput(new OptionalCompositeApp(), MutuallyExclusiveArgsException.class, "Error: [[-a -b] | (-x | -y)] are mutually exclusive (specify only one)", "-a", "-x", "-b");
+        validateInput(new OptionalCompositeApp(), MutuallyExclusiveArgsException.class, "Error: [[-a -b] | (-x | -y)] are mutually exclusive (specify only one)", "-a", "-y", "-b");
 
         // no input: ok because composite as a whole is optional
-        validateInput(new App(), null, null);
+        validateInput(new OptionalCompositeApp(), null, null);
 
         // no error
-        validateInput(new App(), null, null, "-a", "-b");
-        validateInput(new App(), null, null, "-x");
-        validateInput(new App(), null, null, "-y");
+        validateInput(new OptionalCompositeApp(), null, null, "-a", "-b");
+        validateInput(new OptionalCompositeApp(), null, null, "-x");
+        validateInput(new OptionalCompositeApp(), null, null, "-y");
     }
 
     private void validateInput(Object userObject, Class<? extends Exception> exceptionClass, String errorMessage, String... args) {
@@ -801,86 +793,17 @@ public class ArgGroupTest {
                 fail("Expected " + exceptionClass.getSimpleName() + " for " + Arrays.asList(args));
             }
         } catch (Exception ex) {
-            assertEquals("Exception for input " + Arrays.asList(args), exceptionClass, ex.getClass());
             assertEquals(errorMessage, ex.getMessage());
-        }
-    }
-
-    @Test
-    public void testTopologicalSortSimple() {
-        ArgGroupSpec.Builder[] all = new ArgGroupSpec.Builder[]{
-                ArgGroupSpec.builder("A"),
-                ArgGroupSpec.builder("B").subgroupNames("A"),
-                ArgGroupSpec.builder("C").subgroupNames("B"),
-        };
-
-        List<ArgGroupSpec.Builder> builders = ArgGroupSpec.topologicalSort(Arrays.asList(all));
-        assertSame(all[0], builders.get(0));
-        assertSame(all[1], builders.get(1));
-        assertSame(all[2], builders.get(2));
-
-        List<ArgGroupSpec.Builder> randomized = new ArrayList<ArgGroupSpec.Builder>(Arrays.asList(all));
-        Collections.shuffle(randomized);
-        builders = ArgGroupSpec.topologicalSort(randomized);
-        assertSame(all[0], builders.get(0));
-        assertSame(all[1], builders.get(1));
-        assertSame(all[2], builders.get(2));
-    }
-
-    @Test
-    public void testTopologicalSortComplex() {
-        ArgGroupSpec.Builder[] all = new ArgGroupSpec.Builder[]{
-                ArgGroupSpec.builder("5"),
-                ArgGroupSpec.builder("11").subgroupNames("5", "7"),
-                ArgGroupSpec.builder("2" ).subgroupNames("11"),
-                ArgGroupSpec.builder("8" ).subgroupNames("3", "7"),
-                ArgGroupSpec.builder("9" ).subgroupNames("8", "11"),
-                ArgGroupSpec.builder("7"),
-                ArgGroupSpec.builder("3"),
-                ArgGroupSpec.builder("10").subgroupNames("3", "11")
-        };
-        List<ArgGroupSpec.Builder> builders = ArgGroupSpec.topologicalSort(Arrays.asList(all));
-        List<String> names = new ArrayList<String>();
-        for (ArgGroupSpec.Builder b: builders) { names.add(b.name()); }
-        assertEquals(Arrays.asList("7", "5", "3", "8", "11", "10", "9", "2"), names);
-    }
-
-    @Test
-    public void testTopologicalSortCyclicalGroupIsIllegal() {
-        try {
-            ArgGroupSpec.topologicalSort(Arrays.asList(
-                    ArgGroupSpec.builder("A").subgroupNames("B"),
-                    ArgGroupSpec.builder("B").subgroupNames("C"),
-                    ArgGroupSpec.builder("C").subgroupNames("D"),
-                    ArgGroupSpec.builder("D").subgroupNames("E", "G"),
-                    ArgGroupSpec.builder("E").subgroupNames("F", "A"),
-                    ArgGroupSpec.builder("G").subgroupNames("H"),
-                    ArgGroupSpec.builder("F"),
-                    ArgGroupSpec.builder("H")
-            ));
-            fail("Expected exception");
-        } catch (InitializationException ex) {
-            assertEquals("Cyclic group dependency: ArgGroupSpec.Builder[A, -> [B]] in [A, B, C, D, E, A]", ex.getMessage());
-        }
-    }
-
-    @Test
-    public void testTopologicalSortSimpleCyclicalGroupIsIllegal() {
-        try {
-            ArgGroupSpec.topologicalSort(Arrays.asList(
-                    ArgGroupSpec.builder("X").subgroupNames("X")));
-            fail("Expected exception");
-        } catch (InitializationException ex) {
-            assertEquals("Cyclic group dependency: ArgGroupSpec.Builder[X, -> [X]] in [X, X]", ex.getMessage());
+            assertEquals("Exception for input " + Arrays.asList(args), exceptionClass, ex.getClass());
         }
     }
 
     @Test
     public void testSynopsisOnlyOptions() {
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("G")
-                .addArg(OptionSpec.builder("-a").build())
-                .addArg(OptionSpec.builder("-b").build())
-                .addArg(OptionSpec.builder("-c").build());
+        ArgGroupSpec.Builder builder = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-a").required(true).build())
+                .addArg(OptionSpec.builder("-b").required(true).build())
+                .addArg(OptionSpec.builder("-c").required(true).build());
         assertEquals("[-a | -b | -c]", builder.build().synopsis());
 
         builder.multiplicity("1");
@@ -914,10 +837,10 @@ public class ArgGroupTest {
 
     @Test
     public void testSynopsisOnlyPositionals() {
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("G")
-                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG1").build())
-                .addArg(PositionalParamSpec.builder().index("1").paramLabel("ARG2").build())
-                .addArg(PositionalParamSpec.builder().index("2").paramLabel("ARG3").build());
+        ArgGroupSpec.Builder builder = ArgGroupSpec.builder()
+                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG1").required(true).required(true).build())
+                .addArg(PositionalParamSpec.builder().index("1").paramLabel("ARG2").required(true).required(true).build())
+                .addArg(PositionalParamSpec.builder().index("2").paramLabel("ARG3").required(true).required(true).build());
         assertEquals("[ARG1 | ARG2 | ARG3]", builder.build().synopsis());
 
         builder.multiplicity("1");
@@ -948,13 +871,13 @@ public class ArgGroupTest {
 
     @Test
     public void testSynopsisMixOptionsPositionals() {
-        ArgGroupSpec.Builder builder = ArgGroupSpec.builder("G")
-                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG1").build())
-                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG2").build())
-                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG3").build())
-                .addArg(OptionSpec.builder("-a").build())
-                .addArg(OptionSpec.builder("-b").build())
-                .addArg(OptionSpec.builder("-c").build());
+        ArgGroupSpec.Builder builder = ArgGroupSpec.builder()
+                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG1").required(true).build())
+                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG2").required(true).build())
+                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG3").required(true).build())
+                .addArg(OptionSpec.builder("-a").required(true).build())
+                .addArg(OptionSpec.builder("-b").required(true).build())
+                .addArg(OptionSpec.builder("-c").required(true).build());
         assertEquals("[ARG1 | ARG2 | ARG3 | -a | -b | -c]", builder.build().synopsis());
 
         builder.multiplicity("1");
@@ -969,25 +892,25 @@ public class ArgGroupTest {
 
     @Test
     public void testSynopsisOnlyGroups() {
-        ArgGroupSpec.Builder b1 = ArgGroupSpec.builder("B1")
-                .addArg(OptionSpec.builder("-a").build())
-                .addArg(OptionSpec.builder("-b").build())
-                .addArg(OptionSpec.builder("-c").build());
+        ArgGroupSpec.Builder b1 = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-a").required(true).build())
+                .addArg(OptionSpec.builder("-b").required(true).build())
+                .addArg(OptionSpec.builder("-c").required(true).build());
 
-        ArgGroupSpec.Builder b2 = ArgGroupSpec.builder("B2")
-                .addArg(OptionSpec.builder("-e").build())
-                .addArg(OptionSpec.builder("-e").build())
-                .addArg(OptionSpec.builder("-f").build())
+        ArgGroupSpec.Builder b2 = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-e").required(true).build())
+                .addArg(OptionSpec.builder("-e").required(true).build())
+                .addArg(OptionSpec.builder("-f").required(true).build())
                 .multiplicity("1");
 
-        ArgGroupSpec.Builder b3 = ArgGroupSpec.builder("B3")
-                .addArg(OptionSpec.builder("-g").build())
-                .addArg(OptionSpec.builder("-h").build())
-                .addArg(OptionSpec.builder("-i").build())
+        ArgGroupSpec.Builder b3 = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-g").required(true).build())
+                .addArg(OptionSpec.builder("-h").required(true).build())
+                .addArg(OptionSpec.builder("-i").required(true).build())
                 .multiplicity("1")
                 .exclusive(false);
 
-        ArgGroupSpec.Builder composite = ArgGroupSpec.builder("COMPOSITE")
+        ArgGroupSpec.Builder composite = ArgGroupSpec.builder()
                 .addSubgroup(b1.build())
                 .addSubgroup(b2.build())
                 .addSubgroup(b3.build());
@@ -1013,23 +936,23 @@ public class ArgGroupTest {
 
     @Test
     public void testSynopsisMixGroupsOptions() {
-        ArgGroupSpec.Builder b1 = ArgGroupSpec.builder("B1")
-                .addArg(OptionSpec.builder("-a").build())
-                .addArg(OptionSpec.builder("-b").build())
-                .addArg(OptionSpec.builder("-c").build());
+        ArgGroupSpec.Builder b1 = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-a").required(true).build())
+                .addArg(OptionSpec.builder("-b").required(true).build())
+                .addArg(OptionSpec.builder("-c").required(true).build());
 
-        ArgGroupSpec.Builder b2 = ArgGroupSpec.builder("B2")
-                .addArg(OptionSpec.builder("-e").build())
-                .addArg(OptionSpec.builder("-e").build())
-                .addArg(OptionSpec.builder("-f").build())
+        ArgGroupSpec.Builder b2 = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-e").required(true).build())
+                .addArg(OptionSpec.builder("-e").required(true).build())
+                .addArg(OptionSpec.builder("-f").required(true).build())
                 .multiplicity("1");
 
-        ArgGroupSpec.Builder composite = ArgGroupSpec.builder("COMPOSITE")
+        ArgGroupSpec.Builder composite = ArgGroupSpec.builder()
                 .addSubgroup(b1.build())
                 .addSubgroup(b2.build())
-                .addArg(OptionSpec.builder("-x").build())
-                .addArg(OptionSpec.builder("-y").build())
-                .addArg(OptionSpec.builder("-z").build());
+                .addArg(OptionSpec.builder("-x").required(true).build())
+                .addArg(OptionSpec.builder("-y").required(true).build())
+                .addArg(OptionSpec.builder("-z").required(true).build());
 
         assertEquals("[-x | -y | -z | [-a | -b | -c] | (-e | -f)]", composite.build().synopsis());
 
@@ -1045,23 +968,23 @@ public class ArgGroupTest {
 
     @Test
     public void testSynopsisMixGroupsPositionals() {
-        ArgGroupSpec.Builder b1 = ArgGroupSpec.builder("B1")
-                .addArg(OptionSpec.builder("-a").build())
-                .addArg(OptionSpec.builder("-b").build())
-                .addArg(OptionSpec.builder("-c").build());
+        ArgGroupSpec.Builder b1 = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-a").required(true).build())
+                .addArg(OptionSpec.builder("-b").required(true).build())
+                .addArg(OptionSpec.builder("-c").required(true).build());
 
-        ArgGroupSpec.Builder b2 = ArgGroupSpec.builder("B2")
-                .addArg(OptionSpec.builder("-e").build())
-                .addArg(OptionSpec.builder("-e").build())
-                .addArg(OptionSpec.builder("-f").build())
+        ArgGroupSpec.Builder b2 = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-e").required(true).build())
+                .addArg(OptionSpec.builder("-e").required(true).build())
+                .addArg(OptionSpec.builder("-f").required(true).build())
                 .multiplicity("1");
 
-        ArgGroupSpec.Builder composite = ArgGroupSpec.builder("COMPOSITE")
+        ArgGroupSpec.Builder composite = ArgGroupSpec.builder()
                 .addSubgroup(b1.build())
                 .addSubgroup(b2.build())
-                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG1").build())
-                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG2").build())
-                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG3").build());
+                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG1").required(true).build())
+                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG2").required(true).build())
+                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG3").required(true).build());
 
         assertEquals("[ARG1 | ARG2 | ARG3 | [-a | -b | -c] | (-e | -f)]", composite.build().synopsis());
 
@@ -1077,26 +1000,26 @@ public class ArgGroupTest {
 
     @Test
     public void testSynopsisMixGroupsOptionsPositionals() {
-        ArgGroupSpec.Builder b1 = ArgGroupSpec.builder("B1")
-                .addArg(OptionSpec.builder("-a").build())
-                .addArg(OptionSpec.builder("-b").build())
-                .addArg(OptionSpec.builder("-c").build());
+        ArgGroupSpec.Builder b1 = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-a").required(true).build())
+                .addArg(OptionSpec.builder("-b").required(true).build())
+                .addArg(OptionSpec.builder("-c").required(true).build());
 
-        ArgGroupSpec.Builder b2 = ArgGroupSpec.builder("B2")
-                .addArg(OptionSpec.builder("-e").build())
-                .addArg(OptionSpec.builder("-e").build())
-                .addArg(OptionSpec.builder("-f").build())
+        ArgGroupSpec.Builder b2 = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-e").required(true).build())
+                .addArg(OptionSpec.builder("-e").required(true).build())
+                .addArg(OptionSpec.builder("-f").required(true).build())
                 .multiplicity("1");
 
-        ArgGroupSpec.Builder composite = ArgGroupSpec.builder("COMPOSITE")
+        ArgGroupSpec.Builder composite = ArgGroupSpec.builder()
                 .addSubgroup(b1.build())
                 .addSubgroup(b2.build())
-                .addArg(OptionSpec.builder("-x").build())
-                .addArg(OptionSpec.builder("-y").build())
-                .addArg(OptionSpec.builder("-z").build())
-                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG1").build())
-                .addArg(PositionalParamSpec.builder().index("1").paramLabel("ARG2").build())
-                .addArg(PositionalParamSpec.builder().index("2").paramLabel("ARG3").build());
+                .addArg(OptionSpec.builder("-x").required(true).build())
+                .addArg(OptionSpec.builder("-y").required(true).build())
+                .addArg(OptionSpec.builder("-z").required(true).build())
+                .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG1").required(true).build())
+                .addArg(PositionalParamSpec.builder().index("1").paramLabel("ARG2").required(true).build())
+                .addArg(PositionalParamSpec.builder().index("2").paramLabel("ARG3").required(true).build());
 
         assertEquals("[-x | -y | -z | ARG1 | ARG2 | ARG3 | [-a | -b | -c] | (-e | -f)]", composite.build().synopsis());
 
@@ -1110,105 +1033,153 @@ public class ArgGroupTest {
         assertEquals("[-x -y -z ARG1 ARG2 ARG3 [-a | -b | -c] (-e | -f)]", composite.build().synopsis());
     }
 
+    static class BiGroup {
+        @Option(names = "-x") int x;
+        @Option(names = "-y") int y;
+    }
+    static class SetterMethodApp {
+        private BiGroup group;
+
+        @ArgGroup(exclusive = false)
+        public void setGroup(BiGroup group) {
+            this.group = group;
+        }
+    }
+    @Test
+    public void testGroupAnnotationOnSetterMethod() {
+        SetterMethodApp app = new SetterMethodApp();
+        CommandLine cmd = new CommandLine(app, new InnerClassFactory(this));
+//        assertNotNull(app.group); // TODO
+
+        cmd.parseArgs("-x=1", "-y=2");
+        assertEquals(1, app.group.x);
+        assertEquals(2, app.group.y);
+    }
+
+    interface AnnotatedGetterInterface {
+        @ArgGroup(exclusive = false) BiGroup getGroup();
+    }
+    @Test
+    public void testGroupAnnotationOnGetterMethod() {
+        CommandLine cmd = new CommandLine(AnnotatedGetterInterface.class);
+        AnnotatedGetterInterface app = cmd.getCommand();
+        //assertNotNull(app.getGroup()); // TODO
+
+        cmd.parseArgs("-x=1", "-y=2");
+        assertEquals(1, app.getGroup().x);
+        assertEquals(2, app.getGroup().y);
+    }
+
     @Test
     public void testUsageHelpRequiredExclusiveGroup() {
-        @Command(argGroups = {
-                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "1"),
-        })
+        class Excl {
+            @Option(names = "-x", required = true) boolean x;
+            @Option(names = "-y", required = true) boolean y;
+        }
         class App {
-            @Option(names = "-x", groups = "EXCL") boolean x;
-            @Option(names = "-y", groups = "EXCL") boolean y;
+            @ArgGroup(exclusive = true, multiplicity = "1") Excl excl;
         }
         String expected = String.format("" +
                 "Usage: <main class> (-x | -y)%n" +
                 "  -x%n" +
                 "  -y%n");
-        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        String actual = new CommandLine(new App(), new InnerClassFactory(this)).getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
     }
 
     @Test
     public void testUsageHelpNonRequiredExclusiveGroup() {
-        @Command(argGroups = {
-                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "0..1"),
-        })
+        class All {
+            @Option(names = "-x", required = true) boolean x;
+            @Option(names = "-y", required = true) boolean y;
+        }
         class App {
-            @Option(names = "-x", groups = "EXCL") boolean x;
-            @Option(names = "-y", groups = "EXCL") boolean y;
+            @ArgGroup(exclusive = true, multiplicity = "0..1")
+            All all;
         }
         String expected = String.format("" +
                 "Usage: <main class> [-x | -y]%n" +
                 "  -x%n" +
                 "  -y%n");
-        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        String actual = new CommandLine(new App(), new InnerClassFactory(this)).getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
     }
 
     @Test
     public void testUsageHelpRequiredNonExclusiveGroup() {
-        @Command(argGroups = {
-                @ArgGroup(name = "G", exclusive = false, multiplicity = "1"),
-        })
+        class All {
+            @Option(names = "-x", required = true) boolean x;
+            @Option(names = "-y", required = true) boolean y;
+        }
         class App {
-            @Option(names = "-x", groups = "G") boolean x;
-            @Option(names = "-y", groups = "G") boolean y;
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            All all;
         }
         String expected = String.format("" +
                 "Usage: <main class> (-x -y)%n" +
                 "  -x%n" +
                 "  -y%n");
-        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        String actual = new CommandLine(new App(), new InnerClassFactory(this)).getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
     }
 
     @Test
     public void testUsageHelpNonRequiredNonExclusiveGroup() {
-        @Command(argGroups = {
-                @ArgGroup(name = "G", exclusive = false, multiplicity = "0..1"),
-        })
+        class All {
+            @Option(names = "-x", required = true) boolean x;
+            @Option(names = "-y", required = true) boolean y;
+        }
         class App {
-            @Option(names = "-x", groups = "G") boolean x;
-            @Option(names = "-y", groups = "G") boolean y;
+            @ArgGroup(exclusive = false, multiplicity = "0..1")
+            All all;
         }
         String expected = String.format("" +
                 "Usage: <main class> [-x -y]%n" +
                 "  -x%n" +
                 "  -y%n");
-        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        String actual = new CommandLine(new App(), new InnerClassFactory(this)).getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
     }
 
     @Test
     public void testUsageHelpNonValidatingGroupDoesNotImpactSynopsis() {
-        @Command(argGroups = {
-                @ArgGroup(name = "G", validate = false),
-        })
+        class All {
+            @Option(names = "-x") boolean x;
+            @Option(names = "-y") boolean y;
+        }
         class App {
-            @Option(names = "-x", groups = "G") boolean x;
-            @Option(names = "-y", groups = "G") boolean y;
+            @ArgGroup(validate = false)
+            All all;
         }
         String expected = String.format("" +
                 "Usage: <main class> [-xy]%n" +
                 "  -x%n" +
                 "  -y%n");
-        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        String actual = new CommandLine(new App(), new InnerClassFactory(this)).getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
     }
 
     @Test
     public void testCompositeGroupSynopsis() {
-        @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "0..1"),
-                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "1"),
-                @ArgGroup(name = "COMPOSITE", exclusive = true, multiplicity = "0..1",
-                        subgroups = {"ALL", "EXCL"})
-        })
+        class IntXY {
+            @Option(names = "-x", required = true) int x;
+            @Option(names = "-y", required = true) int y;
+        }
+        class IntABC {
+            @Option(names = "-a", required = true) int a;
+            @Option(names = "-b", required = true) int b;
+            @Option(names = "-c", required = true) int c;
+        }
+        class Composite {
+            @ArgGroup(exclusive = false, multiplicity = "0..1")
+            IntABC all;
+
+            @ArgGroup(exclusive = true, multiplicity = "1")
+            IntXY excl;
+        }
         class App {
-            @Option(names = "-x", groups = "EXCL") int x;
-            @Option(names = "-y", groups = "EXCL") int y;
-            @Option(names = "-a", groups = "ALL") int a;
-            @Option(names = "-b", groups = "ALL") int b;
-            @Option(names = "-c", groups = "ALL") int c;
+            @ArgGroup(exclusive = true, multiplicity = "0..1")
+            Composite composite;
         }
         String expected = String.format("" +
                 "Usage: <main class> [[-a=<a> -b=<b> -c=<c>] | (-x=<x> | -y=<y>)]%n" +
@@ -1217,107 +1188,78 @@ public class ArgGroupTest {
                 "  -c=<c>%n" +
                 "  -x=<x>%n" +
                 "  -y=<y>%n");
-        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        String actual = new CommandLine(new App(), new InnerClassFactory(this)).getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
     }
 
     @Test
     public void testCompositeGroupSynopsisAnsi() {
-        @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "0..1"),
-                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "1"),
-                @ArgGroup(name = "COMPOSITE", exclusive = true, multiplicity = "0..1",
-                        subgroups = {"ALL", "EXCL"})
-        })
+        class IntXY {
+            @Option(names = "-x", required = true) int x;
+            @Option(names = "-y", required = true) int y;
+        }
+        class IntABC {
+            @Option(names = "-a", required = true) int a;
+            @Option(names = "-b", required = true) int b;
+            @Option(names = "-c", required = true) int c;
+        }
+        class Composite {
+            @ArgGroup(exclusive = false, multiplicity = "0..1")
+            IntABC all;
+
+            @ArgGroup(exclusive = true, multiplicity = "1")
+            IntXY exclusive;
+        }
+        @Command
         class App {
-            @Option(names = "-x", groups = "EXCL") int x;
-            @Option(names = "-y", groups = "EXCL") int y;
-            @Option(names = "-a", groups = "ALL") int a;
-            @Option(names = "-b", groups = "ALL") int b;
-            @Option(names = "-c", groups = "ALL") int c;
+            @ArgGroup(exclusive = true, multiplicity = "0..1")
+            Composite composite;
         }
         String expected = String.format("" +
                 "Usage: @|bold <main class>|@ [[@|yellow -a|@=@|italic <a>|@ @|yellow -b|@=@|italic <b>|@ @|yellow -c|@=@|italic <c>|@] | (@|yellow -x|@=@|italic <x>|@ | @|yellow -y|@=@|italic <y>|@)]%n" +
-                "  @|yellow -a|@=@|italic <|@@|italic a>|@%n" +
-                "  @|yellow -b|@=@|italic <|@@|italic b>|@%n" +
-                "  @|yellow -c|@=@|italic <|@@|italic c>|@%n" +
-                "  @|yellow -x|@=@|italic <|@@|italic x>|@%n" +
-                "  @|yellow -y|@=@|italic <|@@|italic y>|@%n");
+                "@|yellow  |@ @|yellow -a|@=@|italic <|@@|italic a>|@%n" +
+                "@|yellow  |@ @|yellow -b|@=@|italic <|@@|italic b>|@%n" +
+                "@|yellow  |@ @|yellow -c|@=@|italic <|@@|italic c>|@%n" +
+                "@|yellow  |@ @|yellow -x|@=@|italic <|@@|italic x>|@%n" +
+                "@|yellow  |@ @|yellow -y|@=@|italic <|@@|italic y>|@%n");
         expected = Help.Ansi.ON.string(expected);
-        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.ON);
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testGroupUsageHelpOptionList() {
-        @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "0..1", order = 10,
-                        heading = "Co-occurring options:%nThese options must appear together, or not at all.%n"),
-                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "1", order = 20,
-                        heading = "Exclusive options:%n"),
-                @ArgGroup(name = "COMPOSITE", exclusive = true, multiplicity = "0..1",
-                        subgroups = {"ALL", "EXCL"}),
-                @ArgGroup(name = "INITIAL", validate = false, heading = "", order = 0),
-                @ArgGroup(name = "REMAINDER", validate = false, heading = "Remaining options:%n", order = 100)
-        })
-        class App {
-            @Option(names = "-x", groups = "EXCL") int x;
-            @Option(names = "-y", groups = "EXCL") int y;
-            @Option(names = "-a", groups = "ALL") int a;
-            @Option(names = "-b", groups = "ALL") int b;
-            @Option(names = "-c", groups = "ALL") int c;
-            @Option(names = "-A", groups = "INITIAL") int A;
-            @Option(names = "-B", groups = "INITIAL") boolean B;
-            @Option(names = "-C", groups = "INITIAL") boolean C;
-            @Option(names = "-D", groups = "REMAINDER") int D;
-            @Option(names = "-E", groups = "REMAINDER") boolean E;
-            @Option(names = "-F", groups = "REMAINDER") boolean F;
-        }
-        String expected = String.format("" +
-                "Usage: <main class> [[-a=<a> -b=<b> -c=<c>] | (-x=<x> | -y=<y>)] [-BCEF]%n" +
-                "                    [-A=<A>] [-D=<D>]%n" +
-                "  -A=<A>%n" +
-                "  -B%n" +
-                "  -C%n" +
-                "Co-occurring options:%n" +
-                "These options must appear together, or not at all.%n" +
-                "  -a=<a>%n" +
-                "  -b=<b>%n" +
-                "  -c=<c>%n" +
-                "Exclusive options:%n" +
-                "  -x=<x>%n" +
-                "  -y=<y>%n" +
-                "Remaining options:%n" +
-                "  -D=<D>%n" +
-                "  -E%n" +
-                "  -F%n");
-        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        String actual = new CommandLine(new App(), new InnerClassFactory(this)).getUsageMessage(Help.Ansi.ON);
         assertEquals(expected, actual);
     }
 
     @Test
     public void testGroupUsageHelpOptionListOptionsWithoutGroupsPrecedeGroups() {
-        @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "0..1", order = 10,
-                        heading = "Co-occurring options:%nThese options must appear together, or not at all.%n"),
-                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "1", order = 20,
-                        heading = "Exclusive options:%n"),
-                @ArgGroup(name = "COMPOSITE", exclusive = true, multiplicity = "0..1",
-                        subgroups = {"ALL", "EXCL"}),
-                @ArgGroup(name = "REMAINDER", validate = false, heading = "Remaining options:%n", order = 100)
-        })
+        class IntXY {
+            @Option(names = "-x", required = true) int x;
+            @Option(names = "-y", required = true) int y;
+        }
+        class IntABC {
+            @Option(names = "-a", required = true) int a;
+            @Option(names = "-b", required = true) int b;
+            @Option(names = "-c", required = true) int c;
+        }
+        class Composite {
+            @ArgGroup(exclusive = false, multiplicity = "0..1", order = 10,
+                    heading = "Co-occurring options:%nThese options must appear together, or not at all.%n")
+            IntABC all;
+
+            @ArgGroup(exclusive = true, multiplicity = "1", order = 20, heading = "Exclusive options:%n")
+            IntXY excl;
+        }
         class App {
-            @Option(names = "-x", groups = "EXCL") int x;
-            @Option(names = "-y", groups = "EXCL") int y;
-            @Option(names = "-a", groups = "ALL") int a;
-            @Option(names = "-b", groups = "ALL") int b;
-            @Option(names = "-c", groups = "ALL") int c;
             @Option(names = "-A") int A;
-            @Option(names = "-B") boolean B;
-            @Option(names = "-C") boolean C;
-            @Option(names = "-D", groups = "REMAINDER") int D;
-            @Option(names = "-E", groups = "REMAINDER") boolean E;
-            @Option(names = "-F", groups = "REMAINDER") boolean F;
+            @Option(names = "-B") boolean b;
+            @Option(names = "-C") boolean c;
+
+            @ArgGroup(exclusive = true, multiplicity = "0..1")
+            Composite composite;
+
+            @ArgGroup(validate = false, heading = "Remaining options:%n", order = 100)
+            Object remainder = new Object() {
+                @Option(names = "-D") int D;
+                @Option(names = "-E") boolean E;
+                @Option(names = "-F") boolean F;
+            };
         }
         String expected = String.format("" +
                 "Usage: <main class> [[-a=<a> -b=<b> -c=<c>] | (-x=<x> | -y=<y>)] [-BCEF]%n" +
@@ -1337,22 +1279,24 @@ public class ArgGroupTest {
                 "  -D=<D>%n" +
                 "  -E%n" +
                 "  -F%n");
-        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        String actual = new CommandLine(new App(), new InnerClassFactory(this)).getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
     }
 
-    @Ignore("Currently gives error: Missing required parameter: <f2>")
+    @Ignore
     @Test
-    public void testGroupWithOptionsAndPositionals() {
-        @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "0..1", order = 10,
-                        heading = "Co-occurring args:%nThese options must appear together, or not at all.%n"),
-        })
+    public void testGroupWithOptionsAndPositionals_multiplicity0_1() {
+        class Remainder {
+            @Option(names = "-a"   , required = true) int a;
+            @Parameters(index = "0") File f0;
+            @Parameters(index = "1") File f1;
+        }
         class App {
-            @Option(names = "-a", groups = "ALL") int a;
-            @Parameters(index = "0", groups = "ALL") File f0;
-            @Parameters(index = "1", groups = "ALL") File f1;
-            @Parameters(index = "2") File f2;
+            @ArgGroup(exclusive = false, multiplicity = "0..1", order = 10,
+                    heading = "Co-occurring args:%nThese options must appear together, or not at all.%n")
+            Remainder remainder = new Remainder();
+
+            @Parameters(index = "0") File f2;
         }
         String expected = String.format("" +
                 "Usage: <main class> [-a=<a> <f0> <f1>] <f2>%n" +
@@ -1362,39 +1306,137 @@ public class ArgGroupTest {
                 "      <f0>%n" +
                 "      <f1>%n" +
                 "  -a=<a>%n");
-        CommandLine cmd = new CommandLine(new App());
+
+        HelpTestUtil.setTraceLevel("DEBUG");
+        CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
         String actual = cmd.getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
 
-        CommandLine.ParseResult parseResult = cmd.parseArgs("FILE2");
+        ParseResult parseResult = cmd.parseArgs("FILE2");
+        assertTrue(parseResult.hasMatchedPositional(0));
+        assertEquals("<f2>", parseResult.matchedPositional(0).paramLabel());
+    }
+
+    @Ignore
+    @Test
+    public void testGroupWithOptionsAndPositionals_multiplicity1_2() {
+        class Remainder {
+            @Option(names = "-a"   , required = true) int a;
+            @Parameters(index = "0") File f0;
+            @Parameters(index = "1") File f1;
+        }
+        class App {
+            @ArgGroup(exclusive = false, multiplicity = "1..2", order = 10,
+                    heading = "Co-occurring args:%nThese options must appear together, or not at all.%n")
+            Remainder remainder = new Remainder();
+
+            @Parameters(index = "0") File f2;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> (-a=<a> <f0> <f1>) [-a=<a> <f0> <f1>] <f2>%n" +
+                "      <f2>%n" +
+                "Co-occurring args:%n" +
+                "These options must appear together, or not at all.%n" +
+                "      <f0>%n" +
+                "      <f1>%n" +
+                "  -a=<a>%n");
+
+        HelpTestUtil.setTraceLevel("DEBUG");
+        CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
+        String actual = cmd.getUsageMessage(Help.Ansi.OFF);
+        assertEquals(expected, actual);
+
+        ParseResult parseResult = cmd.parseArgs("-a=1", "F0", "F1", "FILE2");
         assertTrue(parseResult.hasMatchedPositional(0));
         assertEquals("<f2>", parseResult.matchedPositional(0).paramLabel());
     }
 
     @Test
-    public void testGroupUsageHelpOptionListOptionsGroupWithMixedOptionsAndPositionals() {
-        @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "0..1", order = 10,
-                        heading = "Co-occurring options:%nThese options must appear together, or not at all.%n"),
-                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "1", order = 20,
-                        heading = "Exclusive options:%n"),
-                @ArgGroup(name = "COMPOSITE", exclusive = true, multiplicity = "0..1",
-                        subgroups = {"ALL", "EXCL"}),
-                @ArgGroup(name = "REMAINDER", validate = false, heading = "Remaining options:%n", order = 100)
-        })
+    public void testGroupWithMixedOptionsAndPositionals() {
+        class IntXY {
+            @Option(names = "-x", required = true) int x;
+            @Option(names = "-y", required = true) int y;
+        }
+        class IntABC {
+            @Option(names = "-a", required = true) int a;
+            @Parameters(index = "0") File f0;
+            @Parameters(index = "1") File f1;
+        }
+        class Composite {
+            @ArgGroup(exclusive = false, multiplicity = "0..2", order = 10,
+                    heading = "Co-occurring options:%nThese options must appear together, or not at all.%n")
+            List<IntABC> all;
+
+            @ArgGroup(exclusive = true, multiplicity = "1", order = 20, heading = "Exclusive options:%n")
+            IntXY excl;
+        }
         class App {
-            @Option(names = "-x", groups = "EXCL") int x;
-            @Option(names = "-y", groups = "EXCL") int y;
-            @Option(names = "-a", groups = "ALL") int a;
-            @Parameters(index = "0", groups = "ALL") File f0;
-            @Parameters(index = "1", groups = "ALL") File f1;
-            @Parameters(index = "2") File f2;
             @Option(names = "-A") int A;
             @Option(names = "-B") boolean B;
             @Option(names = "-C") boolean C;
-            @Option(names = "-D", groups = "REMAINDER") int D;
-            @Option(names = "-E", groups = "REMAINDER") boolean E;
-            @Option(names = "-F", groups = "REMAINDER") boolean F;
+
+            @ArgGroup(exclusive = true, multiplicity = "0..1")
+            Composite composite;
+        }
+        App app = new App();
+        CommandLine cmd = new CommandLine(app, new InnerClassFactory(this));
+        try {
+            cmd.parseArgs("-x=1", "-a=1", "file0", "file1", "-y=2", "-x=3");
+            fail("Expected exception");
+        } catch (MutuallyExclusiveArgsException ex) {
+            assertEquals("Error: -x=<x>, -y=<y> are mutually exclusive (specify only one)", ex.getMessage());
+        }
+        try {
+            cmd.parseArgs("-x=1", "-a=1", "file0", "file1", "-x=2", "-x=3");
+            fail("Expected exception");
+        } catch (CommandLine.MaxValuesExceededException ex) {
+            assertEquals("Error: Group: (-x=<x> | -y=<y>) can only be specified 1 times but was matched 3 times.", ex.getMessage());
+        }
+        try {
+            cmd.parseArgs("-x=1", "-a=1", "file0", "file1");
+            fail("Expected exception");
+        } catch (CommandLine.MutuallyExclusiveArgsException ex) {
+            assertEquals("Error: [[-a=<a> <f0> <f1>] [-a=<a> <f0> <f1>] | (-x=<x> | -y=<y>)] are mutually exclusive (specify only one)", ex.getMessage());
+        }
+        ParseResult parseResult = cmd.parseArgs("-a=1", "file0", "file1", "-a=2", "file2", "file3");
+
+    }
+
+    @Test
+    public void testGroupUsageHelpOptionListOptionsGroupWithMixedOptionsAndPositionals() {
+        class IntXY {
+            @Option(names = "-x", required = true) int x;
+            @Option(names = "-y", required = true) int y;
+        }
+        class IntABC {
+            @Option(names = "-a", required = true) int a;
+            @Parameters(index = "0") File f0;
+            @Parameters(index = "1") File f1;
+        }
+        class Composite {
+            @ArgGroup(exclusive = false, multiplicity = "0..1", order = 10,
+                    heading = "Co-occurring options:%nThese options must appear together, or not at all.%n")
+            IntABC all;
+
+            @ArgGroup(exclusive = true, multiplicity = "1", order = 20, heading = "Exclusive options:%n")
+            IntXY excl;
+        }
+        class App {
+            @Option(names = "-A") int A;
+            @Option(names = "-B") boolean B;
+            @Option(names = "-C") boolean C;
+
+            @Parameters(index = "2") File f2;
+
+            @ArgGroup(exclusive = true, multiplicity = "0..1")
+            Composite composite;
+
+            @ArgGroup(validate = false, heading = "Remaining options:%n", order = 100)
+            Object remainder = new Object() {
+                @Option(names = "-D") int D;
+                @Option(names = "-E") boolean E;
+                @Option(names = "-F") boolean F;
+            };
         }
         String expected = String.format("" +
                 "Usage: <main class> [[-a=<a> <f0> <f1>] | (-x=<x> | -y=<y>)] [-BCEF] [-A=<A>]%n" +
@@ -1415,20 +1457,23 @@ public class ArgGroupTest {
                 "  -D=<D>%n" +
                 "  -E%n" +
                 "  -F%n");
-        String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
+        String actual = new CommandLine(new App(), new InnerClassFactory(this)).getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
     }
     
     @Test
     public void testRequiredArgsInAGroupAreNotValidated() {
-        @Command(argGroups = {
-                @ArgGroup(name = "ALL", exclusive = false, multiplicity = "1"),
-                @ArgGroup(name = "EXCL", exclusive = true, multiplicity = "0..1", subgroups = "ALL"),
-        })
         class App {
-            @Option(names = "-a", required = true, groups = "ALL") int a;
-            @Parameters(index = "0", groups = "ALL") File f0;
-            @Option(names = "-x", required = true, groups = "EXCL") boolean x;
+            @ArgGroup(exclusive = true, multiplicity = "0..1")
+            Object exclusive = new Object() {
+                @Option(names = "-x", required = true) boolean x;
+
+                @ArgGroup(exclusive = false, multiplicity = "1")
+                Object all = new Object() {
+                    @Option(names = "-a", required = true) int a;
+                    @Parameters(index = "0") File f0;
+                };
+            };
         }
         String expected = String.format("" +
                 "Usage: <main class> [-x | (-a=<a> <f0>)]%n" +
@@ -1442,4 +1487,219 @@ public class ArgGroupTest {
 
         cmd.parseArgs(); // no error
     }
+
+    static class Mono {
+        @Option(names = "-a", required = true) int a;
+    }
+    static class RepeatingApp {
+        @ArgGroup(multiplicity = "2") List<Mono> monos;
+    }
+    @Test
+    public void testRepeatingGroupsSimple() {
+        RepeatingApp app = new RepeatingApp();
+        CommandLine cmd = new CommandLine(app);
+        ParseResult parseResult = cmd.parseArgs("-a", "1", "-a", "2");
+
+        assertEquals(2, app.monos.size());
+        assertEquals(1, app.monos.get(0).a);
+        assertEquals(2, app.monos.get(1).a);
+
+        List<MatchedGroup> matchedGroups = parseResult.matchedGroups();
+        assertEquals(1, matchedGroups.size());
+        MatchedGroup matchedGroup = matchedGroups.get(0);
+        assertEquals(2, matchedGroup.multiples().size());
+
+        ArgSpec a = cmd.getCommandSpec().findOption("-a");
+        MatchedGroupMultiple multiple1 = matchedGroup.multiples().get(0);
+        assertEquals(1, multiple1.matchCount(a));
+        List<Object> values1 = multiple1.matchedValues(a);
+        assertEquals(1, values1.size());
+        assertEquals(Integer.class, values1.get(0).getClass());
+        assertEquals(1, values1.get(0));
+
+        MatchedGroupMultiple multiple2 = matchedGroup.multiples().get(1);
+        assertEquals(1, multiple2.matchCount(a));
+        List<Object> values2 = multiple2.matchedValues(a);
+        assertEquals(1, values2.size());
+        assertEquals(Integer.class, values2.get(0).getClass());
+        assertEquals(2, values2.get(0));
+    }
+
+    @Test
+    public void testRepeatingGroupsValidation() {
+        //HelpTestUtil.setTraceLevel("DEBUG");
+
+        RepeatingApp app = new RepeatingApp();
+        CommandLine cmd = new CommandLine(app);
+        try {
+            cmd.parseArgs("-a", "1");
+            fail("Expected exception");
+        } catch (CommandLine.ParameterException ex) {
+            assertEquals("Error: Group: (-a=<a>) (-a=<a>) must be specified 2 times but was only fully matched 0 times and partially matched 1 times: (-a=<a>) (-a=<a>): match=(-a=1)", ex.getMessage());
+        }
+    }
+
+    static class RepeatingGroupWithOptionalElements635 {
+        @Option(names = {"-a", "--add-dataset"}, required = true) boolean add;
+        @Option(names = {"-d", "--dataset"}    , required = true) String dataset;
+        @Option(names = {"-c", "--container"}  , required = false) String container;
+        @Option(names = {"-t", "--type"}       , required = false) String type;
+    }
+    @Command(name = "viewer", usageHelpWidth = 100)
+    static class RepeatingCompositeWithOptionalApp635 {
+        // SYNOPSIS: viewer (-a -d=DATASET [-c=CONTAINER] [-t=TYPE])... [-f=FALLBACK] <positional>
+        @ArgGroup(exclusive = false, multiplicity = "1..*")
+        List<RepeatingGroupWithOptionalElements635> composites;
+
+        @Option(names = "-f")
+        String fallback;
+
+        @Parameters(index = "0")
+        String positional;
+    }
+    @Test
+    public void testRepeatingCompositeGroupWithOptionalElements_Issue635() {
+        RepeatingCompositeWithOptionalApp635 app = new RepeatingCompositeWithOptionalApp635();
+        CommandLine cmd = new CommandLine(app);
+
+        String synopsis = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF)).synopsis(0);
+        assertEquals("viewer (-a -d=<dataset> [-c=<container>] [-t=<type>])... [-f=<fallback>] <positional>", synopsis.trim());
+
+        ParseResult parseResult = cmd.parseArgs("-a", "-d", "data1", "-a", "-d=data2", "-c=contain2", "-t=typ2", "pos", "-a", "-d=data3", "-c=contain3");
+        assertEquals("pos", parseResult.matchedPositionalValue(0, ""));
+        assertFalse(parseResult.hasMatchedOption("-f"));
+
+        List<MatchedGroup> matchedGroups = parseResult.matchedGroups();
+        assertEquals(1, matchedGroups.size());
+        MatchedGroup matchedGroup = matchedGroups.get(0);
+        assertEquals(3, matchedGroup.multiples().size());
+
+        CommandSpec spec = cmd.getCommandSpec();
+        List<String> data =    Arrays.asList("data1",  "data2",    "data3");
+        List<String> contain = Arrays.asList(null,     "contain2", "contain3");
+        List<String> type =    Arrays.asList(null,     "typ2",     null);
+        for (int i = 0; i < 3; i++) {
+            MatchedGroupMultiple multiple = matchedGroup.multiples().get(i);
+            assertEquals(Arrays.asList(data.get(i)),  multiple.matchedValues(spec.findOption("-d")));
+            if (contain.get(i) == null) {
+                assertEquals(Collections.emptyList(), multiple.matchedValues(spec.findOption("-c")));
+            } else {
+                assertEquals(Arrays.asList(contain.get(i)), multiple.matchedValues(spec.findOption("-c")));
+            }
+            if (type.get(i) == null) {
+                assertEquals(Collections.emptyList(), multiple.matchedValues(spec.findOption("-t")));
+            } else {
+                assertEquals(Arrays.asList(type.get(i)), multiple.matchedValues(spec.findOption("-t")));
+            }
+        }
+
+        assertEquals(3, app.composites.size());
+        for (int i = 0; i < 3; i++) {
+            assertEquals(data.get(i),    app.composites.get(i).dataset);
+            assertEquals(contain.get(i), app.composites.get(i).container);
+            assertEquals(type.get(i),    app.composites.get(i).type);
+        }
+        assertNull(app.fallback);
+        assertEquals("pos", app.positional);
+    }
+
+    static class RepeatingGroup635 {
+        @Option(names = {"-a", "--add-dataset"}, required = true) boolean add;
+        @Option(names = {"-c", "--container"}  , required = true) String container;
+        @Option(names = {"-d", "--dataset"}    , required = true) String dataset;
+        @Option(names = {"-t", "--type"}       , required = true) String type;
+    }
+    @Command(name = "viewer", usageHelpWidth = 100)
+    static class RepeatingCompositeApp635 {
+        // SYNOPSIS: viewer (-a -d=DATASET -c=CONTAINER -t=TYPE)... [-f=FALLBACK] <positional>
+        @ArgGroup(exclusive = false, multiplicity = "1..*")
+        List<RepeatingGroup635> composites;
+
+        @Option(names = "-f")
+        String fallback;
+
+        @Parameters(index = "0")
+        String positional;
+    }
+    @Test
+    public void testRepeatingCompositeGroup_Issue635() {
+        RepeatingCompositeApp635 app = new RepeatingCompositeApp635();
+        CommandLine cmd = new CommandLine(app);
+
+        String synopsis = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF)).synopsis(0);
+        assertEquals("viewer (-a -c=<container> -d=<dataset> -t=<type>)... [-f=<fallback>] <positional>", synopsis.trim());
+
+        ParseResult parseResult = cmd.parseArgs("-a", "-d", "data1", "-c=contain1", "-t=typ1", "-a", "-d=data2", "-c=contain2", "-t=typ2", "pos", "-a", "-d=data3", "-c=contain3", "-t=type3");
+        assertEquals("pos", parseResult.matchedPositionalValue(0, ""));
+        assertFalse(parseResult.hasMatchedOption("-f"));
+
+        List<MatchedGroup> matchedGroups = parseResult.matchedGroups();
+        assertEquals(1, matchedGroups.size());
+        MatchedGroup matchedGroup = matchedGroups.get(0);
+        assertEquals(3, matchedGroup.multiples().size());
+
+        CommandSpec spec = cmd.getCommandSpec();
+        List<String> data =    Arrays.asList("data1",    "data2",    "data3");
+        List<String> contain = Arrays.asList("contain1", "contain2", "contain3");
+        List<String> type =    Arrays.asList("typ1",     "typ2",     "type3");
+        for (int i = 0; i < 3; i++) {
+            MatchedGroupMultiple multiple = matchedGroup.multiples().get(i);
+            assertEquals(Arrays.asList(data.get(i)),    multiple.matchedValues(spec.findOption("-d")));
+            assertEquals(Arrays.asList(contain.get(i)), multiple.matchedValues(spec.findOption("-c")));
+            assertEquals(Arrays.asList(type.get(i)),    multiple.matchedValues(spec.findOption("-t")));
+        }
+
+        assertEquals(3, app.composites.size());
+        for (int i = 0; i < 3; i++) {
+            assertEquals(data.get(i),    app.composites.get(i).dataset);
+            assertEquals(contain.get(i), app.composites.get(i).container);
+            assertEquals(type.get(i),    app.composites.get(i).type);
+        }
+        assertNull(app.fallback);
+        assertEquals("pos", app.positional);
+    }
+
+    @Command(name = "abc")
+    static class OptionPositionalCompositeApp {
+        @ArgGroup(exclusive = false, validate = true, multiplicity = "1..*",
+                heading = "This is the options list heading (See #450)", order = 1)
+        List<OptionPositionalComposite> compositeArguments;
+    }
+    static class OptionPositionalComposite {
+        @Option(names = "--mode", required = true) String mode;
+        @Parameters(index = "0") String file;
+    }
+
+    @Test
+    public void testOptionPositionalComposite() {
+        OptionPositionalCompositeApp app = new OptionPositionalCompositeApp();
+        CommandLine cmd = new CommandLine(app);
+
+        String synopsis = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF)).synopsis(0);
+        assertEquals("abc (--mode=<mode> <file>)...", synopsis.trim());
+
+        ParseResult parseResult = cmd.parseArgs("--mode", "mode1", "/file/1", "--mode", "mode2", "/file/2", "--mode=mode3", "/file/3");
+
+        List<String> data = Arrays.asList("mode1",    "mode2",    "mode3");
+        List<String> file = Arrays.asList("/file/1",  "/file/2",  "/file/3");
+        assertEquals(3, app.compositeArguments.size());
+        for (int i = 0; i < 3; i++) {
+            assertEquals(data.get(i), app.compositeArguments.get(i).mode);
+            assertEquals(file.get(i), app.compositeArguments.get(i).file);
+        }
+
+        List<MatchedGroup> matchedGroups = parseResult.matchedGroups();
+        assertEquals(1, matchedGroups.size());
+        MatchedGroup matchedGroup = matchedGroups.get(0);
+        assertEquals(3, matchedGroup.multiples().size());
+
+        CommandSpec spec = cmd.getCommandSpec();
+        for (int i = 0; i < 3; i++) {
+            assertEquals(Arrays.asList(data.get(i)), matchedGroup.multiples().get(i).matchedValues(spec.findOption("--mode")));
+            assertEquals(Arrays.asList(file.get(i)), matchedGroup.multiples().get(i).matchedValues(spec.positionalParameters().get(0)));
+        }
+    }
+
+    // TODO add tests with positional interactive params in group
+    // TODO add tests with positional params in multiple groups
 }

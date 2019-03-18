@@ -21,7 +21,9 @@ import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import picocli.CommandLine.*;
 import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Model.IScope;
 import picocli.CommandLine.Model.MethodParam;
+import picocli.CommandLine.Model.ObjectScope;
 import picocli.CommandLine.Model.TypedMember;
 import picocli.CommandLineTest.CompactFields;
 
@@ -1044,21 +1046,21 @@ public class CommandLineCommandMethodTest {
 
     @Test
     public void testTypedMemberConstructorRejectsGetterNorSetter() throws Exception {
-        Constructor<TypedMember> constructor = TypedMember.class.getDeclaredConstructor(Method.class, Object.class, CommandSpec.class);
+        Constructor<TypedMember> constructor = TypedMember.class.getDeclaredConstructor(Method.class, IScope.class, CommandSpec.class);
         constructor.setAccessible(true);
 
         Method getterNorSetter1 = TypedMemberObj.class.getDeclaredMethod("getterNorSetter1");
         Method getterNorSetter2 = TypedMemberObj.class.getDeclaredMethod("getterNorSetter2");
 
         try {
-            constructor.newInstance(getterNorSetter1, new TypedMemberObj(), CommandSpec.create());
+            constructor.newInstance(getterNorSetter1, new ObjectScope(new TypedMemberObj()), CommandSpec.create());
             fail("expect exception");
         } catch (InvocationTargetException ex) {
             InitializationException ex2 = (InitializationException) ex.getCause();
             assertEquals("Invalid method, must be either getter or setter: void picocli.CommandLineCommandMethodTest$TypedMemberObj.getterNorSetter1()", ex2.getMessage());
         }
         try {
-            constructor.newInstance(getterNorSetter2, new TypedMemberObj(), CommandSpec.create());
+            constructor.newInstance(getterNorSetter2, new ObjectScope(new TypedMemberObj()), CommandSpec.create());
             fail("expect exception");
         } catch (InvocationTargetException ex) {
             InitializationException ex2 = (InitializationException) ex.getCause();
@@ -1068,22 +1070,22 @@ public class CommandLineCommandMethodTest {
 
     @Test
     public void testTypedMemberConstructorNonProxyObject() throws Exception {
-        Constructor<TypedMember> constructor = TypedMember.class.getDeclaredConstructor(Method.class, Object.class, CommandSpec.class);
+        Constructor<TypedMember> constructor = TypedMember.class.getDeclaredConstructor(Method.class, IScope.class, CommandSpec.class);
         constructor.setAccessible(true);
 
         Method getter = TypedMemberObj.class.getDeclaredMethod("getter");
-        TypedMember typedMember = constructor.newInstance(getter, new TypedMemberObj(), CommandSpec.create());
+        TypedMember typedMember = constructor.newInstance(getter, new ObjectScope(new TypedMemberObj()), CommandSpec.create());
         assertSame(typedMember.getter(), typedMember.setter());
         assertTrue(typedMember.getter() instanceof Model.MethodBinding);
     }
 
     @Test
     public void testTypedMemberInitializeInitialValue() throws Exception {
-        Constructor<TypedMember> constructor = TypedMember.class.getDeclaredConstructor(Method.class, Object.class, CommandSpec.class);
+        Constructor<TypedMember> constructor = TypedMember.class.getDeclaredConstructor(Method.class, IScope.class, CommandSpec.class);
         constructor.setAccessible(true);
 
         Method setter = TypedMemberObj.class.getDeclaredMethod("setter", String.class);
-        TypedMember typedMember = constructor.newInstance(setter, new TypedMemberObj(), CommandSpec.create());
+        TypedMember typedMember = constructor.newInstance(setter, new ObjectScope(new TypedMemberObj()), CommandSpec.create());
 
         Method initializeInitialValue = TypedMember.class.getDeclaredMethod("initializeInitialValue", Object.class);
         initializeInitialValue.setAccessible(true);

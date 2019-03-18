@@ -315,12 +315,12 @@ public class CommandLine {
     /** Returns {@code true} if an option annotated with {@link Option#usageHelp()} was specified on the command line.
      * @return whether the parser encountered an option annotated with {@link Option#usageHelp()}.
      * @since 0.9.8 */
-    public boolean isUsageHelpRequested() { return interpreter.parseResult != null && interpreter.parseResult.usageHelpRequested; }
+    public boolean isUsageHelpRequested() { return interpreter.parseResultBuilder != null && interpreter.parseResultBuilder.usageHelpRequested; }
 
     /** Returns {@code true} if an option annotated with {@link Option#versionHelp()} was specified on the command line.
      * @return whether the parser encountered an option annotated with {@link Option#versionHelp()}.
      * @since 0.9.8 */
-    public boolean isVersionHelpRequested() { return interpreter.parseResult != null && interpreter.parseResult.versionHelpRequested; }
+    public boolean isVersionHelpRequested() { return interpreter.parseResultBuilder != null && interpreter.parseResultBuilder.versionHelpRequested; }
 
     /** Returns the {@code IHelpFactory} that is used to construct the usage help message.
      * @see #setHelpFactory(IHelpFactory)
@@ -748,7 +748,7 @@ public class CommandLine {
      * @since 0.9.7
      */
     public List<String> getUnmatchedArguments() {
-        return interpreter.parseResult == null ? Collections.<String>emptyList() : UnmatchedArgumentException.stripErrorMessage(interpreter.parseResult.unmatched);
+        return interpreter.parseResultBuilder == null ? Collections.<String>emptyList() : UnmatchedArgumentException.stripErrorMessage(interpreter.parseResultBuilder.unmatched);
     }
 
     /**
@@ -833,9 +833,9 @@ public class CommandLine {
      */
     public ParseResult parseArgs(String... args) {
         interpreter.parse(args);
-        return interpreter.parseResult.build();
+        return getParseResult();
     }
-    public ParseResult getParseResult() { return interpreter.parseResult == null ? null : interpreter.parseResult.build(); }
+    public ParseResult getParseResult() { return interpreter.parseResultBuilder == null ? null : interpreter.parseResultBuilder.build(); }
     /**
      * Represents a function that can process a List of {@code CommandLine} objects resulting from successfully
      * {@linkplain #parse(String...) parsing} the command line arguments. This is a
@@ -2741,11 +2741,32 @@ public class CommandLine {
         int order() default -1;
 
         /**
-         * Specify one or more {@linkplain ArgGroup groups} that this option is part of.
-         * @return the name or names of the group(s) that this option belongs to.
+         * Specify the name of one or more options that this option is mutually exclusive with.
+         * Picocli will internally create a mutually exclusive {@linkplain ArgGroup group} with all specified options (and
+         * any options that the specified options are mutually exclusive with).
+         * <p>
+         * Options cannot be part of multiple groups to avoid ambiguity for the parser. Constructions
+         * where an option is part of multiple groups must be simplified so that the option is in just one group.
+         * For example: {@code (-a | -b) | (-a -x)} can be simplified to {@code (-a [-x] | -b)}.
+         * </p>
+         * @return the name or names of the option(s) that this option is mutually exclusive with.
          * @since 4.0
          */
-        String[] groups() default {};
+        String[] excludes() default {};
+
+        /**
+         * Specify the name of one or more options that this option must co-occur with.
+         * Picocli will internally create a co-occurring {@linkplain ArgGroup group} with all specified options (and
+         * any options that the specified options must co-occur with).
+         * <p>
+         * Options cannot be part of multiple groups to avoid ambiguity for the parser. Constructions
+         * where an option is part of multiple groups must be simplified so that the option is in just one group.
+         * For example: {@code (-a -x) | (-a -y)} can be simplified to {@code (-a [-x | -y])}.
+         * </p>
+         * @return the name or names of the option(s) that this option must co-occur with.
+         * @since 4.0
+         */
+        String[] needs() default {};
     }
     /**
      * <p>
@@ -2927,11 +2948,32 @@ public class CommandLine {
         String descriptionKey() default "";
 
         /**
-         * Specify one or more {@linkplain ArgGroup groups} that this positional parameter is part of.
-         * @return the name or names of the group(s) that this positional parameter belongs to.
+         * Specify the name of one or more options that this positional parameter is mutually exclusive with.
+         * Picocli will internally create a mutually exclusive {@linkplain ArgGroup group} with all specified options (and
+         * any options and positional parameters that the specified options are mutually exclusive with).
+         * <p>
+         * An option or positional parameter cannot be part of multiple groups to avoid ambiguity for the parser. Constructions
+         * where an option is part of multiple groups must be simplified so that the option is in just one group.
+         * For example: {@code (-a | -b) | (-a -x)} can be simplified to {@code (-a [-x] | -b)}.
+         * </p>
+         * @return the name or names of the option(s) that this positional parameter is mutually exclusive with.
          * @since 4.0
          */
-        String[] groups() default {};
+        String[] excludes() default {};
+
+        /**
+         * Specify the name of one or more options that this option must co-occur with.
+         * Picocli will internally create a co-occurring {@linkplain ArgGroup group} with all specified options (and
+         * any options that the specified options must co-occur with).
+         * <p>
+         * Options cannot be part of multiple groups to avoid ambiguity for the parser. Constructions
+         * where an option is part of multiple groups must be simplified so that the option is in just one group.
+         * For example: {@code (-a -x) | (-a -y)} can be simplified to {@code (-a [-x | -y])}.
+         * </p>
+         * @return the name or names of the option(s) that this option must co-occur with.
+         * @since 4.0
+         */
+        String[] needs() default {};
     }
 
     /**
@@ -3304,11 +3346,6 @@ public class CommandLine {
          * @since 3.7
          */
         int usageHelpWidth() default 80;
-
-        /** Optionally define argument {@linkplain ArgGroup groups}; groups can be used to define mutually exclusive arguments,
-         * arguments that must co-occur, or to customize the usage help message.
-         * @since 4.0 */
-        ArgGroup[] argGroups() default {};
     }
     /** A {@code Command} may define one or more {@code ArgGroups}: a group of options, positional parameters or a mixture of the two.
      * Groups can be used:
@@ -3328,7 +3365,7 @@ public class CommandLine {
      * For a group of mutually exclusive arguments, making the group required means that one of the arguments in the group must appear on the command line, or a {@link MissingParameterException MissingParameterException} is thrown.
      * For a group of co-occurring arguments, all arguments in the group must appear on the command line.
      * </p>
-     * <p>Groups can be composed by specifying {@linkplain #subgroups() subgroups} for validation purposes:</p>
+     * <p>Groups can be composed for validation purposes:</p>
      * <ul>
      * <li>When the parent group is mutually exclusive, only one of the subgroups may be present.</li>
      * <li>When the parent group is a co-occurring group, all subgroups must be present.</li>
@@ -3337,11 +3374,8 @@ public class CommandLine {
      * @see ArgGroupSpec
      * @since 4.0 */
     @Retention(RetentionPolicy.RUNTIME)
-    @Target({})
+    @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
     public @interface ArgGroup {
-        /** The name of this group. Must be unique in the command. */
-        String name();
-
         /** The heading of this group, used when generating the usage documentation.
          * When neither a {@link #heading() heading} nor a {@link #headingKey() headingKey} are specified,
          * this group is used for validation only and does not change the usage help message. */
@@ -3371,38 +3405,6 @@ public class CommandLine {
          * Options with a lower number are shown before options with a higher number.
          * This attribute is only honored if {@link UsageMessageSpec#sortOptions()} is {@code false} for this command.*/
         int order() default -1;
-        /**
-         * Specify one or more {@linkplain ArgGroup groups} that this group is composed of. A composite group contains other groups.
-         * <p>For example:
-         * <pre>{@code
-         * @Command(argGroups = {
-         *         @ArgGroup(name = "EXCL",      exclusive = true,  required = true),
-         *         @ArgGroup(name = "ALL",       exclusive = false, required = true),
-         *         @ArgGroup(name = "COMPOSITE", exclusive = false, required = false,
-         *                   subgroups = {"ALL", "EXCL"}),
-         * })
-         * class App {
-         *     @Option(names = "-x", groups = "EXCL") boolean x;
-         *     @Option(names = "-y", groups = "EXCL") boolean y;
-         *     @Option(names = "-a", groups = "ALL") boolean a;
-         *     @Option(names = "-b", groups = "ALL") boolean b;
-         * }
-         * }</pre>
-         * This defines a composite group with the following synopsis:
-         * <pre>{@code [(-x | -y) (-a -b)]}</pre>
-         * The composite group consists of the required exclusive group {@code (-x | -y)}
-         * and the required co-occurring group {@code (-a -b)}.
-         * </p><p>Valid user input for this group would be:</p>
-         * <ul>
-         *   <li>no options at all (because the composite group is non-required)</li>
-         *   <li>{@code -x -a -b} (in any order)</li>
-         *   <li>{@code -y -a -b} (in any order)</li>
-         * </ul>
-         * <p>Any other combination of -x, -y, -a and -b would give a validation error.</p>
-         *
-         * @return the name or names of the group(s) that together make up this group.
-         */
-        String[] subgroups() default {};
     }
     /**
      * <p>
@@ -3534,6 +3536,24 @@ public class CommandLine {
     static IFactory defaultFactory() { return new DefaultFactory(); }
     private static class DefaultFactory implements IFactory {
         public <T> T create(Class<T> cls) throws Exception {
+            if (cls.isInterface() && Collection.class.isAssignableFrom(cls)) {
+                if (List.class.isAssignableFrom(cls)) {
+                    return cls.cast(new ArrayList<Object>());
+                } else if (SortedSet.class.isAssignableFrom(cls)) {
+                    return cls.cast(new TreeSet<Object>());
+                } else if (Set.class.isAssignableFrom(cls)) {
+                    return cls.cast(new LinkedHashSet<Object>());
+                } else if (Queue.class.isAssignableFrom(cls)) {
+                    return cls.cast(new LinkedList<Object>()); // ArrayDeque is only available since 1.6
+                }
+                return cls.cast(new ArrayList<Object>());
+            }
+            if (Map.class.isAssignableFrom(cls)) {
+                try { // if it is an implementation class, instantiate it
+                    return cls.cast(cls.getDeclaredConstructor().newInstance());
+                } catch (Exception ignored) { }
+                return cls.cast(new LinkedHashMap<Object, Object>());
+            }
             try {
                 return cls.newInstance();
             } catch (Exception ex) {
@@ -3747,6 +3767,10 @@ public class CommandLine {
             int result = min - other.min;
             return (result == 0) ? max - other.max : result;
         }
+
+        boolean overlaps(Range index) {
+            return contains(index.min) || contains(index.max) || index.contains(min) || index.contains(max);
+        }
     }
     private static void validatePositionalParameters(List<PositionalParamSpec> positionalParametersFields) {
         int min = 0;
@@ -3774,6 +3798,14 @@ public class CommandLine {
      * @since 3.0 */
     public static final class Model {
         private Model() {}
+
+        /** The scope of a binding is the context where the current value should be gotten from or set to.
+         * For a field, the scope is the object whose field value to get/set. For a method binding, it is the
+         * object on which the method should be invoked.
+         * <p>The getter and setter of the scope allow you to change the object onto which the option and positional parameter getters and setters should be applied.</p>
+         * @since 4.0
+         */
+        public interface IScope extends IGetter, ISetter {}
 
         /** Customizable getter for obtaining the current value of an option or positional parameter.
          * When an option or positional parameter is matched on the command line, its getter or setter is invoked to capture the value.
@@ -3836,7 +3868,7 @@ public class CommandLine {
             private final List<OptionSpec> options = new ArrayList<OptionSpec>();
             private final List<PositionalParamSpec> positionalParameters = new ArrayList<PositionalParamSpec>();
             private final List<UnmatchedArgsBinding> unmatchedArgs = new ArrayList<UnmatchedArgsBinding>();
-            private final Map<String, ArgGroupSpec> groups = new LinkedHashMap<String, ArgGroupSpec>();
+            private final List<ArgGroupSpec> groups = new ArrayList<ArgGroupSpec>();
             private final ParserSpec parser = new ParserSpec();
             private final UsageMessageSpec usageMessage = new UsageMessageSpec();
 
@@ -4105,12 +4137,12 @@ public class CommandLine {
                 options.add(option);
                 for (String name : option.names()) { // cannot be null or empty
                     OptionSpec existing = optionsByNameMap.put(name, option);
-                    if (existing != null && !existing.equals(option)) {
+                    if (existing != null) { /* was: && !existing.equals(option)) {*/ // since 4.0 ArgGroups: an option cannot be in multiple groups
                         throw DuplicateOptionAnnotationsException.create(name, option, existing);
                     }
                     if (name.length() == 2 && name.startsWith("-")) { posixOptionsByKeyMap.put(name.charAt(1), option); }
                 }
-                if (option.required()) { requiredArgs.add(option); }
+                if (option.required() && option.group() == null) { requiredArgs.add(option); }
                 option.messages(usageMessage().messages());
                 option.commandSpec = this;
                 return this;
@@ -4125,27 +4157,54 @@ public class CommandLine {
             public CommandSpec addPositional(PositionalParamSpec positional) {
                 args.add(positional);
                 positionalParameters.add(positional);
-                if (positional.required()) { requiredArgs.add(positional); }
+                if (positional.required() && positional.group() == null) { requiredArgs.add(positional); }
                 positional.messages(usageMessage().messages());
                 positional.commandSpec = this;
                 return this;
             }
 
             /** Adds the specified {@linkplain ArgGroupSpec argument group} to the groups in this command.
-             * Groups must be added in topological order: subgroups should be added before the composite that references them.
              * @param group the group spec to add
              * @return this CommandSpec for method chaining
-             * @throws InitializationException if a group is added that references a subgroup that has not yet been added
-             * @see ArgGroupSpec#topologicalSort(Map)
+             * @throws InitializationException if the specified group or one of its {@linkplain ArgGroupSpec#parentGroup() ancestors} has already been added
              * @since 4.0 */
             public CommandSpec addArgGroup(ArgGroupSpec group) {
-                for (ArgGroupSpec subgroup : group.subgroups().values()) {
-                    if (!groups.containsKey(subgroup.name())) {
-                        throw new InitializationException("Groups must be added in topological order: subgroups should be added before the composite that references them.");
-                    }
+                Assert.notNull(group, "group");
+                if (group.parentGroup() != null) {
+                    throw new InitializationException("Groups that are part of another group should not be added to a command. Add only the top-level group.");
                 }
-                this.groups.put(group.name(), group);
+                check(group, flatten(groups, new HashSet<ArgGroupSpec>()));
+                this.groups.add(group);
+                addGroupArgsToCommand(group, new HashMap<String, ArgGroupSpec>());
                 return this;
+            }
+            private void addGroupArgsToCommand(ArgGroupSpec group, Map<String, ArgGroupSpec> added) {
+                for (ArgSpec arg : group.args()) {
+                    if (arg.isOption()) {
+                        for (String name : ((OptionSpec) arg).names()) {
+                            if (added.containsKey(name)) {
+                                throw new DuplicateNameException("An option cannot be in multiple groups but " + name + " is in " + group.synopsis() + " and " + added.get(name).synopsis() + ". Refactor to avoid this. For example, (-a | (-a -b)) can be rewritten as (-a [-b]), and (-a -b | -a -c) can be rewritten as (-a (-b | -c)).");
+                            }
+                        }
+                        for (String name : ((OptionSpec) arg).names()) { added.put(name, group); }
+                    }
+                    add(arg);
+                }
+                for (ArgGroupSpec sub : group.subgroups()) { addGroupArgsToCommand(sub, added); }
+            }
+            private Set<ArgGroupSpec> flatten(Collection<ArgGroupSpec> groups, Set<ArgGroupSpec> result) {
+                for (ArgGroupSpec group : groups) { flatten(group, result); } return result;
+            }
+            private Set<ArgGroupSpec> flatten(ArgGroupSpec group, Set<ArgGroupSpec> result) {
+                result.add(group);
+                for (ArgGroupSpec sub : group.subgroups()) { flatten(sub, result); }
+                return result;
+            }
+            private void check(ArgGroupSpec group, Set<ArgGroupSpec> existing) {
+                if (existing.contains(group)) {
+                    throw new InitializationException("The specified group " + group.synopsis() + " has already been added to the " + qualifiedName() + " command.");
+                }
+                for (ArgGroupSpec sub : group.subgroups()) { check(sub, existing); }
             }
 
             /** Adds the specified mixin {@code CommandSpec} object to the map of mixins for this command.
@@ -4189,9 +4248,9 @@ public class CommandLine {
             public List<PositionalParamSpec> positionalParameters() { return Collections.unmodifiableList(positionalParameters); }
 
             /** Returns the {@linkplain ArgGroupSpec argument groups} in this command.
-             * @return an immutable map of groups of options and positional parameters in this command
+             * @return an immutable list of groups of options and positional parameters in this command
              * @since 4.0 */
-            public Map<String, ArgGroupSpec> argGroups() { return Collections.unmodifiableMap(groups); }
+            public List<ArgGroupSpec> argGroups() { return Collections.unmodifiableList(groups); }
 
             /** Returns a map of the option names to option spec objects configured for this command.
              * @return an immutable map of options that this command recognizes. */
@@ -4202,6 +4261,7 @@ public class CommandLine {
             public Map<Character, OptionSpec> posixOptionsMap() { return Collections.unmodifiableMap(posixOptionsByKeyMap); }
 
             /** Returns the list of required options and positional parameters configured for this command.
+             * This does not include options and positional parameters that are part of a {@linkplain ArgGroupSpec group}.
              * @return an immutable list of the required options and positional parameters for this command. */
             public List<ArgSpec> requiredArgs() { return Collections.unmodifiableList(requiredArgs); }
 
@@ -5219,9 +5279,9 @@ public class CommandLine {
             private final String[] description;
             private final String descriptionKey;
             private final Help.Visibility showDefaultValue;
-            public final List<ArgGroupSpec> groups = new ArrayList<ArgGroupSpec>();
             private Messages messages;
             CommandSpec commandSpec;
+            private ArgGroupSpec group;
             private final Object userObject;
 
             // parser fields
@@ -5236,8 +5296,8 @@ public class CommandLine {
             private final boolean hasInitialValue;
             private final IGetter getter;
             private final ISetter setter;
+            private final IScope scope;
             private final Range arity;
-            private final List<String> groupNames;
             private List<String> stringValues = new ArrayList<String>();
             private List<String> originalStringValues = new ArrayList<String>();
             protected String toString;
@@ -5263,7 +5323,7 @@ public class CommandLine {
                 toString = builder.toString;
                 getter = builder.getter;
                 setter = builder.setter;
-                groupNames = Collections.unmodifiableList(new ArrayList<String>(builder.groupNames()));
+                scope  = builder.scope;
 
                 Range tempArity = builder.arity;
                 if (tempArity == null) {
@@ -5294,8 +5354,21 @@ public class CommandLine {
                     throw new InitializationException("Interactive options and positional parameters are only supported for arity=1, not for arity=" + arity);
                 }
             }
+            void applyInitialValue(Tracer tracer) {
+                if (hasInitialValue()) {
+                    try {
+                        setter().set(initialValue());
+                        tracer.debug("Set initial value for %s of type %s to %s.%n", this, type(), String.valueOf(initialValue()));
+                    } catch (Exception ex) {
+                        tracer.warn("Could not set initial value for %s of type %s to %s: %s%n", this, type(), String.valueOf(initialValue()), ex);
+                    }
+                } else {
+                    tracer.debug("Initial value not available for %s%n", this);
+                }
+            }
 
             /** Returns whether this is a required option or positional parameter.
+             * If this argument is part of a {@linkplain ArgGroup group}, this method returns whether this argument is required <em>within the group</em> (so it is not necessarily a required argument for the command).
              * @see Option#required() */
             public boolean required()      { return required; }
 
@@ -5445,6 +5518,8 @@ public class CommandLine {
             public IGetter getter()        { return getter; }
             /** Returns the {@link ISetter} that is responsible for modifying the value of this argument. */
             public ISetter setter()        { return setter; }
+            /** Returns the {@link IScope} that determines on which object to set the value (or from which object to get the value) of this argument. */
+            public IScope scope()          { return scope; }
 
             /** Returns the current value of this argument. Delegates to the current {@link #getter()}. */
             public <T> T getValue() throws PicocliException {
@@ -5476,15 +5551,9 @@ public class CommandLine {
             /** Returns {@code true} if this argument is a positional parameter, {@code false} otherwise. */
             public abstract boolean isPositional();
 
-            /** Return the names of the groups that this option or positional parameter belongs to; may be empty but not {@code null}.
-             * Used internally by picocli when building a model from the annotations. May be ignored when using programmatic API.
-             * @return immutable list of group names that this option or positional parameter belongs to
+            /** Returns the groups this option or positional parameter belongs to, or {@code null} if this option is not part of a group.
              * @since 4.0 */
-            public List<String> groupNames() { return groupNames; }
-
-            /** Returns an unmodifiable list of groups this option or positional parameter belongs to.
-             * @since 4.0 */
-            public List<ArgGroupSpec> groups() { return Collections.unmodifiableList(groups); }
+            public ArgGroupSpec group() { return group; }
 
             /** Returns the untyped command line arguments matched by this option or positional parameter spec.
              * @return the matched arguments after {@linkplain #splitRegex() splitting}, but before type conversion.
@@ -5645,13 +5714,20 @@ public class CommandLine {
                 }
                 return sb.toString();
             }
+            /** Returns a description of the option or positional arg, e.g. {@code -a=<a>}
+             * @param separator separator between arg and arg parameter label, usually '=' */
             private static String describe(ArgSpec argSpec, String separator) {
+                return describe(argSpec, separator, argSpec.paramLabel());
+            }
+            /** Returns a description of the option or positional arg
+             * @param separator separator between arg and arg parameter value, usually '='
+             * @param value the value to append after the separator*/
+            private static String describe(ArgSpec argSpec, String separator, String value) {
                 String prefix = (argSpec.isOption())
                         ? ((OptionSpec) argSpec).longestName()
                         : "params[" + ((PositionalParamSpec) argSpec).index() + "]";
-                return argSpec.arity().min > 0 ? prefix + separator + argSpec.paramLabel() : prefix;
+                return argSpec.arity().min > 0 ? prefix + separator + value : prefix;
             }
-
             abstract static class Builder<T extends Builder<T>> {
                 private Object userObject;
                 private Range arity;
@@ -5675,7 +5751,7 @@ public class CommandLine {
                 private String toString;
                 private IGetter getter = new ObjectBinding();
                 private ISetter setter = (ISetter) getter;
-                private List<String> groupNames = new ArrayList<String>();
+                private IScope scope = new ObjectScope(null);
 
                 Builder() {}
                 Builder(ArgSpec original) {
@@ -5697,7 +5773,6 @@ public class CommandLine {
                     toString = original.toString;
                     descriptionKey = original.descriptionKey;
                     setTypeInfo(original.typeInfo);
-                    groupNames.addAll(original.groupNames);
                 }
                 Builder(IAnnotatedElement source) {
                     userObject = source.userObject();
@@ -5705,8 +5780,9 @@ public class CommandLine {
                     toString = source.getToString();
                     getter = source.getter();
                     setter = source.setter();
+                    scope = source.scope();
                     hasInitialValue = source.hasInitialValue();
-                    try { initialValue = source.getter().get(); } catch (Exception ex) { initialValue = null; }
+                    try { initialValue = source.getter().get(); } catch (Exception ex) { initialValue = null; hasInitialValue = false; }
                 }
                 Builder(Option option, IAnnotatedElement source, IFactory factory) {
                     this(source);
@@ -5729,7 +5805,6 @@ public class CommandLine {
                             completionCandidates = DefaultFactory.createCompletionCandidates(factory, option.completionCandidates());
                         }
                     }
-                    groupNames.addAll(Arrays.asList(option.groups()));
                 }
                 Builder(Parameters parameters, IAnnotatedElement source, IFactory factory) {
                     this(source);
@@ -5756,7 +5831,6 @@ public class CommandLine {
                                 completionCandidates = DefaultFactory.createCompletionCandidates(factory, parameters.completionCandidates());
                             }
                         }
-                        groupNames.addAll(Arrays.asList(parameters.groups()));
                     }
                 }
                 private static String inferLabel(String label, String fieldName, ITypeInfo typeInfo) {
@@ -5838,7 +5912,7 @@ public class CommandLine {
 
                 /** Returns the default value of this option or positional parameter, before splitting and type conversion.
                  * A value of {@code null} means this option or positional parameter does not have a default. */
-                public String defaultValue()     { return defaultValue; }
+                public String defaultValue()   { return defaultValue; }
                 /** Returns the initial value this option or positional parameter. If {@link #hasInitialValue()} is true,
                  * the option will be reset to the initial value before parsing (regardless of whether a default value exists),
                  * to clear values that would otherwise remain from parsing previous input. */
@@ -5858,12 +5932,8 @@ public class CommandLine {
                 public IGetter getter()        { return getter; }
                 /** Returns the {@link ISetter} that is responsible for modifying the value of this argument. */
                 public ISetter setter()        { return setter; }
-
-                /** Return the names of the groups that this option or positional parameter belongs to; may be empty but not {@code null}.
-                 * Used internally by picocli when building a model from the annotations. May be ignored when using programmatic API.
-                 * @return list of group names that this option or positional parameter belongs to
-                 * @since 4.0 */
-                public List<String> groupNames()   { return groupNames; }
+                /** Returns the {@link IScope} that determines where the setter sets the value (or the getter gets the value) of this argument. */
+                public IScope scope()          { return scope; }
 
                 public String toString() { return toString; }
 
@@ -5961,19 +6031,11 @@ public class CommandLine {
                 public T getter(IGetter getter)              { this.getter = getter; return self(); }
                 /** Sets the {@link ISetter} that is responsible for modifying the value of this argument, and returns this builder. */
                 public T setter(ISetter setter)              { this.setter = setter; return self(); }
+                /** Sets the {@link IScope} that targets where the setter sets the value, and returns this builder. */
+                public T scope(IScope scope)                 { this.scope = scope; return self(); }
 
                 /** Sets the string respresentation of this option or positional parameter to the specified value, and returns this builder. */
                 public T withToString(String toString)       { this.toString = toString; return self(); }
-
-                /** Sets the mutable list of groups that this option or positional parameter belongs to.
-                 * @see Option#groups()
-                 * @since 4.0 */
-                public T groupNames(String... names) { return groupNames(new ArrayList<String>(Arrays.asList(names))); }
-
-                /** Sets the mutable list of groups that this option or positional parameter belongs to.
-                 * @see Option#groups()
-                 * @since 4.0 */
-                public T groupNames(List<String> names) { groupNames = Assert.notNull(names, "names"); return self(); }
             }
         }
         /** The {@code OptionSpec} class models aspects of a <em>named option</em> of a {@linkplain CommandSpec command}, including whether
@@ -6366,64 +6428,48 @@ public class CommandLine {
             static final int DEFAULT_ORDER = -1;
             private static final String NO_HEADING = "__no_heading__";
             private static final String NO_HEADING_KEY = "__no_heading_key__";
-            private final String name;
             private final String heading;
             private final String headingKey;
             private final boolean exclusive;
             private final Range multiplicity;
             private final boolean validate;
             private final int order;
-            private final Map<String, ArgGroupSpec> subgroups;
-            private final List<String> subgroupNames;
+            private final IGetter getter;
+            private final ISetter setter;
+            private final IScope scope;
+            private final ITypeInfo typeInfo;
+            private final List<ArgGroupSpec> subgroups;
             private final Set<ArgSpec> args;
-            private final List<ArgGroupSpec> parentGroups;
+            private ArgGroupSpec parentGroup;
 
             ArgGroupSpec(ArgGroupSpec.Builder builder) {
-                name         = Assert.notNull(builder.name, "name");
-                heading      = NO_HEADING.equals(builder.heading) ? null : builder.heading;
-                headingKey   = NO_HEADING_KEY.equals(builder.headingKey) ? null : builder.headingKey;
-                exclusive    = builder.exclusive;
-                multiplicity = builder.multiplicity;
-                validate     = builder.validate;
-                order        = builder.order;
+                heading          = NO_HEADING    .equals(builder.heading)    ? null : builder.heading;
+                headingKey       = NO_HEADING_KEY.equals(builder.headingKey) ? null : builder.headingKey;
+                exclusive        = builder.exclusive;
+                multiplicity     = builder.multiplicity;
+                validate         = builder.validate;
+                order            = builder.order;
+                typeInfo         = builder.typeInfo;
+                getter           = builder.getter;
+                setter           = builder.setter;
+                scope            = builder.scope;
 
-                args = Collections.unmodifiableSet(new LinkedHashSet<ArgSpec>(builder.args()));
+                args      = Collections.unmodifiableSet(new LinkedHashSet<ArgSpec>(builder.args()));
+                subgroups = Collections.unmodifiableList(new ArrayList<ArgGroupSpec>(builder.subgroups()));
+                if (args.isEmpty() && subgroups.isEmpty()) { throw new InitializationException("ArgGroup has no options or positional parameters, and no subgroups"); }
 
-                Map<String, ArgGroupSpec> groupMap = new LinkedHashMap<String, ArgGroupSpec>();
-                for (ArgGroupSpec subgroup : builder.subgroups()) {
-                    ArgGroupSpec previous = groupMap.put(subgroup.name(), subgroup);
-                    if (previous != null && !previous.equals(subgroup)) { throw new DuplicateNameException("Different subgroups should not use the same name '" + subgroup.name() + "'");}
-                }
-                parentGroups = new ArrayList<ArgGroupSpec>();
-                subgroups = Collections.unmodifiableMap(groupMap);
-                subgroupNames = Collections.unmodifiableList(new ArrayList<String>(builder.subgroupNames()));
-                if (args.isEmpty() && subgroups.isEmpty()) { throw new InitializationException("ArgGroup '" + name + "' has no options or positional parameters, and no subgroups"); }
-                for (ArgGroupSpec subgroup : subgroups.values()) { subgroup.parentGroups.add(this); }
-                for (ArgSpec arg : args) { arg.groups.add(this); }
+                for (ArgGroupSpec sub : subgroups) { sub.parentGroup = this; }
+                for (ArgSpec arg : args)           { arg.group = this; }
             }
 
-            /** Returns a new {@link Builder} with the group name set to the specified value.
-             * @param name name of the new group
-             * @return a new Builder instance */
-            public static Builder builder(String name) { return new Builder().name(name); }
+            /** Returns a new {@link Builder}.
+             * @return a new ArgGroupSpec.Builder instance */
+            public static Builder builder() { return new Builder(); }
 
-            /** Returns a new {@link Builder} initialized from the specified annotation values.
-             * @param group annotation values
-             * @return a new Builder instance */
-            public static Builder builder(ArgGroup group) {
-                return new Builder().name(group.name())
-                        .heading(group.heading())
-                        .headingKey(group.headingKey())
-                        .exclusive(group.exclusive())
-                        .multiplicity(group.multiplicity())
-                        .validate(group.validate())
-                        .order(group.order())
-                        .subgroupNames(Arrays.asList(group.subgroups()));
-            }
-
-            /** Returns the name of this group. Must be unique in the command.
-             * @see ArgGroup#name() */
-            public String name() { return name; }
+            /** Returns a new {@link Builder} associated with the specified annotated element.
+             * @param annotatedElement the annotated element containing {@code @Option} and {@code @Parameters}
+             * @return a new ArgGroupSpec.Builder instance */
+            public static Builder builder(IAnnotatedElement annotatedElement) { return new Builder(Assert.notNull(annotatedElement, "annotatedElement")); }
 
             /** Returns whether this is a mutually exclusive group; {@code true} by default.
              * If {@code false}, this is a co-occurring group. Ignored if {@link #validate()} is {@code false}.
@@ -6458,20 +6504,43 @@ public class CommandLine {
              * @see ArgGroup#headingKey()  */
             public String headingKey() { return headingKey; }
 
-            /** Return the names of the subgroups that this group is composed of; may be empty but not {@code null}.
-             * Used internally by picocli when building a model from the annotations. May be ignored when using programmatic API.
-             * @return immutable list of subgroup names that this group is composed of
-             * @since 4.0 */
-            public List<String> subgroupNames() { return subgroupNames; }
+            /**
+             * Returns the parent group that this group is part of, or {@code null} if this group is not part of a composite.
+             */
+            public ArgGroupSpec parentGroup() { return parentGroup; }
 
             /** Return the subgroups that this group is composed of; may be empty but not {@code null}.
-             * @return immutable map of subgroups by name that this group is composed of.
-             * @see ArgGroup#subgroups() */
-            public Map<String, ArgGroupSpec> subgroups() { return subgroups; }
+             * @return immutable list of subgroups that this group is composed of. */
+            public List<ArgGroupSpec> subgroups() { return subgroups; }
 
-            /** Return the options and positional parameters in this group; may be empty but not {@code null}.
-             * @see Option#groups()
-             * @see Parameters#groups() */
+            /**
+             * Returns {@code true} if this group is a subgroup (or a nested sub-subgroup, to any level of depth)
+             * of the specified group, {@code false} otherwise.
+             * @param group the group to check if it contains this group
+             * @return {@code true} if this group is a subgroup or a nested sub-subgroup of the specified group
+             */
+            public boolean isSubgroupOf(ArgGroupSpec group) {
+                for (ArgGroupSpec sub : group.subgroups) {
+                    if (this == sub) { return true; }
+                    if (isSubgroupOf(sub)) { return true; }
+                }
+                return false;
+            }
+            /** Returns the type info for the annotated program element associated with this group.
+             * @return type information that does not require {@code Class} objects and be constructed both at runtime and compile time
+             */
+            public ITypeInfo typeInfo()    { return typeInfo; }
+
+            /** Returns the {@link IGetter} that is responsible for supplying the value of the annotated program element associated with this group. */
+            public IGetter getter()        { return getter; }
+            /** Returns the {@link ISetter} that is responsible for modifying the value of the annotated program element associated with this group. */
+            public ISetter setter()        { return setter; }
+            /** Returns the {@link IScope} that determines where the setter sets the value (or the getter gets the value) of the annotated program element associated with this group. */
+            public IScope scope()          { return scope; }
+
+            Object userObject() { try { return getter.get(); } catch (Exception ex) { return ex.toString(); } }
+
+            /** Return the options and positional parameters in this group; may be empty but not {@code null}. */
             public Set<ArgSpec> args() {
                 return args;
             }
@@ -6506,7 +6575,7 @@ public class CommandLine {
                         synopsis = concatPositionalText(synopsis, colorScheme, (PositionalParamSpec) arg);
                     }
                 }
-                for (ArgGroupSpec subgroup : subgroups().values()) {
+                for (ArgGroupSpec subgroup : subgroups()) {
                     if (synopsis.length > 0) { synopsis = synopsis.concat(infix); }
                     synopsis = synopsis.concat(subgroup.synopsisText(colorScheme));
                 }
@@ -6531,7 +6600,7 @@ public class CommandLine {
                 if (!option.hidden()) {
                     Text name = colorScheme.optionText(option.shortestName());
                     Text param = createLabelRenderer(option.commandSpec).renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
-                    text = text.concat(name).concat(param).concat("");
+                    text = text.concat(open(option)).concat(name).concat(param).concat(close(option));
                     if (option.isMultiValue()) { // e.g., -x=VAL [-x=VAL]...
                         text = text.concat(" [").concat(name).concat(param).concat("]...");
                     }
@@ -6542,10 +6611,13 @@ public class CommandLine {
             private Text concatPositionalText(Text text, Help.ColorScheme colorScheme, PositionalParamSpec positionalParam) {
                 if (!positionalParam.hidden()) {
                     Text label = createLabelRenderer(positionalParam.commandSpec).renderParameterLabel(positionalParam, colorScheme.ansi(), colorScheme.parameterStyles);
-                    text = text.concat(label);
+                    text = text.concat(open(positionalParam)).concat(label).concat(close(positionalParam));
                 }
                 return text;
             }
+            private String open(ArgSpec argSpec)  { return argSpec.required() ? "" : "["; }
+            private String close(ArgSpec argSpec) { return argSpec.required() ? "" : "]"; }
+
             public Help.IParamLabelRenderer createLabelRenderer(CommandSpec commandSpec) {
                 return new Help.DefaultParamLabelRenderer(commandSpec == null ? CommandSpec.create() : commandSpec);
             }
@@ -6554,27 +6626,25 @@ public class CommandLine {
                 if (obj == this) { return true; }
                 if (!(obj instanceof ArgGroupSpec)) { return false; }
                 ArgGroupSpec other = (ArgGroupSpec) obj;
-                return Assert.equals(name, other.name)
-                        && exclusive == other.exclusive
+                return exclusive == other.exclusive
                         && Assert.equals(multiplicity, other.multiplicity)
                         && validate == other.validate
                         && order == other.order
                         && Assert.equals(heading, other.heading)
                         && Assert.equals(headingKey, other.headingKey)
-                        && Assert.equals(subgroups.keySet(), other.subgroups.keySet())
+                        && Assert.equals(subgroups, other.subgroups)
                         && Assert.equals(args, other.args);
             }
 
             @Override public int hashCode() {
                 int result = 17;
-                result += 37 * result + Assert.hashCode(name);
                 result += 37 * result + Assert.hashCode(exclusive);
                 result += 37 * result + Assert.hashCode(multiplicity);
                 result += 37 * result + Assert.hashCode(validate);
                 result += 37 * result + order;
                 result += 37 * result + Assert.hashCode(heading);
                 result += 37 * result + Assert.hashCode(headingKey);
-                result += 37 * result + Assert.hashCode(subgroups.keySet());
+                result += 37 * result + Assert.hashCode(subgroups);
                 result += 37 * result + Assert.hashCode(args);
                 return result;
             }
@@ -6589,116 +6659,143 @@ public class CommandLine {
                         argNames.add(p.index() + " (" + p.paramLabel() + ")");
                     }
                 }
-                return "ArgGroup[" + name + ", exclusive=" + exclusive + ", multiplicity=" + multiplicity +
-                        ", validate=" + validate + ", order="+ order + ", args=[" + ArgSpec.describe(args()) +
-                        "], subgroups=" + subgroups.keySet() +
-                        ", headingKey=" + quote(headingKey) + ", heading=" + quote(heading) + "]";
+                return "ArgGroup[exclusive=" + exclusive + ", multiplicity=" + multiplicity +
+                        ", validate=" + validate + ", order=" + order + ", args=[" + ArgSpec.describe(args()) +
+                        "], headingKey=" + quote(headingKey) + ", heading=" + quote(heading) +
+                        ", subgroups=" + subgroups + "]";
             }
             private static String quote(String s) { return s == null ? "null" : "'" + s + "'"; }
 
-            static List<Builder> topologicalSort(List<Builder> all) {
-                Map<String, Builder> groupsByName = new TreeMap<String, Builder>();
-                for (Builder g : all) { groupsByName.put(g.name(), g); }
-                return topologicalSort(groupsByName);
-            }
-
-            /**
-             * Sorts groups in topological order, based on the builder's {@link Builder#subgroupNames() subgroupNames}:
-             * subgroups should come before the composite group that references them.
-             * @param original the source map (this is not modified)
-             * @return a list of ArgGroupSpec.Builders in topological order
-             * @since 4.0
-             */
-            private static List<Builder> topologicalSort(Map<String, Builder> original) {
-                Map<String, Builder> groupsByName = new HashMap<String, Builder>(original);
-                // build directed graph
-                for (Builder g : groupsByName.values()) { g.compositesReferencingMe.clear(); }
-                for (Builder g : groupsByName.values()) {
-                    for (String subName : g.subgroupNames()) {
-                        Builder subgroup = groupsByName.get(subName);
-                        if (subgroup == null) {
-                            throw new InitializationException("ArgGroup '" + g.name + "' depends on '" + subName + "', but no group with name '" + subName + "' exists.");
-                        }
-                        subgroup.compositesReferencingMe.add(g);
+            void setUserObject(Object userObject, IFactory factory) throws Exception {
+                if (typeInfo().isCollection()) {
+                    @SuppressWarnings("unchecked") Collection<Object> c = (Collection<Object>) getter().get();
+                    if (c == null) {
+                        @SuppressWarnings("unchecked")
+                        Collection<Object> c2 = (Collection<Object>) DefaultFactory.create(factory, typeInfo.getType());
+                        setter().set(c = c2);
                     }
-                }
-                // reset flags used by topological sort
-                for (Builder g : groupsByName.values()) { g.topologicalSortDone = null; }
-
-                List<Builder> result = new LinkedList<Builder>();
-                List<String> processing = new LinkedList<String>();
-                while (!groupsByName.isEmpty()) {
-                    Builder g = groupsByName.entrySet().iterator().next().getValue();
-                    if (g.topologicalSortDone == null) {
-                        visit(g, original, processing, result);
+                    (c).add(userObject);
+                } else if (typeInfo().isArray()) {
+                    Object old = getter().get();
+                    int oldSize = old == null ? 0 : Array.getLength(old);
+                    Object array = Array.newInstance(typeInfo().getAuxiliaryTypes()[0], oldSize + 1);
+                    for (int i = 0; i < oldSize; i++) {
+                        Array.set(array, i, Array.get(old, i));
                     }
-                    groupsByName.remove(g.name());
+                    Array.set(array, oldSize, userObject);
+                    setter().set(array);
+                } else {
+                    setter().set(userObject);
                 }
-                return result;
-            }
-
-            private static void visit(Builder n, Map<String, Builder> all, List<String> processing, List<Builder> result) {
-                if (n == null || n.topologicalSortDone == Boolean.TRUE) { return; }
-                processing.add(0, n.name);
-                if (n.topologicalSortDone == Boolean.FALSE) {
-                    throw new InitializationException("Cyclic group dependency: " + n + " in " + processing);
-                }
-                n.topologicalSortDone = Boolean.FALSE;
-
-                for (Builder m : n.compositesReferencingMe) { visit(m, all, processing, result); }
-                processing.remove(n.name);
-                n.topologicalSortDone = Boolean.TRUE;
-                result.add(0, n);
             }
 
             enum GroupValidationResult {
                 SUCCESS_PRESENT, SUCCESS_ABSENT,
                 FAILURE_PRESENT, FAILURE_ABSENT, FAILURE_PARTIAL;
+                static boolean containsBlockingFailure(EnumSet<GroupValidationResult> set) {
+                    return set.contains(FAILURE_PRESENT) || set.contains(FAILURE_PARTIAL);
+                }
                 boolean blockingFailure() { return this == FAILURE_PRESENT || this == FAILURE_PARTIAL; }
-                boolean absent()          { return this == SUCCESS_ABSENT  || this == FAILURE_ABSENT; }
                 boolean present()         { return this == SUCCESS_PRESENT /*|| this == FAILURE_PRESENT*/; }
+                boolean success()         { return this == SUCCESS_ABSENT  || this == SUCCESS_PRESENT; }
             }
 
             private ParameterException validationException;
             private GroupValidationResult validationResult;
 
+            /** Clears temporary validation state for this group and its subgroups. */
             void clearValidationResult() {
                 validationException = null;
                 validationResult = null;
+                for (ArgGroupSpec sub : subgroups()) { sub.clearValidationResult(); }
             }
 
             /** Throws an exception if the constraints in this group are not met by the specified match. */
-            void validateConstraints(CommandLine commandLine, Collection<ArgSpec> matched) {
+            void validateConstraints(ParseResult parseResult, Collection<ArgSpec> matched) {
                 if (!validate()) { return; }
+                CommandLine commandLine = parseResult.commandSpec().commandLine();
 
+                // first validate args in this group
                 validationResult = validateArgs(commandLine, matched);
-                if (validationResult == GroupValidationResult.FAILURE_PRESENT
-                        || validationResult == GroupValidationResult.FAILURE_PARTIAL) {
-                    throw validationException; // composite parent validations cannot succeed anyway
+                // TODO to support complex scenarios where groups have positional params at the same index
+                // TODO as command-local positional params, we need to remove the command-local matches
+                // TODO for the overlapping indexes when a MatchedGroupMultiple is matched
+//                if (validationResult == GroupValidationResult.FAILURE_PARTIAL) { // part of optional group was specified
+//                    Set<ArgSpec> intersection = new LinkedHashSet<ArgSpec>(this.args());
+//                    intersection.retainAll(matched);
+//                    Set<ArgSpec> complement = new LinkedHashSet<ArgSpec>(matched);
+//                    complement.removeAll(this.args());
+//                    int errorCount = intersection.size();
+//                    for (ArgSpec match : intersection) {
+//                        if (match.isPositional()) {
+//                            for (ArgSpec alternative : complement) {
+//                                if (alternative.isPositional() && ((PositionalParamSpec) alternative).index().overlaps(((PositionalParamSpec) match).index())) {
+//                                    errorCount--;
+//                                    break;
+//                                }
+//                            }
+//                        }
+//                    }
+//                    if (errorCount == 0) {
+//                        validationResult = GroupValidationResult.SUCCESS_ABSENT;
+//                        validationException = null;
+//                    }
+//                }
+                if (validationResult.blockingFailure()) {
+                    commandLine.interpreter.maybeThrow(validationException); // composite parent validations cannot succeed anyway
                 }
-                // validate groups
-                EnumSet<GroupValidationResult> validationResults = validateGroups(commandLine);
-
-                if (validationResults.contains(GroupValidationResult.FAILURE_PRESENT)
-                || validationResults.contains(GroupValidationResult.FAILURE_PARTIAL)) {
-                    throw validationException; // composite parent validations cannot succeed anyway
+                // then validate sub groups
+                EnumSet<GroupValidationResult> validationResults = validateSubgroups(parseResult, matched);
+                if (GroupValidationResult.containsBlockingFailure(validationResults)) {
+                    commandLine.interpreter.maybeThrow(validationException); // composite parent validations cannot succeed anyway
                 }
-                if (validationException != null && parentGroups.isEmpty()) {
-                    throw validationException;
+                int matchCount = matchCount(parseResult.matchedGroups());
+                // note: matchCount == 0 if only subgroup(s) are matched for a group without args (subgroups-only)
+                boolean checkMinimum = matchCount > 0 || !args().isEmpty();
+                if (checkMinimum && matchCount < multiplicity().min) {
+                    if (validationResult.success()) {
+                        validationResult = matchCount == 0 ? GroupValidationResult.FAILURE_ABSENT: GroupValidationResult.FAILURE_PARTIAL;
+                        int partialMatchCount = matchCount(parseResult.partiallyMatchedGroups());
+                        validationException = new MissingParameterException(commandLine, args(),
+                                "Error: Group: " + synopsis() + " must be specified " + multiplicity().min + " times but was only fully matched " + matchCount + " times and partially matched " + partialMatchCount + " times: " + parseResult.partiallyMatchedGroupsDescription());
+                    }
+                } else if (matchCount > multiplicity().max) {
+                    if (!validationResult.blockingFailure()) {
+                        validationResult = GroupValidationResult.FAILURE_PRESENT;
+                        validationException = new MaxValuesExceededException(commandLine,
+                                "Error: Group: " + synopsis() + " can only be specified " + multiplicity().max + " times but was matched " + matchCount + " times.");
+                    }
+                }
+                if (validationException != null && parentGroup == null) {
+                    commandLine.interpreter.maybeThrow(validationException);
                 }
             }
 
-            private EnumSet<GroupValidationResult> validateGroups(CommandLine commandLine) {
+            private int matchCount(List<ParseResult.MatchedGroup> matchedGroups) {
+                int result = 0;
+                for (ParseResult.MatchedGroup matchedGroup : matchedGroups) {
+                    if (this == matchedGroup.group()) {
+                        result += matchedGroup.multiples().size();
+                    }
+                }
+                return result;
+            }
+
+            private EnumSet<GroupValidationResult> validateSubgroups(ParseResult parseResult, Collection<ArgSpec> matched) {
                 EnumSet<GroupValidationResult> validationResults = EnumSet.of(validationResult);
                 if (subgroups().isEmpty()) { return validationResults; }
+                for (ArgGroupSpec subgroup : subgroups()) { subgroup.validateConstraints(parseResult, matched);}
+
                 int elementCount = args().size() + subgroups().size();
                 int presentCount = validationResult.present() ? 1 : 0;
-                for (ArgGroupSpec subgroup : subgroups().values()) {
+                for (ArgGroupSpec subgroup : subgroups()) {
                     validationResults.add(Assert.notNull(subgroup.validationResult, "subgroup validation result"));
+                    if (subgroup.validationResult.blockingFailure()) { this.validationException = subgroup.validationException; }
                     if (subgroup.validationResult.present()) { presentCount++; }
                 }
-                validationResult = validate(commandLine, presentCount, presentCount < elementCount,
+                validationResult = validate(parseResult.commandSpec().commandLine(), presentCount, presentCount < elementCount,
                         presentCount > 0 && presentCount < elementCount, synopsis(), synopsis(), synopsis());
+                validationResults.add(validationResult);
                 return validationResults;
             }
 
@@ -6749,7 +6846,10 @@ public class CommandLine {
             /** Builder responsible for creating valid {@code ArgGroupSpec} objects.
              * @since 4.0 */
             public static class Builder {
-                private String name;
+                private IGetter getter;
+                private ISetter setter;
+                private IScope scope;
+                private ITypeInfo typeInfo;
                 private String heading;
                 private String headingKey;
                 private boolean exclusive  = true;
@@ -6757,24 +6857,35 @@ public class CommandLine {
                 private boolean validate   = true;
                 private int order          = DEFAULT_ORDER;
                 private List<ArgSpec> args = new ArrayList<ArgSpec>();
-                private List<String> subgroupNames   = new ArrayList<String>();
                 private List<ArgGroupSpec> subgroups = new ArrayList<ArgGroupSpec>();
 
                 // for topological sorting; private only
                 private Boolean topologicalSortDone;
                 private List<Builder> compositesReferencingMe = new ArrayList<Builder>();
 
-                Builder() {}
+                Builder() { }
+                Builder(IAnnotatedElement source) {
+                    typeInfo = source.getTypeInfo();
+                    getter = source.getter();
+                    setter = source.setter();
+                    scope = source.scope();
+                }
+
+                /** Updates this builder from the specified annotation values.
+                 * @param group annotation values
+                 * @return this builder for method chaining */
+                public Builder updateArgGroupAttributes(ArgGroup group) {
+                    return this
+                            .heading(group.heading())
+                            .headingKey(group.headingKey())
+                            .exclusive(group.exclusive())
+                            .multiplicity(group.multiplicity())
+                            .validate(group.validate())
+                            .order(group.order());
+                }
+
                 /** Returns a valid {@code ArgGroupSpec} instance. */
                 public ArgGroupSpec build() { return new ArgGroupSpec(this); }
-
-                /** Returns the name of this group. Must be unique in the command.
-                 * @see ArgGroup#name() */
-                public String name() { return name; }
-
-                /** Sets the name of this group. Must be unique in the command.
-                 * @see ArgGroup#name() */
-                public Builder name(String name) { this.name = Assert.notNull(name, "name"); return this; }
 
                 /** Returns whether this is a mutually exclusive group; {@code true} by default.
                  * If {@code false}, this is a co-occurring group. Ignored if {@link #validate()} is {@code false}.
@@ -6843,41 +6954,41 @@ public class CommandLine {
                  * @see ArgGroup#headingKey()  */
                 public Builder headingKey(String newValue) { this.headingKey = newValue; return this; }
 
-                /** Returns the mutable list of subgroups that this group is composed of.
-                 * Used internally by picocli when building a model from the annotations. May be ignored when using programmatic API.
-                 * @see ArgGroup#subgroups() */
-                public List<String> subgroupNames() { return subgroupNames; }
+                /** Returns the type info for the annotated program element associated with this group.
+                 * @return type information that does not require {@code Class} objects and be constructed both at runtime and compile time
+                 */
+                public ITypeInfo typeInfo()    { return typeInfo; }
+                /** Sets the type info for the annotated program element associated with this group, and returns this builder.
+                 * @param newValue type information that does not require {@code Class} objects and be constructed both at runtime and compile time
+                 */
+                public Builder typeInfo(ITypeInfo newValue) { this.typeInfo = newValue; return this; }
 
-                /** Sets the mutable list of subgroups that this group is composed of.
-                 * Used internally by picocli when building a model from the annotations. May be ignored when using programmatic API.
-                 * @see ArgGroup#subgroups() */
-                public Builder subgroupNames(String... names) { return subgroupNames(new ArrayList<String>(Arrays.asList(names))); }
+                /** Returns the {@link IGetter} that is responsible for supplying the value of the annotated program element associated with this group. */
+                public IGetter getter()        { return getter; }
+                /** Sets the {@link IGetter} that is responsible for getting the value of the annotated program element associated with this group, and returns this builder. */
+                public Builder getter(IGetter getter)       { this.getter = getter; return this; }
 
-                /** Sets the mutable list of subgroups that this group is composed of.
-                 * @see ArgGroup#subgroups() */
-                public Builder subgroupNames(List<String> names) { subgroupNames = Assert.notNull(names, "names"); return this; }
+                /** Returns the {@link ISetter} that is responsible for modifying the value of the annotated program element associated with this group. */
+                public ISetter setter()        { return setter; }
+                /** Sets the {@link ISetter} that is responsible for modifying the value of the annotated program element associated with this group, and returns this builder. */
+                public Builder setter(ISetter setter)       { this.setter = setter; return this; }
+
+                /** Returns the {@link IScope} that determines where the setter sets the value (or the getter gets the value) of the annotated program element associated with this group. */
+                public IScope scope()          { return scope; }
+                /** Sets the {@link IScope} that targets where the setter sets the value of the annotated program element associated with this group, and returns this builder. */
+                public Builder scope(IScope scope)          { this.scope = scope; return this; }
 
                 /** Adds the specified argument to the list of options and positional parameters that depend on this group. */
-                public Builder addArg(ArgSpec arg) {
-                    args.add(arg);
-                    return this;
-                }
+                public Builder addArg(ArgSpec arg) { args.add(arg); return this; }
 
                 /** Returns the list of options and positional parameters that depend on this group.*/
                 public List<ArgSpec> args() { return args; }
 
                 /** Adds the specified group to the list of subgroups that this group is composed of. */
-                public Builder addSubgroup(ArgGroupSpec group) {
-                    subgroups.add(group);
-                    return this;
-                }
+                public Builder addSubgroup(ArgGroupSpec group) { subgroups.add(group); return this; }
 
                 /** Returns the list of subgroups that this group is composed of.*/
                 public List<ArgGroupSpec> subgroups() { return subgroups; }
-
-                @Override public String toString() {
-                    return "ArgGroupSpec.Builder[" + name + ", -> " + subgroupNames + "]";
-                }
             }
         }
 
@@ -7131,6 +7242,7 @@ public class CommandLine {
             boolean isArgSpec();
             boolean isOption();
             boolean isParameter();
+            boolean isArgGroup();
             boolean isMixin();
             boolean isUnmatched();
             boolean isInjectSpec();
@@ -7138,6 +7250,7 @@ public class CommandLine {
             boolean hasInitialValue();
             boolean isMethodParameter();
             int getMethodParamPosition();
+            CommandLine.Model.IScope scope();
             CommandLine.Model.IGetter getter();
             CommandLine.Model.ISetter setter();
             ITypeInfo getTypeInfo();
@@ -7148,16 +7261,18 @@ public class CommandLine {
             final AccessibleObject accessible;
             final String name;
             final ITypeInfo typeInfo;
-            final boolean hasInitialValue;
+            boolean hasInitialValue;
+            private IScope scope;
             private IGetter getter;
             private ISetter setter;
-            static TypedMember createIfAnnotated(Field field, Object scope) {
+            static TypedMember createIfAnnotated(Field field, IScope scope) {
                 return isAnnotated(field) ? new TypedMember(field, scope) : null;
             }
             static boolean isAnnotated(AnnotatedElement e) {
                 return false
                         || e.isAnnotationPresent(Option.class)
                         || e.isAnnotationPresent(Parameters.class)
+                        || e.isAnnotationPresent(ArgGroup.class)
                         || e.isAnnotationPresent(Unmatched.class)
                         || e.isAnnotationPresent(Mixin.class)
                         || e.isAnnotationPresent(Spec.class)
@@ -7170,18 +7285,21 @@ public class CommandLine {
                 typeInfo = createTypeInfo(field.getType(), field.getGenericType());
                 hasInitialValue = true;
             }
-            private TypedMember(Field field, Object scope) {
+            private TypedMember(Field field, IScope scope) {
                 this(field);
-                if (Proxy.isProxyClass(scope.getClass())) {
+                Object obj = ObjectScope.tryGet(scope);
+                if (obj != null && Proxy.isProxyClass(obj.getClass())) {
                     throw new InitializationException("Invalid picocli annotation on interface field");
                 }
                 FieldBinding binding = new FieldBinding(scope, field);
                 getter = binding; setter = binding;
+                this.scope = scope;
+                hasInitialValue &= obj != null ;
             }
-            static TypedMember createIfAnnotated(Method method, Object scope, CommandSpec spec) {
+            static TypedMember createIfAnnotated(Method method, IScope scope, CommandSpec spec) {
                 return isAnnotated(method) ? new TypedMember(method, scope, spec) : null;
             }
-            private TypedMember(Method method, Object scope, CommandSpec spec) {
+            private TypedMember(Method method, IScope scope, CommandSpec spec) {
                 accessible = Assert.notNull(method, "method");
                 accessible.setAccessible(true);
                 name = propertyName(method.getName());
@@ -7192,8 +7310,9 @@ public class CommandLine {
                 if (isGetter) {
                     hasInitialValue = true;
                     typeInfo = createTypeInfo(method.getReturnType(), method.getGenericReturnType());
-                    if (Proxy.isProxyClass(scope.getClass())) {
-                        PicocliInvocationHandler handler = (PicocliInvocationHandler) Proxy.getInvocationHandler(scope);
+                    Object proxy = ObjectScope.tryGet(scope);
+                    if (Proxy.isProxyClass(proxy.getClass())) {
+                        PicocliInvocationHandler handler = (PicocliInvocationHandler) Proxy.getInvocationHandler(proxy);
                         PicocliInvocationHandler.ProxyBinding binding = handler.new ProxyBinding(method);
                         getter = binding; setter = binding;
                         initializeInitialValue(method);
@@ -7209,7 +7328,7 @@ public class CommandLine {
                     getter = binding; setter = binding;
                 }
             }
-            TypedMember(MethodParam param, Object scope) {
+            TypedMember(MethodParam param, IScope scope) {
                 accessible = Assert.notNull(param, "command method parameter");
                 accessible.setAccessible(true);
                 name = param.getName();
@@ -7259,10 +7378,12 @@ public class CommandLine {
             public boolean isArgSpec()      { return isOption() || isParameter() || (isMethodParameter() && !isMixin()); }
             public boolean isOption()       { return isAnnotationPresent(Option.class); }
             public boolean isParameter()    { return isAnnotationPresent(Parameters.class); }
+            public boolean isArgGroup()     { return isAnnotationPresent(ArgGroup.class); }
             public boolean isMixin()        { return isAnnotationPresent(Mixin.class); }
             public boolean isUnmatched()    { return isAnnotationPresent(Unmatched.class); }
             public boolean isInjectSpec()   { return isAnnotationPresent(Spec.class); }
             public boolean isMultiValue()   { return CommandLine.isMultiValue(getType()); }
+            public IScope  scope()          { return scope; }
             public IGetter getter()         { return getter; }
             public ISetter setter()         { return setter; }
             public ITypeInfo getTypeInfo()  { return typeInfo; }
@@ -7459,11 +7580,95 @@ public class CommandLine {
             public CommandSpec commandSpec() { return spec; }
         }
         private static class CommandReflection {
+            static ArgGroupSpec extractArgGroupSpec(IAnnotatedElement member, IFactory factory, CommandSpec commandSpec, boolean annotationsAreMandatory) throws Exception {
+                Object instance = null;
+                try { instance = member.getter().get(); } catch (Exception ignored) {}
+                Class<?> cls = instance == null ? member.getTypeInfo().getType() : instance.getClass();
+                Tracer t = new Tracer();
+
+                if (member.isMultiValue()) {
+//                    t.debug("Creating ArgGroupSpec user object for %s with factory %s%n", member.getToString(), factory.getClass().getName());
+//                    Object[] tmp = getOrCreateInstance(cls, instance, factory, t);
+//                    instance = tmp[1];
+//                    if (member.getter().get() == null) {
+//                        member.setter().set(instance);
+//                    }
+                    cls = member.getTypeInfo().getAuxiliaryTypes()[0];
+                }
+                IScope scope = new ObjectScope(instance);
+                ArgGroupSpec.Builder builder = ArgGroupSpec.builder(member);
+                builder.updateArgGroupAttributes(member.getAnnotation(ArgGroup.class));
+                if (member.isOption() || member.isParameter()) {
+                    if (member instanceof TypedMember) { validateArgSpecMember((TypedMember) member); }
+                    builder.addArg(buildArgForMember(member, factory));
+                }
+
+                Stack<Class<?>> hierarchy = new Stack<Class<?>>();
+                while (cls != null) { hierarchy.add(cls); cls = cls.getSuperclass(); }
+                boolean hasArgAnnotation = false;
+                while (!hierarchy.isEmpty()) {
+                    cls = hierarchy.pop();
+                    hasArgAnnotation |= initFromAnnotatedFields(scope, cls, commandSpec, builder, factory);
+                }
+                ArgGroupSpec result = builder.build();
+                if (annotationsAreMandatory) {validateArgGroupSpec(result, hasArgAnnotation, cls.getName()); }
+                return result;
+            }
             static CommandSpec extractCommandSpec(Object command, IFactory factory, boolean annotationsAreMandatory) {
                 Class<?> cls = command.getClass();
                 Tracer t = new Tracer();
                 t.debug("Creating CommandSpec for object of class %s with factory %s%n", cls.getName(), factory.getClass().getName());
                 if (command instanceof CommandSpec) { return (CommandSpec) command; }
+
+                Object[] tmp = getOrCreateInstance(cls, command, factory, t);
+                cls = (Class<?>) tmp[0];
+                Object instance = tmp[1];
+                String commandClassName = (String) tmp[2];
+
+                CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(instance, "command"));
+                ObjectScope scope = new ObjectScope(instance);
+
+                Stack<Class<?>> hierarchy = new Stack<Class<?>>();
+                while (cls != null) { hierarchy.add(cls); cls = cls.getSuperclass(); }
+                boolean hasCommandAnnotation = false;
+                boolean mixinStandardHelpOptions = false;
+                while (!hierarchy.isEmpty()) {
+                    cls = hierarchy.pop();
+                    Command cmd = cls.getAnnotation(Command.class);
+                    if (cmd != null) {
+                        result.updateCommandAttributes(cmd, factory);
+                        initSubcommands(cmd, cls, result, factory);
+                        // addGroups(cmd, groupBuilders); // TODO delete
+                        hasCommandAnnotation = true;
+                    }
+                    hasCommandAnnotation |= initFromAnnotatedFields(scope, cls, result, null, factory);
+                    if (cls.isAnnotationPresent(Command.class)) {
+                        mixinStandardHelpOptions |= cls.getAnnotation(Command.class).mixinStandardHelpOptions();
+                    }
+                }
+                result.mixinStandardHelpOptions(mixinStandardHelpOptions); //#377 Standard help options should be added last
+                if (command instanceof Method) {
+                    Method method = (Method) command;
+                    t.debug("Using method %s as command %n", method);
+                    commandClassName = method.toString();
+                    Command cmd = method.getAnnotation(Command.class);
+                    result.updateCommandAttributes(cmd, factory);
+                    result.setAddMethodSubcommands(false); // method commands don't have method subcommands
+                    initSubcommands(cmd, null, result, factory);
+                    hasCommandAnnotation = true;
+                    result.mixinStandardHelpOptions(method.getAnnotation(Command.class).mixinStandardHelpOptions());
+                    initFromMethodParameters(scope, method, result, null, factory);
+                    // set command name to method name, unless @Command#name is set
+                    result.initName(((Method)command).getName());
+                }
+                result.updateArgSpecMessages();
+
+                if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, commandClassName); }
+                result.withToString(commandClassName).validate();
+                return result;
+            }
+
+            private static Object[] getOrCreateInstance(Class<?> cls, Object command, IFactory factory, Tracer t) {
                 Object instance = command;
                 String commandClassName = cls.getName();
                 if (command instanceof Class) {
@@ -7485,73 +7690,13 @@ public class CommandLine {
                     }
                 } else if (command instanceof Method) {
                     cls = null; // don't mix in options/positional params from outer class @Command
+                } else if (instance == null) {
+                    t.debug("Getting a %s instance from the factory%n", cls.getName());
+                    instance = DefaultFactory.create(factory, cls);
+                    t.debug("Factory returned a %s instance%n", instance.getClass().getName());
                 }
-
-                CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(instance, "command"));
-
-                Map<String, ArgGroupSpec.Builder> groupBuilders = new LinkedHashMap<String, ArgGroupSpec.Builder>();
-                Stack<Class<?>> hierarchy = new Stack<Class<?>>();
-                while (cls != null) { hierarchy.add(cls); cls = cls.getSuperclass(); }
-                boolean hasCommandAnnotation = false;
-                boolean mixinStandardHelpOptions = false;
-                while (!hierarchy.isEmpty()) {
-                    cls = hierarchy.pop();
-                    Command cmd = cls.getAnnotation(Command.class);
-                    if (cmd != null) {
-                        result.updateCommandAttributes(cmd, factory);
-                        initSubcommands(cmd, cls, result, factory);
-                        addGroups(cmd, groupBuilders);
-                        hasCommandAnnotation = true;
-                    }
-                    hasCommandAnnotation |= initFromAnnotatedFields(instance, cls, result, groupBuilders, factory);
-                    if (cls.isAnnotationPresent(Command.class)) {
-                        mixinStandardHelpOptions |= cls.getAnnotation(Command.class).mixinStandardHelpOptions();
-                    }
-                }
-                result.mixinStandardHelpOptions(mixinStandardHelpOptions); //#377 Standard help options should be added last
-                if (command instanceof Method) {
-                    Method method = (Method) command;
-                    t.debug("Using method %s as command %n", method);
-                    commandClassName = method.toString();
-                    Command cmd = method.getAnnotation(Command.class);
-                    result.updateCommandAttributes(cmd, factory);
-                    result.setAddMethodSubcommands(false); // method commands don't have method subcommands
-                    initSubcommands(cmd, null, result, factory);
-                    addGroups(cmd, groupBuilders);
-                    hasCommandAnnotation = true;
-                    result.mixinStandardHelpOptions(method.getAnnotation(Command.class).mixinStandardHelpOptions());
-                    initFromMethodParameters(instance, method, result, groupBuilders, factory);
-                    // set command name to method name, unless @Command#name is set
-                    result.initName(((Method)command).getName());
-                }
-                result.updateArgSpecMessages();
-
-                // ArgGroup initialization:
-                // by now all options and parameters have been added to the correct group builder.
-                // Next, add the groups themselves: first build the simple groups that have no subgroups,
-                // then build the groups that only have simple groups as subgroups, etc.
-                List<ArgGroupSpec.Builder> sorted = ArgGroupSpec.topologicalSort(groupBuilders);
-                for (ArgGroupSpec.Builder builder : sorted) {
-                    // the groups that this group depends on should have been added now, so we can build it
-                    for (String subgroupName : builder.subgroupNames()) {
-                        ArgGroupSpec subgroup = result.argGroups().get(subgroupName);
-                        if (subgroup == null) { throw new InitializationException("ArgGroup '" + builder.name() + "' is annotated with subgroups = '" + subgroupName + "', but no such group exists."); }
-                        builder.addSubgroup(subgroup);
-                    }
-                    result.addArgGroup(builder.build());
-                }
-
-                if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, commandClassName); }
-                result.withToString(commandClassName).validate();
-                return result;
+                return new Object[] { cls, instance, commandClassName };
             }
-
-            private static void addGroups(Command cmd, Map<String, ArgGroupSpec.Builder> groups) {
-                for (ArgGroup group : cmd.argGroups()) {
-                    groups.put(group.name(), ArgGroupSpec.builder(group));
-                }
-            }
-
             private static void initSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory) {
                 for (Class<?> sub : cmd.subcommands()) {
                     try {
@@ -7599,52 +7744,66 @@ public class CommandLine {
                 }
                 return subCommand.name();
             }
-            private static boolean initFromAnnotatedFields(Object scope, Class<?> cls, CommandSpec receiver, Map<String, ArgGroupSpec.Builder> groups, IFactory factory) {
+            private static boolean initFromAnnotatedFields(IScope scope, Class<?> cls, CommandSpec receiver, ArgGroupSpec.Builder groupBuilder, IFactory factory) {
                 boolean result = false;
                 for (Field field : cls.getDeclaredFields()) {
-                    result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(field, scope), receiver, groups, factory);
+                    result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(field, scope), receiver, groupBuilder, factory);
                 }
                 for (Method method : cls.getDeclaredMethods()) {
-                    result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(method, scope, receiver), receiver, groups, factory);
+                    result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(method, scope, receiver), receiver, groupBuilder, factory);
                 }
                 return result;
             }
             private static boolean initFromAnnotatedTypedMembers(TypedMember member,
-                                                                 CommandSpec receiver,
-                                                                 Map<String, ArgGroupSpec.Builder> groups,
+                                                                 CommandSpec commandSpec,
+                                                                 ArgGroupSpec.Builder groupBuilder,
                                                                  IFactory factory) {
                 boolean result = false;
                 if (member == null) { return result; }
                 if (member.isMixin()) {
-                    validateMixin(member);
-                    receiver.addMixin(member.getMixinName(), buildMixinForField(member, factory));
+                    assertNoDuplicateAnnotations(member, Mixin.class, Option.class, Parameters.class, Unmatched.class, Spec.class, ArgGroup.class);
+                    if (groupBuilder != null) {
+                        throw new InitializationException("@Mixins are not supported on @ArgGroups");
+                        // TODO groupBuilder.addMixin(member.getMixinName(), buildMixinForMember(member, factory));
+                    } else {
+                        commandSpec.addMixin(member.getMixinName(), buildMixinForMember(member, factory));
+                    }
                     result = true;
                 }
+                if (member.isArgGroup()) {
+                    assertNoDuplicateAnnotations(member, ArgGroup.class, Spec.class, Parameters.class, Option.class, Unmatched.class, Mixin.class);
+                    if (groupBuilder != null) {
+                        groupBuilder.addSubgroup(buildArgGroupForMember(member, factory, commandSpec));
+                    } else {
+                        commandSpec.addArgGroup(buildArgGroupForMember(member, factory, commandSpec));
+                    }
+                    return true;
+                }
                 if (member.isUnmatched()) {
-                    validateUnmatched(member);
-                    receiver.addUnmatchedArgsBinding(buildUnmatchedForField(member));
+                    assertNoDuplicateAnnotations(member, Unmatched.class, Mixin.class, Option.class, Parameters.class, Spec.class, ArgGroup.class);
+                    if (groupBuilder != null) {
+                        // we don't support @Unmatched on @ArgGroup class members...
+                        throw new InitializationException("@Unmatched are not supported on @ArgGroups");
+                    } else {
+                        commandSpec.addUnmatchedArgsBinding(buildUnmatchedForMember(member));
+                    }
                 }
                 if (member.isArgSpec()) {
-                    validateArgSpecField(member);
-                    Messages msg = receiver.usageMessage.messages();
-                    ArgSpec arg;
-                    if (member.isOption())         { arg = OptionSpec.builder(member, factory).build(); }
-                    else if (member.isParameter()) { arg = PositionalParamSpec.builder(member, factory).build(); }
-                    else                           { arg = PositionalParamSpec.builder(member, factory).build(); }
-                    for (String groupName : arg.groupNames()) {
-                        ArgGroupSpec.Builder group = groups.get(groupName);
-                        if (group == null) { throw new InitializationException(member.getToString() + " is annotated with groups = '" + groupName + "', but no such group exists."); }
-                        group.addArg(arg);
+                    validateArgSpecMember(member);
+                    if (groupBuilder != null) {
+                        groupBuilder.addArg(buildArgForMember(member, factory));
+                    } else {
+                        commandSpec.add(buildArgForMember(member, factory));
                     }
-                    receiver.add(arg);
+                    result = true;
                 }
                 if (member.isInjectSpec()) {
                     validateInjectSpec(member);
-                    try { member.setter().set(receiver); } catch (Exception ex) { throw new InitializationException("Could not inject spec", ex); }
+                    try { member.setter().set(commandSpec); } catch (Exception ex) { throw new InitializationException("Could not inject spec", ex); }
                 }
                 return result;
             }
-            private static boolean initFromMethodParameters(Object scope, Method method, CommandSpec receiver, Map<String, ArgGroupSpec.Builder> groups, IFactory factory) {
+            private static boolean initFromMethodParameters(IScope scope, Method method, CommandSpec receiver, ArgGroupSpec.Builder groupBuilder, IFactory factory) {
                 boolean result = false;
                 int optionCount = 0;
                 for (int i = 0, count = method.getParameterTypes().length; i < count; i++) {
@@ -7654,31 +7813,16 @@ public class CommandLine {
                     } else {
                         param.position = i - optionCount;
                     }
-                    result |= initFromAnnotatedTypedMembers(new TypedMember(param, scope), receiver, groups, factory);
+                    result |= initFromAnnotatedTypedMembers(new TypedMember(param, scope), receiver, groupBuilder, factory);
                 }
                 return result;
             }
-            private static void validateMixin(TypedMember member) {
-                if (!member.isMixin()) { throw new IllegalStateException("Bug: validateMixin() should only be called with mixins"); }
-                if (member.isArgSpec()) {
-                    throw new DuplicateOptionAnnotationsException("A member cannot be both a @Mixin command and an @Option or @Parameters, but '" + member + "' is both.");
-                }
-                if (member.isUnmatched()) {
-                    throw new DuplicateOptionAnnotationsException("A member cannot be both a @Mixin command and an @Unmatched but '" + member + "' is both.");
-                }
-            }
-            private static void validateUnmatched(IAnnotatedElement member) {
-                if (member.isUnmatched() && member.isArgSpec()) {
-                    throw new DuplicateOptionAnnotationsException("A member cannot have both @Unmatched and @Option or @Parameters annotations, but '" + member + "' has both.");
-                }
-            }
-            private static void validateArgSpecField(TypedMember member) {
-                if (!member.isArgSpec()) { throw new IllegalStateException("Bug: validateArgSpecField() should only be called with an @Option or @Parameters member"); }
-                if (member.isOption() && member.isParameter()) {
-                    throw new DuplicateOptionAnnotationsException("A member can be either @Option or @Parameters, but '" + member + "' is both.");
-                }
-                if (member.isMixin()) {
-                    throw new DuplicateOptionAnnotationsException("A member cannot be both a @Mixin command and an @Option or @Parameters, but '" + member + "' is both.");
+            private static void validateArgSpecMember(TypedMember member) {
+                if (!member.isArgSpec()) { throw new IllegalStateException("Bug: validateArgSpecMember() should only be called with an @Option or @Parameters member"); }
+                if (member.isOption()) {
+                    assertNoDuplicateAnnotations(member, Option.class, Unmatched.class, Mixin.class, Parameters.class, Spec.class, ArgGroup.class);
+                } else {
+                    assertNoDuplicateAnnotations(member, Parameters.class, Option.class, Unmatched.class, Mixin.class, Spec.class, ArgGroup.class);
                 }
                 if (!(member.accessible instanceof Field)) { return; }
                 Field field = (Field) member.accessible;
@@ -7692,22 +7836,26 @@ public class CommandLine {
                     throw new InitializationException(commandClassName + " is not a command: it has no @Command, @Option, @Parameters or @Unmatched annotations");
                 }
             }
+            private static void validateArgGroupSpec(ArgGroupSpec result, boolean hasArgAnnotation, String className) {
+                if (!hasArgAnnotation && result.args().isEmpty()) {
+                    throw new InitializationException(className + " is not a group: it has no @Option or @Parameters annotations");
+                }
+            }
             private static void validateInjectSpec(TypedMember member) {
                 if (!member.isInjectSpec()) { throw new IllegalStateException("Bug: validateInjectSpec() should only be called with @Spec members"); }
-                if (member.isOption() || member.isParameter()) {
-                    throw new DuplicateOptionAnnotationsException("A member cannot have both @Spec and @Option or @Parameters annotations, but '" + member + "' has both.");
-                }
-                if (member.isUnmatched()) {
-                    throw new DuplicateOptionAnnotationsException("A member cannot have both @Spec and @Unmatched annotations, but '" + member + "' has both.");
-                }
-                if (member.isMixin()) {
-                    throw new DuplicateOptionAnnotationsException("A member cannot have both @Spec and @Mixin annotations, but '" + member + "' has both.");
-                }
+                assertNoDuplicateAnnotations(member, Spec.class, Parameters.class, Option.class, Unmatched.class, Mixin.class, ArgGroup.class);
                 if (!CommandSpec.class.getName().equals(member.getTypeInfo().getClassName())) {
                     throw new InitializationException("@picocli.CommandLine.Spec annotation is only supported on fields of type " + CommandSpec.class.getName());
                 }
             }
-            private static CommandSpec buildMixinForField(IAnnotatedElement member, IFactory factory) {
+            private static void assertNoDuplicateAnnotations(TypedMember member, Class<? extends Annotation> myAnnotation, Class<? extends Annotation>... forbidden) {
+                for (Class<? extends Annotation> annotation : forbidden) {
+                    if (member.isAnnotationPresent(annotation)) {
+                        throw new DuplicateOptionAnnotationsException("A member cannot have both @" + myAnnotation.getSimpleName() + " and @" + annotation.getSimpleName() + " annotations, but '" + member + "' has both.");
+                    }
+                }
+            }
+            private static CommandSpec buildMixinForMember(IAnnotatedElement member, IFactory factory) {
                 try {
                     Object userObject = member.getter().get();
                     if (userObject == null) {
@@ -7722,7 +7870,21 @@ public class CommandLine {
                     throw new InitializationException("Could not access or modify mixin member " + member + ": " + ex, ex);
                 }
             }
-            private static UnmatchedArgsBinding buildUnmatchedForField(final IAnnotatedElement member) {
+            private static ArgSpec buildArgForMember(IAnnotatedElement member, IFactory factory) {
+                if (member.isOption())         { return OptionSpec.builder(member, factory).build(); }
+                else if (member.isParameter()) { return PositionalParamSpec.builder(member, factory).build(); }
+                else                           { return PositionalParamSpec.builder(member, factory).build(); }
+            }
+            private static ArgGroupSpec buildArgGroupForMember(IAnnotatedElement member, IFactory factory, CommandSpec commandSpec) {
+                try {
+                    return extractArgGroupSpec(member, factory, commandSpec, true);
+                } catch (InitializationException ex) {
+                    throw ex;
+                } catch (Exception ex) {
+                    throw new InitializationException("Could not access or modify ArgGroup member " + member + ": " + ex, ex);
+                }
+            }
+            private static UnmatchedArgsBinding buildUnmatchedForMember(final IAnnotatedElement member) {
                 ITypeInfo info = member.getTypeInfo();
                 if (!(info.getClassName().equals(String[].class.getName()) ||
                         (info.isCollection() && info.getActualGenericTypeArguments().equals(Arrays.asList(String.class.getName()))))) {
@@ -7746,46 +7908,57 @@ public class CommandLine {
         }
 
         static class FieldBinding implements IGetter, ISetter {
-            private final Object scope;
+            private final IScope scope;
             private final Field field;
-            FieldBinding(Object scope, Field field) { this.scope = scope; this.field = field; }
+            private static IScope asScope(Object scope) { return scope instanceof IScope ? ((IScope) scope) : new ObjectScope(scope); }
+            FieldBinding(Object scope, Field field) { this(asScope(scope), field); }
+            FieldBinding(IScope scope, Field field) { this.scope = scope; this.field = field; }
             public <T> T get() throws PicocliException {
+                Object obj = null;
+                try { obj = scope.get(); }
+                catch (Exception ex) { throw new PicocliException("Could not get scope for field " + field, ex); }
                 try {
-                    @SuppressWarnings("unchecked") T result = (T) field.get(scope);
+                    @SuppressWarnings("unchecked") T result = (T) field.get(obj);
                     return result;
                 } catch (Exception ex) {
                     throw new PicocliException("Could not get value for field " + field, ex);
                 }
             }
             public <T> T set(T value) throws PicocliException {
+                Object obj = null;
+                try { obj = scope.get(); }
+                catch (Exception ex) { throw new PicocliException("Could not get scope for field " + field, ex); }
                 try {
-                    @SuppressWarnings("unchecked") T result = (T) field.get(scope);
-                    field.set(scope, value);
+                    @SuppressWarnings("unchecked") T result = (T) field.get(obj);
+                    field.set(obj, value);
                     return result;
                 } catch (Exception ex) {
                     throw new PicocliException("Could not set value for field " + field + " to " + value, ex);
                 }
             }
             public String toString() {
-                return String.format("%s(%s %s.%s)", getClass().getCanonicalName(), field.getType().getCanonicalName(),
-                        field.getDeclaringClass().getCanonicalName(), field.getName());
+                return String.format("%s(%s %s.%s)", getClass().getSimpleName(), field.getType().getName(),
+                        field.getDeclaringClass().getName(), field.getName());
             }
         }
         static class MethodBinding implements IGetter, ISetter {
-            private final Object scope;
+            private final IScope scope;
             private final Method method;
             private final CommandSpec spec;
             private Object currentValue;
-            MethodBinding(Object scope, Method method, CommandSpec spec) {
+            MethodBinding(IScope scope, Method method, CommandSpec spec) {
                 this.scope = scope;
                 this.method = method;
                 this.spec = spec;
             }
             @SuppressWarnings("unchecked") public <T> T get() { return (T) currentValue; }
             public <T> T set(T value) throws PicocliException {
+                Object obj = null;
+                try { obj = scope.get(); }
+                catch (Exception ex) { throw new PicocliException("Could not get scope for method " + method, ex); }
                 try {
                     @SuppressWarnings("unchecked") T result = (T) currentValue;
-                    method.invoke(scope, value);
+                    method.invoke(obj, value);
                     currentValue = value;
                     return result;
                 } catch (InvocationTargetException ex) {
@@ -7800,7 +7973,7 @@ public class CommandLine {
                 return new ParameterException(cmd, "Could not invoke " + method + " with " + value, t);
             }
             public String toString() {
-                return String.format("%s(%s)", getClass().getCanonicalName(), method);
+                return String.format("%s(%s)", getClass().getSimpleName(), method);
             }
         }
         private static class PicocliInvocationHandler implements InvocationHandler {
@@ -7828,88 +8001,28 @@ public class CommandLine {
                 return result;
             }
             public String toString() {
-                return String.format("%s(value=%s)", getClass().getCanonicalName(), value);
+                return String.format("%s(value=%s)", getClass().getSimpleName(), value);
             }
+        }
+        static class ObjectScope implements IScope {
+            private Object value;
+            public ObjectScope(Object value) { this.value = value; }
+            public <T> T get() { return (T) value; }
+            public <T> T set(T value) { T old = (T) this.value; this.value = value; return old; }
+            public static Object tryGet(IScope scope) {
+                try {
+                    return scope.get();
+                } catch (Exception e) {
+                    throw new InitializationException("Could not get scope value", e);
+                }
+            }
+            public String toString() { return String.format("Scope(value=%s)", value); }
         }
     }
 
     /** Encapsulates the result of parsing an array of command line arguments.
      * @since 3.0 */
     public static class ParseResult {
-        /** Creates and returns a new {@code ParseResult.Builder} for the specified command spec. */
-        public static Builder builder(CommandSpec commandSpec) { return new Builder(commandSpec); }
-        /** Builds immutable {@code ParseResult} instances. */
-        public static class Builder {
-            private final CommandSpec commandSpec;
-            private final Set<OptionSpec> options = new LinkedHashSet<OptionSpec>();
-            private final Set<PositionalParamSpec> positionals = new LinkedHashSet<PositionalParamSpec>();
-            private final List<String> unmatched = new ArrayList<String>();
-            private final List<String> originalArgList = new ArrayList<String>();
-            private final List<List<PositionalParamSpec>> positionalParams = new ArrayList<List<PositionalParamSpec>>();
-            private ParseResult subcommand;
-            private boolean usageHelpRequested;
-            private boolean versionHelpRequested;
-            boolean isInitializingDefaultValues;
-            private List<Exception> errors = new ArrayList<Exception>(1);
-            private List<Object> nowProcessing;
-
-            private Builder(CommandSpec spec) { commandSpec = Assert.notNull(spec, "commandSpec"); }
-            /** Creates and returns a new {@code ParseResult} instance for this builder's configuration. */
-            public ParseResult build() { return new ParseResult(this); }
-
-            private void nowProcessing(ArgSpec spec, Object value) {
-                if (nowProcessing != null && !isInitializingDefaultValues) {
-                    nowProcessing.add(spec.isPositional() ? spec : value);
-                }
-            }
-
-            /** Adds the specified {@code OptionSpec} or {@code PositionalParamSpec} to the list of options and parameters
-             * that were matched on the command line.
-             * @param arg the matched {@code OptionSpec} or {@code PositionalParamSpec}
-             * @param position the command line position at which the  {@code PositionalParamSpec} was matched. Ignored for {@code OptionSpec}s.
-             * @return this builder for method chaining */
-            public Builder add(ArgSpec arg, int position) {
-                if (arg.isOption()) {
-                    addOption((OptionSpec) arg);
-                } else {
-                    addPositionalParam((PositionalParamSpec) arg, position);
-                }
-                return this;
-            }
-            /** Adds the specified {@code OptionSpec} to the list of options that were matched on the command line. */
-            public Builder addOption(OptionSpec option) { if (!isInitializingDefaultValues) {options.add(option);} return this; }
-            /** Adds the specified {@code PositionalParamSpec} to the list of parameters that were matched on the command line.
-             * @param positionalParam the matched {@code PositionalParamSpec}
-             * @param position the command line position at which the  {@code PositionalParamSpec} was matched.
-             * @return this builder for method chaining */
-            public Builder addPositionalParam(PositionalParamSpec positionalParam, int position) {
-                if (isInitializingDefaultValues) { return this; }
-                positionals.add(positionalParam);
-                while (positionalParams.size() <= position) { positionalParams.add(new ArrayList<PositionalParamSpec>()); }
-                positionalParams.get(position).add(positionalParam);
-                return this;
-            }
-            /** Adds the specified command line argument to the list of unmatched command line arguments. */
-            public Builder addUnmatched(String arg) { unmatched.add(arg); return this; }
-            /** Adds all elements of the specified command line arguments stack to the list of unmatched command line arguments. */
-            public Builder addUnmatched(Stack<String> args) { while (!args.isEmpty()) { addUnmatched(args.pop()); } return this; }
-            /** Sets the specified {@code ParseResult} for a subcommand that was matched on the command line. */
-            public Builder subcommand(ParseResult subcommand) { this.subcommand = subcommand; return this; }
-            /** Sets the specified command line arguments that were parsed. */
-            public Builder originalArgs(String[] originalArgs) { originalArgList.addAll(Arrays.asList(originalArgs)); return this;}
-
-            void addStringValue        (ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.stringValues.add(value);} }
-            void addOriginalStringValue(ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.originalStringValues.add(value); } }
-            void addTypedValues(ArgSpec argSpec, int position, Object typedValue) {
-                if (!isInitializingDefaultValues) {
-                    argSpec.typedValues.add(typedValue);
-                    argSpec.typedValueAtPosition.put(position, typedValue);
-                }
-            }
-            public void addError(PicocliException ex) {
-                errors.add(Assert.notNull(ex, "exception"));
-            }
-        }
         private final CommandSpec commandSpec;
         private final List<OptionSpec> matchedOptions;
         private final List<PositionalParamSpec> matchedUniquePositionals;
@@ -7917,6 +8030,8 @@ public class CommandLine {
         private final List<String> unmatched;
         private final List<List<PositionalParamSpec>> matchedPositionalParams;
         private final List<Exception> errors;
+        private final List<MatchedGroup> matchedGroups;
+        private final List<MatchedGroup> partiallyMatchedGroups;
         final List<Object> tentativeMatch;
 
         private final ParseResult subcommand;
@@ -7935,6 +8050,21 @@ public class CommandLine {
             usageHelpRequested = builder.usageHelpRequested;
             versionHelpRequested = builder.versionHelpRequested;
             tentativeMatch = builder.nowProcessing;
+            matchedGroups = Collections.unmodifiableList(new ArrayList<MatchedGroup>(builder.matchedGroups));
+            partiallyMatchedGroups = Collections.unmodifiableList(new ArrayList<MatchedGroup>(builder.partiallyMatchedGroups));
+        }
+        /** Creates and returns a new {@code ParseResult.Builder} for the specified command spec. */
+        public static Builder builder(CommandSpec commandSpec) { return new Builder(commandSpec); }
+        /** Returns the matched groups.
+         * @since 4.0 */
+        public List<MatchedGroup> matchedGroups() { return matchedGroups; }
+        /** Returns partially matched groups if any exist.
+         * @since 4.0 */
+        public List<MatchedGroup> partiallyMatchedGroups() { return partiallyMatchedGroups; }
+        String partiallyMatchedGroupsDescription() {
+            String result = partiallyMatchedGroups.toString();
+            result = result.substring(0, result.length() - 1).substring(1);
+            return result;
         }
         /** Returns the option with the specified short name, or {@code null} if no option with that name was matched
          * on the command line.
@@ -8042,6 +8172,307 @@ public class CommandLine {
             while (pr != null) { result.add(pr.commandSpec().commandLine()); pr = pr.hasSubcommand() ? pr.subcommand() : null; }
             return result;
         }
+
+        /** Builds immutable {@code ParseResult} instances. */
+        public static class Builder {
+            private final CommandSpec commandSpec;
+            private final Set<OptionSpec> options = new LinkedHashSet<OptionSpec>();
+            private final Set<PositionalParamSpec> positionals = new LinkedHashSet<PositionalParamSpec>();
+            private final List<String> unmatched = new ArrayList<String>();
+            private final List<String> originalArgList = new ArrayList<String>();
+            private final List<List<PositionalParamSpec>> positionalParams = new ArrayList<List<PositionalParamSpec>>();
+            private ParseResult subcommand;
+            private boolean usageHelpRequested;
+            private boolean versionHelpRequested;
+            boolean isInitializingDefaultValues;
+            private List<Exception> errors = new ArrayList<Exception>(1);
+            private List<Object> nowProcessing;
+            private Map<ArgGroupSpec, MatchedGroup> currentlyMatchingGroups = new IdentityHashMap<ArgGroupSpec, MatchedGroup>();
+            private List<MatchedGroup> matchedGroups = new ArrayList<MatchedGroup>();
+            private List<MatchedGroup> partiallyMatchedGroups = new ArrayList<MatchedGroup>();
+
+            private Builder(CommandSpec spec) { commandSpec = Assert.notNull(spec, "commandSpec"); }
+            /** Creates and returns a new {@code ParseResult} instance for this builder's configuration. */
+            public ParseResult build() {
+                Tracer tracer = new Tracer();
+                removeMandatoryElementsMatchedGroups(tracer);
+                partiallyMatchedGroups = new ArrayList<MatchedGroup>(currentlyMatchingGroups.values());
+                for (MatchedGroup matchedGroup : partiallyMatchedGroups) {
+                    tracer.info("Found partially matched group: %s%n", matchedGroup);
+                }
+                return new ParseResult(this);
+            }
+
+            private void nowProcessing(ArgSpec spec, Object value) {
+                if (nowProcessing != null && !isInitializingDefaultValues) {
+                    nowProcessing.add(spec.isPositional() ? spec : value);
+                }
+            }
+
+            /** Adds the specified {@code OptionSpec} or {@code PositionalParamSpec} to the list of options and parameters
+             * that were matched on the command line.
+             * @param arg the matched {@code OptionSpec} or {@code PositionalParamSpec}
+             * @param position the command line position at which the  {@code PositionalParamSpec} was matched. Ignored for {@code OptionSpec}s.
+             * @return this builder for method chaining */
+            public Builder add(ArgSpec arg, int position) {
+                if (arg.isOption()) {
+                    addOption((OptionSpec) arg);
+                } else {
+                    addPositionalParam((PositionalParamSpec) arg, position);
+                }
+                matchedGroupElementComplete(arg, position);
+                return this;
+            }
+
+            /** Adds the specified {@code OptionSpec} to the list of options that were matched on the command line. */
+            public Builder addOption(OptionSpec option) { if (!isInitializingDefaultValues) {options.add(option);} return this; }
+            /** Adds the specified {@code PositionalParamSpec} to the list of parameters that were matched on the command line.
+             * @param positionalParam the matched {@code PositionalParamSpec}
+             * @param position the command line position at which the  {@code PositionalParamSpec} was matched.
+             * @return this builder for method chaining */
+            public Builder addPositionalParam(PositionalParamSpec positionalParam, int position) {
+                if (isInitializingDefaultValues) { return this; }
+                positionals.add(positionalParam);
+                while (positionalParams.size() <= position) { positionalParams.add(new ArrayList<PositionalParamSpec>()); }
+                positionalParams.get(position).add(positionalParam);
+                return this;
+            }
+            /** Adds the specified command line argument to the list of unmatched command line arguments. */
+            public Builder addUnmatched(String arg) { unmatched.add(arg); return this; }
+            /** Adds all elements of the specified command line arguments stack to the list of unmatched command line arguments. */
+            public Builder addUnmatched(Stack<String> args) { while (!args.isEmpty()) { addUnmatched(args.pop()); } return this; }
+            /** Sets the specified {@code ParseResult} for a subcommand that was matched on the command line. */
+            public Builder subcommand(ParseResult subcommand) { this.subcommand = subcommand; return this; }
+            /** Sets the specified command line arguments that were parsed. */
+            public Builder originalArgs(String[] originalArgs) { originalArgList.addAll(Arrays.asList(originalArgs)); return this;}
+
+            void addStringValue        (ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.stringValues.add(value);} }
+            void addOriginalStringValue(ArgSpec argSpec, String value) {
+                if (!isInitializingDefaultValues) {
+                    argSpec.originalStringValues.add(value);
+                    if (argSpec.group() != null) {
+                        MatchedGroup matchedGroup = currentlyMatchingGroups.get(argSpec.group());
+                        matchedGroup.multiple().addOriginalStringValue(argSpec, value);
+                    }
+                }
+            }
+
+            void addTypedValues(ArgSpec argSpec, int position, Object typedValue) {
+                if (!isInitializingDefaultValues) {
+                    argSpec.typedValues.add(typedValue);
+                    if (argSpec.group() == null) {
+                        argSpec.typedValueAtPosition.put(position, typedValue);
+                    } else {
+                        MatchedGroup matchedGroup = currentlyMatchingGroups.get(argSpec.group());
+                        matchedGroup.multiple().addMatchedValue(argSpec, position, typedValue, commandSpec.commandLine.tracer);
+                    }
+                }
+            }
+
+            public void addError(PicocliException ex) {
+                errors.add(Assert.notNull(ex, "exception"));
+            }
+
+            void beforeMatchingGroupElement(ArgSpec argSpec) throws Exception {
+                ArgGroupSpec group = argSpec.group();
+                if (group == null || isInitializingDefaultValues) { return; }
+                MatchedGroup matchedGroup = currentlyMatchingGroups.get(group);
+                createNewMatchedGroupIfNecessary(matchedGroup, group, argSpec.required(), ArgSpec.describe(argSpec, "="));
+            }
+
+            private void createNewMatchedGroupIfNecessary(MatchedGroup matchedGroup, ArgGroupSpec group, boolean requiredElement, String elementDescription) throws Exception {
+                ArgGroupSpec parentGroup = group.parentGroup();
+                if (parentGroup != null) {
+                    MatchedGroup matchedParentGroup = currentlyMatchingGroups.get(parentGroup);
+                    createNewMatchedGroupIfNecessary(matchedParentGroup, parentGroup, group.multiplicity().min > 0, group.synopsis());
+                }
+                if (matchedGroup == null || (matchedGroup.multiple().matchedMandatoryElements() && requiredElement)) {
+                    Tracer tracer = commandSpec.commandLine.tracer;
+                    tracer.debug("Before matching: element %s is part of group %s: %s%n", elementDescription, group.synopsis(), group);
+                    if (matchedGroup == null) {
+                        matchedGroup = new MatchedGroup(group);
+                        currentlyMatchingGroups.put(group, matchedGroup);
+                    } else {
+                        if (matchedGroup.isMaxMultiplicityReached()) {
+                            tracer.info("Adding MatchedGroup %s to parse result: current multiple is complete and max multiplicity is reached. Current multiple's mandatory elements are all matched. (User object: %s.) %s is required in the group, so it starts a new MatchedGroup.%n", matchedGroup, matchedGroup.group.userObject(), elementDescription);
+                            matchedGroups.add(matchedGroup);
+                            removeFullyMatchedGroups(tracer); // parent group(s) may be fully matched now
+                        } else {
+                            tracer.info("MatchedGroupMultiple %s is complete: its mandatory elements are all matched. (User object: %s.) %s is required in the group, so it starts a new MatchedGroupMultiple.%n", matchedGroup.multiple(), matchedGroup.group.userObject(), elementDescription);
+                            matchedGroup.addMultiple();
+                        }
+                    }
+                    if (parentGroup != null) { currentlyMatchingGroups.get(parentGroup).multiple().matchedSubgroups.add(matchedGroup); }
+                    if (group.typeInfo() != null) {
+                        tracer.debug("Creating new user object of type %s for group %s%n", group.typeInfo().getAuxiliaryTypes()[0], group.synopsis());
+                        Object userObject = DefaultFactory.create(commandSpec.commandLine().factory, group.typeInfo().getAuxiliaryTypes()[0]);
+                        tracer.debug("Created %s, invoking setter %s with scope %s%n", userObject, group.setter(), group.scope());
+                        group.setUserObject(userObject, commandSpec.commandLine().factory);
+                        for (ArgSpec arg : group.args()) {
+                            tracer.debug("Setting scope for %s in group %s to user object %s and initializing initial and default values%n", ArgSpec.describe(arg, "="), group.synopsis(), userObject);
+                            arg.scope().set(userObject); // flip the actual user object for the arg (and all other args in this group; they share the same IScope instance)
+                            isInitializingDefaultValues = true;
+                            arg.applyInitialValue(tracer);
+                            commandSpec.commandLine.interpreter.applyDefault(commandSpec.defaultValueProvider(), arg);
+                            isInitializingDefaultValues = false;
+                        }
+                        for (ArgGroupSpec subgroup : group.subgroups()) {
+                            tracer.debug("Setting scope for subgroup %s %s in group %s to user object %s%n", subgroup.synopsis(), subgroup.setter(), group.synopsis(), userObject);
+                            subgroup.scope().set(userObject); // flip the actual user object for the arg (and all other args in this group; they share the same IScope instance)
+                        }
+                    } else {
+                        tracer.debug("No type information available for group %s: cannot create new user object. Scope for arg setters is not changed.%n", group.synopsis());
+                    }
+                    tracer.debug("Initialization complete for group %s%n", group.synopsis());
+                }
+            }
+
+            private void matchedGroupElementComplete(ArgSpec argSpec, int position) {
+                ArgGroupSpec group = argSpec.group();
+                if (group == null || isInitializingDefaultValues) { return; }
+                removeFullyMatchedGroups(commandSpec.commandLine.tracer);
+            }
+            private void removeFullyMatchedGroups(Tracer tracer) {
+                boolean repeat;
+                do {
+                    repeat = false;
+                    for (Iterator<Map.Entry<ArgGroupSpec, MatchedGroup>> iter = currentlyMatchingGroups.entrySet().iterator(); iter.hasNext(); ) {
+                        MatchedGroup matchedGroup = iter.next().getValue();
+                        if (matchedGroup.matchedAllElements()) {
+                            tracer.info("Adding fully matched group %s to parse result. User object: %s%n", matchedGroup, matchedGroup.group.userObject());
+                            matchedGroups.add(matchedGroup);
+                            iter.remove();
+                            repeat = true;
+                        }
+                    }
+                } while (repeat);
+            }
+            private void removeMandatoryElementsMatchedGroups(Tracer tracer) {
+                for (Iterator<Map.Entry<ArgGroupSpec, MatchedGroup>> iter = currentlyMatchingGroups.entrySet().iterator(); iter.hasNext(); ) {
+                    MatchedGroup matchedGroup = iter.next().getValue();
+                    if (matchedGroup.matchedMandatoryElements()) {
+                        tracer.info("Adding group %s to parse result: all mandatory elements were matched. User object: %s%n", matchedGroup, matchedGroup.group.userObject());
+                        matchedGroups.add(matchedGroup);
+                        iter.remove();
+                    }
+                }
+            }
+        }
+
+        /** Provides information about an {@link ArgGroup} that was matched on the command line.
+         * @since 4.0 */
+        public static class MatchedGroup {
+            final ArgGroupSpec group;
+            List<MatchedGroupMultiple> multiples = new ArrayList<MatchedGroupMultiple>();
+
+            MatchedGroup(ArgGroupSpec group)   { this.group = group; addMultiple();}
+            void addMultiple()                 { multiples.add(new MatchedGroupMultiple(this)); }
+            public ArgGroupSpec group()        { return group; }
+            MatchedGroupMultiple multiple()    { return multiples.get(multiples.size() - 1); }
+            boolean isMaxMultiplicityReached() { return multiples.size() >= group.multiplicity.max; }
+            boolean isMinMultiplicityReached() { return multiples.size() >= group.multiplicity.min; }
+            public List<MatchedGroupMultiple> multiples() { return Collections.unmodifiableList(multiples); }
+
+            boolean matchedMandatoryElements() { return matchedFully(false); }
+            boolean matchedAllElements()       { return matchedFully(true); }
+            private boolean matchedFully(boolean allRequired) {
+                for (MatchedGroupMultiple multiple : multiples) {
+                    boolean actuallyAllRequired = allRequired && multiple == multiple();
+                    if (!multiple.matchedFully(actuallyAllRequired)) { return false; }
+                }
+                return allRequired ? isMaxMultiplicityReached() : isMinMultiplicityReached();
+            }
+
+            @Override public String toString() {
+                String prefix = group().synopsis() + ": match=";
+                String result = "";
+                for (MatchedGroupMultiple occurrence : multiples) {
+                    result += prefix + occurrence.toString();
+                    prefix = " ";
+                }
+                return result;
+            }
+        }
+
+        /** A group's {@linkplain ArgGroup#multiplicity() multiplicity} specifies how many multiples of a group can/must
+         * appear on the command line before a group is fully matched. This class models a single "multiple".
+         * For example, this group: {@code (-a -b) (-a -b)} requires two multiples of its arguments to fully match.
+         * @since 4.0
+         */
+        static class MatchedGroupMultiple {
+            int position;
+            final MatchedGroup matchedGroup;
+            List<MatchedGroup> matchedSubgroups             = new ArrayList<MatchedGroup>();
+            Map<ArgSpec, List<Object>> matchedValues        = new IdentityHashMap<ArgSpec, List<Object>>();
+            Map<ArgSpec, List<String>> originalStringValues = new IdentityHashMap<ArgSpec, List<String>>();
+            Map<ArgSpec, Map<Integer, List<Object>>> matchedValuesAtPosition = new IdentityHashMap<ArgSpec, Map<Integer, List<Object>>>();
+
+            MatchedGroupMultiple(MatchedGroup matchedGroup) { this.matchedGroup = matchedGroup; }
+
+            public ArgGroupSpec group() { return matchedGroup.group; }
+            public List<MatchedGroup> matchedSubgroups() { return Collections.unmodifiableList(matchedSubgroups); }
+            int matchCount(ArgSpec argSpec)                    { return matchedValues.get(argSpec) == null ? 0 : matchedValues.get(argSpec).size(); }
+            public List<Object> matchedValues(ArgSpec argSpec) { return matchedValues.get(argSpec) == null ? Collections.emptyList() : Collections.unmodifiableList(matchedValues.get(argSpec)); }
+            void addOriginalStringValue(ArgSpec argSpec, String value) {
+                addValueToListInMap(originalStringValues, argSpec, value);
+            }
+            void addMatchedValue(ArgSpec argSpec, int matchPosition, Object stronglyTypedValue, Tracer tracer) {
+                addValueToListInMap(matchedValues, argSpec, stronglyTypedValue);
+
+                Map<Integer, List<Object>> positionalValues = matchedValuesAtPosition.get(argSpec);
+                if (positionalValues == null) {
+                    positionalValues = new TreeMap<Integer, List<Object>>();
+                    matchedValuesAtPosition.put(argSpec, positionalValues);
+                }
+                addValueToListInMap(positionalValues, matchPosition, stronglyTypedValue);
+            }
+            private <K, T> void addValueToListInMap(Map<K, List<T>> map, K key, T value) {
+                List<T> values = map.get(key);
+                if (values == null) { values = new ArrayList<T>(); map.put(key, values); }
+                values.add(value);
+            }
+            boolean hasMatchedValueAtPosition(ArgSpec arg, int position) { Map<Integer, List<Object>> atPos = matchedValuesAtPosition.get(arg); return atPos != null && atPos.containsKey(position); }
+            boolean matchedMandatoryElements() { return matchedFully(false); }
+            boolean matchedAllElements()       { return matchedFully(true); }
+
+            private boolean matchedFully(boolean allRequired) {
+                if (group().exclusive()) { return !matchedValues.isEmpty() || hasFullyMatchedSubgroup(allRequired); }
+                for (ArgSpec arg : group().args()) {
+                    if (matchedValues.get(arg) == null && (arg.required() || allRequired)) { return false; }
+                }
+                for (ArgGroupSpec subgroup : group().subgroups()) {
+                    int matchCount = 0;
+                    for (MatchedGroup matchedGroup : matchedSubgroups()) {
+                        if (matchedGroup.matchedFully(allRequired) && matchedGroup.group() == subgroup) { matchCount++; }
+                    }
+                    if (matchCount < subgroup.multiplicity().min || (allRequired || matchCount < subgroup.multiplicity().max)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            private boolean hasFullyMatchedSubgroup(boolean allRequired) {
+                for (MatchedGroup sub : matchedSubgroups) { if (sub.matchedFully(allRequired)) { return true; } }
+                return false;
+            }
+            @Override public String toString() {
+                String prefix = group().multiplicity().min == 0 ? "[" : "(";
+                String suffix = group().multiplicity().min == 0 ? "]" : ")";
+                String result = prefix;
+                for (ArgSpec arg : originalStringValues.keySet()) {
+                    List<String> values = originalStringValues.get(arg);
+                    for (String value : values) {
+                        if (result != prefix) { result += " "; }
+                        result += ArgSpec.describe(arg, "=", value);
+                    }
+                }
+                for (ParseResult.MatchedGroup sub : matchedSubgroups) {
+                    if (result != prefix) { result += " "; }
+                    result += sub.toString();
+                }
+                return result + suffix;
+            }
+        }
     }
     private enum LookBehind { SEPARATE, ATTACHED, ATTACHED_WITH_SEPARATOR;
         public boolean isAttached() { return this != LookBehind.SEPARATE; }
@@ -8054,7 +8485,7 @@ public class CommandLine {
         private boolean isHelpRequested;
         private int position;
         private boolean endOfOptions;
-        private ParseResult.Builder parseResult;
+        private ParseResult.Builder parseResultBuilder;
 
         Interpreter() { registerBuiltInConverters(); }
 
@@ -8203,7 +8634,7 @@ public class CommandLine {
             position = 0;
             endOfOptions = false;
             isHelpRequested = false;
-            parseResult = ParseResult.builder(getCommandSpec());
+            parseResultBuilder = ParseResult.builder(getCommandSpec());
             for (OptionSpec option : getCommandSpec().options())                           { clear(option); }
             for (PositionalParamSpec positional : getCommandSpec().positionalParameters()) { clear(positional); }
         }
@@ -8212,20 +8643,12 @@ public class CommandLine {
             argSpec.resetOriginalStringValues();
             argSpec.typedValues.clear();
             argSpec.typedValueAtPosition.clear();
-            if (argSpec.hasInitialValue()) {
-                try {
-                    argSpec.setter().set(argSpec.initialValue());
-                    tracer.debug("Set initial value for %s of type %s to %s.%n", argSpec, argSpec.type(), String.valueOf(argSpec.initialValue()));
-                } catch (Exception ex) {
-                    tracer.warn("Could not set initial value for %s of type %s to %s: %s%n", argSpec, argSpec.type(), String.valueOf(argSpec.initialValue()), ex);
-                }
-            } else {
-                tracer.debug("Initial value not available for %s%n", argSpec);
-            }
+            if (argSpec.group() == null) { argSpec.applyInitialValue(tracer); } // groups do their own initialization
         }
+
         private void maybeThrow(PicocliException ex) throws PicocliException {
             if (commandSpec.parser().collectErrors) {
-                parseResult.addError(ex);
+                parseResultBuilder.addError(ex);
             } else {
                 throw ex;
             }
@@ -8233,10 +8656,12 @@ public class CommandLine {
 
         private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs, List<Object> nowProcessing) {
             clear(); // first reset any state in case this CommandLine instance is being reused
-            if (tracer.isDebug()) {tracer.debug("Initializing %s: %d options, %d positional parameters, %d required, %d subcommands.%n",
-                    commandSpec.toString(), new HashSet<ArgSpec>(commandSpec.optionsMap().values()).size(),
-                    commandSpec.positionalParameters().size(), commandSpec.requiredArgs().size(), commandSpec
-                            .subcommands().size());}
+            if (tracer.isDebug()) {
+                tracer.debug("Initializing %s: %d options, %d positional parameters, %d required, %d groups, %d subcommands.%n",
+                        commandSpec.toString(), new HashSet<ArgSpec>(commandSpec.optionsMap().values()).size(),
+                        commandSpec.positionalParameters().size(), commandSpec.requiredArgs().size(),
+                        commandSpec.argGroups().size(), commandSpec.subcommands().size());
+            }
             parsedCommands.add(CommandLine.this);
             List<ArgSpec> required = new ArrayList<ArgSpec>(commandSpec.requiredArgs());
             Set<ArgSpec> initialized = new LinkedHashSet<ArgSpec>();
@@ -8255,7 +8680,7 @@ public class CommandLine {
                     maybeThrow(ParameterException.create(CommandLine.this, ex, arg, offendingArgIndex, originalArgs));
                 }
                 if (continueOnError && stackSize == argumentStack.size() && stackSize > 0) {
-                    parseResult.unmatched.add(argumentStack.pop());
+                    parseResultBuilder.unmatched.add(argumentStack.pop());
                 }
             } while (!argumentStack.isEmpty() && continueOnError);
 
@@ -8265,53 +8690,54 @@ public class CommandLine {
         private void validateConstraints(Stack<String> argumentStack, List<ArgSpec> required, Set<ArgSpec> matched) {
             if (!isAnyHelpRequested() && !required.isEmpty()) {
                 for (ArgSpec missing : required) {
-                    if (missing.groups().isEmpty()) { // otherwise let the group do the validation
-                        if (missing.isOption()) {
-                            maybeThrow(MissingParameterException.create(CommandLine.this, required, config().separator()));
-                        } else {
-                            assertNoMissingParameters(missing, missing.arity(), argumentStack);
-                        }
+                    Assert.assertTrue(missing.group() == null, "Arguments in a group are not necessarily required for the command");
+                    if (missing.isOption()) {
+                        maybeThrow(MissingParameterException.create(CommandLine.this, required, config().separator()));
+                    } else {
+                        assertNoMissingParameters(missing, missing.arity(), argumentStack);
                     }
                 }
             }
-            if (!parseResult.unmatched.isEmpty()) {
-                String[] unmatched = parseResult.unmatched.toArray(new String[0]);
+            if (!parseResultBuilder.unmatched.isEmpty()) {
+                String[] unmatched = parseResultBuilder.unmatched.toArray(new String[0]);
                 for (UnmatchedArgsBinding unmatchedArgsBinding : getCommandSpec().unmatchedArgsBindings()) {
                     unmatchedArgsBinding.addAll(unmatched.clone());
                 }
-                if (!isUnmatchedArgumentsAllowed()) { maybeThrow(new UnmatchedArgumentException(CommandLine.this, Collections.unmodifiableList(parseResult.unmatched))); }
-                if (tracer.isInfo()) { tracer.info("Unmatched arguments: %s%n", parseResult.unmatched); }
+                if (!isUnmatchedArgumentsAllowed()) { maybeThrow(new UnmatchedArgumentException(CommandLine.this, Collections.unmodifiableList(parseResultBuilder.unmatched))); }
+                if (tracer.isInfo()) { tracer.info("Unmatched arguments: %s%n", parseResultBuilder.unmatched); }
             }
-            // loop over groups in topological order
-            for (ArgGroupSpec group : commandSpec.argGroups().values()) {
+            for (ArgGroupSpec group : commandSpec.argGroups()) {
                 group.clearValidationResult();
             }
-            for (ArgGroupSpec group : commandSpec.argGroups().values()) {
-                group.validateConstraints(commandSpec.commandLine(), matched);
+            ParseResult pr = parseResultBuilder.build();
+            for (ArgGroupSpec group : commandSpec.argGroups()) {
+                group.validateConstraints(pr, matched);
             }
         }
 
         private void applyDefaultValues(List<ArgSpec> required) throws Exception {
-            parseResult.isInitializingDefaultValues = true;
-            for (OptionSpec option              : commandSpec.options())              { applyDefault(commandSpec.defaultValueProvider(), option,     required); }
-            for (PositionalParamSpec positional : commandSpec.positionalParameters()) { applyDefault(commandSpec.defaultValueProvider(), positional, required); }
-            parseResult.isInitializingDefaultValues = false;
+            parseResultBuilder.isInitializingDefaultValues = true;
+            for (ArgSpec arg : commandSpec.args()) {
+                if (arg.group() == null) {
+                    if (applyDefault(commandSpec.defaultValueProvider(), arg)) { required.remove(arg); }
+                }
+            }
+            parseResultBuilder.isInitializingDefaultValues = false;
         }
 
-        private void applyDefault(IDefaultValueProvider defaultValueProvider,
-            ArgSpec arg, List<ArgSpec> required) throws Exception {
+        private boolean applyDefault(IDefaultValueProvider defaultValueProvider, ArgSpec arg) throws Exception {
 
             // Default value provider return value is only used if provider exists and if value
             // is not null otherwise the original default or initial value are used
             String fromProvider = defaultValueProvider == null ? null : defaultValueProvider.defaultValue(arg);
             String defaultValue = fromProvider == null ? arg.defaultValue() : fromProvider;
 
-            if (defaultValue == null) { return; }
-            if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s) to %s%n", defaultValue, arg);}
-            Range arity = arg.arity().min(Math.max(1, arg.arity().min));
-
-            applyOption(arg, LookBehind.SEPARATE, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
-            required.remove(arg);
+            if (defaultValue != null) {
+                if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s) to %s%n", defaultValue, arg);}
+                Range arity = arg.arity().min(Math.max(1, arg.arity().min));
+                applyOption(arg, LookBehind.SEPARATE, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
+            }
+            return defaultValue != null;
         }
 
         private Stack<String> stack(String value) {Stack<String> result = new Stack<String>(); result.push(value); return result;}
@@ -8331,8 +8757,8 @@ public class CommandLine {
             // 4. a combination of stand-alone options, like "-vxr". Equivalent to "-v -x -r", "-v true -x true -r true"
             // 5. a combination of stand-alone options and one option with an argument, like "-vxrffile"
 
-            parseResult.originalArgs(originalArgs);
-            parseResult.nowProcessing = nowProcessing;
+            parseResultBuilder.originalArgs(originalArgs);
+            parseResultBuilder.nowProcessing = nowProcessing;
             String separator = config().separator();
             while (!args.isEmpty()) {
                 if (endOfOptions) {
@@ -8361,7 +8787,7 @@ public class CommandLine {
                     }
                     if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, subcommand.commandSpec.toString());}
                     subcommand.interpreter.parse(parsedCommands, args, originalArgs, nowProcessing);
-                    parseResult.subcommand(subcommand.interpreter.parseResult.build());
+                    parseResultBuilder.subcommand(subcommand.interpreter.parseResultBuilder.build());
                     return; // remainder done by the command
                 }
 
@@ -8402,7 +8828,7 @@ public class CommandLine {
                     args.push(arg);
                     if (tracer.isDebug()) {tracer.debug("Could not find option '%s', deciding whether to treat as unmatched option or positional parameter...%n", arg);}
                     if (commandSpec.resemblesOption(arg, tracer)) { handleUnmatchedArgument(args); continue; } // #149
-                    if (tracer.isDebug()) {tracer.debug("No option named '%s' found. Processing remainder as positional parameters%n", arg);}
+                    if (tracer.isDebug()) {tracer.debug("No option named '%s' found. Processing as positional parameter%n", arg);}
                     processPositionalParameter(required, initialized, args);
                 }
             }
@@ -8419,7 +8845,7 @@ public class CommandLine {
             }
         }
         private void handleUnmatchedArgument(String arg) {
-            parseResult.unmatched.add(arg);
+            parseResultBuilder.unmatched.add(arg);
         }
 
         private void processRemainderAsPositionalParameters(Collection<ArgSpec> required, Set<ArgSpec> initialized, Stack<String> args) throws Exception {
@@ -8428,40 +8854,63 @@ public class CommandLine {
             }
         }
         private void processPositionalParameter(Collection<ArgSpec> required, Set<ArgSpec> initialized, Stack<String> args) throws Exception {
-            if (tracer.isDebug()) {tracer.debug("Processing next arg as a positional parameter at index=%d. Remainder=%s%n", position, reverse(copy(args)));}
+            if (tracer.isDebug()) {tracer.debug("Processing next arg as a positional parameter. Command-local position=%d. Remainder=%s%n", position, reverse(copy(args)));}
             if (config().stopAtPositional()) {
                 if (!endOfOptions && tracer.isDebug()) {tracer.debug("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters.%n");}
                 endOfOptions = true;
             }
+            int consumedByGroup = 0;
             int argsConsumed = 0;
             int interactiveConsumed = 0;
-            int originalNowProcessingSize = parseResult.nowProcessing.size();
+            int originalNowProcessingSize = parseResultBuilder.nowProcessing.size();
+            Map<PositionalParamSpec, Integer> newPositions = new IdentityHashMap<PositionalParamSpec, Integer>();
             for (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
                 Range indexRange = positionalParam.index();
-                if (!indexRange.contains(position) || positionalParam.typedValueAtPosition.get(position) != null) {
-                    continue;
+                int localPosition = getPosition(positionalParam);
+                if (positionalParam.group() != null) { // does the positionalParam's index range contain the current position in the currently matching group
+                    ParseResult.MatchedGroup matchedGroup = parseResultBuilder.currentlyMatchingGroups.get(positionalParam.group());
+                    if (!indexRange.contains(localPosition) || (matchedGroup != null && matchedGroup.multiple().hasMatchedValueAtPosition(positionalParam, localPosition))) {
+                        continue;
+                    }
+                } else {
+                    if (!indexRange.contains(localPosition) || positionalParam.typedValueAtPosition.get(localPosition) != null) {
+                        continue;
+                    }
                 }
                 Stack<String> argsCopy = copy(args);
                 Range arity = positionalParam.arity();
-                if (tracer.isDebug()) {tracer.debug("Position %d is in index range %s. Trying to assign args to %s, arity=%s%n", position, indexRange, positionalParam, arity);}
+                if (tracer.isDebug()) {tracer.debug("Position %s is in index range %s. Trying to assign args to %s, arity=%s%n", positionDesc(positionalParam), indexRange, positionalParam, arity);}
                 if (!assertNoMissingParameters(positionalParam, arity, argsCopy)) { break; } // #389 collectErrors parsing
                 int originalSize = argsCopy.size();
-                int actuallyConsumed = applyOption(positionalParam, LookBehind.SEPARATE, arity, argsCopy, initialized, "args[" + indexRange + "] at position " + position);
+                int actuallyConsumed = applyOption(positionalParam, LookBehind.SEPARATE, arity, argsCopy, initialized, "args[" + indexRange + "] at position " + localPosition);
                 int count = originalSize - argsCopy.size();
                 if (count > 0 || actuallyConsumed > 0) {
                     required.remove(positionalParam);
                     if (positionalParam.interactive()) { interactiveConsumed++; }
                 }
-                argsConsumed = Math.max(argsConsumed, count);
-                while (parseResult.nowProcessing.size() > originalNowProcessingSize + count) {
-                    parseResult.nowProcessing.remove(parseResult.nowProcessing.size() - 1);
+                if (positionalParam.group() == null) { // don't update the command-level position for group args
+                    argsConsumed = Math.max(argsConsumed, count);
+                } else {
+                    newPositions.put(positionalParam, localPosition + count);
+                    consumedByGroup = Math.max(consumedByGroup, count);
+                }
+                while (parseResultBuilder.nowProcessing.size() > originalNowProcessingSize + count) {
+                    parseResultBuilder.nowProcessing.remove(parseResultBuilder.nowProcessing.size() - 1);
                 }
             }
             // remove processed args from the stack
-            for (int i = 0; i < argsConsumed; i++) { args.pop(); }
+            int maxConsumed = Math.max(consumedByGroup, argsConsumed);
+            for (int i = 0; i < maxConsumed; i++) { args.pop(); }
             position += argsConsumed + interactiveConsumed;
-            if (tracer.isDebug()) {tracer.debug("Consumed %d arguments and %d interactive values, moving position to index %d.%n", argsConsumed, interactiveConsumed, position);}
-            if (argsConsumed == 0 && interactiveConsumed == 0 && !args.isEmpty()) {
+            if (tracer.isDebug()) {tracer.debug("Consumed %d arguments and %d interactive values, moving command-local position to index %d.%n", argsConsumed, interactiveConsumed, position);}
+            for (PositionalParamSpec positional : newPositions.keySet()) {
+                ParseResult.MatchedGroup inProgress = parseResultBuilder.currentlyMatchingGroups.get(positional.group());
+                if (inProgress != null) {
+                    inProgress.multiple().position = newPositions.get(positional);
+                    if (tracer.isDebug()) {tracer.debug("Updated group position to %s for group %s.%n", inProgress.multiple().position, inProgress);}
+                }
+            }
+            if (consumedByGroup == 0 && argsConsumed == 0 && interactiveConsumed == 0 && !args.isEmpty()) {
                 handleUnmatchedArgument(args);
             }
         }
@@ -8479,7 +8928,7 @@ public class CommandLine {
             }
             LookBehind lookBehind = paramAttachedToKey ? LookBehind.ATTACHED_WITH_SEPARATOR : LookBehind.SEPARATE;
             if (tracer.isDebug()) {tracer.debug("Found option named '%s': %s, arity=%s%n", arg, argSpec, arity);}
-            parseResult.nowProcessing.add(argSpec);
+            parseResultBuilder.nowProcessing.add(argSpec);
             applyOption(argSpec, lookBehind, arity, args, initialized, "option " + arg);
         }
 
@@ -8517,10 +8966,10 @@ public class CommandLine {
                         args.push(cluster); // interpret remainder as option parameter (CAUTION: may be empty string!)
                     }
                     if (first) {
-                        parseResult.nowProcessing.add(argSpec);
+                        parseResultBuilder.nowProcessing.add(argSpec);
                         first = false;
                     } else {
-                        parseResult.nowProcessing.set(parseResult.nowProcessing.size() - 1, argSpec); // replace
+                        parseResultBuilder.nowProcessing.set(parseResultBuilder.nowProcessing.size() - 1, argSpec); // replace
                     }
                     int argCount = args.size();
                     int consumed = applyOption(argSpec, lookBehind, arity, args, initialized, argDescription);
@@ -8583,6 +9032,8 @@ public class CommandLine {
                 workingStack.push(new String(value));
             }
 
+            parseResultBuilder.beforeMatchingGroupElement(argSpec);
+
             int result;
             if (argSpec.type().isArray()) {
                 result = applyValuesToArrayField(argSpec, lookBehind, arity, workingStack, initialized, argDescription);
@@ -8624,7 +9075,7 @@ public class CommandLine {
                     // boolean option with arity = 0..1 or 0..*: value MAY be a param
                     if (arity.max > 0 && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
                         result = 1;            // if it is a varargs we only consume 1 argument if it is a boolean value
-                        if (!lookBehind.isAttached()) { parseResult.nowProcessing(argSpec, value); }
+                        if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, value); }
                     } else if (lookBehind != LookBehind.ATTACHED_WITH_SEPARATOR) { // if attached, try converting the value to boolean (and fail if invalid value)
                         // it's okay to ignore value if not attached to option
                         if (value != null) {
@@ -8644,11 +9095,11 @@ public class CommandLine {
                     } else if (value == null) {
                         value = "";
                     } else {
-                        if (!lookBehind.isAttached()) { parseResult.nowProcessing(argSpec, value); }
+                        if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, value); }
                     }
                 }
             } else {
-                if (!lookBehind.isAttached()) { parseResult.nowProcessing(argSpec, value); }
+                if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, value); }
             }
             if (noMoreValues && value == null) {
                 return 0;
@@ -8657,7 +9108,7 @@ public class CommandLine {
             Object newValue = tryConvert(argSpec, -1, converter, value, cls);
             Object oldValue = argSpec.getValue();
             String traceMessage = "Setting %s to '%3$s' (was '%2$s') for %4$s%n";
-            if (initialized.contains(argSpec)) {
+            if (argSpec.group() == null && initialized.contains(argSpec)) {
                 if (!isOverwrittenOptionsAllowed()) {
                     throw new OverwrittenOptionException(CommandLine.this, argSpec, optionDescription("", argSpec, 0) +  " should be specified only once");
                 }
@@ -8667,10 +9118,11 @@ public class CommandLine {
 
             if (tracer.isInfo()) { tracer.info(traceMessage, argSpec.toString(), String.valueOf(oldValue), String.valueOf(newValue), argDescription); }
             argSpec.setValue(newValue);
-            parseResult.addOriginalStringValue(argSpec, value);// #279 track empty string value if no command line argument was consumed
-            parseResult.addStringValue(argSpec, value);
-            parseResult.addTypedValues(argSpec, position, newValue);
-            parseResult.add(argSpec, position);
+            int pos = getPosition(argSpec);
+            parseResultBuilder.addOriginalStringValue(argSpec, value);// #279 track empty string value if no command line argument was consumed
+            parseResultBuilder.addStringValue(argSpec, value);
+            parseResultBuilder.addTypedValues(argSpec, pos, newValue);
+            parseResultBuilder.add(argSpec, pos);
             return result;
         }
         private int applyValuesToMapField(ArgSpec argSpec,
@@ -8691,8 +9143,9 @@ public class CommandLine {
             }
             initialized.add(argSpec);
             int originalSize = map.size();
+            int pos = getPosition(argSpec);
             consumeMapArguments(argSpec, lookBehind, arity, args, classes, keyConverter, valueConverter, map, argDescription);
-            parseResult.add(argSpec, position);
+            parseResultBuilder.add(argSpec, pos);
             argSpec.setValue(map);
             return map.size() - originalSize;
         }
@@ -8708,14 +9161,14 @@ public class CommandLine {
                                          String argDescription) throws Exception {
 
             // don't modify Interpreter.position: same position may be consumed by multiple ArgSpec objects
-            int currentPosition = position;
+            int currentPosition = getPosition(argSpec);
 
             // first do the arity.min mandatory parameters
             int initialSize = argSpec.stringValues().size();
             int consumed = consumedCountMap(0, initialSize, argSpec);
             for (int i = 0; consumed < arity.min && !args.isEmpty(); i++) {
                 Map<Object, Object> typedValuesAtPosition = new LinkedHashMap<Object, Object>();
-                parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
+                parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
                 assertNoMissingMandatoryParameter(argSpec, args, i, arity);
                 consumeOneMapArgument(argSpec, lookBehind, arity, consumed, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
                 result.putAll(typedValuesAtPosition);
@@ -8727,7 +9180,7 @@ public class CommandLine {
                 if (!varargCanConsumeNextValue(argSpec, args.peek())) { break; }
 
                 Map<Object, Object> typedValuesAtPosition = new LinkedHashMap<Object, Object>();
-                parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
+                parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
                 if (!canConsumeOneMapArgument(argSpec, arity, consumed, args.peek(), classes, keyConverter, valueConverter, argDescription)) {
                     break; // leave empty map at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again
                 }
@@ -8746,8 +9199,8 @@ public class CommandLine {
                                            ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter,
                                            Map<Object, Object> result,
                                            int index,
-                                           String argDescription) {
-            if (!lookBehind.isAttached()) { parseResult.nowProcessing(argSpec, arg); }
+                                           String argDescription) throws Exception {
+            if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, arg); }
             String raw = trim(arg);
             String[] values = argSpec.splitValue(raw, commandSpec.parser(), arity, consumed);
             for (String value : values) {
@@ -8757,10 +9210,10 @@ public class CommandLine {
                 result.put(mapKey, mapValue);
                 if (tracer.isInfo()) { tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s%n", String.valueOf(mapKey), String.valueOf(mapValue),
                         result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), argSpec.toString(), argDescription); }
-                parseResult.addStringValue(argSpec, keyValue[0]);
-                parseResult.addStringValue(argSpec, keyValue[1]);
+                parseResultBuilder.addStringValue(argSpec, keyValue[0]);
+                parseResultBuilder.addStringValue(argSpec, keyValue[1]);
             }
-            parseResult.addOriginalStringValue(argSpec, raw);
+            parseResultBuilder.addOriginalStringValue(argSpec, raw);
         }
 
         private boolean canConsumeOneMapArgument(ArgSpec argSpec, Range arity, int consumed,
@@ -8812,6 +9265,7 @@ public class CommandLine {
             Object existing = argSpec.getValue();
             int length = existing == null ? 0 : Array.getLength(existing);
             Class<?> type = argSpec.auxiliaryTypes()[0];
+            int pos = getPosition(argSpec);
             List<Object> converted = consumeArguments(argSpec, lookBehind, arity, args, type, argDescription);
             List<Object> newValues = new ArrayList<Object>();
             if (initialized.contains(argSpec)) { // existing values are default values if initialized does NOT contain argsSpec
@@ -8832,7 +9286,7 @@ public class CommandLine {
                 Array.set(array, i, newValues.get(i));
             }
             argSpec.setValue(array);
-            parseResult.add(argSpec, position);
+            parseResultBuilder.add(argSpec, pos);
             return converted.size(); // return how many args were consumed
         }
 
@@ -8845,6 +9299,7 @@ public class CommandLine {
                                                  String argDescription) throws Exception {
             Collection<Object> collection = (Collection<Object>) argSpec.getValue();
             Class<?> type = argSpec.auxiliaryTypes()[0];
+            int pos = getPosition(argSpec);
             List<Object> converted = consumeArguments(argSpec, lookBehind, arity, args, type, argDescription);
             if (collection == null || (!collection.isEmpty() && !initialized.contains(argSpec))) {
                 tracer.debug("Initializing binding for %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.type().getSimpleName());
@@ -8859,7 +9314,7 @@ public class CommandLine {
                     collection.add(element);
                 }
             }
-            parseResult.add(argSpec, position);
+            parseResultBuilder.add(argSpec, pos);
             argSpec.setValue(collection);
             return converted.size();
         }
@@ -8873,14 +9328,14 @@ public class CommandLine {
             List<Object> result = new ArrayList<Object>();
 
             // don't modify Interpreter.position: same position may be consumed by multiple ArgSpec objects
-            int currentPosition = position;
+            int currentPosition = getPosition(argSpec);
 
             // first do the arity.min mandatory parameters
             int initialSize = argSpec.stringValues().size();
             int consumed = consumedCount(0, initialSize, argSpec);
             for (int i = 0; consumed < arity.min && !args.isEmpty(); i++) {
                 List<Object> typedValuesAtPosition = new ArrayList<Object>();
-                parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
+                parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
                 assertNoMissingMandatoryParameter(argSpec, args, i, arity);
                 consumeOneArgument(argSpec, lookBehind, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
                 result.addAll(typedValuesAtPosition);
@@ -8892,7 +9347,7 @@ public class CommandLine {
                 if (!varargCanConsumeNextValue(argSpec, args.peek())) { break; }
 
                 List<Object> typedValuesAtPosition = new ArrayList<Object>();
-                parseResult.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
+                parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
                 if (!canConsumeOneArgument(argSpec, arity, consumed, args.peek(), type, argDescription)) {
                     break; // leave empty list at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again
                 }
@@ -8924,18 +9379,19 @@ public class CommandLine {
                                        List<Object> result,
                                        int index,
                                        String argDescription) {
-            if (!lookBehind.isAttached()) { parseResult.nowProcessing(argSpec, arg); }
+            if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, arg); }
             String raw = trim(arg);
             String[] values = argSpec.splitValue(raw, commandSpec.parser(), arity, consumed);
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
             for (int j = 0; j < values.length; j++) {
-                result.add(tryConvert(argSpec, index, converter, values[j], type));
+                Object stronglyTypedValue = tryConvert(argSpec, index, converter, values[j], type);
+                result.add(stronglyTypedValue);
                 if (tracer.isInfo()) {
                     tracer.info("Adding [%s] to %s for %s%n", String.valueOf(result.get(result.size() - 1)), argSpec.toString(), argDescription);
                 }
-                parseResult.addStringValue(argSpec, values[j]);
+                parseResultBuilder.addStringValue(argSpec, values[j]);
             }
-            parseResult.addOriginalStringValue(argSpec, raw);
+            parseResultBuilder.addOriginalStringValue(argSpec, raw);
             return ++index;
         }
         private boolean canConsumeOneArgument(ArgSpec argSpec, Range arity, int consumed, String arg, Class<?> type, String argDescription) {
@@ -9018,17 +9474,17 @@ public class CommandLine {
             return desc;
         }
 
-        private boolean isAnyHelpRequested() { return isHelpRequested || parseResult.versionHelpRequested || parseResult.usageHelpRequested; }
+        private boolean isAnyHelpRequested() { return isHelpRequested || parseResultBuilder.versionHelpRequested || parseResultBuilder.usageHelpRequested; }
 
         private void updateHelpRequested(CommandSpec command) {
             isHelpRequested |= command.helpCommand();
         }
         private void updateHelpRequested(ArgSpec argSpec) {
-            if (!parseResult.isInitializingDefaultValues && argSpec.isOption()) {
+            if (!parseResultBuilder.isInitializingDefaultValues && argSpec.isOption()) {
                 OptionSpec option = (OptionSpec) argSpec;
                 isHelpRequested                  |= is(argSpec, "help", option.help());
-                parseResult.versionHelpRequested |= is(argSpec, "versionHelp", option.versionHelp());
-                parseResult.usageHelpRequested   |= is(argSpec, "usageHelp", option.usageHelp());
+                parseResultBuilder.versionHelpRequested |= is(argSpec, "versionHelp", option.versionHelp());
+                parseResultBuilder.usageHelpRequested   |= is(argSpec, "usageHelp", option.usageHelp());
             }
         }
         private boolean is(ArgSpec p, String attribute, boolean value) {
@@ -9037,18 +9493,6 @@ public class CommandLine {
         }
         @SuppressWarnings("unchecked")
         private Collection<Object> createCollection(Class<?> collectionClass, Class<?> elementType) throws Exception {
-            if (collectionClass.isInterface()) {
-                if (List.class.isAssignableFrom(collectionClass)) {
-                    return new ArrayList<Object>();
-                } else if (SortedSet.class.isAssignableFrom(collectionClass)) {
-                    return new TreeSet<Object>();
-                } else if (Set.class.isAssignableFrom(collectionClass)) {
-                    return new LinkedHashSet<Object>();
-                } else if (Queue.class.isAssignableFrom(collectionClass)) {
-                    return new LinkedList<Object>(); // ArrayDeque is only available since 1.6
-                }
-                return new ArrayList<Object>();
-            }
             if (EnumSet.class.isAssignableFrom(collectionClass) && Enum.class.isAssignableFrom(elementType)) {
                 Object enumSet = EnumSet.noneOf((Class<Enum>) elementType);
                 return (Collection<Object>) enumSet;
@@ -9057,10 +9501,7 @@ public class CommandLine {
             return (Collection<Object>) factory.create(collectionClass);
         }
         @SuppressWarnings("unchecked") private Map<Object, Object> createMap(Class<?> mapClass) throws Exception {
-            try { // if it is an implementation class, instantiate it
-                return (Map<Object, Object>) mapClass.getDeclaredConstructor().newInstance();
-            } catch (Exception ignored) {}
-            return new LinkedHashMap<Object, Object>();
+            return (Map<Object, Object>) factory.create(mapClass);
         }
         private ITypeConverter<?> getTypeConverter(final Class<?> type, ArgSpec argSpec, int index) {
             if (argSpec.converters().length > index) { return argSpec.converters()[index]; }
@@ -9160,6 +9601,15 @@ public class CommandLine {
                     throw new IllegalStateException(ex2);
                 }
             }
+        }
+        int getPosition(ArgSpec arg) {
+            if (arg.group() == null) { return position; }
+            ParseResult.MatchedGroup matchedGroup = parseResultBuilder.currentlyMatchingGroups.get(arg.group());
+            return matchedGroup == null ? 0 : matchedGroup.multiple().position;
+        }
+        String positionDesc(ArgSpec arg) {
+            int pos = getPosition(arg);
+            return (arg.group() == null) ? pos + " (command-local)" : pos + " (in group " + arg.group().synopsis() + ")";
         }
     }
     private static class PositionalParametersSorter implements Comparator<ArgSpec> {
@@ -9770,17 +10220,17 @@ public class CommandLine {
          * @since 4.0 */
         protected Text createDetailedSynopsisGroupsText(Set<ArgSpec> outparam_groupArgs) {
             Set<ArgGroupSpec> remove = new HashSet<ArgGroupSpec>();
-            List<ArgGroupSpec> groups = new ArrayList<ArgGroupSpec>(commandSpec().argGroups().values());
+            List<ArgGroupSpec> groups = new ArrayList<ArgGroupSpec>(commandSpec().argGroups());
             for (ArgGroupSpec group : groups) {
                 if (group.validate()) {
                     // remove subgroups
-                    remove.addAll(group.subgroups().values());
+                    remove.addAll(group.subgroups());
 
                     // exclude options and positional parameters in this group
                     outparam_groupArgs.addAll(group.args());
 
                     // exclude options and positional parameters in the subgroups
-                    for (ArgGroupSpec subgroup : group.subgroups().values()) {
+                    for (ArgGroupSpec subgroup : group.subgroups()) {
                         outparam_groupArgs.addAll(subgroup.args());
                     }
                 } else {
@@ -9996,10 +10446,14 @@ public class CommandLine {
         /** Returns the list of {@code ArgGroupSpec}s with a non-{@code null} heading. */
         private List<ArgGroupSpec> optionListGroups() {
             List<ArgGroupSpec> result = new ArrayList<ArgGroupSpec>();
-            for (ArgGroupSpec group : commandSpec.argGroups().values()) {
+            optionListGroups(commandSpec.argGroups(), result);
+            return result;
+        }
+        private static void optionListGroups(List<ArgGroupSpec> groups, List<ArgGroupSpec> result) {
+            for (ArgGroupSpec group : groups) {
+                optionListGroups(group.subgroups(), result);
                 if (group.heading() != null) { result.add(group); }
             }
-            return result;
         }
 
         /**

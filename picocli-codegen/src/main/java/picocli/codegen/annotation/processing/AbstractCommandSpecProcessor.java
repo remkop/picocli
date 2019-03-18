@@ -1,6 +1,7 @@
 package picocli.codegen.annotation.processing;
 
 import picocli.CommandLine;
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IFactory;
 import picocli.CommandLine.Mixin;
@@ -942,6 +943,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             return false
                     || e.getAnnotation(Option.class) == null
                     || e.getAnnotation(Parameters.class) == null
+                    || e.getAnnotation(ArgGroup.class) == null
                     || e.getAnnotation(Unmatched.class) == null
                     || e.getAnnotation(Mixin.class) == null
                     || e.getAnnotation(Spec.class) == null
@@ -995,6 +997,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         public boolean isArgSpec()      { return isOption() || isParameter() || isMethodParameter(); }
         public boolean isOption()       { return isAnnotationPresent(Option.class); }
         public boolean isParameter()    { return isAnnotationPresent(Parameters.class); }
+        public boolean isArgGroup()     { return isAnnotationPresent(ArgGroup.class); }
         public boolean isMixin()        { return isAnnotationPresent(Mixin.class); }
         public boolean isUnmatched()    { return isAnnotationPresent(Unmatched.class); }
         public boolean isInjectSpec()   { return isAnnotationPresent(Spec.class); }
@@ -1011,6 +1014,12 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         public boolean hasInitialValue()    { return hasInitialValue; }
         public boolean isMethodParameter()  { return position >= 0; }
         public int getMethodParamPosition() { return position; }
+
+        @Override
+        public CommandLine.Model.IScope scope() {
+            return null; // FIXME
+        }
+
         public String getMixinName() {
             String annotationName = getAnnotation(Mixin.class).name();
             return empty(annotationName) ? getName() : annotationName;

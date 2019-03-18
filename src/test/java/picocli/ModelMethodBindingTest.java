@@ -3,6 +3,7 @@ package picocli;
 import org.junit.Test;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.MethodBinding;
+import picocli.CommandLine.Model.ObjectScope;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.PicocliException;
 
@@ -16,7 +17,7 @@ public class ModelMethodBindingTest {
     @Test
     public void testGetDoesNotInvokeMethod() throws Exception {
         Method getX = ModelMethodBindingBean.class.getDeclaredMethod("getX");
-        MethodBinding binding = new MethodBinding(new ModelMethodBindingBean(), getX, CommandSpec.create());
+        MethodBinding binding = new MethodBinding(new ObjectScope(new ModelMethodBindingBean()), getX, CommandSpec.create());
         binding.get(); // no IllegalAccessException
     }
 
@@ -26,7 +27,7 @@ public class ModelMethodBindingTest {
         getX.setAccessible(true);
 
         ModelMethodBindingBean bean = new ModelMethodBindingBean();
-        MethodBinding binding = new MethodBinding(bean, getX, CommandSpec.create());
+        MethodBinding binding = new MethodBinding(new ObjectScope(bean), getX, CommandSpec.create());
         assertNull(binding.get());
         assertEquals("actual value returned by getX() method", 7, bean.publicGetX());
     }
@@ -38,7 +39,7 @@ public class ModelMethodBindingTest {
 
         ModelMethodBindingBean bean = new ModelMethodBindingBean();
         CommandSpec spec = CommandSpec.create();
-        MethodBinding binding = new MethodBinding(bean, getX, spec);
+        MethodBinding binding = new MethodBinding(new ObjectScope(bean), getX, spec);
 
         try {
             binding.set(41);
@@ -57,7 +58,7 @@ public class ModelMethodBindingTest {
         setX.setAccessible(true);
 
         ModelMethodBindingBean bean = new ModelMethodBindingBean();
-        MethodBinding binding = new MethodBinding(bean, setX, CommandSpec.create());
+        MethodBinding binding = new MethodBinding(new ObjectScope(bean), setX, CommandSpec.create());
         assertNull("initial", binding.get());
         assertEquals(7, bean.publicGetX());
 
@@ -69,7 +70,7 @@ public class ModelMethodBindingTest {
     @Test
     public void testMethodMustBeAccessible() throws Exception {
         Method setX = ModelMethodBindingBean.class.getDeclaredMethod("setX", int.class);
-        MethodBinding binding = new MethodBinding(new ModelMethodBindingBean(), setX, CommandSpec.create());
+        MethodBinding binding = new MethodBinding(new ObjectScope(new ModelMethodBindingBean()), setX, CommandSpec.create());
         try {
             binding.set(1);
             fail("Expected exception");
@@ -84,7 +85,7 @@ public class ModelMethodBindingTest {
         setX.setAccessible(true);
 
         ModelMethodBindingBean value = new ModelMethodBindingBean();
-        MethodBinding binding = new MethodBinding(value, setX, CommandSpec.create());
+        MethodBinding binding = new MethodBinding(new ObjectScope(value), setX, CommandSpec.create());
 
         binding.set(987);
         assertEquals(987, value.publicGetX());
@@ -97,7 +98,7 @@ public class ModelMethodBindingTest {
         setX.setAccessible(true);
 
         CommandSpec spec = CommandSpec.create();
-        MethodBinding binding = new MethodBinding(null, setX, spec);
+        MethodBinding binding = new MethodBinding(new ObjectScope(null), setX, spec);
 
         try {
             binding.set(41);
@@ -117,7 +118,7 @@ public class ModelMethodBindingTest {
         CommandSpec spec = CommandSpec.create();
         CommandLine cmd = new CommandLine(spec);
         spec.commandLine(cmd);
-        MethodBinding binding = new MethodBinding(null, setX, spec);
+        MethodBinding binding = new MethodBinding(new ObjectScope(null), setX, spec);
 
         try {
             binding.set(41);
@@ -135,7 +136,7 @@ public class ModelMethodBindingTest {
 
         CommandSpec spec = CommandSpec.create();
         assertNull(spec.commandLine());
-        MethodBinding binding = new MethodBinding(null, setX, spec);
+        MethodBinding binding = new MethodBinding(new ObjectScope(null), setX, spec);
 
         try {
             binding.set(41);
@@ -155,8 +156,8 @@ public class ModelMethodBindingTest {
         setX.setAccessible(true);
 
         ModelMethodBindingBean value = new ModelMethodBindingBean();
-        MethodBinding binding = new MethodBinding(value, setX, CommandSpec.create());
+        MethodBinding binding = new MethodBinding(new ObjectScope(value), setX, CommandSpec.create());
 
-        assertEquals("picocli.CommandLine.Model.MethodBinding(private void picocli.ModelMethodBindingBean.setX(int))", binding.toString());
+        assertEquals("MethodBinding(private void picocli.ModelMethodBindingBean.setX(int))", binding.toString());
     }
 }

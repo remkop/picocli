@@ -290,7 +290,7 @@ public class ModelArgSpecTest {
     @Test
     public void testArgSpecBuilderObjectBindingToString() {
         Builder builder = OptionSpec.builder("-x");
-        assertEquals("picocli.CommandLine.Model.ObjectBinding(value=null)", builder.getter().toString());
+        assertEquals("ObjectBinding(value=null)", builder.getter().toString());
     }
 
     @Test

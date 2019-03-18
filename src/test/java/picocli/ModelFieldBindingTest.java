@@ -53,6 +53,6 @@ public class ModelFieldBindingTest {
         ModelMethodBindingBean value = new ModelMethodBindingBean();
         FieldBinding binding = new FieldBinding(value, f);
 
-        assertEquals("picocli.CommandLine.Model.FieldBinding(int picocli.ModelMethodBindingBean.x)", binding.toString());
+        assertEquals("FieldBinding(int picocli.ModelMethodBindingBean.x)", binding.toString());
     }
 }

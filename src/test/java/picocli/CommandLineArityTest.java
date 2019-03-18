@@ -1593,4 +1593,17 @@ public class CommandLineArityTest {
             assertEquals("positional parameter at index 0..* (<String=String>) requires at least 2 values, but only 1 were specified: [a=c]", ex.getMessage());
         }
     }
+
+    @Test
+    public void testOverlap() {
+        Range r1 = Range.valueOf("1..5");
+        assertTrue(r1.overlaps(Range.valueOf("1..1")));
+        assertTrue(r1.overlaps(Range.valueOf("2..2")));
+        assertTrue(r1.overlaps(Range.valueOf("2..5")));
+        assertTrue(r1.overlaps(Range.valueOf("5")));
+        assertTrue(r1.overlaps(Range.valueOf("0..6")));
+        assertTrue(r1.overlaps(Range.valueOf("0..*")));
+        assertFalse(r1.overlaps(Range.valueOf("6")));
+        assertFalse(r1.overlaps(Range.valueOf("0")));
+    }
 }

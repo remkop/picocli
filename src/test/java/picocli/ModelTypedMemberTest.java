@@ -40,7 +40,7 @@ public class ModelTypedMemberTest {
         Method method = App.class.getDeclaredMethod("mymethod", char.class);
         CommandLine.Model.MethodParam param = new CommandLine.Model.MethodParam(method, 0);
 
-        CommandLine.Model.TypedMember typedMember = new CommandLine.Model.TypedMember(param, new App());
+        CommandLine.Model.TypedMember typedMember = new CommandLine.Model.TypedMember(param, new CommandLine.Model.ObjectScope(new App()));
         assertEquals(0, typedMember.getMethodParamPosition());
     }
 }

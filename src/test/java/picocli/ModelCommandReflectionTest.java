@@ -68,34 +68,6 @@ public class ModelCommandReflectionTest {
         }
     }
 
-    static class TypedMemberObj {
-        int x;
-    }
-    @Test
-    public void testValidateMixin() throws Exception {
-        Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
-        Method validateMixin = reflection.getDeclaredMethod("validateMixin", CommandLine.Model.TypedMember.class);
-        validateMixin.setAccessible(true);
-
-        CommandLine.Model.TypedMember typedMember = new CommandLine.Model.TypedMember(TypedMemberObj.class.getDeclaredField("x"));
-        try {
-            validateMixin.invoke(null, typedMember);
-            fail("expected Exception");
-        } catch (InvocationTargetException ite) {
-            IllegalStateException ex = (IllegalStateException) ite.getCause();
-            assertEquals("Bug: validateMixin() should only be called with mixins", ex.getMessage());
-        }
-    }
-    @Test
-    public void testValidateUnmatched() throws Exception {
-        Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
-        Method validateUnmatched = reflection.getDeclaredMethod("validateUnmatched", CommandLine.Model.IAnnotatedElement.class);
-        validateUnmatched.setAccessible(true);
-
-        CommandLine.Model.TypedMember typedMember = new CommandLine.Model.TypedMember(TypedMemberObj.class.getDeclaredField("x"));
-        validateUnmatched.invoke(null, typedMember); // no error
-    }
-
     static class ValidateArgSpecField {
         @Mixin
         @Option(names = "-x")
@@ -110,7 +82,7 @@ public class ModelCommandReflectionTest {
     @Test
     public void testValidateArgSpecField() throws Exception {
         Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
-        Method validateArgSpecField = reflection.getDeclaredMethod("validateArgSpecField", CommandLine.Model.TypedMember.class);
+        Method validateArgSpecField = reflection.getDeclaredMethod("validateArgSpecMember", CommandLine.Model.TypedMember.class);
         validateArgSpecField.setAccessible(true);
 
         CommandLine.Model.TypedMember typedMember = new CommandLine.Model.TypedMember(ValidateArgSpecField.class.getDeclaredField("x"));
@@ -119,14 +91,14 @@ public class ModelCommandReflectionTest {
             fail("expected Exception");
         } catch (InvocationTargetException ite) {
             CommandLine.DuplicateOptionAnnotationsException ex = (CommandLine.DuplicateOptionAnnotationsException) ite.getCause();
-            assertEquals("A member cannot be both a @Mixin command and an @Option or @Parameters, but 'int picocli.ModelCommandReflectionTest$ValidateArgSpecField.x' is both.", ex.getMessage());
+            assertEquals("A member cannot have both @Option and @Mixin annotations, but 'int picocli.ModelCommandReflectionTest$ValidateArgSpecField.x' has both.", ex.getMessage());
         }
     }
 
     @Test
     public void testValidateArgSpecField_final() throws Exception {
         Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
-        Method validateArgSpecField = reflection.getDeclaredMethod("validateArgSpecField", CommandLine.Model.TypedMember.class);
+        Method validateArgSpecField = reflection.getDeclaredMethod("validateArgSpecMember", CommandLine.Model.TypedMember.class);
         validateArgSpecField.setAccessible(true);
 
         CommandLine.Model.TypedMember typedMember = new CommandLine.Model.TypedMember(ValidateArgSpecField.class.getDeclaredField("f"));
@@ -137,7 +109,7 @@ public class ModelCommandReflectionTest {
     @Test
     public void testValidateArgSpecField_neither() throws Exception {
         Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
-        Method validateArgSpecField = reflection.getDeclaredMethod("validateArgSpecField", CommandLine.Model.TypedMember.class);
+        Method validateArgSpecField = reflection.getDeclaredMethod("validateArgSpecMember", CommandLine.Model.TypedMember.class);
         validateArgSpecField.setAccessible(true);
 
         CommandLine.Model.TypedMember typedMember = new CommandLine.Model.TypedMember(ValidateArgSpecField.class.getDeclaredField("neither"));
@@ -147,23 +119,23 @@ public class ModelCommandReflectionTest {
     static class ValidateInjectSpec {
         int notAnnotated;
 
-        @CommandLine.Spec
+        @Spec
         @Option(names = "-x")
         int x;
 
-        @CommandLine.Spec
+        @Spec
         @CommandLine.Parameters
         int y;
 
-        @CommandLine.Spec
+        @Spec
         @Unmatched
         List<String> unmatched;
 
-        @CommandLine.Spec
+        @Spec
         @Mixin
         Object mixin = new Object();
 
-        @CommandLine.Spec
+        @Spec
         Object invalidType;
     }
     @Test
@@ -194,7 +166,7 @@ public class ModelCommandReflectionTest {
             fail("expected Exception");
         } catch (InvocationTargetException ite) {
             CommandLine.DuplicateOptionAnnotationsException ex = (CommandLine.DuplicateOptionAnnotationsException) ite.getCause();
-            assertEquals("A member cannot have both @Spec and @Option or @Parameters annotations, but 'int picocli.ModelCommandReflectionTest$ValidateInjectSpec.x' has both.", ex.getMessage());
+            assertEquals("A member cannot have both @Spec and @Option annotations, but 'int picocli.ModelCommandReflectionTest$ValidateInjectSpec.x' has both.", ex.getMessage());
         }
     }
 
@@ -210,7 +182,7 @@ public class ModelCommandReflectionTest {
             fail("expected Exception");
         } catch (InvocationTargetException ite) {
             CommandLine.DuplicateOptionAnnotationsException ex = (CommandLine.DuplicateOptionAnnotationsException) ite.getCause();
-            assertEquals("A member cannot have both @Spec and @Option or @Parameters annotations, but 'int picocli.ModelCommandReflectionTest$ValidateInjectSpec.y' has both.", ex.getMessage());
+            assertEquals("A member cannot have both @Spec and @Parameters annotations, but 'int picocli.ModelCommandReflectionTest$ValidateInjectSpec.y' has both.", ex.getMessage());
         }
     }
 
@@ -264,7 +236,7 @@ public class ModelCommandReflectionTest {
     @Test
     public void testValidateArgSpec() throws Exception {
         Class<?> reflection = Class.forName("picocli.CommandLine$Model$CommandReflection");
-        Method validateArgSpec = reflection.getDeclaredMethod("validateArgSpecField", CommandLine.Model.TypedMember.class);
+        Method validateArgSpec = reflection.getDeclaredMethod("validateArgSpecMember", CommandLine.Model.TypedMember.class);
         validateArgSpec.setAccessible(true);
 
         CommandLine.Model.TypedMember typedMember = new CommandLine.Model.TypedMember(ValidateInjectSpec.class.getDeclaredField("notAnnotated"));
@@ -273,7 +245,7 @@ public class ModelCommandReflectionTest {
             fail("expected Exception");
         } catch (InvocationTargetException ite) {
             IllegalStateException ex = (IllegalStateException) ite.getCause();
-            assertEquals("Bug: validateArgSpecField() should only be called with an @Option or @Parameters member", ex.getMessage());
+            assertEquals("Bug: validateArgSpecMember() should only be called with an @Option or @Parameters member", ex.getMessage());
         }
     }
 

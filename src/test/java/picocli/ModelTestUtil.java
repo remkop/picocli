@@ -33,7 +33,7 @@ public class ModelTestUtil {
         return option(obj, fieldName, CommandLine.defaultFactory());
     }
     public static OptionSpec option(Object obj, String fieldName, CommandLine.IFactory factory) throws Exception {
-        return OptionSpec.builder(TypedMember.createIfAnnotated(obj.getClass().getDeclaredField(fieldName), obj), factory).build();
+        return OptionSpec.builder(TypedMember.createIfAnnotated(obj.getClass().getDeclaredField(fieldName), new ObjectScope(obj)), factory).build();
     }
     public static OptionSpec[] options(Object obj, String... fieldNames) throws Exception {
         OptionSpec[] result = new OptionSpec[fieldNames.length];

@@ -9,11 +9,12 @@ buildscript {
 
     dependencies {
         classpath "org.asciidoctor:asciidoctor-gradle-plugin:$asciidoctorGradlePluginVersion"
+        classpath 'org.asciidoctor:asciidoctorj-pdf:1.5.0-alpha.15'
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:$gradleBintrayPluginVersion"
     }
 }
 
-apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'org.asciidoctor.convert' // version '1.5.8.1'
 apply plugin: 'distribution'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
@@ -158,10 +159,18 @@ jar {
 
 javadoc.options.overview = "src/main/java/overview.html"
 javadoc.dependsOn('asciidoctor')
+asciidoctorj {
+    version = '1.5.5'
+}
 asciidoctor {
     sourceDir = file('docs')
     outputDir = file('build/docs')
     logDocuments = true
+//    backends 'pdf', 'html'
+//    attributes 'sourcedir': file('docs') //project.sourceSets.main.java.srcDirs[0]
+////    attributes 'pdf-stylesdir': 'theme',
+////               'pdf-style': 'custom',
+////               'sourcedir': file('docs') //project.sourceSets.main.java.srcDirs[0]
 }
 // jacoco 0.8.2 does not work with Java 13; gradle 4.x has no JavaVersion enum value for Java 12
 if (org.gradle.api.JavaVersion.current().isJava11Compatible()) {
