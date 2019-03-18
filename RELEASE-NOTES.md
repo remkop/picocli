@@ -1,5 +1,105 @@
 # picocli Release Notes
 
+# <a name="4.0.0-alpha-1"></a> Picocli 4.0.0-alpha-1
+The picocli community is pleased to announce picocli 4.0.0-alpha-1.
+
+This release adds support for argument groups (incubating). Argument groups enable the following:
+
+* mutually exclusive options
+* options that must co-occur (dependent options)
+* option grouping in the usage help message
+* repeating composite arguments
+
+
+This is the fifty-first public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.0.0-alpha-1"></a> Table of Contents
+* [New and noteworthy](#4.0.0-alpha-1-new)
+* [Fixed issues](#4.0.0-alpha-1-fixes)
+* [Deprecations](#4.0.0-alpha-1-deprecated)
+* [Potential breaking changes](#4.0.0-alpha-1-breaking-changes)
+
+## <a name="4.0.0-alpha-1-new"></a> New and Noteworthy
+### <a name="4.0.0-alpha-1-new-arggroups"></a> Argument Groups
+
+This release introduces a new `@ArgGroup` annotation and its `ArgGroupSpec` programmatic equivalent.
+
+Argument Groups can be used to define:
+
+* mutually exclusive options
+* options that must co-occur (dependent options)
+* option grouping in the usage help message
+* repeating composite arguments
+
+#### Mutually Exclusive Options
+
+```java
+public class MutuallyExclusiveOptions {
+
+    @ArgGroup(exclusive = true, multiplicity = "1")
+    Exclusive exclusive;
+
+    static class Exclusive {
+        @Option(names = "-a") int a;
+        @Option(names = "-b") int b;
+        @Option(names = "-c") int c;
+    }
+
+    public static void main(String[] args) {
+        MutuallyExclusiveOptions example = new MutuallyExclusiveOptions();
+        CommandLine cmd = new CommandLine(example);
+
+        try {
+            cmd.parseArgs("-a=1", "-b=2");
+        } catch (MutuallyExclusiveArgsException ex) {
+            assert "Error: -a=<a>, -b=<b> are mutually dependent (specify only one)".equals(ex.getMessage());
+        }
+    }
+}
+```
+
+#### Co-occurring (dependent) Options
+
+```java
+public class DependentOptions {
+
+    @ArgGroup(exclusive = false, multiplicity = "1")
+    Dependent dependent;
+
+    static class Dependent {
+        @Option(names = "-a") int a;
+        @Option(names = "-b") int b;
+        @Option(names = "-c") int c;
+    }
+
+    public static void main(String[] args) {
+        DependentOptions example = new DependentOptions();
+        CommandLine cmd = new CommandLine(example);
+
+        try {
+            cmd.parseArgs("-a=1", "-b=2");
+        } catch (MissingParameterException ex) {
+            assert "Error: Missing required argument(s): -c=<c>".equals(ex.getMessage());
+        }
+    }
+}
+```
+
+## <a name="4.0.0-alpha-1-fixes"></a> Fixed issues
+- [#643] Change `%` to `%%` when using `${DEFAULT-VALUE}` in option description. Thanks to [Steffen Rehberg](https://github.com/StefRe) for the pull request. 
+- [#638] Document fallback descriptionKey for options and parameters in user manual. Thanks to [Mikusch](https://github.com/Mikusch) for the suggestion.
+- [#199] mutually exclusive options
+- [#295] options that must co-occur (dependent options)
+- [#450] option grouping in the usage help message
+- [#358] (also [#635])repeating composite arguments (this should also cover the use cases presented in #454 and #434 requests for repeatable subcommands)
+
+## <a name="4.0.0-alpha-1-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.0.0-alpha-1-breaking-changes"></a> Potential breaking changes
+
+
 # <a name="3.9.5"></a> Picocli 3.9.5
 The picocli community is pleased to announce picocli 3.9.5.
 
