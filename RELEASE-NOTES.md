@@ -29,10 +29,20 @@ Argument Groups can be used to define:
 
 * mutually exclusive options
 * options that must co-occur (dependent options)
-* option grouping in the usage help message
+* option sections in the usage help message
 * repeating composite arguments
 
 #### Mutually Exclusive Options
+
+The example below defines a command with mutually exclusive options `-a`, `-b` and `-c`.
+
+Note that the options are defined as `required = true`; this means required _within the group_, not required within the command.
+
+The group itself has a `multiplicity` attribute that defines how many times the group may be specified within the command.
+The default is `multiplicity = "0..1"`, meaning that by default a group may be omitted or specified once.
+In this example the group has `multiplicity = "1"`, so one of the options must occur on the command line.
+
+The synopsis of this command is rendered as `<main class> (-a=<a> | -b=<b> | -c=<c>)`.
 
 ```java
 public class MutuallyExclusiveOptions {
@@ -41,9 +51,9 @@ public class MutuallyExclusiveOptions {
     Exclusive exclusive;
 
     static class Exclusive {
-        @Option(names = "-a") int a;
-        @Option(names = "-b") int b;
-        @Option(names = "-c") int c;
+        @Option(names = "-a", required = true) int a;
+        @Option(names = "-b", required = true) int b;
+        @Option(names = "-c", required = true) int c;
     }
 
     public static void main(String[] args) {
@@ -53,24 +63,45 @@ public class MutuallyExclusiveOptions {
         try {
             cmd.parseArgs("-a=1", "-b=2");
         } catch (MutuallyExclusiveArgsException ex) {
-            assert "Error: -a=<a>, -b=<b> are mutually dependent (specify only one)".equals(ex.getMessage());
+            assert "Error: -a=<a>, -b=<b> are mutually dependent (specify only one)"
+                    .equals(ex.getMessage());
         }
     }
 }
 ```
 
-#### Co-occurring (dependent) Options
+For the above group, the following input is valid:
+
+```
+# with any of the options in the group:
+<main class> -a=1
+<main class> -b=1
+<main class> -c=1
+```
+
+Any other combination of options, or the absence of options, is invalid.
+
+#### Co-occurring (Dependent) Options
+
+The example below sets `exclusive = false`, and defines a command with dependent options `-a`, `-b` and `-c` that must co-occur.
+
+Note that the options are defined as `required = true`; this means required _within the group_, not required within the command.
+
+The group itself has a `multiplicity` attribute that defines how many times the group may be specified within the command.
+In this example the group has the default multiplicity, `multiplicity = "0..1"`, meaning that the group may be omitted or specified once.
+
+The synopsis of this command is rendered as `<main class> [-a=<a> -b=<b> -c=<c>]`.
 
 ```java
 public class DependentOptions {
 
-    @ArgGroup(exclusive = false, multiplicity = "1")
+    @ArgGroup(exclusive = false)
     Dependent dependent;
 
     static class Dependent {
-        @Option(names = "-a") int a;
-        @Option(names = "-b") int b;
-        @Option(names = "-c") int c;
+        @Option(names = "-a", required = true) int a;
+        @Option(names = "-b", required = true) int b;
+        @Option(names = "-c", required = true) int c;
     }
 
     public static void main(String[] args) {
@@ -85,6 +116,111 @@ public class DependentOptions {
     }
 }
 ```
+
+#### Option Sections in Usage Help
+
+The example below uses groups to define options sections in the usage help.
+When a group has a non-null `heading` (or `headingKey`), the options in the group are given the specified heading in the usage help message.
+The `headingKey` attribute can be used to get the heading text from the command's resource bundle.
+
+In this example, the groups are non-validating (`validate = false`), so the grouping is for display purposes only.
+
+
+```java
+@Command(name = "sectiondemo", description = "Section demo")
+public class OptionSectionDemo {
+
+    @ArgGroup(validate = false, heading = "This is the first section%n")
+    Section1 section1;
+
+    static class Section1 {
+        @Option(names = "-a", description = "Option A") int a;
+        @Option(names = "-b", description = "Option B") int b;
+        @Option(names = "-c", description = "Option C") int c;
+    }
+
+    @ArgGroup(validate = false, heading = "This is the second section%n")
+    Section2 section2;
+
+    static class Section2 {
+        @Option(names = "-x", description = "Option X") int x;
+        @Option(names = "-y", description = "Option Y") int y;
+        @Option(names = "-z", description = "Option X") int z;
+    }
+
+    public static void main(String[] args) {
+        new CommandLine(new OptionSectionDemo()).usage(System.out);
+    }
+}
+```
+
+This prints the following usage help message:
+```
+Usage: sectiondemo [-a=<a>] [-b=<b>] [-c=<c>] [-x=<x>] [-y=<y>] [-z=<z>]
+Section demo
+This is the first section
+  -a=<a>    Option A
+  -b=<b>    Option B
+  -c=<c>    Option C
+This is the second section
+  -x=<x>    Option X
+  -y=<y>    Option Y
+  -z=<z>    Option X
+```
+
+#### Repeating Composite Argument Groups
+
+The below example shows how groups can be composed of other groups, and how arrays and collections can be used to capture repeating groups (with a `multiplicity` greater than one).
+
+```java
+public class CompositeGroupDemo {
+
+    static class Dependent {
+        @Option(names = "-a", required = true) int a;
+        @Option(names = "-b", required = true) int b;
+        @Option(names = "-c", required = true) int c;
+    }
+
+    static class Exclusive {
+        @Option(names = "-x", required = true) boolean x;
+        @Option(names = "-y", required = true) boolean y;
+        @Option(names = "-z", required = true) boolean z;
+    }
+
+    @ArgGroup(exclusive = false, multiplicity = "1..*")
+    List<Composite> composites;
+
+    static class Composite {
+        @ArgGroup(exclusive = false, multiplicity = "1")
+        Dependent dependent;
+
+        @ArgGroup(exclusive = true, multiplicity = "1")
+        Exclusive exclusive;
+    }
+
+    public static void main(String[] args) {
+        CompositeGroupDemo example = new CompositeGroupDemo();
+        CommandLine cmd = new CommandLine(example);
+
+        cmd.parseArgs("-x", "-a=1", "-b=1", "-c=1", "-a=2", "-b=2", "-c=2", "-y");
+        assert example.composites.size() == 2;
+
+        Composite c1 = example.composites.get(0);
+        assert c1.exclusive.x;
+        assert c1.dependent.a == 1;
+        assert c1.dependent.b == 1;
+        assert c1.dependent.c == 1;
+
+        Composite c2 = example.composites.get(1);
+        assert c2.exclusive.y;
+        assert c2.dependent.a == 2;
+        assert c2.dependent.b == 2;
+        assert c2.dependent.c == 2;
+    }
+}
+```
+
+
 
 ## <a name="4.0.0-alpha-1-fixes"></a> Fixed issues
 - [#643] Change `%` to `%%` when using `${DEFAULT-VALUE}` in option description. Thanks to [Steffen Rehberg](https://github.com/StefRe) for the pull request. 
