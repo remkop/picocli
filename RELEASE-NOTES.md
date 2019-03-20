@@ -7,8 +7,10 @@ This release adds support for argument groups (incubating). Argument groups enab
 
 * mutually exclusive options
 * options that must co-occur (dependent options)
-* option grouping in the usage help message
+* option sections in the usage help message
 * repeating composite arguments
+
+See the [New and Noteworthy section](#4.0.0-alpha-1-new) below for more details.
 
 
 This is the fifty-first public release.
@@ -21,7 +23,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#4.0.0-alpha-1-breaking-changes)
 
 ## <a name="4.0.0-alpha-1-new"></a> New and Noteworthy
-### <a name="4.0.0-alpha-1-new-arggroups"></a> Argument Groups
+### <a name="4.0.0-alpha-1-new-arggroups"></a> Argument Groups (Incubating)
 
 This release introduces a new `@ArgGroup` annotation and its `ArgGroupSpec` programmatic equivalent.
 
@@ -32,19 +34,18 @@ Argument Groups can be used to define:
 * option sections in the usage help message
 * repeating composite arguments
 
+To create a group using the annotations API, annotate a field or method with `@ArgGroup`.
+The field's type refers to the class containing the options and positional parameters in the group.
+(For annotated interface methods this would be the return type, for annotated setter methods in a concrete class this would be the setter's parameter type.)
+
+Picocli will instantiate this class as necessary to capture command line argument values in the `@Option` and `@Parameters`-annotated fields and methods of this class.
+
 #### Mutually Exclusive Options
 
-The example below defines a command with mutually exclusive options `-a`, `-b` and `-c`.
-
-Note that the options are defined as `required = true`; this means required _within the group_, not required within the command.
-
-The group itself has a `multiplicity` attribute that defines how many times the group may be specified within the command.
-The default is `multiplicity = "0..1"`, meaning that by default a group may be omitted or specified once.
-In this example the group has `multiplicity = "1"`, so one of the options must occur on the command line.
-
-The synopsis of this command is rendered as `<main class> (-a=<a> | -b=<b> | -c=<c>)`.
+Annotate a field or method with `@ArgGroup(exclusive = true)` to create a group of mutually exclusive options and positional parameters. For example:
 
 ```java
+@Command(name = "exclusivedemo")
 public class MutuallyExclusiveOptions {
 
     @ArgGroup(exclusive = true, multiplicity = "1")
@@ -55,44 +56,41 @@ public class MutuallyExclusiveOptions {
         @Option(names = "-b", required = true) int b;
         @Option(names = "-c", required = true) int c;
     }
-
-    public static void main(String[] args) {
-        MutuallyExclusiveOptions example = new MutuallyExclusiveOptions();
-        CommandLine cmd = new CommandLine(example);
-
-        try {
-            cmd.parseArgs("-a=1", "-b=2");
-        } catch (MutuallyExclusiveArgsException ex) {
-            assert "Error: -a=<a>, -b=<b> are mutually dependent (specify only one)"
-                    .equals(ex.getMessage());
-        }
-    }
 }
 ```
 
-For the above group, the following input is valid:
+The above example defines a command with mutually exclusive options `-a`, `-b` and `-c`.
 
-```
-# with any of the options in the group:
-<main class> -a=1
-<main class> -b=1
-<main class> -c=1
-```
+The group itself has a `multiplicity` attribute that defines how many times the group may be specified within the command.
+The default is `multiplicity = "0..1"`, meaning that by default a group may be omitted or specified once.
+In this example the group has `multiplicity = "1"`, so the group must occur once: one of the exclusive options must occur on the command line.
 
-Any other combination of options, or the absence of options, is invalid.
-
-#### Co-occurring (Dependent) Options
-
-The example below sets `exclusive = false`, and defines a command with dependent options `-a`, `-b` and `-c` that must co-occur.
+The synopsis of this command is `exclusivedemo (-a=<a> | -b=<b> | -c=<c>)`.
 
 Note that the options are defined as `required = true`; this means required _within the group_, not required within the command.
 
-The group itself has a `multiplicity` attribute that defines how many times the group may be specified within the command.
-In this example the group has the default multiplicity, `multiplicity = "0..1"`, meaning that the group may be omitted or specified once.
-
-The synopsis of this command is rendered as `<main class> [-a=<a> -b=<b> -c=<c>]`.
+Picocli will validate the arguments and throw a `MutuallyExclusiveArgsException` if multiple mutually exclusive arguments were specified. For example:
 
 ```java
+MutuallyExclusiveOptions example = new MutuallyExclusiveOptions();
+CommandLine cmd = new CommandLine(example);
+
+try {
+    cmd.parseArgs("-a=1", "-b=2");
+} catch (MutuallyExclusiveArgsException ex) {
+    assert "Error: -a=<a>, -b=<b> are mutually dependent (specify only one)"
+            .equals(ex.getMessage());
+}
+```
+
+For the above group, only one of the options can be specified. Any other combination of options, or the absence of options, is invalid.
+
+#### Co-occurring (Dependent) Options
+
+Annotate a field or method with `@ArgGroup(exclusive = false)` to create a group of dependent options and positional parameters that must co-occur. For example:
+
+```java
+@Command(name = "co-occur")
 public class DependentOptions {
 
     @ArgGroup(exclusive = false)
@@ -103,17 +101,28 @@ public class DependentOptions {
         @Option(names = "-b", required = true) int b;
         @Option(names = "-c", required = true) int c;
     }
+}
+```
 
-    public static void main(String[] args) {
-        DependentOptions example = new DependentOptions();
-        CommandLine cmd = new CommandLine(example);
+The above example defines a command with dependent options `-a`, `-b` and `-c` that must co-occur.
 
-        try {
-            cmd.parseArgs("-a=1", "-b=2");
-        } catch (MissingParameterException ex) {
-            assert "Error: Missing required argument(s): -c=<c>".equals(ex.getMessage());
-        }
-    }
+The group itself has a `multiplicity` attribute that defines how many times the group may be specified within the command.
+In this example the group uses the default multiplicity, `multiplicity = "0..1"`, meaning that the group may be omitted or specified once.
+
+The synopsis of this command is `co-occur [-a=<a> -b=<b> -c=<c>]`.
+
+Note that the options are defined as `required = true`; this means required _within the group_, not required within the command.
+
+Picocli will validate the arguments and throw a `MissingParameterException` if not all dependent arguments were specified. For example:
+
+```java
+DependentOptions example = new DependentOptions();
+CommandLine cmd = new CommandLine(example);
+
+try {
+    cmd.parseArgs("-a=1", "-b=2");
+} catch (MissingParameterException ex) {
+    assert "Error: Missing required argument(s): -c=<c>".equals(ex.getMessage());
 }
 ```
 
@@ -123,8 +132,9 @@ The example below uses groups to define options sections in the usage help.
 When a group has a non-null `heading` (or `headingKey`), the options in the group are given the specified heading in the usage help message.
 The `headingKey` attribute can be used to get the heading text from the command's resource bundle.
 
-In this example, the groups are non-validating (`validate = false`), so the grouping is for display purposes only.
+This works for mutually exclusive or co-occurring groups, but it is also possible to define a group that does no validation but only creates an option section in the usage help.
 
+Annotate a field or method with `@ArgGroup(validate = false)` to create a group for display purposes only. For example:
 
 ```java
 @Command(name = "sectiondemo", description = "Section demo")
@@ -168,24 +178,15 @@ This is the second section
   -z=<z>    Option X
 ```
 
+Note that the heading text must end with `%n` to insert a newline between the heading text and the first option.
+This is for consistency with other headings in the usage help, like `@Command(headerHeading = "Usage:%n", optionListHeading = "%nOptions:%n")`.
+
 #### Repeating Composite Argument Groups
 
-The below example shows how groups can be composed of other groups, and how arrays and collections can be used to capture repeating groups (with a `multiplicity` greater than one).
+The below example shows how groups can be composed of other groups, and how arrays and collections can be used to capture repeating groups (with a `multiplicity` greater than one):
 
 ```java
 public class CompositeGroupDemo {
-
-    static class Dependent {
-        @Option(names = "-a", required = true) int a;
-        @Option(names = "-b", required = true) int b;
-        @Option(names = "-c", required = true) int c;
-    }
-
-    static class Exclusive {
-        @Option(names = "-x", required = true) boolean x;
-        @Option(names = "-y", required = true) boolean y;
-        @Option(names = "-z", required = true) boolean z;
-    }
 
     @ArgGroup(exclusive = false, multiplicity = "1..*")
     List<Composite> composites;
@@ -198,28 +199,57 @@ public class CompositeGroupDemo {
         Exclusive exclusive;
     }
 
-    public static void main(String[] args) {
-        CompositeGroupDemo example = new CompositeGroupDemo();
-        CommandLine cmd = new CommandLine(example);
+    static class Dependent {
+        @Option(names = "-a", required = true) int a;
+        @Option(names = "-b", required = true) int b;
+        @Option(names = "-c", required = true) int c;
+    }
 
-        cmd.parseArgs("-x", "-a=1", "-b=1", "-c=1", "-a=2", "-b=2", "-c=2", "-y");
-        assert example.composites.size() == 2;
-
-        Composite c1 = example.composites.get(0);
-        assert c1.exclusive.x;
-        assert c1.dependent.a == 1;
-        assert c1.dependent.b == 1;
-        assert c1.dependent.c == 1;
-
-        Composite c2 = example.composites.get(1);
-        assert c2.exclusive.y;
-        assert c2.dependent.a == 2;
-        assert c2.dependent.b == 2;
-        assert c2.dependent.c == 2;
+    static class Exclusive {
+        @Option(names = "-x", required = true) boolean x;
+        @Option(names = "-y", required = true) boolean y;
+        @Option(names = "-z", required = true) boolean z;
     }
 }
 ```
 
+In the above example, the annotated `composites` field defines a composite group that must be specified at least once, and may be specified many times, on the command line.
+Each time the group is matched, picocli creates an instance of the `Composite` class and adds it to the `composites` list.
+
+The `Composite` class itself contains two groups: a group of dependent options that must co-occur, and another group of mutually exclusive options.
+Both of these subgroups have `multiplicity = "1"`, so they can occur exactly once for each multiple of the `Composite` group. The below example illustrates:
+
+```java
+CompositeGroupDemo example = new CompositeGroupDemo();
+CommandLine cmd = new CommandLine(example);
+
+cmd.parseArgs("-x", "-a=1", "-b=1", "-c=1", "-a=2", "-b=2", "-c=2", "-y");
+assert example.composites.size() == 2;
+
+Composite c1 = example.composites.get(0);
+assert c1.exclusive.x;
+assert c1.dependent.a == 1;
+assert c1.dependent.b == 1;
+assert c1.dependent.c == 1;
+
+Composite c2 = example.composites.get(1);
+assert c2.exclusive.y;
+assert c2.dependent.a == 2;
+assert c2.dependent.b == 2;
+assert c2.dependent.c == 2;
+```
+
+#### Positional Parameters
+
+When a `@Parameters` positional parameter is part of a group, its `index` is the index <em>within the group</em>, not within the command.
+
+I have not decided yet whether to disallow having `@Parameters` positional parameter that are part of a group at the same time (with the same index) as `@Parameters` positional parameters that are part of the command (and not in a group).
+
+In this release this is still possible.
+
+#### Limitations and Points of Caution
+
+Options with the same name cannot be defined in multiple groups, and similarly it is not possible to define multiple options with the same name where one option is part of a group and another is part of the command (and not in a group).
 
 
 ## <a name="4.0.0-alpha-1-fixes"></a> Fixed issues
@@ -234,6 +264,7 @@ public class CompositeGroupDemo {
 No features were deprecated in this release.
 
 ## <a name="4.0.0-alpha-1-breaking-changes"></a> Potential breaking changes
+No breaking changes in this release.
 
 
 # <a name="3.9.5"></a> Picocli 3.9.5
