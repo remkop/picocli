@@ -3,7 +3,6 @@ package picocli.examples.arggroup;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.MissingParameterException;
-import picocli.CommandLine.MutuallyExclusiveArgsException;
 import picocli.CommandLine.Option;
 
 /**
@@ -22,7 +21,7 @@ import picocli.CommandLine.Option;
  * The synopsis of this command is rendered as {@code <main class> [-a=<a> -b=<b> -c=<c>]}.
  * </p>
  */
-public class DependentOptions {
+public class DependentOptionsDemo {
 
     @ArgGroup(exclusive = false)
     Dependent dependent;
@@ -34,7 +33,7 @@ public class DependentOptions {
     }
 
     public static void main(String[] args) {
-        DependentOptions example = new DependentOptions();
+        DependentOptionsDemo example = new DependentOptionsDemo();
         CommandLine cmd = new CommandLine(example);
 
         try {

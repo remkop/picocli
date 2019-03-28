@@ -21,7 +21,7 @@ import picocli.CommandLine.Option;
  * The synopsis of this command is rendered as {@code <main class> (-a=<a> | -b=<b> | -c=<c>)}.
  * </p>
  */
-public class MutuallyExclusiveOptions {
+public class MutuallyExclusiveOptionsDemo {
 
     @ArgGroup(exclusive = true, multiplicity = "1")
     Exclusive exclusive;
@@ -33,7 +33,7 @@ public class MutuallyExclusiveOptions {
     }
 
     public static void main(String[] args) {
-        MutuallyExclusiveOptions example = new MutuallyExclusiveOptions();
+        MutuallyExclusiveOptionsDemo example = new MutuallyExclusiveOptionsDemo();
         CommandLine cmd = new CommandLine(example);
 
         try {

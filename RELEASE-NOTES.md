@@ -46,7 +46,7 @@ Annotate a field or method with `@ArgGroup(exclusive = true)` to create a group 
 
 ```java
 @Command(name = "exclusivedemo")
-public class MutuallyExclusiveOptions {
+public class MutuallyExclusiveOptionsDemo {
 
     @ArgGroup(exclusive = true, multiplicity = "1")
     Exclusive exclusive;
@@ -72,13 +72,13 @@ Note that the options are defined as `required = true`; this means required _wit
 Picocli will validate the arguments and throw a `MutuallyExclusiveArgsException` if multiple mutually exclusive arguments were specified. For example:
 
 ```java
-MutuallyExclusiveOptions example = new MutuallyExclusiveOptions();
+MutuallyExclusiveOptionsDemo example = new MutuallyExclusiveOptionsDemo();
 CommandLine cmd = new CommandLine(example);
 
 try {
     cmd.parseArgs("-a=1", "-b=2");
 } catch (MutuallyExclusiveArgsException ex) {
-    assert "Error: -a=<a>, -b=<b> are mutually dependent (specify only one)"
+    assert "Error: -a=<a>, -b=<b> are mutually exclusive (specify only one)"
             .equals(ex.getMessage());
 }
 ```
@@ -91,7 +91,7 @@ Annotate a field or method with `@ArgGroup(exclusive = false)` to create a group
 
 ```java
 @Command(name = "co-occur")
-public class DependentOptions {
+public class DependentOptionsDemo {
 
     @ArgGroup(exclusive = false)
     Dependent dependent;
@@ -116,7 +116,7 @@ Note that the options are defined as `required = true`; this means required _wit
 Picocli will validate the arguments and throw a `MissingParameterException` if not all dependent arguments were specified. For example:
 
 ```java
-DependentOptions example = new DependentOptions();
+DependentOptionsDemo example = new DependentOptionsDemo();
 CommandLine cmd = new CommandLine(example);
 
 try {
@@ -243,13 +243,11 @@ assert c2.dependent.c == 2;
 
 When a `@Parameters` positional parameter is part of a group, its `index` is the index <em>within the group</em>, not within the command.
 
-I have not decided yet whether to disallow having `@Parameters` positional parameter that are part of a group at the same time (with the same index) as `@Parameters` positional parameters that are part of the command (and not in a group).
-
-In this release this is still possible.
 
 #### Limitations and Points of Caution
 
-Options with the same name cannot be defined in multiple groups, and similarly it is not possible to define multiple options with the same name where one option is part of a group and another is part of the command (and not in a group).
+* Options with the same name cannot be defined in multiple groups, and similarly it is not possible to define multiple options with the same name where one option is part of a group and another is part of the command (and not in a group).
+* It is probably not a good idea to define positional parameters that are part of a group at the same time (with the same index) as `@Parameters` positional parameters that are part of the command (and not in a group).
 
 
 ## <a name="4.0.0-alpha-1-fixes"></a> Fixed issues
