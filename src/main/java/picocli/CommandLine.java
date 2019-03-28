@@ -42,6 +42,7 @@ import picocli.CommandLine.Help.Ansi.IStyle;
 import picocli.CommandLine.Help.Ansi.Style;
 import picocli.CommandLine.Help.Ansi.Text;
 import picocli.CommandLine.Model.*;
+import picocli.CommandLine.ParseResult.MatchedGroup;
 
 import static java.util.Locale.ENGLISH;
 import static picocli.CommandLine.Help.Column.Overflow.SPAN;
@@ -6441,6 +6442,7 @@ public class CommandLine {
             private final List<ArgGroupSpec> subgroups;
             private final Set<ArgSpec> args;
             private ArgGroupSpec parentGroup;
+            private String id = "1";
 
             ArgGroupSpec(ArgGroupSpec.Builder builder) {
                 heading          = NO_HEADING    .equals(builder.heading)    ? null : builder.heading;
@@ -6458,7 +6460,8 @@ public class CommandLine {
                 subgroups = Collections.unmodifiableList(new ArrayList<ArgGroupSpec>(builder.subgroups()));
                 if (args.isEmpty() && subgroups.isEmpty()) { throw new InitializationException("ArgGroup has no options or positional parameters, and no subgroups"); }
 
-                for (ArgGroupSpec sub : subgroups) { sub.parentGroup = this; }
+                int i = 1;
+                for (ArgGroupSpec sub : subgroups) { sub.parentGroup = this; sub.id = id + "." + i++; }
                 for (ArgSpec arg : args)           { arg.group = this; }
             }
 
@@ -6539,6 +6542,7 @@ public class CommandLine {
             public IScope scope()          { return scope; }
 
             Object userObject() { try { return getter.get(); } catch (Exception ex) { return ex.toString(); } }
+            String id() { return id; }
 
             /** Return the options and positional parameters in this group; may be empty but not {@code null}. */
             public Set<ArgSpec> args() {
@@ -6666,6 +6670,41 @@ public class CommandLine {
             }
             private static String quote(String s) { return s == null ? "null" : "'" + s + "'"; }
 
+            void initUserObject(CommandLine commandLine) {
+                if (commandLine == null) { new Tracer().debug("Could not create user object for %s with null CommandLine%n.", this); }
+                try {
+                    tryInitUserObject(commandLine);
+                } catch (PicocliException ex) {
+                    throw ex;
+                } catch (Exception ex) {
+                    throw new InitializationException("Could not create user object for " + this, ex);
+                }
+            }
+            void tryInitUserObject(CommandLine commandLine) throws Exception {
+                Tracer tracer = commandLine.tracer;
+                if (typeInfo() != null) {
+                    tracer.debug("Creating new user object of type %s for group %s%n", typeInfo().getAuxiliaryTypes()[0], synopsis());
+                    Object userObject = DefaultFactory.create(commandLine.factory, typeInfo().getAuxiliaryTypes()[0]);
+                    tracer.debug("Created %s, invoking setter %s with scope %s%n", userObject, setter(), scope());
+                    setUserObject(userObject, commandLine.factory);
+                    for (ArgSpec arg : args()) {
+                        tracer.debug("Initializing %s in group %s: setting scope to user object %s and initializing initial and default values%n", ArgSpec.describe(arg, "="), synopsis(), userObject);
+                        arg.scope().set(userObject); // flip the actual user object for the arg (and all other args in this group; they share the same IScope instance)
+                        commandLine.interpreter.parseResultBuilder.isInitializingDefaultValues = true;
+                        arg.applyInitialValue(tracer);
+                        commandLine.interpreter.applyDefault(commandLine.getCommandSpec().defaultValueProvider(), arg);
+                        commandLine.interpreter.parseResultBuilder.isInitializingDefaultValues = false;
+                    }
+                    for (ArgGroupSpec subgroup : subgroups()) {
+                        tracer.debug("Setting scope for subgroup %s with setter=%s in group %s to user object %s%n", subgroup.synopsis(), subgroup.setter(), synopsis(), userObject);
+                        subgroup.scope().set(userObject); // flip the actual user object for the arg (and all other args in this group; they share the same IScope instance)
+                    }
+                } else {
+                    tracer.debug("No type information available for group %s: cannot create new user object. Scope for arg setters is not changed.%n", synopsis());
+                }
+                tracer.debug("Initialization complete for group %s%n", synopsis());
+            }
+
             void setUserObject(Object userObject, IFactory factory) throws Exception {
                 if (typeInfo().isCollection()) {
                     @SuppressWarnings("unchecked") Collection<Object> c = (Collection<Object>) getter().get();
@@ -6749,36 +6788,30 @@ public class CommandLine {
                 if (GroupValidationResult.containsBlockingFailure(validationResults)) {
                     commandLine.interpreter.maybeThrow(validationException); // composite parent validations cannot succeed anyway
                 }
-                int matchCount = matchCount(parseResult.matchedGroups());
-                // note: matchCount == 0 if only subgroup(s) are matched for a group without args (subgroups-only)
-                boolean checkMinimum = matchCount > 0 || !args().isEmpty();
-                if (checkMinimum && matchCount < multiplicity().min) {
-                    if (validationResult.success()) {
-                        validationResult = matchCount == 0 ? GroupValidationResult.FAILURE_ABSENT: GroupValidationResult.FAILURE_PARTIAL;
-                        int partialMatchCount = matchCount(parseResult.partiallyMatchedGroups());
-                        validationException = new MissingParameterException(commandLine, args(),
-                                "Error: Group: " + synopsis() + " must be specified " + multiplicity().min + " times but was only fully matched " + matchCount + " times and partially matched " + partialMatchCount + " times: " + parseResult.partiallyMatchedGroupsDescription());
+                for (MatchedGroup matchedGroup : parseResult.findMatchedGroup(this)) {
+                    int matchCount = matchedGroup.multiples().size();
+                    // note: matchCount == 0 if only subgroup(s) are matched for a group without args (subgroups-only)
+                    boolean checkMinimum = matchCount > 0 || !args().isEmpty();
+                    if (checkMinimum && matchCount < multiplicity().min) {
+                        if (validationResult.success()) {
+                            validationResult = matchCount == 0 ? GroupValidationResult.FAILURE_ABSENT: GroupValidationResult.FAILURE_PARTIAL;
+                            validationException = new MissingParameterException(commandLine, args(),
+                                    "Error: Group: " + synopsis() + " must be specified " + multiplicity().min + " times but was matched " + matchCount + " times");
+                        }
+                    } else if (matchCount > multiplicity().max) {
+                        if (!validationResult.blockingFailure()) {
+                            validationResult = GroupValidationResult.FAILURE_PRESENT;
+                            validationException = new MaxValuesExceededException(commandLine,
+                                    "Error: Group: " + synopsis() + " can only be specified " + multiplicity().max + " times but was matched " + matchCount + " times.");
+                        }
                     }
-                } else if (matchCount > multiplicity().max) {
-                    if (!validationResult.blockingFailure()) {
-                        validationResult = GroupValidationResult.FAILURE_PRESENT;
-                        validationException = new MaxValuesExceededException(commandLine,
-                                "Error: Group: " + synopsis() + " can only be specified " + multiplicity().max + " times but was matched " + matchCount + " times.");
+                    if (validationResult.blockingFailure()) {
+                        commandLine.interpreter.maybeThrow(validationException);
                     }
                 }
                 if (validationException != null && parentGroup == null) {
                     commandLine.interpreter.maybeThrow(validationException);
                 }
-            }
-
-            private int matchCount(List<ParseResult.MatchedGroup> matchedGroups) {
-                int result = 0;
-                for (ParseResult.MatchedGroup matchedGroup : matchedGroups) {
-                    if (this == matchedGroup.group()) {
-                        result += matchedGroup.multiples().size();
-                    }
-                }
-                return result;
             }
 
             private EnumSet<GroupValidationResult> validateSubgroups(ParseResult parseResult, Collection<ArgSpec> matched) {
@@ -6788,13 +6821,16 @@ public class CommandLine {
 
                 int elementCount = args().size() + subgroups().size();
                 int presentCount = validationResult.present() ? 1 : 0;
+                String exclusiveElements = "";
                 for (ArgGroupSpec subgroup : subgroups()) {
                     validationResults.add(Assert.notNull(subgroup.validationResult, "subgroup validation result"));
                     if (subgroup.validationResult.blockingFailure()) { this.validationException = subgroup.validationException; }
-                    if (subgroup.validationResult.present()) { presentCount++; }
+                    presentCount += parseResult.findMatchedGroup(subgroup).size();
+                    if (exclusiveElements.length() > 0) { exclusiveElements += " and "; }
+                    exclusiveElements += subgroup.synopsis();
                 }
                 validationResult = validate(parseResult.commandSpec().commandLine(), presentCount, presentCount < elementCount,
-                        presentCount > 0 && presentCount < elementCount, synopsis(), synopsis(), synopsis());
+                        presentCount > 0 && presentCount < elementCount, exclusiveElements, synopsis(), synopsis());
                 validationResults.add(validationResult);
                 return validationResults;
             }
@@ -7587,12 +7623,6 @@ public class CommandLine {
                 Tracer t = new Tracer();
 
                 if (member.isMultiValue()) {
-//                    t.debug("Creating ArgGroupSpec user object for %s with factory %s%n", member.getToString(), factory.getClass().getName());
-//                    Object[] tmp = getOrCreateInstance(cls, instance, factory, t);
-//                    instance = tmp[1];
-//                    if (member.getter().get() == null) {
-//                        member.setter().set(instance);
-//                    }
                     cls = member.getTypeInfo().getAuxiliaryTypes()[0];
                 }
                 IScope scope = new ObjectScope(instance);
@@ -8055,16 +8085,19 @@ public class CommandLine {
         }
         /** Creates and returns a new {@code ParseResult.Builder} for the specified command spec. */
         public static Builder builder(CommandSpec commandSpec) { return new Builder(commandSpec); }
-        /** Returns the matched groups.
+
+        /**
+         * Returns the matches for the specified argument group.
          * @since 4.0 */
-        public List<MatchedGroup> matchedGroups() { return matchedGroups; }
-        /** Returns partially matched groups if any exist.
+        public List<MatchedGroup> findMatchedGroup(ArgGroupSpec group) {
+            return matchedGroup.findMatchedGroup(group, new ArrayList<MatchedGroup>());
+        }
+
+        /**
+         * Returns the top-level match or matches found.
          * @since 4.0 */
-        public List<MatchedGroup> partiallyMatchedGroups() { return partiallyMatchedGroups; }
-        String partiallyMatchedGroupsDescription() {
-            String result = partiallyMatchedGroups.toString();
-            result = result.substring(0, result.length() - 1).substring(1);
-            return result;
+        public Map<ArgGroupSpec, MatchedGroup> getMatchedGroups() {
+            return matchedGroup.multiple().matchedSubgroups();
         }
         /** Returns the option with the specified short name, or {@code null} if no option with that name was matched
          * on the command line.
@@ -8220,7 +8253,7 @@ public class CommandLine {
                 } else {
                     addPositionalParam((PositionalParamSpec) arg, position);
                 }
-                matchedGroupElementComplete(arg, position);
+                afterMatchingGroupElement(arg, position);
                 return this;
             }
 
@@ -8251,7 +8284,7 @@ public class CommandLine {
                 if (!isInitializingDefaultValues) {
                     argSpec.originalStringValues.add(value);
                     if (argSpec.group() != null) {
-                        MatchedGroup matchedGroup = currentlyMatchingGroups.get(argSpec.group());
+                        MatchedGroup matchedGroup = this.matchedGroup.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
                         matchedGroup.multiple().addOriginalStringValue(argSpec, value);
                     }
                 }
@@ -8263,7 +8296,7 @@ public class CommandLine {
                     if (argSpec.group() == null) {
                         argSpec.typedValueAtPosition.put(position, typedValue);
                     } else {
-                        MatchedGroup matchedGroup = currentlyMatchingGroups.get(argSpec.group());
+                        MatchedGroup matchedGroup = this.matchedGroup.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
                         matchedGroup.multiple().addMatchedValue(argSpec, position, typedValue, commandSpec.commandLine.tracer);
                     }
                 }
@@ -8276,85 +8309,32 @@ public class CommandLine {
             void beforeMatchingGroupElement(ArgSpec argSpec) throws Exception {
                 ArgGroupSpec group = argSpec.group();
                 if (group == null || isInitializingDefaultValues) { return; }
-                MatchedGroup matchedGroup = currentlyMatchingGroups.get(group);
-                createNewMatchedGroupIfNecessary(matchedGroup, group, argSpec.required(), ArgSpec.describe(argSpec, "="));
-            }
-
-            private void createNewMatchedGroupIfNecessary(MatchedGroup matchedGroup, ArgGroupSpec group, boolean requiredElement, String elementDescription) throws Exception {
-                ArgGroupSpec parentGroup = group.parentGroup();
-                if (parentGroup != null) {
-                    MatchedGroup matchedParentGroup = currentlyMatchingGroups.get(parentGroup);
-                    createNewMatchedGroupIfNecessary(matchedParentGroup, parentGroup, group.multiplicity().min > 0, group.synopsis());
-                }
-                if (matchedGroup == null || (matchedGroup.multiple().matchedMandatoryElements() && requiredElement)) {
+                MatchedGroup foundMatchedGroup = this.matchedGroup.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
+                if (foundMatchedGroup.multiple().matchedMinElements() && argSpec.required()) {
+                    // we need to create a new multiple; if maxMultiplicity has been reached, we need to add a new MatchedGroup.
+                    String elementDescription = ArgSpec.describe(argSpec, "=");
                     Tracer tracer = commandSpec.commandLine.tracer;
-                    tracer.debug("Before matching: element %s is part of group %s: %s%n", elementDescription, group.synopsis(), group);
-                    if (matchedGroup == null) {
-                        matchedGroup = new MatchedGroup(group);
-                        currentlyMatchingGroups.put(group, matchedGroup);
-                    } else {
-                        if (matchedGroup.isMaxMultiplicityReached()) {
-                            tracer.info("Adding MatchedGroup %s to parse result: current multiple is complete and max multiplicity is reached. Current multiple's mandatory elements are all matched. (User object: %s.) %s is required in the group, so it starts a new MatchedGroup.%n", matchedGroup, matchedGroup.group.userObject(), elementDescription);
-                            matchedGroups.add(matchedGroup);
-                            removeFullyMatchedGroups(tracer); // parent group(s) may be fully matched now
-                        } else {
-                            tracer.info("MatchedGroupMultiple %s is complete: its mandatory elements are all matched. (User object: %s.) %s is required in the group, so it starts a new MatchedGroupMultiple.%n", matchedGroup.multiple(), matchedGroup.group.userObject(), elementDescription);
-                            matchedGroup.addMultiple();
-                        }
-                    }
-                    if (parentGroup != null) { currentlyMatchingGroups.get(parentGroup).multiple().matchedSubgroups.add(matchedGroup); }
-                    if (group.typeInfo() != null) {
-                        tracer.debug("Creating new user object of type %s for group %s%n", group.typeInfo().getAuxiliaryTypes()[0], group.synopsis());
-                        Object userObject = DefaultFactory.create(commandSpec.commandLine().factory, group.typeInfo().getAuxiliaryTypes()[0]);
-                        tracer.debug("Created %s, invoking setter %s with scope %s%n", userObject, group.setter(), group.scope());
-                        group.setUserObject(userObject, commandSpec.commandLine().factory);
-                        for (ArgSpec arg : group.args()) {
-                            tracer.debug("Setting scope for %s in group %s to user object %s and initializing initial and default values%n", ArgSpec.describe(arg, "="), group.synopsis(), userObject);
-                            arg.scope().set(userObject); // flip the actual user object for the arg (and all other args in this group; they share the same IScope instance)
-                            isInitializingDefaultValues = true;
-                            arg.applyInitialValue(tracer);
-                            commandSpec.commandLine.interpreter.applyDefault(commandSpec.defaultValueProvider(), arg);
-                            isInitializingDefaultValues = false;
-                        }
-                        for (ArgGroupSpec subgroup : group.subgroups()) {
-                            tracer.debug("Setting scope for subgroup %s %s in group %s to user object %s%n", subgroup.synopsis(), subgroup.setter(), group.synopsis(), userObject);
-                            subgroup.scope().set(userObject); // flip the actual user object for the arg (and all other args in this group; they share the same IScope instance)
-                        }
-                    } else {
-                        tracer.debug("No type information available for group %s: cannot create new user object. Scope for arg setters is not changed.%n", group.synopsis());
-                    }
-                    tracer.debug("Initialization complete for group %s%n", group.synopsis());
+                    tracer.info("MatchedGroupMultiple %s is complete: its mandatory elements are all matched. (User object: %s.) %s is required in the group, so it starts a new MatchedGroupMultiple.%n", foundMatchedGroup.multiple(), foundMatchedGroup.group.userObject(), elementDescription);
+                    foundMatchedGroup.addMultiple(commandSpec.commandLine);
                 }
             }
 
-            private void matchedGroupElementComplete(ArgSpec argSpec, int position) {
-                ArgGroupSpec group = argSpec.group();
-                if (group == null || isInitializingDefaultValues) { return; }
-                removeFullyMatchedGroups(commandSpec.commandLine.tracer);
+            private void afterMatchingGroupElement(ArgSpec argSpec, int position) {
+//                ArgGroupSpec group = argSpec.group();
+//                if (group == null || isInitializingDefaultValues) { return; }
+//                MatchedGroup matchedGroup = this.matchedGroup.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
+//                promotePartiallyMatchedGroupToMatched(group, matchedGroup, true);
             }
-            private void removeFullyMatchedGroups(Tracer tracer) {
-                boolean repeat;
-                do {
-                    repeat = false;
-                    for (Iterator<Map.Entry<ArgGroupSpec, MatchedGroup>> iter = currentlyMatchingGroups.entrySet().iterator(); iter.hasNext(); ) {
-                        MatchedGroup matchedGroup = iter.next().getValue();
-                        if (matchedGroup.matchedAllElements()) {
-                            tracer.info("Adding fully matched group %s to parse result. User object: %s%n", matchedGroup, matchedGroup.group.userObject());
-                            matchedGroups.add(matchedGroup);
-                            iter.remove();
-                            repeat = true;
-                        }
-                    }
-                } while (repeat);
-            }
-            private void removeMandatoryElementsMatchedGroups(Tracer tracer) {
-                for (Iterator<Map.Entry<ArgGroupSpec, MatchedGroup>> iter = currentlyMatchingGroups.entrySet().iterator(); iter.hasNext(); ) {
-                    MatchedGroup matchedGroup = iter.next().getValue();
-                    if (matchedGroup.matchedMandatoryElements()) {
-                        tracer.info("Adding group %s to parse result: all mandatory elements were matched. User object: %s%n", matchedGroup, matchedGroup.group.userObject());
-                        matchedGroups.add(matchedGroup);
-                        iter.remove();
-                    }
+
+            private void promotePartiallyMatchedGroupToMatched(ArgGroupSpec group, MatchedGroup matchedGroup, boolean allRequired) {
+                if (!matchedGroup.matchedFully(allRequired)) { return; }
+
+                // FIXME: before promoting the child group, check to see if the parent is matched, given the child group
+
+                Tracer tracer = commandSpec.commandLine.tracer;
+                if (matchedGroup.matchedMaxElements()) {
+                    tracer.info("Marking matched group %s as complete: max elements reached. User object: %s%n", matchedGroup, matchedGroup.group.userObject());
+                    matchedGroup.complete(commandSpec.commandLine());
                 }
             }
         }
@@ -8362,19 +8342,54 @@ public class CommandLine {
         /** Provides information about an {@link ArgGroup} that was matched on the command line.
          * @since 4.0 */
         public static class MatchedGroup {
-            final ArgGroupSpec group;
-            List<MatchedGroupMultiple> multiples = new ArrayList<MatchedGroupMultiple>();
+            private final ArgGroupSpec group;
+            private MatchedGroup parentMatchedGroup;
+            private List<MatchedGroupMultiple> multiples = new ArrayList<MatchedGroupMultiple>();
 
-            MatchedGroup(ArgGroupSpec group)   { this.group = group; addMultiple();}
-            void addMultiple()                 { multiples.add(new MatchedGroupMultiple(this)); }
-            public ArgGroupSpec group()        { return group; }
-            MatchedGroupMultiple multiple()    { return multiples.get(multiples.size() - 1); }
-            boolean isMaxMultiplicityReached() { return multiples.size() >= group.multiplicity.max; }
-            boolean isMinMultiplicityReached() { return multiples.size() >= group.multiplicity.min; }
+            MatchedGroup(ArgGroupSpec group, CommandLine cmd) { this.group = group; addMultiple(cmd);}
+
+            /** Returns the {@code ArgGroupSpec} whose matches are captured in this {@code MatchedGroup}. */
+            public ArgGroupSpec group() { return group; }
+            /** Returns the {@code MatchedGroup} of the parent {@code ArgGroupSpec}, or {@code null} if this group has no parent. */
+            public MatchedGroup parentMatchedGroup() { return parentMatchedGroup; }
+            /** Returns the list of {@code MatchedGroupMultiple} instances: {@code ArgGroupSpec}s with a multiplicity greater than one may be matched multiple times. */
             public List<MatchedGroupMultiple> multiples() { return Collections.unmodifiableList(multiples); }
 
-            boolean matchedMandatoryElements() { return matchedFully(false); }
-            boolean matchedAllElements()       { return matchedFully(true); }
+            void addMultiple(CommandLine commandLine) {
+                Tracer tracer = commandLine == null ? new Tracer() : commandLine.tracer;
+                if (group != null && isMaxMultiplicityReached()) {
+                    tracer.info("Completing MatchedGroup %s: max multiplicity is reached.%n", this);
+                    complete(commandLine);
+                } else {
+                    if (group != null) {
+                        tracer.info("Adding multiple to MatchedGroup %s (group=%s %s).%n", this, group == null ? "?" : group.id(), group == null ? "ROOT" : group.synopsis());
+                    }
+                    multiples.add(new MatchedGroupMultiple(this));
+                    if (group == null) { return; }
+                    group.initUserObject(commandLine);
+                }
+            }
+            void complete(CommandLine commandLine) {
+                if (parentMatchedGroup == null) {
+                    addMultiple(commandLine); // we have no choice but to potentially exceed the max multiplicity of this group...
+                } else {
+                    parentMatchedGroup.addMultiple(commandLine);
+                }
+            }
+            /** Returns the "active" multiple of this MatchedGroup. */
+            MatchedGroupMultiple multiple()    { return multiples.get(multiples.size() - 1); }
+            /** Returns {@code true} if no more {@code MatchedGroupMultiples} can be added to this {@code MatchedGroup}. Each multiple may be a complete or an incomplete match.*/
+            boolean isMaxMultiplicityReached() { return multiples.size() >= group.multiplicity.max; }
+            /** Returns {@code true} if this {@code MatchedGroup} has at least the minimum number of {@code MatchedGroupMultiples}. Each multiple may be a complete or an incomplete match. */
+            boolean isMinMultiplicityReached() { return multiples.size() >= group.multiplicity.min; }
+
+            /** Returns {@code true} if the minimum number of multiples has been matched for the multiplicity of this group,
+             * and each multiple has matched at least the {@linkplain MatchedGroupMultiple#matchedMinElements() minimum number of elements}.*/
+            boolean matchedMinElements() { return matchedFully(false); }
+            /** Returns {@code true} if the maximum number of multiples has been matched for the multiplicity of this group,
+             * and the last multiple has {@linkplain MatchedGroupMultiple#matchedMaxElements() matched the maximum number of elements},
+             * while all other multiples have matched at least the {@linkplain MatchedGroupMultiple#matchedMinElements() minimum number of elements}.*/
+            boolean matchedMaxElements() { return matchedFully(true); }
             private boolean matchedFully(boolean allRequired) {
                 for (MatchedGroupMultiple multiple : multiples) {
                     boolean actuallyAllRequired = allRequired && multiple == multiple();
@@ -8383,14 +8398,58 @@ public class CommandLine {
                 return allRequired ? isMaxMultiplicityReached() : isMinMultiplicityReached();
             }
 
+            private MatchedGroup findOrCreateMatchingGroup(ArgSpec argSpec, CommandLine commandLine) {
+                ArgGroupSpec searchGroup = Assert.notNull(argSpec.group(), "group for " + argSpec);
+                MatchedGroup match = this;
+                if (searchGroup == match.group()) { return match; }
+                List<ArgGroupSpec> keys = new ArrayList<ArgGroupSpec>();
+                while (searchGroup != null) {
+                    keys.add(searchGroup);
+                    searchGroup = searchGroup.parentGroup();
+                }
+                Collections.reverse(keys);
+                for (ArgGroupSpec key : keys) {
+                    MatchedGroup sub = match.multiple().matchedSubgroups().get(key);
+                    if (sub == null) {
+                        sub = createMatchedGroup(key, match, commandLine);
+                    }
+                    match = sub;
+                }
+                return match;
+            }
+            private MatchedGroup createMatchedGroup(ArgGroupSpec group, MatchedGroup parent, CommandLine commandLine) {
+                MatchedGroup result = new MatchedGroup(group, commandLine);
+                result.parentMatchedGroup = parent;
+                parent.multiple().matchedSubgroups.put(group, result);
+                return result;
+            }
+            MatchedGroup trim() {
+                for (Iterator<MatchedGroupMultiple> iter = multiples.iterator(); iter.hasNext(); ) {
+                    MatchedGroupMultiple multiple = iter.next();
+                    if (multiple.isEmpty()) { iter.remove(); }
+                    for (MatchedGroup sub : multiple.matchedSubgroups.values()) { sub.trim(); }
+                }
+                return this;
+            }
+
+            public List<MatchedGroup> findMatchedGroup(ArgGroupSpec group, List<MatchedGroup> result) {
+                if (this.group == group) { result.add(this); return result; }
+                for (MatchedGroupMultiple multiple : multiples()) {
+                    for (MatchedGroup mg : multiple.matchedSubgroups.values()) {
+                        mg.findMatchedGroup(group, result);
+                    }
+                }
+                return result;
+            }
+
             @Override public String toString() {
-                String prefix = group().synopsis() + ": match=";
-                String result = "";
+                String result = (group != null ? group.synopsis() : "") + "={";
+                String prefix = "";
                 for (MatchedGroupMultiple occurrence : multiples) {
                     result += prefix + occurrence.toString();
                     prefix = " ";
                 }
-                return result;
+                return result + "}";
             }
         }
 
@@ -8401,17 +8460,23 @@ public class CommandLine {
          */
         static class MatchedGroupMultiple {
             int position;
-            final MatchedGroup matchedGroup;
-            List<MatchedGroup> matchedSubgroups             = new ArrayList<MatchedGroup>();
-            Map<ArgSpec, List<Object>> matchedValues        = new IdentityHashMap<ArgSpec, List<Object>>();
-            Map<ArgSpec, List<String>> originalStringValues = new IdentityHashMap<ArgSpec, List<String>>();
+            final MatchedGroup container;
+
+            Map<ArgGroupSpec, MatchedGroup> matchedSubgroups = new LinkedHashMap<ArgGroupSpec, MatchedGroup>(2); // preserve order: used in toString()
+            Map<ArgSpec, List<Object>> matchedValues         = new IdentityHashMap<ArgSpec, List<Object>>(); // identity map for performance
+            Map<ArgSpec, List<String>> originalStringValues  = new LinkedHashMap<ArgSpec, List<String>>(); // preserve order: used in toString()
             Map<ArgSpec, Map<Integer, List<Object>>> matchedValuesAtPosition = new IdentityHashMap<ArgSpec, Map<Integer, List<Object>>>();
 
-            MatchedGroupMultiple(MatchedGroup matchedGroup) { this.matchedGroup = matchedGroup; }
+            MatchedGroupMultiple(MatchedGroup container) { this.container = container; }
 
-            public ArgGroupSpec group() { return matchedGroup.group; }
-            public List<MatchedGroup> matchedSubgroups() { return Collections.unmodifiableList(matchedSubgroups); }
+            /** Returns {@code true} if this multiple has no matched arguments and no matched subgroups. */
+            public boolean isEmpty() { return originalStringValues.isEmpty() && matchedSubgroups.isEmpty(); }
+            /** Returns the {@code ArgGroupSpec} of the container {@code MatchedGroup} of this multiple. */
+            public ArgGroupSpec group() { return container.group; }
+            /** Returns matches for the subgroups, if any. */
+            public Map<ArgGroupSpec, MatchedGroup> matchedSubgroups() { return Collections.unmodifiableMap(matchedSubgroups); }
             int matchCount(ArgSpec argSpec)                    { return matchedValues.get(argSpec) == null ? 0 : matchedValues.get(argSpec).size(); }
+            /** Returns the values matched for the specified argument, converted to the type of the argument. */
             public List<Object> matchedValues(ArgSpec argSpec) { return matchedValues.get(argSpec) == null ? Collections.emptyList() : Collections.unmodifiableList(matchedValues.get(argSpec)); }
             void addOriginalStringValue(ArgSpec argSpec, String value) {
                 addValueToListInMap(originalStringValues, argSpec, value);
@@ -8432,32 +8497,37 @@ public class CommandLine {
                 values.add(value);
             }
             boolean hasMatchedValueAtPosition(ArgSpec arg, int position) { Map<Integer, List<Object>> atPos = matchedValuesAtPosition.get(arg); return atPos != null && atPos.containsKey(position); }
-            boolean matchedMandatoryElements() { return matchedFully(false); }
-            boolean matchedAllElements()       { return matchedFully(true); }
 
+            /** Returns {@code true} if the minimum number of elements have been matched for this multiple:
+             * all required arguments have been matched, and for each subgroup,
+             * the {@linkplain MatchedGroup#matchedMinElements() minimum number of elements have been matched}.*/
+            boolean matchedMinElements() { return matchedFully(false); }
+            /** Returns {@code true} if the maximum number of multiples has been matched for this multiple:
+             * all arguments (required or not) have been matched, and for each subgroup,
+             * the {@linkplain MatchedGroup#matchedMaxElements() maximum number of elements have been matched}.*/
+            boolean matchedMaxElements() { return matchedFully(true); }
             private boolean matchedFully(boolean allRequired) {
                 if (group().exclusive()) { return !matchedValues.isEmpty() || hasFullyMatchedSubgroup(allRequired); }
                 for (ArgSpec arg : group().args()) {
                     if (matchedValues.get(arg) == null && (arg.required() || allRequired)) { return false; }
                 }
                 for (ArgGroupSpec subgroup : group().subgroups()) {
-                    int matchCount = 0;
-                    for (MatchedGroup matchedGroup : matchedSubgroups()) {
-                        if (matchedGroup.matchedFully(allRequired) && matchedGroup.group() == subgroup) { matchCount++; }
-                    }
-                    if (matchCount < subgroup.multiplicity().min || (allRequired || matchCount < subgroup.multiplicity().max)) {
-                        return false;
+                    MatchedGroup matchedGroup = matchedSubgroups.get(subgroup);
+                    if (matchedGroup != null) {
+                        if (!matchedGroup.matchedFully(allRequired)) { return false; }
+                    } else {
+                        if (allRequired || subgroup.multiplicity().min > 0) { return false; }
                     }
                 }
                 return true;
             }
             private boolean hasFullyMatchedSubgroup(boolean allRequired) {
-                for (MatchedGroup sub : matchedSubgroups) { if (sub.matchedFully(allRequired)) { return true; } }
+                for (MatchedGroup sub : matchedSubgroups.values()) { if (sub.matchedFully(allRequired)) { return true; } }
                 return false;
             }
             @Override public String toString() {
-                String prefix = group().multiplicity().min == 0 ? "[" : "(";
-                String suffix = group().multiplicity().min == 0 ? "]" : ")";
+                String prefix = group() == null ? "" : group().multiplicity().min == 0 ? "[" : "(";
+                String suffix = group() == null ? "" : group().multiplicity().min == 0 ? "]" : ")";
                 String result = prefix;
                 for (ArgSpec arg : originalStringValues.keySet()) {
                     List<String> values = originalStringValues.get(arg);
@@ -8466,7 +8536,7 @@ public class CommandLine {
                         result += ArgSpec.describe(arg, "=", value);
                     }
                 }
-                for (ParseResult.MatchedGroup sub : matchedSubgroups) {
+                for (MatchedGroup sub : matchedSubgroups.values()) {
                     if (result != prefix) { result += " "; }
                     result += sub.toString();
                 }
@@ -8868,7 +8938,7 @@ public class CommandLine {
                 Range indexRange = positionalParam.index();
                 int localPosition = getPosition(positionalParam);
                 if (positionalParam.group() != null) { // does the positionalParam's index range contain the current position in the currently matching group
-                    ParseResult.MatchedGroup matchedGroup = parseResultBuilder.currentlyMatchingGroups.get(positionalParam.group());
+                    MatchedGroup matchedGroup = parseResultBuilder.matchedGroup.findOrCreateMatchingGroup(positionalParam, commandSpec.commandLine());
                     if (!indexRange.contains(localPosition) || (matchedGroup != null && matchedGroup.multiple().hasMatchedValueAtPosition(positionalParam, localPosition))) {
                         continue;
                     }
@@ -8904,7 +8974,7 @@ public class CommandLine {
             position += argsConsumed + interactiveConsumed;
             if (tracer.isDebug()) {tracer.debug("Consumed %d arguments and %d interactive values, moving command-local position to index %d.%n", argsConsumed, interactiveConsumed, position);}
             for (PositionalParamSpec positional : newPositions.keySet()) {
-                ParseResult.MatchedGroup inProgress = parseResultBuilder.currentlyMatchingGroups.get(positional.group());
+                MatchedGroup inProgress = parseResultBuilder.matchedGroup.findOrCreateMatchingGroup(positional, commandSpec.commandLine());
                 if (inProgress != null) {
                     inProgress.multiple().position = newPositions.get(positional);
                     if (tracer.isDebug()) {tracer.debug("Updated group position to %s for group %s.%n", inProgress.multiple().position, inProgress);}
@@ -9604,7 +9674,7 @@ public class CommandLine {
         }
         int getPosition(ArgSpec arg) {
             if (arg.group() == null) { return position; }
-            ParseResult.MatchedGroup matchedGroup = parseResultBuilder.currentlyMatchingGroups.get(arg.group());
+            MatchedGroup matchedGroup = parseResultBuilder.matchedGroup.findOrCreateMatchingGroup(arg, commandSpec.commandLine());
             return matchedGroup == null ? 0 : matchedGroup.multiple().position;
         }
         String positionDesc(ArgSpec arg) {
