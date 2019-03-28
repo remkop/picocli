@@ -2480,8 +2480,10 @@ public class CommandLine {
 
         /**
          * Indicates whether this option is required. By default this is false.
-         * If an option is required, but a user invokes the program without specifying the required option,
-         * a {@link MissingParameterException} is thrown from the {@link #parse(String...)} method.
+         * <p>If an option is required, but a user invokes the program without specifying the required option,
+         * a {@link MissingParameterException} is thrown from the {@link #parse(String...)} method.</p>
+         * <p>Required options that are part of a {@linkplain ArgGroup group} are required <em>within the group</em>, not required within the command:
+         * the group's {@linkplain ArgGroup#multiplicity() multiplicity} determines whether the group itself is required or optional.</p>
          * @return whether this option is required
          */
         boolean required() default false;
@@ -2824,6 +2826,9 @@ public class CommandLine {
          * {@link MissingParameterException} is thrown by the {@link #parse(String...)} method.
          * <p>The default depends on the type of the parameter: booleans require no parameters, arrays and Collections
          * accept zero to any number of parameters, and any other type accepts one parameter.</p>
+         * <p>For single-value parameters, setting {@code arity = "0..1"} makes a positional parameter optional, while setting {@code arity = "1"} makes it required.</p>
+         * <p>Required parameters that are part of a {@linkplain ArgGroup group} are required <em>within the group</em>, not required within the command:
+         * the group's {@linkplain ArgGroup#multiplicity() multiplicity} determines whether the group itself is required or optional.</p>
          * @return the range of minimum and maximum parameters accepted by this command
          */
         String arity() default "";
@@ -3349,18 +3354,19 @@ public class CommandLine {
         int usageHelpWidth() default 80;
     }
     /** A {@code Command} may define one or more {@code ArgGroups}: a group of options, positional parameters or a mixture of the two.
-     * Groups can be used:
+     * Groups can be used to:
      * <ul>
-     *     <li>to define mutually exclusive arguments. By default, options and positional parameters
-     *     in a group are mutually exclusive unless you set {@link #exclusive() exclusive = false}.
-     *     Picocli will throw a {@link MutuallyExclusiveArgsException} if the command line arguments contain multiple arguments that are mutually exclusive.</li>
-     *     <li>to define a set of arguments that must co-occur. Set {@link #exclusive() exclusive = false}
+     *     <li>define <b>mutually exclusive</b> arguments. By default, options and positional parameters
+     *     in a group are mutually exclusive. This can be controlled with the {@link #exclusive() exclusive} attribute.
+     *     Picocli will throw a {@link MutuallyExclusiveArgsException} if the command line contains multiple arguments that are mutually exclusive.</li>
+     *     <li>define a set of arguments that <b>must co-occur</b>. Set {@link #exclusive() exclusive = false}
      *     to define a group of options and positional parameters that must always be specified together.
      *     Picocli will throw a {@link MissingParameterException MissingParameterException} if not all the options and positional parameters in a co-occurring group are specified together.</li>
-     *     <li>to create option sections in the usage help message.
+     *     <li>create an <b>option section</b> in the usage help message.
      *     To be shown in the usage help message, a group needs to have a {@link #heading() heading} (which may come from a {@linkplain #headingKey() resource bundle}).
-     *     Groups without a heading are just used for validation and do not change the usage help message.
+     *     Groups without a heading are only used for validation.
      *     Set {@link #validate() validate = false} for groups whose purpose is only to customize the usage help message.</li>
+     *     <li>define <b>composite repeating argument groups</b>. Groups may contain other groups to create composite groups.</li>
      * </ul>
      * <p>Groups may be optional ({@code multiplicity = "0..1"}), required ({@code multiplicity = "1"}), or repeating groups ({@code multiplicity = "0..*"} or {@code multiplicity = "1..*"}).
      * For a group of mutually exclusive arguments, making the group required means that one of the arguments in the group must appear on the command line, or a {@link MissingParameterException MissingParameterException} is thrown.
@@ -3372,6 +3378,20 @@ public class CommandLine {
      * <li>When the parent group is a co-occurring group, all subgroups must be present.</li>
      * <li>When the parent group is required, at least one subgroup must be present.</li>
      * </ul>
+     * <p>
+     * Below is an example of an {@code ArgGroup} defining a set of dependent options that must occur together.
+     * All options are required <em>within the group</em>, while the group itself is optional:</p>
+     * <pre>
+     * public class DependentOptions {
+     *     &#064;ArgGroup(exclusive = false, multiplicity = "0..1")
+     *     Dependent group;
+     *
+     *     static class Dependent {
+     *         &#064;Option(names = "-a", required = true) int a;
+     *         &#064;Option(names = "-b", required = true) int b;
+     *         &#064;Option(names = "-c", required = true) int c;
+     *     }
+     * }</pre>
      * @see ArgGroupSpec
      * @since 4.0 */
     @Retention(RetentionPolicy.RUNTIME)
@@ -3395,9 +3415,9 @@ public class CommandLine {
          * For a group of co-occurring arguments, making the group required means that all arguments in the group must appear on the command line.
          * Ignored if {@link #validate()} is {@code false}. */
         String multiplicity() default "0..1";
-        /** Determines whether picocli should validate the rules of this group ({@code true} by default):
-         * for a mutually exclusive group validation means verifying that no more than one arguments in the group is specified on the command line;
-         * for a co-ocurring group validation means verifying that all arguments in the group are specified on the command line.
+        /** Determines whether picocli should validate the rules of this group ({@code true} by default).
+         * For a mutually exclusive group validation means verifying that no more than one elements of the group is specified on the command line;
+         * for a co-ocurring group validation means verifying that all elements of the group are specified on the command line.
          * Set {@link #validate() validate = false} for groups whose purpose is only to customize the usage help message.
          * @see #multiplicity()
          * @see #heading() */
@@ -4134,8 +4154,6 @@ public class CommandLine {
              * @return this CommandSpec for method chaining
              * @throws DuplicateOptionAnnotationsException if any of the names of the specified option is the same as the name of another option */
             public CommandSpec addOption(OptionSpec option) {
-                args.add(option);
-                options.add(option);
                 for (String name : option.names()) { // cannot be null or empty
                     OptionSpec existing = optionsByNameMap.put(name, option);
                     if (existing != null) { /* was: && !existing.equals(option)) {*/ // since 4.0 ArgGroups: an option cannot be in multiple groups
@@ -4143,10 +4161,8 @@ public class CommandLine {
                     }
                     if (name.length() == 2 && name.startsWith("-")) { posixOptionsByKeyMap.put(name.charAt(1), option); }
                 }
-                if (option.required() && option.group() == null) { requiredArgs.add(option); }
-                option.messages(usageMessage().messages());
-                option.commandSpec = this;
-                return this;
+                options.add(option);
+                return addArg(option);
             }
             /** Adds the specified positional parameter spec to the list of configured arguments to expect.
              * The positional parameter's {@linkplain PositionalParamSpec#description()} may
@@ -4156,11 +4172,14 @@ public class CommandLine {
              * @param positional the positional parameter spec to add
              * @return this CommandSpec for method chaining */
             public CommandSpec addPositional(PositionalParamSpec positional) {
-                args.add(positional);
                 positionalParameters.add(positional);
-                if (positional.required() && positional.group() == null) { requiredArgs.add(positional); }
-                positional.messages(usageMessage().messages());
-                positional.commandSpec = this;
+                return addArg(positional);
+            }
+            private CommandSpec addArg(ArgSpec arg) {
+                args.add(arg);
+                if (arg.required() && arg.group() == null) { requiredArgs.add(arg); }
+                arg.messages(usageMessage().messages());
+                arg.commandSpec = this;
                 return this;
             }
 
@@ -6544,9 +6563,15 @@ public class CommandLine {
             Object userObject() { try { return getter.get(); } catch (Exception ex) { return ex.toString(); } }
             String id() { return id; }
 
-            /** Return the options and positional parameters in this group; may be empty but not {@code null}. */
-            public Set<ArgSpec> args() {
-                return args;
+            /** Returns the options and positional parameters in this group; may be empty but not {@code null}. */
+            public Set<ArgSpec> args() { return args; }
+            /** Returns the required options and positional parameters in this group; may be empty but not {@code null}. */
+            public Set<ArgSpec> requiredArgs() {
+                Set<ArgSpec> result = new LinkedHashSet<ArgSpec>(args);
+                for (Iterator<ArgSpec> iter = result.iterator(); iter.hasNext(); ) {
+                    if (!iter.next().required()) { iter.remove(); }
+                }
+                return Collections.unmodifiableSet(result);
             }
 
             /** Returns the list of positional parameters configured for this group.
@@ -6750,41 +6775,21 @@ public class CommandLine {
             }
 
             /** Throws an exception if the constraints in this group are not met by the specified match. */
-            void validateConstraints(ParseResult parseResult, Collection<ArgSpec> matched) {
+            void validateConstraints(ParseResult parseResult) {
                 if (!validate()) { return; }
                 CommandLine commandLine = parseResult.commandSpec().commandLine();
 
                 // first validate args in this group
-                validationResult = validateArgs(commandLine, matched);
+                validationResult = validateArgs(commandLine, parseResult);
                 // TODO to support complex scenarios where groups have positional params at the same index
-                // TODO as command-local positional params, we need to remove the command-local matches
-                // TODO for the overlapping indexes when a MatchedGroupMultiple is matched
-//                if (validationResult == GroupValidationResult.FAILURE_PARTIAL) { // part of optional group was specified
-//                    Set<ArgSpec> intersection = new LinkedHashSet<ArgSpec>(this.args());
-//                    intersection.retainAll(matched);
-//                    Set<ArgSpec> complement = new LinkedHashSet<ArgSpec>(matched);
-//                    complement.removeAll(this.args());
-//                    int errorCount = intersection.size();
-//                    for (ArgSpec match : intersection) {
-//                        if (match.isPositional()) {
-//                            for (ArgSpec alternative : complement) {
-//                                if (alternative.isPositional() && ((PositionalParamSpec) alternative).index().overlaps(((PositionalParamSpec) match).index())) {
-//                                    errorCount--;
-//                                    break;
-//                                }
-//                            }
-//                        }
-//                    }
-//                    if (errorCount == 0) {
-//                        validationResult = GroupValidationResult.SUCCESS_ABSENT;
-//                        validationException = null;
-//                    }
-//                }
+                //   as command-local positional params, we need to remove the command-local matches
+                //   for the overlapping indexes when a MatchedGroupMultiple is matched
+
                 if (validationResult.blockingFailure()) {
                     commandLine.interpreter.maybeThrow(validationException); // composite parent validations cannot succeed anyway
                 }
                 // then validate sub groups
-                EnumSet<GroupValidationResult> validationResults = validateSubgroups(parseResult, matched);
+                EnumSet<GroupValidationResult> validationResults = validateSubgroups(parseResult);
                 if (GroupValidationResult.containsBlockingFailure(validationResults)) {
                     commandLine.interpreter.maybeThrow(validationException); // composite parent validations cannot succeed anyway
                 }
@@ -6814,10 +6819,10 @@ public class CommandLine {
                 }
             }
 
-            private EnumSet<GroupValidationResult> validateSubgroups(ParseResult parseResult, Collection<ArgSpec> matched) {
+            private EnumSet<GroupValidationResult> validateSubgroups(ParseResult parseResult) {
                 EnumSet<GroupValidationResult> validationResults = EnumSet.of(validationResult);
                 if (subgroups().isEmpty()) { return validationResults; }
-                for (ArgGroupSpec subgroup : subgroups()) { subgroup.validateConstraints(parseResult, matched);}
+                for (ArgGroupSpec subgroup : subgroups()) { subgroup.validateConstraints(parseResult);}
 
                 int elementCount = args().size() + subgroups().size();
                 int presentCount = validationResult.present() ? 1 : 0;
@@ -6835,17 +6840,61 @@ public class CommandLine {
                 return validationResults;
             }
 
-            private GroupValidationResult validateArgs(CommandLine commandLine, Collection<ArgSpec> matched) {
+            private GroupValidationResult validateArgs(CommandLine commandLine, ParseResult parseResult) {
                 if (args().isEmpty()) { return GroupValidationResult.SUCCESS_ABSENT; }
+                GroupValidationResult result = validateArgs(commandLine, parseResult.findMatchedGroup(this));
+                if (result.blockingFailure()) { return result; }
+                return result;
+            }
+
+            private GroupValidationResult validateArgs(CommandLine commandLine, List<MatchedGroup> matchedGroups) {
+                if (matchedGroups.isEmpty()) {
+                    int presentCount = 0;
+                    boolean haveMissing = true;
+                    boolean someButNotAllSpecified = false;
+                    String exclusiveElements = "";
+                    String missingElements = ArgSpec.describe(requiredArgs());
+                    return validate(commandLine, presentCount, haveMissing, someButNotAllSpecified, exclusiveElements, missingElements, missingElements);
+                }
+                GroupValidationResult result = GroupValidationResult.SUCCESS_ABSENT;
+                Map<MatchedGroup, List<MatchedGroup>> byParent = groupByParent(matchedGroups);
+                for (Map.Entry<MatchedGroup, List<MatchedGroup>> entry : byParent.entrySet()) {
+                    result = validateMultiples(commandLine, flatListMultiples(entry.getValue()));
+                    if (result.blockingFailure()) { return result; }
+                }
+                return result;
+            }
+
+            private Map<MatchedGroup, List<MatchedGroup>> groupByParent(List<MatchedGroup> matchedGroups) {
+                Map<MatchedGroup, List<MatchedGroup>> result = new HashMap<MatchedGroup, List<MatchedGroup>>();
+                for (MatchedGroup mg : matchedGroups) {
+                    addValueToListInMap(result, mg.parentMatchedGroup(), mg);
+                }
+                return result;
+            }
+
+            private List<ParseResult.MatchedGroupMultiple> flatListMultiples(Collection<MatchedGroup> matchedGroups) {
+                List<ParseResult.MatchedGroupMultiple> all = new ArrayList<ParseResult.MatchedGroupMultiple>();
+                for (MatchedGroup matchedGroup : matchedGroups) {
+                    all.addAll(matchedGroup.multiples());
+                }
+                return all;
+            }
+
+            private GroupValidationResult validateMultiples(CommandLine commandLine, List<ParseResult.MatchedGroupMultiple> multiples) {
                 Set<ArgSpec> intersection = new LinkedHashSet<ArgSpec>(this.args());
-                intersection.retainAll(matched);
+                Set<ArgSpec> missing = new LinkedHashSet<ArgSpec>(this.requiredArgs());
+                Set<ArgSpec> found = new LinkedHashSet<ArgSpec>();
+                for (ParseResult.MatchedGroupMultiple multiple : multiples) {
+                    found.addAll(multiple.matchedValues.keySet());
+                    missing.removeAll(multiple.matchedValues.keySet());
+                }
+                intersection.retainAll(found);
                 int presentCount = intersection.size();
-                Set<ArgSpec> missing = new LinkedHashSet<ArgSpec>(this.args());
-                missing.removeAll(matched);
                 boolean haveMissing = !missing.isEmpty();
                 boolean someButNotAllSpecified = haveMissing && !intersection.isEmpty();
                 String exclusiveElements = ArgSpec.describe(intersection);
-                String requiredElements = ArgSpec.describe(args());
+                String requiredElements = ArgSpec.describe(requiredArgs());
                 String missingElements = ArgSpec.describe(missing);
 
                 return validate(commandLine, presentCount, haveMissing, someButNotAllSpecified, exclusiveElements, requiredElements, missingElements);
@@ -7784,6 +7833,7 @@ public class CommandLine {
                 }
                 return result;
             }
+            @SuppressWarnings("unchecked")
             private static boolean initFromAnnotatedTypedMembers(TypedMember member,
                                                                  CommandSpec commandSpec,
                                                                  ArgGroupSpec.Builder groupBuilder,
@@ -7847,6 +7897,7 @@ public class CommandLine {
                 }
                 return result;
             }
+            @SuppressWarnings("unchecked")
             private static void validateArgSpecMember(TypedMember member) {
                 if (!member.isArgSpec()) { throw new IllegalStateException("Bug: validateArgSpecMember() should only be called with an @Option or @Parameters member"); }
                 if (member.isOption()) {
@@ -7871,6 +7922,7 @@ public class CommandLine {
                     throw new InitializationException(className + " is not a group: it has no @Option or @Parameters annotations");
                 }
             }
+            @SuppressWarnings("unchecked")
             private static void validateInjectSpec(TypedMember member) {
                 if (!member.isInjectSpec()) { throw new IllegalStateException("Bug: validateInjectSpec() should only be called with @Spec members"); }
                 assertNoDuplicateAnnotations(member, Spec.class, Parameters.class, Option.class, Unmatched.class, Mixin.class, ArgGroup.class);
@@ -8037,8 +8089,8 @@ public class CommandLine {
         static class ObjectScope implements IScope {
             private Object value;
             public ObjectScope(Object value) { this.value = value; }
-            public <T> T get() { return (T) value; }
-            public <T> T set(T value) { T old = (T) this.value; this.value = value; return old; }
+            @SuppressWarnings("unchecked") public <T> T get() { return (T) value; }
+            @SuppressWarnings("unchecked") public <T> T set(T value) { T old = (T) this.value; this.value = value; return old; }
             public static Object tryGet(IScope scope) {
                 try {
                     return scope.get();
@@ -8060,8 +8112,7 @@ public class CommandLine {
         private final List<String> unmatched;
         private final List<List<PositionalParamSpec>> matchedPositionalParams;
         private final List<Exception> errors;
-        private final List<MatchedGroup> matchedGroups;
-        private final List<MatchedGroup> partiallyMatchedGroups;
+        private final MatchedGroup matchedGroup;
         final List<Object> tentativeMatch;
 
         private final ParseResult subcommand;
@@ -8080,8 +8131,7 @@ public class CommandLine {
             usageHelpRequested = builder.usageHelpRequested;
             versionHelpRequested = builder.versionHelpRequested;
             tentativeMatch = builder.nowProcessing;
-            matchedGroups = Collections.unmodifiableList(new ArrayList<MatchedGroup>(builder.matchedGroups));
-            partiallyMatchedGroups = Collections.unmodifiableList(new ArrayList<MatchedGroup>(builder.partiallyMatchedGroups));
+            matchedGroup = builder.matchedGroup.trim();
         }
         /** Creates and returns a new {@code ParseResult.Builder} for the specified command spec. */
         public static Builder builder(CommandSpec commandSpec) { return new Builder(commandSpec); }
@@ -8220,19 +8270,11 @@ public class CommandLine {
             boolean isInitializingDefaultValues;
             private List<Exception> errors = new ArrayList<Exception>(1);
             private List<Object> nowProcessing;
-            private Map<ArgGroupSpec, MatchedGroup> currentlyMatchingGroups = new IdentityHashMap<ArgGroupSpec, MatchedGroup>();
-            private List<MatchedGroup> matchedGroups = new ArrayList<MatchedGroup>();
-            private List<MatchedGroup> partiallyMatchedGroups = new ArrayList<MatchedGroup>();
+            private MatchedGroup matchedGroup = new MatchedGroup(null, null);
 
             private Builder(CommandSpec spec) { commandSpec = Assert.notNull(spec, "commandSpec"); }
             /** Creates and returns a new {@code ParseResult} instance for this builder's configuration. */
             public ParseResult build() {
-                Tracer tracer = new Tracer();
-                removeMandatoryElementsMatchedGroups(tracer);
-                partiallyMatchedGroups = new ArrayList<MatchedGroup>(currentlyMatchingGroups.values());
-                for (MatchedGroup matchedGroup : partiallyMatchedGroups) {
-                    tracer.info("Found partially matched group: %s%n", matchedGroup);
-                }
                 return new ParseResult(this);
             }
 
@@ -8491,11 +8533,6 @@ public class CommandLine {
                 }
                 addValueToListInMap(positionalValues, matchPosition, stronglyTypedValue);
             }
-            private <K, T> void addValueToListInMap(Map<K, List<T>> map, K key, T value) {
-                List<T> values = map.get(key);
-                if (values == null) { values = new ArrayList<T>(); map.put(key, values); }
-                values.add(value);
-            }
             boolean hasMatchedValueAtPosition(ArgSpec arg, int position) { Map<Integer, List<Object>> atPos = matchedValuesAtPosition.get(arg); return atPos != null && atPos.containsKey(position); }
 
             /** Returns {@code true} if the minimum number of elements have been matched for this multiple:
@@ -8543,6 +8580,11 @@ public class CommandLine {
                 return result + suffix;
             }
         }
+    }
+    static <K, T> void addValueToListInMap(Map<K, List<T>> map, K key, T value) {
+        List<T> values = map.get(key);
+        if (values == null) { values = new ArrayList<T>(); map.put(key, values); }
+        values.add(value);
     }
     private enum LookBehind { SEPARATE, ATTACHED, ATTACHED_WITH_SEPARATOR;
         public boolean isAttached() { return this != LookBehind.SEPARATE; }
@@ -8781,7 +8823,7 @@ public class CommandLine {
             }
             ParseResult pr = parseResultBuilder.build();
             for (ArgGroupSpec group : commandSpec.argGroups()) {
-                group.validateConstraints(pr, matched);
+                group.validateConstraints(pr);
             }
         }
 

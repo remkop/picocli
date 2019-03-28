@@ -445,6 +445,20 @@ public class ArgGroupTest {
     }
 
     @Test
+    public void testReflectionRequiresNonEmpty() {
+        class Invalid {}
+        class App {
+            @ArgGroup Invalid invalid;
+        }
+        try {
+            new CommandLine(new App(), new InnerClassFactory(this));
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("ArgGroup has no options or positional parameters, and no subgroups", ex.getMessage());
+        }
+    }
+
+    @Test
     public void testProgrammatic() {
         CommandSpec spec = CommandSpec.create();
 
@@ -480,20 +494,90 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testValidationNonRequiredExclusive_ActualTwo() {
-        ArgGroupSpec group = ArgGroupSpec.builder().addArg(OPTION_A).addArg(OPTION_B).build();
-        CommandLine cmd = new CommandLine(CommandSpec.create());
+    public void testCannotAddSubgroupToCommand() {
+        CommandSpec spec = CommandSpec.create();
+
+        ArgGroupSpec exclusiveSub = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-x").required(true).build())
+                .addArg(OptionSpec.builder("-y").required(true).build()).build();
+        ArgGroupSpec cooccur = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-z").required(true).build())
+                .addSubgroup(exclusiveSub).build();
 
         try {
-            group.validateConstraints(parseResult(cmd), Arrays.<ArgSpec>asList(OPTION_A, OPTION_B));
+            spec.addArgGroup(exclusiveSub);
             fail("Expected exception");
-        } catch (MutuallyExclusiveArgsException ex) {
-            assertEquals("Error: -a, -b are mutually exclusive (specify only one)", ex.getMessage());
+        } catch (InitializationException ex) {
+            assertEquals("Groups that are part of another group should not be added to a command. Add only the top-level group.", ex.getMessage());
         }
     }
 
     @Test
-    public void testReflectionValidationNonRequiredExclusive_ActualTwo() {
+    public void testCannotAddSameGroupToCommandMultipleTimes() {
+        CommandSpec spec = CommandSpec.create();
+
+        ArgGroupSpec cooccur = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-z").required(true).build()).build();
+
+        spec.addArgGroup(cooccur);
+        try {
+            spec.addArgGroup(cooccur);
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("The specified group [-z] has already been added to the <main class> command.", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testIsSubgroupOf_FalseIfUnrelated() {
+        ArgGroupSpec other = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-z").required(true).build()).build();
+
+        ArgGroupSpec exclusiveSub = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-x").required(true).build())
+                .addArg(OptionSpec.builder("-y").required(true).build()).build();
+        ArgGroupSpec cooccur = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-z").required(true).build())
+                .addSubgroup(exclusiveSub).build();
+
+        assertFalse(other.isSubgroupOf(exclusiveSub));
+        assertFalse(other.isSubgroupOf(cooccur));
+
+        assertFalse(exclusiveSub.isSubgroupOf(other));
+        assertFalse(cooccur.isSubgroupOf(other));
+    }
+
+    @Test
+    public void testIsSubgroupOf_FalseIfSame() {
+        ArgGroupSpec other = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-z").required(true).build()).build();
+
+        assertFalse(other.isSubgroupOf(other));
+    }
+
+    @Test
+    public void testIsSubgroupOf_TrueIfChild() {
+        ArgGroupSpec subsub = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-a").required(true).build()).build();
+        ArgGroupSpec sub = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-x").required(true).build())
+                .addArg(OptionSpec.builder("-y").required(true).build())
+                .addSubgroup(subsub).build();
+        ArgGroupSpec top = ArgGroupSpec.builder()
+                .addArg(OptionSpec.builder("-z").required(true).build())
+                .addSubgroup(sub).build();
+
+        assertTrue(sub.isSubgroupOf(top));
+        assertTrue(subsub.isSubgroupOf(sub));
+        assertTrue(subsub.isSubgroupOf(top));
+
+        assertFalse(top.isSubgroupOf(sub));
+        assertFalse(top.isSubgroupOf(subsub));
+        assertFalse(sub.isSubgroupOf(subsub));
+    }
+
+    @Test
+    public void testReflectionValidationExclusiveMultiplicity0_1_ActualTwo() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -511,15 +595,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testValidationNonRequiredExclusive_ActualZero() {
-        ArgGroupSpec group = ArgGroupSpec.builder().addArg(OPTION_A).addArg(OPTION_B).build();
-        CommandLine cmd = new CommandLine(CommandSpec.create());
-
-        group.validateConstraints(parseResult(cmd), Collections.<ArgSpec>emptyList());
-    }
-
-    @Test
-    public void testReflectionValidationNonRequiredExclusive_ActualZero() {
+    public void testReflectionValidationExclusiveMultiplicity0_1_ActualZero() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -533,20 +609,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testValidationRequiredExclusive_ActualZero() {
-        ArgGroupSpec group = ArgGroupSpec.builder().multiplicity("1").addArg(OPTION_A).addArg(OPTION_B).build();
-        CommandLine cmd = new CommandLine(CommandSpec.create());
-
-        try {
-            group.validateConstraints(parseResult(cmd), Collections.<ArgSpec>emptyList());
-            fail("Expected exception");
-        } catch (MissingParameterException ex) {
-            assertEquals("Error: Missing required argument (specify one of these): -a, -b", ex.getMessage());
-        }
-    }
-
-    @Test
-    public void testReflectionValidationRequiredExclusive_ActualZero() {
+    public void testReflectionValidationExclusiveMultiplicity1_ActualZero() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -564,16 +627,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testValidationNonRequiredNonExclusive_All() {
-        ArgGroupSpec group = ArgGroupSpec.builder().exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
-        CommandLine cmd = new CommandLine(CommandSpec.create());
-
-        // no error
-        group.validateConstraints(parseResult(cmd), Arrays.<ArgSpec>asList(OPTION_A, OPTION_B, OPTION_C));
-    }
-
-    @Test
-    public void testReflectionValidationNonRequiredNonExclusive_All() {
+    public void testReflectionValidationDependentAllRequiredMultiplicity0_1_All() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -586,25 +640,36 @@ public class ArgGroupTest {
         new CommandLine(new App(), new InnerClassFactory(this)).parseArgs("-a", "-b", "-c");
     }
 
-    private static ParseResult parseResult(CommandLine cmd) {
-        return ParseResult.builder(cmd.getCommandSpec()).build();
-    }
-
     @Test
-    public void testValidationNonRequiredNonExclusive_Partial() {
-        ArgGroupSpec group = ArgGroupSpec.builder().exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
-        CommandLine cmd = new CommandLine(CommandSpec.create());
-
-        try {
-            group.validateConstraints(parseResult(cmd), Arrays.<ArgSpec>asList(OPTION_A, OPTION_B));
-            fail("Expected exception");
-        } catch (MissingParameterException ex) {
-            assertEquals("Error: Missing required argument(s): -c", ex.getMessage());
+    public void testReflectionValidationDependentSomeOptionalMultiplicity0_1_All() {
+        class All {
+            @Option(names = "-a", required = true) boolean a;
+            @Option(names = "-b", required = false) boolean b;
+            @Option(names = "-c", required = true) boolean c;
         }
+        class App {
+            @ArgGroup(exclusive = false)
+            All all;
+        }
+        new CommandLine(new App(), new InnerClassFactory(this)).parseArgs("-a", "-b", "-c");
     }
 
     @Test
-    public void testReflectionValidationNonRequiredNonExclusive_Partial() {
+    public void testReflectionValidationDependentSomeOptionalMultiplicity0_1_OptionalOmitted() {
+        class All {
+            @Option(names = "-a", required = true) boolean a;
+            @Option(names = "-b", required = false) boolean b;
+            @Option(names = "-c", required = true) boolean c;
+        }
+        class App {
+            @ArgGroup(exclusive = false)
+            All all;
+        }
+        new CommandLine(new App(), new InnerClassFactory(this)).parseArgs("-a", "-c");
+    }
+
+    @Test
+    public void testReflectionValidationDependentMultiplicity0_1_Partial() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -623,16 +688,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testValidationNonRequiredNonExclusive_Zero() {
-        ArgGroupSpec group = ArgGroupSpec.builder().exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
-        CommandLine cmd = new CommandLine(CommandSpec.create());
-
-        // no error
-        group.validateConstraints(parseResult(cmd), Collections.<ArgSpec>emptyList());
-    }
-
-    @Test
-    public void testReflectionValidationNonRequiredNonExclusive_Zero() {
+    public void testReflectionValidationDependentMultiplicity0_1_Zero() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -646,7 +702,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testReflectionValidationRequiredNonExclusive_All() {
+    public void testReflectionValidationDependentMultiplicity1_All() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -660,20 +716,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testValidationRequiredNonExclusive_Partial() {
-        ArgGroupSpec group = ArgGroupSpec.builder().multiplicity("1").exclusive(false).addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
-        CommandLine cmd = new CommandLine(CommandSpec.create());
-
-        try {
-            group.validateConstraints(parseResult(cmd), Arrays.<ArgSpec>asList(OPTION_B));
-            fail("Expected exception");
-        } catch (MissingParameterException ex) {
-            assertEquals("Error: Missing required argument(s): -a, -c", ex.getMessage());
-        }
-    }
-
-    @Test
-    public void testReflectionValidationRequiredNonExclusive_Partial() {
+    public void testReflectionValidationDependentMultiplicity1_Partial() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -692,21 +735,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testValidationRequiredNonExclusive_Zero() {
-        ArgGroupSpec group = ArgGroupSpec.builder().multiplicity("1").exclusive(false)
-                .addArg(OPTION_A).addArg(OPTION_B).addArg(OPTION_C).build();
-        CommandLine cmd = new CommandLine(CommandSpec.create());
-
-        try {
-            group.validateConstraints(parseResult(cmd), Collections.<ArgSpec>emptyList());
-            fail("Expected exception");
-        } catch (MissingParameterException ex) {
-            assertEquals("Error: Missing required argument(s): -a, -b, -c", ex.getMessage());
-        }
-    }
-
-    @Test
-    public void testReflectionValidationRequiredNonExclusive_Zero() {
+    public void testReflectionValidationDependentMultiplicity1_Zero() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -905,7 +934,7 @@ public class ArgGroupTest {
         ArgGroupSpec.Builder b3 = ArgGroupSpec.builder()
                 .addArg(OptionSpec.builder("-g").required(true).build())
                 .addArg(OptionSpec.builder("-h").required(true).build())
-                .addArg(OptionSpec.builder("-i").required(true).build())
+                .addArg(OptionSpec.builder("-i").required(true).type(List.class).build())
                 .multiplicity("1")
                 .exclusive(false);
 
@@ -914,23 +943,23 @@ public class ArgGroupTest {
                 .addSubgroup(b2.build())
                 .addSubgroup(b3.build());
 
-        assertEquals("[[-a | -b | -c] | (-e | -f) | (-g -h -i)]", composite.build().synopsis());
+        assertEquals("[[-a | -b | -c] | (-e | -f) | (-g -h -i=PARAM [-i=PARAM]...)]", composite.build().synopsis());
 
         composite.multiplicity("1");
-        assertEquals("([-a | -b | -c] | (-e | -f) | (-g -h -i))", composite.build().synopsis());
+        assertEquals("([-a | -b | -c] | (-e | -f) | (-g -h -i=PARAM [-i=PARAM]...))", composite.build().synopsis());
 
         composite.multiplicity("1..*");
-        assertEquals("([-a | -b | -c] | (-e | -f) | (-g -h -i))...", composite.build().synopsis());
+        assertEquals("([-a | -b | -c] | (-e | -f) | (-g -h -i=PARAM [-i=PARAM]...))...", composite.build().synopsis());
 
         composite.multiplicity("1");
         composite.exclusive(false);
-        assertEquals("([-a | -b | -c] (-e | -f) (-g -h -i))", composite.build().synopsis());
+        assertEquals("([-a | -b | -c] (-e | -f) (-g -h -i=PARAM [-i=PARAM]...))", composite.build().synopsis());
 
         composite.multiplicity("0..1");
-        assertEquals("[[-a | -b | -c] (-e | -f) (-g -h -i)]", composite.build().synopsis());
+        assertEquals("[[-a | -b | -c] (-e | -f) (-g -h -i=PARAM [-i=PARAM]...)]", composite.build().synopsis());
 
         composite.multiplicity("0..*");
-        assertEquals("[[-a | -b | -c] (-e | -f) (-g -h -i)]...", composite.build().synopsis());
+        assertEquals("[[-a | -b | -c] (-e | -f) (-g -h -i=PARAM [-i=PARAM]...)]...", composite.build().synopsis());
     }
 
     @Test
@@ -969,12 +998,11 @@ public class ArgGroupTest {
     public void testSynopsisMixGroupsPositionals() {
         ArgGroupSpec.Builder b1 = ArgGroupSpec.builder()
                 .addArg(OptionSpec.builder("-a").required(true).build())
-                .addArg(OptionSpec.builder("-b").required(true).build())
+                .addArg(OptionSpec.builder("-b").required(false).build())
                 .addArg(OptionSpec.builder("-c").required(true).build());
 
         ArgGroupSpec.Builder b2 = ArgGroupSpec.builder()
-                .addArg(OptionSpec.builder("-e").required(true).build())
-                .addArg(OptionSpec.builder("-e").required(true).build())
+                .addArg(OptionSpec.builder("-e").required(false).build())
                 .addArg(OptionSpec.builder("-f").required(true).build())
                 .multiplicity("1");
 
@@ -985,16 +1013,16 @@ public class ArgGroupTest {
                 .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG2").required(true).build())
                 .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG3").required(true).build());
 
-        assertEquals("[ARG1 | ARG2 | ARG3 | [-a | -b | -c] | (-e | -f)]", composite.build().synopsis());
+        assertEquals("[ARG1 | ARG2 | ARG3 | [-a | [-b] | -c] | ([-e] | -f)]", composite.build().synopsis());
 
         composite.multiplicity("1");
-        assertEquals("(ARG1 | ARG2 | ARG3 | [-a | -b | -c] | (-e | -f))", composite.build().synopsis());
+        assertEquals("(ARG1 | ARG2 | ARG3 | [-a | [-b] | -c] | ([-e] | -f))", composite.build().synopsis());
 
         composite.exclusive(false);
-        assertEquals("(ARG1 ARG2 ARG3 [-a | -b | -c] (-e | -f))", composite.build().synopsis());
+        assertEquals("(ARG1 ARG2 ARG3 [-a | [-b] | -c] ([-e] | -f))", composite.build().synopsis());
 
         composite.multiplicity("0..1");
-        assertEquals("[ARG1 ARG2 ARG3 [-a | -b | -c] (-e | -f)]", composite.build().synopsis());
+        assertEquals("[ARG1 ARG2 ARG3 [-a | [-b] | -c] ([-e] | -f)]", composite.build().synopsis());
     }
 
     @Test
@@ -1598,9 +1626,7 @@ public class ArgGroupTest {
         assertEquals(1, app.monos.get(0).a);
         assertEquals(2, app.monos.get(1).a);
 
-        List<MatchedGroup> matchedGroups = parseResult.matchedGroups();
-        assertEquals(1, matchedGroups.size());
-        MatchedGroup matchedGroup = matchedGroups.get(0);
+        MatchedGroup matchedGroup = parseResult.findMatchedGroup(cmd.getCommandSpec().argGroups().get(0)).get(0);
         assertEquals(2, matchedGroup.multiples().size());
 
         ArgSpec a = cmd.getCommandSpec().findOption("-a");
@@ -1663,9 +1689,7 @@ public class ArgGroupTest {
         assertEquals("pos", parseResult.matchedPositionalValue(0, ""));
         assertFalse(parseResult.hasMatchedOption("-f"));
 
-        List<MatchedGroup> matchedGroups = parseResult.matchedGroups();
-        assertEquals(1, matchedGroups.size());
-        MatchedGroup matchedGroup = matchedGroups.get(0);
+        MatchedGroup matchedGroup = parseResult.findMatchedGroup(cmd.getCommandSpec().argGroups().get(0)).get(0);
         assertEquals(3, matchedGroup.multiples().size());
 
         CommandSpec spec = cmd.getCommandSpec();
@@ -1727,9 +1751,7 @@ public class ArgGroupTest {
         assertEquals("pos", parseResult.matchedPositionalValue(0, ""));
         assertFalse(parseResult.hasMatchedOption("-f"));
 
-        List<MatchedGroup> matchedGroups = parseResult.matchedGroups();
-        assertEquals(1, matchedGroups.size());
-        MatchedGroup matchedGroup = matchedGroups.get(0);
+        MatchedGroup matchedGroup = parseResult.findMatchedGroup(cmd.getCommandSpec().argGroups().get(0)).get(0);
         assertEquals(3, matchedGroup.multiples().size());
 
         CommandSpec spec = cmd.getCommandSpec();
@@ -1782,9 +1804,7 @@ public class ArgGroupTest {
             assertEquals(file.get(i), app.compositeArguments.get(i).file);
         }
 
-        List<MatchedGroup> matchedGroups = parseResult.matchedGroups();
-        assertEquals(1, matchedGroups.size());
-        MatchedGroup matchedGroup = matchedGroups.get(0);
+        MatchedGroup matchedGroup = parseResult.findMatchedGroup(cmd.getCommandSpec().argGroups().get(0)).get(0);
         assertEquals(3, matchedGroup.multiples().size());
 
         CommandSpec spec = cmd.getCommandSpec();
