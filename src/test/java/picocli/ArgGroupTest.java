@@ -6,20 +6,12 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
-import picocli.CommandLine.ArgGroup;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Help;
-import picocli.CommandLine.InitializationException;
-import picocli.CommandLine.MissingParameterException;
+import picocli.CommandLine.*;
 import picocli.CommandLine.Model.ArgGroupSpec;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
-import picocli.CommandLine.MutuallyExclusiveArgsException;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
-import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.ParseResult.MatchedGroup;
 import picocli.CommandLine.ParseResult.MatchedGroupMultiple;
 
@@ -781,7 +773,8 @@ public class ArgGroupTest {
     public void testReflectionValidationCompositeMultiplicity1() {
         validateInput(new CompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-a");
         validateInput(new CompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-b");
-//TODO        validateInput(new CompositeApp(), MutuallyExclusiveArgsException.class, "Error: -x, -y are mutually exclusive (specify only one)",                "-x", "-y");
+        //validateInput(new CompositeApp(), MutuallyExclusiveArgsException.class, "Error: -x, -y are mutually exclusive (specify only one)",                "-x", "-y");
+        validateInput(new CompositeApp(), MaxValuesExceededException.class,     "Error: expected only one match but got ([-a -b] | (-x | -y))={-x} and ([-a -b] | (-x | -y))={-y}",                "-x", "-y");
         validateInput(new CompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-x", "-a");
         validateInput(new CompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-x", "-b");
         validateInput(new CompositeApp(), MutuallyExclusiveArgsException.class, "Error: [-a -b] and (-x | -y) are mutually exclusive (specify only one)", "-a", "-x", "-b");
@@ -799,7 +792,8 @@ public class ArgGroupTest {
     public void testReflectionValidationCompositeMultiplicity0_1() {
         validateInput(new OptionalCompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-a");
         validateInput(new OptionalCompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-b");
-// TODO       validateInput(new OptionalCompositeApp(), MutuallyExclusiveArgsException.class, "Error: -x, -y are mutually exclusive (specify only one)",                "-x", "-y");
+        //validateInput(new OptionalCompositeApp(), MutuallyExclusiveArgsException.class, "Error: -x, -y are mutually exclusive (specify only one)",                "-x", "-y");
+        validateInput(new OptionalCompositeApp(), MaxValuesExceededException.class,     "Error: expected only one match but got [[-a -b] | (-x | -y)]={-x} and [[-a -b] | (-x | -y)]={-y}",                "-x", "-y");
         validateInput(new OptionalCompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-x", "-a");
         validateInput(new OptionalCompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-x", "-b");
         validateInput(new OptionalCompositeApp(), MutuallyExclusiveArgsException.class, "Error: [-a -b] and (-x | -y) are mutually exclusive (specify only one)", "-a", "-x", "-b");
@@ -1466,7 +1460,7 @@ public class ArgGroupTest {
             cmd.parseArgs("-x=1", "-a=1", "file0", "file1", "-y=2", "-x=3");
             fail("Expected exception");
         } catch (MutuallyExclusiveArgsException ex) {
-            assertEquals("Error: -x=<x>, -y=<y> are mutually exclusive (specify only one)", ex.getMessage());
+            assertEquals("Error: [-a=<a> <f0> <f1>] [-a=<a> <f0> <f1>] and (-x=<x> | -y=<y>) are mutually exclusive (specify only one)", ex.getMessage());
         }
         try {
             cmd.parseArgs("-x=1", "-a=1", "file0", "file1", "-x=2", "-x=3");
@@ -1488,18 +1482,23 @@ public class ArgGroupTest {
         assertSame(app.composite, topLevelGroup.userObject());
 
         ParseResult parseResult = cmd.parseArgs("-a=1", "file0", "file1", "-a=2", "file2", "file3");
-        Map<ArgGroupSpec, MatchedGroup> matchedGroups = parseResult.getMatchedGroups();
-        assertEquals(1, matchedGroups.size());
-        MatchedGroup mg = matchedGroups.get(topLevelGroup);
-        List<MatchedGroupMultiple> multiples = mg.multiples();
+        List<MatchedGroupMultiple> multiples = parseResult.getMatchedGroupMultiples();
         assertEquals(1, multiples.size());
 
-        Map<ArgGroupSpec, MatchedGroup> matchedSubgroups = multiples.get(0).matchedSubgroups();
-        assertEquals(1, matchedSubgroups.size());
-        MatchedGroup subMatch = matchedSubgroups.entrySet().iterator().next().getValue();
-        List<MatchedGroupMultiple> submultiples = subMatch.multiples();
-        assertEquals(2, submultiples.size());
-        MatchedGroupMultiple subMGM1 = submultiples.get(0);
+        Map<ArgGroupSpec, MatchedGroup> matchedTopGroups = multiples.get(0).matchedSubgroups();
+        assertEquals(1, matchedTopGroups.size());
+        MatchedGroup topGroupMatch = matchedTopGroups.entrySet().iterator().next().getValue();
+        List<MatchedGroupMultiple> topGroupMultiples = topGroupMatch.multiples();
+        assertEquals(1, topGroupMultiples.size());
+        MatchedGroupMultiple topGroupMultiple = topGroupMultiples.get(0);
+
+        Map<ArgGroupSpec, MatchedGroup> matchedSubGroups = topGroupMultiple.matchedSubgroups();
+        assertEquals(1, matchedSubGroups.size());
+        MatchedGroup subGroupMatch = matchedSubGroups.entrySet().iterator().next().getValue();
+        List<MatchedGroupMultiple> subGroupMultiples = subGroupMatch.multiples();
+        assertEquals(2, subGroupMultiples.size());
+        MatchedGroupMultiple subMGM1 = subGroupMultiples.get(0);
+
         assertFalse(subMGM1.isEmpty());
         assertTrue(subMGM1.matchedSubgroups().isEmpty());
         CommandSpec spec = cmd.getCommandSpec();
@@ -1507,7 +1506,7 @@ public class ArgGroupTest {
         assertEquals(Arrays.asList(new File("file0")), subMGM1.matchedValues(spec.positionalParameters().get(0)));
         assertEquals(Arrays.asList(new File("file1")), subMGM1.matchedValues(spec.positionalParameters().get(1)));
 
-        MatchedGroupMultiple subMGM2 = submultiples.get(1);
+        MatchedGroupMultiple subMGM2 = subGroupMultiples.get(1);
         assertFalse(subMGM2.isEmpty());
         assertTrue(subMGM2.matchedSubgroups().isEmpty());
         assertEquals(Arrays.asList(2), subMGM2.matchedValues(spec.findOption("-a")));
@@ -1515,13 +1514,12 @@ public class ArgGroupTest {
         assertEquals(Arrays.asList(new File("file3")), subMGM2.matchedValues(spec.positionalParameters().get(1)));
 
         List<MatchedGroup> found = parseResult.findMatchedGroup(topLevelGroup);
-        assertSame(mg, found.get(0));
+        assertSame(topGroupMatch, found.get(0));
 
         ArgGroupSpec sub = topLevelGroup.subgroups().get(0);
         assertEquals("Co-occurring options:%nThese options must appear together, or not at all.%n", sub.heading());
         List<MatchedGroup> foundSub = parseResult.findMatchedGroup(sub);
         assertEquals(1, foundSub.size());
-        assertSame(subMatch, foundSub.get(0));
     }
 
     @Test
@@ -1814,6 +1812,81 @@ public class ArgGroupTest {
         }
     }
 
-    // TODO add tests with positional interactive params in group
+    @Test
+    public void testMultipleGroups() {
+        class MultiGroup {
+            // SYNOPSIS: [--mode=<mode> <file>]
+            @ArgGroup(exclusive = false, multiplicity = "*")
+            OptionPositionalComposite[] optPos;
+
+            // SYNOPSIS: [-a -d=DATASET -c=CONTAINER -t=TYPE]
+            @ArgGroup(exclusive = false)
+            List<RepeatingGroup635> composites;
+        }
+        MultiGroup app = new MultiGroup();
+        CommandLine cmd = new CommandLine(app);
+
+        String synopsis = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF)).synopsis(0);
+//        assertEquals("<main class> [--mode=<mode> <file>] [-a -c=<container> -d=<dataset> -t=<type>]", synopsis.trim());
+
+        ParseResult parseResult = cmd.parseArgs("--mode=mode1", "/file/1", "-a", "-d=data1", "-c=contain1", "-t=typ1", "--mode=mode2", "/file/2");
+        List<MatchedGroupMultiple> multiples = parseResult.getMatchedGroupMultiples();
+
+    }
+
+    static class CompositeGroupDemo {
+
+        @ArgGroup(exclusive = false, multiplicity = "1..*")
+        List<Composite> composites;
+
+        static class Composite {
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            Dependent dependent;
+
+            @ArgGroup(exclusive = true, multiplicity = "1")
+            Exclusive exclusive;
+        }
+
+        static class Dependent {
+            @Option(names = "-a", required = true)
+            int a;
+            @Option(names = "-b", required = true)
+            int b;
+            @Option(names = "-c", required = true)
+            int c;
+        }
+
+        static class Exclusive {
+            @Option(names = "-x", required = true)
+            boolean x;
+            @Option(names = "-y", required = true)
+            boolean y;
+            @Option(names = "-z", required = true)
+            boolean z;
+        }
+    }
+    @Test
+    public void testCompositeDemo() {
+        CompositeGroupDemo example = new CompositeGroupDemo();
+        CommandLine cmd = new CommandLine(example);
+
+        cmd.parseArgs("-x", "-a=1", "-b=1", "-c=1", "-a=2", "-b=2", "-c=2", "-y");
+        assertEquals(2, example.composites.size());
+
+        CompositeGroupDemo.Composite c1 = example.composites.get(0);
+        assertTrue(c1.exclusive.x);
+        assertEquals(1, c1.dependent.a);
+        assertEquals(1, c1.dependent.b);
+        assertEquals(1, c1.dependent.c);
+
+        CompositeGroupDemo.Composite c2 = example.composites.get(1);
+        assertTrue(c2.exclusive.y);
+        assertEquals(2, c2.dependent.a);
+        assertEquals(2, c2.dependent.b);
+        assertEquals(2, c2.dependent.c);
+
+    }
+
+        // TODO add tests with positional interactive params in group
     // TODO add tests with positional params in multiple groups
 }
