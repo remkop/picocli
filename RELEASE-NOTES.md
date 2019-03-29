@@ -12,6 +12,10 @@ This release adds support for argument groups (incubating). Argument groups enab
 
 See the [New and Noteworthy section](#4.0.0-alpha-1-new) below for more details.
 
+_The purpose of this release is to give people a chance to try this out and provide feedback._
+
+_What do you think of the annotations API? What about the programmatic API? Does it work as expected? Is the documentation clear and complete? Anything you want to change or improve? Any other feedback?_
+
 
 This is the fifty-first public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -241,13 +245,13 @@ assert c2.dependent.c == 2;
 
 #### Positional Parameters
 
-When a `@Parameters` positional parameter is part of a group, its `index` is the index <em>within the group</em>, not within the command.
+When a `@Parameters` positional parameter is part of a group, its `index` is the index _within the group_, not within the command.
 
 
 #### Limitations and Points of Caution
 
-* Options with the same name cannot be defined in multiple groups, and similarly it is not possible to define multiple options with the same name where one option is part of a group and another is part of the command (and not in a group).
-* It is probably not a good idea to define positional parameters that are part of a group at the same time (with the same index) as `@Parameters` positional parameters that are part of the command (and not in a group).
+* Options with the same name cannot be defined in multiple groups. Similarly, it is not possible to define an option outside of a group with the same name as a different option that is part of a group.
+* Positional parameters in a single group work fine, but take care (or avoid) defining positional parameters in multiple groups or positional parameters in a group as well as outside a group. Positional parameters are matched by index, and while the index of a group is reset when a new group multiple is encountered, the index of positional parameters outside a group only increases and is never reset.
 
 
 ## <a name="4.0.0-alpha-1-fixes"></a> Fixed issues
