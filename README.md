@@ -45,19 +45,28 @@ Picocli-based applications can easily [integrate](https://picocli.info/#_depende
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 ### Releases
-* [Releases](https://github.com/remkop/picocli/releases) - Latest: 3.9.5 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.9.5)
+* [All Releases](https://github.com/remkop/picocli/releases)
+* Latest: 4.0.0-alpha-1 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.0.0-alpha-1)
+* Stable: Picocli 3.9.5 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.9.5)
 * Older: Picocli 3.0.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0)
 * Older: Picocli 2.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0)
 
 ### Documentation
-* [3.x User manual: https://picocli.info](https://picocli.info)
-* [3.x Quick Guide](https://picocli.info/quick-guide.html)
-* [2.x User manual](https://picocli.info/man/2.x)
+* [4.x User manual: https://picocli.info](https://picocli.info)
+* [4.x Quick Guide](https://picocli.info/quick-guide.html)
+* [4.x API Javadoc](https://picocli.info/apidocs/)
 * [Command line autocompletion](https://picocli.info/autocomplete.html)
-* [API Javadoc](https://picocli.info/apidocs/)
-* [3.0 Programmatic API](https://picocli.info/picocli-3.0-programmatic-api.html)
+* [Programmatic API](https://picocli.info/picocli-3.0-programmatic-api.html)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
 * [GraalVM AOT Compilation to Native Image](https://picocli.info/picocli-on-graalvm.html) <img src="https://www.graalvm.org/resources/img/logo-colored.svg" > 
+
+### Older
+* [3.x User manual](https://picocli.info/man/3.x)
+* [3.x Quick Guide](https://picocli.info/man/3.x/quick-guide.html)
+* [3.x API Javadoc](https://picocli.info/man/3.x/apidocs/)
+* [2.x User manual](https://picocli.info/man/2.x)
+* [2.x API Javadoc](https://picocli.info/man/2.x/apidocs/)
+* [1.x User manual](https://picocli.info/man/1.x)
 
 ### Articles
 * [Migrating from Commons CLI to picocli](https://picocli.info/migrating-from-commons-cli.html). You won't regret it! :-) (also on: [DZone](https://dzone.com/articles/migrating-from-commons-cli-to-picocli) and [Java Code Geeks](https://www.javacodegeeks.com/2018/11/migrating-commons-cli-picocli.html)).
@@ -184,35 +193,35 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:3.9.5'
+compile 'info.picocli:picocli:4.0.0-alpha-1'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>3.9.5</version>
+  <version>4.0.0-alpha-1</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "3.9.5"
+libraryDependencies += "info.picocli" % "picocli" % "4.0.0-alpha-1"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="3.9.5" />
+<dependency org="info.picocli" name="picocli" rev="4.0.0-alpha-1" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='3.9.5')
+    @Grab(group='info.picocli', module='picocli', version='4.0.0-alpha-1')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "3.9.5"]
+[info.picocli/picocli "4.0.0-alpha-1"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:3.9.5'
+'info.picocli:picocli:jar:4.0.0-alpha-1'
 ```

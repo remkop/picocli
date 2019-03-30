@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="4.0.0-alpha-1"></a> Picocli 4.0.0-alpha-1 (UNRELEASED)
+# <a name="4.0.0-alpha-1"></a> Picocli 4.0.0-alpha-1
 The picocli community is pleased to announce picocli 4.0.0-alpha-1.
 
 This release adds support for argument groups (incubating). Argument groups enable the following:
@@ -12,10 +12,11 @@ This release adds support for argument groups (incubating). Argument groups enab
 
 See the [New and Noteworthy section](#4.0.0-alpha-1-new) below for more details.
 
-_The purpose of this release is to give people a chance to try this out and provide feedback._
+_Please try this and provide feedback. We can still make changes._
 
-_What do you think of the annotations API? What about the programmatic API? Does it work as expected? Is the documentation clear and complete? Anything you want to change or improve? Any other feedback?_
+_What do you think of the annotations API? What about the programmatic API? Does it work as expected? Are the input validation error messages correct and clear? Is the documentation clear and complete? Anything you want to change or improve? Any other feedback?_
 
+Many thanks to the picocli community members who contributed!
 
 This is the fifty-first public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -260,7 +261,7 @@ When a `@Parameters` positional parameter is part of a group, its `index` is the
 - [#199] mutually exclusive options
 - [#295] options that must co-occur (dependent options)
 - [#450] option grouping in the usage help message
-- [#358] (also [#635])repeating composite arguments (this should also cover the use cases presented in #454 and #434 requests for repeatable subcommands)
+- [#358] (also [#635]) repeating composite arguments (this should also cover the use cases presented in #454 and #434 requests for repeatable subcommands)
 
 ## <a name="4.0.0-alpha-1-deprecated"></a> Deprecations
 No features were deprecated in this release.
