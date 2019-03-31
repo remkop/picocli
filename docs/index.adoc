@@ -3006,7 +3006,7 @@ Custom factories need to implement the `picocli.CommandLine.IFactory` interface:
 public interface IFactory {
     /**
      * Creates and returns an instance of the specified class.
-     * @param cls the class to instantiate
+     * @param clazz the class to instantiate
      * @param <K> the type to instantiate
      * @return the new instance
      * @throws Exception an exception detailing what went wrong when creating the instance
