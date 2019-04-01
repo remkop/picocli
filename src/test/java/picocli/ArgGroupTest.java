@@ -1884,9 +1884,64 @@ public class ArgGroupTest {
         assertEquals(2, c2.dependent.a);
         assertEquals(2, c2.dependent.b);
         assertEquals(2, c2.dependent.c);
-
     }
 
-        // TODO add tests with positional interactive params in group
+    // https://github.com/remkop/picocli/issues/635
+    @Command(name = "test-composite")
+    static class TestComposite {
+
+        @ArgGroup(exclusive = false, multiplicity = "0..*")
+        List<OuterGroup> outerList;
+
+        static class OuterGroup {
+            @Option(names = "--add-group", required = true) boolean addGroup;
+
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            Inner inner;
+
+            static class Inner {
+                @Option(names = "--option1", required = true) String option1;
+                @Option(names = "--option2", required = true) String option2;
+            }
+        }
+    }
+
+    @Test
+    public void testCompositeValidation() {
+        TestComposite app = new TestComposite();
+        CommandLine cmd = new CommandLine(app);
+        try {
+            cmd.parseArgs("--add-group", "--option2=1");
+            fail("Expect exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): --option1=<option1>", ex.getMessage());
+        }
+        try {
+            cmd.parseArgs("--add-group");
+            fail("Expect exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): [--add-group (--option1=<option1> --option2=<option2>)]...", ex.getMessage());
+        }
+        try {
+            cmd.parseArgs("--add-group", "--option2=1", "--option2=1");
+            fail("Expect exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): --option1=<option1>", ex.getMessage());
+        }
+        try {
+            cmd.parseArgs("--add-group", "--option2=1", "--option1=1", "--add-group", "--option2=1");
+            fail("Expect exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): --option1=<option1>", ex.getMessage());
+        }
+        try {
+            ParseResult parseResult = cmd.parseArgs("--add-group", "--option2=1", "--option1=1", "--add-group");
+            fail("Expect exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): [--add-group (--option1=<option1> --option2=<option2>)]...", ex.getMessage());
+        }
+    }
+
+    // TODO add tests with positional interactive params in group
     // TODO add tests with positional params in multiple groups
 }

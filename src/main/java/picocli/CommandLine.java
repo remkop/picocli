@@ -6927,14 +6927,15 @@ public class CommandLine {
                     }
                     return GroupValidationResult.SUCCESS_PRESENT;
                 } else { // co-occurring group
+                    if (someButNotAllSpecified) {
+                        validationException = new MissingParameterException(commandLine, args(),
+                                "Error: Missing required argument(s): " + missingElements);
+                        return GroupValidationResult.FAILURE_PARTIAL;
+                    }
                     if ((multiplicity().min > 0 && haveMissing)) {
                         validationException = new MissingParameterException(commandLine, args(),
                                 "Error: Missing required argument(s): " + missingElements);
                         return GroupValidationResult.FAILURE_ABSENT;
-                    } else if (multiplicity().min == 0 && someButNotAllSpecified) {
-                        validationException = new MissingParameterException(commandLine, args(),
-                                "Error: Missing required argument(s): " + missingElements);
-                        return GroupValidationResult.FAILURE_PARTIAL;
                     }
                     return haveMissing ? GroupValidationResult.SUCCESS_ABSENT : GroupValidationResult.SUCCESS_PRESENT;
                 }
