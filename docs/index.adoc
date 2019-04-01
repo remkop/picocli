@@ -811,7 +811,7 @@ class ArityDemo {
     String[] strings;
 }
 ----
-A `MissingParameterException` is thrown when fewer than the miminum number of parameters is specified on the command line.
+A `MissingParameterException` is thrown when fewer than the minimum number of parameters is specified on the command line.
 
 Once the minimum number of parameters is consumed, picocli will check each subsequent command line argument to see whether it is an additional parameter, or a new option. For example:
 
@@ -1799,12 +1799,12 @@ Options:
                                 commit.
   -c, --reedit-message=<commit>
                               Like -C, but with -c the editor is invoked, so
-                                that the user canfurther edit the commit
+                                that the user can further edit the commit
                                 message.
       --fixup=<commit>        Construct a commit message for use with rebase
                                 --autosquash.
       --squash=<commit>        Construct a commit message for use with rebase
-                                --autosquash. The commitmessage subject line is
+                                --autosquash. The commit message subject line is
                                 taken from the specified commit with a prefix
                                 of "squash! ". Can be used with additional
                                 commit message options (-m/-c/-C/-F).
@@ -2696,7 +2696,7 @@ public class MyCommand {
 }
 ----
 In addition to adding the options, subcommands and command attributes of the mixed-in object to the command,
-the mixed-in object is also injected into the field annotated with `@Mixin`, making it trival for the command to reference the mixed-in object if necessary.
+the mixed-in object is also injected into the field annotated with `@Mixin`, making it trivial for the command to reference the mixed-in object if necessary.
 
 [source,java]
 ----
