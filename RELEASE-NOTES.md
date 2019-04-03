@@ -1,5 +1,42 @@
 # picocli Release Notes
 
+# <a name="4.0.0-alpha-2"></a> Picocli 4.0.0-alpha-2 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.0.0-alpha-2.
+
+This release contains bugfixes for argument groups. See the [4.0.0-alpha-1 New and Noteworthy section](#4.0.0-alpha-1-new) below for more details on argument groups.
+
+_Please try this and provide feedback. We can still make changes._
+
+_What do you think of the annotations API? What about the programmatic API? Does it work as expected? Are the input validation error messages correct and clear? Is the documentation clear and complete? Anything you want to change or improve? Any other feedback?_
+
+Many thanks to the picocli community members who contributed!
+
+This is the fifty-first public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.0.0-alpha-2"></a> Table of Contents
+* [New and noteworthy](#4.0.0-alpha-2-new)
+* [Fixed issues](#4.0.0-alpha-2-fixes)
+* [Deprecations](#4.0.0-alpha-2-deprecated)
+* [Potential breaking changes](#4.0.0-alpha-2-breaking-changes)
+
+## <a name="4.0.0-alpha-2-new"></a> New and Noteworthy
+
+
+## <a name="4.0.0-alpha-2-fixes"></a> Fixed issues
+- [#635] Bugfix in validation: did not show an error if some but not all parts of a co-occurring group were specified. Thanks to [Philipp Hanslovsky](https://github.com/hanslovsky) for the pull request. 
+- [#653] Bugfix: validation should be skipped if help was requested. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+- [#652] Documentation: fixes in user manual. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+- [#651] Documentation: fixes in user manual. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+
+## <a name="4.0.0-alpha-2-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.0.0-alpha-2-breaking-changes"></a> Potential breaking changes
+No breaking changes in this release.
+
+
+
 # <a name="4.0.0-alpha-1"></a> Picocli 4.0.0-alpha-1
 The picocli community is pleased to announce picocli 4.0.0-alpha-1.
 
