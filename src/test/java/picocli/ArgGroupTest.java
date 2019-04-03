@@ -1886,6 +1886,45 @@ public class ArgGroupTest {
         assertEquals(2, c2.dependent.c);
     }
 
+    static class CompositeGroupSynopsisDemo {
+
+        @ArgGroup(exclusive = false, multiplicity = "2..*")
+        List<Composite> composites;
+
+        static class Composite {
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            Dependent dependent;
+
+            @ArgGroup(exclusive = true, multiplicity = "1")
+            Exclusive exclusive;
+        }
+
+        static class Dependent {
+            @Option(names = "-a", required = true)
+            int a;
+            @Option(names = "-b", required = true)
+            int b;
+            @Option(names = "-c", required = true)
+            int c;
+        }
+
+        static class Exclusive {
+            @Option(names = "-x", required = true)
+            boolean x;
+            @Option(names = "-y", required = true)
+            boolean y;
+            @Option(names = "-z", required = true)
+            boolean z;
+        }
+    }
+    @Test
+    public void testCompositeSynopsisDemo() {
+        CompositeGroupSynopsisDemo example = new CompositeGroupSynopsisDemo();
+        CommandLine cmd = new CommandLine(example);
+        String synopsis = cmd.getCommandSpec().argGroups().get(0).synopsis();
+        assertEquals("((-a=<a> -b=<b> -c=<c>) (-x | -y | -z)) ((-a=<a> -b=<b> -c=<c>) (-x | -y | -z))...", synopsis);
+    }
+
     // https://github.com/remkop/picocli/issues/635
     @Command(name = "test-composite")
     static class TestComposite {

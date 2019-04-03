@@ -6611,13 +6611,13 @@ public class CommandLine {
                 String prefix = multiplicity().min > 0 ? "(" : "[";
                 String postfix = multiplicity().min > 0 ? ")" : "]";
                 Text result = colorScheme.ansi().text(prefix).concat(synopsis).concat(postfix);
+                int i = 1;
+                for (; i < multiplicity.min; i++) {
+                    result = result.concat(" (").concat(synopsis).concat(")");
+                }
                 if (multiplicity().isVariable) {
                     result = result.concat("...");
                 } else {
-                    int i = 1;
-                    for (; i < multiplicity.min; i++) {
-                        result = result.concat(" (").concat(synopsis).concat(")");
-                    }
                     for (; i < multiplicity.max; i++) {
                         result = result.concat(" [").concat(synopsis).concat("]");
                     }
