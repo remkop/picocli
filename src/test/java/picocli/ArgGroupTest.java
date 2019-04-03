@@ -1993,6 +1993,36 @@ public class ArgGroupTest {
         assertTrue(parseResult.isUsageHelpRequested());
     }
 
+    @Command(name = "ArgGroupsTest", resourceBundle = "picocli.arggroup-localization")
+    static class LocalizedCommand {
+
+        @Option(names = {"-q", "--quiet"}, required = true)
+        static boolean quiet;
+
+        @ArgGroup(exclusive = true, multiplicity = "1", headingKey = "myKey")
+        LocalizedGroup datasource;
+
+        static class LocalizedGroup {
+            @Option(names = "-a", required = true)
+            static boolean isA;
+
+            @Option(names = "-b", required = true)
+            static File dataFile;
+        }
+    }
+    @Test
+    public void testArgGroupHeaderLocalization() {
+        CommandLine cmd = new CommandLine(new LocalizedCommand());
+        String expected = String.format("" +
+                "Usage: ArgGroupsTest (-a | -b=<dataFile>) -q%n" +
+                "  -q, --quiet      My description for option quiet%n" +
+                "My heading text%n" +
+                "  -a               My description for exclusive option a%n" +
+                "  -b=<dataFile>%n");
+        String actual = cmd.getUsageMessage();
+        assertEquals(expected, actual);
+    }
+
     // TODO add tests with positional interactive params in group
     // TODO add tests with positional params in multiple groups
 }

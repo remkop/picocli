@@ -4047,6 +4047,7 @@ public class CommandLine {
             private void updateArgSpecMessages() {
                 for (OptionSpec opt : options()) { opt.messages(usageMessage().messages()); }
                 for (PositionalParamSpec pos : positionalParameters()) { pos.messages(usageMessage().messages()); }
+                for (ArgGroupSpec group : argGroups()) { group.messages(usageMessage().messages()); }
             }
 
             /** Returns a read-only view of the subcommand map. */
@@ -6460,6 +6461,7 @@ public class CommandLine {
             private final ITypeInfo typeInfo;
             private final List<ArgGroupSpec> subgroups;
             private final Set<ArgSpec> args;
+            private Messages messages;
             private ArgGroupSpec parentGroup;
             private String id = "1";
 
@@ -6520,7 +6522,12 @@ public class CommandLine {
 
             /** Returns the heading of this group (may be {@code null}), used when generating the usage documentation.
              * @see ArgGroup#heading() */
-            public String heading()  { return heading; }
+            public String heading()  {
+                if (messages() == null) { return heading; }
+                String newValue = messages().getString(headingKey(), null);
+                if (newValue != null) { return newValue; }
+                return heading;
+            }
 
             /** Returns the heading key of this group (may be {@code null}), used to get the heading from a resource bundle.
              * @see ArgGroup#headingKey()  */
@@ -6649,6 +6656,18 @@ public class CommandLine {
 
             public Help.IParamLabelRenderer createLabelRenderer(CommandSpec commandSpec) {
                 return new Help.DefaultParamLabelRenderer(commandSpec == null ? CommandSpec.create() : commandSpec);
+            }
+            /** Returns the Messages for this argument group specification, or {@code null}. */
+            public Messages messages() { return messages; }
+            /** Sets the Messages for this ArgGroupSpec, and returns this ArgGroupSpec.
+             * @param msgs the new Messages value, may be {@code null}
+             * @see Command#resourceBundle()
+             * @see #headingKey()
+             */
+            public ArgGroupSpec messages(Messages msgs) {
+                messages = msgs;
+                for (ArgGroupSpec sub : subgroups()) { sub.messages(msgs); }
+                return this;
             }
 
             @Override public boolean equals(Object obj) {
