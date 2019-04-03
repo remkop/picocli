@@ -8852,11 +8852,13 @@ public class CommandLine {
                 }
             } while (!argumentStack.isEmpty() && continueOnError);
 
-            validateConstraints(argumentStack, required, initialized);
+            if (!isAnyHelpRequested()) {
+                validateConstraints(argumentStack, required, initialized);
+            }
         }
 
         private void validateConstraints(Stack<String> argumentStack, List<ArgSpec> required, Set<ArgSpec> matched) {
-            if (!isAnyHelpRequested() && !required.isEmpty()) {
+            if (!required.isEmpty()) {
                 for (ArgSpec missing : required) {
                     Assert.assertTrue(missing.group() == null, "Arguments in a group are not necessarily required for the command");
                     if (missing.isOption()) {

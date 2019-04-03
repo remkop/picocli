@@ -1942,6 +1942,18 @@ public class ArgGroupTest {
         }
     }
 
+    @Test
+    public void testHelp() {
+        @Command(name = "abc", mixinStandardHelpOptions = true)
+        class App {
+            @ArgGroup(multiplicity = "1")
+            Composite composite;
+        }
+        CommandLine commandLine = new CommandLine(new App());
+        ParseResult parseResult = commandLine.parseArgs("--help");
+        assertTrue(parseResult.isUsageHelpRequested());
+    }
+
     // TODO add tests with positional interactive params in group
     // TODO add tests with positional params in multiple groups
 }
