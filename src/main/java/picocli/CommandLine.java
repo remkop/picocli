@@ -8105,7 +8105,7 @@ public class CommandLine {
         }
         private ITypeConverter<?> getTypeConverter(final Class<?> type, ArgSpec argSpec, int index) {
             if (argSpec.converters().length > index) { return argSpec.converters()[index]; }
-            if (char[].class.equals(argSpec.type())) { return converterRegistry.get(char[].class); }
+            if (char[].class.equals(argSpec.type()) && argSpec.interactive()) { return converterRegistry.get(char[].class); }
             if (converterRegistry.containsKey(type)) { return converterRegistry.get(type); }
             if (type.isEnum()) {
                 return new ITypeConverter<Object>() {
