@@ -6746,6 +6746,11 @@ public class CommandLine {
                                 if (lower.length > 0 && lower[0] instanceof Class) { result[i] = (Class<?>) lower[0]; continue; }
                                 Type[] upper = wildcardType.getUpperBounds(); // e.g. Number
                                 if (upper.length > 0 && upper[0] instanceof Class) { result[i] = (Class<?>) upper[0]; continue; }
+                            } else if (paramTypes[i] instanceof GenericArrayType) {
+                                GenericArrayType gat = (GenericArrayType) paramTypes[i];
+                                if (char.class.equals(gat.getGenericComponentType())) {
+                                    result[i] = char[].class; continue;
+                                }
                             }
                             Arrays.fill(result, String.class); return result; // too convoluted generic type, giving up
                         }
