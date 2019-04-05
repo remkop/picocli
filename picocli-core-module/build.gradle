@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id 'distribution'
+    id 'maven-publish'
+    id 'com.jfrog.bintray'
+    id 'java-library'
+}
+
+group 'info.picocli'
+description 'Picocli JPMS module.'
+version "$projectVersion"
+ext.moduleName = 'info.picocli'
+sourceCompatibility = JavaVersion.VERSION_1_9
+targetCompatibility = JavaVersion.VERSION_1_9
+
+task copyRootProjectCode(type: Copy) {    
+    from("${rootProject.projectDir}/src/main/java"){
+        exclude '**/groovy'
+    }
+    into "${projectDir}/src/main/java"
+}
+
+compileJava {
+    inputs.property("moduleName", moduleName)   
+    doFirst {
+        options.compilerArgs = [
+            '--module-path', classpath.asPath,
+        ]
+        classpath = files()
+    }
+}
+
+test {
+    // Excluding unit tests, should have been generated already with the root project.
+    exclude 'picocli'
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'Gradle Jar File Example',
+        	'Implementation-Version': version
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+compileJava.dependsOn(copyRootProjectCode)
