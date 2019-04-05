@@ -274,7 +274,7 @@ public class ModelOptionSpecTest {
     @Test
     public void testOptionInteractiveIfSet() {
         assertTrue(OptionSpec.builder("-x").interactive(true).interactive());
-        assertTrue(OptionSpec.builder("-x").arity("1").interactive(true).build().interactive());
+        assertTrue(OptionSpec.builder("-x").arity("0").interactive(true).build().interactive());
     }
 
     @Test
@@ -294,8 +294,7 @@ public class ModelOptionSpecTest {
     @Test
     public void testOptionInteractiveNotSupportedForMultiValue() {
         OptionSpec.Builder[] options = new OptionSpec.Builder[]{
-                OptionSpec.builder("-x").arity("0").interactive(true),
-                OptionSpec.builder("-x").arity("0..1").interactive(true),
+                OptionSpec.builder("-x").arity("1").interactive(true),
                 OptionSpec.builder("-x").arity("2").interactive(true),
                 OptionSpec.builder("-x").arity("3").interactive(true),
                 OptionSpec.builder("-x").arity("1..2").interactive(true),
@@ -307,9 +306,13 @@ public class ModelOptionSpecTest {
                 opt.build();
                 fail("Expected exception");
             } catch (InitializationException ex) {
-                assertEquals("Interactive options and positional parameters are only supported for arity=1, not for arity=" + opt.arity(), ex.getMessage());
+                assertEquals("Interactive options and positional parameters are only supported for arity=0 and arity=0..1; not for arity=" + opt.arity(), ex.getMessage());
             }
         }
+
+        // no errors
+        OptionSpec.builder("-x").arity("0").interactive(true).build();
+        OptionSpec.builder("-x").arity("0..1").interactive(true).build();
     }
 
     @Test

@@ -150,6 +150,10 @@ assert  Arrays.equals(tar.files, new File[] {new File("file1.txt"), new File("fi
 Picocli 3.5 introduced password support: for options and positional parameters marked as `interactive`, the user is prompted to enter a value on the console.
 When running on Java 6 or higher, picocli will use the https://docs.oracle.com/javase/8/docs/api/java/io/Console.html#readPassword-java.lang.String-java.lang.Object...-[`Console.readPassword`] API so that user input is not echoed to the console.
 
+==== Example
+The example below demonstrates how an interactive option can be used to specify a password.
+From picocli 3.9.6, interactive options can use type `char[]` instead of String, to allow applications to null out the array after use so that sensitive information is no longer resident in memory.
+
 Example usage:
 
 [source,java]
@@ -159,12 +163,21 @@ class Login implements Callable<Object> {
     String user;
 
     @Option(names = {"-p", "--password"}, description = "Passphrase", interactive = true)
-    String password;
+    char[] password;
 
     public Object call() throws Exception {
+        byte[] bytes = new byte[password.length];
+        for (int i = 0; i < bytes.length; i++) { bytes[i] = (byte) password[i]; }
+
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        md.update(password.getBytes());
-        System.out.printf("Hi %s, your passphrase is hashed to %s.%n", user, base64(md.digest()));
+        md.update(bytes);
+
+        System.out.printf("Hi %s, your password is hashed to %s.%n", user, base64(md.digest()));
+
+        // null out the arrays when done
+        Arrays.fill(bytes, (byte) 0);
+        Arrays.fill(password, ' ');
+
         return null;
     }
 
@@ -189,15 +202,45 @@ After the user enters a password value and presses enter, the `call()` method is
 Hi user123, your passphrase is hashed to 75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=.
 ----
 
+==== Optionally Interactive
+Interactive options by default cause the application to wait for input on stdin. For commands that need to be run interactively as well as in batch mode, it is useful if the option can optionally consume an argument from the command line.
+
+The default <<Arity,arity>> for interactive options is zero, meaning that the option takes no parameters. From picocli 3.9.6, interactive options can also take a value from the command line if configured with `arity = "0..1"`.
+
+For example, if an application has these options:
+
+```java
+@Option(names = "--user")
+String user;
+
+@Option(names = "--password", arity = "0..1", interactive = true)
+char[] password;
+```
+
+With the following input, the `password` field will be initialized to `"123"` without prompting the user for input:
+
+```
+--password 123 --user Joe
+```
+
+However, if the password is not specified, the user will be prompted to enter a value. In the following example, the password option has no parameter, so the user will be prompted to type in a value on the console:
+
+```
+--password --user Joe
+```
+
+
 [TIP]
-.Supporting both Interactive and Batch (Script) Mode
+.Providing Passwords to Batch Scripts Securely
 ====
-Interactive options will cause the application to wait for input on stdin. If your command also needs to be run in (non-interactive) batch mode, it should provide additional non-interactive alternative options to allow end users to run the command interactively as well as in batch mode.
+Note that specifying a password in plain text on the command line or in scripts is not secure. There are alternatives that are more secure.
 
-In the above example, one idea is to add a `--password:file` option that takes a `File` or `Path` parameter, where the application reads the password from the specified file.
-Another idea is to add a `--password:env` option that takes an environment variable name parameter, where the application gets the password from the user’s environment variables.
+One idea is to add a separate different option (that could be named `--password:file`) that takes a `File` or `Path` parameter, where the application reads the password from the specified file.
+Another idea is to add a separate different option (that could be named `--password:env`) that takes an environment variable name parameter, where the application gets the password from the user’s environment variables.
 
-A command that combines either of these with an interactive `--password` option allows end users to provide a password without specifying it in plain text on the command line, and can be executed both interactively and in batch mode.
+A command that combines either of these with an interactive `--password` option (with the default `arity = "0"`) allows end users to provide a password without specifying it in plain text on the command line. Such a command can be executed both interactively and in batch mode.
+
+The `picocli-examples` module has https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/interactive/PasswordDemo.java[an example].
 ====
 
 === Short Options

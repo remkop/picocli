@@ -198,8 +198,7 @@ public class ModelPositionalParamSpecTest {
     @Test
     public void testPositionalInteractiveNotSupportedForMultiValue() {
         PositionalParamSpec.Builder[] options = new PositionalParamSpec.Builder[]{
-                PositionalParamSpec.builder().arity("0").interactive(true),
-                PositionalParamSpec.builder().arity("0..1").interactive(true),
+                PositionalParamSpec.builder().arity("1").interactive(true),
                 PositionalParamSpec.builder().arity("2").interactive(true),
                 PositionalParamSpec.builder().arity("3").interactive(true),
                 PositionalParamSpec.builder().arity("1..2").interactive(true),
@@ -211,9 +210,12 @@ public class ModelPositionalParamSpecTest {
                 opt.build();
                 fail("Expected exception");
             } catch (CommandLine.InitializationException ex) {
-                assertEquals("Interactive options and positional parameters are only supported for arity=1, not for arity=" + opt.arity(), ex.getMessage());
+                assertEquals("Interactive options and positional parameters are only supported for arity=0 and arity=0..1; not for arity=" + opt.arity(), ex.getMessage());
             }
         }
+        // no errors
+        PositionalParamSpec.builder().arity("0").interactive(true).build();
+        PositionalParamSpec.builder().arity("0..1").interactive(true).build();
     }
 
     @Test
