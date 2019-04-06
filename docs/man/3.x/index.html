@@ -513,8 +513,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 3.9.5,</span>
-<span id="revdate">2019-02-18</span>
+<span id="revnumber">version 3.9.6,</span>
+<span id="revdate">2019-04-06</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -889,6 +889,12 @@ Tar tar = <span class="keyword">new</span> Tar();
 <p>Picocli 3.5 introduced password support: for options and positional parameters marked as <code>interactive</code>, the user is prompted to enter a value on the console.
 When running on Java 6 or higher, picocli will use the <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Console.html#readPassword-java.lang.String-java.lang.Object&#8230;&#8203;-"><code>Console.readPassword</code></a> API so that user input is not echoed to the console.</p>
 </div>
+<div class="sect3">
+<h4 id="_example">2.2.1. Example</h4>
+<div class="paragraph">
+<p>The example below demonstrates how an interactive option can be used to specify a password.
+From picocli 3.9.6, interactive options can use type <code>char[]</code> instead of String, to allow applications to null out the array after use so that sensitive information is no longer resident in memory.</p>
+</div>
 <div class="paragraph">
 <p>Example usage:</p>
 </div>
@@ -899,12 +905,21 @@ When running on Java 6 or higher, picocli will use the <a href="https://docs.ora
     <span class="predefined-type">String</span> user;
 
     <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-p</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--password</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Passphrase</span><span class="delimiter">&quot;</span></span>, interactive = <span class="predefined-constant">true</span>)
-    <span class="predefined-type">String</span> password;
+    <span class="type">char</span><span class="type">[]</span> password;
 
     <span class="directive">public</span> <span class="predefined-type">Object</span> call() <span class="directive">throws</span> <span class="exception">Exception</span> {
+        <span class="type">byte</span><span class="type">[]</span> bytes = <span class="keyword">new</span> <span class="type">byte</span>[password.length];
+        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; bytes.length; i++) { bytes[i] = (<span class="type">byte</span>) password[i]; }
+
         <span class="predefined-type">MessageDigest</span> md = <span class="predefined-type">MessageDigest</span>.getInstance(<span class="string"><span class="delimiter">&quot;</span><span class="content">SHA-256</span><span class="delimiter">&quot;</span></span>);
-        md.update(password.getBytes());
-        <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hi %s, your passphrase is hashed to %s.%n</span><span class="delimiter">&quot;</span></span>, user, base64(md.digest()));
+        md.update(bytes);
+
+        <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hi %s, your password is hashed to %s.%n</span><span class="delimiter">&quot;</span></span>, user, base64(md.digest()));
+
+        <span class="comment">// null out the arrays when done</span>
+        <span class="predefined-type">Arrays</span>.fill(bytes, (<span class="type">byte</span>) <span class="integer">0</span>);
+        <span class="predefined-type">Arrays</span>.fill(password, <span class="string"><span class="delimiter">'</span><span class="content"> </span><span class="delimiter">'</span></span>);
+
         <span class="keyword">return</span> <span class="predefined-constant">null</span>;
     }
 
@@ -937,6 +952,43 @@ After the user enters a password value and presses enter, the <code>call()</code
 <pre class="CodeRay highlight"><code>Hi user123, your passphrase is hashed to 75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=.</code></pre>
 </div>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_optionally_interactive">2.2.2. Optionally Interactive</h4>
+<div class="paragraph">
+<p>Interactive options by default cause the application to wait for input on stdin. For commands that need to be run interactively as well as in batch mode, it is useful if the option can optionally consume an argument from the command line.</p>
+</div>
+<div class="paragraph">
+<p>The default <a href="#_arity">arity</a> for interactive options is zero, meaning that the option takes no parameters. From picocli 3.9.6, interactive options can also take a value from the command line if configured with <code>arity = "0..1"</code>.</p>
+</div>
+<div class="paragraph">
+<p>For example, if an application has these options:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">--user</span><span class="delimiter">&quot;</span></span>)
+<span class="predefined-type">String</span> user;
+
+<span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">--password</span><span class="delimiter">&quot;</span></span>, arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">0..1</span><span class="delimiter">&quot;</span></span>, interactive = <span class="predefined-constant">true</span>)
+<span class="type">char</span><span class="type">[]</span> password;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With the following input, the <code>password</code> field will be initialized to <code>"123"</code> without prompting the user for input:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>--password 123 --user Joe</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>However, if the password is not specified, the user will be prompted to enter a value. In the following example, the password option has no parameter, so the user will be prompted to type in a value on the console:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>--password --user Joe</code></pre>
+</div>
+</div>
 <div class="admonitionblock tip">
 <table>
 <tr>
@@ -944,20 +996,24 @@ After the user enters a password value and presses enter, the <code>call()</code
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-<div class="title">Supporting both Interactive and Batch (Script) Mode</div>
+<div class="title">Providing Passwords to Batch Scripts Securely</div>
 <div class="paragraph">
-<p>Interactive options will cause the application to wait for input on stdin. If your command also needs to be run in (non-interactive) batch mode, it should provide additional non-interactive alternative options to allow end users to run the command interactively as well as in batch mode.</p>
+<p>Note that specifying a password in plain text on the command line or in scripts is not secure. There are alternatives that are more secure.</p>
 </div>
 <div class="paragraph">
-<p>In the above example, one idea is to add a <code>--password:file</code> option that takes a <code>File</code> or <code>Path</code> parameter, where the application reads the password from the specified file.
-Another idea is to add a <code>--password:env</code> option that takes an environment variable name parameter, where the application gets the password from the user’s environment variables.</p>
+<p>One idea is to add a separate different option (that could be named <code>--password:file</code>) that takes a <code>File</code> or <code>Path</code> parameter, where the application reads the password from the specified file.
+Another idea is to add a separate different option (that could be named <code>--password:env</code>) that takes an environment variable name parameter, where the application gets the password from the user’s environment variables.</p>
 </div>
 <div class="paragraph">
-<p>A command that combines either of these with an interactive <code>--password</code> option allows end users to provide a password without specifying it in plain text on the command line, and can be executed both interactively and in batch mode.</p>
+<p>A command that combines either of these with an interactive <code>--password</code> option (with the default <code>arity = "0"</code>) allows end users to provide a password without specifying it in plain text on the command line. Such a command can be executed both interactively and in batch mode.</p>
+</div>
+<div class="paragraph">
+<p>The <code>picocli-examples</code> module has <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/interactive/PasswordDemo.java">an example</a>.</p>
 </div>
 </td>
 </tr>
 </table>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -4918,7 +4974,7 @@ CommandLine cmdLine = <span class="keyword">new</span> CommandLine(<span class="
 <pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="type">interface</span> <span class="class">IFactory</span> {
     <span class="comment">/**
      * Creates and returns an instance of the specified class.
-     * @param cls the class to instantiate
+     * @param clazz the class to instantiate
      * @param &lt;K&gt; the type to instantiate
      * @return the new instance
      * @throws Exception an exception detailing what went wrong when creating the instance
@@ -5406,7 +5462,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.5</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.6</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -5441,7 +5497,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.5</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:3.9.6</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -5606,7 +5662,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle">27.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:3.9.5'</pre>
+<pre>compile 'info.picocli:picocli:3.9.6'</pre>
 </div>
 </div>
 </div>
@@ -5617,7 +5673,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;3.9.5&lt;/version&gt;
+  &lt;version&gt;3.9.6&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -5626,7 +5682,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">27.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "3.9.5"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "3.9.6"</pre>
 </div>
 </div>
 </div>
@@ -5634,7 +5690,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">27.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.9.5" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="3.9.6" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -5650,8 +5706,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 3.9.5<br>
-Last updated 2019-02-18 22:32:38 +09:00
+Version 3.9.6<br>
+Last updated 2019-04-06 19:32:47 +09:00
 </div>
 </div>
 </body>

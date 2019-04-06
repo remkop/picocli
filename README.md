@@ -47,7 +47,7 @@ Picocli-based applications can easily [integrate](https://picocli.info/#_depende
 ### Releases
 * [All Releases](https://github.com/remkop/picocli/releases)
 * Latest: 4.0.0-alpha-1 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.0.0-alpha-1)
-* Stable: Picocli 3.9.5 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.9.5)
+* Stable: Picocli 3.9.6 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.9.6)
 * Older: Picocli 3.0.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0)
 * Older: Picocli 2.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0)
 
