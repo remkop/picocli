@@ -3521,7 +3521,7 @@ public class CommandLine {
             return result.isUnspecified ? defaultArity(member) : result;
         }
         /** Returns the default arity {@code Range}: for interactive options/positional parameters,
-         * this is "0..1"; for {@link Option options} this is 0 for booleans and 1 for
+         * this is 0; for {@link Option options} this is 0 for booleans and 1 for
          * other types, for {@link Parameters parameters} booleans have arity 0, arrays or Collections have
          * arity "0..*", and other types have arity 1.
          * @param field the field whose default arity to return
