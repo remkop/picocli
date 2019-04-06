@@ -4,14 +4,15 @@ plugins {
     id 'maven-publish'
     id 'com.jfrog.bintray'
     id 'java-library'
+    id 'org.beryx.jar' version '1.1.3'
 }
 
 group 'info.picocli'
 description 'Picocli JPMS module.'
 version "$projectVersion"
 ext.moduleName = 'info.picocli'
-sourceCompatibility = JavaVersion.VERSION_1_9
-targetCompatibility = JavaVersion.VERSION_1_9
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 task copyRootProjectCode(type: Copy) {    
     from("${rootProject.projectDir}/src/main/java"){
@@ -35,14 +36,13 @@ test {
     exclude 'picocli'
 }
 
-task fatJar(type: Jar) {
+jar {
     manifest {
-        attributes 'Implementation-Title': 'Gradle Jar File Example',
-        	'Implementation-Version': version
+        attributes 'Implementation-Title': 'Picocli-core-module',
+                    'Implementation-Version': version
     }
     baseName = project.name + '-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }    
 }
 
 compileJava.dependsOn(copyRootProjectCode)
