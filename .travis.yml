@@ -11,6 +11,7 @@ jdk:
 - openjdk9
 - openjdk10
 - openjdk11
+- openjdk12
 - openjdk-ea
 #  - openjdk7 # Disabled to avoid error java.security.NoSuchProviderException: no such provider: SunEC...
 #  - oraclejdk7
