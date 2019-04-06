@@ -1,7 +1,7 @@
 = picocli - a mighty tiny command line interface
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 3.9.6
+:revnumber: 3.9.7-SNAPSHOT
 :revdate: 2019-04-06
 :toc: left
 :numbered:
@@ -3435,7 +3435,7 @@ The script body is executed if the user input was valid and did not request usag
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli:3.9.6')
+@Grab('info.picocli:picocli:3.9.7-SNAPSHOT')
 @Command(name = "myScript",
         mixinStandardHelpOptions = true, // add --help and --version options
         description = "@|bold Groovy script|@ @|underline picocli|@ example")
@@ -3460,7 +3460,7 @@ CAUTION: When using a Groovy version older than 2.4.7, use this workaround for t
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli:3.9.6')
+@Grab('info.picocli:picocli:3.9.7-SNAPSHOT')
 @GrabExclude('org.codehaus.groovy:groovy-all') // work around GROOVY-7613
 ...
 ----
@@ -3582,7 +3582,7 @@ See the <<Source,source code>> below. Copy and paste it into a file called `Comm
 
 === Gradle
 ----
-compile 'info.picocli:picocli:3.9.6'
+compile 'info.picocli:picocli:3.9.7-SNAPSHOT'
 ----
 
 === Maven
@@ -3590,19 +3590,19 @@ compile 'info.picocli:picocli:3.9.6'
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>3.9.6</version>
+  <version>3.9.7-SNAPSHOT</version>
 </dependency>
 ----
 
 === Scala SBT
 ----
-libraryDependencies += "info.picocli" % "picocli" % "3.9.6"
+libraryDependencies += "info.picocli" % "picocli" % "3.9.7-SNAPSHOT"
 ----
 
 === Ivy
 
 ----
-<dependency org="info.picocli" name="picocli" rev="3.9.6" />
+<dependency org="info.picocli" name="picocli" rev="3.9.7-SNAPSHOT" />
 ----
 
 === Source
