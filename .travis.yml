@@ -7,13 +7,13 @@ jdk:
 - oraclejdk8
 - oraclejdk11
 - oraclejdk-ea
+- openjdk7
 - openjdk8
 - openjdk9
 - openjdk10
 - openjdk11
 - openjdk12
 - openjdk-ea
-#  - openjdk7 # Disabled to avoid error java.security.NoSuchProviderException: no such provider: SunEC...
 #  - oraclejdk7
 # $ jdk_switcher use oraclejdk7
 # Switching to Oracle JDK7 (java-7-oracle), JAVA_HOME will be set to /usr/lib/jvm/java-7-oracle
@@ -25,7 +25,10 @@ jdk:
 
 matrix:
   allow_failures:
-  - jdk: oraclejdk-ea
+  - jdk:
+    - oraclejdk-ea
+    - openjdk7
+    #  - openjdk7 # Disabled to avoid error java.security.NoSuchProviderException: no such provider: SunEC...
 
 before_script:
   - chmod +x gradlew
