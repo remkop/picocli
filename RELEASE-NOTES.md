@@ -38,6 +38,63 @@ No features were deprecated in this release.
 No breaking changes in this release.
 
 
+# <a name="3.9.6"></a> Picocli 3.9.6
+The picocli community is pleased to announce picocli 3.9.6.
+
+This release improves support for interactive (password) options:
+
+* interactive options can now use type `char[]` instead of String, to allow applications to null out the array after use so that sensitive information is no longer resident in memory
+* interactive options can be optionally interactive if configured with `arity = "0..1"`
+
+This is the fifty-second public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="3.9.6"></a> Table of Contents
+* [New and noteworthy](#3.9.6-new)
+* [Fixed issues](#3.9.6-fixes)
+* [Deprecations](#3.9.6-deprecated)
+* [Potential breaking changes](#3.9.6-breaking-changes)
+
+## <a name="3.9.6-new"></a> New and Noteworthy
+
+This release improves support for interactive (password) options:
+
+* interactive options can now use type `char[]` instead of String, to allow applications to null out the array after use so that sensitive information is no longer resident in memory
+* interactive options can be optionally interactive if configured with `arity = "0..1"`
+
+
+For example, if an application has these options:
+
+```java
+@Option(names = "--user")
+String user;
+
+@Option(names = "--password", arity = "0..1", interactive = true)
+char[] password;
+```
+
+With the following input, the `password` field will be initialized to `"123"` without prompting the user for input:
+
+```
+--password 123 --user Joe
+```
+
+However, if the password is not specified, the user will be prompted to enter a value. In the following example, the password option has no parameter, so the user will be prompted to type in a value on the console:
+
+```
+--password --user Joe
+```
+
+## <a name="3.9.6-fixes"></a> Fixed issues
+* [#657] Support type `char[]` for interactive options. Thanks to [Lukáš Petrovický](https://github.com/triceo) for raising this issue.
+* [#536] Support optionally interactive options. Thanks to [Lukas Heumos](https://github.com/Zethson) for raising this issue.
+
+## <a name="3.9.6-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="3.9.6-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
 
 # <a name="4.0.0-alpha-1"></a> Picocli 4.0.0-alpha-1
 The picocli community is pleased to announce picocli 4.0.0-alpha-1.
