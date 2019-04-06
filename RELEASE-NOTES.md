@@ -49,7 +49,6 @@ However, if the password is not specified, the user will be prompted to enter a 
 
 ## <a name="3.9.6-fixes"></a> Fixed issues
 * [#657] Support type `char[]` for interactive options. Thanks to [Lukáš Petrovický](https://github.com/triceo) for raising this issue.
-* [#648] Introduce a failing test for char[] type conversion. Thanks to [Lukáš Petrovický](https://github.com/triceo) for the pull request.
 * [#536] Support optionally interactive options. Thanks to [Lukas Heumos](https://github.com/Zethson) for raising this issue.
 
 ## <a name="3.9.6-deprecated"></a> Deprecations
