@@ -3673,7 +3673,8 @@ public class CommandLine {
         static Range adjustForType(Range result, IAnnotatedElement member) {
             return result.isUnspecified ? defaultArity(member) : result;
         }
-        /** Returns the default arity {@code Range}: for {@link Option options} this is 0 for booleans and 1 for
+        /** Returns the default arity {@code Range}: for interactive options/positional parameters,
+         * this is 0; for {@link Option options} this is 0 for booleans and 1 for
          * other types, for {@link Parameters parameters} booleans have arity 0, arrays or Collections have
          * arity "0..*", and other types have arity 1.
          * @param field the field whose default arity to return
@@ -3681,6 +3682,7 @@ public class CommandLine {
          * @since 2.0 */
         public static Range defaultArity(Field field) { return defaultArity(new TypedMember(field)); }
         private static Range defaultArity(IAnnotatedElement member) {
+            if (member.isInteractive()) { return Range.valueOf("0").unspecified(true); }
             ITypeInfo info = member.getTypeInfo();
             if (member.isAnnotationPresent(Option.class)) {
                 boolean zeroArgs = info.isBoolean() || (info.isMultiValue() && info.getAuxiliaryTypeInfos().get(0).isBoolean());
@@ -3788,7 +3790,8 @@ public class CommandLine {
             int result = min - other.min;
             return (result == 0) ? max - other.max : result;
         }
-
+        /** Returns true for these ranges: 0 and 0..1. */
+        boolean isValidForInteractiveArgs() { return (min == 0 && (max == 0 || max == 1)); }
         boolean overlaps(Range index) {
             return contains(index.min) || contains(index.max) || index.contains(min) || index.contains(max);
         }
@@ -5348,7 +5351,9 @@ public class CommandLine {
 
                 Range tempArity = builder.arity;
                 if (tempArity == null) {
-                    if (isOption()) {
+                    if (interactive) {
+                        tempArity = Range.valueOf("0");
+                    } else if (isOption()) {
                         tempArity = (builder.type == null || isBoolean(builder.type)) ? Range.valueOf("0") : Range.valueOf("1");
                     } else {
                         tempArity = Range.valueOf("1");
@@ -5359,7 +5364,7 @@ public class CommandLine {
 
                 if (builder.typeInfo == null) {
                     this.typeInfo = RuntimeTypeInfo.create(builder.type, builder.auxiliaryTypes,
-                            Collections.<String>emptyList(), arity, (isOption() ? boolean.class : String.class));
+                            Collections.<String>emptyList(), arity, (isOption() ? boolean.class : String.class), interactive);
                 } else {
                     this.typeInfo = builder.typeInfo;
                 }
@@ -5371,8 +5376,8 @@ public class CommandLine {
                 } else {
                     completionCandidates = builder.completionCandidates;
                 }
-                if (interactive && (arity.min != 1 || arity.max != 1)) {
-                    throw new InitializationException("Interactive options and positional parameters are only supported for arity=1, not for arity=" + arity);
+                if (interactive && !arity.isValidForInteractiveArgs()) {
+                    throw new InitializationException("Interactive options and positional parameters are only supported for arity=0 and arity=0..1; not for arity=" + arity);
                 }
             }
             void applyInitialValue(Tracer tracer) {
@@ -7237,26 +7242,29 @@ public class CommandLine {
             }
 
             static ITypeInfo createForAuxType(Class<?> type) {
-                return create(type, new Class[0], (Type) null, Range.valueOf("1"), String.class);
+                return create(type, new Class[0], (Type) null, Range.valueOf("1"), String.class, false);
             }
             public static ITypeInfo create(Class<?> type,
                                            Class<?>[] annotationTypes,
                                            Type genericType,
                                            Range arity,
-                                           Class<?> defaultType) {
+                                           Class<?> defaultType,
+                                           boolean interactive) {
                 Class<?>[] auxiliaryTypes = RuntimeTypeInfo.inferTypes(type, annotationTypes, genericType);
                 List<String> actualGenericTypeArguments = new ArrayList<String>();
                 if (genericType instanceof ParameterizedType)  {
                     Class[] declaredTypeParameters = extractTypeParameters((ParameterizedType) genericType);
                     for (Class<?> c : declaredTypeParameters) { actualGenericTypeArguments.add(c.getName()); }
                 }
-                return create(type, auxiliaryTypes, actualGenericTypeArguments, arity, defaultType);
+                return create(type, auxiliaryTypes, actualGenericTypeArguments, arity, defaultType, interactive);
             }
 
-            public static ITypeInfo create(Class<?> type, Class<?>[] auxiliaryTypes, List<String> actualGenericTypeArguments, Range arity, Class<?> defaultType) {
+            public static ITypeInfo create(Class<?> type, Class<?>[] auxiliaryTypes, List<String> actualGenericTypeArguments, Range arity, Class<?> defaultType, boolean interactive) {
                 if (type == null) {
                     if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
-                        if (arity.isVariable || arity.max > 1) {
+                        if (interactive) {
+                            type = char[].class;
+                        } else if (arity.isVariable || arity.max > 1) {
                             type = String[].class;
                         } else if (arity.max == 1) {
                             type = String.class;
@@ -7269,9 +7277,13 @@ public class CommandLine {
                 }
                 if (auxiliaryTypes == null || auxiliaryTypes.length == 0) {
                     if (type.isArray()) {
-                        auxiliaryTypes = new Class<?>[] {type.getComponentType()};
+                        if (interactive && type.equals(char[].class)) {
+                            auxiliaryTypes = new Class<?>[]{char[].class};
+                        } else {
+                            auxiliaryTypes = new Class<?>[]{type.getComponentType()};
+                        }
                     } else if (Collection.class.isAssignableFrom(type)) { // type is a collection but element type is unspecified
-                        auxiliaryTypes = new Class<?>[] {String.class}; // use String elements
+                        auxiliaryTypes = new Class<?>[] {interactive ? char[].class : String.class}; // use String elements
                     } else if (Map.class.isAssignableFrom(type)) { // type is a map but element type is unspecified
                         auxiliaryTypes = new Class<?>[] {String.class, String.class}; // use String keys and String values
                     } else {
@@ -7298,12 +7310,17 @@ public class CommandLine {
                 Class<?>[] result = new Class<?>[paramTypes.length];
                 for (int i = 0; i < paramTypes.length; i++) {
                     if (paramTypes[i] instanceof Class) { result[i] = (Class<?>) paramTypes[i]; continue; } // e.g. Long
-                    if (paramTypes[i] instanceof WildcardType) { // e.g. ? extends Number
+                    else if (paramTypes[i] instanceof WildcardType) { // e.g. ? extends Number
                         WildcardType wildcardType = (WildcardType) paramTypes[i];
                         Type[] lower = wildcardType.getLowerBounds(); // e.g. []
                         if (lower.length > 0 && lower[0] instanceof Class) { result[i] = (Class<?>) lower[0]; continue; }
                         Type[] upper = wildcardType.getUpperBounds(); // e.g. Number
                         if (upper.length > 0 && upper[0] instanceof Class) { result[i] = (Class<?>) upper[0]; continue; }
+                    } else if (paramTypes[i] instanceof GenericArrayType) {
+                        GenericArrayType gat = (GenericArrayType) paramTypes[i];
+                        if (char.class.equals(gat.getGenericComponentType())) {
+                            result[i] = char[].class; continue;
+                        }
                     }
                     Arrays.fill(result, String.class); return result; // too convoluted generic type, giving up
                 }
@@ -7364,6 +7381,7 @@ public class CommandLine {
             boolean isUnmatched();
             boolean isInjectSpec();
             boolean isMultiValue();
+            boolean isInteractive();
             boolean hasInitialValue();
             boolean isMethodParameter();
             int getMethodParamPosition();
@@ -7469,7 +7487,7 @@ public class CommandLine {
                     }
                     arity = arity.unspecified(true);
                 }
-                return RuntimeTypeInfo.create(type, annotationTypes(), genericType, arity, (isOption() ? boolean.class : String.class));
+                return RuntimeTypeInfo.create(type, annotationTypes(), genericType, arity, (isOption() ? boolean.class : String.class), isInteractive());
             }
 
             private void initializeInitialValue(Object arg) {
@@ -7500,6 +7518,7 @@ public class CommandLine {
             public boolean isUnmatched()    { return isAnnotationPresent(Unmatched.class); }
             public boolean isInjectSpec()   { return isAnnotationPresent(Spec.class); }
             public boolean isMultiValue()   { return CommandLine.isMultiValue(getType()); }
+            public boolean isInteractive()  { return (isOption() && getAnnotation(Option.class).interactive()) || (isParameter() && getAnnotation(Parameters.class).interactive()); }
             public IScope  scope()          { return scope; }
             public IGetter getter()         { return getter; }
             public ISetter setter()         { return setter; }
@@ -8671,6 +8690,7 @@ public class CommandLine {
         private final Map<Class<?>, ITypeConverter<?>> converterRegistry = new HashMap<Class<?>, ITypeConverter<?>>();
         private boolean isHelpRequested;
         private int position;
+        private int interactiveCount;
         private boolean endOfOptions;
         private ParseResult.Builder parseResultBuilder;
 
@@ -8680,6 +8700,7 @@ public class CommandLine {
             converterRegistry.put(Object.class,        new BuiltIn.StringConverter());
             converterRegistry.put(String.class,        new BuiltIn.StringConverter());
             converterRegistry.put(StringBuilder.class, new BuiltIn.StringBuilderConverter());
+            converterRegistry.put(char[].class,        new BuiltIn.CharArrayConverter());
             converterRegistry.put(CharSequence.class,  new BuiltIn.CharSequenceConverter());
             converterRegistry.put(Byte.class,          new BuiltIn.ByteConverter());
             converterRegistry.put(Byte.TYPE,           new BuiltIn.ByteConverter());
@@ -9085,6 +9106,7 @@ public class CommandLine {
                 if (!endOfOptions && tracer.isDebug()) {tracer.debug("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters.%n");}
                 endOfOptions = true;
             }
+            int originalInteractiveCount = this.interactiveCount;
             int consumedByGroup = 0;
             int argsConsumed = 0;
             int interactiveConsumed = 0;
@@ -9112,7 +9134,7 @@ public class CommandLine {
                 int count = originalSize - argsCopy.size();
                 if (count > 0 || actuallyConsumed > 0) {
                     required.remove(positionalParam);
-                    if (positionalParam.interactive()) { interactiveConsumed++; }
+                    interactiveConsumed = this.interactiveCount - originalInteractiveCount;
                 }
                 if (positionalParam.group() == null) { // don't update the command-level position for group args
                     argsConsumed = Math.max(argsConsumed, count);
@@ -9249,19 +9271,10 @@ public class CommandLine {
                 if (!assertNoMissingParameters(argSpec, arity, args)) { return 0; } // #389 collectErrors parsing
             }
 
-            if (argSpec.interactive()) {
-                String name = argSpec.isOption() ? ((OptionSpec) argSpec).longestName() : "position " + position;
-                String prompt = String.format("Enter value for %s (%s): ", name, str(argSpec.renderedDescription(), 0));
-                if (tracer.isDebug()) {tracer.debug("Reading value for %s from console...%n", name);}
-                char[] value = readPassword(prompt);
-                if (tracer.isDebug()) {tracer.debug("User entered '%s' for %s.%n", value, name);}
-                workingStack.push(new String(value));
-            }
-
             parseResultBuilder.beforeMatchingGroupElement(argSpec);
 
             int result;
-            if (argSpec.type().isArray()) {
+            if (argSpec.type().isArray() && !(argSpec.interactive() && argSpec.type() == char[].class)) {
                 result = applyValuesToArrayField(argSpec, lookBehind, arity, workingStack, initialized, argDescription);
             } else if (Collection.class.isAssignableFrom(argSpec.type())) {
                 result = applyValuesToCollectionField(argSpec, lookBehind, arity, workingStack, initialized, argDescription);
@@ -9290,66 +9303,97 @@ public class CommandLine {
                 throw new MaxValuesExceededException(CommandLine.this, optionDescription("", argSpec, 0) +
                         " should be specified without '" + value + "' parameter");
             }
-            int result = arity.min; // the number or args we need to consume
+            int consumed = arity.min; // the number or args we need to consume
 
+            String actualValue = value;
+            char[] interactiveValue = null;
             Class<?> cls = argSpec.auxiliaryTypes()[0]; // field may be interface/abstract type, use annotation to get concrete type
             if (arity.min <= 0) { // value may be optional
+                boolean optionalValueExists = true; // assume we will use the command line value
+                consumed = 1;
 
                 // special logic for booleans: BooleanConverter accepts only "true" or "false".
                 if (cls == Boolean.class || cls == Boolean.TYPE) {
 
                     // boolean option with arity = 0..1 or 0..*: value MAY be a param
-                    if (arity.max > 0 && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))) {
-                        result = 1;            // if it is a varargs we only consume 1 argument if it is a boolean value
-                        if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, value); }
-                    } else if (lookBehind != LookBehind.ATTACHED_WITH_SEPARATOR) { // if attached, try converting the value to boolean (and fail if invalid value)
-                        // it's okay to ignore value if not attached to option
-                        if (value != null) {
-                            args.push(value); // we don't consume the value
-                        }
+                    boolean optionalWithBooleanValue = arity.max > 0 && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value));
+                    if (!optionalWithBooleanValue && lookBehind != LookBehind.ATTACHED_WITH_SEPARATOR) { // if attached, try converting the value to boolean (and fail if invalid value)
+                        // don't process cmdline arg: it's okay to ignore value if not attached to option
                         if (commandSpec.parser().toggleBooleanFlags()) {
                             Boolean currentValue = (Boolean) argSpec.getValue();
-                            value = String.valueOf(currentValue == null || !currentValue); // #147 toggle existing boolean value
+                            actualValue = String.valueOf(currentValue == null || !currentValue); // #147 toggle existing boolean value
                         } else {
-                            value = "true";
+                            actualValue = "true";
                         }
+                        optionalValueExists = false;
+                        consumed = 0;
                     }
                 } else { // non-boolean option with optional value #325, #279
-                    if (isOption(value)) {
-                        args.push(value); // we don't consume the value
-                        value = "";
-                    } else if (value == null) {
-                        value = "";
-                    } else {
-                        if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, value); }
+                    if (isOption(value)) { // value is not a parameter
+                        actualValue = "";
+                        optionalValueExists = false;
+                        consumed = 0;
+                    } else if (value == null) { // stack is empty, option with arity=0..1 was the last arg
+                        actualValue = "";
+                        optionalValueExists = false;
+                        consumed = 0;
                     }
                 }
-            } else {
-                if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, value); }
+                // if argSpec is interactive, we may need to read the password from the console:
+                // - if arity = 0   : ALWAYS read from console
+                // - if arity = 0..1: ONLY read from console if user specified a non-option value
+                if (argSpec.interactive() && (arity.max == 0 || !optionalValueExists)) {
+                    interactiveValue = readPassword(argSpec);
+                    consumed = 0;
+                }
             }
-            if (noMoreValues && value == null) {
+            if (consumed == 0) { // optional value was not specified on command line, we made something up
+                if (value != null) {
+                    args.push(value); // we don't consume the command line value
+                }
+            } else { // value was non-optional or optional value was actually specified
+                // process the command line value
+                if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, value); } // update position for Completers
+            }
+            if (noMoreValues && actualValue == null && interactiveValue == null) {
                 return 0;
             }
-            ITypeConverter<?> converter = getTypeConverter(cls, argSpec, 0);
-            Object newValue = tryConvert(argSpec, -1, converter, value, cls);
+            Object newValue = interactiveValue;
+            String initValueMessage = "Setting %s to *** (masked interactive value) for %4$s%n";
+            String overwriteValueMessage = "Overwriting %s value with *** (masked interactive value) for %s%n";
+            if (!char[].class.equals(cls) && !char[].class.equals(argSpec.type())) {
+                if (interactiveValue != null) {
+                    actualValue = new String(interactiveValue);
+                }
+                ITypeConverter<?> converter = getTypeConverter(cls, argSpec, 0);
+                newValue = tryConvert(argSpec, -1, converter, actualValue, cls);
+                initValueMessage = "Setting %s to '%3$s' (was '%2$s') for %4$s%n";
+                overwriteValueMessage = "Overwriting %s value '%s' with '%s' for %s%n";
+            } else {
+                if (interactiveValue == null) { // setting command line arg to char[] field
+                    newValue = actualValue.toCharArray();
+                } else {
+                    actualValue = "***"; // mask interactive value
+                }
+            }
             Object oldValue = argSpec.getValue();
-            String traceMessage = "Setting %s to '%3$s' (was '%2$s') for %4$s%n";
+            String traceMessage = initValueMessage;
             if (argSpec.group() == null && initialized.contains(argSpec)) {
                 if (!isOverwrittenOptionsAllowed()) {
                     throw new OverwrittenOptionException(CommandLine.this, argSpec, optionDescription("", argSpec, 0) +  " should be specified only once");
                 }
-                traceMessage = "Overwriting %s value '%s' with '%s' for %s%n";
+                traceMessage = overwriteValueMessage;
             }
             initialized.add(argSpec);
 
             if (tracer.isInfo()) { tracer.info(traceMessage, argSpec.toString(), String.valueOf(oldValue), String.valueOf(newValue), argDescription); }
             int pos = getPosition(argSpec);
             argSpec.setValue(newValue);
-            parseResultBuilder.addOriginalStringValue(argSpec, value);// #279 track empty string value if no command line argument was consumed
-            parseResultBuilder.addStringValue(argSpec, value);
+            parseResultBuilder.addOriginalStringValue(argSpec, actualValue);// #279 track empty string value if no command line argument was consumed
+            parseResultBuilder.addStringValue(argSpec, actualValue);
             parseResultBuilder.addTypedValues(argSpec, pos, newValue);
             parseResultBuilder.add(argSpec, pos);
-            return result;
+            return 1;
         }
         private int applyValuesToMapField(ArgSpec argSpec,
                                           LookBehind lookBehind,
@@ -9568,19 +9612,26 @@ public class CommandLine {
                 consumed = consumedCount(i + 1, initialSize, argSpec);
                 lookBehind = LookBehind.SEPARATE;
             }
+            if (argSpec.interactive() && argSpec.arity().max == 0) {
+                consumed = addPasswordToList(argSpec, type, result, consumed, argDescription);
+            }
             // now process the varargs if any
             for (int i = consumed; consumed < arity.max && !args.isEmpty(); i++) {
-                if (!varargCanConsumeNextValue(argSpec, args.peek())) { break; }
-
-                List<Object> typedValuesAtPosition = new ArrayList<Object>();
-                parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
-                if (!canConsumeOneArgument(argSpec, arity, consumed, args.peek(), type, argDescription)) {
-                    break; // leave empty list at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again
+                if (argSpec.interactive() && argSpec.arity().max == 1 && !varargCanConsumeNextValue(argSpec, args.peek())) {
+                    // if interactive and arity = 0..1, we consume from command line if possible (if next arg not an option or subcommand)
+                    consumed = addPasswordToList(argSpec, type, result, consumed, argDescription);
+                } else {
+                    if (!varargCanConsumeNextValue(argSpec, args.peek())) { break; }
+                    List<Object> typedValuesAtPosition = new ArrayList<Object>();
+                    parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
+                    if (!canConsumeOneArgument(argSpec, arity, consumed, args.peek(), type, argDescription)) {
+                        break; // leave empty list at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again
+                    }
+                    consumeOneArgument(argSpec, lookBehind, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
+                    result.addAll(typedValuesAtPosition);
+                    consumed = consumedCount(i + 1, initialSize, argSpec);
+                    lookBehind = LookBehind.SEPARATE;
                 }
-                consumeOneArgument(argSpec, lookBehind, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
-                result.addAll(typedValuesAtPosition);
-                consumed = consumedCount(i + 1, initialSize, argSpec);
-                lookBehind = LookBehind.SEPARATE;
             }
             if (result.isEmpty() && arity.min == 0 && arity.max <= 1 && isBoolean(type)) {
                 return Arrays.asList((Object) Boolean.TRUE);
@@ -9596,6 +9647,22 @@ public class CommandLine {
             return commandSpec.parser().splitFirst() ? (arg.stringValues().size() - initialSize) / 2 : i;
         }
 
+        private int addPasswordToList(ArgSpec argSpec, Class<?> type, List<Object> result, int consumed, String argDescription) {
+            char[] password = readPassword(argSpec);
+            if (tracer.isInfo()) {
+                tracer.info("Adding *** (masked interactive value) to %s for %s%n", argSpec.toString(), argDescription);
+            }
+            parseResultBuilder.addStringValue(argSpec, "***");
+            parseResultBuilder.addOriginalStringValue(argSpec, "***");
+            if (!char[].class.equals(argSpec.auxiliaryTypes()[0]) && !char[].class.equals(argSpec.type())) {
+                Object value = tryConvert(argSpec, consumed, getTypeConverter(type, argSpec, consumed), new String(password), type);
+                result.add(value);
+            } else {
+                result.add(password);
+            }
+            consumed++;
+            return consumed;
+        }
         private int consumeOneArgument(ArgSpec argSpec,
                                        LookBehind lookBehind,
                                        Range arity,
@@ -9621,6 +9688,7 @@ public class CommandLine {
             return ++index;
         }
         private boolean canConsumeOneArgument(ArgSpec argSpec, Range arity, int consumed, String arg, Class<?> type, String argDescription) {
+            if (char[].class.equals(argSpec.auxiliaryTypes()[0]) || char[].class.equals(argSpec.type())) { return true; }
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
             try {
                 String[] values = argSpec.splitValue(trim(arg), commandSpec.parser(), arity, consumed);
@@ -9648,7 +9716,7 @@ public class CommandLine {
             return !isCommand && !isOption(nextValue);
         }
 
-        /**
+        /** Returns true if the specified arg is "--", a registered option, or potentially a clustered POSIX option.
          * Called when parsing varargs parameters for a multi-value option.
          * When an option is encountered, the remainder should not be interpreted as vararg elements.
          * @param arg the string to determine whether it is an option or not
@@ -9731,6 +9799,7 @@ public class CommandLine {
         }
         private ITypeConverter<?> getTypeConverter(final Class<?> type, ArgSpec argSpec, int index) {
             if (argSpec.converters().length > index) { return argSpec.converters()[index]; }
+            if (char[].class.equals(argSpec.type()) && argSpec.interactive()) { return converterRegistry.get(char[].class); }
             if (converterRegistry.containsKey(type)) { return converterRegistry.get(type); }
             if (type.isEnum()) {
                 return new ITypeConverter<Object>() {
@@ -9812,6 +9881,14 @@ public class CommandLine {
                         : value;
         }
 
+        char[] readPassword(ArgSpec argSpec) {
+            String name = argSpec.isOption() ? ((OptionSpec) argSpec).longestName() : "position " + position;
+            String prompt = String.format("Enter value for %s (%s): ", name, str(argSpec.renderedDescription(), 0));
+            if (tracer.isDebug()) {tracer.debug("Reading value for %s from console...%n", name);}
+            char[] result = readPassword(prompt);
+            if (tracer.isDebug()) {tracer.debug("User entered %d characters for %s.%n", result.length, name);}
+            return result;
+        }
         char[] readPassword(String prompt) {
             try {
                 Object console = System.class.getDeclaredMethod("console").invoke(null);
@@ -9826,6 +9903,8 @@ public class CommandLine {
                 } catch (IOException ex2) {
                     throw new IllegalStateException(ex2);
                 }
+            } finally {
+                interactiveCount++;
             }
         }
         int getPosition(ArgSpec arg) {
@@ -9850,6 +9929,9 @@ public class CommandLine {
      * Inner class to group the built-in {@link ITypeConverter} implementations.
      */
     private static class BuiltIn {
+        static class CharArrayConverter implements ITypeConverter<char[]> {
+            public char[] convert(String value) { return value.toCharArray(); }
+        }
         static class StringConverter implements ITypeConverter<String> {
             public String convert(String value) { return value; }
         }
