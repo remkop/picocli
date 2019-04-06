@@ -22,6 +22,7 @@ Every main method deserves picocli!
 image:logo/horizontal.png[picocli the Mighty Tiny Command Line Interface,width=800]
 
 The user manual for the latest release is at http://picocli.info.
+The user manual for the https://picocli.info/man/3.x/[latest stable release (3.9.6) is here].
 For the busy and impatient: there is also a link:quick-guide.html[Quick Guide].
 
 == Introduction
