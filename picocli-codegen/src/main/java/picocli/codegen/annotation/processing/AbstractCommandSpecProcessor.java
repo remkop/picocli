@@ -1002,6 +1002,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         public boolean isUnmatched()    { return isAnnotationPresent(Unmatched.class); }
         public boolean isInjectSpec()   { return isAnnotationPresent(Spec.class); }
         public boolean isMultiValue()   { return getTypeInfo().isMultiValue(); }
+        public boolean isInteractive()  { return (isOption() && getAnnotation(Option.class).interactive()) || (isParameter() && getAnnotation(Parameters.class).interactive()); }
         public ITypeInfo getTypeInfo()  { return typeInfo; }
         public CommandLine.Model.IGetter getter()         { return getter; }
         public CommandLine.Model.ISetter setter()         { return setter; }
