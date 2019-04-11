@@ -8015,6 +8015,96 @@ public class CommandLine {
             }
             public String toString() { return String.format("Scope(value=%s)", value); }
         }
+        static class Interpolator {
+            private final CommandSpec commandSpec;
+            private final Map<String, ILookup> lookups = new HashMap<String, ILookup>();
+
+            public Interpolator(final CommandSpec commandSpec) {
+                this.commandSpec = commandSpec;
+                lookups.put("sys", new ILookup() { public String get(String key) { return System.getProperty(key); } });
+                lookups.put("env", new ILookup() { public String get(String key) { return System.getenv(key); } });
+                lookups.put("resource", new ILookup() {
+                    public String get(String key) {
+                        ResourceBundle rb = commandSpec.resourceBundle();
+                        return (rb != null) ? rb.getString(key) : null;
+                    }
+                });
+            }
+
+            public String interpolate(String original) {
+                String result1 = original.replaceAll("\\$\\{COMMAND-NAME}", commandSpec.name());
+                String result = result1.replaceAll("\\$\\{COMMAND-FULL-NAME}", commandSpec.qualifiedName());
+                if (commandSpec.parent() != null) {
+                    String tmp = result.replaceAll("\\$\\{PARENT-COMMAND-NAME}", commandSpec.parent().name());
+                    result = tmp.replaceAll("\\$\\{PARENT-COMMAND-FULL-NAME}", commandSpec.parent().qualifiedName());
+                }
+                return resolveLookups(result, new HashSet<String>(), new HashMap<String, String>());
+            }
+
+            private String resolveLookups(String text, Set<String> visited, Map<String, String> resolved) {
+                if (text == null) { return null; }
+                for (String lookupKey : lookups.keySet()) {
+                    ILookup lookup = lookups.get(lookupKey);
+                    String prefix = "${" + lookupKey + ":";
+                    int sysStartPos = -1;
+                    while ((sysStartPos = text.indexOf(prefix, sysStartPos)) >= 0) {
+                        int endPos = findClosingBrace(text, sysStartPos + prefix.length());
+                        if (endPos < 0) { endPos = text.length() - 1; }
+                        String fullKey = text.substring(sysStartPos + prefix.length(), endPos);
+                        String actualKey = fullKey;
+
+                        int defaultStartPos = fullKey.indexOf(":-");
+                        if (defaultStartPos >= 0) { actualKey = fullKey.substring(0, defaultStartPos); }
+                        if (resolved.containsKey(prefix + actualKey)) { return resolved.get(prefix + actualKey); }
+                        if (visited.contains(prefix + actualKey)) {
+                            throw new InitializationException("Lookup '" + prefix + actualKey + "' has a circular reference.");
+                        }
+                        visited.add(prefix + actualKey);
+                        String value = lookup.get(actualKey);
+                        if (value == null && defaultStartPos >= 0) {
+                            String defaultValue = fullKey.substring(defaultStartPos + 2);
+                            value = resolveLookups(defaultValue, visited, resolved);
+                        }
+                        resolved.put(prefix + actualKey, value);
+
+                        // interpolate
+                        text = text.substring(0, sysStartPos) + value + text.substring(endPos + 1);
+                        sysStartPos += value == null ? "null".length() : value.length();
+                    }
+                }
+                return text;
+            }
+
+            private int findClosingBrace(String text, int start) {
+                int open = 1;
+                boolean escaping = false;
+                for (int ch = 0, i = start; i < text.length(); i += Character.charCount(ch)) {
+                    ch = text.codePointAt(i);
+                    switch (ch) {
+                        case '\\':
+                            escaping = !escaping;
+                            break;
+                        case '}':
+                            if (!escaping) { open--; }
+                            if (open == 0) { return i; }
+                            escaping = false;
+                            break;
+                        case '{':
+                            if (!escaping) { open++; }
+                            escaping = false;
+                            break;
+                        default:
+                            escaping = false;
+                            break;
+                    }
+                }
+                return -1;
+            }
+
+            interface ILookup {
+                String get(String key);
+            }
+        }
     }
 
     /** Encapsulates the result of parsing an array of command line arguments.
