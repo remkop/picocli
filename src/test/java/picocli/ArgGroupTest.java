@@ -12,8 +12,8 @@ import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
-import picocli.CommandLine.ParseResult.MatchedGroup;
-import picocli.CommandLine.ParseResult.MatchedGroupMultiple;
+import picocli.CommandLine.ParseResult.GroupMatchContainer;
+import picocli.CommandLine.ParseResult.GroupMatch;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -569,7 +569,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testReflectionValidationExclusiveMultiplicity0_1_ActualTwo() {
+    public void testValidationExclusiveMultiplicity0_1_ActualTwo() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -587,7 +587,78 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testReflectionValidationExclusiveMultiplicity0_1_ActualZero() {
+    public void testValidationGroups2Violation1ExclusiveMultiplicity0_1_ActualTwo() {
+        class Group1 {
+            @Option(names = "-a", required = true) boolean a;
+            @Option(names = "-b", required = true) boolean b;
+        }
+        class Group2 {
+            @Option(names = "-x", required = true) boolean x;
+            @Option(names = "-y", required = true) boolean y;
+        }
+        class App {
+            @ArgGroup(exclusive = true, multiplicity = "0..1")
+            Group1 g1;
+            
+            @ArgGroup(exclusive = true, multiplicity = "0..1")
+            Group2 g2;
+        }
+        try {
+            new CommandLine(new App(), new InnerClassFactory(this)).parseArgs("-x", "-a", "-b");
+            fail("Expected exception");
+        } catch (MutuallyExclusiveArgsException ex) {
+            assertEquals("Error: -a, -b are mutually exclusive (specify only one)", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testValidationGroups2Violations2BothExclusiveMultiplicity0_1_ActualTwo() {
+        class Group1 {
+            @Option(names = "-a", required = true) boolean a;
+            @Option(names = "-b", required = true) boolean b;
+        }
+        class Group2 {
+            @Option(names = "-x", required = true) boolean x;
+            @Option(names = "-y", required = true) boolean y;
+        }
+        class App {
+            @ArgGroup(exclusive = true, multiplicity = "0..1")
+            Group1 g1;
+
+            @ArgGroup(exclusive = true, multiplicity = "0..1")
+            Group2 g2;
+        }
+        try {
+            new CommandLine(new App(), new InnerClassFactory(this)).parseArgs("-x", "-y", "-a", "-b");
+            fail("Expected exception");
+        } catch (MutuallyExclusiveArgsException ex) {
+            assertEquals("Error: -x, -y are mutually exclusive (specify only one)", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testValidationGroups2Violations0() {
+        class Group1 {
+            @Option(names = "-a", required = true) boolean a;
+            @Option(names = "-b", required = true) boolean b;
+        }
+        class Group2 {
+            @Option(names = "-x", required = true) boolean x;
+            @Option(names = "-y", required = true) boolean y;
+        }
+        class App {
+            @ArgGroup(exclusive = true, multiplicity = "0..1")
+            Group1 g1;
+
+            @ArgGroup(exclusive = true, multiplicity = "0..1")
+            Group2 g2;
+        }
+        // no error
+        new CommandLine(new App(), new InnerClassFactory(this)).parseArgs("-x", "-a");
+    }
+
+    @Test
+    public void testValidationExclusiveMultiplicity0_1_ActualZero() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -601,7 +672,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testReflectionValidationExclusiveMultiplicity1_ActualZero() {
+    public void testValidationExclusiveMultiplicity1_ActualZero() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -614,12 +685,12 @@ public class ArgGroupTest {
             new CommandLine(new App(), new InnerClassFactory(this)).parseArgs();
             fail("Expected exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Error: Missing required argument (specify one of these): -a, -b", ex.getMessage());
+            assertEquals("Error: Missing required argument (specify one of these): (-a | -b)", ex.getMessage());
         }
     }
 
     @Test
-    public void testReflectionValidationDependentAllRequiredMultiplicity0_1_All() {
+    public void testValidationDependentAllRequiredMultiplicity0_1_All() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -633,7 +704,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testReflectionValidationDependentSomeOptionalMultiplicity0_1_All() {
+    public void testValidationDependentSomeOptionalMultiplicity0_1_All() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = false) boolean b;
@@ -647,7 +718,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testReflectionValidationDependentSomeOptionalMultiplicity0_1_OptionalOmitted() {
+    public void testValidationDependentSomeOptionalMultiplicity0_1_OptionalOmitted() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = false) boolean b;
@@ -661,7 +732,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testReflectionValidationDependentMultiplicity0_1_Partial() {
+    public void testValidationDependentMultiplicity0_1_Partial() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -680,7 +751,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testReflectionValidationDependentMultiplicity0_1_Zero() {
+    public void testValidationDependentMultiplicity0_1_Zero() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -694,7 +765,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testReflectionValidationDependentMultiplicity1_All() {
+    public void testValidationDependentMultiplicity1_All() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -708,7 +779,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testReflectionValidationDependentMultiplicity1_Partial() {
+    public void testValidationDependentMultiplicity1_Partial() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -727,7 +798,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testReflectionValidationDependentMultiplicity1_Zero() {
+    public void testValidationDependentMultiplicity1_Zero() {
         class All {
             @Option(names = "-a", required = true) boolean a;
             @Option(names = "-b", required = true) boolean b;
@@ -741,7 +812,7 @@ public class ArgGroupTest {
             new CommandLine(new App(), new InnerClassFactory(this)).parseArgs();
             fail("Expected exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Error: Missing required argument(s): -a, -b, -c", ex.getMessage());
+            assertEquals("Error: Missing required argument(s): (-a -b -c)", ex.getMessage());
         }
     }
 
@@ -770,10 +841,9 @@ public class ArgGroupTest {
         Composite composite = new Composite();
     }
     @Test
-    public void testReflectionValidationCompositeMultiplicity1() {
+    public void testValidationCompositeMultiplicity1() {
         validateInput(new CompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-a");
         validateInput(new CompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-b");
-        //validateInput(new CompositeApp(), MutuallyExclusiveArgsException.class, "Error: -x, -y are mutually exclusive (specify only one)",                "-x", "-y");
         validateInput(new CompositeApp(), MaxValuesExceededException.class,     "Error: expected only one match but got ([-a -b] | (-x | -y))={-x} and ([-a -b] | (-x | -y))={-y}",                "-x", "-y");
         validateInput(new CompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-x", "-a");
         validateInput(new CompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-x", "-b");
@@ -789,10 +859,9 @@ public class ArgGroupTest {
         validateInput(new CompositeApp(), null, null, "-y");
     }
     @Test
-    public void testReflectionValidationCompositeMultiplicity0_1() {
+    public void testValidationCompositeMultiplicity0_1() {
         validateInput(new OptionalCompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-a");
         validateInput(new OptionalCompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-b");
-        //validateInput(new OptionalCompositeApp(), MutuallyExclusiveArgsException.class, "Error: -x, -y are mutually exclusive (specify only one)",                "-x", "-y");
         validateInput(new OptionalCompositeApp(), MaxValuesExceededException.class,     "Error: expected only one match but got [[-a -b] | (-x | -y)]={-x} and [[-a -b] | (-x | -y)]={-y}",                "-x", "-y");
         validateInput(new OptionalCompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -b",                                "-x", "-a");
         validateInput(new OptionalCompositeApp(), MissingParameterException.class,      "Error: Missing required argument(s): -a",                                "-x", "-b");
@@ -1482,22 +1551,22 @@ public class ArgGroupTest {
         assertSame(app.composite, topLevelGroup.userObject());
 
         ParseResult parseResult = cmd.parseArgs("-a=1", "file0", "file1", "-a=2", "file2", "file3");
-        List<MatchedGroupMultiple> multiples = parseResult.getMatchedGroupMultiples();
+        List<ParseResult.GroupMatch> multiples = parseResult.getGroupMatches();
         assertEquals(1, multiples.size());
 
-        Map<ArgGroupSpec, MatchedGroup> matchedTopGroups = multiples.get(0).matchedSubgroups();
+        Map<ArgGroupSpec, GroupMatchContainer> matchedTopGroups = multiples.get(0).matchedSubgroups();
         assertEquals(1, matchedTopGroups.size());
-        MatchedGroup topGroupMatch = matchedTopGroups.entrySet().iterator().next().getValue();
-        List<MatchedGroupMultiple> topGroupMultiples = topGroupMatch.multiples();
+        GroupMatchContainer topGroupMatch = matchedTopGroups.entrySet().iterator().next().getValue();
+        List<ParseResult.GroupMatch> topGroupMultiples = topGroupMatch.matches();
         assertEquals(1, topGroupMultiples.size());
-        MatchedGroupMultiple topGroupMultiple = topGroupMultiples.get(0);
+        ParseResult.GroupMatch topGroupMultiple = topGroupMultiples.get(0);
 
-        Map<ArgGroupSpec, MatchedGroup> matchedSubGroups = topGroupMultiple.matchedSubgroups();
+        Map<ArgGroupSpec, GroupMatchContainer> matchedSubGroups = topGroupMultiple.matchedSubgroups();
         assertEquals(1, matchedSubGroups.size());
-        MatchedGroup subGroupMatch = matchedSubGroups.entrySet().iterator().next().getValue();
-        List<MatchedGroupMultiple> subGroupMultiples = subGroupMatch.multiples();
+        GroupMatchContainer subGroupMatch = matchedSubGroups.entrySet().iterator().next().getValue();
+        List<GroupMatch> subGroupMultiples = subGroupMatch.matches();
         assertEquals(2, subGroupMultiples.size());
-        MatchedGroupMultiple subMGM1 = subGroupMultiples.get(0);
+        ParseResult.GroupMatch subMGM1 = subGroupMultiples.get(0);
 
         assertFalse(subMGM1.isEmpty());
         assertTrue(subMGM1.matchedSubgroups().isEmpty());
@@ -1506,19 +1575,19 @@ public class ArgGroupTest {
         assertEquals(Arrays.asList(new File("file0")), subMGM1.matchedValues(spec.positionalParameters().get(0)));
         assertEquals(Arrays.asList(new File("file1")), subMGM1.matchedValues(spec.positionalParameters().get(1)));
 
-        MatchedGroupMultiple subMGM2 = subGroupMultiples.get(1);
+        ParseResult.GroupMatch subMGM2 = subGroupMultiples.get(1);
         assertFalse(subMGM2.isEmpty());
         assertTrue(subMGM2.matchedSubgroups().isEmpty());
         assertEquals(Arrays.asList(2), subMGM2.matchedValues(spec.findOption("-a")));
         assertEquals(Arrays.asList(new File("file2")), subMGM2.matchedValues(spec.positionalParameters().get(0)));
         assertEquals(Arrays.asList(new File("file3")), subMGM2.matchedValues(spec.positionalParameters().get(1)));
 
-        List<MatchedGroup> found = parseResult.findMatchedGroup(topLevelGroup);
+        List<GroupMatchContainer> found = parseResult.findMatches(topLevelGroup);
         assertSame(topGroupMatch, found.get(0));
 
         ArgGroupSpec sub = topLevelGroup.subgroups().get(0);
         assertEquals("Co-occurring options:%nThese options must appear together, or not at all.%n", sub.heading());
-        List<MatchedGroup> foundSub = parseResult.findMatchedGroup(sub);
+        List<GroupMatchContainer> foundSub = parseResult.findMatches(sub);
         assertEquals(1, foundSub.size());
     }
 
@@ -1624,18 +1693,18 @@ public class ArgGroupTest {
         assertEquals(1, app.monos.get(0).a);
         assertEquals(2, app.monos.get(1).a);
 
-        MatchedGroup matchedGroup = parseResult.findMatchedGroup(cmd.getCommandSpec().argGroups().get(0)).get(0);
-        assertEquals(2, matchedGroup.multiples().size());
+        GroupMatchContainer groupMatchContainer = parseResult.findMatches(cmd.getCommandSpec().argGroups().get(0)).get(0);
+        assertEquals(2, groupMatchContainer.matches().size());
 
         ArgSpec a = cmd.getCommandSpec().findOption("-a");
-        MatchedGroupMultiple multiple1 = matchedGroup.multiples().get(0);
+        ParseResult.GroupMatch multiple1 = groupMatchContainer.matches().get(0);
         assertEquals(1, multiple1.matchCount(a));
         List<Object> values1 = multiple1.matchedValues(a);
         assertEquals(1, values1.size());
         assertEquals(Integer.class, values1.get(0).getClass());
         assertEquals(1, values1.get(0));
 
-        MatchedGroupMultiple multiple2 = matchedGroup.multiples().get(1);
+        ParseResult.GroupMatch multiple2 = groupMatchContainer.matches().get(1);
         assertEquals(1, multiple2.matchCount(a));
         List<Object> values2 = multiple2.matchedValues(a);
         assertEquals(1, values2.size());
@@ -1687,15 +1756,15 @@ public class ArgGroupTest {
         assertEquals("pos", parseResult.matchedPositionalValue(0, ""));
         assertFalse(parseResult.hasMatchedOption("-f"));
 
-        MatchedGroup matchedGroup = parseResult.findMatchedGroup(cmd.getCommandSpec().argGroups().get(0)).get(0);
-        assertEquals(3, matchedGroup.multiples().size());
+        GroupMatchContainer groupMatchContainer = parseResult.findMatches(cmd.getCommandSpec().argGroups().get(0)).get(0);
+        assertEquals(3, groupMatchContainer.matches().size());
 
         CommandSpec spec = cmd.getCommandSpec();
         List<String> data =    Arrays.asList("data1",  "data2",    "data3");
         List<String> contain = Arrays.asList(null,     "contain2", "contain3");
         List<String> type =    Arrays.asList(null,     "typ2",     null);
         for (int i = 0; i < 3; i++) {
-            MatchedGroupMultiple multiple = matchedGroup.multiples().get(i);
+            ParseResult.GroupMatch multiple = groupMatchContainer.matches().get(i);
             assertEquals(Arrays.asList(data.get(i)),  multiple.matchedValues(spec.findOption("-d")));
             if (contain.get(i) == null) {
                 assertEquals(Collections.emptyList(), multiple.matchedValues(spec.findOption("-c")));
@@ -1749,15 +1818,15 @@ public class ArgGroupTest {
         assertEquals("pos", parseResult.matchedPositionalValue(0, ""));
         assertFalse(parseResult.hasMatchedOption("-f"));
 
-        MatchedGroup matchedGroup = parseResult.findMatchedGroup(cmd.getCommandSpec().argGroups().get(0)).get(0);
-        assertEquals(3, matchedGroup.multiples().size());
+        ParseResult.GroupMatchContainer groupMatchContainer = parseResult.findMatches(cmd.getCommandSpec().argGroups().get(0)).get(0);
+        assertEquals(3, groupMatchContainer.matches().size());
 
         CommandSpec spec = cmd.getCommandSpec();
         List<String> data =    Arrays.asList("data1",    "data2",    "data3");
         List<String> contain = Arrays.asList("contain1", "contain2", "contain3");
         List<String> type =    Arrays.asList("typ1",     "typ2",     "type3");
         for (int i = 0; i < 3; i++) {
-            MatchedGroupMultiple multiple = matchedGroup.multiples().get(i);
+            ParseResult.GroupMatch multiple = groupMatchContainer.matches().get(i);
             assertEquals(Arrays.asList(data.get(i)),    multiple.matchedValues(spec.findOption("-d")));
             assertEquals(Arrays.asList(contain.get(i)), multiple.matchedValues(spec.findOption("-c")));
             assertEquals(Arrays.asList(type.get(i)),    multiple.matchedValues(spec.findOption("-t")));
@@ -1802,20 +1871,20 @@ public class ArgGroupTest {
             assertEquals(file.get(i), app.compositeArguments.get(i).file);
         }
 
-        MatchedGroup matchedGroup = parseResult.findMatchedGroup(cmd.getCommandSpec().argGroups().get(0)).get(0);
-        assertEquals(3, matchedGroup.multiples().size());
+        ParseResult.GroupMatchContainer groupMatchContainer = parseResult.findMatches(cmd.getCommandSpec().argGroups().get(0)).get(0);
+        assertEquals(3, groupMatchContainer.matches().size());
 
         CommandSpec spec = cmd.getCommandSpec();
         for (int i = 0; i < 3; i++) {
-            assertEquals(Arrays.asList(data.get(i)), matchedGroup.multiples().get(i).matchedValues(spec.findOption("--mode")));
-            assertEquals(Arrays.asList(file.get(i)), matchedGroup.multiples().get(i).matchedValues(spec.positionalParameters().get(0)));
+            assertEquals(Arrays.asList(data.get(i)), groupMatchContainer.matches().get(i).matchedValues(spec.findOption("--mode")));
+            assertEquals(Arrays.asList(file.get(i)), groupMatchContainer.matches().get(i).matchedValues(spec.positionalParameters().get(0)));
         }
     }
 
     @Test
     public void testMultipleGroups() {
         class MultiGroup {
-            // SYNOPSIS: [--mode=<mode> <file>]
+            // SYNOPSIS: [--mode=<mode> <file>]...
             @ArgGroup(exclusive = false, multiplicity = "*")
             OptionPositionalComposite[] optPos;
 
@@ -1827,11 +1896,26 @@ public class ArgGroupTest {
         CommandLine cmd = new CommandLine(app);
 
         String synopsis = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF)).synopsis(0);
-//        assertEquals("<main class> [--mode=<mode> <file>] [-a -c=<container> -d=<dataset> -t=<type>]", synopsis.trim());
+        String expectedSynopsis = String.format("" +
+                "<main class> [--mode=<mode> <file>]... [-a -c=<container> -d=<dataset>%n" +
+                "             -t=<type>]");
+        assertEquals(expectedSynopsis, synopsis.trim());
 
         ParseResult parseResult = cmd.parseArgs("--mode=mode1", "/file/1", "-a", "-d=data1", "-c=contain1", "-t=typ1", "--mode=mode2", "/file/2");
-        List<MatchedGroupMultiple> multiples = parseResult.getMatchedGroupMultiples();
+        List<ParseResult.GroupMatch> multiples = parseResult.getGroupMatches();
+        assertEquals(1, multiples.size());
+        GroupMatch groupMatch = multiples.get(0);
 
+        assertEquals(2, groupMatch.matchedSubgroups().size());
+        List<ArgGroupSpec> argGroups = cmd.getCommandSpec().argGroups();
+        ArgGroupSpec modeGroup = argGroups.get(0);
+        ArgGroupSpec addDatasetGroup = argGroups.get(1);
+
+        GroupMatchContainer modeGroupMatchContainer = groupMatch.matchedSubgroups().get(modeGroup);
+        assertEquals(2, modeGroupMatchContainer.matches().size());
+
+        GroupMatchContainer addDatasetGroupMatchContainer = groupMatch.matchedSubgroups().get(addDatasetGroup);
+        assertEquals(1, addDatasetGroupMatchContainer.matches().size());
     }
 
     static class CompositeGroupDemo {
@@ -1945,7 +2029,6 @@ public class ArgGroupTest {
         }
     }
 
-    @Ignore
     @Test // https://github.com/remkop/picocli/issues/655
     public void testCompositeValidation() {
         TestComposite app = new TestComposite();
@@ -1960,7 +2043,7 @@ public class ArgGroupTest {
             cmd.parseArgs("--add-group");
             fail("Expect exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Error: Missing required argument(s): [--add-group (--option1=<option1> --option2=<option2>)]...", ex.getMessage());
+            assertEquals("Error: Missing required argument(s): (--option1=<option1> --option2=<option2>)", ex.getMessage());
         }
         try {
             cmd.parseArgs("--add-group", "--option2=1", "--option2=1");
@@ -1978,7 +2061,7 @@ public class ArgGroupTest {
             ParseResult parseResult = cmd.parseArgs("--add-group", "--option2=1", "--option1=1", "--add-group");
             fail("Expect exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Error: Missing required argument(s): [--add-group (--option1=<option1> --option2=<option2>)]...", ex.getMessage());
+            assertEquals("Error: Missing required argument(s): (--option1=<option1> --option2=<option2>)", ex.getMessage());
         }
     }
 

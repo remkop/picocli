@@ -28,6 +28,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#654] Bugfix: argument group heading text was not retrieved from ResourceBundle. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 - [#635] Bugfix in validation: did not show an error if some but not all parts of a co-occurring group were specified. Thanks to [Philipp Hanslovsky](https://github.com/hanslovsky) for the pull request. 
 - [#653] Bugfix: validation should be skipped if help was requested. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+- [#655] Bugfix: ArgGroup validation silently accepts missing subgroup with multiplicity=1.
 - [#652] Documentation: fixes in user manual. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 - [#651] Documentation: fixes in user manual. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
@@ -35,7 +36,17 @@ Picocli follows [semantic versioning](http://semver.org/).
 No features were deprecated in this release.
 
 ## <a name="4.0.0-alpha-2-breaking-changes"></a> Potential breaking changes
-No breaking changes in this release.
+The following classes and methods introduced in 4.0.0-alpha-1 have been renamed:
+
+Classes:
+
+* `picocli.CommandLine.ParseResult.MatchedGroup` -> `picocli.CommandLine.ParseResult.GroupMatchContainer`
+* `picocli.CommandLine.ParseResult.MatchedGroupMultiple` -> `picocli.CommandLine.ParseResult.GroupMatch`
+
+Methods:
+ 
+* `ParseResult::getMatchedGroupMultiples` has been renamed to `ParseResult::getGroupMatches`
+* `ParseResult::findMatchedGroup(ArgGroupSpec)` has been renamed to `ParseResult::findMatches(ArgGroupSpec)`
 
 
 # <a name="3.9.6"></a> Picocli 3.9.6
