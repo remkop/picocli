@@ -18,6 +18,7 @@ package picocli;
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -3114,6 +3115,7 @@ public class CommandLine {
      *   <li>[footer]</li>
      * </ul> */
     @Retention(RetentionPolicy.RUNTIME)
+    @Inherited
     @Target({ElementType.TYPE, ElementType.LOCAL_VARIABLE, ElementType.FIELD, ElementType.PACKAGE, ElementType.METHOD})
     public @interface Command {
         /** Program name to show in the synopsis. If omitted, {@code "<main class>"} is used.

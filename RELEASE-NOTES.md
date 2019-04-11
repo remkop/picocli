@@ -24,6 +24,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.0.0-alpha-2-fixes"></a> Fixed issues
+- [#660] Added `@java.lang.annotation.Inherited` to the `@picocli.CommandLine.Command` annotation. Thanks to [Devin Smith](https://github.com/devinrsmith) for the suggestion.
 - [#656] Bugfix for issue where synopsis for composite groups did not expand for n..* (n > 1). Thanks to Arno Tuomainen for finding this issue.
 - [#654] Bugfix: argument group heading text was not retrieved from ResourceBundle. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 - [#635] Bugfix in validation: did not show an error if some but not all parts of a co-occurring group were specified. Thanks to [Philipp Hanslovsky](https://github.com/hanslovsky) for the pull request. 
