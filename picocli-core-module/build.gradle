@@ -49,8 +49,13 @@ test {
 
 jar {
     manifest {
-        attributes 'Implementation-Title': 'Picocli-core-module',
-                    'Implementation-Version': version
+        attributes 'Specification-Title'   : 'picocli-jpms-module',
+                   'Specification-Vendor'  : 'Remko Popma',
+                   'Specification-Version' : version,
+                   'Implementation-Title'  : 'picocli-jpms-module',
+                   'Implementation-Vendor' : 'Remko Popma',
+                   'Implementation-Version': version,
+                   'Main-Class'            : 'picocli.AutoComplete'
     }
     baseName = project.name + '-all'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }    
