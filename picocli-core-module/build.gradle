@@ -24,9 +24,11 @@ task copyRootProjectCode(type: Copy) {
 compileJava {
     inputs.property("moduleName", moduleName)   
     doFirst {
-        options.compilerArgs = [
-            '--module-path', classpath.asPath,
-        ]
+        if (org.gradle.api.JavaVersion.current().isJava9Compatible()) {
+            options.compilerArgs = [
+                    '--module-path', classpath.asPath,
+            ]
+        }
         classpath = files()
     }
 }
