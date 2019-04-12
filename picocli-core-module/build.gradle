@@ -38,8 +38,8 @@ compileJava {
         classpath = files()
     }
 }
-
-assemble.finalizedBy cleanupRootProjectCode
+compileJava.dependsOn(copyRootProjectCode)
+assemble.finalizedBy(cleanupRootProjectCode)
 
 
 test {
@@ -61,4 +61,3 @@ jar {
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }    
 }
 
-compileJava.dependsOn(copyRootProjectCode)
