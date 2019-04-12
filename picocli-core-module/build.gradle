@@ -20,6 +20,12 @@ task copyRootProjectCode(type: Copy) {
     }
     into "${projectDir}/src/main/java"
 }
+task cleanupRootProjectCode(type: Delete) {
+    delete "${projectDir}/src/main/java/picocli"
+    delete fileTree("${projectDir}/src/main/java") {
+        exclude '**/module-info.java'
+    }
+}
 
 compileJava {
     inputs.property("moduleName", moduleName)   
@@ -32,6 +38,9 @@ compileJava {
         classpath = files()
     }
 }
+
+assemble.finalizedBy cleanupRootProjectCode
+
 
 test {
     // Excluding unit tests, should have been generated already with the root project.
