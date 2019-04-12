@@ -2107,6 +2107,27 @@ public class ArgGroupTest {
         assertEquals(expected, actual);
     }
 
+    @Command(name = "ArgGroupsTest")
+    static class TestCommand implements Runnable {
+
+        @ArgGroup( exclusive = true)
+        DataSource datasource;
+
+        static class DataSource {
+            @Option(names = "-a", required = true, defaultValue = "Strings.gxl")
+            static String aString;
+        }
+
+        public void run() { }
+    }
+
+    @Test
+    public void testIssue661StackOverflow() {
+        CommandLine cmd = new CommandLine(new TestCommand());
+        cmd.parseArgs("-a=Foo");
+        cmd.parseWithHandler(new CommandLine.RunAll(), new String[0]);
+    }
+
     // TODO add tests with positional interactive params in group
     // TODO add tests with positional params in multiple groups
 }

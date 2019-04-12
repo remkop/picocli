@@ -8145,7 +8145,7 @@ public class CommandLine {
          * Returns the matches for the specified argument group.
          * @since 4.0 */
         public List<GroupMatchContainer> findMatches(ArgGroupSpec group) {
-            return groupMatchContainer.findMatches(group, new ArrayList<GroupMatchContainer>());
+            return groupMatchContainer.findMatchContainers(group, new ArrayList<GroupMatchContainer>());
         }
 
         /**
@@ -8349,7 +8349,7 @@ public class CommandLine {
                 if (!isInitializingDefaultValues) {
                     argSpec.originalStringValues.add(value);
                     if (argSpec.group() != null) {
-                        GroupMatchContainer groupMatchContainer = this.groupMatchContainer.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
+                        GroupMatchContainer groupMatchContainer = this.groupMatchContainer.findLastMatchContainer(argSpec.group());
                         groupMatchContainer.lastMatch().addOriginalStringValue(argSpec, value);
                     }
                 }
@@ -8361,7 +8361,7 @@ public class CommandLine {
                     if (argSpec.group() == null) {
                         argSpec.typedValueAtPosition.put(position, typedValue);
                     } else {
-                        GroupMatchContainer groupMatchContainer = this.groupMatchContainer.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
+                        GroupMatchContainer groupMatchContainer = this.groupMatchContainer.findLastMatchContainer(argSpec.group());
                         groupMatchContainer.lastMatch().addMatchedValue(argSpec, position, typedValue, commandSpec.commandLine.tracer);
                     }
                 }
@@ -8381,6 +8381,7 @@ public class CommandLine {
                     Tracer tracer = commandSpec.commandLine.tracer;
                     tracer.info("GroupMatch %s is complete: its mandatory elements are all matched. (User object: %s.) %s is required in the group, so it starts a new GroupMatch.%n", foundGroupMatchContainer.lastMatch(), foundGroupMatchContainer.group.userObject(), elementDescription);
                     foundGroupMatchContainer.addMatch(commandSpec.commandLine);
+                    this.groupMatchContainer.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
                 }
             }
 
@@ -8535,14 +8536,18 @@ public class CommandLine {
                 return this;
             }
 
-            List<GroupMatchContainer> findMatches(ArgGroupSpec group, List<GroupMatchContainer> result) {
+            List<GroupMatchContainer> findMatchContainers(ArgGroupSpec group, List<GroupMatchContainer> result) {
                 if (this.group == group) { result.add(this); return result; }
                 for (GroupMatch multiple : matches()) {
                     for (GroupMatchContainer mg : multiple.matchedSubgroups.values()) {
-                        mg.findMatches(group, result);
+                        mg.findMatchContainers(group, result);
                     }
                 }
                 return result;
+            }
+            GroupMatchContainer findLastMatchContainer(ArgGroupSpec group) {
+                List<GroupMatchContainer> all = findMatchContainers(group, new ArrayList<GroupMatchContainer>());
+                return all.isEmpty() ? null : all.get(all.size() - 1);
             }
 
             @Override public String toString() {
@@ -8569,7 +8574,7 @@ public class CommandLine {
                 Assert.assertTrue(Assert.equals(group(), group.parentGroup()), new IHelpSectionRenderer() {public String render(Help h) {
                     return "Internal error: expected " + group.parentGroup() + " (the parent of " + group + "), but was " + group(); }});
 
-                List<GroupMatchContainer> groupMatchContainers = findMatches(group, new ArrayList<GroupMatchContainer>());
+                List<GroupMatchContainer> groupMatchContainers = findMatchContainers(group, new ArrayList<GroupMatchContainer>());
                 if (groupMatchContainers.isEmpty()) {
                     this.unmatchedSubgroups.add(group);
                 }
@@ -10025,8 +10030,8 @@ public class CommandLine {
         }
         int getPosition(ArgSpec arg) {
             if (arg.group() == null) { return position; }
-            ParseResult.GroupMatchContainer groupMatchContainer = parseResultBuilder.groupMatchContainer.findOrCreateMatchingGroup(arg, commandSpec.commandLine());
-            return groupMatchContainer == null ? 0 : groupMatchContainer.lastMatch().position;
+            GroupMatchContainer container = parseResultBuilder.groupMatchContainer.findLastMatchContainer(arg.group());
+            return container == null ? 0 : container.lastMatch().position;
         }
         String positionDesc(ArgSpec arg) {
             int pos = getPosition(arg);
