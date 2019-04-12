@@ -2830,26 +2830,62 @@ usage.footer = footer
 # Option Descriptions
 # -------------------
 # Use numbered keys to create multi-line descriptions.
+
+# Example description for an option `@Option(names = "-x")`
+x = This is the description for the -x option
+
+# Example multi-line description for an option `@Option(names = "-y")`
+y.0 = This is the first line of the description for the -y option
+y.1 = This is the second line of the description for the -y option
+
+# Example descriptions for the standard help mixin options:
 help = Show this help message and exit.
 version = Print version information and exit.
 ----
 
-For options and positional parameters, the `descriptionKey` can be used to localize the description.
+For options and positional parameters, the optional annotation attribute `descriptionKey` can be used to localize the description. For example:
+
+```java
+@Option(names = "-x", descriptionKey = "xoption") int x;
+```
+The matching entry in the resource bundle could look like this:
+```
+xoption = This is the description for the -x option.
+```
 
 When the `descriptionKey` is omitted, the https://picocli.info/apidocs/picocli/CommandLine.Option.html#descriptionKey--[fallback for options] is any option name without the leading dashes, for example:
 
+```java
+@Option(names = {"-v", "--verbose") boolean[] verbose;
+```
+The matching entry in the resource bundle could look like this:
 ----
-# For @Option(names = {"-v", "--verbose) boolean[] verbose;
 verbose = Show more detail during execution. \
           May be specified multiple times for increasing verbosity.
 ----
 
 For https://picocli.info/apidocs/picocli/CommandLine.Parameters.html#descriptionKey--[positional parameters] the fallback key is the `paramLabel + [ index ]`, for example:
 
+[source,java]
 ----
-# For @Parameters(paramLabel="FILES") File[];
+@Parameters(index = "0..*", paramLabel="FILES") File[];
+----
+The matching entry in the resource bundle could look like this:
+----
 FILES[0..*] = The files to process.
 ----
+
+For argument groups, use the `headingKey` to specify a resource bundle key. For example:
+```java
+@ArgGroup(headingKey = "myBundleKey") MyArgGroup myGroup;
+```
+The matching entry in the resource bundle could look like this:
+----
+myBundleKey = The localized heading for this argument group%n
+----
+
+Note that the heading text should end with `%n` or the first option in the group will be on the same line.
+This is to be consistent with other <<Section Headings,section headings>> in the usage help.
 
 === Shared Resource Bundles
 
