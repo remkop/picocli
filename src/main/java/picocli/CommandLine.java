@@ -11841,31 +11841,76 @@ public class CommandLine {
                 throw new IllegalStateException(column.overflow.toString());
             }
             private static int length(Text str) {
-                return str.length; // TODO count some characters as double length
+                return length(str, str.from, str.length);
+            }
+            private static int length(Text str, int from, int length) {
+                int result = 0;
+                for (int i = from; i < str.from + length; i++) {
+                    result += isCharCJK(str.plain.charAt(i)) ? 2 : 1;
+                }
+                return result;
             }
 
+            /**
+             * Given a character, is this character considered to be a CJK character?
+             * Shamelessly stolen from
+             * <a href="http://stackoverflow.com/questions/1499804/how-can-i-detect-japanese-text-in-a-java-string">StackOverflow</a>
+             * where it was contributed by user Rakesh N. (Upvote! :-) )
+             * @param c Character to test
+             * @return {@code true} if the character is a CJK character
+             */
+            static boolean isCharCJK(char c) {
+                Character.UnicodeBlock unicodeBlock = Character.UnicodeBlock.of(c);
+                return (unicodeBlock == Character.UnicodeBlock.HIRAGANA)
+                        || (unicodeBlock == Character.UnicodeBlock.KATAKANA)
+                        || (unicodeBlock == Character.UnicodeBlock.KATAKANA_PHONETIC_EXTENSIONS)
+                        || (unicodeBlock == Character.UnicodeBlock.HANGUL_COMPATIBILITY_JAMO)
+                        || (unicodeBlock == Character.UnicodeBlock.HANGUL_JAMO)
+                        || (unicodeBlock == Character.UnicodeBlock.HANGUL_SYLLABLES)
+                        || (unicodeBlock == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS)
+                        || (unicodeBlock == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A)
+                        || (unicodeBlock == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B)
+                        || (unicodeBlock == Character.UnicodeBlock.CJK_COMPATIBILITY_FORMS)
+                        || (unicodeBlock == Character.UnicodeBlock.CJK_COMPATIBILITY_IDEOGRAPHS)
+                        || (unicodeBlock == Character.UnicodeBlock.CJK_RADICALS_SUPPLEMENT)
+                        || (unicodeBlock == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION)
+                        || (unicodeBlock == Character.UnicodeBlock.ENCLOSED_CJK_LETTERS_AND_MONTHS)
+                        //The magic number here is the separating index between full-width and half-width
+                        || (unicodeBlock == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS && c < 0xFF61);
+            }
+
+            static class Count {
+                int charCount;
+                int columnCount;
+            }
             private int copy(BreakIterator line, Text text, Text columnValue, int offset) {
                 // Deceive the BreakIterator to ensure no line breaks after '-' character
                 line.setText(text.plainString().replace("-", "\u00ff"));
-                int done = 0;
+                Count count = new Count();
                 for (int start = line.first(), end = line.next(); end != BreakIterator.DONE; start = end, end = line.next()) {
                     Text word = text.substring(start, end); //.replace("\u00ff", "-"); // not needed
-                    if (columnValue.maxLength >= offset + done + length(word)) {
-                        done += copy(word, columnValue, offset + done); // TODO messages length
+                    if (columnValue.maxLength >= offset + count.columnCount + length(word)) {
+                        copy(word, columnValue, offset + count.charCount, count);
                     } else {
                         break;
                     }
                 }
-                if (done == 0 && length(text) + offset > columnValue.maxLength) {
+                if (count.charCount == 0 && length(text) + offset > columnValue.maxLength) {
                     // The value is a single word that is too big to be written to the column. Write as much as we can.
-                    done = copy(text, columnValue, offset);
+                    copy(text, columnValue, offset, count);
                 }
-                return done;
+                return count.charCount;
             }
             private static int copy(Text value, Text destination, int offset) {
+                Count count = new Count();
+                copy(value, destination, offset, count);
+                return count.charCount;
+            }
+            private static void copy(Text value, Text destination, int offset, Count count) {
                 int length = Math.min(value.length, destination.maxLength - offset);
                 value.getStyledChars(value.from, length, destination, offset);
-                return length;
+                count.columnCount += length(value, value.from, length);
+                count.charCount += length;
             }
 
             /** Copies the text representation that we built up from the options into the specified StringBuilder.

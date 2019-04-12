@@ -3,15 +3,18 @@
 # <a name="4.0.0-alpha-2"></a> Picocli 4.0.0-alpha-2 (UNRELEASED)
 The picocli community is pleased to announce picocli 4.0.0-alpha-2.
 
-This release contains bugfixes for argument groups. See the [4.0.0-alpha-1 New and Noteworthy section](#4.0.0-alpha-1-new) below for more details on argument groups.
+Thanks to great feedback from the picocli community on the 4.0.0-alpha-1 release, this release contains many argument group-related bugfixes.
+See the [4.0.0-alpha-1 New and Noteworthy section](#4.0.0-alpha-1-new) below for more details on argument groups.
 
 _Please try this and provide feedback. We can still make changes._
 
 _What do you think of the annotations API? What about the programmatic API? Does it work as expected? Are the input validation error messages correct and clear? Is the documentation clear and complete? Anything you want to change or improve? Any other feedback?_
 
-Many thanks to the picocli community members who contributed!
+This release also has support for variable expansion and improved support for Chinese, Japanese and Korean.
 
-This is the fifty-first public release.
+Many thanks to the picocli community for the contributions!
+
+This is the fifty-third public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.0-alpha-2"></a> Table of Contents
@@ -22,15 +25,27 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.0-alpha-2-new"></a> New and Noteworthy
 
+### Variable Expansion
+
+TODO
+
+### Improved Support for Chinese, Japanese and Korean
+Picocli will align the usage help message to fit within some user-defined width (80 columns by default).
+A number of characters in Chinese, Japanese and Korean (CJK) are wider than others.
+If those characters are treated to have the same width as other characters, the usage help message may extend past the right margin.
+
+From this release, picocli will use 2 columns for these wide characters when calculating where to put line breaks, resulting in better usage help message text.
+
 
 ## <a name="4.0.0-alpha-2-fixes"></a> Fixed issues
+- [#21] Count double-width Asian characters as two characters for line-breaking purposes.
 - [#660] Added `@java.lang.annotation.Inherited` to the `@picocli.CommandLine.Command` annotation. Thanks to [Devin Smith](https://github.com/devinrsmith) for the suggestion.
-- [#661] Bugfix for stack overflow when option in an `@ArgGroup` had a default value. Thanks to [Andreas Deininger](https://github.com/deining) for reporting this.
-- [#656] Bugfix for issue where synopsis for composite groups did not expand for n..* (n > 1). Thanks to Arno Tuomainen for finding this issue.
+- [#661] Bugfix for stack overflow when option in an argument group had a default value. Thanks to [Andreas Deininger](https://github.com/deining) for reporting this.
+- [#656] Bugfix for issue where synopsis for composite argument groups did not expand for n..* (n > 1). Thanks to Arno Tuomainen for finding this issue.
 - [#654] Bugfix: argument group heading text was not retrieved from ResourceBundle. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
-- [#635] Bugfix in validation: did not show an error if some but not all parts of a co-occurring group were specified. Thanks to [Philipp Hanslovsky](https://github.com/hanslovsky) for the pull request. 
-- [#653] Bugfix: validation should be skipped if help was requested. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
-- [#655] Bugfix: ArgGroup validation silently accepts missing subgroup with multiplicity=1.
+- [#635] Bugfix in argument group validation: did not show an error if some but not all parts of a co-occurring group were specified. Thanks to [Philipp Hanslovsky](https://github.com/hanslovsky) for the pull request. 
+- [#653] Bugfix: argument group validation should be skipped if help was requested. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+- [#655] Bugfix: argument group validation silently accepts missing subgroup with multiplicity=1.
 - [#652] Documentation: fixes in user manual. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 - [#651] Documentation: fixes in user manual. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
