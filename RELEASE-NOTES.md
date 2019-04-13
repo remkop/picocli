@@ -66,6 +66,12 @@ Methods:
 * `ParseResult::getMatchedGroupMultiples` has been renamed to `ParseResult::getGroupMatches`
 * `ParseResult::findMatchedGroup(ArgGroupSpec)` has been renamed to `ParseResult::findMatches(ArgGroupSpec)`
 
+Removed:
+
+These may be implemented in a future version.
+
+* `picocli.CommandLine.Option.excludes()` and `picocli.CommandLine.Parameters.excludes()`
+* `picocli.CommandLine.Option.needs(()` and `picocli.CommandLine.Parameters.needs(()`
 
 # <a name="3.9.6"></a> Picocli 3.9.6
 The picocli community is pleased to announce picocli 3.9.6.

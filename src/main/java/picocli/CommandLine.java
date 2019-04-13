@@ -2743,34 +2743,6 @@ public class CommandLine {
          * @since 3.9
          */
         int order() default -1;
-
-        /**
-         * Specify the name of one or more options that this option is mutually exclusive with.
-         * Picocli will internally create a mutually exclusive {@linkplain ArgGroup group} with all specified options (and
-         * any options that the specified options are mutually exclusive with).
-         * <p>
-         * Options cannot be part of multiple groups to avoid ambiguity for the parser. Constructions
-         * where an option is part of multiple groups must be simplified so that the option is in just one group.
-         * For example: {@code (-a | -b) | (-a -x)} can be simplified to {@code (-a [-x] | -b)}.
-         * </p>
-         * @return the name or names of the option(s) that this option is mutually exclusive with.
-         * @since 4.0
-         */
-        String[] excludes() default {};
-
-        /**
-         * Specify the name of one or more options that this option must co-occur with.
-         * Picocli will internally create a co-occurring {@linkplain ArgGroup group} with all specified options (and
-         * any options that the specified options must co-occur with).
-         * <p>
-         * Options cannot be part of multiple groups to avoid ambiguity for the parser. Constructions
-         * where an option is part of multiple groups must be simplified so that the option is in just one group.
-         * For example: {@code (-a -x) | (-a -y)} can be simplified to {@code (-a [-x | -y])}.
-         * </p>
-         * @return the name or names of the option(s) that this option must co-occur with.
-         * @since 4.0
-         */
-        String[] needs() default {};
     }
     /**
      * <p>
@@ -2953,34 +2925,6 @@ public class CommandLine {
          * @since 3.6
          */
         String descriptionKey() default "";
-
-        /**
-         * Specify the name of one or more options that this positional parameter is mutually exclusive with.
-         * Picocli will internally create a mutually exclusive {@linkplain ArgGroup group} with all specified options (and
-         * any options and positional parameters that the specified options are mutually exclusive with).
-         * <p>
-         * An option or positional parameter cannot be part of multiple groups to avoid ambiguity for the parser. Constructions
-         * where an option is part of multiple groups must be simplified so that the option is in just one group.
-         * For example: {@code (-a | -b) | (-a -x)} can be simplified to {@code (-a [-x] | -b)}.
-         * </p>
-         * @return the name or names of the option(s) that this positional parameter is mutually exclusive with.
-         * @since 4.0
-         */
-        String[] excludes() default {};
-
-        /**
-         * Specify the name of one or more options that this option must co-occur with.
-         * Picocli will internally create a co-occurring {@linkplain ArgGroup group} with all specified options (and
-         * any options that the specified options must co-occur with).
-         * <p>
-         * Options cannot be part of multiple groups to avoid ambiguity for the parser. Constructions
-         * where an option is part of multiple groups must be simplified so that the option is in just one group.
-         * For example: {@code (-a -x) | (-a -y)} can be simplified to {@code (-a [-x | -y])}.
-         * </p>
-         * @return the name or names of the option(s) that this option must co-occur with.
-         * @since 4.0
-         */
-        String[] needs() default {};
     }
 
     /**
