@@ -420,6 +420,25 @@ public class CommandLine {
         }
         return this;
     }
+    /**
+     * Returns whether line breaks should take wide Chinese, Japanese and Korean characters into account for line-breaking purposes.
+     * @return true if wide Chinese, Japanese and Korean characters are counted as double the size of other characters for line-breaking purposes
+     * @since 4.0 */
+    public boolean isAdjustLineBreaksForWideCJKCharacters() { return getCommandSpec().usageMessage().adjustLineBreaksForWideCJKCharacters(); }
+    /** Sets whether line breaks should take wide Chinese, Japanese and Korean characters into account, and returns this UsageMessageSpec.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param adjustForWideChars if true, wide Chinese, Japanese and Korean characters are counted as double the size of other characters for line-breaking purposes
+     * @since 4.0 */
+    public CommandLine setAdjustLineBreaksForWideCJKCharacters(boolean adjustForWideChars) {
+        getCommandSpec().usageMessage().adjustLineBreaksForWideCJKCharacters(adjustForWideChars);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setAdjustLineBreaksForWideCJKCharacters(adjustForWideChars);
+        }
+        return this;
+    }
 
     /** Returns whether the value of boolean flag options should be "toggled" when the option is matched.
      * By default, flags are toggled, so if the value is {@code true} it is set to {@code false}, and when the value is
@@ -4676,6 +4695,9 @@ public class CommandLine {
             /** Constant Boolean holding the default setting for whether this command should be listed in the usage help of the parent command: <code>{@value}</code>.*/
             static final Boolean DEFAULT_HIDDEN = Boolean.FALSE;
 
+            /** Constant Boolean holding the default setting for whether line breaks should take wide CJK characters into account: <code>{@value}</code>.*/
+            static final Boolean DEFAULT_ADJUST_CJK = Boolean.TRUE;
+
             static final String DEFAULT_SINGLE_VALUE = "";
             static final String[] DEFAULT_MULTI_LINE = {};
 
@@ -4718,6 +4740,7 @@ public class CommandLine {
             private int width = DEFAULT_USAGE_WIDTH;
 
             private Messages messages;
+            private Boolean adjustLineBreaksForWideCJKCharacters;
 
             /**
              * Sets the maximum usage help message width to the specified value. Longer values are wrapped.
@@ -5002,6 +5025,16 @@ public class CommandLine {
              * @param msgs the new Messages value that encapsulates this {@linkplain CommandSpec#resourceBundle() command's resource bundle}, may be {@code null}
              * @since 3.6 */
             public UsageMessageSpec messages(Messages msgs) { messages = msgs; return this; }
+            /**
+             * Returns whether line breaks should take wide Chinese, Japanese and Korean characters into account for line-breaking purposes.
+             * @return true if wide Chinese, Japanese and Korean characters are counted as double the size of other characters for line-breaking purposes
+             * @since 4.0 */
+            public boolean adjustLineBreaksForWideCJKCharacters() { return adjustLineBreaksForWideCJKCharacters == null ? DEFAULT_ADJUST_CJK : adjustLineBreaksForWideCJKCharacters; }
+            /** Sets whether line breaks should take wide Chinese, Japanese and Korean characters into account, and returns this UsageMessageSpec.
+             * @param adjustForWideChars if true, wide Chinese, Japanese and Korean characters are counted as double the size of other characters for line-breaking purposes
+             * @since 4.0 */
+            public UsageMessageSpec adjustLineBreaksForWideCJKCharacters(boolean adjustForWideChars) { adjustLineBreaksForWideCJKCharacters = adjustForWideChars; return this; }
+
             void updateFromCommand(Command cmd, CommandSpec commandSpec) {
                 if (isNonDefault(cmd.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))            {synopsisHeading = cmd.synopsisHeading();}
                 if (isNonDefault(cmd.commandListHeading(), DEFAULT_COMMAND_LIST_HEADING))     {commandListHeading = cmd.commandListHeading();}
@@ -5043,6 +5076,7 @@ public class CommandLine {
                 if (initializable(parameterListHeading, mixin.parameterListHeading(), DEFAULT_SINGLE_VALUE))           {parameterListHeading = mixin.parameterListHeading();}
                 if (initializable(optionListHeading, mixin.optionListHeading(), DEFAULT_SINGLE_VALUE))                 {optionListHeading = mixin.optionListHeading();}
                 if (Messages.empty(messages)) { messages(Messages.copy(commandSpec, mixin.messages())); }
+                if (initializable(adjustLineBreaksForWideCJKCharacters, mixin.adjustLineBreaksForWideCJKCharacters(), DEFAULT_ADJUST_CJK)) {adjustLineBreaksForWideCJKCharacters = mixin.adjustLineBreaksForWideCJKCharacters();}
             }
             void initFrom(UsageMessageSpec settings, CommandSpec commandSpec) {
                 description = settings.description;
@@ -5063,6 +5097,7 @@ public class CommandLine {
                 footerHeading = settings.footerHeading;
                 width = settings.width;
                 messages = Messages.copy(commandSpec, settings.messages());
+                adjustLineBreaksForWideCJKCharacters = settings.adjustLineBreaksForWideCJKCharacters;
             }
         }
         /** Models parser configuration specification.
@@ -10726,6 +10761,7 @@ public class CommandLine {
 
             // synopsis heading ("Usage: ") may be on the same line, so adjust column width
             TextTable textTable = TextTable.forColumnWidths(ansi(), firstColumnLength, width() - firstColumnLength);
+            textTable.setAdjustLineBreaksForWideCJKCharacters(commandSpec.usageMessage().adjustLineBreaksForWideCJKCharacters());
             textTable.indentWrappedLines = 1; // don't worry about first line: options (2nd column) always start with a space
 
             // right-adjust the command name by length of synopsis heading
@@ -10802,7 +10838,7 @@ public class CommandLine {
             int longOptionColumnWidth = calcLongOptionColumnWidth();
             Collections.sort(groups, new SortByOrder<ArgGroupSpec>());
             for (ArgGroupSpec group : groups) {
-                sb.append(heading(ansi(), width(), group.heading()));
+                sb.append(heading(ansi(), width(), adjustCJK(), group.heading()));
 
                 Layout groupLayout = createLayout(longOptionColumnWidth);
                 groupLayout.addPositionalParameters(group.positionalParameters(), valueLabelRenderer);
@@ -10851,8 +10887,8 @@ public class CommandLine {
             return layout.toString();
         }
 
-        private static String heading(Ansi ansi, int usageWidth, String values, Object... params) {
-            StringBuilder sb = join(ansi, usageWidth, new String[] {values}, new StringBuilder(), params);
+        private static String heading(Ansi ansi, int usageWidth, boolean adjustCJK, String values, Object... params) {
+            StringBuilder sb = join(ansi, usageWidth, adjustCJK, new String[] {values}, new StringBuilder(), params);
             return trimLineSeparator(sb.toString()) + new String(spaces(countTrailingSpaces(values)));
         }
         static String trimLineSeparator(String result) {
@@ -10868,16 +10904,26 @@ public class CommandLine {
             return trailingSpaces;
         }
 
+        /**
+         * @deprecated Use {@link #join(String[], int, int, String)} instead
+         */
+        @Deprecated public static StringBuilder join(Ansi ansi, int usageHelpWidth, String[] values, StringBuilder sb, Object... params) {
+            return join(ansi, usageHelpWidth, UsageMessageSpec.DEFAULT_ADJUST_CJK, values, sb, params);
+        }
+
         /** Formats each of the specified values and appends it to the specified StringBuilder.
          * @param ansi whether the result should contain ANSI escape codes or not
          * @param usageHelpWidth the width of the usage help message
+         * @param adjustCJK true if wide Chinese, Japanese and Korean characters should be counted as double the size of other characters for line-breaking purposes
          * @param values the values to format and append to the StringBuilder
          * @param sb the StringBuilder to collect the formatted strings
          * @param params the parameters to pass to the format method when formatting each value
-         * @return the specified StringBuilder */
-        public static StringBuilder join(Ansi ansi, int usageHelpWidth, String[] values, StringBuilder sb, Object... params) {
+         * @return the specified StringBuilder
+         * @since 4.0 */
+        public static StringBuilder join(Ansi ansi, int usageHelpWidth, boolean adjustCJK, String[] values, StringBuilder sb, Object... params) {
             if (values != null) {
                 TextTable table = TextTable.forColumnWidths(ansi, usageHelpWidth);
+                table.setAdjustLineBreaksForWideCJKCharacters(adjustCJK);
                 table.indentWrappedLines = 0;
                 for (String summaryLine : values) {
                     Text[] lines = ansi.new Text(format(summaryLine, params)).splitLines();
@@ -10888,6 +10934,7 @@ public class CommandLine {
             return sb;
         }
         private int width() { return commandSpec.usageMessage().width(); }
+        private boolean adjustCJK() { return commandSpec.usageMessage().adjustLineBreaksForWideCJKCharacters(); }
         /** Returns command custom synopsis as a string. A custom synopsis can be zero or more lines, and can be
          * specified declaratively with the {@link Command#customSynopsis()} annotation attribute or programmatically
          * by setting the Help instance's {@link Help#customSynopsis} field.
@@ -10895,7 +10942,7 @@ public class CommandLine {
          * @return the custom synopsis lines combined into a single String (which may be empty)
          */
         public String customSynopsis(Object... params) {
-            return join(ansi(), width(), commandSpec.usageMessage().customSynopsis(), new StringBuilder(), params).toString();
+            return join(ansi(), width(), adjustCJK(), commandSpec.usageMessage().customSynopsis(), new StringBuilder(), params).toString();
         }
         /** Returns command description text as a string. Description text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#description()} annotation attribute or programmatically by
@@ -10904,7 +10951,7 @@ public class CommandLine {
          * @return the description lines combined into a single String (which may be empty)
          */
         public String description(Object... params) {
-            return join(ansi(), width(), commandSpec.usageMessage().description(), new StringBuilder(), params).toString();
+            return join(ansi(), width(), adjustCJK(), commandSpec.usageMessage().description(), new StringBuilder(), params).toString();
         }
         /** Returns the command header text as a string. Header text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#header()} annotation attribute or programmatically by
@@ -10913,7 +10960,7 @@ public class CommandLine {
          * @return the header lines combined into a single String (which may be empty)
          */
         public String header(Object... params) {
-            return join(ansi(), width(), commandSpec.usageMessage().header(), new StringBuilder(), params).toString();
+            return join(ansi(), width(), adjustCJK(), commandSpec.usageMessage().header(), new StringBuilder(), params).toString();
         }
         /** Returns command footer text as a string. Footer text can be zero or more lines, and can be specified
          * declaratively with the {@link Command#footer()} annotation attribute or programmatically by
@@ -10922,21 +10969,21 @@ public class CommandLine {
          * @return the footer lines combined into a single String (which may be empty)
          */
         public String footer(Object... params) {
-            return join(ansi(), width(), commandSpec.usageMessage().footer(), new StringBuilder(), params).toString();
+            return join(ansi(), width(), adjustCJK(), commandSpec.usageMessage().footer(), new StringBuilder(), params).toString();
         }
 
         /** Returns the text displayed before the header text; the result of {@code String.format(headerHeading, params)}.
          * @param params the parameters to use to format the header heading
          * @return the formatted header heading */
         public String headerHeading(Object... params) {
-            return heading(ansi(), width(), commandSpec.usageMessage().headerHeading(), params);
+            return heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().headerHeading(), params);
         }
 
         /** Returns the text displayed before the synopsis text; the result of {@code String.format(synopsisHeading, params)}.
          * @param params the parameters to use to format the synopsis heading
          * @return the formatted synopsis heading */
         public String synopsisHeading(Object... params) {
-            return heading(ansi(), width(), commandSpec.usageMessage().synopsisHeading(), params);
+            return heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().synopsisHeading(), params);
         }
 
         /** Returns the text displayed before the description text; an empty string if there is no description,
@@ -10944,7 +10991,7 @@ public class CommandLine {
          * @param params the parameters to use to format the description heading
          * @return the formatted description heading */
         public String descriptionHeading(Object... params) {
-            return empty(commandSpec.usageMessage().descriptionHeading()) ? "" : heading(ansi(), width(), commandSpec.usageMessage().descriptionHeading(), params);
+            return empty(commandSpec.usageMessage().descriptionHeading()) ? "" : heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().descriptionHeading(), params);
         }
 
         /** Returns the text displayed before the positional parameter list; an empty string if there are no positional
@@ -10952,7 +10999,7 @@ public class CommandLine {
          * @param params the parameters to use to format the parameter list heading
          * @return the formatted parameter list heading */
         public String parameterListHeading(Object... params) {
-            return commandSpec.positionalParameters().isEmpty() ? "" : heading(ansi(), width(), commandSpec.usageMessage().parameterListHeading(), params);
+            return commandSpec.positionalParameters().isEmpty() ? "" : heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().parameterListHeading(), params);
         }
 
         /** Returns the text displayed before the option list; an empty string if there are no options,
@@ -10960,7 +11007,7 @@ public class CommandLine {
          * @param params the parameters to use to format the option list heading
          * @return the formatted option list heading */
         public String optionListHeading(Object... params) {
-            return commandSpec.optionsMap().isEmpty() ? "" : heading(ansi(), width(), commandSpec.usageMessage().optionListHeading(), params);
+            return commandSpec.optionsMap().isEmpty() ? "" : heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().optionListHeading(), params);
         }
 
         /** Returns the text displayed before the command list; an empty string if there are no commands,
@@ -10968,14 +11015,14 @@ public class CommandLine {
          * @param params the parameters to use to format the command list heading
          * @return the formatted command list heading */
         public String commandListHeading(Object... params) {
-            return commands.isEmpty() ? "" : heading(ansi(), width(), commandSpec.usageMessage().commandListHeading(), params);
+            return commands.isEmpty() ? "" : heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().commandListHeading(), params);
         }
 
         /** Returns the text displayed before the footer text; the result of {@code String.format(footerHeading, params)}.
          * @param params the parameters to use to format the footer heading
          * @return the formatted footer heading */
         public String footerHeading(Object... params) {
-            return heading(ansi(), width(), commandSpec.usageMessage().footerHeading(), params);
+            return heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().footerHeading(), params);
         }
         /** Returns a 2-column list with command names and the first line of their header or (if absent) description.
          * @return a usage help section describing the added commands */
@@ -10985,6 +11032,7 @@ public class CommandLine {
             Help.TextTable textTable = Help.TextTable.forColumns(ansi(),
                     new Help.Column(commandLength + 2, 2, Help.Column.Overflow.SPAN),
                     new Help.Column(width() - (commandLength + 2), 2, Help.Column.Overflow.WRAP));
+            textTable.setAdjustLineBreaksForWideCJKCharacters(adjustCJK());
 
             for (Map.Entry<String, Help> entry : subcommands().entrySet()) {
                 Help help = entry.getValue();
@@ -11036,7 +11084,9 @@ public class CommandLine {
         }
 
         private Layout createLayout(int longOptionsColumnWidth) {
-            return new Layout(colorScheme, TextTable.forDefaultColumns(colorScheme.ansi(), longOptionsColumnWidth, width()), createDefaultOptionRenderer(), createDefaultParameterRenderer());
+            TextTable tt = TextTable.forDefaultColumns(colorScheme.ansi(), longOptionsColumnWidth, width());
+            tt.setAdjustLineBreaksForWideCJKCharacters(commandSpec.usageMessage().adjustLineBreaksForWideCJKCharacters());
+            return new Layout(colorScheme, tt, createDefaultOptionRenderer(), createDefaultParameterRenderer());
         }
 
         /** Returns a new default OptionRenderer which converts {@link OptionSpec Options} to five columns of text to match
@@ -11425,7 +11475,8 @@ public class CommandLine {
              * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
              * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}.
              * @param colorScheme the color scheme to use for common, auto-generated parts of the usage help message */
-            public Layout(ColorScheme colorScheme, int tableWidth) { this(colorScheme, TextTable.forDefaultColumns(colorScheme.ansi(), tableWidth)); }
+            public Layout(ColorScheme colorScheme, int tableWidth) { this(colorScheme,
+                    TextTable.forDefaultColumns(colorScheme.ansi(), tableWidth)); }
 
             /** Constructs a Layout with the specified color scheme, the specified TextTable, the
              * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
@@ -11590,6 +11641,7 @@ public class CommandLine {
 
             private final Ansi ansi;
             private final int tableWidth;
+            private boolean adjustLineBreaksForWideCJKCharacters = true;
 
             /** Constructs a TextTable with five columns as follows:
              * <ol>
@@ -11651,6 +11703,15 @@ public class CommandLine {
                 int totalWidth = 0;
                 for (Column col : columns) { totalWidth += col.width; }
                 tableWidth = totalWidth;
+            }
+            /** @see UsageMessageSpec#adjustLineBreaksForWideCJKCharacters()
+             * @since 4.0 */
+            public boolean isAdjustLineBreaksForWideCJKCharacters() { return adjustLineBreaksForWideCJKCharacters; }
+            /** @see UsageMessageSpec#adjustLineBreaksForWideCJKCharacters(boolean)
+             * @since 4.0 */
+            public TextTable setAdjustLineBreaksForWideCJKCharacters(boolean adjustLineBreaksForWideCJKCharacters) {
+                this.adjustLineBreaksForWideCJKCharacters = adjustLineBreaksForWideCJKCharacters;
+                return this;
             }
             /** The column definitions of this table. */
             public Column[] columns() { return columns.clone(); }
@@ -11784,10 +11845,10 @@ public class CommandLine {
                 }
                 throw new IllegalStateException(column.overflow.toString());
             }
-            private static int length(Text str) {
+            private int length(Text str) {
                 return length(str, str.from, str.length);
             }
-            private static int length(Text str, int from, int length) {
+            private int length(Text str, int from, int length) {
                 int result = 0;
                 for (int i = from; i < str.from + length; i++) {
                     result += isCharCJK(str.plain.charAt(i)) ? 2 : 1;
@@ -11803,7 +11864,8 @@ public class CommandLine {
              * @param c Character to test
              * @return {@code true} if the character is a CJK character
              */
-            static boolean isCharCJK(char c) {
+            boolean isCharCJK(char c) {
+                if (!adjustLineBreaksForWideCJKCharacters) { return false; }
                 Character.UnicodeBlock unicodeBlock = Character.UnicodeBlock.of(c);
                 return (unicodeBlock == Character.UnicodeBlock.HIRAGANA)
                         || (unicodeBlock == Character.UnicodeBlock.KATAKANA)
@@ -11845,12 +11907,12 @@ public class CommandLine {
                 }
                 return count.charCount;
             }
-            private static int copy(Text value, Text destination, int offset) {
+            private int copy(Text value, Text destination, int offset) {
                 Count count = new Count();
                 copy(value, destination, offset, count);
                 return count.charCount;
             }
-            private static void copy(Text value, Text destination, int offset, Count count) {
+            private void copy(Text value, Text destination, int offset, Count count) {
                 int length = Math.min(value.length, destination.maxLength - offset);
                 value.getStyledChars(value.from, length, destination, offset);
                 count.columnCount += length(value, value.from, length);

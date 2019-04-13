@@ -36,6 +36,7 @@ If those characters are treated to have the same width as other characters, the 
 
 From this release, picocli will use 2 columns for these wide characters when calculating where to put line breaks, resulting in better usage help message text.
 
+This can be switched off with `CommandLine.setAdjustLineBreaksForWideCJKCharacters(false)`.
 
 ## <a name="4.0.0-alpha-2-fixes"></a> Fixed issues
 - [#495] Publish picocli as a JPMS module in a new artifact `picocli-core-module`. Thanks to [Warkdev](https://github.com/Warkdev) for the pull request. 

@@ -57,6 +57,7 @@ class MyCommandListRenderer implements IHelpSectionRenderer {
         TextTable textTable = TextTable.forColumns(help.ansi(),
                 new Column(15, 2, Overflow.SPAN),
                 new Column(spec.usageMessage().width() - 15, 2, Overflow.WRAP));
+        textTable.setAdjustLineBreaksForWideCJKCharacters(spec.usageMessage().adjustLineBreaksForWideCJKCharacters());
 
         for (CommandLine subcommand : spec.subcommands().values()) {
             addHierarchy(subcommand, textTable, "");
