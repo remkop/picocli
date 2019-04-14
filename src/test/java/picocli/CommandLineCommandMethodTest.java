@@ -928,7 +928,7 @@ public class CommandLineCommandMethodTest {
         try {
             CommandLine.invoke("cannotBeCalled", StaticMethodCommand.class);
         } catch (ExecutionException ex) {
-            assertTrue(ex.getCause() instanceof UnsupportedOperationException);
+            assertTrue(ex.getCause() instanceof NoSuchMethodException);
         }
     }
 
