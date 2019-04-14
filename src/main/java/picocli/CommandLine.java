@@ -1201,15 +1201,17 @@ public class CommandLine {
             }
         } else if (command instanceof Method) {
             try {
-                if (Modifier.isStatic(((Method) command).getModifiers())) {
+                Method method = (Method) command;
+                Object[] parsedArgs = parsed.getCommandSpec().argValues();
+                if (Modifier.isStatic(method.getModifiers())) {
                     // invoke static method
-                    executionResult.add(((Method) command).invoke(null, parsed.getCommandSpec().argValues()));
+                    executionResult.add(method.invoke(null, parsedArgs));
                     return executionResult;
                 } else if (parsed.getCommandSpec().parent() != null) {
-                    executionResult.add(((Method) command).invoke(parsed.getCommandSpec().parent().userObject(), parsed.getCommandSpec().argValues()));
+                    executionResult.add(method.invoke(parsed.getCommandSpec().parent().userObject(), parsedArgs));
                     return executionResult;
                 } else {
-                    executionResult.add(((Method) command).invoke(parsed.factory.create(((Method) command).getDeclaringClass()), parsed.getCommandSpec().argValues()));
+                    executionResult.add(method.invoke(parsed.factory.create(method.getDeclaringClass()), parsedArgs));
                     return executionResult;
                 }
             } catch (InvocationTargetException ex) {
