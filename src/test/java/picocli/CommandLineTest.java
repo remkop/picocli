@@ -1737,28 +1737,40 @@ public class CommandLineTest {
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLine$AutoHelpMixin with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLine$HelpCommand with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Adding subcommand 'help' to 'git'%n" +
+                        "[picocli DEBUG] Created Messages from resourceBundle[base=null] for command 'help' (picocli.CommandLine$HelpCommand)%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitStatus with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Adding subcommand 'status' to 'git'%n" +
+                        "[picocli DEBUG] Created Messages from resourceBundle[base=null] for command 'git-status' (picocli.Demo$GitStatus)%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitCommit with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Adding subcommand 'commit' to 'git'%n" +
+                        "[picocli DEBUG] Created Messages from resourceBundle[base=null] for command 'git-commit' (picocli.Demo$GitCommit)%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitAdd with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Adding subcommand 'add' to 'git'%n" +
+                        "[picocli DEBUG] Created Messages from resourceBundle[base=null] for command 'git-add' (picocli.Demo$GitAdd)%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitBranch with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Adding subcommand 'branch' to 'git'%n" +
+                        "[picocli DEBUG] Created Messages from resourceBundle[base=null] for command 'git-branch' (picocli.Demo$GitBranch)%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitCheckout with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Adding subcommand 'checkout' to 'git'%n" +
+                        "[picocli DEBUG] Created Messages from resourceBundle[base=null] for command 'git-checkout' (picocli.Demo$GitCheckout)%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitClone with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Adding subcommand 'clone' to 'git'%n" +
+                        "[picocli DEBUG] Created Messages from resourceBundle[base=null] for command 'git-clone' (picocli.Demo$GitClone)%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitDiff with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Adding subcommand 'diff' to 'git'%n" +
+                        "[picocli DEBUG] Created Messages from resourceBundle[base=null] for command 'git-diff' (picocli.Demo$GitDiff)%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitMerge with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Adding subcommand 'merge' to 'git'%n" +
+                        "[picocli DEBUG] Created Messages from resourceBundle[base=null] for command 'git-merge' (picocli.Demo$GitMerge)%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitPush with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Adding subcommand 'push' to 'git'%n" +
+                        "[picocli DEBUG] Created Messages from resourceBundle[base=null] for command 'git-push' (picocli.Demo$GitPush)%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitRebase with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Adding subcommand 'rebase' to 'git'%n" +
+                        "[picocli DEBUG] Created Messages from resourceBundle[base=null] for command 'git-rebase' (picocli.Demo$GitRebase)%n" +
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.Demo$GitTag with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli DEBUG] Adding subcommand 'tag' to 'git'%n" +
+                        "[picocli DEBUG] Created Messages from resourceBundle[base=null] for command 'git-tag' (picocli.Demo$GitTag)%n" +
                         "[picocli INFO] Picocli version: %3$s%n" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, useSimplifiedAtFiles=false, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false, toggleBooleanFlags=true, unmatchedOptionsArePositionalParams=false, collectErrors=false,caseInsensitiveEnumValuesAllowed=false, trimQuotes=false, splitQuotedStrings=false%n" +

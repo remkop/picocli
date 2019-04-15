@@ -31,7 +31,7 @@ public class InterpolatorTest {
         CommandSpec hierarchy = createTestSpec();
         hierarchy.resourceBundle(createResourceBundle("myProp=myValue"));
         Interpolator interpolator = new Interpolator(hierarchy);
-        String original = "This is a resource value: ${resource:myProp}.";
+        String original = "This is a resource value: ${bundle:myProp}.";
         String expected = "This is a resource value: myValue.";
 
         assertEquals(expected, interpolator.interpolate(original));

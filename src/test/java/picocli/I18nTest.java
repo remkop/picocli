@@ -19,6 +19,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.OptionSpec;
@@ -40,6 +41,9 @@ public class I18nTest {
 
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
+
+    @Rule
+    public final RestoreSystemProperties restore = new RestoreSystemProperties();
 
     @Test
     public void testSuperclassWithResourceBundle() {
@@ -153,6 +157,7 @@ public class I18nTest {
                 "  help  header first line from bundle%n" +
                 "sub footer heading from subbundle%n" +
                 "sub footer from subbundle%n");
+        System.setProperty("picocli.trace", "DEBUG");
         CommandLine cmd = new CommandLine(new I18nSubclass2());
         assertEquals(expected, cmd.getUsageMessage());
     }

@@ -40,6 +40,7 @@ compileJava {
 }
 compileJava.dependsOn(copyRootProjectCode)
 assemble.finalizedBy(cleanupRootProjectCode)
+clean.finalizedBy(cleanupRootProjectCode)
 
 
 test {

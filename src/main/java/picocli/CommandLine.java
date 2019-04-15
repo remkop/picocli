@@ -3845,6 +3845,9 @@ public class CommandLine {
             /** Constant Boolean holding the default setting for whether method commands should be added as subcommands: <code>{@value}</code>.*/
             static final Boolean DEFAULT_IS_ADD_METHOD_SUBCOMMANDS = Boolean.TRUE;
 
+            /** Constant Boolean holding the default setting for whether variables should be interpolated in String values: <code>{@value}</code>.*/
+            static final Boolean DEFAULT_INTERPOLATE_VARIABLES = Boolean.TRUE;
+
             private final Map<String, CommandLine> commands = new LinkedHashMap<String, CommandLine>();
             private final Map<String, OptionSpec> optionsByNameMap = new LinkedHashMap<String, OptionSpec>();
             private final Map<Character, OptionSpec> posixOptionsByKeyMap = new LinkedHashMap<Character, OptionSpec>();
@@ -3856,12 +3859,14 @@ public class CommandLine {
             private final List<UnmatchedArgsBinding> unmatchedArgs = new ArrayList<UnmatchedArgsBinding>();
             private final List<ArgGroupSpec> groups = new ArrayList<ArgGroupSpec>();
             private final ParserSpec parser = new ParserSpec();
-            private final UsageMessageSpec usageMessage = new UsageMessageSpec();
+            private final Interpolator interpolator = new Interpolator(this);
+            private final UsageMessageSpec usageMessage = new UsageMessageSpec(interpolator);
 
             private final Object userObject;
             private CommandLine commandLine;
             private CommandSpec parent;
             private Boolean isAddMethodSubcommands;
+            private Boolean interpolateVariables;
 
             private String name;
             private Set<String> aliases = new LinkedHashSet<String>();
@@ -4064,6 +4069,13 @@ public class CommandLine {
              * @since 4.0 */
             public CommandSpec setAddMethodSubcommands(Boolean addMethodSubcommands) { isAddMethodSubcommands = addMethodSubcommands; return this; }
 
+            /** Returns whether whether variables should be interpolated in String values.
+             * @since 4.0 */
+            public boolean isInterpolateVariables() { return (interpolateVariables == null) ? DEFAULT_INTERPOLATE_VARIABLES : interpolateVariables; }
+            /** Sets whether whether variables should be interpolated in String values.
+             * @since 4.0 */
+            public CommandSpec setInterpolateVariables(Boolean interpolate) { interpolateVariables = interpolate; return this; }
+
             /** Reflects on the class of the {@linkplain #userObject() user object} and registers any command methods
              * (class methods annotated with {@code @Command}) as subcommands.
              *
@@ -4120,7 +4132,7 @@ public class CommandLine {
              * @return this CommandSpec for method chaining
              * @throws DuplicateOptionAnnotationsException if any of the names of the specified option is the same as the name of another option */
             public CommandSpec addOption(OptionSpec option) {
-                for (String name : option.names()) { // cannot be null or empty
+                for (String name : interpolator.interpolate(option.names())) { // cannot be null or empty
                     OptionSpec existing = optionsByNameMap.put(name, option);
                     if (existing != null) { /* was: && !existing.equals(option)) {*/ // since 4.0 ArgGroups: an option cannot be in multiple groups
                         throw DuplicateOptionAnnotationsException.create(name, option, existing);
@@ -4167,12 +4179,13 @@ public class CommandLine {
             private void addGroupArgsToCommand(ArgGroupSpec group, Map<String, ArgGroupSpec> added) {
                 for (ArgSpec arg : group.args()) {
                     if (arg.isOption()) {
-                        for (String name : ((OptionSpec) arg).names()) {
+                        String[] names = interpolator.interpolate(((OptionSpec) arg).names());
+                        for (String name : names) {
                             if (added.containsKey(name)) {
                                 throw new DuplicateNameException("An option cannot be in multiple groups but " + name + " is in " + group.synopsis() + " and " + added.get(name).synopsis() + ". Refactor to avoid this. For example, (-a | (-a -b)) can be rewritten as (-a [-b]), and (-a -b | -a -c) can be rewritten as (-a (-b | -c)).");
                             }
                         }
-                        for (String name : ((OptionSpec) arg).names()) { added.put(name, group); }
+                        for (String name : names) { added.put(name, group); }
                     }
                     add(arg);
                 }
@@ -4198,10 +4211,10 @@ public class CommandLine {
              * @param mixin the mixin whose options and positional parameters and other attributes to add to this command
              * @return this CommandSpec for method chaining */
             public CommandSpec addMixin(String name, CommandSpec mixin) {
-                mixins.put(name, mixin);
-    
+                mixins.put(interpolator.interpolate(name), mixin);
+
                 parser.initSeparator(mixin.parser.separator());
-                initName(mixin.name());
+                initName(interpolator.interpolateCommandName(mixin.name()));
                 initVersion(mixin.version());
                 initHelpCommand(mixin.helpCommand());
                 initVersionProvider(mixin.versionProvider());
@@ -4258,11 +4271,11 @@ public class CommandLine {
             /** Returns name of this command. Used in the synopsis line of the help message.
              * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined.
              * @see #qualifiedName() */
-            public String name() { return (name == null) ? DEFAULT_COMMAND_NAME : name; }
+            public String name() { return interpolator.interpolateCommandName((name == null) ? DEFAULT_COMMAND_NAME : name); }
 
             /** Returns the alias command names of this subcommand.
              * @since 3.1 */
-            public String[] aliases() { return aliases.toArray(new String[0]); }
+            public String[] aliases() { return interpolator.interpolate(aliases.toArray(new String[0])); }
 
             /** Returns all names of this command, including {@link #name()} and {@link #aliases()}.
              * @since 3.9 */
@@ -4336,13 +4349,13 @@ public class CommandLine {
             public String[] version() {
                 if (versionProvider != null) {
                     try {
-                        return versionProvider.getVersion();
+                        return interpolator.interpolate(versionProvider.getVersion());
                     } catch (Exception ex) {
                         String msg = "Could not get version info from " + versionProvider + ": " + ex;
                         throw new ExecutionException(this.commandLine, msg, ex);
                     }
                 }
-                return version == null ? UsageMessageSpec.DEFAULT_MULTI_LINE : version;
+                return interpolator.interpolate(version == null ? UsageMessageSpec.DEFAULT_MULTI_LINE : version);
             }
     
             /** Returns the version provider for this command, to generate the {@link #version()} strings.
@@ -4360,7 +4373,7 @@ public class CommandLine {
             public boolean mixinStandardHelpOptions() { return mixins.containsKey(AutoHelpMixin.KEY); }
 
             /** Returns a string representation of this command, used in error messages and trace messages. */
-            public String toString() { return toString; }
+            public String toString() { return toString == null ? String.valueOf(userObject) : toString; }
 
             /** Sets the String to use as the program name in the synopsis line of the help message.
              * @return this CommandSpec for method chaining */
@@ -4412,7 +4425,7 @@ public class CommandLine {
                     if (helpMixin != null) {
                         options.removeAll(helpMixin.options);
                         for (OptionSpec option : helpMixin.options()) {
-                            for (String name : option.names) {
+                            for (String name : interpolator.interpolate(option.names())) {
                                 optionsByNameMap.remove(name);
                                 if (name.length() == 2 && name.startsWith("-")) { posixOptionsByKeyMap.remove(name.charAt(1)); }
                             }
@@ -4436,8 +4449,9 @@ public class CommandLine {
              * @since 3.7
              */
             public void updateCommandAttributes(Command cmd, IFactory factory) {
+                parser().updateSeparator(interpolator.interpolate(cmd.separator()));
+
                 aliases(cmd.aliases());
-                parser().updateSeparator(cmd.separator());
                 updateName(cmd.name());
                 updateVersion(cmd.version());
                 updateHelpCommand(cmd.helpCommand());
@@ -4736,8 +4750,12 @@ public class CommandLine {
             private String footerHeading;
             private int width = DEFAULT_USAGE_WIDTH;
 
+            private final Interpolator interpolator;
             private Messages messages;
             private Boolean adjustLineBreaksForWideCJKCharacters;
+
+            public UsageMessageSpec() { this(null); }
+            UsageMessageSpec(Interpolator interpolator) { this.interpolator = interpolator; }
 
             /**
              * Sets the maximum usage help message width to the specified value. Longer values are wrapped.
@@ -4874,11 +4892,13 @@ public class CommandLine {
                 return this;
             }
 
+            private String   interpolate(String value)    { return interpolator == null ? value  : interpolator.interpolate(value); }
+            private String[] interpolate(String[] values) { return interpolator == null ? values : interpolator.interpolate(values); }
             private String str(String localized, String value, String defaultValue) {
-                return localized != null ? localized : (value != null ? value : defaultValue);
+                return interpolate(localized != null ? localized : (value != null ? value : defaultValue));
             }
             private String[] arr(String[] localized, String[] value, String[] defaultValue) {
-                return localized != null ? localized : (value != null ? value.clone() : defaultValue);
+                return interpolate(localized != null ? localized : (value != null ? value.clone() : defaultValue));
             }
             private String   resourceStr(String key) { return messages == null ? null : messages.getString(key, null); }
             private String[] resourceArr(String key) { return messages == null ? null : messages.getStringArray(key, null); }
@@ -5380,21 +5400,52 @@ public class CommandLine {
              * @see Option#interactive() */
             public boolean interactive()   { return interactive; }
 
-            /** Returns the description template of this option, before variables are rendered.
+            /** Returns the description of this option or positional parameter, after all variables have been rendered,
+             * including the {@code ${DEFAULT-VALUE}} and {@code ${COMPLETION-CANDIDATES}} variables.
+             * Use {@link CommandSpec#setInterpolateVariables(Boolean)} to switch off variable expansion if needed.
+             * <p>
+             * If a resource bundle has been {@linkplain ArgSpec#messages(Messages) set}, this method will first try to find a value in the resource bundle:
+             * If the resource bundle has no entry for the {@code fully qualified commandName + "." + descriptionKey} or for the unqualified {@code descriptionKey},
+             * an attempt is made to find the option or positional parameter description using any of the
+             * {@linkplain #getAdditionalDescriptionKeys() additional description keys}, first with the {@code fully qualified commandName + "."} prefix, then without.
+             * </p>
+             * @see CommandSpec#qualifiedName(String)
+             * @see #getAdditionalDescriptionKeys()
+             * @see Parameters#description()
              * @see Option#description() */
-            public String[] description()  { return description.clone(); }
+            public String[] description()  {
+                String[] result = description.clone();
+                if (messages() != null) { // localize if possible
+                    String[] newValue = messages().getStringArray(descriptionKey(), null);
+                    if (newValue == null) {
+                        for (String name : getAdditionalDescriptionKeys()) {
+                            newValue = messages().getStringArray(name, null);
+                            if (newValue != null) { result = newValue; break; }
+                        }
+                    } else {
+                        result = newValue;
+                    }
+                }
+                if (commandSpec == null || commandSpec.isInterpolateVariables()) { // expand variables
+                    result = expandVariables(result);
+                }
+                return result;
+            }
+
+            /** Subclasses should override to return a collection of additional description keys that may be used to find
+             * description text for this option or positional parameter in the resource bundle.
+             * @see OptionSpec#getAdditionalDescriptionKeys()
+             * @see PositionalParamSpec#getAdditionalDescriptionKeys()
+             * @since 4.0 */
+            protected abstract Collection<String> getAdditionalDescriptionKeys();
 
             /** Returns the description key of this arg spec, used to get the description from a resource bundle.
              * @see Option#descriptionKey()
              * @see Parameters#descriptionKey()
              * @since 3.6 */
-            public String descriptionKey()  { return descriptionKey; }
+            public String descriptionKey()  { return interpolate(descriptionKey); }
 
-            /** Returns the description of this option, after variables are rendered. Used when generating the usage documentation.
-             * @see Option#description()
-             * @since 3.2 */
-            public String[] renderedDescription()  {
-                String[] desc = description();
+            private String[] expandVariables(String[] desc) {
                 if (desc.length == 0) { return desc; }
                 StringBuilder candidates = new StringBuilder();
                 if (completionCandidates() != null) {
@@ -5409,8 +5460,11 @@ public class CommandLine {
                     result[i] = format(desc[i].replace(DESCRIPTION_VARIABLE_DEFAULT_VALUE, defaultValueString.replace("%", "%%"))
                             .replace(DESCRIPTION_VARIABLE_COMPLETION_CANDIDATES, candidates.toString()));
                 }
-                return result;
+                return interpolate(result);
             }
+
+            /** @deprecated Use {@link #description()} instead */
+            @Deprecated public String[] renderedDescription()  { return description(); }
 
             /** Returns how many arguments this option or positional parameter requires.
              * @see Option#arity() */
@@ -5418,7 +5472,7 @@ public class CommandLine {
     
             /** Returns the name of the option or positional parameter used in the usage help message.
              * @see Option#paramLabel() {@link Parameters#paramLabel()} */
-            public String paramLabel()     { return paramLabel; }
+            public String paramLabel()     { return interpolate(paramLabel); }
     
             /** Returns whether usage syntax decorations around the {@linkplain #paramLabel() paramLabel} should be suppressed.
              * The default is {@code false}: by default, the paramLabel is surrounded with {@code '['} and {@code ']'} characters
@@ -5438,7 +5492,7 @@ public class CommandLine {
     
             /** Returns a regular expression to split option parameter values or {@code ""} if the value should not be split.
              * @see Option#split() */
-            public String splitRegex()     { return splitRegex; }
+            public String splitRegex()     { return interpolate(splitRegex); }
     
             /** Returns whether this option should be excluded from the usage message.
              * @see Option#hidden() */
@@ -5465,7 +5519,7 @@ public class CommandLine {
              *      returning {@code null} means this option or positional parameter does not have a default
              * @see CommandSpec#defaultValueProvider()
              */
-            public String defaultValue()   { return defaultValue; }
+            public String defaultValue()   { return interpolate(defaultValue); }
             /** Returns the initial value this option or positional parameter. If {@link #hasInitialValue()} is true,
              * the option will be reset to the initial value before parsing (regardless of whether a default value exists),
              * to clear values that would otherwise remain from parsing previous input. */
@@ -5486,7 +5540,8 @@ public class CommandLine {
              * @see ArgSpec#defaultValue() */
             public String defaultValueString() {
                 String fromProvider = defaultValueFromProvider();
-                String defaultVal = fromProvider == null ? this.defaultValue() : fromProvider;
+                // implementation note: don't call this.defaultValue(), that will interpolate variables too soon!
+                String defaultVal = fromProvider == null ? this.defaultValue : fromProvider;
                 Object value = defaultVal == null ? initialValue() : defaultVal;
                 if (value != null && value.getClass().isArray()) {
                     StringBuilder sb = new StringBuilder();
@@ -5733,6 +5788,8 @@ public class CommandLine {
                         : "params[" + ((PositionalParamSpec) argSpec).index() + "]";
                 return argSpec.arity().min > 0 ? prefix + separator + value : prefix;
             }
+            String interpolate(String value)      { return commandSpec == null ? value  : commandSpec.interpolator.interpolate(value); }
+            String[] interpolate(String[] values) { return commandSpec == null ? values : commandSpec.interpolator.interpolate(values); }
             abstract static class Builder<T extends Builder<T>> {
                 private Object userObject;
                 private Range arity;
@@ -6134,34 +6191,25 @@ public class CommandLine {
                 return super.internalShowDefaultValue(usageMessageShowDefaults) && !help() && !versionHelp() && !usageHelp();
             }
 
-            /** Returns the description template of this option, before variables are {@linkplain Option#description() rendered}.
-             * If a resource bundle has been {@linkplain ArgSpec#messages(Messages) set}, this method will first try to find a value in the resource bundle:
-             * If the resource bundle has no entry for the {@code fully qualified commandName + "." + descriptionKey} or for the unqualified {@code descriptionKey},
-             * an attempt is made to find the option description using any of the option names (without leading hyphens) as key,
-             * first with the {@code fully qualified commandName + "."} prefix, then without.
-             * @see CommandSpec#qualifiedName(String)
-             * @see Option#description() */
-            @Override public String[] description() {
-                if (messages() == null) { return super.description(); }
-                String[] newValue = messages().getStringArray(descriptionKey(), null);
-                if (newValue != null) { return newValue; }
-                for (String name : names()) {
-                    newValue = messages().getStringArray(CommandSpec.stripPrefix(name), null);
-                    if (newValue != null) { return newValue; }
-                }
-                return super.description();
+            /** Returns the additional lookup keys for finding description lines in the resource bundle for this option.
+             * @return option names (after variable interpolation), without leading hyphens, slashes and other non-Java identifier characters.
+             * @since 4.0 */
+            @Override protected Collection<String> getAdditionalDescriptionKeys() {
+                Set<String> result = new LinkedHashSet<String>();
+                for (String name : names()) { result.add(CommandSpec.stripPrefix(name)); }
+                return result;
             }
 
             /** Returns one or more option names. The returned array will contain at least one option name.
              * @see Option#names() */
-            public String[] names() { return names.clone(); }
+            public String[] names() { return interpolate(names.clone()); }
 
             /** Returns the longest {@linkplain #names() option name}. */
-            public String longestName() { return Help.ShortestFirst.longestFirst(names.clone())[0]; }
+            public String longestName() { return Help.ShortestFirst.longestFirst(names())[0]; }
 
             /** Returns the shortest {@linkplain #names() option name}.
              * @since 3.8 */
-            public String shortestName() { return Help.ShortestFirst.sort(names.clone())[0]; }
+            public String shortestName() { return Help.ShortestFirst.sort(names())[0]; }
 
             /** Returns the position in the options list in the usage help message at which this option should be shown.
              * Options with a lower number are shown before options with a higher number.
@@ -6340,21 +6388,11 @@ public class CommandLine {
             @Override public boolean isOption()     { return false; }
             @Override public boolean isPositional() { return true; }
 
-            /** Returns the description template of this positional parameter, before variables are {@linkplain Parameters#description() rendered}.
-             * If a resource bundle has been {@linkplain ArgSpec#messages(Messages) set}, this method will first try to find a value in the resource bundle:
-             * If the resource bundle has no entry for the {@code fully qualified commandName + "." + descriptionKey} or for the unqualified {@code descriptionKey},
-             * an attempt is made to find the positional parameter description using {@code paramLabel() + "[" + index() + "]"} as key,
-             * first with the {@code fully qualified commandName + "."} prefix, then without.
-             * @see Parameters#description()
-             * @see CommandSpec#qualifiedName(String)
-             * @since 3.6 */
-            @Override public String[] description() {
-                if (messages() == null) { return super.description(); }
-                String[] newValue = messages().getStringArray(descriptionKey(), null);
-                if (newValue != null) { return newValue; }
-                newValue = messages().getStringArray(paramLabel() + "[" + index() + "]", null);
-                if (newValue != null) { return newValue; }
-                return super.description();
+            /** Returns the additional lookup keys for finding description lines in the resource bundle for this positional parameter.
+             * @return a collection with the following single value: {@code paramLabel() + "[" + index() + "]"}.
+             * @since 4.0 */
+            @Override protected Collection<String> getAdditionalDescriptionKeys() {
+                return Arrays.asList(paramLabel() + "[" + index() + "]");
             }
 
             /** Returns an index or range specifying which of the command line arguments should be assigned to this positional parameter.
@@ -7473,6 +7511,7 @@ public class CommandLine {
                 this.bundleBaseName = baseName;
                 this.rb = rb;
                 this.keys = keys(rb);
+                new Tracer().debug("Created Messages from resourceBundle[base=%s] for command '%s' (%s)%n", baseName, spec.name(), spec);
             }
             private static ResourceBundle createBundle(String baseName) {
                 return ResourceBundle.getBundle(baseName);
@@ -7993,35 +8032,61 @@ public class CommandLine {
         }
         static class Interpolator {
             private final CommandSpec commandSpec;
-            private final Map<String, ILookup> lookups = new HashMap<String, ILookup>();
+            private final Map<String, ILookup> lookups = new LinkedHashMap<String, ILookup>();
 
             public Interpolator(final CommandSpec commandSpec) {
                 this.commandSpec = commandSpec;
-                lookups.put("sys", new ILookup() { public String get(String key) { return System.getProperty(key); } });
-                lookups.put("env", new ILookup() { public String get(String key) { return System.getenv(key); } });
-                lookups.put("resource", new ILookup() {
+                lookups.put("sys:", new ILookup() { public String get(String key) { return System.getProperty(key); } });
+                lookups.put("env:", new ILookup() { public String get(String key) { return System.getenv(key); } });
+                lookups.put("bundle:", new ILookup() {
                     public String get(String key) {
-                        ResourceBundle rb = commandSpec.resourceBundle();
-                        return (rb != null) ? rb.getString(key) : null;
+                        //commandSpec.usageMessage().messages().
+                        return bundleValue(commandSpec.resourceBundle(), key);
+                    }
+                });
+                lookups.put("", new ILookup() {
+                    public String get(String key) {
+                        String result = System.getProperty(key);
+                        if (result == null) { result = System.getenv(key); }
+                        if (result == null) { result = bundleValue(commandSpec.resourceBundle(), key); }
+                        return result;
                     }
                 });
             }
-
-            public String interpolate(String original) {
-                String result1 = original.replaceAll("\\$\\{COMMAND-NAME}", commandSpec.name());
-                String result = result1.replaceAll("\\$\\{COMMAND-FULL-NAME}", commandSpec.qualifiedName());
-                if (commandSpec.parent() != null) {
-                    String tmp = result.replaceAll("\\$\\{PARENT-COMMAND-NAME}", commandSpec.parent().name());
-                    result = tmp.replaceAll("\\$\\{PARENT-COMMAND-FULL-NAME}", commandSpec.parent().qualifiedName());
+            private static String bundleValue(ResourceBundle rb, String key) {
+                if (rb != null) {
+                    try {return rb.getString(key);} catch (MissingResourceException ex) { return null; }
                 }
-                return resolveLookups(result, new HashSet<String>(), new HashMap<String, String>());
+                return null;
+            }
+
+            public String[] interpolate(String[] values) {
+                if (values == null || values.length == 0) { return values; }
+                String[] result = new String[values.length];
+                for (int i = 0; i < result.length; i++) { result[i] = interpolate(values[i]); }
+                return result;
+            }
+            public String interpolate(String original) {
+                if (original == null || !commandSpec.isInterpolateVariables()) { return original; }
+                String result1 = original.replaceAll("\\$\\{COMMAND-NAME}", commandSpec.name());
+                String result2 = result1.replaceAll("\\$\\{COMMAND-FULL-NAME}", commandSpec.qualifiedName());
+                if (commandSpec.parent() != null) {
+                    String tmp = result2.replaceAll("\\$\\{PARENT-COMMAND-NAME}", commandSpec.parent().name());
+                    result2 = tmp.replaceAll("\\$\\{PARENT-COMMAND-FULL-NAME}", commandSpec.parent().qualifiedName());
+                }
+                String result = resolveLookups(result2, new HashSet<String>(), new HashMap<String, String>());
+                return result;
+            }
+            public String interpolateCommandName(String original) {
+                if (original == null || !commandSpec.isInterpolateVariables()) { return original; }
+                return resolveLookups(original, new HashSet<String>(), new HashMap<String, String>());
             }
 
             private String resolveLookups(String text, Set<String> visited, Map<String, String> resolved) {
                 if (text == null) { return null; }
                 for (String lookupKey : lookups.keySet()) {
                     ILookup lookup = lookups.get(lookupKey);
-                    String prefix = "${" + lookupKey + ":";
+                    String prefix = "${" + lookupKey;
                     int sysStartPos = -1;
                     while ((sysStartPos = text.indexOf(prefix, sysStartPos)) >= 0) {
                         int endPos = findClosingBrace(text, sysStartPos + prefix.length());
@@ -9980,7 +10045,7 @@ public class CommandLine {
 
         char[] readPassword(ArgSpec argSpec) {
             String name = argSpec.isOption() ? ((OptionSpec) argSpec).longestName() : "position " + position;
-            String prompt = String.format("Enter value for %s (%s): ", name, str(argSpec.renderedDescription(), 0));
+            String prompt = String.format("Enter value for %s (%s): ", name, str(argSpec.description(), 0));
             if (tracer.isDebug()) {tracer.debug("Reading value for %s from console...%n", name);}
             char[] result = readPassword(prompt);
             if (tracer.isDebug()) {tracer.debug("User entered %d characters for %s.%n", result.length, name);}
@@ -10252,11 +10317,11 @@ public class CommandLine {
     static class AutoHelpMixin {
         private static final String KEY = "mixinStandardHelpOptions";
 
-        @Option(names = {"-h", "--help"}, usageHelp = true, descriptionKey = "mixinStandardHelpOptions.help",
+        @Option(names = {"${picocli.help.name.0:--h}", "${picocli.help.name.1:---help}"}, usageHelp = true, descriptionKey = "mixinStandardHelpOptions.help",
                 description = "Show this help message and exit.")
         private boolean helpRequested;
 
-        @Option(names = {"-V", "--version"}, versionHelp = true, descriptionKey = "mixinStandardHelpOptions.version",
+        @Option(names = {"${picocli.version.name.0:--V}", "${picocli.version.name.1:---version}"}, versionHelp = true, descriptionKey = "mixinStandardHelpOptions.version",
                 description = "Print version information and exit.")
         private boolean versionRequested;
     }
@@ -11254,7 +11319,7 @@ public class CommandLine {
                 Text EMPTY = Ansi.EMPTY_TEXT;
                 boolean[] showDefault = {option.internalShowDefaultValue(showDefaultValues)};
                 List<Text[]> result = new ArrayList<Text[]>();
-                String[] description = option.renderedDescription();
+                String[] description = option.description();
                 Text[] descriptionFirstLines = createDescriptionFirstLines(scheme, option, description, showDefault);
                 result.add(new Text[] { scheme.optionText(requiredOption), scheme.optionText(shortOption),
                         scheme.ansi().new Text(sep), longOptionText, descriptionFirstLines[0] });
@@ -11331,7 +11396,7 @@ public class CommandLine {
                 Text EMPTY = Ansi.EMPTY_TEXT;
                 boolean[] showDefault = {param.internalShowDefaultValue(showDefaultValues)};
                 List<Text[]> result = new ArrayList<Text[]>();
-                String[] description = param.renderedDescription();
+                String[] description = param.description();
                 Text[] descriptionFirstLines = createDescriptionFirstLines(scheme, param, description, showDefault);
                 result.add(new Text[] { requiredParameter, EMPTY, EMPTY, label, descriptionFirstLines[0] });
                 for (int i = 1; i < descriptionFirstLines.length; i++) {
