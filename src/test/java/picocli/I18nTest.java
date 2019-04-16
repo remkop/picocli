@@ -575,4 +575,31 @@ public class I18nTest {
             Locale.setDefault(original);
         }
     }
+
+    @Test
+    public void testIssue670NoScrambledCharactersOnJava9() {
+        try {
+            Class.forName("java.lang.Runtime$Version"); // introduced in Java 9
+        } catch (ClassNotFoundException e) {
+            return;
+        }
+        @Command(name = "tests", aliases = {"t"}, resourceBundle = "picocli.i18n.SG_cli")
+        class App {
+            @Option(names = {"-a", "--auth"}, descriptionKey = "auth.desc") boolean auth;
+            @Option(names = {"-u", "--upload"}, descriptionKey = "upload.desc") String upload;
+        }
+
+        String expected = String.format("" +
+                "Usage: tests [-a] [-u=<upload>]%n" +
+                "  -a, --auth              Vérifie si l'utilisateur est connecte%n" +
+                "  -u, --upload=<upload>   Tester le téléversement de fichiers.%n" +
+                "                          Attend un chemin complet de fichier.%n");
+        Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.FRENCH);
+        try {
+            assertEquals(expected, new CommandLine(new App()).getUsageMessage());
+        } finally {
+            Locale.setDefault(original);
+        }
+    }
 }
