@@ -63,8 +63,14 @@ function ArrContains() {
   declare -A tmp
   eval lArr1=("\"\${$1[@]}\"")
   eval lArr2=("\"\${$2[@]}\"")
-  for i in "${lArr1[@]}";{ [ -n "$i" ] && ((++tmp[$i]));}
-  for i in "${lArr2[@]}";{ [ -n "$i" ] && [ -z "${tmp[$i]}" ] && return 1;}
+  for i in "${lArr1[@]}";
+  do
+    if [ -n "$i" ] ; then ((++tmp[$i])); fi
+  done
+  for i in "${lArr2[@]}";
+  do
+    if [ -n "$i" ] && [ -z "${tmp[$i]}" ] ; then return 1; fi
+  done
   return 0
 }
 
@@ -76,8 +82,8 @@ function _complete_rcmd() {
   local cmds0=(sub-1)
   local cmds1=(sub-2)
 
-  ArrContains COMP_WORDS cmds1 && { _picocli_rcmd_sub2; return $?; }
-  ArrContains COMP_WORDS cmds0 && { _picocli_rcmd_sub1; return $?; }
+  if ArrContains COMP_WORDS cmds1; then _picocli_rcmd_sub2; return $?; fi
+  if ArrContains COMP_WORDS cmds0; then _picocli_rcmd_sub1; return $?; fi
 
   # No subcommands were specified; generate completions for the top-level command.
   _picocli_rcmd; return $?;
@@ -93,9 +99,9 @@ function _picocli_rcmd() {
   local arg_opts=""
 
   if [[ "${curr_word}" == -* ]]; then
-    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- ${curr_word}) )
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
-    COMPREPLY=( $(compgen -W "${commands}" -- ${curr_word}) )
+    COMPREPLY=( $(compgen -W "${commands}" -- "${curr_word}") )
   fi
 }
 
@@ -118,9 +124,9 @@ function _picocli_rcmd_sub1() {
   esac
 
   if [[ "${curr_word}" == -* ]]; then
-    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- ${curr_word}) )
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
-    COMPREPLY=( $(compgen -W "${commands}" -- ${curr_word}) )
+    COMPREPLY=( $(compgen -W "${commands}" -- "${curr_word}") )
   fi
 }
 
@@ -143,9 +149,9 @@ function _picocli_rcmd_sub2() {
   esac
 
   if [[ "${curr_word}" == -* ]]; then
-    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- ${curr_word}) )
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
-    COMPREPLY=( $(compgen -W "${commands}" -- ${curr_word}) )
+    COMPREPLY=( $(compgen -W "${commands}" -- "${curr_word}") )
   fi
 }
 

@@ -63,8 +63,14 @@ function ArrContains() {
   declare -A tmp
   eval lArr1=("\"\${$1[@]}\"")
   eval lArr2=("\"\${$2[@]}\"")
-  for i in "${lArr1[@]}";{ [ -n "$i" ] && ((++tmp[$i]));}
-  for i in "${lArr2[@]}";{ [ -n "$i" ] && [ -z "${tmp[$i]}" ] && return 1;}
+  for i in "${lArr1[@]}";
+  do
+    if [ -n "$i" ] ; then ((++tmp[$i])); fi
+  done
+  for i in "${lArr2[@]}";
+  do
+    if [ -n "$i" ] && [ -z "${tmp[$i]}" ] ; then return 1; fi
+  done
   return 0
 }
 
@@ -94,7 +100,7 @@ function _picocli_basicExample() {
 
   case ${prev_word} in
     -u|--timeUnit)
-      COMPREPLY=( $( compgen -W "${timeUnit_option_args}" -- ${curr_word} ) )
+      COMPREPLY=( $( compgen -W "${timeUnit_option_args}" -- "${curr_word}" ) )
       return $?
       ;;
     -t|--timeout)
@@ -103,9 +109,9 @@ function _picocli_basicExample() {
   esac
 
   if [[ "${curr_word}" == -* ]]; then
-    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- ${curr_word}) )
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
-    COMPREPLY=( $(compgen -W "${commands}" -- ${curr_word}) )
+    COMPREPLY=( $(compgen -W "${commands}" -- "${curr_word}") )
   fi
 }
 

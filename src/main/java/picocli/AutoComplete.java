@@ -311,8 +311,14 @@ public class AutoComplete {
             "  declare -A tmp\n" +
             "  eval lArr1=(\"\\\"\\${$1[@]}\\\"\")\n" +
             "  eval lArr2=(\"\\\"\\${$2[@]}\\\"\")\n" +
-            "  for i in \"${lArr1[@]}\";{ [ -n \"$i\" ] && ((++tmp[$i]));}\n" +
-            "  for i in \"${lArr2[@]}\";{ [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] && return 1;}\n" +
+            "  for i in \"${lArr1[@]}\";\n" +
+            "  do\n" +
+            "    if [ -n \"$i\" ] ; then ((++tmp[$i])); fi\n" +
+            "  done\n" +
+            "  for i in \"${lArr2[@]}\";\n" +
+            "  do\n" +
+            "    if [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] ; then return 1; fi\n" +
+            "  done\n" +
             "  return 0\n" +
             "}\n" +
             "\n";
@@ -398,10 +404,10 @@ public class AutoComplete {
 //                "  CMDS3=(%1$s tool sub1)\n" +
 //                "  CMDS4=(%1$s tool sub2)\n" +
 //                "\n" +
-//                "  ArrContains COMP_WORDS CMDS4 && { _picocli_basic_tool_sub2; return $?; }\n" +
-//                "  ArrContains COMP_WORDS CMDS3 && { _picocli_basic_tool_sub1; return $?; }\n" +
-//                "  ArrContains COMP_WORDS CMDS2 && { _picocli_basic_tool; return $?; }\n" +
-//                "  ArrContains COMP_WORDS CMDS1 && { _picocli_basic_gettingstarted; return $?; }\n" +
+//                "  if ArrContains COMP_WORDS CMDS4 ; then _picocli_basic_tool_sub2; return $?; fi\n" +
+//                "  if ArrContains COMP_WORDS CMDS3 ; then _picocli_basic_tool_sub1; return $?; fi\n" +
+//                "  if ArrContains COMP_WORDS CMDS2 ; then _picocli_basic_tool; return $?; fi\n" +
+//                "  if ArrContains COMP_WORDS CMDS1 ; then _picocli_basic_gettingstarted; return $?; fi\n" +
 //                "  _picocli_%1$s; return $?;\n" +
 //                "}\n" +
 //                "\n" +
@@ -442,7 +448,7 @@ public class AutoComplete {
         for (Map.Entry<String, CommandLine> entry : commandLine.getSubcommands().entrySet()) {
             int count = functionCalls.size();
             String functionName = "_picocli_" + scriptName + "_" + concat("_", predecessors, entry.getKey(), new Bashify());
-            functionCalls.add(format("  ArrContains COMP_WORDS cmds%2$d && { %1$s; return $?; }\n", functionName, count));
+            functionCalls.add(format("  if ArrContains COMP_WORDS cmds%2$d; then %1$s; return $?; fi\n", functionName, count));
             buff.append(      format("  local cmds%2$d=(%1$s)\n", concat(" ", predecessors, entry.getKey(), new NullFunction()), count));
 
             // remember the function name and associated subcommand so we can easily generate a function later
@@ -488,9 +494,9 @@ public class AutoComplete {
         String FOOTER = "" +
                 "\n" +
                 "  if [[ \"${curr_word}\" == -* ]]; then\n" +
-                "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- ${curr_word}) )\n" +
+                "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                 "  else\n" +
-                "    COMPREPLY=( $(compgen -W \"${commands}\" -- ${curr_word}) )\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n";
 
@@ -565,19 +571,19 @@ public class AutoComplete {
         for (OptionSpec option : argOptionFields) {
             if (option.completionCandidates() != null) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -u|--timeUnit)\n"
-                buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_option_args}\" -- %s ) )\n", indent, bashify(option.paramLabel()), currWord));
+                buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_option_args}\" -- \"%s\" ) )\n", indent, bashify(option.paramLabel()), currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else if (option.type().equals(File.class) || "java.nio.file.Path".equals(option.type().getName())) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -f|--file)\n"
                 buff.append(format("%s      compopt -o filenames\n", indent));
-                buff.append(format("%s      COMPREPLY=( $( compgen -f -- %s ) ) # files\n", indent, currWord));
+                buff.append(format("%s      COMPREPLY=( $( compgen -f -- \"%s\" ) ) # files\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else if (option.type().equals(InetAddress.class)) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -h|--host)\n"
                 buff.append(format("%s      compopt -o filenames\n", indent));
-                buff.append(format("%s      COMPREPLY=( $( compgen -A hostname -- %s ) )\n", indent, currWord));
+                buff.append(format("%s      COMPREPLY=( $( compgen -A hostname -- \"%s\" ) )\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else {

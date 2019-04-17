@@ -616,8 +616,14 @@ public class AutoCompleteTest {
                 "  declare -A tmp\n" +
                 "  eval lArr1=(\"\\\"\\${$1[@]}\\\"\")\n" +
                 "  eval lArr2=(\"\\\"\\${$2[@]}\\\"\")\n" +
-                "  for i in \"${lArr1[@]}\";{ [ -n \"$i\" ] && ((++tmp[$i]));}\n" +
-                "  for i in \"${lArr2[@]}\";{ [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] && return 1;}\n" +
+                "  for i in \"${lArr1[@]}\";\n" +
+                "  do\n" +
+                "    if [ -n \"$i\" ] ; then ((++tmp[$i])); fi\n" +
+                "  done\n" +
+                "  for i in \"${lArr2[@]}\";\n" +
+                "  do\n" +
+                "    if [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] ; then return 1; fi\n" +
+                "  done\n" +
                 "  return 0\n" +
                 "}\n" +
                 "\n" +
@@ -653,15 +659,15 @@ public class AutoCompleteTest {
                 "      ;;\n" +
                 "    -o|--completionScript)\n" +
                 "      compopt -o filenames\n" +
-                "      COMPREPLY=( $( compgen -f -- ${curr_word} ) ) # files\n" +
+                "      COMPREPLY=( $( compgen -f -- \"${curr_word}\" ) ) # files\n" +
                 "      return $?\n" +
                 "      ;;\n" +
                 "  esac\n" +
                 "\n" +
                 "  if [[ \"${curr_word}\" == -* ]]; then\n" +
-                "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- ${curr_word}) )\n" +
+                "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                 "  else\n" +
-                "    COMPREPLY=( $(compgen -W \"${commands}\" -- ${curr_word}) )\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
@@ -782,8 +788,14 @@ public class AutoCompleteTest {
                 "  declare -A tmp\n" +
                 "  eval lArr1=(\"\\\"\\${$1[@]}\\\"\")\n" +
                 "  eval lArr2=(\"\\\"\\${$2[@]}\\\"\")\n" +
-                "  for i in \"${lArr1[@]}\";{ [ -n \"$i\" ] && ((++tmp[$i]));}\n" +
-                "  for i in \"${lArr2[@]}\";{ [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] && return 1;}\n" +
+                "  for i in \"${lArr1[@]}\";\n" +
+                "  do\n" +
+                "    if [ -n \"$i\" ] ; then ((++tmp[$i])); fi\n" +
+                "  done\n" +
+                "  for i in \"${lArr2[@]}\";\n" +
+                "  do\n" +
+                "    if [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] ; then return 1; fi\n" +
+                "  done\n" +
                 "  return 0\n" +
                 "}\n" +
                 "\n" +
@@ -817,9 +829,9 @@ public class AutoCompleteTest {
                 "  esac\n" +
                 "\n" +
                 "  if [[ \"${curr_word}\" == -* ]]; then\n" +
-                "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- ${curr_word}) )\n" +
+                "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                 "  else\n" +
-                "    COMPREPLY=( $(compgen -W \"${commands}\" -- ${curr_word}) )\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
