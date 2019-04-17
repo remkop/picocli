@@ -686,6 +686,54 @@ public class SubcommandTests {
     }
 
     @Test
+    public void testInterpolateVariables_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals(true, commandLine.isInterpolateVariables());
+        commandLine.setInterpolateVariables(false);
+        assertEquals(false, commandLine.isInterpolateVariables());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", true, sub.isInterpolateVariables());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", true, subsub.isInterpolateVariables());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testInterpolateVariables_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertEquals(true, commandLine.isInterpolateVariables());
+        commandLine.setInterpolateVariables(false);
+        assertEquals(false, commandLine.isInterpolateVariables());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", false, sub.isInterpolateVariables());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", false, sub.isInterpolateVariables());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
     public void testParserToggleBooleanFlags_BeforeSubcommandsAdded() {
         @Command
         class TopLevel {}

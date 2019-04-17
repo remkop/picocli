@@ -1,5 +1,6 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.Model.Interpolator;
 import picocli.CommandLine.Model.CommandSpec;
@@ -23,6 +24,18 @@ public class InterpolatorTest {
         Interpolator interpolator = new Interpolator(spec);
         String original = "This is a description for ${COMMAND-NAME}, whose fqcn is ${COMMAND-FULL-NAME}. It's parent is ${PARENT-COMMAND-NAME}, also known as ${PARENT-COMMAND-FULL-NAME}.";
         String expected = "This is a description for subsub, whose fqcn is top sub subsub. It's parent is sub, also known as top sub.";
+        assertEquals(expected, interpolator.interpolate(original));
+    }
+
+    @Ignore
+    @Test
+    public void notInterpolateIfEscaped() {
+        CommandSpec hierarchy = createTestSpec();
+        Interpolator interpolator = new Interpolator(hierarchy);
+        String original = "This is an undefined system property: $${sys:myProp:-defaultValue}.";
+        String expected = "This is an undefined system property: ${sys:myProp:-defaultValue}.";
+
+        System.clearProperty("myProp");
         assertEquals(expected, interpolator.interpolate(original));
     }
 

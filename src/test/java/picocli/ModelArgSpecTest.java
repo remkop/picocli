@@ -28,7 +28,7 @@ public class ModelArgSpecTest {
     }
 
     @Test
-    public void testArgSpecRenderedDescriptionInitial() {
+    @Deprecated public void testArgSpecRenderedDescriptionInitial() {
         PositionalParamSpec positional = PositionalParamSpec.builder().build();
         assertArrayEquals(new String[0], positional.renderedDescription());
 

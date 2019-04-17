@@ -25,9 +25,87 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.0-alpha-2-new"></a> New and Noteworthy
 
-### Variable Expansion
 
-TODO
+### Variable Interpolation
+
+From this release, picocli supports variable interpolation (variable expansion) in annotation attributes as well as in text attributes of the programmatic API.
+
+#### Variable Interpolation Example
+
+```java
+@Command(name = "status", description = "This command logs the status for ${PARENT-COMMAND-NAME}.")
+class Status {
+    @Option(names = {"${dirOptionName1:--d}", "${dirOptionName2:---directories}"}, // -d or --directories
+            description = {"Specify one or more directories, separated by '${sys:path.separator}'.",
+                           "The default is the user home directory (${DEFAULT-VALUE})."},  
+            arity = "${sys:dirOptionArity:-1..*}",
+            defaultValue = "${sys:user.home}",
+            split = "${sys:path.separator}")
+    String[] directories;
+}
+```
+
+#### Predefined Variables
+
+The following variables are predefined:
+
+* `${DEFAULT-VALUE}`: (since 3.2) - can be used in the description for an option or positional parameter, replaced with the default value for that option or positional parameter
+* `${COMPLETION-CANDIDATES}`: (since 3.2) - can be used in the description for an option or positional parameter, replaced with the completion candidates for that option or positional parameter
+* `${COMMAND-NAME}`: (since 4.0) - can be used in any section of the usage help message for a command, replaced with the name of the command
+* `${COMMAND-FULL-NAME}`: (since 4.0) - can be used in any section of the usage help message for a command, replaced with the fully qualified name of the command (that is, preceded by its parent fully qualified name)
+* `${PARENT-COMMAND-NAME}`: (since 4.0) - can be used in any section of the usage help message for a command, replaced with the name of its parent command
+* `${PARENT-COMMAND-FULL-NAME}`: (since 4.0) - can be used in any section of the usage help message for a command, replaced with the fully qualified name of its parent command (that is, preceded by the name(s) of the parent command's ancestor commands)
+
+#### Custom Variables
+
+In addition, you can define your own variables. Currently the following syntaxes are supported:
+
+* `${sys:key}`: system property lookup, replaced by the value of `System.getProperty("key")`
+* `${env:key}`: environment variable lookup, replaced by the value of `System.getEnv("key")`
+* `${bundle:key}`: look up the value of `key` in the resource bundle of the command
+* `${key}`: search all of the above, first system properties, then environment variables, and finally the resource bundle of the command
+
+#### Default Values for Custom Variables
+
+You can specify a default value to use when no value is found for a custom variable. The syntax for specifying a default is `${a:-b}`, where `a` is the variable name and `b` is the default value to use if `a` is not found.
+
+So, for the individual lookups, this looks like this:
+
+```
+${key:-defaultValue}
+${sys:key:-defaultValue}
+${env:key:-defaultValue}
+${bundle:key:-defaultValue}
+```
+
+The default value may contain other custom variables. For example:
+
+```
+${bundle:a:-${env:b:-${sys:c:-X}}}
+```
+
+The above variable is expanded as follows. First, try to find key `a` in the command's resource bundle. If `a` is not found in the resource bundle, get the value of environment variable `b`. If no environment variable `b` exists, get the value of system property `c`. Finally, no system property `c` exists, the value of the expression becomes `X`.
+
+#### Switching Off Variable Interpolation
+
+Variable interpolation can be switched off for the full command hierarchy by calling `CommandLine.setInterpolateVariables(false)`, or for a particular command by calling `CommandSpec.interpolateVariables(false)`.
+
+#### Limitations of Variable Interpolation (WORK IN PROGRESS)
+
+Some attribute values need to be resolved early, when the model is constructed from the annotation values.
+
+Specifically:
+
+* command names and aliases, option names, mixin names
+* `arity` (for options and positional parameters)
+* `index` (for positional parameters)
+* `separator` (for commands)
+
+It is technically possible for these attributes to contain variables, but it is not recommended.
+
+If these attributes have variables, and the variables get a different value after the model is constructed, the change will not be reflected in the model.
+Also, the annotation processor will not be able to resolve these variables at compile time and will not be able to construct a model.
+
 
 ### Improved Support for Chinese, Japanese and Korean
 Picocli will align the usage help message to fit within some user-defined width (80 columns by default).

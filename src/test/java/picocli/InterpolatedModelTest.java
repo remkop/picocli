@@ -168,8 +168,12 @@ public class InterpolatedModelTest {
         CommandLine commandLine = new CommandLine(new App());
         String actual = commandLine.getUsageMessage();
         String expected = String.format("" +
-                "Usage: cmd [-NAME1[=PARAMLABEL[;;;PARAMLABEL...]...]]%n" +
-                "      -NAME1, --NAME2[=PARAMLABEL[;;;PARAMLABEL...]...]%n" +
+                "Usage: cmd [-NAME1=PARAMLABEL[;;;PARAMLABEL...] PARAMLABEL[;;;PARAMLABEL...]%n" +
+                "           PARAMLABEL[;;;PARAMLABEL...] PARAMLABEL[;;;PARAMLABEL...]%n" +
+                "           [PARAMLABEL [PARAMLABEL]]]%n" +
+                "      -NAME1, --NAME2=PARAMLABEL[;;;PARAMLABEL...] PARAMLABEL[;;;PARAMLABEL...]%n" +
+                "        PARAMLABEL[;;;PARAMLABEL...] PARAMLABEL[;;;PARAMLABEL...] [PARAMLABEL%n" +
+                "        [PARAMLABEL]]%n" +
                 "         OPT DESCR%n");
         assertEquals(expected, actual);
 
@@ -195,5 +199,67 @@ public class InterpolatedModelTest {
                 "  -H, -HELP      Show this help message and exit.%n" +
                 "  -v, -VERSION   Print version information and exit.%n");
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testReleaseNotesExample_WithoutPropertiesSet() {
+        @Command(name = "app")
+        class App {
+            @Command(name = "status", description = "This command logs the ${COMMAND-NAME} for ${PARENT-COMMAND-NAME}.")
+            void status(
+                @Option(names = {"${dirOptionName1:--d}", "${dirOptionName2:---directories}"}, // -d or --directories
+                        description = {"Specify one or more directories, separated by '${sys:path.separator}'.",
+                                "The default is the user home directory (${DEFAULT-VALUE})."},
+                        arity = "${sys:dirOptionArity:-1..*}",
+                        defaultValue = "${sys:user.home}",
+                        split = "${sys:path.separator}")
+                String[] directories) { }
+        }
+
+        CommandLine status = new CommandLine(new App()).getSubcommands().get("status");
+        String actual = status.getUsageMessage();
+        String expected = String.format("" +
+                "Usage: app status [-d=<arg0>[%1$s<arg0>...]...]...%n" +
+                "This command logs the status for app.%n" +
+                "  -d, --directories=<arg0>[%1$s<arg0>...]...%n" +
+                "         Specify one or more directories, separated by '%1$s'.%n" +
+                "         The default is the user home directory (%2$s).%n",
+                System.getProperty("path.separator"), System.getProperty("user.home"));
+        assertEquals(expected, actual);
+
+        assertEquals(CommandLine.Range.valueOf("1..*"), status.getCommandSpec().findOption("d").arity());
+    }
+
+    @Test
+    public void testReleaseNotesExample_WithPropertiesSet() {
+        @Command(name = "app")
+        class App {
+            @Command(name = "status", description = "This command logs the ${COMMAND-NAME} for ${PARENT-COMMAND-NAME}.")
+            void status(
+                    @Option(names = {"${dirOptionName1:--d}", "${dirOptionName2:---directories}"}, // -d or --directories
+                            description = {"Specify one or more directories, separated by '${sys:path.separator}'.",
+                                    "The default is the user home directory (${DEFAULT-VALUE})."},
+                            arity = "${sys:dirOptionArity:-1..*}",
+                            defaultValue = "${sys:user.home}",
+                            split = "${sys:path.separator}")
+                            String[] directories) { }
+        }
+
+        System.setProperty("dirOptionName1", "-x");
+        System.setProperty("dirOptionName2", "--extended");
+        System.setProperty("dirOptionArity", "2..3");
+
+        CommandLine status = new CommandLine(new App()).getSubcommands().get("status");
+        String actual = status.getUsageMessage();
+        String expected = String.format("" +
+                        "Usage: app status [-x=<arg0>[%1$s<arg0>...] <arg0>[%1$s<arg0>...] [<arg0>]]...%n" +
+                        "This command logs the status for app.%n" +
+                        "  -x, --extended=<arg0>[%1$s<arg0>...] <arg0>[%1$s<arg0>...] [<arg0>]%n" +
+                        "         Specify one or more directories, separated by '%1$s'.%n" +
+                        "         The default is the user home directory (%2$s).%n",
+                System.getProperty("path.separator"), System.getProperty("user.home"));
+        assertEquals(expected, actual);
+
+        assertEquals(CommandLine.Range.valueOf("2..3"), status.getCommandSpec().findOption("x").arity());
     }
 }

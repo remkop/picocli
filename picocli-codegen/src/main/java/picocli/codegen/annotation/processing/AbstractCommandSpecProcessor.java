@@ -277,6 +277,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         if (commandSpec == null) {
             logger.fine("Element " + argElement.getKey() + " is enclosed by " + key + " which does not have a @Command annotation");
             commandSpec = CommandSpec.forAnnotatedObjectLenient(key);
+            commandSpec.interpolateVariables(false);
             commands.put(key, commandSpec);
         }
         return commandSpec;
@@ -425,6 +426,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             return result;
         }
         result = CommandSpec.wrapWithoutInspection(element);
+        result.interpolateVariables(false);
         result.withToString(commandClassName);
         commands.put(element, result);
 

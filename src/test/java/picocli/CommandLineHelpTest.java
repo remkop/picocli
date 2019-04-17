@@ -2566,8 +2566,14 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testJoin2() {
+    @Deprecated public void testJoin2Deprecated() {
         StringBuilder sb = Help.join(Help.Ansi.OFF, 80, null, new StringBuilder("abc"));
+        assertEquals("abc", sb.toString());
+    }
+
+    @Test
+    public void testJoin2() {
+        StringBuilder sb = Help.join(Help.Ansi.OFF, 80, true,null, new StringBuilder("abc"));
         assertEquals("abc", sb.toString());
     }
 

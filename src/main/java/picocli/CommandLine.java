@@ -467,6 +467,19 @@ public class CommandLine {
         return this;
     }
 
+    /** Returns whether whether variables should be interpolated in String values.
+     * @since 4.0 */
+    public boolean isInterpolateVariables() { return getCommandSpec().interpolateVariables(); }
+    /** Sets whether whether variables should be interpolated in String values.
+     * @since 4.0 */
+    public CommandLine setInterpolateVariables(boolean interpolate) {
+        getCommandSpec().interpolateVariables(interpolate);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setInterpolateVariables(interpolate);
+        }
+        return this;
+    }
+
     /** Returns whether options for single-value fields can be specified multiple times on the command line.
      * The default is {@code false} and a {@link OverwrittenOptionException} is thrown if this happens.
      * When {@code true}, the last specified value is retained.
@@ -3686,6 +3699,9 @@ public class CommandLine {
          * @param range the value range string to parse
          * @return a new {@code Range} value */
         public static Range valueOf(String range) {
+            if (range.contains("${")) {
+                return new Range(0, 0, false, false, range); // unresolved
+            }
             range = range.trim();
             boolean unspecified = range.length() == 0 || range.startsWith(".."); // || range.endsWith("..");
             int min = -1, max = -1;
@@ -3729,6 +3745,10 @@ public class CommandLine {
         /** Returns {@code true} if this Range is a default value, {@code false} if the user specified this value.
          * @since 4.0 */
         public boolean isUnspecified() { return isUnspecified; }
+        /** Returns {@code true} if this range contains variables that have not been expanded yet,
+         * {@code false} if this Range does not contain any variables.
+         * @since 4.0 */
+        public boolean isUnresolved() { return originalValue != null && originalValue.contains("${"); }
 
         /**
          * Returns {@code true} if this Range includes the specified value, {@code false} otherwise.
@@ -3746,6 +3766,7 @@ public class CommandLine {
             return ((17 * 37 + max) * 37 + min) * 37 + (isVariable ? 1 : 0);
         }
         public String toString() {
+            if (isUnresolved()) { return originalValue; }
             return min == max ? String.valueOf(min) : min + ".." + (isVariable ? "*" : max);
         }
         public int compareTo(Range other) {
@@ -4071,10 +4092,10 @@ public class CommandLine {
 
             /** Returns whether whether variables should be interpolated in String values.
              * @since 4.0 */
-            public boolean isInterpolateVariables() { return (interpolateVariables == null) ? DEFAULT_INTERPOLATE_VARIABLES : interpolateVariables; }
+            public boolean interpolateVariables() { return (interpolateVariables == null) ? DEFAULT_INTERPOLATE_VARIABLES : interpolateVariables; }
             /** Sets whether whether variables should be interpolated in String values.
              * @since 4.0 */
-            public CommandSpec setInterpolateVariables(Boolean interpolate) { interpolateVariables = interpolate; return this; }
+            public CommandSpec interpolateVariables(Boolean interpolate) { interpolateVariables = interpolate; return this; }
 
             /** Reflects on the class of the {@linkplain #userObject() user object} and registers any command methods
              * (class methods annotated with {@code @Command}) as subcommands.
@@ -4151,13 +4172,21 @@ public class CommandLine {
              * @return this CommandSpec for method chaining */
             public CommandSpec addPositional(PositionalParamSpec positional) {
                 positionalParameters.add(positional);
-                return addArg(positional);
+                addArg(positional);
+                if (positional.index().isUnresolved()) {
+                    positional.index = Range.valueOf(interpolator.interpolate(positional.index().originalValue));
+                    positional.initCapacity();
+                }
+                return this;
             }
             private CommandSpec addArg(ArgSpec arg) {
                 args.add(arg);
                 if (arg.required() && arg.group() == null) { requiredArgs.add(arg); }
                 arg.messages(usageMessage().messages());
                 arg.commandSpec = this;
+                if (arg.arity().isUnresolved()) {
+                    arg.arity = Range.valueOf(interpolator.interpolate(arg.arity().originalValue));
+                }
                 return this;
             }
 
@@ -5319,7 +5348,7 @@ public class CommandLine {
             private final IGetter getter;
             private final ISetter setter;
             private final IScope scope;
-            private final Range arity;
+            private Range arity;
             private List<String> stringValues = new ArrayList<String>();
             private List<String> originalStringValues = new ArrayList<String>();
             protected String toString;
@@ -5402,7 +5431,7 @@ public class CommandLine {
 
             /** Returns the description of this option or positional parameter, after all variables have been rendered,
              * including the {@code ${DEFAULT-VALUE}} and {@code ${COMPLETION-CANDIDATES}} variables.
-             * Use {@link CommandSpec#setInterpolateVariables(Boolean)} to switch off variable expansion if needed.
+             * Use {@link CommandSpec#interpolateVariables(Boolean)} to switch off variable expansion if needed.
              * <p>
              * If a resource bundle has been {@linkplain ArgSpec#messages(Messages) set}, this method will first try to find a value in the resource bundle:
              * If the resource bundle has no entry for the {@code fully qualified commandName + "." + descriptionKey} or for the unqualified {@code descriptionKey},
@@ -5426,7 +5455,7 @@ public class CommandLine {
                         result = newValue;
                     }
                 }
-                if (commandSpec == null || commandSpec.isInterpolateVariables()) { // expand variables
+                if (commandSpec == null || commandSpec.interpolateVariables()) { // expand variables
                     result = expandVariables(result);
                 }
                 return result;
@@ -6371,13 +6400,18 @@ public class CommandLine {
         public static class PositionalParamSpec extends ArgSpec {
             private Range index;
             private Range capacity;
+            private Range builderCapacity;
 
             /** Ensures all attributes of this {@code PositionalParamSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
             private PositionalParamSpec(Builder builder) {
                 super(builder);
-                index = builder.index == null ? Range.valueOf("*") : builder.index; 
-                capacity = builder.capacity == null ? Range.parameterCapacity(arity(), index) : builder.capacity;
+                index = builder.index == null ? Range.valueOf("*") : builder.index;
+                builderCapacity = builder.capacity;
+                initCapacity();
                 if (toString == null) { toString = "positional parameter[" + index() + "]"; }
+            }
+            private void initCapacity() {
+                capacity = builderCapacity == null ? Range.parameterCapacity(arity(), index) : builderCapacity;
             }
             public static Builder builder() { return new Builder(); }
             public static Builder builder(IAnnotatedElement source, IFactory factory) { return new Builder(source, factory); }
@@ -8067,7 +8101,8 @@ public class CommandLine {
                 return result;
             }
             public String interpolate(String original) {
-                if (original == null || !commandSpec.isInterpolateVariables()) { return original; }
+                if (original == null || !commandSpec.interpolateVariables()) { return original; }
+                // TODO don't expand escaped vars, like $${COMMAND-NAME}
                 String result1 = original.replaceAll("\\$\\{COMMAND-NAME}", commandSpec.name());
                 String result2 = result1.replaceAll("\\$\\{COMMAND-FULL-NAME}", commandSpec.qualifiedName());
                 if (commandSpec.parent() != null) {
@@ -8078,7 +8113,7 @@ public class CommandLine {
                 return result;
             }
             public String interpolateCommandName(String original) {
-                if (original == null || !commandSpec.isInterpolateVariables()) { return original; }
+                if (original == null || !commandSpec.interpolateVariables()) { return original; }
                 return resolveLookups(original, new HashSet<String>(), new HashMap<String, String>());
             }
 
@@ -8087,8 +8122,8 @@ public class CommandLine {
                 for (String lookupKey : lookups.keySet()) {
                     ILookup lookup = lookups.get(lookupKey);
                     String prefix = "${" + lookupKey;
-                    int sysStartPos = -1;
-                    while ((sysStartPos = text.indexOf(prefix, sysStartPos)) >= 0) {
+                    int sysStartPos = 0;
+                    while ((sysStartPos = findOpeningDollar(text, prefix, sysStartPos)) >= 0) {
                         int endPos = findClosingBrace(text, sysStartPos + prefix.length());
                         if (endPos < 0) { endPos = text.length() - 1; }
                         String fullKey = text.substring(sysStartPos + prefix.length(), endPos);
@@ -8114,6 +8149,30 @@ public class CommandLine {
                     }
                 }
                 return text;
+            }
+
+            private int findOpeningDollar(String text, String prefix, int start) {
+                int open = -1;
+                boolean escaping = false;
+                for (int ch = 0, i = start; i < text.length(); i += Character.charCount(ch)) {
+                    ch = text.codePointAt(i);
+                    switch (ch) {
+                        case '$':
+                            open = escaping ? -1 : i;
+                            escaping = !escaping;
+                            break;
+                        default:
+                            escaping = false;
+                            break;
+                    }
+                    if (open != -1 && ch != prefix.codePointAt(i - open)) {
+                        open = -1;
+                    }
+                    if (open != -1 && i - open == prefix.length() - 1) {
+                        return open;
+                    }
+                }
+                return -1;
             }
 
             private int findClosingBrace(String text, int start) {
