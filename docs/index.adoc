@@ -2936,17 +2936,16 @@ userName=Specify the user name. The default is ${DEFAULT-VALUE}.
 ----
 
 
-== Tips & Tricks
 
 [#option-parameters-methods]
-=== `@Option` and `@Parameters` Methods
+== `@Option` and `@Parameters` Methods
 From version 3.2, `@Option` and `@Parameters` annotations can be added to methods as well as fields of a class.
 
 For concrete classes, annotate "setter" methods (methods that accept a parameter) and when the option is specified on the command line, picocli will invoke the method with the value specified on the command line, converted to the type of the method parameter.
 
 Alternatively, you may annotate "getter-like" methods (methods that return a value) on an interface, and picocli will create an instance of the interface that returns the values specified on the command line, converted to the method return type.
 
-==== Annotating Methods of an Interface
+=== Annotating Methods of an Interface
 The `@Option` and `@Parameters` annotations can be used on methods of an interface that return a value. For example:
 
 [source,java]
@@ -2966,7 +2965,7 @@ Counter counter = cmd.getCommand(); // picocli created an instance
 assert counter.getCount() == 3; // method returns command line value
 ----
 
-==== Annotating Methods of a Concrete Class
+=== Annotating Methods of a Concrete Class
 The `@Option` and `@Parameters` annotations can be used on methods of a class that accept a parameter. For example:
 
 [source,java]
@@ -3022,7 +3021,7 @@ class ValidationExample {
 
 
 [#command-methods]
-=== `@Command` Methods
+== `@Command` Methods
 From picocli 3.6, methods can be annotated with `@Command`.
 The method parameters provide the command options and parameters. For example:
 
@@ -3065,7 +3064,7 @@ For positional parameters, the `@Parameters` annotation may be omitted on method
 
 TIP: If compiled with the `-parameters` flag on Java 8 or higher, the `paramLabel` of positional parameters is obtained from the method parameter name using reflection instead of the generic arg0, arg1, etc.
 
-==== Subcommand Methods
+=== Subcommand Methods
 
 If the enclosing class is annotated with `@Command`, method commands are automatically added as subcommands to the class command, unless the class command has attribute `@Command(addMethodSubcommands = false)`.
 For example:
@@ -3089,7 +3088,7 @@ class Git {
 
 Use `@Command(addMethodSubcommands = false)` on the class `@Command` annotation if the `@Command`-annotated methods in this class should not be added as subcommands.
 
-==== Description Text in ResourceBundle
+=== Description Text in ResourceBundle
 
 The usage help of the above `git commit` example command is very minimal:
 
@@ -3128,7 +3127,7 @@ Record changes to the repository
   -m, --message=<arg0>    Use the given <msg> as the commit message.
 ----
 
-==== Mixin Support in `@Command` Methods
+=== Mixin Support in `@Command` Methods
 
 From picocli 3.8, `@Command` methods accept `@Mixin` parameters.
 All options and positional parameters defined in the mixin class are added to the command.
@@ -3149,7 +3148,8 @@ class App {
 
 In the above example, the `-x` and `-y` options are added to the other options of the `doit` command.
 
-=== Less Boilerplate
+[#less-boilerplate]
+== Execute Commands with Less Boilerplate
 You can omit some of the boilerplate code from your application when the annotated object implements `Runnable` or `Callable`:
 
 .Before
@@ -3200,6 +3200,101 @@ If the command class has subcommands, the `CommandLine::call` and `CommandLine::
 <command> -g global_option subcommand -x -y -z subsubcommand param1 param2
 ----
 In the above example, the `subsubcommand` is the most specific subcommand, and only the `Runnable` or `Callable` associated with that subcommand will be executed by the `CommandLine::call` and `CommandLine::run` convenience methods.
+
+
+== Variable Interpolation
+
+From 4.0, picocli supports variable interpolation (variable expansion) in annotation attributes as well as in text attributes of the programmatic API.
+
+=== Variable Interpolation Example
+
+```java
+@Command(name = "status",
+         description = "This command logs the ${COMMAND-NAME} for ${PARENT-COMMAND-NAME}.")
+class Status {
+    // -d or --directories
+    @Option(names = {"${dirOptionName1:--d}", "${dirOptionName2:---directories}"},
+            description = {"Specify one or more directories, " +
+                               "separated by '${sys:path.separator}'.",
+                           "The default is the user home directory (${DEFAULT-VALUE})."},
+            arity = "${sys:dirOptionArity:-1..*}",
+            defaultValue = "${sys:user.home}",
+            split = "${sys:path.separator}")
+    String[] directories;
+}
+```
+
+=== Predefined Variables
+
+The following variables are predefined:
+
+[grid=cols,cols=".<3,.^1,.<3,.<3",options="header"]
+|===
+|Variable | Since | Use in | Meaning
+|`${DEFAULT-VALUE}`| 3.2 | the description for an option or positional parameter|replaced with the default value for that option or positional parameter
+|`${COMPLETION-CANDIDATES}`| 3.2 | the description for an option or positional parameter| replaced with the completion candidates for that option or positional parameter
+|`${COMMAND-NAME}`| 4.0 | any section of the usage help message for a command|replaced with the name of the command
+|`${COMMAND-FULL-NAME}`| 4.0 | any section of the usage help message for a command| replaced with the fully qualified name of the command (that is, preceded by its parent fully qualified name)
+|`${PARENT-COMMAND-NAME}`| 4.0 | any section of the usage help message for a command| replaced with the name of its parent command
+|`${PARENT-COMMAND-FULL-NAME}`| 4.0 | any section of the usage help message for a command| replaced with the fully qualified name of its parent command (that is, preceded by the name(s) of the parent command's ancestor commands)
+|===
+
+=== Custom Variables
+
+In addition, you can define your own variables. Currently the following syntaxes are supported:
+
+* `${sys:key}`: system property lookup, replaced by the value of `System.getProperty("key")`
+* `${env:key}`: environment variable lookup, replaced by the value of `System.getEnv("key")`
+* `${bundle:key}`: look up the value of `key` in the resource bundle of the command
+* `${key}`: search all of the above, first system properties, then environment variables, and finally the resource bundle of the command
+
+=== Default Values for Custom Variables
+
+You can specify a default value to use when no value is found for a custom variable. The syntax for specifying a default is `${a:-b}`, where `a` is the variable name and `b` is the default value to use if `a` is not found.
+
+So, for the individual lookups, this looks like this:
+
+```
+${key:-defaultValue}
+${sys:key:-defaultValue}
+${env:key:-defaultValue}
+${bundle:key:-defaultValue}
+```
+
+The default value may contain other custom variables. For example:
+
+```
+${bundle:a:-${env:b:-${sys:c:-X}}}
+```
+
+The above variable is expanded as follows. First, try to find key `a` in the command's resource bundle. If `a` is not found in the resource bundle, get the value of environment variable `b`. If no environment variable `b` exists, get the value of system property `c`. Finally, no system property `c` exists, the value of the expression becomes `X`.
+
+=== Escaping Variables
+Sometimes you want to show a string like `"${VAR}"` in a description.
+A `$` character can be escaped with another `$` character. Therefore, `$${VAR}` will not be interpreted as a `VAR` variable, but will be replaced by `${VAR}` instead.
+
+=== Switching Off Variable Interpolation
+
+Variable interpolation can be switched off for the full command hierarchy by calling `CommandLine.setInterpolateVariables(false)`, or for a particular command by calling `CommandSpec.interpolateVariables(false)`.
+
+=== Limitations of Variable Interpolation (WORK IN PROGRESS)
+
+Some attribute values need to be resolved early, when the model is constructed from the annotation values.
+
+Specifically:
+
+* command names and aliases, option names, mixin names
+* `arity` (for options and positional parameters)
+* `index` (for positional parameters)
+* `separator` (for commands)
+
+It is technically possible for these attributes to contain variables, but be aware of the limitations.
+
+If these attributes have variables, and the variables get a different value after the model is constructed, the change will not be reflected in the model.
+//Also, the annotation processor will not be able to resolve these variables at compile time and will not be able to construct a model.
+
+
+== Tips & Tricks
 
 === Convenience Methods for Subcommands
 Picocli v2.0 introduced the `CommandLine::parseWithHandler` and `CommandLine::parseWithHandlers` convenience methods.
@@ -3303,6 +3398,14 @@ class InjectSpecExample implements Runnable {
 }
 ----
 
+=== Improved Support for Chinese, Japanese and Korean
+Picocli will align the usage help message to fit within some user-defined width (80 columns by default).
+A number of characters in Chinese, Japanese and Korean (CJK) are wider than others.
+If those characters are treated to have the same width as other characters, the usage help message may extend past the right margin.
+
+From 4.0, picocli will use 2 columns for these wide characters when calculating where to put line breaks, resulting in better usage help message text.
+
+This can be switched off with `CommandLine.setAdjustLineBreaksForWideCJKCharacters(false)`.
 
 === Custom Factory
 

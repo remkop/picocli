@@ -86,6 +86,10 @@ ${bundle:a:-${env:b:-${sys:c:-X}}}
 
 The above variable is expanded as follows. First, try to find key `a` in the command's resource bundle. If `a` is not found in the resource bundle, get the value of environment variable `b`. If no environment variable `b` exists, get the value of system property `c`. Finally, no system property `c` exists, the value of the expression becomes `X`.
 
+#### Escaping Variables
+Sometimes you want to show a string like `"${VAR}"` in a description.
+A `$` character can be escaped with another `$` character. Therefore, `$${VAR}` will not be interpreted as a `VAR` variable, but will be replaced by `${VAR}` instead.
+
 #### Switching Off Variable Interpolation
 
 Variable interpolation can be switched off for the full command hierarchy by calling `CommandLine.setInterpolateVariables(false)`, or for a particular command by calling `CommandSpec.interpolateVariables(false)`.
@@ -101,10 +105,10 @@ Specifically:
 * `index` (for positional parameters)
 * `separator` (for commands)
 
-It is technically possible for these attributes to contain variables, but it is not recommended.
+It is technically possible for these attributes to contain variables, but be aware of the limitations.
 
 If these attributes have variables, and the variables get a different value after the model is constructed, the change will not be reflected in the model.
-Also, the annotation processor will not be able to resolve these variables at compile time and will not be able to construct a model.
+
 
 
 ### Improved Support for Chinese, Japanese and Korean

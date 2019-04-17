@@ -27,7 +27,6 @@ public class InterpolatorTest {
         assertEquals(expected, interpolator.interpolate(original));
     }
 
-    @Ignore
     @Test
     public void notInterpolateIfEscaped() {
         CommandSpec hierarchy = createTestSpec();

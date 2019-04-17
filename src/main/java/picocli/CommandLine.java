@@ -8148,7 +8148,7 @@ public class CommandLine {
                         sysStartPos += value == null ? "null".length() : value.length();
                     }
                 }
-                return text;
+                return text.replace("$$", "$");
             }
 
             private int findOpeningDollar(String text, String prefix, int start) {
