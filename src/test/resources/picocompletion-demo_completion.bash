@@ -73,15 +73,15 @@ function ArrContains() {
 # on the command line and delegates to the appropriate function
 # to generate possible options and subcommands for the last specified subcommand.
 function _complete_picocompletion-demo() {
-  CMDS0=(sub1)
-  CMDS1=(sub2)
-  CMDS2=(sub2 subsub1)
-  CMDS3=(sub2 subsub2)
+  local cmds0=(sub1)
+  local cmds1=(sub2)
+  local cmds2=(sub2 subsub1)
+  local cmds3=(sub2 subsub2)
 
-  ArrContains COMP_WORDS CMDS3 && { _picocli_picocompletion-demo_sub2_subsub2; return $?; }
-  ArrContains COMP_WORDS CMDS2 && { _picocli_picocompletion-demo_sub2_subsub1; return $?; }
-  ArrContains COMP_WORDS CMDS1 && { _picocli_picocompletion-demo_sub2; return $?; }
-  ArrContains COMP_WORDS CMDS0 && { _picocli_picocompletion-demo_sub1; return $?; }
+  ArrContains COMP_WORDS cmds3 && { _picocli_picocompletion-demo_sub2_subsub2; return $?; }
+  ArrContains COMP_WORDS cmds2 && { _picocli_picocompletion-demo_sub2_subsub1; return $?; }
+  ArrContains COMP_WORDS cmds1 && { _picocli_picocompletion-demo_sub2; return $?; }
+  ArrContains COMP_WORDS cmds0 && { _picocli_picocompletion-demo_sub1; return $?; }
 
   # No subcommands were specified; generate completions for the top-level command.
   _picocli_picocompletion-demo; return $?;
@@ -90,34 +90,33 @@ function _complete_picocompletion-demo() {
 # Generates completions for the options and subcommands of the `picocompletion-demo` command.
 function _picocli_picocompletion-demo() {
   # Get completion data
-  CURR_WORD=${COMP_WORDS[COMP_CWORD]}
-  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
 
-  COMMANDS="sub1 sub2"
-  FLAG_OPTS="-V --version -h --help"
-  ARG_OPTS=""
+  local commands="sub1 sub2"
+  local flag_opts="-V --version -h --help"
+  local arg_opts=""
 
-  if [[ "${CURR_WORD}" == -* ]]; then
-    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- ${curr_word}) )
   else
-    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+    COMPREPLY=( $(compgen -W "${commands}" -- ${curr_word}) )
   fi
 }
 
 # Generates completions for the options and subcommands of the `sub1` subcommand.
 function _picocli_picocompletion-demo_sub1() {
   # Get completion data
-  CURR_WORD=${COMP_WORDS[COMP_CWORD]}
-  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+  local prev_word=${COMP_WORDS[COMP_CWORD-1]}
 
-  COMMANDS=""
-  FLAG_OPTS=""
-  ARG_OPTS="--num --str --candidates"
-  str2_OPTION_ARGS="aaa bbb ccc" # --candidates values
+  local commands=""
+  local flag_opts=""
+  local arg_opts="--num --str --candidates"
+  local str2_option_args="aaa bbb ccc" # --candidates values
 
   compopt +o default
 
-  case ${PREV_WORD} in
+  case ${prev_word} in
     --num)
       return
       ;;
@@ -125,91 +124,91 @@ function _picocli_picocompletion-demo_sub1() {
       return
       ;;
     --candidates)
-      COMPREPLY=( $( compgen -W "${str2_OPTION_ARGS}" -- ${CURR_WORD} ) )
+      COMPREPLY=( $( compgen -W "${str2_option_args}" -- ${curr_word} ) )
       return $?
       ;;
   esac
 
-  if [[ "${CURR_WORD}" == -* ]]; then
-    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- ${curr_word}) )
   else
-    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+    COMPREPLY=( $(compgen -W "${commands}" -- ${curr_word}) )
   fi
 }
 
 # Generates completions for the options and subcommands of the `sub2` subcommand.
 function _picocli_picocompletion-demo_sub2() {
   # Get completion data
-  CURR_WORD=${COMP_WORDS[COMP_CWORD]}
-  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+  local prev_word=${COMP_WORDS[COMP_CWORD-1]}
 
-  COMMANDS="subsub1 subsub2"
-  FLAG_OPTS=""
-  ARG_OPTS="--num2 --directory -d"
+  local commands="subsub1 subsub2"
+  local flag_opts=""
+  local arg_opts="--num2 --directory -d"
 
   compopt +o default
 
-  case ${PREV_WORD} in
+  case ${prev_word} in
     --num2)
       return
       ;;
     --directory|-d)
       compopt -o filenames
-      COMPREPLY=( $( compgen -f -- ${CURR_WORD} ) ) # files
+      COMPREPLY=( $( compgen -f -- ${curr_word} ) ) # files
       return $?
       ;;
   esac
 
-  if [[ "${CURR_WORD}" == -* ]]; then
-    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- ${curr_word}) )
   else
-    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+    COMPREPLY=( $(compgen -W "${commands}" -- ${curr_word}) )
   fi
 }
 
 # Generates completions for the options and subcommands of the `subsub1` subcommand.
 function _picocli_picocompletion-demo_sub2_subsub1() {
   # Get completion data
-  CURR_WORD=${COMP_WORDS[COMP_CWORD]}
-  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+  local prev_word=${COMP_WORDS[COMP_CWORD-1]}
 
-  COMMANDS=""
-  FLAG_OPTS=""
-  ARG_OPTS="-h --host"
+  local commands=""
+  local flag_opts=""
+  local arg_opts="-h --host"
 
   compopt +o default
 
-  case ${PREV_WORD} in
+  case ${prev_word} in
     -h|--host)
       compopt -o filenames
-      COMPREPLY=( $( compgen -A hostname -- ${CURR_WORD} ) )
+      COMPREPLY=( $( compgen -A hostname -- ${curr_word} ) )
       return $?
       ;;
   esac
 
-  if [[ "${CURR_WORD}" == -* ]]; then
-    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- ${curr_word}) )
   else
-    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+    COMPREPLY=( $(compgen -W "${commands}" -- ${curr_word}) )
   fi
 }
 
 # Generates completions for the options and subcommands of the `subsub2` subcommand.
 function _picocli_picocompletion-demo_sub2_subsub2() {
   # Get completion data
-  CURR_WORD=${COMP_WORDS[COMP_CWORD]}
-  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+  local prev_word=${COMP_WORDS[COMP_CWORD-1]}
 
-  COMMANDS=""
-  FLAG_OPTS=""
-  ARG_OPTS="-u --timeUnit -t --timeout"
-  timeUnit_OPTION_ARGS="%2$s" # --timeUnit values
+  local commands=""
+  local flag_opts=""
+  local arg_opts="-u --timeUnit -t --timeout"
+  local timeUnit_option_args="%2$s" # --timeUnit values
 
   compopt +o default
 
-  case ${PREV_WORD} in
+  case ${prev_word} in
     -u|--timeUnit)
-      COMPREPLY=( $( compgen -W "${timeUnit_OPTION_ARGS}" -- ${CURR_WORD} ) )
+      COMPREPLY=( $( compgen -W "${timeUnit_option_args}" -- ${curr_word} ) )
       return $?
       ;;
     -t|--timeout)
@@ -217,10 +216,10 @@ function _picocli_picocompletion-demo_sub2_subsub2() {
       ;;
   esac
 
-  if [[ "${CURR_WORD}" == -* ]]; then
-    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- ${curr_word}) )
   else
-    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+    COMPREPLY=( $(compgen -W "${commands}" -- ${curr_word}) )
   fi
 }
 

@@ -442,8 +442,8 @@ public class AutoComplete {
         for (Map.Entry<String, CommandLine> entry : commandLine.getSubcommands().entrySet()) {
             int count = functionCalls.size();
             String functionName = "_picocli_" + scriptName + "_" + concat("_", predecessors, entry.getKey(), new Bashify());
-            functionCalls.add(format("  ArrContains COMP_WORDS CMDS%2$d && { %1$s; return $?; }\n", functionName, count));
-            buff.append(      format("  CMDS%2$d=(%1$s)\n", concat(" ", predecessors, entry.getKey(), new NullFunction()), count));
+            functionCalls.add(format("  ArrContains COMP_WORDS cmds%2$d && { %1$s; return $?; }\n", functionName, count));
+            buff.append(      format("  local cmds%2$d=(%1$s)\n", concat(" ", predecessors, entry.getKey(), new NullFunction()), count));
 
             // remember the function name and associated subcommand so we can easily generate a function later
             function2command.put(new CommandDescriptor(functionName, entry.getKey()), entry.getValue());
@@ -479,19 +479,18 @@ public class AutoComplete {
                 "# Generates completions for the options and subcommands of the `%s` %scommand.\n" +
                 "function %s() {\n" +
                 "  # Get completion data\n" +
-                "  CURR_WORD=${COMP_WORDS[COMP_CWORD]}\n" +
-                "  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}\n" +
+                "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
+                "%s" +
                 "\n" +
-                "  COMMANDS=\"%s\"\n" +  // COMMANDS="gettingstarted tool"
-                "  FLAG_OPTS=\"%s\"\n" + // FLAG_OPTS="--verbose -V -x --extract -t --list"
-                "  ARG_OPTS=\"%s\"\n";   // ARG_OPTS="--host --option --file -f -u --timeUnit"
-
+                "  local commands=\"%s\"\n" +  // local commands="gettingstarted tool"
+                "  local flag_opts=\"%s\"\n" + // local flag_opts="--verbose -V -x --extract -t --list"
+                "  local arg_opts=\"%s\"\n";   // local arg_opts="--host --option --file -f -u --timeUnit"
         String FOOTER = "" +
                 "\n" +
-                "  if [[ \"${CURR_WORD}\" == -* ]]; then\n" +
-                "    COMPREPLY=( $(compgen -W \"${FLAG_OPTS} ${ARG_OPTS}\" -- ${CURR_WORD}) )\n" +
+                "  if [[ \"${curr_word}\" == -* ]]; then\n" +
+                "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- ${curr_word}) )\n" +
                 "  else\n" +
-                "    COMPREPLY=( $(compgen -W \"${COMMANDS}\" -- ${CURR_WORD}) )\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands}\" -- ${curr_word}) )\n" +
                 "  fi\n" +
                 "}\n";
 
@@ -507,7 +506,8 @@ public class AutoComplete {
         // Generate the header: the function declaration, CURR_WORD, PREV_WORD and COMMANDS, FLAG_OPTS and ARG_OPTS.
         StringBuilder buff = new StringBuilder(1024);
         String sub = functionName.equals("_picocli_" + commandName) ? "" : "sub";
-        buff.append(format(HEADER, commandName, sub, functionName, commands, flagOptionNames, argOptionNames));
+        String previous_word = argOptionFields.isEmpty() ? "" : "  local prev_word=${COMP_WORDS[COMP_CWORD-1]}\n";
+        buff.append(format(HEADER, commandName, sub, functionName, previous_word, commands, flagOptionNames, argOptionNames));
 
         // Generate completion lists for options with a known set of valid values (including java enums)
         for (OptionSpec f : commandSpec.options()) {
@@ -530,7 +530,7 @@ public class AutoComplete {
     }
 
     private static void generateCompletionCandidates(StringBuilder buff, OptionSpec f) {
-        buff.append(format("  %s_OPTION_ARGS=\"%s\" # %s values\n",
+        buff.append(format("  local %s_option_args=\"%s\" # %s values\n",
                 bashify(f.paramLabel()),
                 concat(" ", extract(f.completionCandidates())).trim(),
                 f.longestName()));
@@ -544,7 +544,7 @@ public class AutoComplete {
     }
 
     private static String generateOptionsSwitch(List<OptionSpec> argOptions) {
-        String optionsCases = generateOptionsCases(argOptions, "", "${CURR_WORD}");
+        String optionsCases = generateOptionsCases(argOptions, "", "${curr_word}");
 
         if (optionsCases.length() == 0) {
             return "";
@@ -554,7 +554,7 @@ public class AutoComplete {
         buff.append("\n");
         buff.append("  compopt +o default\n");
         buff.append("\n");
-        buff.append("  case ${PREV_WORD} in\n");
+        buff.append("  case ${prev_word} in\n");
         buff.append(optionsCases);
         buff.append("  esac\n");
         return buff.toString();
@@ -565,7 +565,7 @@ public class AutoComplete {
         for (OptionSpec option : argOptionFields) {
             if (option.completionCandidates() != null) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -u|--timeUnit)\n"
-                buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_OPTION_ARGS}\" -- %s ) )\n", indent, bashify(option.paramLabel()), currWord));
+                buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_option_args}\" -- %s ) )\n", indent, bashify(option.paramLabel()), currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else if (option.type().equals(File.class) || "java.nio.file.Path".equals(option.type().getName())) {

@@ -82,27 +82,27 @@ function _complete_bashify() {
 # Generates completions for the options and subcommands of the `bashify` command.
 function _picocli_bashify() {
   # Get completion data
-  CURR_WORD=${COMP_WORDS[COMP_CWORD]}
-  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+  local prev_word=${COMP_WORDS[COMP_CWORD-1]}
 
-  COMMANDS=""
-  FLAG_OPTS=""
-  ARG_OPTS="-x"
-  _AB_C_OPTION_ARGS="1" # -x values
+  local commands=""
+  local flag_opts=""
+  local arg_opts="-x"
+  local _AB_C_option_args="1" # -x values
 
   compopt +o default
 
-  case ${PREV_WORD} in
+  case ${prev_word} in
     -x)
-      COMPREPLY=( $( compgen -W "${_AB_C_OPTION_ARGS}" -- ${CURR_WORD} ) )
+      COMPREPLY=( $( compgen -W "${_AB_C_option_args}" -- ${curr_word} ) )
       return $?
       ;;
   esac
 
-  if [[ "${CURR_WORD}" == -* ]]; then
-    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- ${curr_word}) )
   else
-    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+    COMPREPLY=( $(compgen -W "${commands}" -- ${curr_word}) )
   fi
 }
 
