@@ -659,15 +659,15 @@ public class AutoCompleteTest {
                 "      ;;\n" +
                 "    -o|--completionScript)\n" +
                 "      compopt -o filenames\n" +
-                "      COMPREPLY=( $( compgen -f -- \"${curr_word}\" ) ) # files\n" +
+                "      read -d -a COMPREPLY < <(compgen -f -- \"${curr_word}\") # files\n" +
                 "      return $?\n" +
                 "      ;;\n" +
                 "  esac\n" +
                 "\n" +
                 "  if [[ \"${curr_word}\" == -* ]]; then\n" +
-                "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
+                "    read -d -a COMPREPLY < <(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\")\n" +
                 "  else\n" +
-                "    COMPREPLY=( $(compgen -W \"${commands}\" -- \"${curr_word}\") )\n" +
+                "    read -d -a COMPREPLY < <(compgen -W \"${commands}\" -- \"${curr_word}\")\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
@@ -829,9 +829,9 @@ public class AutoCompleteTest {
                 "  esac\n" +
                 "\n" +
                 "  if [[ \"${curr_word}\" == -* ]]; then\n" +
-                "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
+                "    read -d -a COMPREPLY < <(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\")\n" +
                 "  else\n" +
-                "    COMPREPLY=( $(compgen -W \"${commands}\" -- \"${curr_word}\") )\n" +
+                "    read -d -a COMPREPLY < <(compgen -W \"${commands}\" -- \"${curr_word}\")\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
