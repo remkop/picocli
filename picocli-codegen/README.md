@@ -63,7 +63,7 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
         <dependency>
           <groupId>info.picocli</groupId>
           <artifactId>picocli-codegen</artifactId>
-          <version>4.0.0-alpha-1</version>
+          <version>4.0.0-alpha-2</version>
           <type>jar</type>
         </dependency>
       </dependencies>
@@ -82,8 +82,8 @@ configurations {
     generateConfig
 }
 dependencies {
-    compile 'info.picocli:picocli:4.0.0-alpha-1'
-    generateConfig 'info.picocli:picocli-codegen:4.0.0-alpha-1'
+    compile 'info.picocli:picocli:4.0.0-alpha-2'
+    generateConfig 'info.picocli:picocli-codegen:4.0.0-alpha-2'
 }
 ```
 

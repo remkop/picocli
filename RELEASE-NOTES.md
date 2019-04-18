@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="4.0.0-alpha-2"></a> Picocli 4.0.0-alpha-2 (UNRELEASED)
+# <a name="4.0.0-alpha-2"></a> Picocli 4.0.0-alpha-2
 The picocli community is pleased to announce picocli 4.0.0-alpha-2.
 
 Thanks to great feedback from the picocli community on the 4.0.0-alpha-1 release, this release contains many argument group-related bugfixes.
