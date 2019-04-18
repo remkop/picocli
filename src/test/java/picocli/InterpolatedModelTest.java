@@ -1,12 +1,14 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Model.Interpolator;
-import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.ParseResult;
+import picocli.CommandLine.Mixin;
+import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Option;
 
 import static org.junit.Assert.*;
@@ -261,5 +263,46 @@ public class InterpolatedModelTest {
         assertEquals(expected, actual);
 
         assertEquals(CommandLine.Range.valueOf("2..3"), status.getCommandSpec().findOption("x").arity());
+    }
+
+    static class CommonMixinOne {
+        @Parameters(index = "${sys:commonParam1}", paramLabel = "COMMON-PARAM-ONE")
+        private String commonMixinOneParam;
+    }
+
+    static class CommonMixinTwo {
+        @Parameters(index = "${sys:commonParam2}", paramLabel = "COMMON-PARAM-TWO")
+        private String commonMixinTwoParam;
+    }
+
+    @Ignore
+    @Test
+    // test for https://github.com/remkop/picocli/issues/564
+    public void testMixinsWithVariableIndex() {
+        @Command(name = "testCommand", description = "Example for issue 564")
+        class TestCommand {
+
+            @Mixin
+            private CommonMixinTwo myCommonMixinTwo;
+
+            @Parameters(index = "1", paramLabel = "TEST-COMMAND-PARAM")
+            private String testCommandParam;
+
+            @Mixin
+            private CommonMixinOne myCommonMixinOne;
+        }
+
+        // re-order the indices of the mixin parameters for this application:
+        System.setProperty("commonParam2", "0");
+        System.setProperty("commonParam1", "2");
+
+        CommandLine cmd = new CommandLine(new TestCommand());
+        //ParseResult result = cmd.parseArgs(args);
+        // ...
+
+        String expected = String.format("" +
+                "");
+        String actual = cmd.getUsageMessage();
+        assertEquals(expected, actual);
     }
 }
