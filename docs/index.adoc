@@ -2936,272 +2936,6 @@ userName=Specify the user name. The default is ${DEFAULT-VALUE}.
 ----
 
 
-
-[#option-parameters-methods]
-== `@Option` and `@Parameters` Methods
-From version 3.2, `@Option` and `@Parameters` annotations can be added to methods as well as fields of a class.
-
-For concrete classes, annotate "setter" methods (methods that accept a parameter) and when the option is specified on the command line, picocli will invoke the method with the value specified on the command line, converted to the type of the method parameter.
-
-Alternatively, you may annotate "getter-like" methods (methods that return a value) on an interface, and picocli will create an instance of the interface that returns the values specified on the command line, converted to the method return type.
-
-=== Annotating Methods of an Interface
-The `@Option` and `@Parameters` annotations can be used on methods of an interface that return a value. For example:
-
-[source,java]
-----
-interface Counter {
-    @Option(names = "--count")
-    int getCount();
-}
-----
-You use it by specifying the class of the interface:
-[source,java]
-----
-CommandLine cmd = new CommandLine(Counter.class); // specify a class
-String[] args = new String[] {"--count", "3"};
-cmd.parse(args);
-Counter counter = cmd.getCommand(); // picocli created an instance
-assert counter.getCount() == 3; // method returns command line value
-----
-
-=== Annotating Methods of a Concrete Class
-The `@Option` and `@Parameters` annotations can be used on methods of a class that accept a parameter. For example:
-
-[source,java]
-----
-class Counter {
-    int count;
-
-    @Option(names = "--count")
-    void setCount(int count) {
-        this.count = count;
-    }
-}
-----
-You use it by passing an instance of the class:
-[source,java]
-----
-Counter counter = new Counter(); // the instance to populate
-CommandLine cmd = new CommandLine(counter);
-String[] args = new String[] {"--count", "3"};
-cmd.parse(args);
-assert counter.count == 3; // method was invoked with command line value
-----
-
-Methods annotated with `@Option` and `@Parameters` can do simple input validation by throwing a `ParameterException` when invalid values are specified on the command line.
-
-[source,java]
-----
-class ValidationExample {
-    private Map<String, String> properties = new LinkedHashMap<>();
-
-    @Spec private CommandSpec spec; // injected by picocli
-
-    @Option(names = {"-D", "--property"}, paramLabel = "KEY=VALUE")
-    public void setProperty(Map<String, String> map) {
-        for (String key : map.keySet()) {
-            String newValue = map.get(key);
-            validateUnique(key, newValue);
-            properties.put(key, newValue);
-        }
-    }
-
-    private void validateUnique(String key, String newValue) {
-        String existing = properties.get(key);
-        if (existing != null && !existing.equals(newValue)) {
-            throw new ParameterException(spec.commandLine(),
-                    String.format("Duplicate key '%s' for values '%s' and '%s'.",
-                    key, existing, newValue));
-        }
-    }
-    // ...
-}
-----
-
-
-[#command-methods]
-== `@Command` Methods
-From picocli 3.6, methods can be annotated with `@Command`.
-The method parameters provide the command options and parameters. For example:
-
-[source,java]
-----
-class Cat {
-    public static void main(String[] args) {
-        CommandLine.invoke("cat", Cat.class, args);
-    }
-
-    @Command(description = "Concatenate FILE(s) to standard output.",
-             mixinStandardHelpOptions = true, version = "3.6.0")
-    void cat(@Option(names = {"-E", "--show-ends"}) boolean showEnds,
-             @Option(names = {"-n", "--number"}) boolean number,
-             @Option(names = {"-T", "--show-tabs"}) boolean showTabs,
-             @Option(names = {"-v", "--show-nonprinting"}) boolean showNonPrinting,
-             @Parameters(paramLabel = "FILE") File[] files) {
-        // process files
-    }
-}
-----
-
-The usage help of the above command looks like this:
-
-----
-Usage: cat [-EhnTvV] [FILE...]
-Concatenate FILE(s) to standard output.
-      [FILE...]
-  -E, --show-ends
-  -h, --help               Show this help message and exit.
-  -n, --number
-  -T, --show-tabs
-  -v, --show-nonprinting
-  -V, --version            Print version information and exit.
-----
-
-See below for an example that uses a <<Internationalization,resource bundle>> to define usage help descriptions outside the code.
-
-For positional parameters, the `@Parameters` annotation may be omitted on method parameters.
-
-TIP: If compiled with the `-parameters` flag on Java 8 or higher, the `paramLabel` of positional parameters is obtained from the method parameter name using reflection instead of the generic arg0, arg1, etc.
-
-=== Subcommand Methods
-
-If the enclosing class is annotated with `@Command`, method commands are automatically added as subcommands to the class command, unless the class command has attribute `@Command(addMethodSubcommands = false)`.
-For example:
-
-[source,java]
-----
-@Command(name = "git", mixinStandardHelpOptions = true,
-         resourceBundle = "Git_Messages", version = "picocli-3.6.0")
-class Git {
-    @Option(names = "--git-dir", descriptionKey = "GITDIR")
-    Path path;
-
-    @Command
-    void commit(@Option(names = {"-m", "--message"}) String commitMessage,
-                @Option(names = "--squash", paramLabel = "<commit>") String squash,
-                @Parameters(paramLabel = "<file>") File[] files) {
-        // ... implement business logic
-    }
-}
-----
-
-Use `@Command(addMethodSubcommands = false)` on the class `@Command` annotation if the `@Command`-annotated methods in this class should not be added as subcommands.
-
-=== Description Text in ResourceBundle
-
-The usage help of the above `git commit` example command is very minimal:
-
-----
-Usage: git commit [--squash=<commit>] [-m=<arg0>] [<file>...]
-      [<file>...]
-      --squash=<commit>
-  -m, --message=<arg0>
-----
-
-You can use a <<Internationalization,resource bundle>> to move the descriptions out of the code:
-
-----
-# shared between all commands
-help = Show this help message and exit.
-version = Print version information and exit.
-
-# command-specific strings
-git.usage.description = Version control system
-git.GITDIR = Set the path to the repository
-
-git.commit.usage.description = Record changes to the repository
-git.commit.message = Use the given <msg> as the commit message.
-git.commit.squash = Construct a commit message for use with rebase --autosquash.
-git.commit.<file>[0..*] = The files to commit.
-----
-
-With this resource bundle, the usage help for the `git commit` command looks like this:
-
-----
-Usage: git commit [--squash=<commit>] [-m=<arg0>] [<file>...]
-Record changes to the repository
-      [<file>...]         The files to commit.
-      --squash=<commit>   Construct a commit message for use with rebase
-                            --autosquash.
-  -m, --message=<arg0>    Use the given <msg> as the commit message.
-----
-
-=== Mixin Support in `@Command` Methods
-
-From picocli 3.8, `@Command` methods accept `@Mixin` parameters.
-All options and positional parameters defined in the mixin class are added to the command.
-
-Example:
-
-```java
-class CommonParams {
-    @Option(names = "-x") int x;
-    @Option(names = "-y") int y;
-}
-
-class App {
-    @Command
-    public void doit(@Mixin CommonParams params, @Option(names = "-z") int z) {}
-}
-```
-
-In the above example, the `-x` and `-y` options are added to the other options of the `doit` command.
-
-[#less-boilerplate]
-== Execute Commands with Less Boilerplate
-You can omit some of the boilerplate code from your application when the annotated object implements `Runnable` or `Callable`:
-
-.Before
-
-[source,java]
-----
-Callable<Object> callable = new MyCallable();
-CommandLine cmd = new CommandLine(callable);
-try {
-    cmd.parse(args);
-    if (cmd.isUsageHelpRequested()) {
-        cmd.usage(System.out);
-        return null;
-    } else if (cmd.isVersionHelpRequested()) {
-        cmd.printVersionHelp(System.out);
-        return null;
-    }
-    return callable.call();
-} catch (ParameterException ex) {
-    System.err.println(ex.getMessage());
-    if (!UnmatchedArgumentException.printSuggestions(ex, System.err)) {
-        ex.getCommandLine().usage(System.err);
-    }
-    return null;
-} catch (Exception ex) {
-    throw new ExecutionException(cmd, "Error while calling " + callable, ex);
-}
-----
-
-.After
-
-[source,java]
-----
-Object result = CommandLine.call(new MyCallable(), args);
-----
-The `CommandLine.call` method returns the result of the `Callable`, or `null` if the command line options were invalid. An error message and a usage help message are printed when the command line options were invalid. Exceptions thrown from the `Callable.call` method are caught, wrapped in an `ExecutionException` and rethrown.
-
-
-When the annotated object implements `Runnable`, use the `run` method. For example:
-[source,java]
-----
-CommandLine.run(new MyRunnable(), args);
-----
-
-If the command class has subcommands, the `CommandLine::call` and `CommandLine::run` convenience methods will execute the most specific subcommand on the command line. For example:
-
-----
-<command> -g global_option subcommand -x -y -z subsubcommand param1 param2
-----
-In the above example, the `subsubcommand` is the most specific subcommand, and only the `Runnable` or `Callable` associated with that subcommand will be executed by the `CommandLine::call` and `CommandLine::run` convenience methods.
-
-
 == Variable Interpolation
 
 From 4.0, picocli supports variable interpolation (variable expansion) in annotation attributes as well as in text attributes of the programmatic API.
@@ -3277,7 +3011,7 @@ A `$` character can be escaped with another `$` character. Therefore, `$${VAR}` 
 
 Variable interpolation can be switched off for the full command hierarchy by calling `CommandLine.setInterpolateVariables(false)`, or for a particular command by calling `CommandSpec.interpolateVariables(false)`.
 
-=== Limitations of Variable Interpolation (WORK IN PROGRESS)
+=== Limitations of Variable Interpolation
 
 Some attribute values need to be resolved early, when the model is constructed from the annotation values.
 
@@ -3288,13 +3022,281 @@ Specifically:
 * `index` (for positional parameters)
 * `separator` (for commands)
 
-It is technically possible for these attributes to contain variables, but be aware of the limitations.
+It is possible for these attributes to contain variables, but be aware of the limitations.
 
 If these attributes have variables, and the variables get a different value after the model is constructed, the change will not be reflected in the model.
 //Also, the annotation processor will not be able to resolve these variables at compile time and will not be able to construct a model.
 
 
+
+
 == Tips & Tricks
+
+
+[#option-parameters-methods]
+=== `@Option` and `@Parameters` Methods
+From version 3.2, `@Option` and `@Parameters` annotations can be added to methods as well as fields of a class.
+
+For concrete classes, annotate "setter" methods (methods that accept a parameter) and when the option is specified on the command line, picocli will invoke the method with the value specified on the command line, converted to the type of the method parameter.
+
+Alternatively, you may annotate "getter-like" methods (methods that return a value) on an interface, and picocli will create an instance of the interface that returns the values specified on the command line, converted to the method return type.
+
+==== Annotating Methods of an Interface
+The `@Option` and `@Parameters` annotations can be used on methods of an interface that return a value. For example:
+
+[source,java]
+----
+interface Counter {
+    @Option(names = "--count")
+    int getCount();
+}
+----
+You use it by specifying the class of the interface:
+[source,java]
+----
+CommandLine cmd = new CommandLine(Counter.class); // specify a class
+String[] args = new String[] {"--count", "3"};
+cmd.parse(args);
+Counter counter = cmd.getCommand(); // picocli created an instance
+assert counter.getCount() == 3; // method returns command line value
+----
+
+==== Annotating Methods of a Concrete Class
+The `@Option` and `@Parameters` annotations can be used on methods of a class that accept a parameter. For example:
+
+[source,java]
+----
+class Counter {
+    int count;
+
+    @Option(names = "--count")
+    void setCount(int count) {
+        this.count = count;
+    }
+}
+----
+You use it by passing an instance of the class:
+[source,java]
+----
+Counter counter = new Counter(); // the instance to populate
+CommandLine cmd = new CommandLine(counter);
+String[] args = new String[] {"--count", "3"};
+cmd.parse(args);
+assert counter.count == 3; // method was invoked with command line value
+----
+
+Methods annotated with `@Option` and `@Parameters` can do simple input validation by throwing a `ParameterException` when invalid values are specified on the command line.
+
+[source,java]
+----
+class ValidationExample {
+    private Map<String, String> properties = new LinkedHashMap<>();
+
+    @Spec private CommandSpec spec; // injected by picocli
+
+    @Option(names = {"-D", "--property"}, paramLabel = "KEY=VALUE")
+    public void setProperty(Map<String, String> map) {
+        for (String key : map.keySet()) {
+            String newValue = map.get(key);
+            validateUnique(key, newValue);
+            properties.put(key, newValue);
+        }
+    }
+
+    private void validateUnique(String key, String newValue) {
+        String existing = properties.get(key);
+        if (existing != null && !existing.equals(newValue)) {
+            throw new ParameterException(spec.commandLine(),
+                    String.format("Duplicate key '%s' for values '%s' and '%s'.",
+                    key, existing, newValue));
+        }
+    }
+    // ...
+}
+----
+
+
+[#command-methods]
+=== `@Command` Methods
+From picocli 3.6, methods can be annotated with `@Command`.
+The method parameters provide the command options and parameters. For example:
+
+[source,java]
+----
+class Cat {
+    public static void main(String[] args) {
+        CommandLine.invoke("cat", Cat.class, args);
+    }
+
+    @Command(description = "Concatenate FILE(s) to standard output.",
+             mixinStandardHelpOptions = true, version = "3.6.0")
+    void cat(@Option(names = {"-E", "--show-ends"}) boolean showEnds,
+             @Option(names = {"-n", "--number"}) boolean number,
+             @Option(names = {"-T", "--show-tabs"}) boolean showTabs,
+             @Option(names = {"-v", "--show-nonprinting"}) boolean showNonPrinting,
+             @Parameters(paramLabel = "FILE") File[] files) {
+        // process files
+    }
+}
+----
+
+The usage help of the above command looks like this:
+
+----
+Usage: cat [-EhnTvV] [FILE...]
+Concatenate FILE(s) to standard output.
+      [FILE...]
+  -E, --show-ends
+  -h, --help               Show this help message and exit.
+  -n, --number
+  -T, --show-tabs
+  -v, --show-nonprinting
+  -V, --version            Print version information and exit.
+----
+
+See below for an example that uses a <<Internationalization,resource bundle>> to define usage help descriptions outside the code.
+
+For positional parameters, the `@Parameters` annotation may be omitted on method parameters.
+
+TIP: If compiled with the `-parameters` flag on Java 8 or higher, the `paramLabel` of positional parameters is obtained from the method parameter name using reflection instead of the generic arg0, arg1, etc.
+
+==== Subcommand Methods
+
+If the enclosing class is annotated with `@Command`, method commands are automatically added as subcommands to the class command, unless the class command has attribute `@Command(addMethodSubcommands = false)`.
+For example:
+
+[source,java]
+----
+@Command(name = "git", mixinStandardHelpOptions = true,
+         resourceBundle = "Git_Messages", version = "picocli-3.6.0")
+class Git {
+    @Option(names = "--git-dir", descriptionKey = "GITDIR")
+    Path path;
+
+    @Command
+    void commit(@Option(names = {"-m", "--message"}) String commitMessage,
+                @Option(names = "--squash", paramLabel = "<commit>") String squash,
+                @Parameters(paramLabel = "<file>") File[] files) {
+        // ... implement business logic
+    }
+}
+----
+
+Use `@Command(addMethodSubcommands = false)` on the class `@Command` annotation if the `@Command`-annotated methods in this class should not be added as subcommands.
+
+==== Description Text in ResourceBundle
+
+The usage help of the above `git commit` example command is very minimal:
+
+----
+Usage: git commit [--squash=<commit>] [-m=<arg0>] [<file>...]
+      [<file>...]
+      --squash=<commit>
+  -m, --message=<arg0>
+----
+
+You can use a <<Internationalization,resource bundle>> to move the descriptions out of the code:
+
+----
+# shared between all commands
+help = Show this help message and exit.
+version = Print version information and exit.
+
+# command-specific strings
+git.usage.description = Version control system
+git.GITDIR = Set the path to the repository
+
+git.commit.usage.description = Record changes to the repository
+git.commit.message = Use the given <msg> as the commit message.
+git.commit.squash = Construct a commit message for use with rebase --autosquash.
+git.commit.<file>[0..*] = The files to commit.
+----
+
+With this resource bundle, the usage help for the `git commit` command looks like this:
+
+----
+Usage: git commit [--squash=<commit>] [-m=<arg0>] [<file>...]
+Record changes to the repository
+      [<file>...]         The files to commit.
+      --squash=<commit>   Construct a commit message for use with rebase
+                            --autosquash.
+  -m, --message=<arg0>    Use the given <msg> as the commit message.
+----
+
+==== Mixin Support in `@Command` Methods
+
+From picocli 3.8, `@Command` methods accept `@Mixin` parameters.
+All options and positional parameters defined in the mixin class are added to the command.
+
+Example:
+
+```java
+class CommonParams {
+    @Option(names = "-x") int x;
+    @Option(names = "-y") int y;
+}
+
+class App {
+    @Command
+    public void doit(@Mixin CommonParams params, @Option(names = "-z") int z) {}
+}
+```
+
+In the above example, the `-x` and `-y` options are added to the other options of the `doit` command.
+
+[#less-boilerplate]
+=== Execute Commands with Less Boilerplate
+You can omit some of the boilerplate code from your application when the annotated object implements `Runnable` or `Callable`:
+
+.Before
+
+[source,java]
+----
+Callable<Object> callable = new MyCallable();
+CommandLine cmd = new CommandLine(callable);
+try {
+    cmd.parse(args);
+    if (cmd.isUsageHelpRequested()) {
+        cmd.usage(System.out);
+        return null;
+    } else if (cmd.isVersionHelpRequested()) {
+        cmd.printVersionHelp(System.out);
+        return null;
+    }
+    return callable.call();
+} catch (ParameterException ex) {
+    System.err.println(ex.getMessage());
+    if (!UnmatchedArgumentException.printSuggestions(ex, System.err)) {
+        ex.getCommandLine().usage(System.err);
+    }
+    return null;
+} catch (Exception ex) {
+    throw new ExecutionException(cmd, "Error while calling " + callable, ex);
+}
+----
+
+.After
+
+[source,java]
+----
+Object result = CommandLine.call(new MyCallable(), args);
+----
+The `CommandLine.call` method returns the result of the `Callable`, or `null` if the command line options were invalid. An error message and a usage help message are printed when the command line options were invalid. Exceptions thrown from the `Callable.call` method are caught, wrapped in an `ExecutionException` and rethrown.
+
+
+When the annotated object implements `Runnable`, use the `run` method. For example:
+[source,java]
+----
+CommandLine.run(new MyRunnable(), args);
+----
+
+If the command class has subcommands, the `CommandLine::call` and `CommandLine::run` convenience methods will execute the most specific subcommand on the command line. For example:
+
+----
+<command> -g global_option subcommand -x -y -z subsubcommand param1 param2
+----
+In the above example, the `subsubcommand` is the most specific subcommand, and only the `Runnable` or `Callable` associated with that subcommand will be executed by the `CommandLine::call` and `CommandLine::run` convenience methods.
+
 
 === Convenience Methods for Subcommands
 Picocli v2.0 introduced the `CommandLine::parseWithHandler` and `CommandLine::parseWithHandlers` convenience methods.

@@ -25,6 +25,9 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.0-alpha-2-new"></a> New and Noteworthy
 
+### Argument Groups
+
+Many bugfixes for argument groups.
 
 ### Variable Interpolation
 
@@ -94,7 +97,7 @@ A `$` character can be escaped with another `$` character. Therefore, `$${VAR}` 
 
 Variable interpolation can be switched off for the full command hierarchy by calling `CommandLine.setInterpolateVariables(false)`, or for a particular command by calling `CommandSpec.interpolateVariables(false)`.
 
-#### Limitations of Variable Interpolation (WORK IN PROGRESS)
+#### Limitations of Variable Interpolation
 
 Some attribute values need to be resolved early, when the model is constructed from the annotation values.
 
@@ -105,7 +108,7 @@ Specifically:
 * `index` (for positional parameters)
 * `separator` (for commands)
 
-It is technically possible for these attributes to contain variables, but be aware of the limitations.
+It is possible for these attributes to contain variables, but be aware of the limitations.
 
 If these attributes have variables, and the variables get a different value after the model is constructed, the change will not be reflected in the model.
 
