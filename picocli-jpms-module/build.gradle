@@ -21,7 +21,7 @@ plugins {
 apply plugin: "org.beryx.jar"
 
 group 'info.picocli'
-description 'Picocli JPMS module.'
+description 'Picocli JPMS module: a modular jar for applications that want to use picocli while taking full advantage of the Java Platform Module System (JPMS) introduced in Java 9'
 version "$projectVersion"
 ext.moduleName = 'info.picocli'
 sourceCompatibility = JavaVersion.VERSION_1_8
@@ -75,3 +75,65 @@ jar {
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }    
 }
 
+
+ext {
+    bintrayPackage    = 'picocli-jpms-module'
+    bintrayWebsiteUrl = 'https://github.com/remkop/picocli/tree/master/picocli-jpms-module'
+    bintrayLabels     = ['jpms', 'module', 'java9', 'picocli']
+}
+bintray {
+    user = bintrayUsername
+    key  = bintrayApiKey
+    publications = ['MyPublication']
+    dryRun   = bintrayDryRun //[Default: false] Whether to run this as dry-run, without deploying
+    publish  = bintrayPublish //[Default: false] Whether version should be auto published after an upload    
+    override = bintrayOverride //[Default: false] Whether to override version artifacts already published    
+    //Package configuration. The plugin will use the repo and name properties to check if the package already exists. In that case, there's no need to configure the other package properties (like userOrg, desc, etc).
+    pkg {
+        repo     = 'picocli'
+        name     = bintrayPackage
+        userOrg  = 'remkop'
+        licenses = ['Apache-2.0']
+        desc = description
+        websiteUrl = bintrayWebsiteUrl
+        issueTrackerUrl = 'https://github.com/remkop/picocli/issues'
+        vcsUrl   = 'https://github.com/remkop/picocli.git'
+        labels = bintrayLabels
+        publicDownloadNumbers = false
+        version {
+            name     = "$projectVersion"
+            desc     = description
+            released = new Date()
+            vcsTag   = "v$projectVersion"
+            mavenCentralSync {
+                sync = mavenOssSync //[Default: true] Determines whether to sync the version to Maven Central.
+                user = mavenOssUser //OSS user token: mandatory
+                password = mavenOssPassword //OSS user password: mandatory
+                close = '1' //Optional property. By default the staging repository is closed and artifacts are released to Maven Central. You can optionally turn this behaviour off (by puting 0 as value) and release the version manually.
+            }
+        }
+    }
+}
+publishing {
+    publications {
+        MyPublication(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact testJar
+            artifact testSourcesJar
+            artifact javadocJar
+            groupId 'info.picocli'
+            artifactId bintrayPackage
+            version "$projectVersion"
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('packaging',     'jar')
+                root.appendNode('name',          bintrayPackage)
+                root.appendNode('description',   description)
+                root.appendNode('url',           'http://picocli.info')
+                root.appendNode('inceptionYear', '2019')
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
