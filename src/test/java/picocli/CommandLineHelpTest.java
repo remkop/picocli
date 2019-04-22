@@ -3269,6 +3269,7 @@ public class CommandLineHelpTest {
         assertEquals("", this.systemOutRule.getLog());
     }
 
+    @SuppressWarnings({"deprecation"})
     @Test
     public void testHelpSubcommandRunPrintsParentUsageIfParentSet() {
         HelpCommand cmd = new HelpCommand();
@@ -3279,6 +3280,25 @@ public class CommandLineHelpTest {
         new CommandLine(spec); // make sure parent spec has a CommandLine
 
         cmd.init(help, Help.Ansi.OFF, System.out, System.err);
+        cmd.run();
+        String expected = String.format("" +
+                "Usage: parent [COMMAND]%n" +
+                "the parent command%n" +
+                "Commands:%n" +
+                "  parent  Displays help information about the specified command%n");
+        assertEquals(expected, this.systemOutRule.getLog());
+    }
+
+    @Test
+    public void testHelpSubcommand2RunPrintsParentUsageIfParentSet() {
+        HelpCommand cmd = new HelpCommand();
+        CommandLine help = new CommandLine(cmd);
+        CommandSpec spec = CommandSpec.create().name("parent");
+        spec.usageMessage().description("the parent command");
+        spec.addSubcommand("parent", help);
+        new CommandLine(spec); // make sure parent spec has a CommandLine
+
+        cmd.init(help, Help.defaultColorScheme(Help.Ansi.OFF), System.out, System.err);
         cmd.run();
         String expected = String.format("" +
                 "Usage: parent [COMMAND]%n" +
