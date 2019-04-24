@@ -15,16 +15,16 @@
 <p>
     Picocli provides a number of <a href="http://picocli.info/#_less_boilerplate">convenience methods</a>
     that allow you to omit error handling and other boilerplate code for common use cases.
-    Here is a small example application that uses the <code>CommandLine.call</code> convenience method
+    Here is a small example application that uses the <code>CommandLine.execute</code> convenience method
     to do parsing and error handling in one line of code.
 </p>
 <p>
     The full user manual is hosted at <a href="http://picocli.info/">http://picocli.info</a>.
 </p>
 <pre>
-&#064;Command(name = "checksum", mixinStandardHelpOptions = true, version = "Checksum 2.0",
+&#064;Command(name = "checksum", mixinStandardHelpOptions = true, version = "Checksum 4.0",
     description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
-class CheckSum implements Callable&lt;Void&gt; {
+class CheckSum implements Callable&lt;Integer&gt; {
 
     &#064;Parameters(index = "0", description = "The file whose checksum to calculate.")
     private File file;
@@ -35,16 +35,17 @@ class CheckSum implements Callable&lt;Void&gt; {
     public static void main(String[] args) throws Exception {
         // CheckSum implements Callable, so parsing, error handling and handling user
         // requests for usage help or version help can be done with one line of code.
-        CommandLine.call(new CheckSum(), args);
+        int exitCode = new CommandLine(new CheckSum()).execute(args);
+        // System.exit(exitCode);
     }
 
     &#064;Override
-    public Void call() throws Exception {
+    public Integer call() throws Exception {
         // your business logic goes here
         byte[] fileContents = Files.readAllBytes(file.toPath());
         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
-        System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(digest));
-        return null;
+        System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1, digest));
+        return 0;
     }
 }
 </pre>

@@ -101,12 +101,12 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * -vooutfile in1 in2
  * </pre>
  * <p>
- * Another example that implements {@code Callable} and uses the {@link #call(Callable, String...) CommandLine.call} convenience API to run in a single line of code:
+ * Another example that implements {@code Callable} and uses the {@link #execute(String...) CommandLine.execute} convenience API to run in a single line of code:
  * </p>
  * <pre>
  *  &#064;Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
- *          name = "checksum", mixinStandardHelpOptions = true, version = "checksum 3.0")
- * class CheckSum implements Callable&lt;Void&gt; {
+ *          name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0")
+ * class CheckSum implements Callable&lt;Integer&gt; {
  *
  *     &#064;Parameters(index = "0", description = "The file whose checksum to calculate.")
  *     private File file;
@@ -117,16 +117,17 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  *     public static void main(String[] args) throws Exception {
  *         // CheckSum implements Callable, so parsing, error handling and handling user
  *         // requests for usage help or version help can be done with one line of code.
- *         CommandLine.call(new CheckSum(), args);
+ *         int exitCode = new CommandLine(new CheckSum()).execute(args);
+ *         // System.exit(exitCode);
  *     }
  *
  *     &#064;Override
- *     public Void call() throws Exception {
+ *     public Integer call() throws Exception {
  *         // your business logic goes here...
  *         byte[] fileContents = Files.readAllBytes(file.toPath());
  *         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
- *         System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(digest));
- *         return null;
+ *         System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1,digest));
+ *         return 0;
  *     }
  * }
  * </pre>
@@ -784,10 +785,10 @@ public class CommandLine {
     public List<String> getUnmatchedArguments() {
         return interpreter.parseResultBuilder == null ? Collections.<String>emptyList() : UnmatchedArgumentException.stripErrorMessage(interpreter.parseResultBuilder.unmatched);
     }
-    interface IExitCodeGenerator {
+    public interface IExitCodeGenerator {
         int getExitCode();
     }
-    interface IExitCodeExceptionMapper {
+    public interface IExitCodeExceptionMapper {
         int getExitCode(Throwable exception);
     }
     private PrintWriter out;
@@ -847,7 +848,7 @@ public class CommandLine {
     /** Returns the stream to print diagnostic messages to. Defaults to a PrintWriter wrapper around {@code System.err},
      * unless {@link #setErr(PrintWriter)} was called with a different stream.
      * <p>This method is used by {@link #execute(String...)}.
-     * {@code IParameterExceptionHandler} and {@link IExecutionExceptionHandler} implementations
+     * {@code IParameterExceptionHandler} and {@link CommandLine.IExecutionExceptionHandler} implementations
      * should use this stream to print error messages (which may include a usage help message) when an unexpected error occurs.
      * </p>
      * @since 4.0 */
@@ -1035,8 +1036,27 @@ public class CommandLine {
         R handleParseResult(ParseResult parseResult) throws ExecutionException;
     }
 
-    interface IExecutionStrategy {
-        int execute(ParseResult parseResult) throws ExecutionException;
+    /**
+     * Implementations are responsible for "executing" the user input and returning an exit code.
+     * The {@link #execute(String...)} and {@link #tryExecute(String...)} methods delegate to a {@linkplain #setExecutionStrategy(IExecutionStrategy) configured} execution strategy.
+     * <p>Implementers responsibilities are:</p>
+     * <ul>
+     *   <li>From the {@code ParseResult}, select which {@code CommandSpec} should be executed. This is especially important for commands that have subcommands.</li>
+     *   <li>"Execute" the selected {@code CommandSpec}. Often this means invoking a method on the spec's {@linkplain CommandSpec#userObject() user object}.</li>
+     *   <li>Return an exit code. Common sources of exit values are the invoked method's return value, or the user object if it implements {@link IExitCodeGenerator}.</li>
+     * </ul>
+     * This interface supercedes {@link IParseResultHandler2}
+     * @since 4.0 */
+    public interface IExecutionStrategy {
+        /**
+         * "Executes" the user input and returns an exit code.
+         * Execution often means invoking a method on the selected CommandSpec's {@linkplain CommandSpec#userObject() user object}.
+         * @param parseResult the parse result from which to select one or more {@code CommandSpec} instances to execute.
+         * @return an exit code
+         * @throws ParameterException if the invoked method on the CommandSpec's user object threw a ParameterException to signify invalid user input.
+         * @throws ExecutionException if any problem occurred while executing the command. Any exceptions (other than ParameterException) should be wrapped in a ExecutionException and not thrown as is.
+         */
+        int execute(ParseResult parseResult) throws ExecutionException, ParameterException;
     }
 
     /**
@@ -1093,10 +1113,10 @@ public class CommandLine {
          */
         R handleExecutionException(ExecutionException ex, ParseResult parseResult);
     }
-    interface IParameterExceptionHandler {
+    public interface IParameterExceptionHandler {
         int handleParseException(ParameterException ex, String[] args) throws Exception;
     }
-    interface IExecutionExceptionHandler {
+    public interface IExecutionExceptionHandler {
         int handleExecutionException(ExecutionException ex, ParseResult parseResult) throws Exception;
     }
 
@@ -1388,7 +1408,7 @@ public class CommandLine {
      * </p><p>
      * A second difference is that this method provides exit code support.
      * If the user object {@code Callable} or {@code Method} returns an {@code int} or {@code Integer},
-     * this will be used as the exit code. Additionally, if the user object implements {@link IExitCodeGenerator IExitCodeGenerator},
+     * this will be used as the exit code. Additionally, if the user object implements {@link CommandLine.IExitCodeGenerator IExitCodeGenerator},
      * an exit code is obtained by calling its {@code getExitCode()} method (after invoking the user object).
      * </p><p>
      * In the case of multiple exit codes the highest value will be used (or if all values are negative, the lowest value will be used).
@@ -1418,7 +1438,7 @@ public class CommandLine {
      * The default {@code IExecutionExceptionHandler} will rethrow the <em>cause</em> Exception.
      * This method will catch any exceptions thrown by the execution exception handler and return an exit code.
      * </p><p>
-     * If an {@link IExitCodeExceptionMapper IExitCodeExceptionMapper} is {@linkplain #setExitCodeExceptionMapper(IExitCodeExceptionMapper) configured},
+     * If an {@link CommandLine.IExitCodeExceptionMapper IExitCodeExceptionMapper} is {@linkplain #setExitCodeExceptionMapper(IExitCodeExceptionMapper) configured},
      * this mapper is used to determine the exit code based on the exception.
      * </p><p>
      * If no {@code IExitCodeExceptionMapper} is set, by default this method will return the {@code @Command} annotation's
@@ -1455,7 +1475,7 @@ public class CommandLine {
      * </p><p>
      * A second difference is that this method provides exit code support.
      * If the user object {@code Callable} or {@code Method} returns an {@code int} or {@code Integer},
-     * this will be used as the exit code. Additionally, if the user object implements {@link IExitCodeGenerator IExitCodeGenerator},
+     * this will be used as the exit code. Additionally, if the user object implements {@link CommandLine.IExitCodeGenerator IExitCodeGenerator},
      * an exit code is obtained by calling its {@code getExitCode()} method (after invoking the user object).
      * </p><p>
      * In the case of multiple exit codes the highest value will be used (or if all values are negative, the lowest value will be used).
@@ -1547,7 +1567,7 @@ public class CommandLine {
          * Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.
          *
          * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
-         * @return the result of {@link #handle(ParseResult) processing parse results}
+         * @return the result of {@link #handle(CommandLine.ParseResult) processing parse results}
          * @throws ParameterException if the {@link HelpCommand HelpCommand} was invoked for an unknown subcommand. Any {@code ParameterExceptions}
          *      thrown from this method are treated as if this exception was thrown during parsing and passed to the {@link IExceptionHandler2}
          * @throws ExecutionException if a problem occurred while processing the parse results; client code can use
@@ -1602,7 +1622,7 @@ public class CommandLine {
          */
         protected abstract R handle(ParseResult parseResult) throws ExecutionException;
 
-        protected abstract List<IExitCodeGenerator> extractExitCodeGenerators(ParseResult parseResult);
+        protected List<IExitCodeGenerator> extractExitCodeGenerators(ParseResult parseResult) { return Collections.emptyList(); }
     }
     /**
      * Command line parse result handler that prints help if requested, and otherwise executes the top-level
@@ -2240,7 +2260,7 @@ public class CommandLine {
     /**
      * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
      * The specified {@linkplain IFactory factory} will create an instance of the specified {@code callableClass};
-     * use this method instead of {@link #call(Callable, PrintStream, PrintStream, Help.ColorScheme, String...) call(Callable, ...)}
+     * use this method instead of {@link #call(Callable, PrintStream, PrintStream, Help.Ansi, String...) call(Callable, ...)}
      * if you want to use a factory that performs Dependency Injection.
      * The annotated class needs to implement {@link Callable}.
      * <p>Consider using the {@link #execute(String...)} method instead:</p>
@@ -3678,12 +3698,12 @@ public class CommandLine {
          */
         int usageHelpWidth() default 80;
 
-        /** Exit code for successful termination. {@value CommandSpec#DEFAULT_EXIT_CODE_OK}  by default, following C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.
+        /** Exit code for successful termination. {@value picocli.CommandLine.Model.CommandSpec#DEFAULT_EXIT_CODE_OK}  by default, following C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.
          * @see #execute(String...)
          * @since 4.0 */
         int exitCodeOnSuccess() default CommandSpec.DEFAULT_EXIT_CODE_OK;
 
-        /** Exit code for successful termination after printing usage help on user request. {@value CommandSpec#DEFAULT_EXIT_CODE_OK} by default, following unix C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.
+        /** Exit code for successful termination after printing usage help on user request. {@value Model.CommandSpec#DEFAULT_EXIT_CODE_OK} by default, following unix C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.
          * @see #execute(String...)
          * @since 4.0 */
         int exitCodeOnUsageHelp() default CommandSpec.DEFAULT_EXIT_CODE_OK;
