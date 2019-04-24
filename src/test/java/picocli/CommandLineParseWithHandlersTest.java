@@ -56,7 +56,7 @@ public class CommandLineParseWithHandlersTest {
             public Object create() {return new App();}
         };
         String[] args = { "abc" };
-        verifyAllFail(factory, "Parsed command (picocli.CommandLineParseWithHandlersTest$", ") is not Method, Runnable or Callable", args);
+        verifyAllFail(factory, "Parsed command (picocli.CommandLineParseWithHandlersTest$", ") is not a Method, Runnable or Callable", args);
     }
 
     @Test

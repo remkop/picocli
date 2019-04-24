@@ -3298,7 +3298,7 @@ public class CommandLineHelpTest {
         spec.addSubcommand("parent", help);
         new CommandLine(spec); // make sure parent spec has a CommandLine
 
-        cmd.init(help, Help.defaultColorScheme(Help.Ansi.OFF), System.out, System.err);
+        cmd.init(help, Help.defaultColorScheme(Help.Ansi.OFF), new PrintWriter(System.out), new PrintWriter(System.err));
         cmd.run();
         String expected = String.format("" +
                 "Usage: parent [COMMAND]%n" +

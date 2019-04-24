@@ -974,7 +974,7 @@ public class CommandLineCommandMethodTest {
         Method method = CommandMethod1.class.getDeclaredMethod("times", int.class, int.class);
         CommandLine cmd = new CommandLine(method);
 
-        Method execute = CommandLine.class.getDeclaredMethod("execute", CommandLine.class, List.class);
+        Method execute = CommandLine.class.getDeclaredMethod("executeUserObject", CommandLine.class, List.class);
         execute.setAccessible(true);
         try {
             execute.invoke(null, cmd, null);

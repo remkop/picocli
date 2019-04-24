@@ -1,5 +1,45 @@
 # picocli Release Notes
 
+
+# <a name="4.0.0-alpha-3"></a> Picocli 4.0.0-alpha-3 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.0.0-alpha-3.
+
+
+_Please try this and provide feedback. We can still make changes._
+
+_What do you think of the annotations API? What about the programmatic API? Does it work as expected? Are the input validation error messages correct and clear? Is the documentation clear and complete? Anything you want to change or improve? Any other feedback?_
+
+
+Many thanks to the picocli community for the contributions!
+
+This is the fifty-fourth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.0.0-alpha-3"></a> Table of Contents
+* [New and noteworthy](#4.0.0-alpha-3-new)
+* [Fixed issues](#4.0.0-alpha-3-fixes)
+* [Deprecations](#4.0.0-alpha-3-deprecated)
+* [Potential breaking changes](#4.0.0-alpha-3-breaking-changes)
+
+## <a name="4.0.0-alpha-3-new"></a> New and Noteworthy
+
+
+## <a name="4.0.0-alpha-3-fixes"></a> Fixed issues
+- [#516] Add support for color schemes in the convenience methods and associated classes and interfaces. Thanks to [Bob Tiernay](https://github.com/bobtiernay-okta) for the suggestion.
+- [#561] Parser configuration for convenience methods.
+- [#650] Global parser configuration if using Runnable. Thanks to [gitfineon](https://github.com/gitfineon) for raising this.
+- [#424] Exit on help, version or invalid arguments. Thanks to [Gerard Bosch](https://github.com/gerardbosch) for raising this.
+- [#541] Improved exception handling for Runnable/Callable.
+- [#663] How to remove stacktraces on error. Thanks to [Nicolas Mingo](https://github.com/nicolasmingo) and [jrevault](https://github.com/jrevault) for raising this and subsequent discussion.
+- [#672] Need way to send errors back from subcommand. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
+
+
+## <a name="4.0.0-alpha-3-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.0.0-alpha-3-breaking-changes"></a> Potential breaking changes
+
+
 # <a name="4.0.0-alpha-2"></a> Picocli 4.0.0-alpha-2
 The picocli community is pleased to announce picocli 4.0.0-alpha-2.
 

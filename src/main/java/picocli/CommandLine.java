@@ -784,6 +784,112 @@ public class CommandLine {
     public List<String> getUnmatchedArguments() {
         return interpreter.parseResultBuilder == null ? Collections.<String>emptyList() : UnmatchedArgumentException.stripErrorMessage(interpreter.parseResultBuilder.unmatched);
     }
+    interface IExitCodeGenerator {
+        int getExitCode();
+    }
+    interface IExitCodeExceptionMapper {
+        int getExitCode(Throwable exception);
+    }
+    private PrintWriter out;
+    private PrintWriter err;
+    private Help.ColorScheme colorScheme = Help.defaultColorScheme(Help.Ansi.AUTO);
+    private IExitCodeExceptionMapper exitCodeExceptionMapper = new IExitCodeExceptionMapper() {
+        public int getExitCode(Throwable exception) {
+            if (exception instanceof IExitCodeGenerator) {
+                return ((IExitCodeGenerator) exception).getExitCode();
+            }
+            return 1;
+        }
+    };
+    private IExecutionStrategy executionStrategy = new RunLast();
+    private IParameterExceptionHandler parameterExceptionHandler = new IParameterExceptionHandler() {
+        public int handleParseException(ParameterException ex, String[] args) {
+            CommandLine cmd = ex.getCommandLine();
+            DefaultExceptionHandler.internalHandleParseException(ex, cmd.getErr(), cmd.getColorScheme());
+            return mappedExitCode(ex, cmd.getExitCodeExceptionMapper(), cmd.getCommandSpec().exitCodeOnInvalidInput());
+        }
+    };
+    private IExecutionExceptionHandler executionExceptionHandler = new IExecutionExceptionHandler() {
+        public int handleExecutionException(ExecutionException ex, ParseResult parseResult) throws Exception {
+            Throwable cause = ex.getCause() == null ? ex : ex.getCause();
+            if (cause instanceof Exception) { throw (Exception) cause; }
+            if (cause instanceof Error)     { throw (Error)     cause; }
+            return ex.getCommandLine().getCommandSpec().exitCodeOnExecutionException;
+        }
+    };
+    private static int mappedExitCode(Throwable t, IExitCodeExceptionMapper mapper, int defaultExitCode) {
+        return (mapper != null) ? mapper.getExitCode(t) : defaultExitCode;
+    }
+
+    public Help.ColorScheme getColorScheme() { return colorScheme; }
+
+    public CommandLine setColorScheme(Help.ColorScheme colorScheme) {
+        this.colorScheme = Assert.notNull(colorScheme, "colorScheme");
+        for (CommandLine sub : getSubcommands().values()) { sub.setColorScheme(colorScheme); }
+        return this;
+    }
+
+    /** Returns the writer to print command output to. Defaults to a PrintWriter wrapper around {@code System.out}
+     * unless {@link #setOut(PrintWriter)} was called with a different stream.
+     * <p>This method is used by {@link #execute(String...)}. {@code IExecutionStrategy} implementations should use this writer.
+     * </p><p>
+     * By <a href="http://www.gnu.org/prep/standards/html_node/_002d_002dhelp.html">convention</a>, when the user requests
+     * help with a {@code --help} or similar option, the usage help message is printed to the standard output stream so that it can be easily searched and paged.</p>
+     * @since 4.0 */
+    public PrintWriter getOut() { return out != null ? out : new PrintWriter(System.out); }
+
+    public CommandLine setOut(PrintWriter out) {
+        this.out = Assert.notNull(out, "out");
+        for (CommandLine sub : getSubcommands().values()) { sub.setOut(out); }
+        return this;
+    }
+
+    /** Returns the stream to print diagnostic messages to. Defaults to a PrintWriter wrapper around {@code System.err},
+     * unless {@link #setErr(PrintWriter)} was called with a different stream.
+     * <p>This method is used by {@link #execute(String...)}.
+     * {@code IParameterExceptionHandler} and {@link IExecutionExceptionHandler} implementations
+     * should use this stream to print error messages (which may include a usage help message) when an unexpected error occurs.
+     * </p>
+     * @since 4.0 */
+    public PrintWriter getErr() { return err != null ? err : new PrintWriter(System.err); }
+
+    public CommandLine setErr(PrintWriter err) {
+        this.err = Assert.notNull(err, "err");
+        for (CommandLine sub : getSubcommands().values()) { sub.setErr(err); }
+        return this;
+    }
+
+    public IExitCodeExceptionMapper getExitCodeExceptionMapper() { return exitCodeExceptionMapper; }
+
+    public CommandLine setExitCodeExceptionMapper(IExitCodeExceptionMapper exitCodeExceptionMapper) {
+        this.exitCodeExceptionMapper = Assert.notNull(exitCodeExceptionMapper, "exitCodeExceptionMapper");
+        for (CommandLine sub : getSubcommands().values()) { sub.setExitCodeExceptionMapper(exitCodeExceptionMapper); }
+        return this;
+    }
+
+    public IExecutionStrategy getExecutionStrategy() { return executionStrategy; }
+
+    public CommandLine setExecutionStrategy(IExecutionStrategy executionStrategy) {
+        this.executionStrategy = Assert.notNull(executionStrategy, "executionStrategy");
+        for (CommandLine sub : getSubcommands().values()) { sub.setExecutionStrategy(executionStrategy); }
+        return this;
+    }
+
+    public IParameterExceptionHandler getParameterExceptionHandler() { return parameterExceptionHandler; }
+
+    public CommandLine setParameterExceptionHandler(IParameterExceptionHandler parameterExceptionHandler) {
+        this.parameterExceptionHandler = Assert.notNull(parameterExceptionHandler, "parameterExceptionHandler");
+        for (CommandLine sub : getSubcommands().values()) { sub.setParameterExceptionHandler(parameterExceptionHandler); }
+        return this;
+    }
+
+    public IExecutionExceptionHandler getExecutionExceptionHandler() { return executionExceptionHandler; }
+
+    public CommandLine setExecutionExceptionHandler(IExecutionExceptionHandler executionExceptionHandler) {
+        this.executionExceptionHandler = Assert.notNull(executionExceptionHandler, "executionExceptionHandler");
+        for (CommandLine sub : getSubcommands().values()) { sub.setExecutionExceptionHandler(executionExceptionHandler); }
+        return this;
+    }
 
     /**
      * <p>
@@ -928,6 +1034,11 @@ public class CommandLine {
          */
         R handleParseResult(ParseResult parseResult) throws ExecutionException;
     }
+
+    interface IExecutionStrategy {
+        int execute(ParseResult parseResult) throws ExecutionException;
+    }
+
     /**
      * Represents a function that can handle a {@code ParameterException} that occurred while
      * {@linkplain #parse(String...) parsing} the command line arguments. This is a
@@ -982,6 +1093,12 @@ public class CommandLine {
          */
         R handleExecutionException(ExecutionException ex, ParseResult parseResult);
     }
+    interface IParameterExceptionHandler {
+        int handleParseException(ParameterException ex, String[] args) throws Exception;
+    }
+    interface IExecutionExceptionHandler {
+        int handleExecutionException(ExecutionException ex, ParseResult parseResult) throws Exception;
+    }
 
     /** Abstract superclass for {@link IParseResultHandler2} and {@link IExceptionHandler2} implementations.
      * <p>Note that {@code AbstractHandler} is a generic type. This, along with the abstract {@code self} method,
@@ -1016,7 +1133,7 @@ public class CommandLine {
         /** Returns the ANSI style to use. Defaults to {@code Help.Ansi.AUTO}, unless {@link #useAnsi(CommandLine.Help.Ansi)} was called with a different setting.
          * @deprecated use {@link #colorScheme()} instead */
         @Deprecated public Help.Ansi ansi()      { return colorScheme.ansi(); }
-        /** Returns the ColorScheme to use. Defaults to {@code Help#defaultColorScheme(Help.Ansi.AUTO)}, unless {@link #useColorScheme(Help.ColorScheme)} was called with a different setting.
+        /** Returns the ColorScheme to use. Defaults to {@code Help#defaultColorScheme(Help.Ansi.AUTO)}.
          * @since 4.0*/
         public Help.ColorScheme colorScheme() { return colorScheme; }
         /** Returns the exit code to use as the termination status, or {@code null} (the default) if the handler should
@@ -1052,21 +1169,19 @@ public class CommandLine {
         /** Returns {@code this} to allow method chaining when calling the setters for a fluent API. */
         protected abstract T self();
 
-        /** Sets the stream to print command output to. For use by {@code IParseResultHandler2} implementations.
-         * @see #out() */
-        public T useOut(PrintStream out)   { this.out =  Assert.notNull(out, "out");   return self(); }
-        /** Sets the stream to print diagnostic messages to. For use by {@code IExceptionHandler2} implementations.
-         * @see #err()*/
-        public T useErr(PrintStream err)   { this.err =  Assert.notNull(err, "err");   return self(); }
+        /** Sets the stream to print command output to.
+         * @deprecated use {@link CommandLine#setOut(PrintWriter)} and {@link CommandLine#execute(String...)} instead */
+        @Deprecated public T useOut(PrintStream out)   { this.out =  Assert.notNull(out, "out");   return self(); }
+        /** Sets the stream to print diagnostic messages to.
+         * @deprecated use {@link CommandLine#setErr(PrintWriter)} and {@link CommandLine#execute(String...)} instead */
+        @Deprecated public T useErr(PrintStream err)   { this.err =  Assert.notNull(err, "err");   return self(); }
         /** Sets the ANSI style to use and resets the color scheme to the default.
-         * @deprecated use {@link #useColorScheme(Help.ColorScheme)} instead
+         * @deprecated use {@link CommandLine#setColorScheme(Help.ColorScheme)} and {@link CommandLine#execute(String...)} instead
          * @see #ansi() */
         @Deprecated public T useAnsi(Help.Ansi ansi) { this.colorScheme = Help.defaultColorScheme(Assert.notNull(ansi, "ansi")); return self(); }
-        /** Sets the color scheme to use.
-         * @since 4.0 */
-        public T useColorScheme(Help.ColorScheme colorScheme) { this.colorScheme = Assert.notNull(colorScheme, "colorScheme"); return self(); }
-        /** Indicates that the handler should call {@link System#exit(int)} after processing completes and sets the exit code to use as the termination status. */
-        public T andExit(int exitCode)     { this.exitCode = exitCode; return self(); }
+        /** Indicates that the handler should call {@link System#exit(int)} after processing completes and sets the exit code to use as the termination status.
+         * @deprecated use {@link CommandLine#execute(String...)} instead, and call {@code System.exit()} in the application. */
+        @Deprecated public T andExit(int exitCode)     { this.exitCode = exitCode; return self(); }
     }
 
     /**
@@ -1083,7 +1198,7 @@ public class CommandLine {
     @SuppressWarnings("deprecation")
     public static class DefaultExceptionHandler<R> extends AbstractHandler<R, DefaultExceptionHandler<R>> implements IExceptionHandler, IExceptionHandler2<R> {
         public List<Object> handleException(ParameterException ex, PrintStream out, Help.Ansi ansi, String... args) {
-            internalHandleParseException(ex, out, Help.defaultColorScheme(ansi), args); return Collections.<Object>emptyList(); }
+            internalHandleParseException(ex, new PrintWriter(out), Help.defaultColorScheme(ansi)); return Collections.<Object>emptyList(); }
 
         /** Prints the message of the specified exception, followed by the usage message for the command or subcommand
          * whose input was invalid, to the stream returned by {@link #err()}.
@@ -1093,13 +1208,14 @@ public class CommandLine {
          * @return the empty list
          * @since 3.0 */
         public R handleParseException(ParameterException ex, String[] args) {
-            internalHandleParseException(ex, err(), colorScheme(), args); return returnResultOrExit(null); }
+            internalHandleParseException(ex, new PrintWriter(err()), colorScheme()); return returnResultOrExit(null); }
 
-        private void internalHandleParseException(ParameterException ex, PrintStream out, Help.ColorScheme colorScheme, String[] args) {
-            out.println(ex.getMessage());
-            if (!UnmatchedArgumentException.printSuggestions(ex, out)) {
-                ex.getCommandLine().usage(out, colorScheme);
+        static void internalHandleParseException(ParameterException ex, PrintWriter writer, Help.ColorScheme colorScheme) {
+            writer.println(ex.getMessage());
+            if (!UnmatchedArgumentException.printSuggestions(ex, writer)) {
+                ex.getCommandLine().usage(writer, colorScheme);
             }
+            writer.flush();
         }
         /** This implementation always simply rethrows the specified exception.
          * @param ex the ExecutionException describing the problem that occurred while executing the {@code Runnable} or {@code Callable} command
@@ -1119,48 +1235,52 @@ public class CommandLine {
     @Deprecated public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, Help.Ansi ansi) {
         return printHelpIfRequested(parsedCommands, out, out, ansi);
     }
-
-    /** Delegates to {@link #printHelpIfRequested(List, PrintStream, PrintStream, Help.Ansi)} with
-     * {@code parseResult.asCommandLineList(), System.out, System.err, Help.Ansi.AUTO}.
+    /**
+     * Delegates to {@link #executeHelpRequest(ParseResult)}.
+     * @param parseResult contains the {@code CommandLine} objects found during parsing; check these to see if help was requested
+     * @return {@code true} if help was printed, {@code false} otherwise
      * @since 3.0 */
     public static boolean printHelpIfRequested(ParseResult parseResult) {
-        return printHelpIfRequested(parseResult.asCommandLineList(), System.out, System.err, Help.defaultColorScheme(Help.Ansi.AUTO));
+        return executeHelpRequest(parseResult) != null;
     }
     /**
-     * Helper method that may be useful when processing the list of {@code CommandLine} objects that result from successfully
-     * {@linkplain #parse(String...) parsing} command line arguments. This method prints out
-     * {@linkplain #usage(PrintStream, Help.Ansi) usage help} if {@linkplain #isUsageHelpRequested() requested}
-     * or {@linkplain #printVersionHelp(PrintStream, Help.Ansi) version help} if {@linkplain #isVersionHelpRequested() requested}
-     * and returns {@code true}. If the command is a {@link Command#helpCommand()} and {@code runnable} or {@code callable},
-     * that command is executed and this method returns {@code true}.
-     * Otherwise, if none of the specified {@code CommandLine} objects have help requested,
-     * this method returns {@code false}.<p>
-     * Note that this method <em>only</em> looks at the {@link Option#usageHelp() usageHelp} and
-     * {@link Option#versionHelp() versionHelp} attributes. The {@link Option#help() help} attribute is ignored.
-     * </p><p><b>Implementation note:</b></p><p>
-     * When an error occurs while processing the help request, it is recommended custom Help commands throw a
-     * {@link ParameterException} with a reference to the parent command. This will print the error message and the
-     * usage for the parent command, and will use the exit code of the exception handler if one was set.
-     * </p>
+     * Delegates to the implementation of {@link #executeHelpRequest(ParseResult)}.
+     * @deprecated use {@link #executeHelpRequest(ParseResult)} instead
      * @param parsedCommands the list of {@code CommandLine} objects to check if help was requested
      * @param out the {@code PrintStream} to print help to if requested
      * @param err the error string to print diagnostic messages to, in addition to the output from the exception handler
      * @param ansi for printing help messages using ANSI styles and colors
      * @return {@code true} if help was printed, {@code false} otherwise
-     * @see IHelpCommandInitializable2
      * @since 3.0 */
-    public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, PrintStream err, Help.Ansi ansi) {
+    @Deprecated public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, PrintStream err, Help.Ansi ansi) {
         return printHelpIfRequested(parsedCommands, out, err, Help.defaultColorScheme(ansi));
     }
     /**
-     * Helper method that may be useful when processing the list of {@code CommandLine} objects that result from successfully
-     * {@linkplain #parse(String...) parsing} command line arguments. This method prints out
-     * {@linkplain #usage(PrintStream, Help.ColorScheme) usage help} if {@linkplain #isUsageHelpRequested() requested}
-     * or {@linkplain #printVersionHelp(PrintStream, Help.Ansi) version help} if {@linkplain #isVersionHelpRequested() requested}
-     * and returns {@code true}. If the command is a {@link Command#helpCommand()} and {@code runnable} or {@code callable},
-     * that command is executed and this method returns {@code true}.
+     * Delegates to the implementation of {@link #executeHelpRequest(ParseResult)}.
+     * @deprecated use {@link #executeHelpRequest(ParseResult)} instead
+     * @param parsedCommands the list of {@code CommandLine} objects to check if help was requested
+     * @param out the {@code PrintStream} to print help to if requested
+     * @param err the error string to print diagnostic messages to, in addition to the output from the exception handler
+     * @param colorScheme for printing help messages using ANSI styles and colors
+     * @return {@code true} if help was printed, {@code false} otherwise
+     * @since 3.6 */
+    @Deprecated public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, PrintStream err, Help.ColorScheme colorScheme) {
+        // for backwards compatibility
+        for (CommandLine cmd : parsedCommands) { cmd.setOut(new PrintWriter(out)).setErr(new PrintWriter(err)).setColorScheme(colorScheme); }
+        return executeHelpRequest(parsedCommands) != null;
+    }
+
+    /**
+     * Helper method that may be useful when processing the {@code ParseResult} that results from successfully
+     * {@linkplain #parseArgs(String...) parsing} command line arguments. This method prints out
+     * {@linkplain #usage(PrintWriter, Help.ColorScheme) usage help} to the {@linkplain CommandLine#getOut() configured output writer}
+     * if {@linkplain #isUsageHelpRequested() requested} or {@linkplain #printVersionHelp(PrintWriter, Help.Ansi, Object...) version help}
+     * to the {@linkplain CommandLine#getOut() configured output writer} if {@linkplain #isVersionHelpRequested() requested}
+     * and returns {@link CommandSpec#exitCodeOnUsageHelp()} or {@link CommandSpec#exitCodeOnVersionHelp()}, respectively.
+     * If the command is a {@link Command#helpCommand()} and {@code runnable} or {@code callable},
+     * that command is executed and this method returns {@link CommandSpec#exitCodeOnUsageHelp()}.
      * Otherwise, if none of the specified {@code CommandLine} objects have help requested,
-     * this method returns {@code false}.<p>
+     * this method returns {@code null}.<p>
      * Note that this method <em>only</em> looks at the {@link Option#usageHelp() usageHelp} and
      * {@link Option#versionHelp() versionHelp} attributes. The {@link Option#help() help} attribute is ignored.
      * </p><p><b>Implementation note:</b></p><p>
@@ -1168,35 +1288,40 @@ public class CommandLine {
      * {@link ParameterException} with a reference to the parent command. This will print the error message and the
      * usage for the parent command, and will use the exit code of the exception handler if one was set.
      * </p>
-     * @param parsedCommands the list of {@code CommandLine} objects to check if help was requested
-     * @param out the {@code PrintStream} to print help to if requested
-     * @param err the error string to print diagnostic messages to, in addition to the output from the exception handler
-     * @param colorScheme for printing help messages using ANSI styles and colors
-     * @return {@code true} if help was printed, {@code false} otherwise
+     * @param parseResult contains the {@code CommandLine} objects found during parsing; check these to see if help was requested
+     * @return {@link CommandSpec#exitCodeOnUsageHelp()} if usage help was requested,
+     *      {@link CommandSpec#exitCodeOnVersionHelp()} if version help was requested, and {@code null} otherwise
      * @see IHelpCommandInitializable2
-     * @since 3.6 */
-    public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, PrintStream err, Help.ColorScheme colorScheme) {
+     * @since 4.0 */
+    public static Integer executeHelpRequest(ParseResult parseResult) {
+        return executeHelpRequest(parseResult.asCommandLineList());
+    }
+    /** @since 4.0 */
+    static Integer executeHelpRequest(List<CommandLine> parsedCommands) {
         for (int i = 0; i < parsedCommands.size(); i++) {
             CommandLine parsed = parsedCommands.get(i);
+            Help.ColorScheme colorScheme = parsed.getColorScheme();
+            PrintWriter out = parsed.getOut();
             if (parsed.isUsageHelpRequested()) {
                 parsed.usage(out, colorScheme);
-                return true;
+                return parsed.getCommandSpec().exitCodeOnUsageHelp();
             } else if (parsed.isVersionHelpRequested()) {
                 parsed.printVersionHelp(out, colorScheme.ansi);
-                return true;
+                return parsed.getCommandSpec().exitCodeOnVersionHelp();
             } else if (parsed.getCommandSpec().helpCommand()) {
+                PrintWriter err = parsed.getErr();
                 if (parsed.getCommand() instanceof IHelpCommandInitializable2) {
                     ((IHelpCommandInitializable2) parsed.getCommand()).init(parsed, colorScheme, out, err);
                 } else if (parsed.getCommand() instanceof IHelpCommandInitializable) {
-                    ((IHelpCommandInitializable) parsed.getCommand()).init(parsed, colorScheme.ansi, out, err);
+                    ((IHelpCommandInitializable) parsed.getCommand()).init(parsed, colorScheme.ansi, System.out, System.err);
                 }
-                execute(parsed, new ArrayList<Object>());
-                return true;
+                executeUserObject(parsed, new ArrayList<Object>());
+                return parsed.getCommandSpec().exitCodeOnUsageHelp();
             }
         }
-        return false;
+        return null;
     }
-    private static List<Object> execute(CommandLine parsed, List<Object> executionResult) {
+    private static List<Object> executeUserObject(CommandLine parsed, List<Object> executionResult) {
         Object command = parsed.getCommand();
         if (command instanceof Runnable) {
             try {
@@ -1250,7 +1375,159 @@ public class CommandLine {
                 throw new ExecutionException(parsed, "Unhandled error while calling command (" + command + "): " + ex, ex);
             }
         }
-        throw new ExecutionException(parsed, "Parsed command (" + command + ") is not Method, Runnable or Callable");
+        throw new ExecutionException(parsed, "Parsed command (" + command + ") is not a Method, Runnable or Callable");
+    }
+
+    /**
+     * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
+     * To use this method, the annotated object that this {@code CommandLine} is constructed with needs to
+     * either implement {@link Runnable}, {@link Callable}, or be a {@code Method} object.
+     * <p>This method is equivalent to the {@link #run(Runnable, String...) run}, {@link #call(Callable, String...) call}
+     * and {@link #invoke(String, Class, String...) invoke} convenience methods, except that this method is an
+     * instance method, not a static method, so it allows more configuration.
+     * </p><p>
+     * A second difference is that this method provides exit code support.
+     * If the user object {@code Callable} or {@code Method} returns an {@code int} or {@code Integer},
+     * this will be used as the exit code. Additionally, if the user object implements {@link IExitCodeGenerator IExitCodeGenerator},
+     * an exit code is obtained by calling its {@code getExitCode()} method (after invoking the user object).
+     * </p><p>
+     * In the case of multiple exit codes the highest value will be used (or if all values are negative, the lowest value will be used).
+     * </p><p>Example usage:</p>
+     * <pre>{@code
+     * CommandLine cmd = new CommandLine(new MyCallable())
+     *         .setCaseInsensitiveEnumValuesAllowed(true) // configure a non-default parser option
+     *         .setOut(myOutWriter()) // configure an alternative to System.out
+     *         .setErr(myErrWriter()) // configure an alternative to System.err
+     *         .setColorScheme(myColorScheme()); // configure a custom color scheme
+     * int exitCode = cmd.execute(args);
+     * //System.exit(exitCode);
+     * }</pre>
+     * <p>
+     * If the specified command has subcommands, the {@linkplain RunLast last} subcommand specified on the
+     * command line is executed. This can be configured by setting the {@linkplain #setExecutionStrategy(IExecutionStrategy) execution strategy}.
+     * Built-in alternatives are executing the {@linkplain RunFirst first} subcommand, or executing {@linkplain RunAll all} specified subcommands.
+     * </p><p>
+     * This method never throws an exception.
+     * </p><p>
+     * If the user specified invalid input, the {@linkplain #getParameterExceptionHandler() parameter exception handler} is invoked.
+     * By default this prints an error message and the usage help message, and returns an exit code.
+     * </p><p>
+     * If an exception occurred while the user object {@code Runnable}, {@code Callable}, or {@code Method}
+     * was invoked, this exception is caught, wrapped in an {@link ExecutionException ExecutionException}, and
+     * passed to the {@linkplain #getExecutionExceptionHandler() execution exception handler}.
+     * The default {@code IExecutionExceptionHandler} will rethrow the <em>cause</em> Exception.
+     * This method will catch any exceptions thrown by the execution exception handler and return an exit code.
+     * </p><p>
+     * If an {@link IExitCodeExceptionMapper IExitCodeExceptionMapper} is {@linkplain #setExitCodeExceptionMapper(IExitCodeExceptionMapper) configured},
+     * this mapper is used to determine the exit code based on the exception.
+     * </p><p>
+     * If no {@code IExitCodeExceptionMapper} is set, by default this method will return the {@code @Command} annotation's
+     * {@link Command#exitCodeOnInvalidInput() exitCodeOnInvalidInput} or {@link Command#exitCodeOnExecutionException() exitCodeOnExecutionException}.
+     * </p>
+     * @param args the command line arguments to parse
+     * @return the exit code
+     * @see #tryExecute(String...)
+     * @since 4.0
+     */
+    public int execute(String... args) {
+        ParseResult[] parseResult = new ParseResult[1];
+        try {
+            return internalTryExecute(args, parseResult);
+        } catch (ExecutionException ex) {
+            try {
+                return getExecutionExceptionHandler().handleExecutionException(ex, parseResult[0]);
+            } catch (Exception ex2) {
+                PrintWriter err = getErr();
+                ex2.printStackTrace(err);
+                err.flush();
+                CommandLine cmd = ex.getCommandLine();
+                return mappedExitCode(ex2, cmd.getExitCodeExceptionMapper(), cmd.getCommandSpec().exitCodeOnInvalidInput());
+            }
+        }
+    }
+    /**
+     * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
+     * To use this method, the annotated object that this {@code CommandLine} is constructed with needs to
+     * either implement {@link Runnable}, {@link Callable}, or be a {@code Method} object.
+     * <p>This method is equivalent to the {@link #run(Runnable, String...) run}, {@link #call(Callable, String...) call}
+     * and {@link #invoke(String, Class, String...) invoke} convenience methods, except that this method is an
+     * instance method, not a static method, so it allows more configuration.
+     * </p><p>
+     * A second difference is that this method provides exit code support.
+     * If the user object {@code Callable} or {@code Method} returns an {@code int} or {@code Integer},
+     * this will be used as the exit code. Additionally, if the user object implements {@link IExitCodeGenerator IExitCodeGenerator},
+     * an exit code is obtained by calling its {@code getExitCode()} method (after invoking the user object).
+     * </p><p>
+     * In the case of multiple exit codes the highest value will be used (or if all values are negative, the lowest value will be used).
+     * </p><p>Example usage:</p>
+     * <pre>{@code
+     * CommandLine cmd = new CommandLine(new MyCallable())
+     *         .setCaseInsensitiveEnumValuesAllowed(true) // configure a non-default parser option
+     *         .setOut(myOutWriter()) // configure an alternative to System.out
+     *         .setErr(myErrWriter()) // configure an alternative to System.err
+     *         .setColorScheme(myColorScheme()); // configure a custom color scheme
+     * int exitCode = cmd.execute(args);
+     * //System.exit(exitCode);
+     * }</pre>
+     * <p>
+     * If the specified command has subcommands, the {@linkplain RunLast last} subcommand specified on the
+     * command line is executed. This can be configured by setting the {@linkplain #setExecutionStrategy(IExecutionStrategy) execution strategy}.
+     * Built-in alternatives are executing the {@linkplain RunFirst first} subcommand, or executing {@linkplain RunAll all} specified subcommands.
+     * </p><p>
+     * If the user specified invalid input, the {@linkplain #getParameterExceptionHandler() parameter exception handler} is invoked.
+     * By default this prints an error message and the usage help message, and returns an exit code.
+     * The returned exit code is determined by the {@linkplain #setExitCodeExceptionMapper(IExitCodeExceptionMapper) configured}
+     * {@code IExitCodeExceptionMapper}, or, if this is not set, by default this method will return the {@code @Command} annotation's
+     * {@link Command#exitCodeOnInvalidInput() exitCodeOnInvalidInput}.
+     * </p><p>
+     * If an exception occurred while the user object {@code Runnable}, {@code Callable}, or {@code Method}
+     * was invoked, this exception is caught, wrapped in an {@link ExecutionException ExecutionException}, and
+     * passed to the {@linkplain #getExecutionExceptionHandler() execution exception handler}.
+     * The default {@code IExecutionExceptionHandler} will rethrow the <em>cause</em> Exception.
+     * This method will not handle any exceptions thrown by the execution exception handler, this is the responsibility of the application.
+     * </p>
+     * @param args the command line arguments to parse
+     * @return the exit code
+     * @see #execute(String...)
+     * @since 4.0
+     */
+    public int tryExecute(String... args) throws Exception {
+        ParseResult[] parseResult = new ParseResult[1];
+        try {
+            return internalTryExecute(args, parseResult);
+        } catch (ExecutionException ex) {
+            return getExecutionExceptionHandler().handleExecutionException(ex, parseResult[0]);
+        }
+    }
+    private int internalTryExecute(String[] args, ParseResult[] parseResult) throws ExecutionException {
+        int exitCode;
+        try {
+            parseResult[0] = parseArgs(args);
+            exitCode = enrichForBackwardsCompatibility(getExecutionStrategy()).execute(parseResult[0]);
+        } catch (ParameterException ex) {
+            try {
+                exitCode = getParameterExceptionHandler().handleParseException(ex, args);
+            } catch (Exception ex2) {
+                PrintWriter err = getErr();
+                ex2.printStackTrace(err);
+                err.flush();
+                CommandLine cmd = ex.getCommandLine();
+                exitCode = mappedExitCode(ex2, cmd.getExitCodeExceptionMapper(), cmd.getCommandSpec().exitCodeOnInvalidInput());
+            }
+        }
+        return exitCode;
+    }
+
+    private <T> T enrichForBackwardsCompatibility(T obj) {
+        // in case the IExecutionStrategy is a built-in like RunLast,
+        // called from one of the deprecated convenience methods like run(Runnable, OutputStream, OutputStream, Ansi, String[])
+        if (obj instanceof AbstractHandler<?, ?>) {
+            AbstractHandler<?, ?> handler = (AbstractHandler<?, ?>) obj;
+            if (handler.out()  != System.out)     { setOut(new PrintWriter(handler.out())); }
+            if (handler.err()  != System.err)     { setErr(new PrintWriter(handler.err())); }
+            if (handler.ansi() != Help.Ansi.AUTO) { setColorScheme(handler.colorScheme()); }
+        }
+        return obj;
     }
     /** Command line parse result handler that returns a value. This handler prints help if requested, and otherwise calls
      * {@link #handle(CommandLine.ParseResult)} with the parse result. Facilitates implementation of the {@link IParseResultHandler2} interface.
@@ -1265,7 +1542,7 @@ public class CommandLine {
      * }
      * }</pre>
      * @since 3.0 */
-    public abstract static class AbstractParseResultHandler<R> extends AbstractHandler<R, AbstractParseResultHandler<R>> implements IParseResultHandler2<R> {
+    public abstract static class AbstractParseResultHandler<R> extends AbstractHandler<R, AbstractParseResultHandler<R>> implements IParseResultHandler2<R>, IExecutionStrategy {
         /** Prints help if requested, and otherwise calls {@link #handle(CommandLine.ParseResult)}.
          * Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.
          *
@@ -1283,6 +1560,37 @@ public class CommandLine {
             return returnResultOrExit(handle(parseResult));
         }
 
+        public int execute(ParseResult parseResult) throws ExecutionException {
+            Integer helpExitCode = executeHelpRequest(parseResult);
+            if (helpExitCode != null) { return helpExitCode; }
+
+            R executionResult = handle(parseResult);
+            List<IExitCodeGenerator> exitCodeGenerators = extractExitCodeGenerators(parseResult);
+            return resolveExitCode(parseResult.commandSpec().exitCodeOnSuccess(), executionResult, exitCodeGenerators);
+        }
+
+        private int resolveExitCode(int exitCodeOnSuccess, R executionResult, List<IExitCodeGenerator> exitCodeGenerators) {
+            int result = exitCodeOnSuccess;
+            for (IExitCodeGenerator generator : exitCodeGenerators) {
+                int exitCode = generator.getExitCode();
+                if ((exitCode > 0 && exitCode > exitCodeOnSuccess) || (exitCode < 0 && exitCode < exitCodeOnSuccess)) {
+                    result = exitCode;
+                }
+            }
+            if (executionResult instanceof List) {
+                List<?> resultList = (List<?>) executionResult;
+                for (Object obj : resultList) {
+                    if (obj instanceof Integer) {
+                        Integer exitCode = (Integer) obj;
+                        if ((exitCode > 0 && exitCode > exitCodeOnSuccess) || (exitCode < 0 && exitCode < exitCodeOnSuccess)) {
+                            result = exitCode;
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
         /** Processes the specified {@code ParseResult} and returns the result as a list of objects.
          * Implementations are responsible for catching any exceptions thrown in the {@code handle} method, and
          * rethrowing an {@code ExecutionException} that details the problem and captures the offending {@code CommandLine} object.
@@ -1293,6 +1601,8 @@ public class CommandLine {
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          */
         protected abstract R handle(ParseResult parseResult) throws ExecutionException;
+
+        protected abstract List<IExitCodeGenerator> extractExitCodeGenerators(ParseResult parseResult);
     }
     /**
      * Command line parse result handler that prints help if requested, and otherwise executes the top-level
@@ -1317,7 +1627,7 @@ public class CommandLine {
          */
         public List<Object> handleParseResult(List<CommandLine> parsedCommands, PrintStream out, Help.Ansi ansi) {
             if (printHelpIfRequested(parsedCommands, out, err(), ansi)) { return returnResultOrExit(Collections.emptyList()); }
-            return returnResultOrExit(execute(parsedCommands.get(0), new ArrayList<Object>()));
+            return returnResultOrExit(executeUserObject(parsedCommands.get(0), new ArrayList<Object>()));
         }
         /** Executes the top-level {@code Runnable} or {@code Callable} subcommand.
          * If the top-level command does not implement either {@code Runnable} or {@code Callable}, an {@code ExecutionException}
@@ -1330,8 +1640,16 @@ public class CommandLine {
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          * @since 3.0 */
         protected List<Object> handle(ParseResult parseResult) throws ExecutionException {
-            return execute(parseResult.commandSpec().commandLine(), new ArrayList<Object>()); // first
+            return executeUserObject(parseResult.commandSpec().commandLine(), new ArrayList<Object>()); // first
         }
+
+        protected List<IExitCodeGenerator> extractExitCodeGenerators(ParseResult parseResult) {
+            if (parseResult.commandSpec().userObject() instanceof IExitCodeGenerator) {
+                return Arrays.asList((IExitCodeGenerator) parseResult.commandSpec().userObject());
+            }
+            return Collections.emptyList();
+        }
+
         @Override protected RunFirst self() { return this; }
     }
     /**
@@ -1390,7 +1708,7 @@ public class CommandLine {
          */
         public List<Object> handleParseResult(List<CommandLine> parsedCommands, PrintStream out, Help.Ansi ansi) {
             if (printHelpIfRequested(parsedCommands, out, err(), ansi)) { return returnResultOrExit(Collections.emptyList()); }
-            return returnResultOrExit(execute(parsedCommands.get(parsedCommands.size() - 1), new ArrayList<Object>()));
+            return returnResultOrExit(executeUserObject(parsedCommands.get(parsedCommands.size() - 1), new ArrayList<Object>()));
         }
         /** Executes the most specific {@code Runnable} or {@code Callable} subcommand.
          * If the last (sub)command does not implement either {@code Runnable} or {@code Callable}, an {@code ExecutionException}
@@ -1404,7 +1722,13 @@ public class CommandLine {
          * @since 3.0 */
         protected List<Object> handle(ParseResult parseResult) throws ExecutionException {
             List<CommandLine> parsedCommands = parseResult.asCommandLineList();
-            return execute(parsedCommands.get(parsedCommands.size() - 1), new ArrayList<Object>());
+            return executeUserObject(parsedCommands.get(parsedCommands.size() - 1), new ArrayList<Object>());
+        }
+        protected List<IExitCodeGenerator> extractExitCodeGenerators(ParseResult parseResult) {
+            List<CommandLine> parsedCommands = parseResult.asCommandLineList();
+            Object userObject = parsedCommands.get(parsedCommands.size() - 1).getCommandSpec().userObject();
+            if (userObject instanceof IExitCodeGenerator) { return Arrays.asList((IExitCodeGenerator) userObject); }
+            return Collections.emptyList();
         }
         @Override protected RunLast self() { return this; }
     }
@@ -1434,7 +1758,7 @@ public class CommandLine {
             if (printHelpIfRequested(parsedCommands, out, err(), ansi)) { return returnResultOrExit(Collections.emptyList()); }
             List<Object> result = new ArrayList<Object>();
             for (CommandLine parsed : parsedCommands) {
-                execute(parsed, result);
+                executeUserObject(parsed, result);
             }
             return returnResultOrExit(result);
         }
@@ -1450,12 +1774,21 @@ public class CommandLine {
          * @since 3.0 */
         protected List<Object> handle(ParseResult parseResult) throws ExecutionException {
             List<Object> result = new ArrayList<Object>();
-            execute(parseResult.commandSpec().commandLine(), result);
+            executeUserObject(parseResult.commandSpec().commandLine(), result);
             while (parseResult.hasSubcommand()) {
                 parseResult = parseResult.subcommand();
-                execute(parseResult.commandSpec().commandLine(), result);
+                executeUserObject(parseResult.commandSpec().commandLine(), result);
             }
             return returnResultOrExit(result);
+        }
+        protected List<IExitCodeGenerator> extractExitCodeGenerators(ParseResult parseResult) {
+            List<IExitCodeGenerator> result = new ArrayList<IExitCodeGenerator>();
+            if (parseResult.commandSpec().userObject() instanceof IExitCodeGenerator) { result.add((IExitCodeGenerator) parseResult.commandSpec().userObject()); }
+            while (parseResult.hasSubcommand()) {
+                parseResult = parseResult.subcommand();
+                if (parseResult.commandSpec().userObject() instanceof IExitCodeGenerator) { result.add((IExitCodeGenerator) parseResult.commandSpec().userObject()); }
+            }
+            return result;
         }
         @Override protected RunAll self() { return this; }
     }
@@ -1659,11 +1992,13 @@ public class CommandLine {
      */
     public void usage(PrintStream out, Help.ColorScheme colorScheme) {
         out.print(usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), colorScheme)));
+        out.flush();
     }
     /** Similar to {@link #usage(PrintStream, Help.ColorScheme)}, but with the specified {@code PrintWriter} instead of a {@code PrintStream}.
      * @since 3.0 */
     public void usage(PrintWriter writer, Help.ColorScheme colorScheme) {
         writer.print(usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), colorScheme)));
+        writer.flush();
     }
     /** Similar to {@link #usage(PrintStream)}, but returns the usage help message as a String instead of printing it to the {@code PrintStream}.
      * @since 3.2 */
@@ -1712,6 +2047,7 @@ public class CommandLine {
         for (String versionInfo : getCommandSpec().version()) {
             out.println(ansi.new Text(versionInfo));
         }
+        out.flush();
     }
     /**
      * Prints version information from the {@link Command#version()} annotation to the specified {@code PrintStream}.
@@ -1730,24 +2066,49 @@ public class CommandLine {
         for (String versionInfo : getCommandSpec().version()) {
             out.println(ansi.new Text(format(versionInfo, params)));
         }
+        out.flush();
+    }
+    /**
+     * Delegates to {@link #printVersionHelp(PrintWriter, Help.Ansi, Object...)} with the {@linkplain Help.Ansi#AUTO platform default}.
+     * @param out the PrintWriter to print to
+     * @since 4.0 */
+    public void printVersionHelp(PrintWriter out) { printVersionHelp(out, Help.Ansi.AUTO); }
+    /**
+     * Prints version information from the {@link Command#version()} annotation to the specified {@code PrintWriter}.
+     * Each element of the array of version strings is {@linkplain String#format(String, Object...) formatted} with the
+     * specified parameters, and printed on a separate line. Both version strings and parameters may contain
+     * <a href="http://picocli.info/#_usage_help_with_styles_and_colors">markup for colors and style</a>.
+     * @param out the PrintWriter to print to
+     * @param ansi whether the usage message should include ANSI escape codes or not
+     * @param params Arguments referenced by the format specifiers in the version strings
+     * @see Command#version()
+     * @see Option#versionHelp()
+     * @see #isVersionHelpRequested()
+     * @since 4.0 */
+    public void printVersionHelp(PrintWriter out, Help.Ansi ansi, Object... params) {
+        for (String versionInfo : getCommandSpec().version()) {
+            out.println(ansi.new Text(format(versionInfo, params)));
+        }
+        out.flush();
     }
 
     /**
-     * Delegates to {@link #call(Callable, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.out} for
-     * requested usage help messages, {@code System.err} for diagnostic error messages, and {@link Help.Ansi#AUTO}.
+     * Equivalent to {@code new CommandLine(callable).execute(args)}, except for the return value.
      * @param callable the command to call when {@linkplain #parseArgs(String...) parsing} succeeds.
      * @param args the command line arguments to parse
      * @param <C> the annotated object must implement Callable
      * @param <T> the return type of the most specific command (must implement {@code Callable})
-     * @see #call(Callable, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @see #execute(String...)
      * @since 3.0
      */
     public static <C extends Callable<T>, T> T call(C callable, String... args) {
-        return call(callable, System.out, System.err, Help.Ansi.AUTO, args);
+        CommandLine cmd = new CommandLine(callable);
+        List<Object> results = cmd.parseWithHandler(new RunLast(), args);
+        @SuppressWarnings("unchecked") T result = (results == null || results.isEmpty()) ? null : (T) results.get(0);
+        return result;
     }
 
     /**
@@ -1758,14 +2119,13 @@ public class CommandLine {
      * @param args the command line arguments to parse
      * @param <C> the annotated object must implement Callable
      * @param <T> the return type of the most specific command (must implement {@code Callable})
-     * @see #call(Callable, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @deprecated use {@link #execute(String...)} instead
      * @see RunLast
      */
-    public static <C extends Callable<T>, T> T call(C callable, PrintStream out, String... args) {
+    @Deprecated public static <C extends Callable<T>, T> T call(C callable, PrintStream out, String... args) {
         return call(callable, out, System.err, Help.Ansi.AUTO, args);
     }
     /**
@@ -1776,17 +2136,31 @@ public class CommandLine {
      * @param args the command line arguments to parse
      * @param <C> the annotated object must implement Callable
      * @param <T> the return type of the most specific command (must implement {@code Callable})
-     * @see #call(Callable, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @deprecated use {@link #execute(String...)} instead
      * @see RunLast
      */
-    public static <C extends Callable<T>, T> T call(C callable, PrintStream out, Help.Ansi ansi, String... args) {
+    @Deprecated public static <C extends Callable<T>, T> T call(C callable, PrintStream out, Help.Ansi ansi, String... args) {
         return call(callable, out, System.err, ansi, args);
     }
-    /** Delegates to {@link #call(Callable, PrintStream, PrintStream, Help.ColorScheme, String...)} with the default color scheme for the specified ANSI value.
+    /**
+     * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
+     * The annotated object needs to implement {@link Callable}.
+     * <p>Consider using the {@link #execute(String...)} method instead:</p>
+     * <pre>{@code
+     * CommandLine cmd = new CommandLine(callable)
+     *         .setOut(myOutWriter()) // System.out by default
+     *         .setErr(myErrWriter()) // System.err by default
+     *         .setColorScheme(myColorScheme()); // default color scheme, Ansi.AUTO by default
+     * int exitCode = cmd.execute(args);
+     * //System.exit(exitCode);
+     * }</pre>
+     * <p>
+     * If the specified Callable command has subcommands, the {@linkplain RunLast last} subcommand specified on the
+     * command line is executed.
+     * </p>
      * @param callable the command to call when {@linkplain #parse(String...) parsing} succeeds.
      * @param out the printStream to print the usage help message to when the user requested help
      * @param err the printStream to print diagnostic messages to
@@ -1797,70 +2171,33 @@ public class CommandLine {
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
+     * @deprecated use {@link #execute(String...)} instead
      * @since 3.0
      */
-    public static <C extends Callable<T>, T> T call(C callable, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
-        return call(callable, out, err, Help.defaultColorScheme(ansi), args);
-    }
-
-    /**
-     * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
-     * The annotated object needs to implement {@link Callable}. Calling this method is equivalent to:
-     * <pre>{@code
-     * CommandLine cmd = new CommandLine(callable);
-     * List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useColorScheme(colorScheme),
-     *                                              new DefaultExceptionHandler().useErr(err).useColorScheme(colorScheme),
-     *                                              args);
-     * T result = results == null || results.isEmpty() ? null : (T) results.get(0);
-     * return result;
-     * }</pre>
-     * <p>
-     * If the specified Callable command has subcommands, the {@linkplain RunLast last} subcommand specified on the
-     * command line is executed.
-     * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler2, String[]) parseWithHandler}
-     * method with the {@link RunAll} handler or a custom handler.
-     * </p><p>
-     * Use {@link #call(Class, IFactory, PrintStream, PrintStream, Help.ColorScheme, String...) call(Class, IFactory, ...)} instead of this method
-     * if you want to use a factory that performs Dependency Injection.
-     * </p>
-     * @param callable the command to call when {@linkplain #parse(String...) parsing} succeeds.
-     * @param out the printStream to print the usage help message to when the user requested help
-     * @param err the printStream to print diagnostic messages to
-     * @param colorScheme the color scheme to use, including whether the usage message should include ANSI escape codes or not
-     * @param args the command line arguments to parse
-     * @param <C> the annotated object must implement Callable
-     * @param <T> the return type of the specified {@code Callable}
-     * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
-     * @throws ExecutionException if the Callable throws an exception
-     * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
-     * @see #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
-     * @see RunLast
-     * @since 4.0
-     */
-    public static <C extends Callable<T>, T> T call(C callable, PrintStream out, PrintStream err, Help.ColorScheme colorScheme, String... args) {
+    @Deprecated public static <C extends Callable<T>, T> T call(C callable, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(callable);
-        List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useColorScheme(colorScheme), new DefaultExceptionHandler<List<Object>>().useErr(err).useColorScheme(colorScheme), args);
+        List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
         @SuppressWarnings("unchecked") T result = (results == null || results.isEmpty()) ? null : (T) results.get(0);
         return result;
     }
     /**
-     * Delegates to {@link #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.out} for
-     * requested usage help messages, {@code System.err} for diagnostic error messages, and {@link Help.Ansi#AUTO}.
+     * Equivalent to {@code new CommandLine(callableClass, factory).execute(args)}, except for the return value.
      * @param callableClass class of the command to call when {@linkplain #parseArgs(String...) parsing} succeeds.
      * @param factory the factory responsible for instantiating the specified callable class and potentially inject other components
      * @param args the command line arguments to parse
      * @param <C> the annotated class must implement Callable
      * @param <T> the return type of the most specific command (must implement {@code Callable})
-     * @see #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @see #execute(String...)
      * @since 3.2
      */
     public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, String... args) {
-        return call(callableClass, factory, System.out, System.err, Help.Ansi.AUTO, args);
+        CommandLine cmd = new CommandLine(callableClass, factory);
+        List<Object> results = cmd.parseWithHandler(new RunLast(), args);
+        @SuppressWarnings("unchecked") T result = (results == null || results.isEmpty()) ? null : (T) results.get(0);
+        return result;
     }
     /**
      * Delegates to {@link #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with
@@ -1871,14 +2208,13 @@ public class CommandLine {
      * @param args the command line arguments to parse
      * @param <C> the annotated class must implement Callable
      * @param <T> the return type of the most specific command (must implement {@code Callable})
-     * @see #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @deprecated use {@link #execute(String...)} instead
      * @since 3.2
      */
-    public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, PrintStream out, String... args) {
+    @Deprecated public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, PrintStream out, String... args) {
         return call(callableClass, factory, out, System.err, Help.Ansi.AUTO, args);
     }
     /**
@@ -1891,18 +2227,35 @@ public class CommandLine {
      * @param args the command line arguments to parse
      * @param <C> the annotated class must implement Callable
      * @param <T> the return type of the most specific command (must implement {@code Callable})
-     * @see #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @deprecated use {@link #execute(String...)} instead
      * @since 3.2
      */
-    public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, PrintStream out, Help.Ansi ansi, String... args) {
+    @Deprecated public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, PrintStream out, Help.Ansi ansi, String... args) {
         return call(callableClass, factory, out, System.err, ansi, args);
     }
 
-    /** Delegates to {@link #call(Class, IFactory, PrintStream, PrintStream, Help.ColorScheme, String...)} with the default color scheme for the specified ANSI setting.
+    /**
+     * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
+     * The specified {@linkplain IFactory factory} will create an instance of the specified {@code callableClass};
+     * use this method instead of {@link #call(Callable, PrintStream, PrintStream, Help.ColorScheme, String...) call(Callable, ...)}
+     * if you want to use a factory that performs Dependency Injection.
+     * The annotated class needs to implement {@link Callable}.
+     * <p>Consider using the {@link #execute(String...)} method instead:</p>
+     * <pre>{@code
+     * CommandLine cmd = new CommandLine(callableClass, factory)
+     *         .setOut(myOutWriter()) // System.out by default
+     *         .setErr(myErrWriter()) // System.err by default
+     *         .setColorScheme(myColorScheme()); // default color scheme, Ansi.AUTO by default
+     * int exitCode = cmd.execute(args);
+     * //System.exit(exitCode);
+     * }</pre>
+     * <p>
+     * If the specified Callable command has subcommands, the {@linkplain RunLast last} subcommand specified on the
+     * command line is executed.
+     * </p>
      * @param callableClass class of the command to call when {@linkplain #parseArgs(String...) parsing} succeeds.
      * @param factory the factory responsible for instantiating the specified callable class and potentially injecting other components
      * @param out the printStream to print the usage help message to when the user requested help
@@ -1914,68 +2267,28 @@ public class CommandLine {
      * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
+     * @deprecated use {@link #execute(String...)} instead
      * @since 3.2
      */
-    public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
-        return call(callableClass, factory, out, err, Help.defaultColorScheme(ansi), args);
-    }
-    /**
-     * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
-     * The specified {@linkplain IFactory factory} will create an instance of the specified {@code callableClass};
-     * use this method instead of {@link #call(Callable, PrintStream, PrintStream, Help.ColorScheme, String...) call(Callable, ...)}
-     * if you want to use a factory that performs Dependency Injection.
-     * The annotated class needs to implement {@link Callable}. Calling this method is equivalent to:
-     * <pre>{@code
-     * CommandLine cmd = new CommandLine(callableClass, factory);
-     * List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useColorScheme(colorScheme),
-     *                                              new DefaultExceptionHandler().useErr(err).useColorScheme(colorScheme),
-     *                                              args);
-     * T result = results == null || results.isEmpty() ? null : (T) results.get(0);
-     * return result;
-     * }</pre>
-     * <p>
-     * If the specified Callable command has subcommands, the {@linkplain RunLast last} subcommand specified on the
-     * command line is executed.
-     * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler2, String[]) parseWithHandler}
-     * method with the {@link RunAll} handler or a custom handler.
-     * </p>
-     * @param callableClass class of the command to call when {@linkplain #parseArgs(String...) parsing} succeeds.
-     * @param factory the factory responsible for instantiating the specified callable class and potentially injecting other components
-     * @param out the printStream to print the usage help message to when the user requested help
-     * @param err the printStream to print diagnostic messages to
-     * @param colorScheme the colorscheme to use, including the ANSI style to use
-     * @param args the command line arguments to parse
-     * @param <C> the annotated class must implement Callable
-     * @param <T> the return type of the most specific command (must implement {@code Callable})
-     * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
-     * @throws ExecutionException if the Callable throws an exception
-     * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
-     * @see #call(Callable, PrintStream, PrintStream, Help.Ansi, String...)
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
-     * @since 4.0
-     */
-    public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, PrintStream out, PrintStream err, Help.ColorScheme colorScheme, String... args) {
+    @Deprecated public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(callableClass, factory);
-        List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useColorScheme(colorScheme), new DefaultExceptionHandler<List<Object>>().useErr(err).useColorScheme(colorScheme), args);
+        List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
         @SuppressWarnings("unchecked") T result = (results == null || results.isEmpty()) ? null : (T) results.get(0);
         return result;
     }
 
     /**
-     * Delegates to {@link #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.out} for
-     * requested usage help messages, {@code System.err} for diagnostic error messages, and {@link Help.Ansi#AUTO}.
+     * Equivalent to {@code new CommandLine(runnable).execute(args)}.
      * @param runnable the command to run when {@linkplain #parseArgs(String...) parsing} succeeds.
      * @param args the command line arguments to parse
      * @param <R> the annotated object must implement Runnable
-     * @see #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Runnable throws an exception
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
-     * @see RunLast
+     * @see #execute(String...)
      * @since 3.0
      */
     public static <R extends Runnable> void run(R runnable, String... args) {
-        run(runnable, System.out, System.err, Help.Ansi.AUTO, args);
+        new CommandLine(runnable).execute(args);
     }
     /**
      * Delegates to {@link #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.err} for diagnostic error messages and {@link Help.Ansi#AUTO}.
@@ -1983,13 +2296,12 @@ public class CommandLine {
      * @param out the printStream to print the usage help message to when the user requested help
      * @param args the command line arguments to parse
      * @param <R> the annotated object must implement Runnable
-     * @see #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Runnable throws an exception
-     * @see #parseWithHandler(IParseResultHandler2, String[])
+     * @deprecated use {@link #execute(String...)} instead
      * @see RunLast
      */
-    public static <R extends Runnable> void run(R runnable, PrintStream out, String... args) {
+    @Deprecated public static <R extends Runnable> void run(R runnable, PrintStream out, String... args) {
         run(runnable, out, System.err, Help.Ansi.AUTO, args);
     }
     /**
@@ -1999,16 +2311,33 @@ public class CommandLine {
      * @param ansi whether the usage message should include ANSI escape codes or not
      * @param args the command line arguments to parse
      * @param <R> the annotated object must implement Runnable
-     * @see #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Runnable throws an exception
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @deprecated use {@link #execute(String...)} instead
      * @see RunLast
      */
-    public static <R extends Runnable> void run(R runnable, PrintStream out, Help.Ansi ansi, String... args) {
+    @Deprecated public static <R extends Runnable> void run(R runnable, PrintStream out, Help.Ansi ansi, String... args) {
         run(runnable, out, System.err, ansi, args);
     }
-    /** Delegates to {@link #run(Runnable, PrintStream, PrintStream, Help.ColorScheme, String...)} with the default color scheme for the specified ANSI setting.
+    /**
+     * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
+     * The annotated object needs to implement {@link Runnable}.
+     * <p>Consider using the {@link #execute(String...)} method instead:</p>
+     * <pre>{@code
+     * CommandLine cmd = new CommandLine(runnable)
+     *         .setOut(myOutWriter()) // System.out by default
+     *         .setErr(myErrWriter()) // System.err by default
+     *         .setColorScheme(myColorScheme()); // default color scheme, Ansi.AUTO by default
+     * int exitCode = cmd.execute(args);
+     * //System.exit(exitCode);
+     * }</pre>
+     * <p>
+     * If the specified Runnable command has subcommands, the {@linkplain RunLast last} subcommand specified on the
+     * command line is executed.
+     * </p><p>
+     * From picocli v2.0, this method prints usage help or version help if {@linkplain #printHelpIfRequested(List, PrintStream, PrintStream, Help.Ansi) requested},
+     * and any exceptions thrown by the {@code Runnable} are caught and rethrown wrapped in an {@code ExecutionException}.
+     * </p>
      * @param runnable the command to run when {@linkplain #parse(String...) parsing} succeeds.
      * @param out the printStream to print the usage help message to when the user requested help
      * @param err the printStream to print diagnostic messages to
@@ -2017,65 +2346,26 @@ public class CommandLine {
      * @param <R> the annotated object must implement Runnable
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Runnable throws an exception
+     * @deprecated use {@link #execute(String...)} instead
      * @since 3.0
      */
-    public static <R extends Runnable> void run(R runnable, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
-        run(runnable, out, err, Help.defaultColorScheme(ansi), args);
-    }
-    /**
-     * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
-     * The annotated object needs to implement {@link Runnable}. Calling this method is equivalent to:
-     * <pre>{@code
-     * CommandLine cmd = new CommandLine(runnable);
-     * cmd.parseWithHandlers(new RunLast().useOut(out).useColorScheme(colorScheme),
-     *                       new DefaultExceptionHandler().useErr(err).useColorScheme(colorScheme),
-     *                       args);
-     * }</pre>
-     * <p>
-     * If the specified Runnable command has subcommands, the {@linkplain RunLast last} subcommand specified on the
-     * command line is executed.
-     * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler2, String[]) parseWithHandler}
-     * method with the {@link RunAll} handler or a custom handler.
-     * </p><p>
-     * From picocli v2.0, this method prints usage help or version help if {@linkplain #printHelpIfRequested(List, PrintStream, PrintStream, Help.Ansi) requested},
-     * and any exceptions thrown by the {@code Runnable} are caught and rethrown wrapped in an {@code ExecutionException}.
-     * </p><p>
-     * Use {@link #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...) run(Class, IFactory, ...)} instead of this method
-     * if you want to use a factory that performs Dependency Injection.
-     * </p>
-     * @param runnable the command to run when {@linkplain #parse(String...) parsing} succeeds.
-     * @param out the printStream to print the usage help message to when the user requested help
-     * @param err the printStream to print diagnostic messages to
-     * @param colorScheme the colorScheme to use, including whether the usage message should include ANSI escape codes or not
-     * @param args the command line arguments to parse
-     * @param <R> the annotated object must implement Runnable
-     * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
-     * @throws ExecutionException if the Runnable throws an exception
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
-     * @see RunLast
-     * @see #run(Class, IFactory, PrintStream, PrintStream, Help.ColorScheme, String...)
-     * @since 4.0
-     */
-    public static <R extends Runnable> void run(R runnable, PrintStream out, PrintStream err, Help.ColorScheme colorScheme, String... args) {
+    @Deprecated public static <R extends Runnable> void run(R runnable, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(runnable);
-        cmd.parseWithHandlers(new RunLast().useOut(out).useColorScheme(colorScheme), new DefaultExceptionHandler<List<Object>>().useErr(err).useColorScheme(colorScheme), args);
+        cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
     }
     /**
-     * Delegates to {@link #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.out} for
-     * requested usage help messages, {@code System.err} for diagnostic error messages, and {@link Help.Ansi#AUTO}.
+     * Equivalent to {@code new CommandLine(runnableClass, factory).execute(args)}.
      * @param runnableClass class of the command to run when {@linkplain #parseArgs(String...) parsing} succeeds.
      * @param factory the factory responsible for instantiating the specified Runnable class and potentially injecting other components
      * @param args the command line arguments to parse
      * @param <R> the annotated class must implement Runnable
-     * @see #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
      * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Runnable throws an exception
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
-     * @see RunLast
+     * @see #execute(String...)
      * @since 3.2
      */
     public static <R extends Runnable> void run(Class<R> runnableClass, IFactory factory, String... args) {
-        run(runnableClass, factory, System.out, System.err, Help.Ansi.AUTO, args);
+        new CommandLine(runnableClass, factory).execute(args);
     }
     /**
      * Delegates to {@link #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with
@@ -2090,9 +2380,10 @@ public class CommandLine {
      * @throws ExecutionException if the Runnable throws an exception
      * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @see RunLast
+     * @deprecated use {@link #execute(String...)} instead
      * @since 3.2
      */
-    public static <R extends Runnable> void run(Class<R> runnableClass, IFactory factory, PrintStream out, String... args) {
+    @Deprecated public static <R extends Runnable> void run(Class<R> runnableClass, IFactory factory, PrintStream out, String... args) {
         run(runnableClass, factory, out, System.err, Help.Ansi.AUTO, args);
     }
     /**
@@ -2109,42 +2400,31 @@ public class CommandLine {
      * @throws ExecutionException if the Runnable throws an exception
      * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @see RunLast
+     * @deprecated use {@link #execute(String...)} instead
      * @since 3.2
      */
-    public static <R extends Runnable> void run(Class<R> runnableClass, IFactory factory, PrintStream out, Help.Ansi ansi, String... args) {
+    @Deprecated public static <R extends Runnable> void run(Class<R> runnableClass, IFactory factory, PrintStream out, Help.Ansi ansi, String... args) {
         run(runnableClass, factory, out, System.err, ansi, args);
     }
 
-    /** Delegates to {@link #run(Class, IFactory, PrintStream, PrintStream, Help.ColorScheme, String...)} with the default color scheme for the given ANSI setting.
-     * @param runnableClass class of the command to run when {@linkplain #parseArgs(String...) parsing} succeeds.
-     * @param factory the factory responsible for instantiating the specified Runnable class and potentially injecting other components
-     * @param out the printStream to print the usage help message to when the user requested help
-     * @param err the printStream to print diagnostic messages to
-     * @param ansi whether the usage message should include ANSI escape codes or not
-     * @param args the command line arguments to parse
-     * @param <R> the annotated class must implement Runnable
-     * @since 3.2
-     */
-    public static <R extends Runnable> void run(Class<R> runnableClass, IFactory factory, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
-        run(runnableClass, factory, out, err, Help.defaultColorScheme(ansi), args);
-    }
     /**
      * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
      * The specified {@linkplain IFactory factory} will create an instance of the specified {@code runnableClass};
      * use this method instead of {@link #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...) run(Runnable, ...)}
      * if you want to use a factory that performs Dependency Injection.
-     * The annotated class needs to implement {@link Runnable}. Calling this method is equivalent to:
+     * The annotated class needs to implement {@link Runnable}.
+     * <p>Consider using the {@link #execute(String...)} method instead:</p>
      * <pre>{@code
-     * CommandLine cmd = new CommandLine(runnableClass, factory);
-     * cmd.parseWithHandlers(new RunLast().useOut(out).useColorScheme(colorScheme),
-     *                       new DefaultExceptionHandler().useErr(err).useColorScheme(colorScheme),
-     *                       args);
+     * CommandLine cmd = new CommandLine(runnableClass, factory)
+     *         .setOut(myOutWriter()) // System.out by default
+     *         .setErr(myErrWriter()) // System.err by default
+     *         .setColorScheme(myColorScheme()); // default color scheme, Ansi.AUTO by default
+     * int exitCode = cmd.execute(args);
+     * //System.exit(exitCode);
      * }</pre>
      * <p>
      * If the specified Runnable command has subcommands, the {@linkplain RunLast last} subcommand specified on the
      * command line is executed.
-     * Commands with subcommands may be interested in calling the {@link #parseWithHandler(IParseResultHandler2, String[]) parseWithHandler}
-     * method with the {@link RunAll} handler or a custom handler.
      * </p><p>
      * This method prints usage help or version help if {@linkplain #printHelpIfRequested(List, PrintStream, PrintStream, Help.Ansi) requested},
      * and any exceptions thrown by the {@code Runnable} are caught and rethrown wrapped in an {@code ExecutionException}.
@@ -2153,20 +2433,15 @@ public class CommandLine {
      * @param factory the factory responsible for instantiating the specified Runnable class and potentially injecting other components
      * @param out the printStream to print the usage help message to when the user requested help
      * @param err the printStream to print diagnostic messages to
-     * @param colorScheme the colorScheme to use, including whether the usage message should include ANSI escape codes or not
+     * @param ansi whether the usage message should include ANSI escape codes or not
      * @param args the command line arguments to parse
      * @param <R> the annotated class must implement Runnable
-     * @see #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
-     * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
-     * @throws ExecutionException if the Runnable throws an exception
-     * @see #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
-     * @see RunLast
-     * @since 4.0
+     * @deprecated use {@link #execute(String...)} instead
+     * @since 3.2
      */
-    public static <R extends Runnable> void run(Class<R> runnableClass, IFactory factory, PrintStream out, PrintStream err, Help.ColorScheme colorScheme, String... args) {
+    @Deprecated public static <R extends Runnable> void run(Class<R> runnableClass, IFactory factory, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(runnableClass, factory);
-        cmd.parseWithHandlers(new RunLast().useOut(out).useColorScheme(colorScheme), new DefaultExceptionHandler<List<Object>>().useErr(err).useColorScheme(colorScheme), args);
+        cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
     }
 
     /**
@@ -2199,9 +2474,10 @@ public class CommandLine {
      *      or if the specified class contains multiple {@code @Command}-annotated methods with the specified name
      * @throws ExecutionException if the Runnable throws an exception
      * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @deprecated use {@link #execute(String...)} instead
      * @since 3.6
      */
-    public static Object invoke(String methodName, Class<?> cls, PrintStream out, String... args) {
+    @Deprecated public static Object invoke(String methodName, Class<?> cls, PrintStream out, String... args) {
         return invoke(methodName, cls, out, System.err, Help.Ansi.AUTO, args);
     }
     /**
@@ -2218,13 +2494,27 @@ public class CommandLine {
      *      or if the specified class contains multiple {@code @Command}-annotated methods with the specified name
      * @throws ExecutionException if the Runnable throws an exception
      * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
+     * @deprecated use {@link #execute(String...)} instead
      * @since 3.6
      */
-    public static Object invoke(String methodName, Class<?> cls, PrintStream out, Help.Ansi ansi, String... args) {
+    @Deprecated public static Object invoke(String methodName, Class<?> cls, PrintStream out, Help.Ansi ansi, String... args) {
         return invoke(methodName, cls, out, System.err, ansi, args);
     }
 
-    /** Delegates to {@link #invoke(String, Class, PrintStream, PrintStream, Help.ColorScheme, String...)} with the default color scheme for the given ANSI setting.
+    /**
+     * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
+     * Constructs a {@link CommandSpec} model from the {@code @Option} and {@code @Parameters}-annotated method parameters
+     * of the {@code @Command}-annotated method, parses the specified command line arguments and invokes the specified method.
+     * <p>Consider using the {@link #execute(String...)} method instead:</p>
+     * <pre>{@code
+     * Method commandMethod = getCommandMethods(cls, methodName).get(0);
+     * CommandLine cmd = new CommandLine(commandMethod)
+     *         .setOut(myOutWriter()) // System.out by default
+     *         .setErr(myErrWriter()) // System.err by default
+     *         .setColorScheme(myColorScheme()); // default color scheme, Ansi.AUTO by default
+     * int exitCode = cmd.execute(args);
+     * //System.exit(exitCode);
+     * }</pre>
      * @param methodName the {@code @Command}-annotated method to build a {@link CommandSpec} model from,
      *                   and run when {@linkplain #parseArgs(String...) parsing} succeeds.
      * @param cls the class where the {@code @Command}-annotated method is declared, or a subclass
@@ -2235,46 +2525,17 @@ public class CommandLine {
      * @throws InitializationException if the specified method does not have a {@link Command} annotation,
      *      or if the specified class contains multiple {@code @Command}-annotated methods with the specified name
      * @throws ExecutionException if the method throws an exception
+     * @deprecated use {@link #execute(String...)} instead
      * @since 3.6
      */
-    public static Object invoke(String methodName, Class<?> cls, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
-        return invoke(methodName, cls, out, err, Help.defaultColorScheme(ansi), args);
-    }
-    /**
-     * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
-     * Constructs a {@link CommandSpec} model from the {@code @Option} and {@code @Parameters}-annotated method parameters
-     * of the {@code @Command}-annotated method, parses the specified command line arguments and invokes the specified method.
-     * Calling this method is equivalent to:
-     * <pre>{@code
-     * Method commandMethod = getCommandMethods(cls, methodName).get(0);
-     * CommandLine cmd = new CommandLine(commandMethod);
-     * List<Object> list = cmd.parseWithHandlers(new RunLast().useOut(out).useColorScheme(colorScheme),
-     *                                           new DefaultExceptionHandler().useErr(err).useColorScheme(colorScheme),
-     *                                           args);
-     * return list == null ? null : list.get(0);
-     * }</pre>
-     * @param methodName the {@code @Command}-annotated method to build a {@link CommandSpec} model from,
-     *                   and run when {@linkplain #parseArgs(String...) parsing} succeeds.
-     * @param cls the class where the {@code @Command}-annotated method is declared, or a subclass
-     * @param out the printStream to print the usage help message to when the user requested help
-     * @param err the printStream to print diagnostic messages to
-     * @param colorScheme the colorScheme to use, including whether the usage message should include ANSI escape codes or not
-     * @param args the command line arguments to parse
-     * @throws InitializationException if the specified method does not have a {@link Command} annotation,
-     *      or if the specified class contains multiple {@code @Command}-annotated methods with the specified name
-     * @throws ExecutionException if the method throws an exception
-     * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
-     * @since 4.0
-     */
-    public static Object invoke(String methodName, Class<?> cls, PrintStream out, PrintStream err, Help.ColorScheme colorScheme, String... args) {
+    @Deprecated public static Object invoke(String methodName, Class<?> cls, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         List<Method> candidates = getCommandMethods(cls, methodName);
         if (candidates.size() != 1) { throw new InitializationException("Expected exactly one @Command-annotated method for " + cls.getName() + "::" + methodName + "(...), but got: " + candidates); }
         Method method = candidates.get(0);
         CommandLine cmd = new CommandLine(method);
-        List<Object> list = cmd.parseWithHandlers(new RunLast().useOut(out).useColorScheme(colorScheme), new DefaultExceptionHandler<List<Object>>().useErr(err).useColorScheme(colorScheme), args);
+        List<Object> list = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
         return list == null ? null : list.get(0);
     }
-
     /**
      * Helper to get methods of a class annotated with {@link Command @Command} via reflection, optionally filtered by method name (not {@link Command#name() @Command.name}).
      * Methods have to be either public (inherited) members or be declared by {@code cls}, that is "inherited" static or protected methods will not be picked up.
@@ -3146,6 +3407,7 @@ public class CommandLine {
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.FIELD, ElementType.METHOD})
     public @interface Spec { }
+
     /**
      * <p>Annotate your class with {@code @Command} when you want more control over the format of the generated help
      * message. From 3.6, methods can also be annotated with {@code @Command}, where the method parameters define the
@@ -3415,6 +3677,31 @@ public class CommandLine {
          * @since 3.7
          */
         int usageHelpWidth() default 80;
+
+        /** Exit code for successful termination. {@value CommandSpec#DEFAULT_EXIT_CODE_OK}  by default, following C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.
+         * @see #execute(String...)
+         * @since 4.0 */
+        int exitCodeOnSuccess() default CommandSpec.DEFAULT_EXIT_CODE_OK;
+
+        /** Exit code for successful termination after printing usage help on user request. {@value CommandSpec#DEFAULT_EXIT_CODE_OK} by default, following unix C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.
+         * @see #execute(String...)
+         * @since 4.0 */
+        int exitCodeOnUsageHelp() default CommandSpec.DEFAULT_EXIT_CODE_OK;
+
+        /** Exit code for successful termination after printing version help on user request. {@value CommandSpec#DEFAULT_EXIT_CODE_OK}  by default, following unix C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.
+         * @see #execute(String...)
+         * @since 4.0 */
+        int exitCodeOnVersionHelp() default CommandSpec.DEFAULT_EXIT_CODE_OK;
+
+        /** Exit code for command line usage error. {@value CommandSpec#DEFAULT_EXIT_CODE_USAGE}  by default, following unix C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.
+         * @see #execute(String...)
+         * @since 4.0 */
+        int exitCodeOnInvalidInput() default CommandSpec.DEFAULT_EXIT_CODE_USAGE;
+
+        /** Exit code for internal software error. {@value CommandSpec#DEFAULT_EXIT_CODE_SOFTWARE}  by default, following unix C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.
+         * @see #execute(String...)
+         * @since 4.0 */
+        int exitCodeOnExecutionException() default CommandSpec.DEFAULT_EXIT_CODE_SOFTWARE;
     }
     /** A {@code Command} may define one or more {@code ArgGroups}: a group of options, positional parameters or a mixture of the two.
      * Groups can be used to:
@@ -3957,6 +4244,15 @@ public class CommandLine {
             /** Constant Boolean holding the default setting for whether variables should be interpolated in String values: <code>{@value}</code>.*/
             static final Boolean DEFAULT_INTERPOLATE_VARIABLES = Boolean.TRUE;
 
+            /** Exit code for successful termination. {@value CommandSpec#DEFAULT_EXIT_CODE_OK}  by default, following unix C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>. */
+            static final int DEFAULT_EXIT_CODE_OK = 0;
+
+            /** Exit code for command line usage error. {@value CommandSpec#DEFAULT_EXIT_CODE_USAGE}  by default, following unix C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>. */
+            static final int DEFAULT_EXIT_CODE_USAGE = 64;
+
+            /** Exit code for internal software error. {@value CommandSpec#DEFAULT_EXIT_CODE_SOFTWARE}  by default, following unix C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>. */
+            static final int DEFAULT_EXIT_CODE_SOFTWARE = 70;
+
             private final Map<String, CommandLine> commands = new LinkedHashMap<String, CommandLine>();
             private final Map<String, OptionSpec> optionsByNameMap = new LinkedHashMap<String, OptionSpec>();
             private final Map<Character, OptionSpec> posixOptionsByKeyMap = new LinkedHashMap<Character, OptionSpec>();
@@ -3984,6 +4280,12 @@ public class CommandLine {
             private IDefaultValueProvider defaultValueProvider;
             private String[] version;
             private String toString;
+
+            private Integer exitCodeOnSuccess;
+            private Integer exitCodeOnUsageHelp;
+            private Integer exitCodeOnVersionHelp;
+            private Integer exitCodeOnInvalidInput;
+            private Integer exitCodeOnExecutionException;
 
             private CommandSpec(Object userObject) { this.userObject = userObject; }
     
@@ -4330,6 +4632,12 @@ public class CommandLine {
             public CommandSpec addMixin(String name, CommandSpec mixin) {
                 mixins.put(interpolator.interpolate(name), mixin);
 
+                initExitCodeOnSuccess(mixin.exitCodeOnSuccess());
+                initExitCodeOnUsageHelp(mixin.exitCodeOnUsageHelp());
+                initExitCodeOnVersionHelp(mixin.exitCodeOnVersionHelp());
+                initExitCodeOnInvalidInput(mixin.exitCodeOnInvalidInput());
+                initExitCodeOnExecutionException(mixin.exitCodeOnExecutionException());
+
                 parser.initSeparator(mixin.parser.separator());
                 initName(interpolator.interpolateCommandName(mixin.name()));
                 initVersion(mixin.version());
@@ -4486,6 +4794,12 @@ public class CommandLine {
              * @see Command#helpCommand() */
             public boolean helpCommand() { return (isHelpCommand == null) ? DEFAULT_IS_HELP_COMMAND : isHelpCommand; }
 
+            public int exitCodeOnSuccess() { return exitCodeOnSuccess == null ? DEFAULT_EXIT_CODE_OK : exitCodeOnSuccess; }
+            public int exitCodeOnUsageHelp() { return exitCodeOnUsageHelp == null ? DEFAULT_EXIT_CODE_OK : exitCodeOnUsageHelp; }
+            public int exitCodeOnVersionHelp() { return exitCodeOnVersionHelp == null ? DEFAULT_EXIT_CODE_OK : exitCodeOnVersionHelp; }
+            public int exitCodeOnInvalidInput() { return exitCodeOnInvalidInput == null ? DEFAULT_EXIT_CODE_USAGE : exitCodeOnInvalidInput; }
+            public int exitCodeOnExecutionException() { return exitCodeOnExecutionException == null ? DEFAULT_EXIT_CODE_SOFTWARE : exitCodeOnExecutionException; }
+
             /** Returns {@code true} if the standard help options have been mixed in with this command, {@code false} otherwise. */
             public boolean mixinStandardHelpOptions() { return mixins.containsKey(AutoHelpMixin.KEY); }
 
@@ -4530,6 +4844,12 @@ public class CommandLine {
              * @see Command#helpCommand() */
             public CommandSpec helpCommand(boolean newValue) {isHelpCommand = newValue; return this;}
 
+            public CommandSpec exitCodeOnSuccess(int newValue) { exitCodeOnSuccess = newValue; return this; }
+            public CommandSpec exitCodeOnUsageHelp(int newValue) { exitCodeOnUsageHelp = newValue; return this; }
+            public CommandSpec exitCodeOnVersionHelp(int newValue) { exitCodeOnVersionHelp = newValue; return this; }
+            public CommandSpec exitCodeOnInvalidInput(int newValue) { exitCodeOnInvalidInput = newValue; return this; }
+            public CommandSpec exitCodeOnExecutionException(int newValue) { exitCodeOnExecutionException = newValue; return this; }
+
             /** Sets whether the standard help options should be mixed in with this command.
              * @return this CommandSpec for method chaining
              * @see Command#mixinStandardHelpOptions() */
@@ -4568,6 +4888,12 @@ public class CommandLine {
             public void updateCommandAttributes(Command cmd, IFactory factory) {
                 parser().updateSeparator(interpolator.interpolate(cmd.separator()));
 
+                updateExitCodeOnSuccess(cmd.exitCodeOnSuccess());
+                updateExitCodeOnUsageHelp(cmd.exitCodeOnUsageHelp());
+                updateExitCodeOnVersionHelp(cmd.exitCodeOnVersionHelp());
+                updateExitCodeOnInvalidInput(cmd.exitCodeOnInvalidInput());
+                updateExitCodeOnExecutionException(cmd.exitCodeOnExecutionException());
+
                 aliases(cmd.aliases());
                 updateName(cmd.name());
                 updateVersion(cmd.version());
@@ -4589,6 +4915,11 @@ public class CommandLine {
             void initDefaultValueProvider(Class<? extends IDefaultValueProvider> value, IFactory factory) {
                 if (initializable(defaultValueProvider, value, NoDefaultProvider.class)) { defaultValueProvider = (DefaultFactory.createDefaultValueProvider(factory, value)); }
             }
+            void initExitCodeOnSuccess(int exitCode)            { if (initializable(exitCodeOnSuccess, exitCode, DEFAULT_EXIT_CODE_OK)) { exitCodeOnSuccess = exitCode; } }
+            void initExitCodeOnUsageHelp(int exitCode)          { if (initializable(exitCodeOnUsageHelp, exitCode, DEFAULT_EXIT_CODE_OK)) { exitCodeOnUsageHelp = exitCode; } }
+            void initExitCodeOnVersionHelp(int exitCode)        { if (initializable(exitCodeOnVersionHelp, exitCode, DEFAULT_EXIT_CODE_OK)) { exitCodeOnVersionHelp = exitCode; } }
+            void initExitCodeOnInvalidInput(int exitCode)       { if (initializable(exitCodeOnInvalidInput, exitCode, DEFAULT_EXIT_CODE_USAGE)) { exitCodeOnInvalidInput = exitCode; } }
+            void initExitCodeOnExecutionException(int exitCode) { if (initializable(exitCodeOnExecutionException, exitCode, DEFAULT_EXIT_CODE_SOFTWARE)) { exitCodeOnExecutionException = exitCode; } }
             void updateName(String value)               { if (isNonDefault(value, DEFAULT_COMMAND_NAME))                 {name = value;} }
             void updateHelpCommand(boolean value)       { if (isNonDefault(value, DEFAULT_IS_HELP_COMMAND))              {isHelpCommand = value;} }
             void updateAddMethodSubcommands(boolean value) { if (isNonDefault(value, DEFAULT_IS_ADD_METHOD_SUBCOMMANDS)) {isAddMethodSubcommands = value;} }
@@ -4596,6 +4927,11 @@ public class CommandLine {
             void updateVersionProvider(Class<? extends IVersionProvider> value, IFactory factory) {
                 if (isNonDefault(value, NoVersionProvider.class)) { versionProvider = (DefaultFactory.createVersionProvider(factory, value)); }
             }
+            void updateExitCodeOnSuccess(int exitCode)            { if (isNonDefault(exitCode, DEFAULT_EXIT_CODE_OK)) { exitCodeOnSuccess = exitCode; } }
+            void updateExitCodeOnUsageHelp(int exitCode)          { if (isNonDefault(exitCode, DEFAULT_EXIT_CODE_OK)) { exitCodeOnUsageHelp = exitCode; } }
+            void updateExitCodeOnVersionHelp(int exitCode)        { if (isNonDefault(exitCode, DEFAULT_EXIT_CODE_OK)) { exitCodeOnVersionHelp = exitCode; } }
+            void updateExitCodeOnInvalidInput(int exitCode)       { if (isNonDefault(exitCode, DEFAULT_EXIT_CODE_USAGE)) { exitCodeOnInvalidInput = exitCode; } }
+            void updateExitCodeOnExecutionException(int exitCode) { if (isNonDefault(exitCode, DEFAULT_EXIT_CODE_SOFTWARE)) { exitCodeOnExecutionException = exitCode; } }
 
             /** Returns the option with the specified short name, or {@code null} if no option with that name is defined for this command. */
             public OptionSpec findOption(char shortName) { return findOption(shortName, options()); }
@@ -10506,6 +10842,8 @@ public class CommandLine {
         private CommandLine self;
         private PrintStream out;
         private PrintStream err;
+        private PrintWriter outWriter;
+        private PrintWriter errWriter;
         private Help.Ansi ansi; // for backwards compatibility with pre-4.0
         private Help.ColorScheme colorScheme;
 
@@ -10517,12 +10855,20 @@ public class CommandLine {
             if (commands.length > 0) {
                 CommandLine subcommand = parent.getSubcommands().get(commands[0]);
                 if (subcommand != null) {
-                    subcommand.usage(out, colors);
+                    if (outWriter != null) {
+                        subcommand.usage(outWriter, colors);
+                    } else {
+                        subcommand.usage(out, colors); // for compatibility with pre-4.0 clients
+                    }
                 } else {
                     throw new ParameterException(parent, "Unknown subcommand '" + commands[0] + "'.", null, commands[0]);
                 }
             } else {
-                parent.usage(out, colors);
+                if (outWriter != null) {
+                    parent.usage(outWriter, colors);
+                } else {
+                    parent.usage(out, colors); // for compatibility with pre-4.0 clients
+                }
             }
         }
         /** {@inheritDoc} */
@@ -10533,11 +10879,11 @@ public class CommandLine {
             this.err  = Assert.notNull(err, "err");
         }
         /** {@inheritDoc} */
-        public void init(CommandLine helpCommandLine, Help.ColorScheme colorScheme, PrintStream out, PrintStream err) {
+        public void init(CommandLine helpCommandLine, Help.ColorScheme colorScheme, PrintWriter out, PrintWriter err) {
             this.self        = Assert.notNull(helpCommandLine, "helpCommandLine");
             this.colorScheme = Assert.notNull(colorScheme, "colorScheme");
-            this.out         = Assert.notNull(out, "out");
-            this.err         = Assert.notNull(err, "err");
+            this.outWriter   = Assert.notNull(out, "outWriter");
+            this.errWriter   = Assert.notNull(err, "errWriter");
         }
     }
 
@@ -10564,8 +10910,8 @@ public class CommandLine {
     }
 
     /** Help commands that provide usage help for other commands can implement this interface to be initialized with the information they need.
-     * <p>The {@link #printHelpIfRequested(List, PrintStream, PrintStream, Help.ColorScheme) CommandLine::printHelpIfRequested} method calls the
-     * {@link #init(CommandLine, picocli.CommandLine.Help.ColorScheme, PrintStream, PrintStream) init} method on commands marked as {@link Command#helpCommand() helpCommand}
+     * <p>The {@link #executeHelpRequest(List) CommandLine::printHelpIfRequested} method calls the
+     * {@link #init(CommandLine, picocli.CommandLine.Help.ColorScheme, PrintWriter, PrintWriter) init} method on commands marked as {@link Command#helpCommand() helpCommand}
      * before the help command's {@code run} or {@code call} method is called.</p>
      * <p><b>Implementation note:</b></p><p>
      * If an error occurs in the {@code run} or {@code call} method while processing the help request, it is recommended custom Help
@@ -10578,10 +10924,10 @@ public class CommandLine {
          * @param helpCommandLine the {@code CommandLine} object associated with this help command. Implementors can use
          *                        this to walk the command hierarchy and get access to the help command's parent and sibling commands.
          * @param colorScheme the color scheme to use when printing help, including whether to use Ansi colors or not
-         * @param out the stream to print the usage help message to
-         * @param err the error stream to print any diagnostic messages to, in addition to the output from the exception handler
+         * @param outWriter the output writer to print the usage help message to
+         * @param errWriter the error writer to print any diagnostic messages to, in addition to the output from the exception handler
          */
-        void init(CommandLine helpCommandLine, Help.ColorScheme colorScheme, PrintStream out, PrintStream err);
+        void init(CommandLine helpCommandLine, Help.ColorScheme colorScheme, PrintWriter outWriter, PrintWriter errWriter);
     }
 
     /**
@@ -13040,6 +13386,11 @@ public class CommandLine {
         public static boolean printSuggestions(ParameterException ex, PrintStream out) {
             return ex instanceof UnmatchedArgumentException && ((UnmatchedArgumentException) ex).printSuggestions(out);
         }
+        /** Returns {@code true} and prints suggested solutions to the specified writer if such solutions exist, otherwise returns {@code false}.
+         * @since 4.0 */
+        public static boolean printSuggestions(ParameterException ex, PrintWriter writer) {
+            return ex instanceof UnmatchedArgumentException && ((UnmatchedArgumentException) ex).printSuggestions(writer);
+        }
         /** Returns the unmatched command line arguments.
          * @since 3.3.0 */
         public List<String> getUnmatched() { return stripErrorMessage(unmatched); }
@@ -13057,10 +13408,13 @@ public class CommandLine {
         public boolean isUnknownOption() { return isUnknownOption(unmatched, getCommandLine()); }
         /** Returns {@code true} and prints suggested solutions to the specified stream if such solutions exist, otherwise returns {@code false}.
          * @since 3.3.0 */
-        public boolean printSuggestions(PrintStream out) {
+        public boolean printSuggestions(PrintStream out) { return printSuggestions(new PrintWriter(out)); }
+        /** Returns {@code true} and prints suggested solutions to the specified stream if such solutions exist, otherwise returns {@code false}.
+         * @since 4.0 */
+        public boolean printSuggestions(PrintWriter writer) {
             List<String> suggestions = getSuggestions();
             if (!suggestions.isEmpty()) {
-                out.println(isUnknownOption()
+                writer.println(isUnknownOption()
                         ? "Possible solutions: " + str(suggestions)
                         : "Did you mean: " + str(suggestions).replace(", ", " or ") + "?");
             }
