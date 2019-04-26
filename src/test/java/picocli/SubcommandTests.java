@@ -5,13 +5,20 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.ExecutionException;
+import picocli.CommandLine.IExecutionExceptionHandler;
+import picocli.CommandLine.IExecutionStrategy;
+import picocli.CommandLine.IExitCodeExceptionMapper;
 import picocli.CommandLine.IFactory;
+import picocli.CommandLine.IParameterExceptionHandler;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.InitializationException;
 import picocli.CommandLine.MissingTypeConverterException;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.UsageMessageSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.RunAll;
 import picocli.CommandLine.UnmatchedArgumentException;
 
@@ -686,7 +693,7 @@ public class SubcommandTests {
     }
 
     @Test
-    public void testInterpolateVariables_BeforeSubcommandsAdded() {
+    public void testInterpolateVariables_AfterSubcommandsAdded() {
         @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
@@ -710,7 +717,7 @@ public class SubcommandTests {
     }
 
     @Test
-    public void testInterpolateVariables_AfterSubcommandsAdded() {
+    public void testInterpolateVariables_BeforeSubcommandsAdded() {
         @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
@@ -727,6 +734,236 @@ public class SubcommandTests {
             for (CommandLine subsub : sub.getSubcommands().values()) {
                 grandChildCount++;
                 assertEquals("subsubcommand added before IS impacted", false, sub.isInterpolateVariables());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testExitCodeExceptionMapper_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals(null, commandLine.getExitCodeExceptionMapper());
+        IExitCodeExceptionMapper mapper = new IExitCodeExceptionMapper() {
+            public int getExitCode(Throwable exception) { return 0; }
+        };
+        commandLine.setExitCodeExceptionMapper(mapper);
+        assertEquals(mapper, commandLine.getExitCodeExceptionMapper());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", null, sub.getExitCodeExceptionMapper());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", null, subsub.getExitCodeExceptionMapper());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testExitCodeExceptionMapper_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertEquals(null, commandLine.getExitCodeExceptionMapper());
+        IExitCodeExceptionMapper mapper = new IExitCodeExceptionMapper() {
+            public int getExitCode(Throwable exception) { return 0; }
+        };
+        commandLine.setExitCodeExceptionMapper(mapper);
+        assertEquals(mapper, commandLine.getExitCodeExceptionMapper());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", mapper, sub.getExitCodeExceptionMapper());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", mapper, sub.getExitCodeExceptionMapper());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testExecutionStrategy_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        IExecutionStrategy original = commandLine.getExecutionStrategy();
+        assertTrue(original instanceof CommandLine.RunLast);
+        IExecutionStrategy strategy = new IExecutionStrategy() {
+            public int execute(ParseResult parseResult) throws ExecutionException, ParameterException {
+                return 0;
+            }
+        };
+        commandLine.setExecutionStrategy(strategy);
+        assertEquals(strategy, commandLine.getExecutionStrategy());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertTrue("subcommand added afterwards is not impacted", sub.getExecutionStrategy() instanceof CommandLine.RunLast);
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertTrue("subcommand added afterwards is not impacted", subsub.getExecutionStrategy() instanceof CommandLine.RunLast);
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testExecutionStrategy_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        IExecutionStrategy original = commandLine.getExecutionStrategy();
+        assertTrue(original instanceof CommandLine.RunLast);
+        IExecutionStrategy strategy = new IExecutionStrategy() {
+            public int execute(ParseResult parseResult) throws ExecutionException, ParameterException {
+                return 0;
+            }
+        };
+        commandLine.setExecutionStrategy(strategy);
+        assertEquals(strategy, commandLine.getExecutionStrategy());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", strategy, sub.getExecutionStrategy());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", strategy, sub.getExecutionStrategy());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testParameterExceptionHandler_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        IParameterExceptionHandler original = commandLine.getParameterExceptionHandler();
+        assertNotNull(original);
+        IParameterExceptionHandler strategy = new IParameterExceptionHandler() {
+            public int handleParseException(ParameterException ex, String[] args) { return 0; }
+        };
+        commandLine.setParameterExceptionHandler(strategy);
+        assertEquals(strategy, commandLine.getParameterExceptionHandler());
+        assertNotEquals(original, commandLine.getParameterExceptionHandler());
+        assertNotEquals(original.getClass(), commandLine.getParameterExceptionHandler().getClass());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", original.getClass(), sub.getParameterExceptionHandler().getClass());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", original.getClass(), subsub.getParameterExceptionHandler().getClass());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testParameterExceptionHandler_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        IParameterExceptionHandler original = commandLine.getParameterExceptionHandler();
+        assertNotNull(original);
+        IParameterExceptionHandler strategy = new IParameterExceptionHandler() {
+            public int handleParseException(ParameterException ex, String[] args) { return 0; }
+        };
+        commandLine.setParameterExceptionHandler(strategy);
+        assertEquals(strategy, commandLine.getParameterExceptionHandler());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", strategy, sub.getParameterExceptionHandler());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", strategy, sub.getParameterExceptionHandler());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testExecutionExceptionHandler_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        IExecutionExceptionHandler original = commandLine.getExecutionExceptionHandler();
+        assertNotNull(original);
+        IExecutionExceptionHandler strategy = new IExecutionExceptionHandler() {
+            public int handleExecutionException(ExecutionException ex, ParseResult parseResult) { return 0; }
+        };
+        commandLine.setExecutionExceptionHandler(strategy);
+        assertEquals(strategy, commandLine.getExecutionExceptionHandler());
+        assertNotEquals(original, commandLine.getExecutionExceptionHandler());
+        assertNotEquals(original.getClass(), commandLine.getExecutionExceptionHandler().getClass());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", original.getClass(), sub.getExecutionExceptionHandler().getClass());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", original.getClass(), subsub.getExecutionExceptionHandler().getClass());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testExecutionExceptionHandler_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        IExecutionExceptionHandler original = commandLine.getExecutionExceptionHandler();
+        assertNotNull(original);
+        IExecutionExceptionHandler strategy = new IExecutionExceptionHandler() {
+            public int handleExecutionException(ExecutionException ex, ParseResult parseResult) { return 0; }
+        };
+        commandLine.setExecutionExceptionHandler(strategy);
+        assertEquals(strategy, commandLine.getExecutionExceptionHandler());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", strategy, sub.getExecutionExceptionHandler());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", strategy, sub.getExecutionExceptionHandler());
             }
         }
         assertTrue(childCount > 0);
