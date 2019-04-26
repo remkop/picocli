@@ -991,4 +991,23 @@ public class CommandLineParseWithHandlersTest {
         Object result = CommandLine.call(Executable.class, CommandLine.defaultFactory(), "-x");
         assertNull(result);
     }
+
+    @Test
+    public void testDefaultExceptionHandler_handleExecutionException() {
+        final int[] outerExitCode = {-1};
+        DefaultExceptionHandler h = new DefaultExceptionHandler() {
+            @Override
+            protected void exit(int exitCode) {
+                outerExitCode[0] = exitCode;
+            }
+        };
+        h.andExit(9876);
+
+        @Command class App {}
+        CommandLine cmd = new CommandLine(new App());
+        ExecutionException ex = new ExecutionException(cmd, "boo");
+        Object result = h.handleExecutionException(ex, null);
+        assertNull(result);
+        assertEquals(9876, outerExitCode[0]);
+    }
 }

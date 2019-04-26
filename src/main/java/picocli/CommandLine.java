@@ -1257,6 +1257,7 @@ public class CommandLine {
             if (hasExitCode()) {
                 ex.printStackTrace(this.err());
                 exit(exitCode());
+                return null;
             }
             throw ex;
         }
