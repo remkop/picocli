@@ -15,7 +15,6 @@
  */
 package picocli;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -27,19 +26,17 @@ import picocli.CommandLine.IExitCodeExceptionMapper;
 import picocli.CommandLine.IParameterExceptionHandler;
 import picocli.CommandLine.Model.CommandSpec;
 
-import java.io.*;
-import java.util.Arrays;
-import java.util.List;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.concurrent.Callable;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.Command;
-import static picocli.CommandLine.DefaultExceptionHandler;
 import static picocli.CommandLine.ExecutionException;
 import static picocli.CommandLine.Help;
 import static picocli.CommandLine.IExecutionStrategy;
-import static picocli.CommandLine.InitializationException;
 import static picocli.CommandLine.Option;
 import static picocli.CommandLine.ParameterException;
 import static picocli.CommandLine.Parameters;
@@ -745,5 +742,11 @@ public class ExecuteTest {
             assertFalse(cause instanceof Error);
             assertEquals("blah", cause.getMessage());
         }
+    }
+
+    @Test
+    public void testPrintHelpIfRequested() {
+        ParseResult parseResult = ParseResult.builder(CommandSpec.create()).build();
+        assertFalse(CommandLine.printHelpIfRequested(parseResult));
     }
 }
