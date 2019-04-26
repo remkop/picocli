@@ -167,7 +167,7 @@ public class CommandLine {
             Throwable cause = ex.getCause() == null ? ex : ex.getCause();
             if (cause instanceof Exception) { throw (Exception) cause; }
             if (cause instanceof Error)     { throw (Error)     cause; }
-            return ex.getCommandLine().getCommandSpec().exitCodeOnExecutionException;
+            throw ex;
         }
     };
 

@@ -687,4 +687,63 @@ public class ExecuteTest {
         assertEquals(9876, cmd.execute());
         assertEquals(9876, cmd.tryExecute());
     }
+
+    @Test
+    public void testDefaultExecutionExceptionHandlerRethrowsExceptions() throws Exception {
+        @Command
+        class App { }
+        CommandLine cmd = new CommandLine(new App());
+        ExecutionException ex = new ExecutionException(cmd, "", new InterruptedException("blah"));
+        try {
+            cmd.getExecutionExceptionHandler().handleExecutionException(ex, null);
+            fail("Expected exception");
+        } catch (InterruptedException e) {
+            assertEquals("blah", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testDefaultExecutionExceptionHandlerRethrowsExecutionExceptions() throws Exception {
+        @Command
+        class App { }
+        CommandLine cmd = new CommandLine(new App());
+        ExecutionException ex = new ExecutionException(cmd, "exception without a Cause");
+        try {
+            cmd.getExecutionExceptionHandler().handleExecutionException(ex, null);
+            fail("Expected exception");
+        } catch (ExecutionException e) {
+            assertEquals("exception without a Cause", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testDefaultExecutionExceptionHandlerRethrowsErrors() throws Exception {
+        @Command
+        class App { }
+        CommandLine cmd = new CommandLine(new App());
+        ExecutionException ex = new ExecutionException(cmd, "", new InternalError("blah"));
+        try {
+            cmd.getExecutionExceptionHandler().handleExecutionException(ex, null);
+            fail("Expected error");
+        } catch (InternalError e) {
+            assertEquals("blah", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testDefaultExecutionExceptionHandlerDoesNotThrowThrowables() throws Exception {
+        @Command
+        class App { }
+        CommandLine cmd = new CommandLine(new App());
+        ExecutionException ex = new ExecutionException(cmd, "", new Throwable("blah"));
+        try {
+            cmd.getExecutionExceptionHandler().handleExecutionException(ex, null);
+            fail("Expected error");
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            assertFalse(cause instanceof Exception);
+            assertFalse(cause instanceof Error);
+            assertEquals("blah", cause.getMessage());
+        }
+    }
 }
