@@ -102,7 +102,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * </pre>
  * <p>
  * Another example that implements {@code Callable} and uses the {@link #execute(String...) CommandLine.execute} convenience API to run in a single line of code:
- * </p>
+ * </p><a name = "checksum_example"></a>
  * <pre>
  *  &#064;Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
  *          name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0")
@@ -179,7 +179,12 @@ public class CommandLine {
      * </p><p>
      * When the {@link #parse(String...)} method is called, the {@link CommandSpec CommandSpec} object will be
      * initialized based on command line arguments. If the commandSpec is created from an annotated user object, this
-     * user object will be initialized based on the command line arguments.</p>
+     * user object will be initialized based on the command line arguments.
+     * </p><p>
+     * If the specified object implements {@code Runnable} or {@code Callable}, or if it is a {@code Method} object,
+     * the command can be run as an application in a <a href="#checksum_example">single line of code</a> by using the
+     * {@link #execute(String...) execute} method to omit some boilerplate code for handling help requests and invalid input.
+     * </p>
      * @param command an annotated user object or a {@code CommandSpec} object to initialize from the command line arguments
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      */
@@ -197,7 +202,12 @@ public class CommandLine {
      * </p><p>
      * When the {@link #parse(String...)} method is called, the {@link CommandSpec CommandSpec} object will be
      * initialized based on command line arguments. If the commandSpec is created from an annotated user object, this
-     * user object will be initialized based on the command line arguments.</p>
+     * user object will be initialized based on the command line arguments.
+     * </p><p>
+     * If the specified object implements {@code Runnable} or {@code Callable}, or if it is a {@code Method} object,
+     * the command can be run as an application in a <a href="#checksum_example">single line of code</a> by using the
+     * {@link #execute(String...) execute} method to omit some boilerplate code for handling help requests and invalid input.
+     * </p>
      * @param command an annotated user object or a {@code CommandSpec} object to initialize from the command line arguments
      * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands}, {@linkplain Option#converter() converters}, etc., that are registered declaratively with annotation attributes
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
