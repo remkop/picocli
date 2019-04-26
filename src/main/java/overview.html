@@ -35,13 +35,13 @@ class CheckSum implements Callable&lt;Integer&gt; {
     public static void main(String[] args) throws Exception {
         // CheckSum implements Callable, so parsing, error handling and handling user
         // requests for usage help or version help can be done with one line of code.
+
         int exitCode = new CommandLine(new CheckSum()).execute(args);
         // System.exit(exitCode);
     }
 
     &#064;Override
-    public Integer call() throws Exception {
-        // your business logic goes here
+    public Integer call() throws Exception { // your business logic goes here
         byte[] fileContents = Files.readAllBytes(file.toPath());
         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
         System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1, digest));
