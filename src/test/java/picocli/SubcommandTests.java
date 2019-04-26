@@ -22,6 +22,8 @@ import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.RunAll;
 import picocli.CommandLine.UnmatchedArgumentException;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -964,6 +966,166 @@ public class SubcommandTests {
             for (CommandLine subsub : sub.getSubcommands().values()) {
                 grandChildCount++;
                 assertEquals("subsubcommand added before IS impacted", strategy, sub.getExecutionExceptionHandler());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testErr_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        PrintWriter original = commandLine.getErr();
+        assertNotNull(original);
+        PrintWriter err = new PrintWriter(new StringWriter());
+        commandLine.setErr(err);
+        assertEquals(err, commandLine.getErr());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertNotSame("subcommand added afterwards is not impacted", err, sub.getErr().getClass());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertNotSame("subcommand added afterwards is not impacted", err, subsub.getErr().getClass());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testErr_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        PrintWriter original = commandLine.getErr();
+        assertNotNull(original);
+        PrintWriter err = new PrintWriter(new StringWriter());
+        commandLine.setErr(err);
+        assertEquals(err, commandLine.getErr());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertSame("subcommand added before IS impacted", err, sub.getErr());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertSame("subsubcommand added before IS impacted", err, sub.getErr());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testOut_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        PrintWriter original = commandLine.getOut();
+        assertNotNull(original);
+        PrintWriter out = new PrintWriter(new StringWriter());
+        commandLine.setOut(out);
+        assertEquals(out, commandLine.getOut());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertNotSame("subcommand added afterwards is not impacted", out, sub.getOut().getClass());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertNotSame("subcommand added afterwards is not impacted", out, subsub.getOut().getClass());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testOut_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        PrintWriter original = commandLine.getOut();
+        assertNotNull(original);
+        PrintWriter out = new PrintWriter(new StringWriter());
+        commandLine.setOut(out);
+        assertEquals(out, commandLine.getOut());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertSame("subcommand added before IS impacted", out, sub.getOut());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertSame("subsubcommand added before IS impacted", out, sub.getOut());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testColorScheme_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        CommandLine.Help.ColorScheme original = commandLine.getColorScheme();
+        assertEquals(Arrays.asList(CommandLine.Help.Ansi.Style.bold), original.commandStyles);
+
+        CommandLine.Help.ColorScheme scheme = new CommandLine.Help.ColorScheme();
+        scheme.commands(CommandLine.Help.Ansi.Style.fg_black, CommandLine.Help.Ansi.Style.bg_cyan);
+        commandLine.setColorScheme(scheme);
+        assertEquals(scheme, commandLine.getColorScheme());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertNotSame("subcommand added afterwards is not impacted", scheme, sub.getColorScheme().getClass());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertNotSame("subcommand added afterwards is not impacted", scheme, subsub.getColorScheme().getClass());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testColorScheme_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        CommandLine.Help.ColorScheme original = commandLine.getColorScheme();
+        assertEquals(Arrays.asList(CommandLine.Help.Ansi.Style.bold), original.commandStyles);
+
+        CommandLine.Help.ColorScheme scheme = new CommandLine.Help.ColorScheme();
+        scheme.commands(CommandLine.Help.Ansi.Style.fg_black, CommandLine.Help.Ansi.Style.bg_cyan);
+        commandLine.setColorScheme(scheme);
+        assertEquals(scheme, commandLine.getColorScheme());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertSame("subcommand added before IS impacted", scheme, sub.getColorScheme());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertSame("subsubcommand added before IS impacted", scheme, sub.getColorScheme());
             }
         }
         assertTrue(childCount > 0);

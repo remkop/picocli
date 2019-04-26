@@ -1,6 +1,10 @@
 package picocli;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.SystemErrRule;
+import org.junit.contrib.java.lang.system.SystemOutRule;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -12,6 +16,14 @@ import static picocli.HelpTestUtil.usageString;
 import static picocli.PicocliTestUtil.setOf;
 
 public class HelpSubCommandTest {
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
+
+    @Rule
+    public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
+
+    @Rule
+    public final SystemOutRule systemOutRule = new SystemOutRule().enableLog().muteForSuccessfulTests();
 
     @Test
     public void testShowSynopsisUsageWithCommandOption() {
@@ -107,5 +119,37 @@ public class HelpSubCommandTest {
                 "Commands:%n" +
                 "  @|bold,underline subsub|@, @|bold,underline ss|@, @|bold,underline sbsb|@  I'm like a 3rd rate command but great bang for your buck%n")).toString();
         assertEquals(expected, baos.toString());
+    }
+
+    @Command(name = "customHelp", helpCommand = true)
+    static class LegacyCustomHelpCommand implements IHelpCommandInitializable, Runnable {
+        private CommandLine helpCommandLine;
+        private Help.Ansi ansi;
+        private PrintStream out;
+        private PrintStream err;
+
+        public void init(CommandLine helpCommandLine, Help.Ansi ansi, PrintStream out, PrintStream err) {
+            this.helpCommandLine = helpCommandLine;
+            this.ansi = ansi;
+            this.out = out;
+            this.err = err;
+        }
+
+        public void run() {
+            out.println("Hi, ansi is " + ansi);
+            err.println("Hello, ansi is " + ansi);
+        }
+    }
+    @Test
+    public void testLegacyCustomHelpCommand() {
+        @Command(subcommands = LegacyCustomHelpCommand.class)
+        class App implements Runnable {
+            public void run() { }
+        }
+
+        CommandLine cmd = new CommandLine(new App());
+        cmd.parseWithHandler(new RunLast().useOut(System.out).useErr(System.err).useAnsi(Help.Ansi.OFF),new String[]{"customHelp"});
+        assertEquals(String.format("Hi, ansi is OFF%n"), systemOutRule.getLog());
+        assertEquals(String.format("Hello, ansi is OFF%n"), systemErrRule.getLog());
     }
 }
