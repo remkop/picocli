@@ -18,17 +18,16 @@ package picocli;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.Assertion;
-import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
+import picocli.CommandLine.ExitCode;
 import picocli.CommandLine.IExecutionExceptionHandler;
+import picocli.CommandLine.IExitCodeExceptionMapper;
+import picocli.CommandLine.IParameterExceptionHandler;
 import picocli.CommandLine.Model.CommandSpec;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -53,15 +52,12 @@ import static picocli.CommandLine.Spec;
 public class ExecuteTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
-    
+
     @Rule
     public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
 
     @Rule
     public final SystemOutRule systemOutRule = new SystemOutRule().enableLog().muteForSuccessfulTests();
-
-    @Rule
-    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
     interface Factory { Object create(); }
     @Test
@@ -73,10 +69,10 @@ public class ExecuteTest {
             public Object create() {return new App();}
         };
         String[] args = { "abc" };
-        verifyAllFail(factory, "Parsed command (picocli.ExecuteTest$", ") is not a Method, Runnable or Callable", args);
+        verifyAllFail(factory, "Parsed command (picocli.ExecuteTest$",
+                ") is not a Method, Runnable or Callable", args);
     }
 
-    @Ignore
     @Test
     public void testExecutionStrategyRunXxxCatchesAndRethrowsExceptionFromRunnable() {
         @Command class App implements Runnable {
@@ -86,11 +82,9 @@ public class ExecuteTest {
         Factory factory = new Factory() {
             public Object create() {return new App();}
         };
-        verifyAllFail(factory, "Error while running command (picocli.ExecuteTest$",
-                "): java.lang.IllegalStateException: TEST EXCEPTION", new String[0]);
+        verifyAllFail(factory, "TEST EXCEPTION", "", new String[0]);
     }
 
-    @Ignore
     @Test
     public void testExecutionStrategyRunXxxCatchesAndRethrowsExceptionFromCallable() {
         @Command class App implements Callable<Object> {
@@ -100,8 +94,7 @@ public class ExecuteTest {
         Factory factory = new Factory() {
             public Object create() {return new App();}
         };
-        verifyAllFail(factory, "Error while calling command (picocli.ExecuteTest$",
-                "): java.lang.IllegalStateException: TEST EXCEPTION2", new String[0]);
+        verifyAllFail(factory, "TEST EXCEPTION2", "", new String[0]);
     }
 
     private void verifyAllFail(Factory factory, String prefix, String suffix, String[] args) {
@@ -115,18 +108,37 @@ public class ExecuteTest {
                         .setExecutionStrategy(strategy)
                         .tryExecute(args);
                 fail(descr + ": expected exception");
+            } catch (IllegalStateException ex) {
+                String actual = ex.getMessage();
+                assertTrue(descr + ": " + actual, actual.startsWith(prefix));
+                assertTrue(descr + ": " + actual, actual.endsWith(suffix));
             } catch (ExecutionException ex) {
                 String actual = ex.getMessage();
                 assertTrue(descr + ": " + actual, actual.startsWith(prefix));
                 assertTrue(descr + ": " + actual, actual.endsWith(suffix));
             } catch (Exception ex) {
-                fail("Unexpected exception");
+                fail("Unexpected exception " + ex);
             }
         }
     }
 
     @Test
-    public void testNonNumericCallableReturnsSpecifiedExitCodeIfHelpRequested() {
+    public void testReturnDefaultExitCodeIfHelpRequested() {
+        @Command(version = "abc 1.3.4")
+        class App implements Callable<Object> {
+            @Option(names = "-h", usageHelp = true) boolean requestHelp;
+            @Option(names = "-V", versionHelp = true) boolean requestVersion;
+            public Object call() { return "RETURN VALUE"; }
+        }
+        CommandLineFactory factory = new CommandLineFactory() {
+            public CommandLine create() {return new CommandLine(new App());}
+        };
+        verifyExitCodeForBuiltInHandlers(factory, ExitCode.OK, new String[] {"-h"});
+        verifyExitCodeForBuiltInHandlers(factory, ExitCode.OK, new String[] {"-V"});
+    }
+
+    @Test
+    public void testReturnExitCodeFromAnnotationIfHelpRequested_NonNumericCallable() {
         @Command(version = "abc 1.3.4", exitCodeOnUsageHelp = 234, exitCodeOnVersionHelp = 543)
         class App implements Callable<Object> {
             @Option(names = "-h", usageHelp = true) boolean requestHelp;
@@ -141,7 +153,34 @@ public class ExecuteTest {
     }
 
     @Test
-    public void testNonNumericCallableReturnsSpecifiedExitCode() {
+    public void testReturnExitCodeFromAnnotationIfHelpRequested_NumericCallable() {
+        @Command(version = "abc 1.3.4", exitCodeOnUsageHelp = 234, exitCodeOnVersionHelp = 543)
+        class App implements Callable<Object> {
+            @Option(names = "-h", usageHelp = true) boolean requestHelp;
+            @Option(names = "-V", versionHelp = true) boolean requestVersion;
+            public Object call() { return 999; } // ignored (not executed)
+        }
+        CommandLineFactory factory = new CommandLineFactory() {
+            public CommandLine create() {return new CommandLine(new App());}
+        };
+        verifyExitCodeForBuiltInHandlers(factory, 234, new String[] {"-h"});
+        verifyExitCodeForBuiltInHandlers(factory, 543, new String[] {"-V"});
+    }
+
+    @Test
+    public void testReturnDefaultExitCodeOnSuccess() {
+        @Command
+        class App implements Callable<Object> {
+            public Object call() { return "RETURN VALUE"; }
+        }
+        CommandLineFactory factory = new CommandLineFactory() {
+            public CommandLine create() {return new CommandLine(new App());}
+        };
+        verifyExitCodeForBuiltInHandlers(factory, ExitCode.OK, new String[0]);
+    }
+
+    @Test
+    public void testReturnExitCodeFromAnnotationOnSuccess_NonNumericCallable() {
         @Command(exitCodeOnSuccess = 123)
         class App implements Callable<Object> {
             public Object call() { return "RETURN VALUE"; }
@@ -152,6 +191,18 @@ public class ExecuteTest {
         verifyExitCodeForBuiltInHandlers(factory, 123, new String[0]);
     }
 
+    @Test
+    public void testReturnExitCodeFromAnnotationOnSuccess_NumericCallable() {
+        @Command(exitCodeOnSuccess = 123)
+        class App implements Callable<Object> {
+            public Object call() { return 987; }
+        }
+        CommandLineFactory factory = new CommandLineFactory() {
+            public CommandLine create() {return new CommandLine(new App());}
+        };
+        verifyExitCodeForBuiltInHandlers(factory, 987, new String[0]);
+    }
+
     interface CommandLineFactory {
         CommandLine create();
     }
@@ -160,308 +211,151 @@ public class ExecuteTest {
         IExecutionStrategy[] strategies = new IExecutionStrategy[] {
                 new RunFirst(), new RunLast(), new RunAll()
         };
-        PrintStream out = new PrintStream(new ByteArrayOutputStream());
         for (IExecutionStrategy strategy : strategies) {
             String descr = strategy.getClass().getSimpleName();
             int actual = factory.create().setExecutionStrategy(strategy).execute(args);
             assertEquals(descr + ": return value", expected, actual);
         }
-    }
-
-    @Test
-    public void testExecutionStrategyRunXxxReturnsExitCodeZeroByDefaultIfHelpRequested() {
-        @Command(version = "abc 1.3.4")
-        class App implements Callable<Object> {
-            @Option(names = "-h", usageHelp = true) boolean requestHelp;
-            @Option(names = "-V", versionHelp = true) boolean requestVersion;
-            public Object call() { return "RETURN VALUE"; }
-        }
-        CommandLineFactory factory = new CommandLineFactory() {
-            public CommandLine create() {return new CommandLine(new App());}
-        };
-        verifyReturnValueForBuiltInExecutionStrategies(factory, CommandSpec.DEFAULT_EXIT_CODE_OK, new String[] {"-h"});
-        verifyReturnValueForBuiltInExecutionStrategies(factory, CommandSpec.DEFAULT_EXIT_CODE_OK, new String[] {"-V"});
-    }
-
-    @Test
-    public void testExecutionStrategyRunXxxReturnsExitCode() {
-        @Command
-        class App implements Callable<Object> {
-            public Object call() { return 123; }
-        }
-        CommandLineFactory factory = new CommandLineFactory() {
-            public CommandLine create() {return new CommandLine(new App());}
-        };
-        verifyReturnValueForBuiltInExecutionStrategies(factory, 123, new String[0]);
-    }
-
-    private void verifyReturnValueForBuiltInExecutionStrategies(CommandLineFactory factory, int expected, String[] args) {
-        IExecutionStrategy[] strategies = new IExecutionStrategy[] {
-                new RunFirst(), new RunLast(), new RunAll()
-        };
         for (IExecutionStrategy strategy : strategies) {
             String descr = strategy.getClass().getSimpleName();
-            int actual = factory.create().setExecutionStrategy(strategy).execute(args);
-            assertEquals(descr + ": return value", expected, actual);
-        }
-    }
-    @Test
-    public void testExecutionStrategyRunXxxReturnsCallableResultWithSubcommand() {
-        @Command
-        class App implements Callable<Object> {
-            public Object call() { return "RETURN VALUE"; }
-        }
-        @Command(name = "sub")
-        class Sub implements Callable<Object> {
-            public Object call() { return "SUB RETURN VALUE"; }
-        }
-        CommandLineFactory factory = new CommandLineFactory() {
-            public CommandLine create() {return new CommandLine(new App()).addSubcommand("sub", new Sub());}
-        };
-
-        Object actual1 = factory.create().parseWithHandler(new RunFirst(), new String[] {"sub"});
-        assertEquals("RunFirst: return value", Arrays.asList("RETURN VALUE"), actual1);
-
-        Object actual2 = factory.create().parseWithHandler(new RunLast(), new String[] {"sub"});
-        assertEquals("RunLast: return value", Arrays.asList("SUB RETURN VALUE"), actual2);
-
-        Object actual3 = factory.create().parseWithHandler(new RunAll(), new String[] {"sub"});
-        assertEquals("RunAll: return value", Arrays.asList("RETURN VALUE", "SUB RETURN VALUE"), actual3);
-    }
-    @Test
-    public void testExecutionStrategy2RunXxxReturnsCallableResultWithSubcommand() {
-        @Command
-        class App implements Callable<Object> {
-            public Object call() { return "RETURN VALUE"; }
-        }
-        @Command(name = "sub")
-        class Sub implements Callable<Object> {
-            public Object call() { return "SUB RETURN VALUE"; }
-        }
-        CommandLineFactory factory = new CommandLineFactory() {
-            public CommandLine create() {return new CommandLine(new App()).addSubcommand("sub", new Sub());}
-        };
-        PrintStream out = new PrintStream(new ByteArrayOutputStream());
-
-        Object actual1 = factory.create().parseWithHandler(new RunFirst(), new String[]{"sub"});
-        assertEquals("RunFirst: return value", Arrays.asList("RETURN VALUE"), actual1);
-
-        Object actual2 = factory.create().parseWithHandler(new RunLast(), new String[]{"sub"});
-        assertEquals("RunLast: return value", Arrays.asList("SUB RETURN VALUE"), actual2);
-
-        Object actual3 = factory.create().parseWithHandler(new RunAll(), new String[]{"sub"});
-        assertEquals("RunAll: return value", Arrays.asList("RETURN VALUE", "SUB RETURN VALUE"), actual3);
-    }
-
-    @Test
-    public void testRunCallsRunnableIfParseSucceeds() {
-        final boolean[] runWasCalled = {false};
-        @Command class App implements Runnable {
-            public void run() {
-                runWasCalled[0] = true;
+            try {
+                int actual = factory.create().setExecutionStrategy(strategy).tryExecute(args);
+                assertEquals(descr + ": return value", expected, actual);
+            } catch (Exception ex) {
+                fail("Unexpected exception " + ex);
             }
         }
-        CommandLine.run(new App(), System.err);
-        assertTrue(runWasCalled[0]);
     }
 
     @Test
-    public void testRunPrintsErrorIfParseFails() throws UnsupportedEncodingException {
-        final boolean[] runWasCalled = {false};
+    public void testRunsRunnableIfParseSucceeds() throws Exception {
+        final int[] runWasCalled = {0};
+        @Command class App implements Runnable {
+            public void run() {
+                runWasCalled[0]++;
+            }
+        }
+        new CommandLine(new App()).execute();
+        assertEquals(1, runWasCalled[0]);
+
+        new CommandLine(new App()).tryExecute();
+        assertEquals(2, runWasCalled[0]);
+    }
+
+    @Test
+    public void testCallsCallableIfParseSucceeds() throws Exception {
+        final int[] runWasCalled = {0};
+        @Command class App implements Callable<Object> {
+            public Object call() {
+                return runWasCalled[0]++;
+            }
+        }
+        new CommandLine(new App()).execute();
+        assertEquals(1, runWasCalled[0]);
+
+        new CommandLine(new App()).tryExecute();
+        assertEquals(2, runWasCalled[0]);
+    }
+
+    @Test
+    public void testInvokesMethodIfParseSucceeds() throws Exception {
+        final int[] runWasCalled = {0};
+        @Command class App {
+            @Command
+            public Object mySubcommand() {
+                return runWasCalled[0]++;
+            }
+        }
+        new CommandLine(new App()).execute("mySubcommand");
+        assertEquals(1, runWasCalled[0]);
+
+        new CommandLine(new App()).tryExecute("mySubcommand");
+        assertEquals(2, runWasCalled[0]);
+    }
+
+    @Test
+    public void testPrintErrorOnInvalidInput() throws Exception {
+        final int[] runWasCalled = {0};
         class App implements Runnable {
             @Option(names = "-number") int number;
             public void run() {
-                runWasCalled[0] = true;
+                runWasCalled[0]++;
             }
         }
-        PrintStream oldErr = System.err;
-        StringPrintStream sps = new StringPrintStream();
-        System.setErr(sps.stream());
-        CommandLine.run(new App(), System.err, "-number", "not a number");
-        System.setErr(oldErr);
+        {
+            StringWriter sw = new StringWriter();
+            new CommandLine(new App()).setErr(new PrintWriter(sw)).execute("-number", "not a number");
 
-        assertFalse(runWasCalled[0]);
-        assertEquals(String.format(
-                "Invalid value for option '-number': 'not a number' is not an int%n" +
-                        "Usage: <main class> [-number=<number>]%n" +
-                        "      -number=<number>%n"), sps.toString());
-    }
-
-    @Test(expected = InitializationException.class)
-    public void testRunRequiresAnnotatedCommand() {
-        class App implements Runnable {
-            public void run() { }
+            assertEquals(0, runWasCalled[0]);
+            assertEquals(String.format(
+                    "Invalid value for option '-number': 'not a number' is not an int%n" +
+                            "Usage: <main class> [-number=<number>]%n" +
+                            "      -number=<number>%n"), sw.toString());
         }
-        CommandLine.run(new App(), System.err);
+        {
+            StringWriter sw = new StringWriter();
+            new CommandLine(new App()).setErr(new PrintWriter(sw)).tryExecute("-number", "not a number");
+
+            assertEquals(0, runWasCalled[0]);
+            assertEquals(String.format(
+                    "Invalid value for option '-number': 'not a number' is not an int%n" +
+                            "Usage: <main class> [-number=<number>]%n" +
+                            "      -number=<number>%n"), sw.toString());
+        }
     }
 
     @Test
-    public void testCallReturnsCallableResultParseSucceeds() throws Exception {
-        @Command class App implements Callable<Boolean> {
-            public Boolean call() { return true; }
-        }
-        assertTrue(CommandLine.call(new App(), System.err));
-    }
-
-    @Test
-    public void testCallReturnsNullAndPrintsErrorIfParseFails() throws Exception {
+    public void testReturnDefaultExitCodeOnInvalidInput() throws Exception {
         class App implements Callable<Boolean> {
             @Option(names = "-number") int number;
             public Boolean call() { return true; }
         }
-        PrintStream oldErr = System.err;
-        StringPrintStream sps = new StringPrintStream();
-        System.setErr(sps.stream());
-        Boolean callResult = CommandLine.call(new App(), System.err, "-number", "not a number");
-        System.setErr(oldErr);
-
-        assertNull(callResult);
-        assertEquals(String.format(
-                "Invalid value for option '-number': 'not a number' is not an int%n" +
-                        "Usage: <main class> [-number=<number>]%n" +
-                        "      -number=<number>%n"), sps.toString());
-    }
-
-    @Test(expected = InitializationException.class)
-    public void testCallRequiresAnnotatedCommand() throws Exception {
-        class App implements Callable<Object> {
-            public Object call() { return null; }
+        {
+            int exitCode = new CommandLine(new App()).execute("-number", "not a number");
+            assertEquals(ExitCode.USAGE, exitCode);
         }
-        CommandLine.call(new App(), System.err);
-    }
-
-    @Test
-    public void testExitCodeFromParseResultHandler() {
-        @Command class App implements Runnable {
-            public void run() {
-            }
-        }
-        exit.expectSystemExitWithStatus(23);
-        new CommandLine(new App()).parseWithHandler(new RunFirst().andExit(23), new String[]{});
-    }
-
-    @Test
-    public void testExitCodeFromParseResultHandler2() {
-        @Command class App implements Runnable {
-            public void run() {
-            }
-        }
-        MyHandler handler = new MyHandler();
-        new CommandLine(new App()).parseWithHandler(handler.andExit(23), new String[]{});
-        assertEquals(23, handler.exitCode);
-    }
-    static class MyHandler extends RunLast {
-        int exitCode;
-
-        @Override
-        protected void exit(int exitCode) {
-            this.exitCode = exitCode;
+        {
+            int exitCode = new CommandLine(new App()).tryExecute("-number", "not a number");
+            assertEquals(ExitCode.USAGE, exitCode);
         }
     }
 
     @Test
-    public void testExitCodeFromExceptionHandler() {
+    public void testReturnExitCodeFromAnnotationOnInvalidInput_NumericCallable() throws Exception {
+        @Command(exitCodeOnInvalidInput = 987)
+        class App implements Callable<Boolean> {
+            @Option(names = "-number") int number;
+            public Boolean call() { return true; }
+        }
+        {
+            int exitCode = new CommandLine(new App()).execute("-number", "not a number");
+            assertEquals(987, exitCode);
+        }
+        {
+            int exitCode = new CommandLine(new App()).tryExecute("-number", "not a number");
+            assertEquals(987, exitCode);
+        }
+    }
+
+    @Test
+    public void testExitCodeFromParameterExceptionHandlerHandler() {
         @Command class App implements Runnable {
             public void run() {
                 throw new ParameterException(new CommandLine(this), "blah");
             }
         }
-        exit.expectSystemExitWithStatus(25);
-        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23),
-                                                    defaultExceptionHandler().andExit(25));
+        CustomParameterExceptionHandler handler = new CustomParameterExceptionHandler();
+        int exitCode = new CommandLine(new App()).setParameterExceptionHandler(handler).execute();
         assertEquals(format("" +
-                "blah%n",
-                "<main command>"), systemErrRule.getLog());
+                "Hi, this is my custom error message%n"), systemErrRule.getLog());
+        assertEquals(125, exitCode);
     }
 
-    private DefaultExceptionHandler<List<Object>> defaultExceptionHandler() {
-        return new DefaultExceptionHandler<List<Object>>();
-    }
-
-    @Test
-    public void testExitCodeFromExceptionHandler2() {
-        @Command class App implements Runnable {
-            public void run() {
-                throw new ParameterException(new CommandLine(this), "blah");
-            }
+    static class CustomParameterExceptionHandler implements IParameterExceptionHandler {
+        public int handleParseException(ParameterException ex, String[] args) throws Exception {
+            ex.getCommandLine().getErr().println("Hi, this is my custom error message");
+            return 125;
         }
-        CustomExceptionHandler<List<Object>> handler = new CustomExceptionHandler<List<Object>>();
-        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23), handler.andExit(25));
-        assertEquals(format("" +
-                        "blah%n" +
-                        "Usage: <main class>%n"), systemErrRule.getLog());
-        assertEquals(25, handler.exitCode);
-    }
-
-    static class CustomExceptionHandler<R> extends DefaultExceptionHandler<R> {
-        int exitCode;
-
-        @Override
-        protected void exit(int exitCode) {
-            this.exitCode = exitCode;
-        }
-    }
-
-    @Test
-    public void testExitCodeFromExceptionHandler3() {
-        @Command class App implements Runnable {
-            public void run() {
-                throw new ParameterException(new CommandLine(this), "blah");
-            }
-        }
-        CustomNoThrowExceptionHandler<List<Object>> handler = new CustomNoThrowExceptionHandler<List<Object>>();
-        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23), handler.andExit(25));
-        assertEquals(format("" +
-                "blah%n" +
-                "Usage: <main class>%n"), systemErrRule.getLog());
-        assertEquals(25, handler.exitCode);
-    }
-    static class CustomNoThrowExceptionHandler<R> extends DefaultExceptionHandler<R> {
-        int exitCode;
-
-        @Override
-        protected R throwOrExit(ExecutionException ex) {
-            try {
-                super.throwOrExit(ex);
-            } catch (ExecutionException caught) {
-            }
-            return null;
-        }
-
-        @Override
-        protected void exit(int exitCode) {
-            this.exitCode = exitCode;
-        }
-    }
-
-    @Test
-    public void testSystemExitForOtherExceptions() {
-        @Command class App implements Runnable {
-            public void run() {
-                throw new RuntimeException("blah");
-            }
-        }
-        exit.expectSystemExitWithStatus(25);
-        exit.checkAssertionAfterwards(new Assertion() {
-            public void checkAssertion() {
-                String actual = systemErrRule.getLog();
-                assertTrue(actual.startsWith("picocli.CommandLine$ExecutionException: Error while running command (picocli.ExecuteTest"));
-                assertTrue(actual.contains("java.lang.RuntimeException: blah"));
-            }
-        });
-        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23),
-                defaultExceptionHandler().andExit(25));
-    }
-
-    @Test(expected = InternalError.class)
-    public void testNoSystemExitForErrors() {
-        @Command class App implements Runnable {
-            public void run() {
-                throw new InternalError("blah");
-            }
-        }
-        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23),
-                defaultExceptionHandler().andExit(25));
     }
 
     @Command(name = "mycmd", mixinStandardHelpOptions = true, version = "MyCallable-1.0")
@@ -495,251 +389,143 @@ public class ExecuteTest {
             "  @|yellow -x|@=@|italic <|@@|italic option>|@     this is an option%n")).toString();
 
     @Test
-    public void testCall1WithInvalidInput() {
-        CommandLine.call(new MyCallable(), "invalid input");
+    public void testExecuteWithInvalidInput() {
+        int exitCode = new CommandLine(new MyCallable()).execute("invalid input");
         assertEquals(MYCALLABLE_INVALID_INPUT, systemErrRule.getLog());
         assertEquals("", systemOutRule.getLog());
+        assertEquals(ExitCode.USAGE, exitCode);
     }
 
     @Test
-    public void testCall2WithInvalidInput() {
-        CommandLine.call(new MyCallable(), System.out, "invalid input");
-        assertEquals(MYCALLABLE_INVALID_INPUT, systemErrRule.getLog());
-        assertEquals("", systemOutRule.getLog());
-    }
-
-    @Test
-    public void testCall3WithInvalidInput() {
-        CommandLine.call(new MyCallable(), System.out, Help.Ansi.ON, "invalid input");
+    public void testExecuteWithInvalidInput_Ansi_ON() {
+        new CommandLine(new MyCallable())
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.ON)).execute("invalid input");
         assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
         assertEquals("", systemOutRule.getLog());
     }
 
     @Test
-    public void testCall4WithInvalidInput() {
-        CommandLine.call(new MyCallable(), System.out, System.err, Help.Ansi.ON, "invalid input");
-        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
-        assertEquals("", systemOutRule.getLog());
-    }
-
-    @Test
-    public void testCall4WithInvalidInput_ToStdout() {
-        CommandLine.call(new MyCallable(), System.out, System.out, Help.Ansi.ON, "invalid input");
+    public void testExecuteWithInvalidInput_Ansi_ON_CustomErr() {
+        new CommandLine(new MyCallable())
+                .setErr(new PrintWriter(System.out, true))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.ON)).execute("invalid input");
         assertEquals("", systemErrRule.getLog());
         assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
     }
 
     @Test
-    public void testCall1DefaultExceptionHandlerRethrows() {
-        try {
-            CommandLine.call(new MyCallable(), "-x abc");
-        } catch (ExecutionException ex) {
-            String cmd = ex.getCommandLine().getCommand().toString();
-            String msg = "Error while calling command (" + cmd + "): java.lang.IllegalStateException: this is a test";
-            assertEquals(msg, ex.getMessage());
+    public void testErrIsSystemErrByDefault() {
+        new CommandLine(new MyCallable()).getErr().println("hi");
+        assertEquals(String.format("hi%n"), systemErrRule.getLog());
+        assertEquals("", systemOutRule.getLog());
+    }
+
+    @Test
+    public void testOutIsSystemOutByDefault() {
+        new CommandLine(new MyCallable()).getOut().println("hi");
+        assertEquals("", systemErrRule.getLog());
+        assertEquals(String.format("hi%n"), systemOutRule.getLog());
+    }
+
+    @Test
+    public void testExitCodeExceptionMapper_nullByDefault() {
+        CommandLine cmd = new CommandLine(new MyCallable());
+        assertNull(cmd.getExitCodeExceptionMapper());
+    }
+
+    @Test
+    public void testExitCodeExceptionMapper() {
+        @Command
+        class MyCommand implements Callable  {
+            public Void call() throws IOException {
+                throw new IOException("error");
+            }
         }
-        assertEquals("", systemErrRule.getLog());
-        assertEquals("", systemOutRule.getLog());
+        IExitCodeExceptionMapper mapper = new IExitCodeExceptionMapper() {
+            public int getExitCode(Throwable t) {
+                if (t instanceof IOException && "error".equals(t.getMessage())) {
+                    return 123;
+                }
+                return 987;
+            }
+        };
+        CommandLine cmd = new CommandLine(new MyCommand());
+        cmd.setExitCodeExceptionMapper(mapper);
+        int exitCode = cmd.execute();
+        assertEquals(123, exitCode);
+    }
+
+    @Test
+    public void testExecuteCallableThrowsException() {
+        int exitCode = new CommandLine(new MyCallable()).execute("-x", "abc");
+        String cmd = "mycmd";
+        String msg = "java.lang.IllegalStateException: this is a test";
+        assertTrue(systemErrRule.getLog().startsWith(msg));
+        assertEquals(ExitCode.SOFTWARE, exitCode);
     }
 
 
     @Test
-    public void testCall1WithHelpRequest() {
-        CommandLine.call(new MyCallable(), "--help");
-        assertEquals("", systemErrRule.getLog());
-        assertEquals(MYCALLABLE_USAGE, systemOutRule.getLog());
-    }
-
-    @Test
-    public void testCall2WithHelpRequest() {
-        CommandLine.call(new MyCallable(), System.out, "--help");
-        assertEquals("", systemErrRule.getLog());
-        assertEquals(MYCALLABLE_USAGE, systemOutRule.getLog());
-    }
-
-    @Test
-    public void testCall3WithHelpRequest() {
-        CommandLine.call(new MyCallable(), System.out, Help.Ansi.ON, "--help");
-        assertEquals("", systemErrRule.getLog());
-        assertEquals(MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
-    }
-
-    @Test
-    public void testCall3WithHelpRequest_ToStderr() {
-        CommandLine.call(new MyCallable(), System.err, Help.Ansi.ON, "--help");
-        assertEquals(MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
-        assertEquals("", systemOutRule.getLog());
-    }
-
-    @Test
-    public void testCall3WithHelpRequest_ToCustomStream() {
-        StringPrintStream sps = new StringPrintStream();
-        CommandLine.call(new MyCallable(), sps.stream(), Help.Ansi.ON, "--help");
-        assertEquals(MYCALLABLE_USAGE_ANSI, sps.toString());
-        assertEquals("", systemErrRule.getLog());
-        assertEquals("", systemOutRule.getLog());
-    }
-
-    @Test
-    public void testCall4WithHelpRequest() {
-        CommandLine.call(new MyCallable(), System.out, System.err, Help.Ansi.ON, "--help");
-        assertEquals("", systemErrRule.getLog());
-        assertEquals(MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
-    }
-
-    @Test
-    public void testCall4WithHelpRequest_ToStderr() {
-        CommandLine.call(new MyCallable(), System.err, System.out, Help.Ansi.ON, "--help");
-        assertEquals(MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
-        assertEquals("", systemOutRule.getLog());
-    }
-
-    @Test
-    public void testCall4WithHelpRequest_ToCustomStream() {
-        StringPrintStream sps = new StringPrintStream();
-        CommandLine.call(new MyCallable(), sps.stream(), System.out, Help.Ansi.ON, "--help");
-        assertEquals(MYCALLABLE_USAGE_ANSI, sps.toString());
-        assertEquals("", systemErrRule.getLog());
-        assertEquals("", systemOutRule.getLog());
-    }
-    //---
-
-    @Test
-    public void testRun1WithInvalidInput() {
-        CommandLine.run(new MyRunnable(), "invalid input");
-        assertEquals(MYCALLABLE_INVALID_INPUT, systemErrRule.getLog());
-        assertEquals("", systemOutRule.getLog());
-    }
-
-    @Test
-    public void testRun2WithInvalidInput() {
-        CommandLine.run(new MyRunnable(), System.out, "invalid input");
-        assertEquals(MYCALLABLE_INVALID_INPUT, systemErrRule.getLog());
-        assertEquals("", systemOutRule.getLog());
-    }
-
-    @Test
-    public void testRun3WithInvalidInput() {
-        CommandLine.run(new MyRunnable(), System.out, Help.Ansi.ON, "invalid input");
-        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
-        assertEquals("", systemOutRule.getLog());
-    }
-
-    @Test
-    public void testRun4WithInvalidInput() {
-        CommandLine.run(new MyRunnable(), System.out, System.err, Help.Ansi.ON, "invalid input");
-        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
-        assertEquals("", systemOutRule.getLog());
-    }
-
-    @Test
-    public void testRun4WithInvalidInput_ToStdout() {
-        CommandLine.run(new MyRunnable(), System.out, System.out, Help.Ansi.ON, "invalid input");
-        assertEquals("", systemErrRule.getLog());
-        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
-    }
-
-    @Test
-    public void testRun1WithHelpRequest() {
-        CommandLine.run(new MyRunnable(), "--help");
+    public void testExecuteCallableWithHelpRequest() {
+        int exitCode = new CommandLine(new MyCallable()).execute("--help");
         assertEquals("", systemErrRule.getLog());
         assertEquals(MYCALLABLE_USAGE, systemOutRule.getLog());
+        assertEquals(ExitCode.OK, exitCode);
     }
 
     @Test
-    public void testRun2WithHelpRequest() {
-        CommandLine.run(new MyRunnable(), System.out, "--help");
-        assertEquals("", systemErrRule.getLog());
-        assertEquals(MYCALLABLE_USAGE, systemOutRule.getLog());
-    }
-
-    @Test
-    public void testRun3WithHelpRequest() {
-        CommandLine.run(new MyRunnable(), System.out, Help.Ansi.ON, "--help");
-        assertEquals("", systemErrRule.getLog());
-        assertEquals(MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
-    }
-
-    @Test
-    public void testRun3WithHelpRequest_ToStderr() {
-        CommandLine.run(new MyRunnable(), System.err, Help.Ansi.ON, "--help");
-        assertEquals(MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
-        assertEquals("", systemOutRule.getLog());
-    }
-
-    @Test
-    public void testRun3WithHelpRequest_ToCustomStream() {
-        StringPrintStream sps = new StringPrintStream();
-        CommandLine.run(new MyRunnable(), sps.stream(), Help.Ansi.ON, "--help");
-        assertEquals(MYCALLABLE_USAGE_ANSI, sps.toString());
+    public void testExecuteCallableWithHelpRequest_Ansi_OFF_ToCustomWriter() {
+        StringWriter sw = new StringWriter();
+        int exitCode = new CommandLine(new MyCallable())
+                .setOut(new PrintWriter(sw))
+                .execute("--help");
         assertEquals("", systemErrRule.getLog());
         assertEquals("", systemOutRule.getLog());
+        assertEquals(MYCALLABLE_USAGE, sw.toString());
+        assertEquals(ExitCode.OK, exitCode);
     }
 
     @Test
-    public void testRun4WithHelpRequest() {
-        CommandLine.run(new MyRunnable(), System.out, System.err, Help.Ansi.ON, "--help");
-        assertEquals("", systemErrRule.getLog());
-        assertEquals(MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
-    }
-
-    @Test
-    public void testRun4WithHelpRequest_ToStderr() {
-        CommandLine.run(new MyRunnable(), System.err, System.out, Help.Ansi.ON, "--help");
-        assertEquals(MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
-        assertEquals("", systemOutRule.getLog());
-    }
-
-    @Test
-    public void testRun4WithHelpRequest_ToCustomStream() {
-        StringPrintStream sps = new StringPrintStream();
-        CommandLine.run(new MyRunnable(), sps.stream(), System.out, Help.Ansi.ON, "--help");
-        assertEquals(MYCALLABLE_USAGE_ANSI, sps.toString());
+    public void testExecuteCallableWithHelpRequest_Ansi_ON_ToCustomWriter() {
+        StringWriter sw = new StringWriter();
+        new CommandLine(new MyCallable())
+                .setOut(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.ON))
+                .execute("--help");
         assertEquals("", systemErrRule.getLog());
         assertEquals("", systemOutRule.getLog());
+        assertEquals(MYCALLABLE_USAGE_ANSI, sw.toString());
     }
 
     @Test
     public void testCallWithFactory() {
-        Runnable[] variations = new Runnable[] {
-                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), "-x", "a");}},
-                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), System.out, "-x", "a");}},
-                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), System.out, Help.Ansi.OFF, "-x", "a");}},
-                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), System.out, System.out, Help.Ansi.OFF, "-x", "a");}},
-        };
-        for (Runnable r : variations) {
-            try {
-                r.run();
-            } catch (ExecutionException ex) {
-                assertTrue(ex.getMessage().startsWith("Error while calling command (picocli.ExecuteTest$MyCallable"));
-                assertTrue(ex.getCause() instanceof IllegalStateException);
-                assertEquals("this is a test", ex.getCause().getMessage());
-            }
+        try {
+            new CommandLine(MyCallable.class, new InnerClassFactory(this)).tryExecute("-x", "a");
+            fail("Expected exception");
+        } catch (IllegalStateException ex) {
+            assertEquals("this is a test", ex.getMessage());
+        } catch (Exception ex) {
+            fail("Unexpected exception " + ex);
+        }
+    }
+
+    @Test
+    public void testRunWithFactory() {
+        try {
+            new CommandLine(MyRunnable.class, new InnerClassFactory(this)).tryExecute("-x", "a");
+            fail("Expected exception");
+        } catch (IllegalStateException ex) {
+            assertEquals("this is a test", ex.getMessage());
+        } catch (Exception ex) {
+            fail("Unexpected exception " + ex);
         }
     }
 
     @Test
     public void testCallWithFactoryVersionHelp() {
-        CommandLine.call(MyCallable.class, new InnerClassFactory(this), "--version");
+        new CommandLine(MyCallable.class, new InnerClassFactory(this)).execute("--version");
         assertEquals(String.format("MyCallable-1.0%n"), systemOutRule.getLog());
         assertEquals("", systemErrRule.getLog());
-        systemOutRule.clearLog();
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final PrintStream ps = new PrintStream(baos);
-        Runnable[] variations = new Runnable[] {
-                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), ps, "--version");}},
-                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), ps, Help.Ansi.OFF, "--version");}},
-                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), ps, System.out, Help.Ansi.OFF, "--version");}},
-        };
-        for (Runnable r : variations) {
-            assertEquals("", baos.toString());
-            r.run();
-            assertEquals(String.format("MyCallable-1.0%n"), baos.toString());
-            baos.reset();
-            assertEquals("", systemErrRule.getLog());
-            assertEquals("", systemOutRule.getLog());
-        }
     }
 
     @Test
@@ -750,73 +536,16 @@ public class ExecuteTest {
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n" +
                 "  -x=<option>     this is an option%n");
-        Runnable[] variations = new Runnable[] {
-                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), "-x");}},
-                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), System.out, "-x");}},
-                new Runnable() {public void run() {CommandLine.call(MyCallable.class, new InnerClassFactory(this), System.out, Help.Ansi.OFF, "-x");}},
-        };
-        for (Runnable r : variations) {
-            assertEquals("", systemErrRule.getLog());
-            assertEquals("", systemOutRule.getLog());
-            systemErrRule.clearLog();
-            systemOutRule.clearLog();
-            r.run();
-            assertEquals(expected, systemErrRule.getLog());
-            assertEquals("", systemOutRule.getLog());
-
-            systemErrRule.clearLog();
-            systemOutRule.clearLog();
-        }
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final PrintStream ps = new PrintStream(baos);
-        CommandLine.call(MyCallable.class, new InnerClassFactory(this), System.out, ps, Help.Ansi.OFF, "-x");
-        assertEquals(expected, baos.toString());
+        new CommandLine(MyCallable.class, new InnerClassFactory(this)).execute("-x");
+        assertEquals(expected, systemErrRule.getLog());
         assertEquals("", systemOutRule.getLog());
-        assertEquals("", systemErrRule.getLog());
-    }
-
-    @Test
-    public void testRunWithFactory() {
-        Runnable[] variations = new Runnable[] {
-                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), "-x", "a");}},
-                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), System.out, "-x", "a");}},
-                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), System.out, Help.Ansi.OFF, "-x", "a");}},
-                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), System.out, System.out, Help.Ansi.OFF, "-x", "a");}},
-        };
-        for (Runnable r : variations) {
-            try {
-                r.run();
-            } catch (ExecutionException ex) {
-                assertTrue(ex.getMessage(), ex.getMessage().startsWith("Error while running command (picocli.ExecuteTest$MyRunnable"));
-                assertTrue(ex.getCause() instanceof IllegalStateException);
-                assertEquals("this is a test", ex.getCause().getMessage());
-            }
-        }
     }
 
     @Test
     public void testRunWithFactoryVersionHelp() {
-        CommandLine.run(MyRunnable.class, new InnerClassFactory(this), "--version");
+        new CommandLine(MyRunnable.class, new InnerClassFactory(this)).execute("--version");
         assertEquals(String.format("MyRunnable-1.0%n"), systemOutRule.getLog());
         assertEquals("", systemErrRule.getLog());
-        systemOutRule.clearLog();
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final PrintStream ps = new PrintStream(baos);
-        Runnable[] variations = new Runnable[] {
-                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), ps, "--version");}},
-                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), ps, Help.Ansi.OFF, "--version");}},
-                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), ps, System.out, Help.Ansi.OFF, "--version");}},
-        };
-        for (Runnable r : variations) {
-            assertEquals("", baos.toString());
-            r.run();
-            assertEquals(String.format("MyRunnable-1.0%n"), baos.toString());
-            baos.reset();
-            assertEquals("", systemErrRule.getLog());
-            assertEquals("", systemOutRule.getLog());
-        }
     }
 
     @Test
@@ -827,34 +556,13 @@ public class ExecuteTest {
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n" +
                 "  -x=<option>     this is an option%n");
-        Runnable[] variations = new Runnable[] {
-                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), "-x");}},
-                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), System.out, "-x");}},
-                new Runnable() {public void run() {CommandLine.run(MyRunnable.class, new InnerClassFactory(this), System.out, Help.Ansi.OFF, "-x");}},
-        };
-        for (Runnable r : variations) {
-            assertEquals("", systemErrRule.getLog());
-            assertEquals("", systemOutRule.getLog());
-            systemErrRule.clearLog();
-            systemOutRule.clearLog();
-            r.run();
-            assertEquals(expected, systemErrRule.getLog());
-            assertEquals("", systemOutRule.getLog());
-
-            systemErrRule.clearLog();
-            systemOutRule.clearLog();
-        }
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final PrintStream ps = new PrintStream(baos);
-        CommandLine.run(MyRunnable.class, new InnerClassFactory(this), System.out, ps, Help.Ansi.OFF, "-x");
-        assertEquals(expected, baos.toString());
+        new CommandLine(MyRunnable.class, new InnerClassFactory(this)).execute("-x");
+        assertEquals(expected, systemErrRule.getLog());
         assertEquals("", systemOutRule.getLog());
-        assertEquals("", systemErrRule.getLog());
     }
 
     @Test
-    public void testExecutionExceptionIfRunnableThrowsExecutionException() {
+    public void testExecutionExceptionIfRunnableThrowsExecutionException() throws Exception {
         @Command
         class App implements Runnable {
             @Spec CommandSpec spec;
@@ -863,14 +571,15 @@ public class ExecuteTest {
             }
         }
         try {
-            CommandLine.run(new App());
+            new CommandLine(new App()).tryExecute();
+            fail("Expected exception");
         } catch (ExecutionException ex) {
             assertEquals("abc", ex.getMessage());
         }
     }
 
     @Test
-    public void testExecutionExceptionIfCallableThrowsExecutionException() {
+    public void testExecutionExceptionIfCallableThrowsExecutionException() throws Exception {
         @Command
         class App implements Callable<Void> {
             @Spec CommandSpec spec;
@@ -879,14 +588,15 @@ public class ExecuteTest {
             }
         }
         try {
-            CommandLine.call(new App());
+            new CommandLine(new App()).tryExecute();
+            fail("Expected exception");
         } catch (ExecutionException ex) {
             assertEquals("abc", ex.getMessage());
         }
     }
 
     @Test
-    public void testParameterExceptionIfCallableThrowsParameterException() {
+    public void testNoParameterExceptionIfCallableThrowsParameterException() throws Exception {
         @Command
         class App implements Callable<Void> {
             @Spec CommandSpec spec;
@@ -894,11 +604,8 @@ public class ExecuteTest {
                 throw new ParameterException(spec.commandLine(), "xxx");
             }
         }
-        try {
-            CommandLine.call(new App());
-        } catch (ParameterException ex) {
-            assertEquals("xxx", ex.getMessage());
-        }
+        int exitCode = new CommandLine(new App()).tryExecute();
+        assertEquals(ExitCode.USAGE, exitCode);
     }
 
     @Test
@@ -907,18 +614,27 @@ public class ExecuteTest {
         assertSame(runAll, runAll.self());
     }
 
-    @Ignore
     @Test
     public void testExecuteWhenExecutionStrategyThrowsOtherException() {
         @Command
         class App { }
 
-        CommandLine cmd = new CommandLine(new App()).setExecutionStrategy(new IExecutionStrategy() {
+        class FailingExecutionStrategy implements IExecutionStrategy {
             public int execute(ParseResult parseResult) throws ExecutionException {
                 throw new IllegalArgumentException("abc");
             }
-        });
-        assertEquals(CommandSpec.DEFAULT_EXIT_CODE_SOFTWARE, cmd.execute());
+        }
+
+        CommandLine cmd = new CommandLine(new App()).setExecutionStrategy(new FailingExecutionStrategy());
+        assertEquals(ExitCode.SOFTWARE, cmd.execute());
+
+        String prefix = String.format("" +
+                "java.lang.IllegalArgumentException: abc%n" +
+                "\tat picocli.ExecuteTest$1FailingExecutionStrategy.execute(ExecuteTest.java");
+        assertTrue(systemErrRule.getLog().startsWith(prefix));
+
+        systemErrRule.clearLog();
+        systemOutRule.clearLog();
         try {
             cmd.tryExecute();
             fail("Expected exception");
@@ -929,31 +645,31 @@ public class ExecuteTest {
         }
     }
 
-    @Ignore
     @Test
     public void testExecuteWhenExecutionStrategyThrowsExecutionException() {
         @Command
         class App { }
 
-        CommandLine cmd = new CommandLine(new App()).setExecutionStrategy(new IExecutionStrategy() {
+        class FailingExecutionStrategy implements IExecutionStrategy {
             public int execute(ParseResult parseResult) throws ExecutionException {
-                throw new ExecutionException(new CommandLine(new App()), "xyz");
+                throw new ExecutionException(new CommandLine(new App()), "abc");
             }
-        });
-        assertEquals(CommandSpec.DEFAULT_EXIT_CODE_SOFTWARE, cmd.execute());
+        }
+
+        CommandLine cmd = new CommandLine(new App()).setExecutionStrategy(new FailingExecutionStrategy());
+        assertEquals(ExitCode.SOFTWARE, cmd.execute());
         try {
             cmd.tryExecute();
             fail("Expected exception");
         } catch (ExecutionException ex) {
-            assertEquals("xyz", ex.getMessage());
+            assertEquals("abc", ex.getMessage());
         } catch (Exception ex) {
             fail("Unexpected exception " + ex);
         }
     }
 
-    @Ignore
     @Test
-    public void testExecutionExceptionHandlerCanChangeExitCode() {
+    public void testExecutionExceptionHandlerCanChangeExitCode() throws Exception {
         @Command
         class App { }
 
@@ -969,37 +685,6 @@ public class ExecuteTest {
         };
         CommandLine cmd = new CommandLine(new App()).setExecutionStrategy(handler).setExecutionExceptionHandler(exceptionHandler);
         assertEquals(9876, cmd.execute());
-        try {
-            cmd.tryExecute();
-            fail("Expected exception");
-        } catch (ExecutionException ex) {
-            assertEquals("xyz", ex.getMessage());
-        } catch (Exception ex) {
-            fail("Unexpected exception " + ex);
-        }
-    }
-
-    @Command
-    static class Executable implements Runnable, Callable<Void> {
-
-        @Option(names = "-x") int x;
-
-        public void run() { }
-
-        public Void call() throws Exception {
-            return null;
-        }
-    }
-
-    @Test
-    public void testCallNullResult() {
-        Object result = CommandLine.call(new Executable(), "-x");
-        assertNull(result);
-    }
-
-    @Test
-    public void testCallableClassNullResult() {
-        Object result = CommandLine.call(Executable.class, CommandLine.defaultFactory(), "-x");
-        assertNull(result);
+        assertEquals(9876, cmd.tryExecute());
     }
 }

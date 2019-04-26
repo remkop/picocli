@@ -117,13 +117,13 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  *     public static void main(String[] args) throws Exception {
  *         // CheckSum implements Callable, so parsing, error handling and handling user
  *         // requests for usage help or version help can be done with one line of code.
+ *
  *         int exitCode = new CommandLine(new CheckSum()).execute(args);
  *         // System.exit(exitCode);
  *     }
  *
  *     &#064;Override
- *     public Integer call() throws Exception {
- *         // your business logic goes here...
+ *     public Integer call() throws Exception { // your business logic goes here...
  *         byte[] fileContents = Files.readAllBytes(file.toPath());
  *         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
  *         System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1,digest));
@@ -149,6 +149,27 @@ public class CommandLine {
     private final CommandSpec commandSpec;
     private final Interpreter interpreter;
     private final IFactory factory;
+
+    private PrintWriter out;
+    private PrintWriter err;
+    private Help.ColorScheme colorScheme = Help.defaultColorScheme(Help.Ansi.AUTO);
+    private IExitCodeExceptionMapper exitCodeExceptionMapper;
+    private IExecutionStrategy executionStrategy = new RunLast();
+    private IParameterExceptionHandler parameterExceptionHandler = new IParameterExceptionHandler() {
+        public int handleParseException(ParameterException ex, String[] args) {
+            CommandLine cmd = ex.getCommandLine();
+            DefaultExceptionHandler.internalHandleParseException(ex, cmd.getErr(), cmd.getColorScheme());
+            return mappedExitCode(ex, cmd.getExitCodeExceptionMapper(), cmd.getCommandSpec().exitCodeOnInvalidInput());
+        }
+    };
+    private IExecutionExceptionHandler executionExceptionHandler = new IExecutionExceptionHandler() {
+        public int handleExecutionException(ExecutionException ex, ParseResult parseResult) throws Exception {
+            Throwable cause = ex.getCause() == null ? ex : ex.getCause();
+            if (cause instanceof Exception) { throw (Exception) cause; }
+            if (cause instanceof Error)     { throw (Error)     cause; }
+            return ex.getCommandLine().getCommandSpec().exitCodeOnExecutionException;
+        }
+    };
 
     /**
      * Constructs a new {@code CommandLine} interpreter with the specified object (which may be an annotated user object or a {@link CommandSpec CommandSpec}) and a default subcommand factory.
@@ -785,39 +806,85 @@ public class CommandLine {
     public List<String> getUnmatchedArguments() {
         return interpreter.parseResultBuilder == null ? Collections.<String>emptyList() : UnmatchedArgumentException.stripErrorMessage(interpreter.parseResultBuilder.unmatched);
     }
+
+    /**
+     * Defines some exit codes used by picocli as default return values from the {@link #execute(String...) execute},
+     * {@link #tryExecute(String...) tryExecute} and {@link #executeHelpRequest(ParseResult) executeHelpRequest} methods.
+     * <p>Commands can override these defaults with annotations (e.g. {@code @Command(exitCodeOnInvalidInput = 12345)}
+     * or programmatically (e.g. {@link CommandSpec#exitCodeOnInvalidInput(int)}).</p>
+     * <p>Additionally, there are several mechanisms for commands to return custom exit codes.
+     * See the javadoc of the {@link #execute(String...) execute} and {@link #tryExecute(String...) tryExecute} methods for details.</p>
+     * @since 4.0 */
+    public static final class ExitCode {
+        /** Return value from the {@link #execute(String...) execute}, {@link #tryExecute(String...) tryExecute} and
+         * {@link #executeHelpRequest(ParseResult) executeHelpRequest} methods signifying successful termination.
+         * <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.</p> */
+        public static final int OK = 0;
+        /** Return value from the {@link #execute(String...) execute} and {@link #tryExecute(String...) tryExecute} methods signifying command line usage error: user input for the command was incorrect, e.g., the wrong number of arguments, a bad flag, a bad syntax in a parameter, or whatever. <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.</p>*/
+        public static final int USAGE = 64;
+        /** Return value from the {@link #execute(String...) execute} method signifying internal software error: an exception occurred when invoking the Runnable, Callable or Method user object of a command. <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.</p> */
+        public static final int SOFTWARE = 70;
+        private ExitCode() {} // don't instantiate
+    }
+
+    /** {@code @Command}-annotated classes can implement this interface to specify an exit code that will be returned
+     * from the {@link #execute(String...) execute} and {@link #tryExecute(String...) tryExecute} methods when the command is successfully invoked.
+     *
+     * <p>Example usage:</p>
+     * <pre>
+     * &#064Command
+     * class MyCommand implements Runnable, IExitCodeGenerator {
+     *     public void run() { System.out.println("Hello"); }
+     *     public int getExitCode() { return 123; }
+     * }
+     * CommandLine cmd = new CommandLine(new MyCommand());
+     * int exitCode = cmd.execute(args);
+     * assert exitCode == 123;
+     * System.exit(exitCode);
+     * </pre>
+     * @since 4.0
+     */
     public interface IExitCodeGenerator {
+        /** Returns the exit code that should be returned from the {@link #execute(String...) execute} and {@link #tryExecute(String...) tryExecute} methods.
+         * @return the exit code
+         */
         int getExitCode();
     }
+    /** Interface that provides the appropriate exit code that will be returned from the {@link #execute(String...) execute}
+     * method for an exception that occurred during parsing or while invoking the command's Runnable, Callable, or Method.
+     * <p>Example usage:</p>
+     * <pre>
+     * &#064Command
+     * class FailingCommand implements Callable&lt;Void&gt; {
+     *     public Void call() throws IOException {
+     *         throw new IOException("error");
+     *     }
+     * }
+     * IExitCodeExceptionMapper mapper = new IExitCodeExceptionMapper() {
+     *     public int getExitCode(Throwable t) {
+     *         if (t instanceof IOException && "error".equals(t.getMessage())) {
+     *             return 123;
+     *         }
+     *         return 987;
+     *     }
+     * }
+     *
+     * CommandLine cmd = new CommandLine(new FailingCommand());
+     * cmd.setExitCodeExceptionMapper(mapper);
+     * int exitCode = cmd.execute(args);
+     * assert exitCode == 123;
+     * System.exit(exitCode);
+     * </pre>
+     * @see #setExitCodeExceptionMapper(IExitCodeExceptionMapper)
+     * @since 4.0
+     */
     public interface IExitCodeExceptionMapper {
+        /** Returns the exit code that should be returned from the {@link #execute(String...) execute} and {@link #tryExecute(String...) tryExecute} methods.
+         * @param exception the exception that occurred during parsing or while invoking the command's Runnable, Callable, or Method.
+         * @return the exit code
+         */
         int getExitCode(Throwable exception);
     }
-    private PrintWriter out;
-    private PrintWriter err;
-    private Help.ColorScheme colorScheme = Help.defaultColorScheme(Help.Ansi.AUTO);
-    private IExitCodeExceptionMapper exitCodeExceptionMapper = new IExitCodeExceptionMapper() {
-        public int getExitCode(Throwable exception) {
-            if (exception instanceof IExitCodeGenerator) {
-                return ((IExitCodeGenerator) exception).getExitCode();
-            }
-            return 1;
-        }
-    };
-    private IExecutionStrategy executionStrategy = new RunLast();
-    private IParameterExceptionHandler parameterExceptionHandler = new IParameterExceptionHandler() {
-        public int handleParseException(ParameterException ex, String[] args) {
-            CommandLine cmd = ex.getCommandLine();
-            DefaultExceptionHandler.internalHandleParseException(ex, cmd.getErr(), cmd.getColorScheme());
-            return mappedExitCode(ex, cmd.getExitCodeExceptionMapper(), cmd.getCommandSpec().exitCodeOnInvalidInput());
-        }
-    };
-    private IExecutionExceptionHandler executionExceptionHandler = new IExecutionExceptionHandler() {
-        public int handleExecutionException(ExecutionException ex, ParseResult parseResult) throws Exception {
-            Throwable cause = ex.getCause() == null ? ex : ex.getCause();
-            if (cause instanceof Exception) { throw (Exception) cause; }
-            if (cause instanceof Error)     { throw (Error)     cause; }
-            return ex.getCommandLine().getCommandSpec().exitCodeOnExecutionException;
-        }
-    };
     private static int mappedExitCode(Throwable t, IExitCodeExceptionMapper mapper, int defaultExitCode) {
         return (mapper != null) ? mapper.getExitCode(t) : defaultExitCode;
     }
@@ -837,7 +904,7 @@ public class CommandLine {
      * By <a href="http://www.gnu.org/prep/standards/html_node/_002d_002dhelp.html">convention</a>, when the user requests
      * help with a {@code --help} or similar option, the usage help message is printed to the standard output stream so that it can be easily searched and paged.</p>
      * @since 4.0 */
-    public PrintWriter getOut() { return out != null ? out : new PrintWriter(System.out); }
+    public PrintWriter getOut() { return out != null ? out : new PrintWriter(System.out, true); }
 
     public CommandLine setOut(PrintWriter out) {
         this.out = Assert.notNull(out, "out");
@@ -852,7 +919,7 @@ public class CommandLine {
      * should use this stream to print error messages (which may include a usage help message) when an unexpected error occurs.
      * </p>
      * @since 4.0 */
-    public PrintWriter getErr() { return err != null ? err : new PrintWriter(System.err); }
+    public PrintWriter getErr() { return err != null ? err : new PrintWriter(System.err, true); }
 
     public CommandLine setErr(PrintWriter err) {
         this.err = Assert.notNull(err, "err");
@@ -1218,7 +1285,7 @@ public class CommandLine {
     @SuppressWarnings("deprecation")
     public static class DefaultExceptionHandler<R> extends AbstractHandler<R, DefaultExceptionHandler<R>> implements IExceptionHandler, IExceptionHandler2<R> {
         public List<Object> handleException(ParameterException ex, PrintStream out, Help.Ansi ansi, String... args) {
-            internalHandleParseException(ex, new PrintWriter(out), Help.defaultColorScheme(ansi)); return Collections.<Object>emptyList(); }
+            internalHandleParseException(ex, new PrintWriter(out, true), Help.defaultColorScheme(ansi)); return Collections.<Object>emptyList(); }
 
         /** Prints the message of the specified exception, followed by the usage message for the command or subcommand
          * whose input was invalid, to the stream returned by {@link #err()}.
@@ -1228,14 +1295,13 @@ public class CommandLine {
          * @return the empty list
          * @since 3.0 */
         public R handleParseException(ParameterException ex, String[] args) {
-            internalHandleParseException(ex, new PrintWriter(err()), colorScheme()); return returnResultOrExit(null); }
+            internalHandleParseException(ex, new PrintWriter(err(), true), colorScheme()); return returnResultOrExit(null); }
 
         static void internalHandleParseException(ParameterException ex, PrintWriter writer, Help.ColorScheme colorScheme) {
             writer.println(ex.getMessage());
             if (!UnmatchedArgumentException.printSuggestions(ex, writer)) {
                 ex.getCommandLine().usage(writer, colorScheme);
             }
-            writer.flush();
         }
         /** This implementation always simply rethrows the specified exception.
          * @param ex the ExecutionException describing the problem that occurred while executing the {@code Runnable} or {@code Callable} command
@@ -1286,7 +1352,7 @@ public class CommandLine {
      * @since 3.6 */
     @Deprecated public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, PrintStream err, Help.ColorScheme colorScheme) {
         // for backwards compatibility
-        for (CommandLine cmd : parsedCommands) { cmd.setOut(new PrintWriter(out)).setErr(new PrintWriter(err)).setColorScheme(colorScheme); }
+        for (CommandLine cmd : parsedCommands) { cmd.setOut(new PrintWriter(out, true)).setErr(new PrintWriter(err, true)).setColorScheme(colorScheme); }
         return executeHelpRequest(parsedCommands) != null;
     }
 
@@ -1406,13 +1472,24 @@ public class CommandLine {
      * and {@link #invoke(String, Class, String...) invoke} convenience methods, except that this method is an
      * instance method, not a static method, so it allows more configuration.
      * </p><p>
-     * A second difference is that this method provides exit code support.
+     * A second difference is that this method returns an exit code that applications can use to call {@code System.exit()}.
      * If the user object {@code Callable} or {@code Method} returns an {@code int} or {@code Integer},
      * this will be used as the exit code. Additionally, if the user object implements {@link CommandLine.IExitCodeGenerator IExitCodeGenerator},
      * an exit code is obtained by calling its {@code getExitCode()} method (after invoking the user object).
      * </p><p>
      * In the case of multiple exit codes the highest value will be used (or if all values are negative, the lowest value will be used).
      * </p><p>Example usage:</p>
+     * <pre>
+     * &#064Command
+     * class MyCommand implements Callable&lt;Integer&gt; {
+     *     public Integer call() { return 123; }
+     * }
+     * CommandLine cmd = new CommandLine(new MyCommand());
+     * int exitCode = cmd.execute(args);
+     * assert exitCode == 123;
+     * System.exit(exitCode);
+     * </pre>
+     * <p>Since {@code execute} is an instance method, not a static method, applications can do configuration before invoking the command:</p>
      * <pre>{@code
      * CommandLine cmd = new CommandLine(new MyCallable())
      *         .setCaseInsensitiveEnumValuesAllowed(true) // configure a non-default parser option
@@ -1420,14 +1497,14 @@ public class CommandLine {
      *         .setErr(myErrWriter()) // configure an alternative to System.err
      *         .setColorScheme(myColorScheme()); // configure a custom color scheme
      * int exitCode = cmd.execute(args);
-     * //System.exit(exitCode);
+     * System.exit(exitCode);
      * }</pre>
      * <p>
      * If the specified command has subcommands, the {@linkplain RunLast last} subcommand specified on the
      * command line is executed. This can be configured by setting the {@linkplain #setExecutionStrategy(IExecutionStrategy) execution strategy}.
      * Built-in alternatives are executing the {@linkplain RunFirst first} subcommand, or executing {@linkplain RunAll all} specified subcommands.
      * </p><p>
-     * This method never throws an exception.
+     * This method never throws an exception (see {@link #tryExecute(String...) tryExecute} for an alternative).
      * </p><p>
      * If the user specified invalid input, the {@linkplain #getParameterExceptionHandler() parameter exception handler} is invoked.
      * By default this prints an error message and the usage help message, and returns an exit code.
@@ -1435,18 +1512,21 @@ public class CommandLine {
      * If an exception occurred while the user object {@code Runnable}, {@code Callable}, or {@code Method}
      * was invoked, this exception is caught, wrapped in an {@link ExecutionException ExecutionException}, and
      * passed to the {@linkplain #getExecutionExceptionHandler() execution exception handler}.
-     * The default {@code IExecutionExceptionHandler} will rethrow the <em>cause</em> Exception.
-     * This method will catch any exceptions thrown by the execution exception handler and return an exit code.
+     * The default {@code IExecutionExceptionHandler} will unwrap the {@code ExecutionException} and rethrow the <em>cause</em> Exception, which
+     * is then caught by this method and mapped to an exit code.
      * </p><p>
      * If an {@link CommandLine.IExitCodeExceptionMapper IExitCodeExceptionMapper} is {@linkplain #setExitCodeExceptionMapper(IExitCodeExceptionMapper) configured},
      * this mapper is used to determine the exit code based on the exception.
      * </p><p>
-     * If no {@code IExitCodeExceptionMapper} is set, by default this method will return the {@code @Command} annotation's
-     * {@link Command#exitCodeOnInvalidInput() exitCodeOnInvalidInput} or {@link Command#exitCodeOnExecutionException() exitCodeOnExecutionException}.
+     * If an {@code IExitCodeExceptionMapper} is not set, by default this method will return the {@code @Command} annotation's
+     * {@link Command#exitCodeOnInvalidInput() exitCodeOnInvalidInput} or {@link Command#exitCodeOnExecutionException() exitCodeOnExecutionException} value, respectively.
      * </p>
      * @param args the command line arguments to parse
      * @return the exit code
      * @see #tryExecute(String...)
+     * @see ExitCode
+     * @see IExitCodeGenerator
+     * @see IExitCodeExceptionMapper
      * @since 4.0
      */
     public int execute(String... args) {
@@ -1457,58 +1537,66 @@ public class CommandLine {
             try {
                 return getExecutionExceptionHandler().handleExecutionException(ex, parseResult[0]);
             } catch (Exception ex2) {
-                PrintWriter err = getErr();
-                ex2.printStackTrace(err);
-                err.flush();
+                ex2.printStackTrace(getErr());
                 CommandLine cmd = ex.getCommandLine();
-                return mappedExitCode(ex2, cmd.getExitCodeExceptionMapper(), cmd.getCommandSpec().exitCodeOnInvalidInput());
+                return mappedExitCode(ex2, cmd.getExitCodeExceptionMapper(), cmd.getCommandSpec().exitCodeOnExecutionException());
             }
+        } catch (Exception ex) {
+            ex.printStackTrace(getErr());
+            return mappedExitCode(ex, getExitCodeExceptionMapper(), getCommandSpec().exitCodeOnExecutionException());
         }
     }
     /**
      * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
      * To use this method, the annotated object that this {@code CommandLine} is constructed with needs to
      * either implement {@link Runnable}, {@link Callable}, or be a {@code Method} object.
-     * <p>This method is equivalent to the {@link #run(Runnable, String...) run}, {@link #call(Callable, String...) call}
-     * and {@link #invoke(String, Class, String...) invoke} convenience methods, except that this method is an
-     * instance method, not a static method, so it allows more configuration.
-     * </p><p>
-     * A second difference is that this method provides exit code support.
-     * If the user object {@code Callable} or {@code Method} returns an {@code int} or {@code Integer},
-     * this will be used as the exit code. Additionally, if the user object implements {@link CommandLine.IExitCodeGenerator IExitCodeGenerator},
-     * an exit code is obtained by calling its {@code getExitCode()} method (after invoking the user object).
-     * </p><p>
-     * In the case of multiple exit codes the highest value will be used (or if all values are negative, the lowest value will be used).
-     * </p><p>Example usage:</p>
-     * <pre>{@code
-     * CommandLine cmd = new CommandLine(new MyCallable())
-     *         .setCaseInsensitiveEnumValuesAllowed(true) // configure a non-default parser option
-     *         .setOut(myOutWriter()) // configure an alternative to System.out
-     *         .setErr(myErrWriter()) // configure an alternative to System.err
-     *         .setColorScheme(myColorScheme()); // configure a custom color scheme
-     * int exitCode = cmd.execute(args);
-     * //System.exit(exitCode);
-     * }</pre>
+     * </p><p>This method differs from {@link #execute(String...) execute} in that this method will not suppress any
+     * exception that occurred while the user object {@code Runnable}, {@code Callable}, or {@code Method} was invoked. (This can be configured with a custom {@link IExecutionExceptionHandler IExecutionExceptionHandler}.)</p>
+     * <p>Example usage:</p>
+     * <pre>
+     * &#064Command(name = "md5sum")
+     * class MyCommand implements Callable&lt;Integer&gt; {
+     *     &#064Parameters(index = "0", description = "File whose MD5 checksum to calculate")
+     *     Path path;
+     *
+     *     public Integer call() throws IOException, NoSuchAlgorithmException {
+     *         byte[] fileContents = Files.readAllBytes(path);
+     *         byte[] digest = MessageDigest.getInstance("MD5").digest(fileContents);
+     *         System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1, digest));
+     *         return 0;
+     *     }
+     * }
+     * CommandLine cmd = new CommandLine(new MyCommand());
+     * int exitCode;
+     * try {
+     *     exitCode = cmd.tryExecute(args);
+     *     assert exitCode == 0; // success
+     * } catch (IOException ex) {
+     *     System.err.println("Could not read specified file: ", ex.getMessage());
+     *     exitCode = 66;
+     * } catch (Exception unexpectedException) {
+     *     unexpectedException.printStackTrace(); // handle somehow...
+     *     exitCode = ExitCode.SOFTWARE; // ...for example
+     * }
+     * System.exit(exitCode);
+     * </pre>
      * <p>
-     * If the specified command has subcommands, the {@linkplain RunLast last} subcommand specified on the
-     * command line is executed. This can be configured by setting the {@linkplain #setExecutionStrategy(IExecutionStrategy) execution strategy}.
-     * Built-in alternatives are executing the {@linkplain RunFirst first} subcommand, or executing {@linkplain RunAll all} specified subcommands.
-     * </p><p>
-     * If the user specified invalid input, the {@linkplain #getParameterExceptionHandler() parameter exception handler} is invoked.
-     * By default this prints an error message and the usage help message, and returns an exit code.
-     * The returned exit code is determined by the {@linkplain #setExitCodeExceptionMapper(IExitCodeExceptionMapper) configured}
-     * {@code IExitCodeExceptionMapper}, or, if this is not set, by default this method will return the {@code @Command} annotation's
-     * {@link Command#exitCodeOnInvalidInput() exitCodeOnInvalidInput}.
-     * </p><p>
      * If an exception occurred while the user object {@code Runnable}, {@code Callable}, or {@code Method}
      * was invoked, this exception is caught, wrapped in an {@link ExecutionException ExecutionException}, and
      * passed to the {@linkplain #getExecutionExceptionHandler() execution exception handler}.
-     * The default {@code IExecutionExceptionHandler} will rethrow the <em>cause</em> Exception.
-     * This method will not handle any exceptions thrown by the execution exception handler, this is the responsibility of the application.
+     * The default {@code IExecutionExceptionHandler} will not map the exception to an exit code, but unwrap the {@code ExecutionException} and rethrow the <em>cause</em> Exception instead.
+     * Handling this exception is the responsibility of the application.
+     * </p><p>
+     * If the user specified invalid input, the parameter exception handler is invoked,
+     * and an exit code is returned, similarly to what the {@link #execute(String...) execute} method does.
+     * (This can be configured with a custom {@link IParameterExceptionHandler IParameterExceptionHandler}.)
      * </p>
      * @param args the command line arguments to parse
      * @return the exit code
      * @see #execute(String...)
+     * @see ExitCode
+     * @see IExitCodeGenerator
+     * @see IExitCodeExceptionMapper
      * @since 4.0
      */
     public int tryExecute(String... args) throws Exception {
@@ -1528,9 +1616,7 @@ public class CommandLine {
             try {
                 exitCode = getParameterExceptionHandler().handleParseException(ex, args);
             } catch (Exception ex2) {
-                PrintWriter err = getErr();
-                ex2.printStackTrace(err);
-                err.flush();
+                ex2.printStackTrace(getErr());
                 CommandLine cmd = ex.getCommandLine();
                 exitCode = mappedExitCode(ex2, cmd.getExitCodeExceptionMapper(), cmd.getCommandSpec().exitCodeOnInvalidInput());
             }
@@ -1543,8 +1629,8 @@ public class CommandLine {
         // called from one of the deprecated convenience methods like run(Runnable, OutputStream, OutputStream, Ansi, String[])
         if (obj instanceof AbstractHandler<?, ?>) {
             AbstractHandler<?, ?> handler = (AbstractHandler<?, ?>) obj;
-            if (handler.out()  != System.out)     { setOut(new PrintWriter(handler.out())); }
-            if (handler.err()  != System.err)     { setErr(new PrintWriter(handler.err())); }
+            if (handler.out()  != System.out)     { setOut(new PrintWriter(handler.out(), true)); }
+            if (handler.err()  != System.err)     { setErr(new PrintWriter(handler.err(), true)); }
             if (handler.ansi() != Help.Ansi.AUTO) { setColorScheme(handler.colorScheme()); }
         }
         return obj;
@@ -2308,7 +2394,7 @@ public class CommandLine {
      * @since 3.0
      */
     public static <R extends Runnable> void run(R runnable, String... args) {
-        new CommandLine(runnable).execute(args);
+        run(runnable, System.out, System.err, Help.Ansi.AUTO, args);
     }
     /**
      * Delegates to {@link #run(Runnable, PrintStream, PrintStream, Help.Ansi, String...)} with {@code System.err} for diagnostic error messages and {@link Help.Ansi#AUTO}.
@@ -2385,7 +2471,7 @@ public class CommandLine {
      * @since 3.2
      */
     public static <R extends Runnable> void run(Class<R> runnableClass, IFactory factory, String... args) {
-        new CommandLine(runnableClass, factory).execute(args);
+        run(runnableClass, factory, System.out, System.err, Help.Ansi.AUTO, args);
     }
     /**
      * Delegates to {@link #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with
@@ -3698,30 +3784,31 @@ public class CommandLine {
          */
         int usageHelpWidth() default 80;
 
-        /** Exit code for successful termination. {@value picocli.CommandLine.Model.CommandSpec#DEFAULT_EXIT_CODE_OK}  by default, following C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.
+        /** Exit code for successful termination. {@value picocli.CommandLine.ExitCode#OK} by default.
          * @see #execute(String...)
          * @since 4.0 */
-        int exitCodeOnSuccess() default CommandSpec.DEFAULT_EXIT_CODE_OK;
+        int exitCodeOnSuccess() default ExitCode.OK;
 
-        /** Exit code for successful termination after printing usage help on user request. {@value Model.CommandSpec#DEFAULT_EXIT_CODE_OK} by default, following unix C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.
+        /** Exit code for successful termination after printing usage help on user request. {@value picocli.CommandLine.ExitCode#OK} by default.
          * @see #execute(String...)
          * @since 4.0 */
-        int exitCodeOnUsageHelp() default CommandSpec.DEFAULT_EXIT_CODE_OK;
+        int exitCodeOnUsageHelp() default ExitCode.OK;
 
-        /** Exit code for successful termination after printing version help on user request. {@value CommandSpec#DEFAULT_EXIT_CODE_OK}  by default, following unix C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.
+        /** Exit code for successful termination after printing version help on user request. {@value picocli.CommandLine.ExitCode#OK} by default.
          * @see #execute(String...)
          * @since 4.0 */
-        int exitCodeOnVersionHelp() default CommandSpec.DEFAULT_EXIT_CODE_OK;
+        int exitCodeOnVersionHelp() default ExitCode.OK;
 
-        /** Exit code for command line usage error. {@value CommandSpec#DEFAULT_EXIT_CODE_USAGE}  by default, following unix C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.
+        /** Exit code for command line usage error. {@value picocli.CommandLine.ExitCode#USAGE} by default.
          * @see #execute(String...)
          * @since 4.0 */
-        int exitCodeOnInvalidInput() default CommandSpec.DEFAULT_EXIT_CODE_USAGE;
+        int exitCodeOnInvalidInput() default ExitCode.USAGE;
 
-        /** Exit code for internal software error. {@value CommandSpec#DEFAULT_EXIT_CODE_SOFTWARE}  by default, following unix C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.
+        /** Exit code signifying that an exception occurred when invoking the Runnable, Callable or Method user object of a command.
+         * {@value picocli.CommandLine.ExitCode#SOFTWARE} by default.
          * @see #execute(String...)
          * @since 4.0 */
-        int exitCodeOnExecutionException() default CommandSpec.DEFAULT_EXIT_CODE_SOFTWARE;
+        int exitCodeOnExecutionException() default ExitCode.SOFTWARE;
     }
     /** A {@code Command} may define one or more {@code ArgGroups}: a group of options, positional parameters or a mixture of the two.
      * Groups can be used to:
@@ -4264,15 +4351,6 @@ public class CommandLine {
             /** Constant Boolean holding the default setting for whether variables should be interpolated in String values: <code>{@value}</code>.*/
             static final Boolean DEFAULT_INTERPOLATE_VARIABLES = Boolean.TRUE;
 
-            /** Exit code for successful termination. {@value CommandSpec#DEFAULT_EXIT_CODE_OK}  by default, following unix C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>. */
-            static final int DEFAULT_EXIT_CODE_OK = 0;
-
-            /** Exit code for command line usage error. {@value CommandSpec#DEFAULT_EXIT_CODE_USAGE}  by default, following unix C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>. */
-            static final int DEFAULT_EXIT_CODE_USAGE = 64;
-
-            /** Exit code for internal software error. {@value CommandSpec#DEFAULT_EXIT_CODE_SOFTWARE}  by default, following unix C/C++ <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>. */
-            static final int DEFAULT_EXIT_CODE_SOFTWARE = 70;
-
             private final Map<String, CommandLine> commands = new LinkedHashMap<String, CommandLine>();
             private final Map<String, OptionSpec> optionsByNameMap = new LinkedHashMap<String, OptionSpec>();
             private final Map<Character, OptionSpec> posixOptionsByKeyMap = new LinkedHashMap<Character, OptionSpec>();
@@ -4814,11 +4892,27 @@ public class CommandLine {
              * @see Command#helpCommand() */
             public boolean helpCommand() { return (isHelpCommand == null) ? DEFAULT_IS_HELP_COMMAND : isHelpCommand; }
 
-            public int exitCodeOnSuccess() { return exitCodeOnSuccess == null ? DEFAULT_EXIT_CODE_OK : exitCodeOnSuccess; }
-            public int exitCodeOnUsageHelp() { return exitCodeOnUsageHelp == null ? DEFAULT_EXIT_CODE_OK : exitCodeOnUsageHelp; }
-            public int exitCodeOnVersionHelp() { return exitCodeOnVersionHelp == null ? DEFAULT_EXIT_CODE_OK : exitCodeOnVersionHelp; }
-            public int exitCodeOnInvalidInput() { return exitCodeOnInvalidInput == null ? DEFAULT_EXIT_CODE_USAGE : exitCodeOnInvalidInput; }
-            public int exitCodeOnExecutionException() { return exitCodeOnExecutionException == null ? DEFAULT_EXIT_CODE_SOFTWARE : exitCodeOnExecutionException; }
+            /** Returns exit code for successful termination. {@value picocli.CommandLine.ExitCode#OK} by default, may be set programmatically or via the {@link Command#exitCodeOnSuccess() exitCodeOnSuccess} annotation.
+             * @see #execute(String...)
+             * @since 4.0 */
+            public int exitCodeOnSuccess() { return exitCodeOnSuccess == null ? ExitCode.OK : exitCodeOnSuccess; }
+            /** Returns exit code for successful termination after printing usage help on user request. {@value picocli.CommandLine.ExitCode#OK} by default, may be set programmatically or via the {@link Command#exitCodeOnVersionHelp() exitCodeOnVersionHelp} annotation.
+             * @see #execute(String...)
+             * @since 4.0 */
+            public int exitCodeOnUsageHelp() { return exitCodeOnUsageHelp == null ? ExitCode.OK : exitCodeOnUsageHelp; }
+            /** Returns exit code for successful termination after printing version help on user request. {@value picocli.CommandLine.ExitCode#OK} by default, may be set programmatically or via the {@link Command#exitCodeOnUsageHelp() exitCodeOnUsageHelp} annotation.
+             * @see #execute(String...)
+             * @since 4.0 */
+            public int exitCodeOnVersionHelp() { return exitCodeOnVersionHelp == null ? ExitCode.OK : exitCodeOnVersionHelp; }
+            /** Returns exit code for command line usage error. {@value picocli.CommandLine.ExitCode#USAGE} by default, may be set programmatically or via the {@link Command#exitCodeOnInvalidInput() exitCodeOnInvalidInput} annotation.
+             * @see #execute(String...)
+             * @since 4.0 */
+            public int exitCodeOnInvalidInput() { return exitCodeOnInvalidInput == null ? ExitCode.USAGE : exitCodeOnInvalidInput; }
+            /** Returns exit code signifying that an exception occurred when invoking the Runnable, Callable or Method user object of a command.
+             * {@value picocli.CommandLine.ExitCode#SOFTWARE} by default, may be set programmatically or via the {@link Command#exitCodeOnExecutionException() exitCodeOnExecutionException} annotation.
+             * @see #execute(String...)
+             * @since 4.0 */
+            public int exitCodeOnExecutionException() { return exitCodeOnExecutionException == null ? ExitCode.SOFTWARE : exitCodeOnExecutionException; }
 
             /** Returns {@code true} if the standard help options have been mixed in with this command, {@code false} otherwise. */
             public boolean mixinStandardHelpOptions() { return mixins.containsKey(AutoHelpMixin.KEY); }
@@ -4864,10 +4958,26 @@ public class CommandLine {
              * @see Command#helpCommand() */
             public CommandSpec helpCommand(boolean newValue) {isHelpCommand = newValue; return this;}
 
+            /** Sets exit code for successful termination. {@value picocli.CommandLine.ExitCode#OK} by default.
+             * @see #execute(String...)
+             * @since 4.0 */
             public CommandSpec exitCodeOnSuccess(int newValue) { exitCodeOnSuccess = newValue; return this; }
+            /** Sets exit code for successful termination after printing usage help on user request. {@value picocli.CommandLine.ExitCode#OK} by default.
+             * @see #execute(String...)
+             * @since 4.0 */
             public CommandSpec exitCodeOnUsageHelp(int newValue) { exitCodeOnUsageHelp = newValue; return this; }
+            /** Sets exit code for successful termination after printing version help on user request. {@value picocli.CommandLine.ExitCode#OK} by default.
+             * @see #execute(String...)
+             * @since 4.0 */
             public CommandSpec exitCodeOnVersionHelp(int newValue) { exitCodeOnVersionHelp = newValue; return this; }
+            /** Sets exit code for command line usage error. {@value picocli.CommandLine.ExitCode#USAGE} by default.
+             * @see #execute(String...)
+             * @since 4.0 */
             public CommandSpec exitCodeOnInvalidInput(int newValue) { exitCodeOnInvalidInput = newValue; return this; }
+            /** Sets exit code signifying that an exception occurred when invoking the Runnable, Callable or Method user object of a command.
+             * {@value picocli.CommandLine.ExitCode#SOFTWARE} by default.
+             * @see #execute(String...)
+             * @since 4.0 */
             public CommandSpec exitCodeOnExecutionException(int newValue) { exitCodeOnExecutionException = newValue; return this; }
 
             /** Sets whether the standard help options should be mixed in with this command.
@@ -4935,11 +5045,11 @@ public class CommandLine {
             void initDefaultValueProvider(Class<? extends IDefaultValueProvider> value, IFactory factory) {
                 if (initializable(defaultValueProvider, value, NoDefaultProvider.class)) { defaultValueProvider = (DefaultFactory.createDefaultValueProvider(factory, value)); }
             }
-            void initExitCodeOnSuccess(int exitCode)            { if (initializable(exitCodeOnSuccess, exitCode, DEFAULT_EXIT_CODE_OK)) { exitCodeOnSuccess = exitCode; } }
-            void initExitCodeOnUsageHelp(int exitCode)          { if (initializable(exitCodeOnUsageHelp, exitCode, DEFAULT_EXIT_CODE_OK)) { exitCodeOnUsageHelp = exitCode; } }
-            void initExitCodeOnVersionHelp(int exitCode)        { if (initializable(exitCodeOnVersionHelp, exitCode, DEFAULT_EXIT_CODE_OK)) { exitCodeOnVersionHelp = exitCode; } }
-            void initExitCodeOnInvalidInput(int exitCode)       { if (initializable(exitCodeOnInvalidInput, exitCode, DEFAULT_EXIT_CODE_USAGE)) { exitCodeOnInvalidInput = exitCode; } }
-            void initExitCodeOnExecutionException(int exitCode) { if (initializable(exitCodeOnExecutionException, exitCode, DEFAULT_EXIT_CODE_SOFTWARE)) { exitCodeOnExecutionException = exitCode; } }
+            void initExitCodeOnSuccess(int exitCode)            { if (initializable(exitCodeOnSuccess, exitCode, ExitCode.OK)) { exitCodeOnSuccess = exitCode; } }
+            void initExitCodeOnUsageHelp(int exitCode)          { if (initializable(exitCodeOnUsageHelp, exitCode, ExitCode.OK)) { exitCodeOnUsageHelp = exitCode; } }
+            void initExitCodeOnVersionHelp(int exitCode)        { if (initializable(exitCodeOnVersionHelp, exitCode, ExitCode.OK)) { exitCodeOnVersionHelp = exitCode; } }
+            void initExitCodeOnInvalidInput(int exitCode)       { if (initializable(exitCodeOnInvalidInput, exitCode, ExitCode.USAGE)) { exitCodeOnInvalidInput = exitCode; } }
+            void initExitCodeOnExecutionException(int exitCode) { if (initializable(exitCodeOnExecutionException, exitCode, ExitCode.SOFTWARE)) { exitCodeOnExecutionException = exitCode; } }
             void updateName(String value)               { if (isNonDefault(value, DEFAULT_COMMAND_NAME))                 {name = value;} }
             void updateHelpCommand(boolean value)       { if (isNonDefault(value, DEFAULT_IS_HELP_COMMAND))              {isHelpCommand = value;} }
             void updateAddMethodSubcommands(boolean value) { if (isNonDefault(value, DEFAULT_IS_ADD_METHOD_SUBCOMMANDS)) {isAddMethodSubcommands = value;} }
@@ -4947,11 +5057,11 @@ public class CommandLine {
             void updateVersionProvider(Class<? extends IVersionProvider> value, IFactory factory) {
                 if (isNonDefault(value, NoVersionProvider.class)) { versionProvider = (DefaultFactory.createVersionProvider(factory, value)); }
             }
-            void updateExitCodeOnSuccess(int exitCode)            { if (isNonDefault(exitCode, DEFAULT_EXIT_CODE_OK)) { exitCodeOnSuccess = exitCode; } }
-            void updateExitCodeOnUsageHelp(int exitCode)          { if (isNonDefault(exitCode, DEFAULT_EXIT_CODE_OK)) { exitCodeOnUsageHelp = exitCode; } }
-            void updateExitCodeOnVersionHelp(int exitCode)        { if (isNonDefault(exitCode, DEFAULT_EXIT_CODE_OK)) { exitCodeOnVersionHelp = exitCode; } }
-            void updateExitCodeOnInvalidInput(int exitCode)       { if (isNonDefault(exitCode, DEFAULT_EXIT_CODE_USAGE)) { exitCodeOnInvalidInput = exitCode; } }
-            void updateExitCodeOnExecutionException(int exitCode) { if (isNonDefault(exitCode, DEFAULT_EXIT_CODE_SOFTWARE)) { exitCodeOnExecutionException = exitCode; } }
+            void updateExitCodeOnSuccess(int exitCode)            { if (isNonDefault(exitCode, ExitCode.OK))       { exitCodeOnSuccess = exitCode; } }
+            void updateExitCodeOnUsageHelp(int exitCode)          { if (isNonDefault(exitCode, ExitCode.OK))       { exitCodeOnUsageHelp = exitCode; } }
+            void updateExitCodeOnVersionHelp(int exitCode)        { if (isNonDefault(exitCode, ExitCode.OK))       { exitCodeOnVersionHelp = exitCode; } }
+            void updateExitCodeOnInvalidInput(int exitCode)       { if (isNonDefault(exitCode, ExitCode.USAGE))    { exitCodeOnInvalidInput = exitCode; } }
+            void updateExitCodeOnExecutionException(int exitCode) { if (isNonDefault(exitCode, ExitCode.SOFTWARE)) { exitCodeOnExecutionException = exitCode; } }
 
             /** Returns the option with the specified short name, or {@code null} if no option with that name is defined for this command. */
             public OptionSpec findOption(char shortName) { return findOption(shortName, options()); }
@@ -8981,7 +9091,7 @@ public class CommandLine {
          * <p>
          * The {@code ParseResult} may have more than one {@code GroupMatchContainer} for an {@code ArgGroupSpec}, when the
          * group was matched more often than its maximum {@linkplain ArgGroup#multiplicity() multiplicity}.
-         * This is not necessarily a problem: the parser will add a match to the {@linkplain GroupMatchContainer#parentContainer() parent matched group}
+         * This is not necessarily a problem: the parser will add a match to the parent matched group
          * until the maximum multiplicity of the parent group is exceeded, in which case parser will add a match to the parent's parent group, etc.
          * </p><p>
          * Ultimately, as long as the {@link ParseResult#getGroupMatches()} method does not return more than one match, the maximum number of elements is not exceeded.
@@ -13428,7 +13538,7 @@ public class CommandLine {
         public boolean isUnknownOption() { return isUnknownOption(unmatched, getCommandLine()); }
         /** Returns {@code true} and prints suggested solutions to the specified stream if such solutions exist, otherwise returns {@code false}.
          * @since 3.3.0 */
-        public boolean printSuggestions(PrintStream out) { return printSuggestions(new PrintWriter(out)); }
+        public boolean printSuggestions(PrintStream out) { return printSuggestions(new PrintWriter(out, true)); }
         /** Returns {@code true} and prints suggested solutions to the specified stream if such solutions exist, otherwise returns {@code false}.
          * @since 4.0 */
         public boolean printSuggestions(PrintWriter writer) {
