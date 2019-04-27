@@ -398,12 +398,14 @@ public class CommandLineParseWithHandlersTest {
     }
     static class CustomNoThrowExceptionHandler<R> extends DefaultExceptionHandler<R> {
         int exitCode;
+        ExecutionException caught;
 
         @Override
         protected R throwOrExit(ExecutionException ex) {
             try {
                 super.throwOrExit(ex);
             } catch (ExecutionException caught) {
+                this.caught = caught;
             }
             return null;
         }
@@ -412,6 +414,19 @@ public class CommandLineParseWithHandlersTest {
         protected void exit(int exitCode) {
             this.exitCode = exitCode;
         }
+    }
+
+    @Test
+    public void testWithoutSystemExitForOtherExceptions() {
+        @Command class App implements Runnable {
+            public void run() {
+                throw new RuntimeException("blah");
+            }
+        }
+        CustomNoThrowExceptionHandler<List<Object>> handler = new CustomNoThrowExceptionHandler<List<Object>>();
+        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23), handler);
+        assertTrue(handler.caught.getCause() instanceof RuntimeException);
+        assertEquals("blah", handler.caught.getCause().getMessage());
     }
 
     @Test
