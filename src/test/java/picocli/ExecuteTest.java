@@ -34,7 +34,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import static java.lang.String.format;
@@ -847,11 +846,30 @@ public class ExecuteTest {
             public Integer call() { return callResult; }
             public int getExitCode() { return exitResult; }
         }
+        //assertEquals(1, new CommandLine(new App(-1, 1)).execute());
+        assertEquals(1, new CommandLine(new App(1, -1)).execute());
         assertEquals(3, new CommandLine(new App(2, 3)).execute());
         assertEquals(3, new CommandLine(new App(3, 2)).execute());
         assertEquals(-3, new CommandLine(new App(-2, -3)).execute());
         assertEquals(-3, new CommandLine(new App(-3, -2)).execute());
-        assertEquals(-1, new CommandLine(new App(-1, 1)).execute());
+    }
+
+    @Test
+    public void testExceptionFromExitCodeGenerator() {
+        @Command
+        class App implements Runnable, IExitCodeGenerator {
+            public void run() { }
+            public int getExitCode() {
+                throw new IllegalStateException("This IExitCodeGenerator threw an exception");
+            }
+        }
+
+        int exitCode = new CommandLine(new App()).execute();
+        assertEquals(1, exitCode);
+        String expected = String.format("" +
+                "java.lang.IllegalStateException: This IExitCodeGenerator threw an exception%n" +
+                "\tat %s.getExitCode(", App.class.getName());
+        assertTrue(systemErrRule.getLog().startsWith(expected));
     }
 
     @Command(name = "flex")
@@ -878,20 +896,39 @@ public class ExecuteTest {
 
     @Test
     public void testRunAllResolveExitCodeFromIExitCodeGenerator() {
-        assertEquals(2,  cmd(1, -1, 2).execute("sub"));
-        assertEquals(2,  cmd(-1, 1, 2).execute("sub"));
-        assertEquals(8,  cmd(7, 8, 9).execute()); // ignore 9: sub not invoked
-        assertEquals(9,  cmd(7, 8, 9).execute("sub"));
-        assertEquals(9,  cmd(9, 8, 7).execute()); // ignore 7: sub not invoked
-        assertEquals(9,  cmd(9, 8, 7).execute("flex"));
-        assertEquals(6,  cmd(1, 2, 3).execute("flex"));
-        assertEquals(-3, cmd(-2, -3, -4).execute()); // ignore -4: sub not invoked
-        assertEquals(-4, cmd(-2, -3, -4).execute("sub"));
-        assertEquals(-3, cmd(-3, -2, -1).execute("sub"));
-        assertEquals(6, cmd(-3, -2, -1).execute("flex"));
-        assertEquals(-6, cmd(-3, -2, -1).execute("flex", "-n"));
+        assertEquals(2,  all(1, -1, 2).execute("sub"));
+        assertEquals(2,  all(-1, 1, 2).execute("sub"));
+        assertEquals(8,  all(7, 8, 9).execute()); // ignore 9: sub not invoked
+        assertEquals(9,  all(7, 8, 9).execute("sub"));
+        assertEquals(9,  all(9, 8, 7).execute()); // ignore 7: sub not invoked
+        assertEquals(9,  all(9, 8, 7).execute("flex"));
+        assertEquals(6,  all(1, 2, 3).execute("flex"));
+        assertEquals(-3, all(-2, -3, -4).execute()); // ignore -4: sub not invoked
+        assertEquals(-4, all(-2, -3, -4).execute("sub"));
+        assertEquals(-3, all(-3, -2, -1).execute("sub"));
+        assertEquals(6, all(-3, -2, -1).execute("flex"));
+        assertEquals(-6, all(-3, -2, -1).execute("flex", "-n"));
     }
-    private static CommandLine cmd(int callResult, int exitResult, int subResult) {
+    private static CommandLine all(int callResult, int exitResult, int subResult) {
         return new CommandLine(new Cmd(callResult, exitResult, subResult)).setExecutionStrategy(new RunAll());
+    }
+
+    @Test
+    public void testRunFirstResolveExitCodeFromIExitCodeGenerator() {
+        assertEquals(1,  first(1, -1, 2).execute("sub"));
+        assertEquals(1,  first(-1, 1, 2).execute("sub"));
+        assertEquals(8,  first(7, 8, 9).execute()); // ignore 9: sub not invoked
+        assertEquals(8,  first(7, 8, 9).execute("sub"));
+        assertEquals(9,  first(9, 8, 7).execute()); // ignore 7: sub not invoked
+        assertEquals(9,  first(9, 8, 7).execute("flex"));
+        assertEquals(2,  first(1, 2, 3).execute("flex")); // ignore 3: sub not invoked
+        assertEquals(-3, first(-2, -3, -4).execute()); // ignore -4: sub not invoked
+        assertEquals(-3, first(-2, -3, -4).execute("sub"));
+        assertEquals(-3, first(-3, -2, -1).execute("sub"));
+        assertEquals(-3, first(-3, -2, -1).execute("flex"));
+        assertEquals(-3, first(-3, -2, -1).execute("flex", "-n"));
+    }
+    private static CommandLine first(int callResult, int exitResult, int subResult) {
+        return new CommandLine(new Cmd(callResult, exitResult, subResult)).setExecutionStrategy(new RunFirst());
     }
 }

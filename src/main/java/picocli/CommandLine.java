@@ -1688,11 +1688,16 @@ public class CommandLine {
 
         // Use the highest value (or if all values are negative, use the lowest value).
         private int resolveExitCode(int exitCodeOnSuccess, R executionResult, List<IExitCodeGenerator> exitCodeGenerators) {
-            int result = exitCodeOnSuccess;
+            int result = 0;
             for (IExitCodeGenerator generator : exitCodeGenerators) {
-                int exitCode = generator.getExitCode();
-                if ((exitCode > 0 && exitCode > result) || (exitCode < 0 && exitCode < result)) {
-                    result = exitCode;
+                try {
+                    int exitCode = generator.getExitCode();
+                    if ((exitCode > 0 && exitCode > result) || (exitCode < 0 && result <= 0 && exitCode < result)) {
+                        result = exitCode;
+                    }
+                } catch (Exception ex) {
+                    result = (result == 0) ? 1 : result;
+                    ex.printStackTrace();
                 }
             }
             if (executionResult instanceof List) {
@@ -1700,13 +1705,13 @@ public class CommandLine {
                 for (Object obj : resultList) {
                     if (obj instanceof Integer) {
                         Integer exitCode = (Integer) obj;
-                        if ((exitCode > 0 && exitCode > result) || (exitCode < 0 && exitCode < result)) {
+                        if ((exitCode > 0 && exitCode > result) || (exitCode < 0 && result <= 0 && exitCode < result)) {
                             result = exitCode;
                         }
                     }
                 }
             }
-            return result;
+            return result == 0 ? exitCodeOnSuccess : result;
         }
 
         /** Processes the specified {@code ParseResult} and returns the result as a list of objects.
