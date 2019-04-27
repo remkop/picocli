@@ -2066,17 +2066,17 @@ public class CommandLine {
     }
 
     /**
-     * Delegates to {@link #usage(PrintStream, Help.Ansi)} with the {@linkplain Help.Ansi#AUTO platform default}.
+     * Delegates to {@link #usage(PrintStream, Help.ColorScheme)} with the {@linkplain #getColorScheme() configured} color scheme.
      * @param out the printStream to print to
      * @see #usage(PrintStream, Help.ColorScheme)
      */
-    public void usage(PrintStream out) { usage(out, Help.Ansi.AUTO); }
+    public void usage(PrintStream out) { usage(out, getColorScheme()); }
     /**
-     * Delegates to {@link #usage(PrintWriter, Help.Ansi)} with the {@linkplain Help.Ansi#AUTO platform default}.
+     * Delegates to {@link #usage(PrintWriter, Help.ColorScheme)} with the {@linkplain #getColorScheme() configured} color scheme.
      * @param writer the PrintWriter to print to
      * @see #usage(PrintWriter, Help.ColorScheme)
      * @since 3.0 */
-    public void usage(PrintWriter writer) { usage(writer, Help.Ansi.AUTO); }
+    public void usage(PrintWriter writer) { usage(writer, getColorScheme()); }
 
     /**
      * Delegates to {@link #usage(PrintStream, Help.ColorScheme)} with the {@linkplain Help#defaultColorScheme(CommandLine.Help.Ansi) default color scheme}.
@@ -2126,7 +2126,7 @@ public class CommandLine {
     /** Similar to {@link #usage(PrintStream)}, but returns the usage help message as a String instead of printing it to the {@code PrintStream}.
      * @since 3.2 */
     public String getUsageMessage() {
-        return usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), Help.defaultColorScheme(Help.Ansi.AUTO))).toString();
+        return usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), getColorScheme())).toString();
     }
     /** Similar to {@link #usage(PrintStream, Help.Ansi)}, but returns the usage help message as a String instead of printing it to the {@code PrintStream}.
      * @since 3.2 */
@@ -2230,8 +2230,7 @@ public class CommandLine {
     public static <C extends Callable<T>, T> T call(C callable, String... args) {
         CommandLine cmd = new CommandLine(callable);
         List<Object> results = cmd.parseWithHandler(new RunLast(), args);
-        @SuppressWarnings("unchecked") T result = (results == null || results.isEmpty()) ? null : (T) results.get(0);
-        return result;
+        return firstElement(results);
     }
 
     /**
@@ -2300,8 +2299,7 @@ public class CommandLine {
     @Deprecated public static <C extends Callable<T>, T> T call(C callable, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(callable);
         List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
-        @SuppressWarnings("unchecked") T result = (results == null || results.isEmpty()) ? null : (T) results.get(0);
-        return result;
+        return firstElement(results);
     }
     /**
      * Equivalent to {@code new CommandLine(callableClass, factory).execute(args)}, except for the return value.
@@ -2319,8 +2317,7 @@ public class CommandLine {
     public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, String... args) {
         CommandLine cmd = new CommandLine(callableClass, factory);
         List<Object> results = cmd.parseWithHandler(new RunLast(), args);
-        @SuppressWarnings("unchecked") T result = (results == null || results.isEmpty()) ? null : (T) results.get(0);
-        return result;
+        return firstElement(results);
     }
     /**
      * Delegates to {@link #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)} with
@@ -2396,8 +2393,11 @@ public class CommandLine {
     @Deprecated public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
         CommandLine cmd = new CommandLine(callableClass, factory);
         List<Object> results = cmd.parseWithHandlers(new RunLast().useOut(out).useAnsi(ansi), new DefaultExceptionHandler<List<Object>>().useErr(err).useAnsi(ansi), args);
-        @SuppressWarnings("unchecked") T result = (results == null || results.isEmpty()) ? null : (T) results.get(0);
-        return result;
+        return firstElement(results);
+    }
+
+    @SuppressWarnings("unchecked") private static <T> T firstElement(List<Object> results) {
+        return (results == null || results.isEmpty()) ? null : (T) results.get(0);
     }
 
     /**
