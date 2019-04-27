@@ -1690,7 +1690,7 @@ public class CommandLine {
             int result = exitCodeOnSuccess;
             for (IExitCodeGenerator generator : exitCodeGenerators) {
                 int exitCode = generator.getExitCode();
-                if ((exitCode > 0 && exitCode > exitCodeOnSuccess) || (exitCode < 0 && exitCode < exitCodeOnSuccess)) {
+                if ((exitCode > 0 && exitCode > result) || (exitCode < 0 && exitCode < result)) {
                     result = exitCode;
                 }
             }
@@ -1699,7 +1699,7 @@ public class CommandLine {
                 for (Object obj : resultList) {
                     if (obj instanceof Integer) {
                         Integer exitCode = (Integer) obj;
-                        if ((exitCode > 0 && exitCode > exitCodeOnSuccess) || (exitCode < 0 && exitCode < exitCodeOnSuccess)) {
+                        if ((exitCode > 0 && exitCode > result) || (exitCode < 0 && exitCode < result)) {
                             result = exitCode;
                         }
                     }
