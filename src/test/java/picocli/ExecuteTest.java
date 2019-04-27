@@ -746,7 +746,54 @@ public class ExecuteTest {
 
     @Test
     public void testPrintHelpIfRequested() {
-        ParseResult parseResult = ParseResult.builder(CommandSpec.create()).build();
+        ParseResult parseResult = ParseResult.builder(new CommandLine(CommandSpec.create()).getCommandSpec()).build();
         assertFalse(CommandLine.printHelpIfRequested(parseResult));
+    }
+
+    @Test
+    public void testParameterExceptionHandlerThrowsException() {
+        IParameterExceptionHandler pah = new IParameterExceptionHandler() {
+            public int handleParseException(ParameterException ex, String[] args) throws Exception {
+                throw new IllegalStateException("blah");
+            }
+        };
+        @Command class App implements Runnable {
+            @Option(names = "-x") int x;
+            public void run() { }
+        }
+        CommandLine cmd = new CommandLine(new App());
+        cmd.setParameterExceptionHandler(pah);
+        int exitCode = cmd.execute("-x");
+        assertEquals(ExitCode.USAGE, exitCode);
+        String expected = String.format("" +
+                "java.lang.IllegalStateException: blah%n" +
+                "\tat %s.handleParseException(", pah.getClass().getName());
+        assertTrue(systemErrRule.getLog().startsWith(expected));
+        assertEquals("", systemOutRule.getLog());
+    }
+
+    @Test
+    public void testParameterExceptionHandlerThrowsException_WithMapper() {
+        IParameterExceptionHandler pah = new IParameterExceptionHandler() {
+            public int handleParseException(ParameterException ex, String[] args) throws Exception {
+                throw new IllegalStateException("blah");
+            }
+        };
+        @Command class App implements Runnable {
+            @Option(names = "-x") int x;
+            public void run() { }
+        }
+        IExitCodeExceptionMapper mapper = new IExitCodeExceptionMapper() {
+            public int getExitCode(Throwable exception) {
+                if (exception instanceof IllegalStateException) { return 1; }
+                if (exception instanceof ParameterException) { return 2; }
+                return 3;
+            }
+        };
+        CommandLine cmd = new CommandLine(new App());
+        cmd.setParameterExceptionHandler(pah);
+        cmd.setExitCodeExceptionMapper(mapper);
+        int exitCode = cmd.execute("-x");
+        assertEquals(1, exitCode);
     }
 }
