@@ -899,38 +899,63 @@ public class CommandLine {
         return (mapper != null) ? mapper.getExitCode(t) : defaultExitCode;
     }
 
+    /** Returns the color scheme to use when printing help.
+     * @see #execute(String...)
+     * @see #usage(PrintStream)
+     * @see #usage(PrintWriter)
+     * @see #getUsageMessage()
+     * @since 4.0
+     */
     public Help.ColorScheme getColorScheme() { return colorScheme; }
 
+    /** Sets the color scheme to use when printing help.
+     * @param colorScheme the new color scheme
+     * @see #execute(String...)
+     * @see #usage(PrintStream)
+     * @see #usage(PrintWriter)
+     * @see #getUsageMessage()
+     * @since 4.0
+     */
     public CommandLine setColorScheme(Help.ColorScheme colorScheme) {
         this.colorScheme = Assert.notNull(colorScheme, "colorScheme");
         for (CommandLine sub : getSubcommands().values()) { sub.setColorScheme(colorScheme); }
         return this;
     }
 
-    /** Returns the writer to print command output to. Defaults to a PrintWriter wrapper around {@code System.out}
-     * unless {@link #setOut(PrintWriter)} was called with a different stream.
-     * <p>This method is used by {@link #execute(String...)}. {@code IExecutionStrategy} implementations should use this writer.
+    /** Returns the writer used when printing user-requested usage help or version help during command {@linkplain #execute(String...) execution}.
+     * Defaults to a PrintWriter wrapper around {@code System.out} unless {@link #setOut(PrintWriter)} was called with a different stream.
+     * <p>This method is used by {@link #execute(String...)}. Custom {@code IExecutionStrategy} implementations should also use this writer.
      * </p><p>
      * By <a href="http://www.gnu.org/prep/standards/html_node/_002d_002dhelp.html">convention</a>, when the user requests
      * help with a {@code --help} or similar option, the usage help message is printed to the standard output stream so that it can be easily searched and paged.</p>
      * @since 4.0 */
     public PrintWriter getOut() { return out != null ? out : new PrintWriter(System.out, true); }
 
+    /** Sets the writer to use when printing user-requested usage help or version help during command {@linkplain #execute(String...) execution}.
+     * <p>This method is used by {@link #execute(String...)}. Custom {@code IExecutionStrategy} implementations should also use this writer.</p>
+     * @param out the new PrintWriter to use
+     * @return this CommandLine for method chaining
+     * @since 4.0
+     */
     public CommandLine setOut(PrintWriter out) {
         this.out = Assert.notNull(out, "out");
         for (CommandLine sub : getSubcommands().values()) { sub.setOut(out); }
         return this;
     }
 
-    /** Returns the stream to print diagnostic messages to. Defaults to a PrintWriter wrapper around {@code System.err},
-     * unless {@link #setErr(PrintWriter)} was called with a different stream.
+    /** Returns the writer to use when printing diagnostic messages during command {@linkplain #execute(String...) execution}.
+     * Defaults to a PrintWriter wrapper around {@code System.err}, unless {@link #setErr(PrintWriter)} was called with a different stream.
      * <p>This method is used by {@link #execute(String...)}.
      * {@code IParameterExceptionHandler} and {@link CommandLine.IExecutionExceptionHandler} implementations
-     * should use this stream to print error messages (which may include a usage help message) when an unexpected error occurs.
-     * </p>
+     * should use this stream to print error messages (which may include a usage help message) when an unexpected error occurs.</p>
      * @since 4.0 */
     public PrintWriter getErr() { return err != null ? err : new PrintWriter(System.err, true); }
 
+    /** Sets the writer to use when printing diagnostic messages during command {@linkplain #execute(String...) execution}.
+     * <p>This method is used by {@link #execute(String...)}. Custom {@code IExecutionStrategy} implementations should also use this writer.</p>
+     * @param err the new PrintWriter to use
+     * @return this CommandLine for method chaining
+     * @since 4.0 */
     public CommandLine setErr(PrintWriter err) {
         this.err = Assert.notNull(err, "err");
         for (CommandLine sub : getSubcommands().values()) { sub.setErr(err); }
@@ -1122,7 +1147,10 @@ public class CommandLine {
      *   <li>"Execute" the selected {@code CommandSpec}. Often this means invoking a method on the spec's {@linkplain CommandSpec#userObject() user object}.</li>
      *   <li>Return an exit code. Common sources of exit values are the invoked method's return value, or the user object if it implements {@link IExitCodeGenerator}.</li>
      * </ul>
-     * This interface supercedes {@link IParseResultHandler2}
+     * <p>Implementors that need to print messages to the console should use the {@linkplain #getOut() output} and {@linkplain #getErr() error} PrintWriters,
+     * and the {@linkplain #getColorScheme() color scheme} from the CommandLine object obtained from ParseResult's CommandSpec.</p>
+     * <p>This interface supercedes {@link IParseResultHandler2}.</p>
+     *
      * @since 4.0 */
     public interface IExecutionStrategy {
         /**
@@ -1190,10 +1218,41 @@ public class CommandLine {
          */
         R handleExecutionException(ExecutionException ex, ParseResult parseResult);
     }
+
+    /** Classes implementing this interface know how to handle {@code ParameterExceptions} (usually from invalid user input).
+     * <p>Implementors that need to print messages to the console should use the {@linkplain #getOut() output} and {@linkplain #getErr() error} PrintWriters,
+     * and the {@linkplain #getColorScheme() color scheme} from the CommandLine object obtained from the exception.</p>
+     * <p>This interface supercedes {@link IParseResultHandler2}.</p>
+     * @see CommandLine#setParameterExceptionHandler(IParameterExceptionHandler)
+     * @since 4.0
+     */
     public interface IParameterExceptionHandler {
+        /** Handles a {@code ParameterException} that occurred while {@linkplain #parseArgs(String...) parsing} the command
+         * line arguments and returns an exit code suitable for returning from {@link #execute(String...)}.
+         * @param ex the ParameterException describing the problem that occurred while parsing the command line arguments,
+         *           and the CommandLine representing the command or subcommand whose input was invalid
+         * @param args the command line arguments that could not be parsed
+         * @return an exit code
+         */
         int handleParseException(ParameterException ex, String[] args) throws Exception;
     }
+    /**
+     * Classes implementing this interface know how to handle {@code ExecutionExceptions} that occurred while executing the {@code Runnable}, {@code Callable} or {@code Method} user object of the command.
+     * <p>Implementors that need to print messages to the console should use the {@linkplain #getOut() output} and {@linkplain #getErr() error} PrintWriters,
+     * and the {@linkplain #getColorScheme() color scheme} from the CommandLine object obtained from the exception.</p>
+     * <p>This interface supercedes {@link IParseResultHandler2}.</p>
+     * @see CommandLine#setExecutionExceptionHandler(IExecutionExceptionHandler)
+     * @since 4.0
+     */
     public interface IExecutionExceptionHandler {
+        /** Handles a {@code ExecutionException} that occurred while executing the {@code Runnable} or
+         * {@code Callable} command and returns an exit code suitable for returning from {@link #execute(String...)}.
+         * @param ex the ExecutionException describing the problem that occurred while executing the {@code Runnable},
+         *          {@code Callable} or {@code Method} user object of the command,
+         *           and the CommandLine representing the command or subcommand that was being executed
+         * @param parseResult the result of parsing the command line arguments
+         * @return an exit code
+         */
         int handleExecutionException(ExecutionException ex, ParseResult parseResult) throws Exception;
     }
 
@@ -2148,12 +2207,12 @@ public class CommandLine {
     }
 
     /**
-     * Delegates to {@link #printVersionHelp(PrintStream, Help.Ansi)} with the {@linkplain Help.Ansi#AUTO platform default}.
+     * Delegates to {@link #printVersionHelp(PrintStream, Help.Ansi)} with the ANSI setting of the {@linkplain #getColorScheme() configured} color scheme.
      * @param out the printStream to print to
      * @see #printVersionHelp(PrintStream, Help.Ansi)
      * @since 0.9.8
      */
-    public void printVersionHelp(PrintStream out) { printVersionHelp(out, Help.Ansi.AUTO); }
+    public void printVersionHelp(PrintStream out) { printVersionHelp(out, getColorScheme().ansi()); }
 
     /**
      * Prints version information from the {@link Command#version()} annotation to the specified {@code PrintStream}.
@@ -2192,10 +2251,10 @@ public class CommandLine {
         out.flush();
     }
     /**
-     * Delegates to {@link #printVersionHelp(PrintWriter, Help.Ansi, Object...)} with the {@linkplain Help.Ansi#AUTO platform default}.
+     * Delegates to {@link #printVersionHelp(PrintWriter, Help.Ansi, Object...)} with the ANSI setting of the {@linkplain #getColorScheme() configured} color scheme.
      * @param out the PrintWriter to print to
      * @since 4.0 */
-    public void printVersionHelp(PrintWriter out) { printVersionHelp(out, Help.Ansi.AUTO); }
+    public void printVersionHelp(PrintWriter out) { printVersionHelp(out, getColorScheme().ansi()); }
     /**
      * Prints version information from the {@link Command#version()} annotation to the specified {@code PrintWriter}.
      * Each element of the array of version strings is {@linkplain String#format(String, Object...) formatted} with the
