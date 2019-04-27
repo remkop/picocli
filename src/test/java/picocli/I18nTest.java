@@ -602,4 +602,11 @@ public class I18nTest {
             Locale.setDefault(original);
         }
     }
+
+    @Test
+    public void testResourceBundleBaseName() {
+        @Command(resourceBundle = "picocli.i18n.SG_cli")
+        class App { }
+        assertEquals("picocli.i18n.SG_cli", new CommandLine(new App()).getCommandSpec().resourceBundleBaseName());
+    }
 }
