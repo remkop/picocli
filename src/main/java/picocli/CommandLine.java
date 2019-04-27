@@ -1686,6 +1686,7 @@ public class CommandLine {
             return resolveExitCode(parseResult.commandSpec().exitCodeOnSuccess(), executionResult, exitCodeGenerators);
         }
 
+        // Use the highest value (or if all values are negative, use the lowest value).
         private int resolveExitCode(int exitCodeOnSuccess, R executionResult, List<IExitCodeGenerator> exitCodeGenerators) {
             int result = exitCodeOnSuccess;
             for (IExitCodeGenerator generator : exitCodeGenerators) {

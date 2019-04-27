@@ -20,15 +20,21 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
+import picocli.CommandLine.AbstractParseResultHandler;
 import picocli.CommandLine.ExitCode;
 import picocli.CommandLine.IExecutionExceptionHandler;
 import picocli.CommandLine.IExitCodeExceptionMapper;
+import picocli.CommandLine.IExitCodeGenerator;
 import picocli.CommandLine.IParameterExceptionHandler;
 import picocli.CommandLine.Model.CommandSpec;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import static java.lang.String.format;
@@ -795,5 +801,97 @@ public class ExecuteTest {
         cmd.setExitCodeExceptionMapper(mapper);
         int exitCode = cmd.execute("-x");
         assertEquals(1, exitCode);
+    }
+
+    @Test
+    public void testModifiedExecutionStrategy() {
+        @Command class App implements Runnable {
+            @Option(names = "-h", usageHelp = true) boolean help;
+            public void run() { }
+        }
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(bout);
+        ByteArrayOutputStream berr = new ByteArrayOutputStream();
+        PrintStream err = new PrintStream(berr);
+
+        CommandLine cmd = new CommandLine(new App());
+        cmd.setExecutionStrategy(new RunLast().useOut(out).useErr(err).useAnsi(Help.Ansi.OFF));
+        int exitCode = cmd.execute("-h");
+
+        assertEquals(ExitCode.OK, exitCode);
+        String expected = String.format("" +
+                "Usage: <main class> [-h]%n" +
+                "  -h%n");
+        assertEquals("", berr.toString());
+        assertEquals(expected, bout.toString());
+    }
+
+    @Test
+    public void testAbstractParseResultHandler_extractExitCodeGenerators() {
+        AbstractParseResultHandler handler = new AbstractParseResultHandler() {
+            protected Object handle(ParseResult parseResult) throws ExecutionException { return null; }
+            protected CommandLine.AbstractHandler self() { return null; }
+        };
+        assertEquals(Collections.emptyList(), handler.extractExitCodeGenerators(null));
+    }
+
+    @Test
+    public void testRunLastResolveExitCodeFromIExitCodeGenerator() {
+        @Command class App implements Callable<Integer>, IExitCodeGenerator {
+            private final int callResult;
+            private final int exitResult;
+            App(int callResult, int exitResult) {
+                this.callResult = callResult;
+                this.exitResult = exitResult;
+            }
+            public Integer call() { return callResult; }
+            public int getExitCode() { return exitResult; }
+        }
+        assertEquals(3, new CommandLine(new App(2, 3)).execute());
+        assertEquals(3, new CommandLine(new App(3, 2)).execute());
+        assertEquals(-3, new CommandLine(new App(-2, -3)).execute());
+        assertEquals(-3, new CommandLine(new App(-3, -2)).execute());
+        assertEquals(-1, new CommandLine(new App(-1, 1)).execute());
+    }
+
+    @Command(name = "flex")
+    static class ExitCodeGen implements Callable<Integer>, IExitCodeGenerator {
+        @Option(names = "-n") boolean negate;
+        ExitCodeGen() { }
+        public Integer call() { return negate ? -6 : 6; }
+        public int getExitCode() { return negate ? -5 : 5; }
+    }
+    @Command(subcommands = ExitCodeGen.class)
+    static class Cmd implements Callable<Integer>, IExitCodeGenerator {
+        private final int callResult;
+        private final int exitResult;
+        private final int subResult;
+        Cmd(int callResult, int exitResult, int subResult) {
+            this.callResult = callResult;
+            this.exitResult = exitResult;
+            this.subResult = subResult;
+        }
+        public Integer call() { return callResult; }
+        public int getExitCode() { return exitResult; }
+        @Command public int sub() { return subResult; }
+    }
+
+    @Test
+    public void testRunAllResolveExitCodeFromIExitCodeGenerator() {
+        assertEquals(2,  cmd(1, -1, 2).execute("sub"));
+        assertEquals(2,  cmd(-1, 1, 2).execute("sub"));
+        assertEquals(8,  cmd(7, 8, 9).execute()); // ignore 9: sub not invoked
+        assertEquals(9,  cmd(7, 8, 9).execute("sub"));
+        assertEquals(9,  cmd(9, 8, 7).execute()); // ignore 7: sub not invoked
+        assertEquals(9,  cmd(9, 8, 7).execute("flex"));
+        assertEquals(6,  cmd(1, 2, 3).execute("flex"));
+        assertEquals(-3, cmd(-2, -3, -4).execute()); // ignore -4: sub not invoked
+        assertEquals(-4, cmd(-2, -3, -4).execute("sub"));
+        assertEquals(-3, cmd(-3, -2, -1).execute("sub"));
+        assertEquals(6, cmd(-3, -2, -1).execute("flex"));
+        assertEquals(-6, cmd(-3, -2, -1).execute("flex", "-n"));
+    }
+    private static CommandLine cmd(int callResult, int exitResult, int subResult) {
+        return new CommandLine(new Cmd(callResult, exitResult, subResult)).setExecutionStrategy(new RunAll());
     }
 }
