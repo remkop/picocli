@@ -857,19 +857,24 @@ public class ExecuteTest {
     @Test
     public void testExceptionFromExitCodeGenerator() {
         @Command
-        class App implements Runnable, IExitCodeGenerator {
-            public void run() { }
+        class App implements Callable<Integer>, IExitCodeGenerator {
+            int exitCode;
+            App(int exitCode) { this.exitCode = exitCode; }
+            public Integer call() { return exitCode; }
             public int getExitCode() {
                 throw new IllegalStateException("This IExitCodeGenerator threw an exception");
             }
         }
 
-        int exitCode = new CommandLine(new App()).execute();
+        int exitCode = new CommandLine(new App(0)).execute();
         assertEquals(1, exitCode);
         String expected = String.format("" +
                 "java.lang.IllegalStateException: This IExitCodeGenerator threw an exception%n" +
                 "\tat %s.getExitCode(", App.class.getName());
         assertTrue(systemErrRule.getLog().startsWith(expected));
+
+        assertEquals(2, new CommandLine(new App(2)).execute());
+        assertEquals(1, new CommandLine(new App(-1)).execute());
     }
 
     @Command(name = "flex")
