@@ -3934,7 +3934,10 @@ object MyApp {
 ----
 
 == API Javadoc
-Picocli API Javadoc can be found https://remkop.github.io/picocli/apidocs[here].
+Picocli API Javadoc can be found link:apidocs/[here].
+
+See also: https://remkop.github.io/picocli/apidocs[latest version], https://picocli.info/man/3.x/apidocs[picocli 3.x javadoc].
+
 
 == GitHub Project
 The https://github.com/remkop/picocli[GitHub project] has the source code, tests, build scripts, etc.
