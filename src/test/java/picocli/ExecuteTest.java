@@ -973,4 +973,47 @@ public class ExecuteTest {
         PicocliException exception = new PicocliException("", new IOException("blah"));
         exception.rethrowCauseIf(null);
     }
+
+    @Test
+    public void testCommandSpecDefaultExitCodes() {
+        CommandSpec spec = CommandSpec.create();
+        assertEquals(ExitCode.OK, spec.exitCodeOnSuccess());
+        assertEquals(ExitCode.OK, spec.exitCodeOnUsageHelp());
+        assertEquals(ExitCode.OK, spec.exitCodeOnVersionHelp());
+        assertEquals(ExitCode.USAGE, spec.exitCodeOnInvalidInput());
+        assertEquals(ExitCode.SOFTWARE, spec.exitCodeOnExecutionException());
+    }
+
+    @Test
+    public void testCommandSpecExitCodesMutable() {
+        CommandSpec spec = CommandSpec.create();
+        spec.exitCodeOnSuccess(1)
+                .exitCodeOnUsageHelp(2)
+                .exitCodeOnVersionHelp(3)
+                .exitCodeOnInvalidInput(4)
+                .exitCodeOnExecutionException(5);
+
+        assertEquals(1, spec.exitCodeOnSuccess());
+        assertEquals(2, spec.exitCodeOnUsageHelp());
+        assertEquals(3, spec.exitCodeOnVersionHelp());
+        assertEquals(4, spec.exitCodeOnInvalidInput());
+        assertEquals(5, spec.exitCodeOnExecutionException());
+    }
+
+    @Test
+    public void testCommandSpecExitCodesFromAnnotations() {
+        @Command(exitCodeOnSuccess = 1
+               , exitCodeOnUsageHelp = 2
+               , exitCodeOnVersionHelp = 3
+               , exitCodeOnInvalidInput = 4
+               , exitCodeOnExecutionException = 5)
+        class Annotated{}
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new Annotated());
+
+        assertEquals(1, spec.exitCodeOnSuccess());
+        assertEquals(2, spec.exitCodeOnUsageHelp());
+        assertEquals(3, spec.exitCodeOnVersionHelp());
+        assertEquals(4, spec.exitCodeOnInvalidInput());
+        assertEquals(5, spec.exitCodeOnExecutionException());
+    }
 }
