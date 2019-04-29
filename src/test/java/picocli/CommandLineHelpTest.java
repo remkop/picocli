@@ -3269,7 +3269,7 @@ public class CommandLineHelpTest {
         assertEquals(expected, baos.toString());
 
         StringWriter sw = new StringWriter();
-        new CommandLine(new App()).usage(new PrintWriter(sw));
+        new CommandLine(new App()).usage(new PrintWriter(sw), Help.Ansi.OFF);
         assertEquals(expected, sw.toString());
     }
 
