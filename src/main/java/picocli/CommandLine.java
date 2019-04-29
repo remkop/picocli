@@ -13609,8 +13609,9 @@ public class CommandLine {
         public UnmatchedArgumentException(CommandLine commandLine, String msg) { super(commandLine, msg); }
         public UnmatchedArgumentException(CommandLine commandLine, Stack<String> args) { this(commandLine, new ArrayList<String>(reverse(args))); }
         public UnmatchedArgumentException(CommandLine commandLine, List<String> args) {
-            this(commandLine, describe(args, commandLine) + (args.size() == 1 ? ": " : "s: ") + str(args));
-            unmatched = args == null ? Collections.<String>emptyList() : args;
+            this(commandLine, describe(Assert.notNull(args, "unmatched list"), commandLine) +
+                    (args.size() == 1 ? ": " : "s: ") + str(args));
+            unmatched = new ArrayList<String>(args);
         }
         /** Returns {@code true} and prints suggested solutions to the specified stream if such solutions exist, otherwise returns {@code false}.
          * @since 3.3.0 */
@@ -13654,7 +13655,7 @@ public class CommandLine {
         /** Returns suggested solutions if such solutions exist, otherwise returns an empty list.
          * @since 3.3.0 */
         public List<String> getSuggestions() {
-            if (unmatched == null || unmatched.isEmpty()) { return Collections.emptyList(); }
+            if (unmatched.isEmpty()) { return Collections.emptyList(); }
             String arg = unmatched.get(0);
             String stripped = CommandSpec.stripPrefix(arg);
             CommandSpec spec = getCommandLine().getCommandSpec();

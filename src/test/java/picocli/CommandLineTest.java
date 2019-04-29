@@ -3759,48 +3759,6 @@ public class CommandLineTest {
             assertEquals("CHOICE3", e.getValue());
         }
     }
-    @Test
-    @SuppressWarnings("deprecation")
-    public void testUnmatchedArgumentSuggestsSubcommands() {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Demo.mainCommand().parseWithHandler(((IParseResultHandler)null), new PrintStream(baos), new String[]{"chekcout"});
-        String expected = format("" +
-                "Unmatched argument: chekcout%n" +
-                "Did you mean: checkout or help or branch?%n");
-        assertEquals(expected, baos.toString());
-    }
-    @Test
-    @SuppressWarnings("deprecation")
-    public void testUnmatchedArgumentSuggestsSubcommands2() {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Demo.mainCommand().parseWithHandler(((IParseResultHandler)null), new PrintStream(baos), new String[]{"me"});
-        String expected = format("" +
-                "Unmatched argument: me%n" +
-                "Did you mean: merge?%n");
-        assertEquals(expected, baos.toString());
-    }
-    @Test
-    @SuppressWarnings("deprecation")
-    public void testUnmatchedArgumentSuggestsOptions() {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine cmd = new CommandLine(new Demo.GitCommit());
-        cmd.parseWithHandler(((IParseResultHandler)null), new PrintStream(baos), new String[]{"-fi"});
-        String expected = format("" +
-                "Unknown option: -fi%n" +
-                "Possible solutions: --fixup, --file%n");
-        assertEquals(expected, baos.toString());
-    }
-    @Test
-    @SuppressWarnings("deprecation")
-    public void testUnmatchedArgumentDoesNotSuggestOptionsIfNoMatch() {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine cmd = new CommandLine(new Demo.GitCommit());
-        cmd.parseWithHandler(((IParseResultHandler)null), new PrintStream(baos), new String[]{"-x"});
-        String actual = baos.toString();
-        assertTrue(actual, actual.startsWith("Unknown option: -x"));
-        assertTrue(actual, actual.contains("Usage:"));
-        assertFalse(actual, actual.contains("Possible solutions:"));
-    }
 
     @Test
     public void testEmptyObjectArray() throws Exception {
