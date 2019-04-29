@@ -3905,4 +3905,20 @@ public class CommandLineHelpTest {
                 "                     \u306b\u5ec3\u308c\u305f\u308f\u3051\u3067\u306f\u306a\u3044\u3002%n");
         assertEquals(expected, usageMessage);
     }
+
+    @Test
+    public void testTextTableAjustForWideCJKCharsByDefault() {
+        assertTrue(TextTable.forDefaultColumns(Help.Ansi.OFF, 80).isAdjustLineBreaksForWideCJKCharacters());
+        assertTrue(TextTable.forColumnWidths(Help.Ansi.OFF, 3, 4, 6, 30).isAdjustLineBreaksForWideCJKCharacters());
+        assertTrue(TextTable.forDefaultColumns(Help.Ansi.OFF, 20, 80).isAdjustLineBreaksForWideCJKCharacters());
+    }
+
+    @Test
+    public void testTextTableAjustForWideCJKCharsByDefaultIsMutable() {
+        TextTable textTable = TextTable.forDefaultColumns(Help.Ansi.OFF, 80);
+
+        assertTrue(textTable.isAdjustLineBreaksForWideCJKCharacters());
+        textTable.setAdjustLineBreaksForWideCJKCharacters(false);
+        assertFalse(textTable.isAdjustLineBreaksForWideCJKCharacters());
+    }
 }
