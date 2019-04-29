@@ -51,6 +51,7 @@ import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.rules.TestRule;
+import picocli.CommandLine.IHelpSectionRenderer;
 import picocli.CommandLine.Model.*;
 import picocli.CommandLine.Range;
 
@@ -932,6 +933,24 @@ public class CommandLineTest {
         } catch (InvocationTargetException ex) {
             IllegalStateException actual = (IllegalStateException) ex.getTargetException();
             assertEquals("thrown", actual.getMessage());
+        }
+    }
+    @Test
+    public void testAssertAssertTrue2() throws Exception {
+        Method m = Class.forName("picocli.CommandLine$Assert").getDeclaredMethod("assertTrue", boolean.class, IHelpSectionRenderer.class);
+        m.setAccessible(true);
+
+        IHelpSectionRenderer renderer = new IHelpSectionRenderer() {
+            public String render(CommandLine.Help h) {
+                return "Internal error: blah";
+            }
+        };
+        m.invoke(null, true, renderer);
+        try {
+            m.invoke(null, false, renderer);
+        } catch (InvocationTargetException ex) {
+            IllegalStateException actual = (IllegalStateException) ex.getTargetException();
+            assertEquals("Internal error: blah", actual.getMessage());
         }
     }
 
