@@ -164,9 +164,8 @@ public class CommandLine {
     };
     private IExecutionExceptionHandler executionExceptionHandler = new IExecutionExceptionHandler() {
         public int handleExecutionException(ExecutionException ex, ParseResult parseResult) throws Exception {
-            Throwable cause = ex.getCause() == null ? ex : ex.getCause();
-            if (cause instanceof Exception) { throw (Exception) cause; }
-            if (cause instanceof Error)     { throw (Error)     cause; }
+            ex.rethrowCauseIf(Exception.class);
+            ex.rethrowCauseIf(Error.class);
             throw ex;
         }
     };
@@ -986,8 +985,22 @@ public class CommandLine {
         return this;
     }
 
+    /** Returns the handler for dealing with exceptions that occurred in the {@code Callable}, {@code Runnable} or {@code Method}
+     * user object of a command when the command was {@linkplain #execute(String...) executed}.
+     * <p>The default implementation unwraps the cause exception and {@linkplain PicocliException#rethrowCauseIf(Class) rethrows} it.</p>
+     * @return the handler for dealing with exceptions that occurred in the business logic when the {@link #execute(String...) execute} or {@link #tryExecute(String...) tryExecute} method was invoked.
+     * @since 4.0
+     */
     public IExecutionExceptionHandler getExecutionExceptionHandler() { return executionExceptionHandler; }
 
+    /**
+     * Sets a custom handler for dealing with exceptions that occurred in the {@code Callable}, {@code Runnable} or {@code Method}
+     * user object of a command when the command was executed via the {@linkplain #execute(String...) execute} or {@link #tryExecute(String...) tryExecute} method.
+     * <p>Implementors may be interested in the {@link PicocliException#rethrowCauseIf(Class)} method.</p>
+     * @param executionExceptionHandler the handler for dealing with exceptions that occurred in the business logic when the {@link #execute(String...) execute} or {@link #tryExecute(String...) tryExecute} method was invoked.
+     * @return this CommandLine for method chaining
+     * @since 4.0
+     */
     public CommandLine setExecutionExceptionHandler(IExecutionExceptionHandler executionExceptionHandler) {
         this.executionExceptionHandler = Assert.notNull(executionExceptionHandler, "executionExceptionHandler");
         for (CommandLine sub : getSubcommands().values()) { sub.setExecutionExceptionHandler(executionExceptionHandler); }
@@ -1696,7 +1709,7 @@ public class CommandLine {
 
     private <T> T enrichForBackwardsCompatibility(T obj) {
         // in case the IExecutionStrategy is a built-in like RunLast,
-        // called from one of the deprecated convenience methods like run(Runnable, OutputStream, OutputStream, Ansi, String[])
+        // and the application called #useOut, #useErr or #useAnsi on it
         if (obj instanceof AbstractHandler<?, ?>) {
             AbstractHandler<?, ?> handler = (AbstractHandler<?, ?>) obj;
             if (handler.out()  != System.out)     { setOut(new PrintWriter(handler.out(), true)); }
@@ -13410,6 +13423,18 @@ public class CommandLine {
         private static final long serialVersionUID = -2574128880125050818L;
         public PicocliException(String msg) { super(msg); }
         public PicocliException(String msg, Throwable t) { super(msg, t); }
+        /**
+         * Rethrows the wrapped cause exception in a type-safe manner:
+         * unwraps the cause of this {@code PicocliException} and rethrows it if the specified class {@link Class#isAssignableFrom(Class) matches} the cause Throwable.
+         * This may be useful to rethrow the cause exception of an {@link ExecutionException}.
+         * @param cls the class of the exception or error
+         * @param <E> type parameter of the throwable class to match
+         * @throws E the exception or error that was wrapped by this {@code PicocliException}
+         * @since 4.0
+         */
+        public <E extends Throwable> void rethrowCauseIf(Class<E> cls) throws E {
+            if (getCause() != null && cls.isAssignableFrom(getCause().getClass())) { throw cls.cast(getCause()); }
+        }
     }
     /** Exception indicating a problem during {@code CommandLine} initialization.
      * @since 2.0 */

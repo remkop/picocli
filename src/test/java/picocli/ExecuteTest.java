@@ -27,8 +27,10 @@ import picocli.CommandLine.IExitCodeExceptionMapper;
 import picocli.CommandLine.IExitCodeGenerator;
 import picocli.CommandLine.IParameterExceptionHandler;
 import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.PicocliException;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -935,5 +937,40 @@ public class ExecuteTest {
     }
     private static CommandLine first(int callResult, int exitResult, int subResult) {
         return new CommandLine(new Cmd(callResult, exitResult, subResult)).setExecutionStrategy(new RunFirst());
+    }
+
+    @Test
+    public void testRethrowCauseIf() {
+        PicocliException exception = new PicocliException("", new IOException("blah"));
+        exception.rethrowCauseIf(IllegalStateException.class); // does nothing
+        try {
+            exception.rethrowCauseIf(IOException.class);
+            fail("Expected exception");
+        } catch (IOException ex) {
+            assertEquals("blah", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testRethrowCauseIfSubclass() {
+        PicocliException exception = new PicocliException("", new FileNotFoundException("blah"));
+        try {
+            exception.rethrowCauseIf(IOException.class);
+            fail("Expected exception");
+        } catch (IOException ex) {
+            assertEquals("blah", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testRethrowCauseNotRethrownIfSuperclass() throws FileNotFoundException {
+        PicocliException exception = new PicocliException("", new IOException("blah"));
+        exception.rethrowCauseIf(FileNotFoundException.class);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testRethrowCauseIfDisallowsNull() throws Throwable {
+        PicocliException exception = new PicocliException("", new IOException("blah"));
+        exception.rethrowCauseIf(null);
     }
 }
