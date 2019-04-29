@@ -604,9 +604,20 @@ public class I18nTest {
     }
 
     @Test
-    public void testResourceBundleBaseName() {
+    public void testResourceBundleBaseNameGetter() {
         @Command(resourceBundle = "picocli.i18n.SG_cli")
         class App { }
         assertEquals("picocli.i18n.SG_cli", new CommandLine(new App()).getCommandSpec().resourceBundleBaseName());
+    }
+
+    @Test
+    public void testResourceBundleBaseNameSetter() {
+        @Command
+        class App {}
+
+        CommandLine cmd = new CommandLine(new App());
+        cmd.getCommandSpec().resourceBundleBaseName("picocli.i18n.SG_cli");
+
+        assertEquals("picocli.i18n.SG_cli", cmd.getCommandSpec().resourceBundleBaseName());
     }
 }
