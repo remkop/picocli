@@ -3022,6 +3022,17 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testPrintVersionHelpPrintWriter() {
+        @Command(version = "abc 1.2.3 myversion")
+        class App {
+            @Option(names = "-V", versionHelp = true) boolean versionRequested;
+        }
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App()).printVersionHelp(new PrintWriter(sw));
+        assertEquals(String.format("abc 1.2.3 myversion%n"), sw.toString());
+    }
+
+    @Test
     public void testPrintHelpIfRequestedReturnsFalseForNoHelp() throws IOException {
         class App {
             @Option(names = "-v") boolean verbose;
