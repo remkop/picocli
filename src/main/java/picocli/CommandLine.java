@@ -150,6 +150,7 @@ public class CommandLine {
     private final Interpreter interpreter;
     private final IFactory factory;
 
+    private Object executionResult;
     private PrintWriter out;
     private PrintWriter err;
     private Help.ColorScheme colorScheme = Help.defaultColorScheme(Help.Ansi.AUTO);
@@ -817,19 +818,19 @@ public class CommandLine {
     }
 
     /**
-     * Defines some exit codes used by picocli as default return values from the {@link #execute(String...) execute},
-     * {@link #tryExecute(String...) tryExecute} and {@link #executeHelpRequest(ParseResult) executeHelpRequest} methods.
+     * Defines some exit codes used by picocli as default return values from the {@link #execute(String...) execute}
+     * and {@link #executeHelpRequest(ParseResult) executeHelpRequest} methods.
      * <p>Commands can override these defaults with annotations (e.g. {@code @Command(exitCodeOnInvalidInput = 12345)}
      * or programmatically (e.g. {@link CommandSpec#exitCodeOnInvalidInput(int)}).</p>
      * <p>Additionally, there are several mechanisms for commands to return custom exit codes.
-     * See the javadoc of the {@link #execute(String...) execute} and {@link #tryExecute(String...) tryExecute} methods for details.</p>
+     * See the javadoc of the {@link #execute(String...) execute} method for details.</p>
      * @since 4.0 */
     public static final class ExitCode {
-        /** Return value from the {@link #execute(String...) execute}, {@link #tryExecute(String...) tryExecute} and
+        /** Return value from the {@link #execute(String...) execute} and
          * {@link #executeHelpRequest(ParseResult) executeHelpRequest} methods signifying successful termination.
          * <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.</p> */
         public static final int OK = 0;
-        /** Return value from the {@link #execute(String...) execute} and {@link #tryExecute(String...) tryExecute} methods signifying command line usage error: user input for the command was incorrect, e.g., the wrong number of arguments, a bad flag, a bad syntax in a parameter, or whatever. <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.</p>*/
+        /** Return value from the {@link #execute(String...) execute} method signifying command line usage error: user input for the command was incorrect, e.g., the wrong number of arguments, a bad flag, a bad syntax in a parameter, or whatever. <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.</p>*/
         public static final int USAGE = 64;
         /** Return value from the {@link #execute(String...) execute} method signifying internal software error: an exception occurred when invoking the Runnable, Callable or Method user object of a command. <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.</p> */
         public static final int SOFTWARE = 70;
@@ -837,7 +838,7 @@ public class CommandLine {
     }
 
     /** {@code @Command}-annotated classes can implement this interface to specify an exit code that will be returned
-     * from the {@link #execute(String...) execute} and {@link #tryExecute(String...) tryExecute} methods when the command is successfully invoked.
+     * from the {@link #execute(String...) execute} method when the command is successfully invoked.
      *
      * <p>Example usage:</p>
      * <pre>
@@ -854,7 +855,7 @@ public class CommandLine {
      * @since 4.0
      */
     public interface IExitCodeGenerator {
-        /** Returns the exit code that should be returned from the {@link #execute(String...) execute} and {@link #tryExecute(String...) tryExecute} methods.
+        /** Returns the exit code that should be returned from the {@link #execute(String...) execute} method.
          * @return the exit code
          */
         int getExitCode();
@@ -888,7 +889,7 @@ public class CommandLine {
      * @since 4.0
      */
     public interface IExitCodeExceptionMapper {
-        /** Returns the exit code that should be returned from the {@link #execute(String...) execute} and {@link #tryExecute(String...) tryExecute} methods.
+        /** Returns the exit code that should be returned from the {@link #execute(String...) execute} method.
          * @param exception the exception that occurred during parsing or while invoking the command's Runnable, Callable, or Method.
          * @return the exit code
          */
@@ -988,16 +989,16 @@ public class CommandLine {
     /** Returns the handler for dealing with exceptions that occurred in the {@code Callable}, {@code Runnable} or {@code Method}
      * user object of a command when the command was {@linkplain #execute(String...) executed}.
      * <p>The default implementation unwraps the cause exception and {@linkplain PicocliException#rethrowCauseIf(Class) rethrows} it.</p>
-     * @return the handler for dealing with exceptions that occurred in the business logic when the {@link #execute(String...) execute} or {@link #tryExecute(String...) tryExecute} method was invoked.
+     * @return the handler for dealing with exceptions that occurred in the business logic when the {@link #execute(String...) execute} method was invoked.
      * @since 4.0
      */
     public IExecutionExceptionHandler getExecutionExceptionHandler() { return executionExceptionHandler; }
 
     /**
      * Sets a custom handler for dealing with exceptions that occurred in the {@code Callable}, {@code Runnable} or {@code Method}
-     * user object of a command when the command was executed via the {@linkplain #execute(String...) execute} or {@link #tryExecute(String...) tryExecute} method.
+     * user object of a command when the command was executed via the {@linkplain #execute(String...) execute} method.
      * <p>Implementors may be interested in the {@link PicocliException#rethrowCauseIf(Class)} method.</p>
-     * @param executionExceptionHandler the handler for dealing with exceptions that occurred in the business logic when the {@link #execute(String...) execute} or {@link #tryExecute(String...) tryExecute} method was invoked.
+     * @param executionExceptionHandler the handler for dealing with exceptions that occurred in the business logic when the {@link #execute(String...) execute} method was invoked.
      * @return this CommandLine for method chaining
      * @since 4.0
      */
@@ -1092,6 +1093,35 @@ public class CommandLine {
         return getParseResult();
     }
     public ParseResult getParseResult() { return interpreter.parseResultBuilder == null ? null : interpreter.parseResultBuilder.build(); }
+
+    /** Returns the result of calling the user object {@code Callable} or invoking the user object {@code Method}
+     * after parsing the user input, or {@code null} if this command has not been {@linkplain #execute(String...) executed}
+     * or if this {@code CommandLine} is for a subcommand that was not specified by the end user on the command line.
+     * <p><b>Implementation note:</b></p>
+     * <p>It is the responsibility of the {@link IExecutionStrategy IExecutionStrategy} to set this value.</p>
+     * @param <T> type of the result value
+     * @return the result of the user object {@code Callable} or {@code Method} (may be {@code null}), or {@code null} if this (sub)command was not executed
+     * @since 4.0
+     */
+    @SuppressWarnings("unchecked") public <T> T getExecutionResult() { return (T) executionResult; }
+
+    /** Sets the result of calling the business logic on the command's user object.
+     * @param result the business logic result, may be {@code null}
+     * @since 4.0
+     * @see #execute(String...)
+     * @see IExecutionStrategy
+     */
+    public void setExecutionResult(Object result) { executionResult = result; }
+
+    /** Clears the {@linkplain #getExecutionResult() execution result} of a previous invocation.
+     * <p>Custom {@link IExecutionStrategy IExecutionStrategy} implementations should call this method
+     * before invoking any business logic on the command user object.</p>
+     * @since 4.0
+     */
+    public void clearExecutionResults() {
+        executionResult = null;
+        for (CommandLine sub : getSubcommands().values()) { sub.clearExecutionResults(); }
+    }
     /**
      * Represents a function that can process a List of {@code CommandLine} objects resulting from successfully
      * {@linkplain #parse(String...) parsing} the command line arguments. This is a
@@ -1153,11 +1183,12 @@ public class CommandLine {
 
     /**
      * Implementations are responsible for "executing" the user input and returning an exit code.
-     * The {@link #execute(String...)} and {@link #tryExecute(String...)} methods delegate to a {@linkplain #setExecutionStrategy(IExecutionStrategy) configured} execution strategy.
+     * The {@link #execute(String...)} method delegates to a {@linkplain #setExecutionStrategy(IExecutionStrategy) configured} execution strategy.
      * <p>Implementers responsibilities are:</p>
      * <ul>
      *   <li>From the {@code ParseResult}, select which {@code CommandSpec} should be executed. This is especially important for commands that have subcommands.</li>
      *   <li>"Execute" the selected {@code CommandSpec}. Often this means invoking a method on the spec's {@linkplain CommandSpec#userObject() user object}.</li>
+     *   <li>Call {@link CommandLine#setExecutionResult(Object) setExecutionResult} to make the return value of that method invocation available to the application</li>
      *   <li>Return an exit code. Common sources of exit values are the invoked method's return value, or the user object if it implements {@link IExitCodeGenerator}.</li>
      * </ul>
      * <p>Implementors that need to print messages to the console should use the {@linkplain #getOut() output} and {@linkplain #getErr() error} PrintWriters,
@@ -1168,7 +1199,8 @@ public class CommandLine {
     public interface IExecutionStrategy {
         /**
          * "Executes" the user input and returns an exit code.
-         * Execution often means invoking a method on the selected CommandSpec's {@linkplain CommandSpec#userObject() user object}.
+         * Execution often means invoking a method on the selected CommandSpec's {@linkplain CommandSpec#userObject() user object},
+         * and making the return value of that invocation available via {@link CommandLine#setExecutionResult(Object) setExecutionResult}.
          * @param parseResult the parse result from which to select one or more {@code CommandSpec} instances to execute.
          * @return an exit code
          * @throws ParameterException if the invoked method on the CommandSpec's user object threw a ParameterException to signify invalid user input.
@@ -1490,13 +1522,14 @@ public class CommandLine {
         }
         return null;
     }
-    private static List<Object> executeUserObject(CommandLine parsed, List<Object> executionResult) {
+    private static List<Object> executeUserObject(CommandLine parsed, List<Object> executionResultList) {
         Object command = parsed.getCommand();
         if (command instanceof Runnable) {
             try {
                 ((Runnable) command).run();
-                executionResult.add(null); // for compatibility with picocli 2.x
-                return executionResult;
+                parsed.setExecutionResult(null); // 4.0
+                executionResultList.add(null); // for compatibility with picocli 2.x
+                return executionResultList;
             } catch (ParameterException ex) {
                 throw ex;
             } catch (ExecutionException ex) {
@@ -1507,8 +1540,10 @@ public class CommandLine {
         } else if (command instanceof Callable) {
             try {
                 @SuppressWarnings("unchecked") Callable<Object> callable = (Callable<Object>) command;
-                executionResult.add(callable.call());
-                return executionResult;
+                Object executionResult = callable.call();
+                parsed.setExecutionResult(executionResult);
+                executionResultList.add(executionResult);
+                return executionResultList;
             } catch (ParameterException ex) {
                 throw ex;
             } catch (ExecutionException ex) {
@@ -1520,17 +1555,17 @@ public class CommandLine {
             try {
                 Method method = (Method) command;
                 Object[] parsedArgs = parsed.getCommandSpec().argValues();
+                Object executionResult;
                 if (Modifier.isStatic(method.getModifiers())) {
-                    // invoke static method
-                    executionResult.add(method.invoke(null, parsedArgs));
-                    return executionResult;
+                    executionResult = method.invoke(null, parsedArgs); // invoke static method
                 } else if (parsed.getCommandSpec().parent() != null) {
-                    executionResult.add(method.invoke(parsed.getCommandSpec().parent().userObject(), parsedArgs));
-                    return executionResult;
+                    executionResult = method.invoke(parsed.getCommandSpec().parent().userObject(), parsedArgs);
                 } else {
-                    executionResult.add(method.invoke(parsed.factory.create(method.getDeclaringClass()), parsedArgs));
-                    return executionResult;
+                    executionResult = method.invoke(parsed.factory.create(method.getDeclaringClass()), parsedArgs);
                 }
+                parsed.setExecutionResult(executionResult);
+                executionResultList.add(executionResult);
+                return executionResultList;
             } catch (InvocationTargetException ex) {
                 Throwable t = ex.getTargetException();
                 if (t instanceof ParameterException) {
@@ -1587,7 +1622,7 @@ public class CommandLine {
      * command line is executed. This can be configured by setting the {@linkplain #setExecutionStrategy(IExecutionStrategy) execution strategy}.
      * Built-in alternatives are executing the {@linkplain RunFirst first} subcommand, or executing {@linkplain RunAll all} specified subcommands.
      * </p><p>
-     * This method never throws an exception (see {@link #tryExecute(String...) tryExecute} for an alternative).
+     * This method never throws an exception.
      * </p><p>
      * If the user specified invalid input, the {@linkplain #getParameterExceptionHandler() parameter exception handler} is invoked.
      * By default this prints an error message and the usage help message, and returns an exit code.
@@ -1606,7 +1641,6 @@ public class CommandLine {
      * </p>
      * @param args the command line arguments to parse
      * @return the exit code
-     * @see #tryExecute(String...)
      * @see ExitCode
      * @see IExitCodeGenerator
      * @see IExitCodeExceptionMapper
@@ -1614,97 +1648,29 @@ public class CommandLine {
      */
     public int execute(String... args) {
         ParseResult[] parseResult = new ParseResult[1];
+        clearExecutionResults();
         try {
-            return internalTryExecute(args, parseResult);
+            parseResult[0] = parseArgs(args);
+            return enrichForBackwardsCompatibility(getExecutionStrategy()).execute(parseResult[0]);
+        } catch (ParameterException ex) {
+            try {
+                return getParameterExceptionHandler().handleParseException(ex, args);
+            } catch (Exception ex2) {
+                return handleUnhandled(ex2, ex.getCommandLine(), ex.getCommandLine().getCommandSpec().exitCodeOnInvalidInput());
+            }
         } catch (ExecutionException ex) {
             try {
                 return getExecutionExceptionHandler().handleExecutionException(ex, parseResult[0]);
             } catch (Exception ex2) {
-                ex2.printStackTrace(getErr());
-                CommandLine cmd = ex.getCommandLine();
-                return mappedExitCode(ex2, cmd.getExitCodeExceptionMapper(), cmd.getCommandSpec().exitCodeOnExecutionException());
+                return handleUnhandled(ex2, ex.getCommandLine(), ex.getCommandLine().getCommandSpec().exitCodeOnExecutionException());
             }
         } catch (Exception ex) {
-            ex.printStackTrace(getErr());
-            return mappedExitCode(ex, getExitCodeExceptionMapper(), getCommandSpec().exitCodeOnExecutionException());
+            return handleUnhandled(ex, this, getCommandSpec().exitCodeOnExecutionException());
         }
     }
-    /**
-     * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
-     * To use this method, the annotated object that this {@code CommandLine} is constructed with needs to
-     * either implement {@link Runnable}, {@link Callable}, or be a {@code Method} object.
-     * </p><p>This method differs from {@link #execute(String...) execute} in that this method will not suppress any
-     * exception that occurred while the user object {@code Runnable}, {@code Callable}, or {@code Method} was invoked. (This can be configured with a custom {@link IExecutionExceptionHandler IExecutionExceptionHandler}.)</p>
-     * <p>Example usage:</p>
-     * <pre>
-     * &#064Command(name = "md5sum")
-     * class MyCommand implements Callable&lt;Integer&gt; {
-     *     &#064Parameters(index = "0", description = "File whose MD5 checksum to calculate")
-     *     Path path;
-     *
-     *     public Integer call() throws IOException, NoSuchAlgorithmException {
-     *         byte[] fileContents = Files.readAllBytes(path);
-     *         byte[] digest = MessageDigest.getInstance("MD5").digest(fileContents);
-     *         System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1, digest));
-     *         return 0;
-     *     }
-     * }
-     * CommandLine cmd = new CommandLine(new MyCommand());
-     * int exitCode;
-     * try {
-     *     exitCode = cmd.tryExecute(args);
-     *     assert exitCode == 0; // success
-     * } catch (IOException ex) {
-     *     System.err.println("Could not read specified file: ", ex.getMessage());
-     *     exitCode = 66;
-     * } catch (Exception unexpectedException) {
-     *     unexpectedException.printStackTrace(); // handle somehow...
-     *     exitCode = ExitCode.SOFTWARE; // ...for example
-     * }
-     * System.exit(exitCode);
-     * </pre>
-     * <p>
-     * If an exception occurred while the user object {@code Runnable}, {@code Callable}, or {@code Method}
-     * was invoked, this exception is caught, wrapped in an {@link ExecutionException ExecutionException}, and
-     * passed to the {@linkplain #getExecutionExceptionHandler() execution exception handler}.
-     * The default {@code IExecutionExceptionHandler} will not map the exception to an exit code, but unwrap the {@code ExecutionException} and rethrow the <em>cause</em> Exception instead.
-     * Handling this exception is the responsibility of the application.
-     * </p><p>
-     * If the user specified invalid input, the parameter exception handler is invoked,
-     * and an exit code is returned, similarly to what the {@link #execute(String...) execute} method does.
-     * (This can be configured with a custom {@link IParameterExceptionHandler IParameterExceptionHandler}.)
-     * </p>
-     * @param args the command line arguments to parse
-     * @return the exit code
-     * @see #execute(String...)
-     * @see ExitCode
-     * @see IExitCodeGenerator
-     * @see IExitCodeExceptionMapper
-     * @since 4.0
-     */
-    public int tryExecute(String... args) throws Exception {
-        ParseResult[] parseResult = new ParseResult[1];
-        try {
-            return internalTryExecute(args, parseResult);
-        } catch (ExecutionException ex) {
-            return getExecutionExceptionHandler().handleExecutionException(ex, parseResult[0]);
-        }
-    }
-    private int internalTryExecute(String[] args, ParseResult[] parseResult) throws ExecutionException {
-        int exitCode;
-        try {
-            parseResult[0] = parseArgs(args);
-            exitCode = enrichForBackwardsCompatibility(getExecutionStrategy()).execute(parseResult[0]);
-        } catch (ParameterException ex) {
-            try {
-                exitCode = getParameterExceptionHandler().handleParseException(ex, args);
-            } catch (Exception ex2) {
-                ex2.printStackTrace(getErr());
-                CommandLine cmd = ex.getCommandLine();
-                exitCode = mappedExitCode(ex2, cmd.getExitCodeExceptionMapper(), cmd.getCommandSpec().exitCodeOnInvalidInput());
-            }
-        }
-        return exitCode;
+    private static int handleUnhandled(Exception ex, CommandLine cmd, int defaultExitCode) {
+        ex.printStackTrace(cmd.getErr());
+        return mappedExitCode(ex, cmd.getExitCodeExceptionMapper(), defaultExitCode);
     }
 
     private <T> T enrichForBackwardsCompatibility(T obj) {
@@ -2036,6 +2002,7 @@ public class CommandLine {
     /** @deprecated use {@link #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)} instead
      * @since 2.0 */
     @Deprecated public List<Object> parseWithHandlers(IParseResultHandler handler, PrintStream out, Help.Ansi ansi, IExceptionHandler exceptionHandler, String... args) {
+        clearExecutionResults();
         try {
             List<CommandLine> result = parse(args);
             return handler.handleParseResult(result, out, ansi);
@@ -2088,6 +2055,7 @@ public class CommandLine {
      * @see DefaultExceptionHandler
      * @since 3.0 */
     public <R> R parseWithHandlers(IParseResultHandler2<R> handler, IExceptionHandler2<R> exceptionHandler, String... args) {
+        clearExecutionResults();
         ParseResult parseResult = null;
         try {
             parseResult = parseArgs(args);

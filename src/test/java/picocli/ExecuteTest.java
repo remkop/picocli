@@ -15,6 +15,7 @@
  */
 package picocli;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -107,23 +108,34 @@ public class ExecuteTest {
         };
         for (IExecutionStrategy strategy : strategies) {
             String descr = strategy.getClass().getSimpleName();
-            try {
-                new CommandLine(factory.create())
-                        .setExecutionStrategy(strategy)
-                        .tryExecute(args);
-                fail(descr + ": expected exception");
-            } catch (IllegalStateException ex) {
-                String actual = ex.getMessage();
-                assertTrue(descr + ": " + actual, actual.startsWith(prefix));
-                assertTrue(descr + ": " + actual, actual.endsWith(suffix));
-            } catch (ExecutionException ex) {
-                String actual = ex.getMessage();
-                assertTrue(descr + ": " + actual, actual.startsWith(prefix));
-                assertTrue(descr + ": " + actual, actual.endsWith(suffix));
-            } catch (Exception ex) {
-                fail("Unexpected exception " + ex);
-            }
+            int exitCode = new CommandLine(factory.create())
+                    .setExecutionStrategy(strategy)
+                    .setExecutionExceptionHandler(createHandler(descr, prefix, suffix))
+                    .execute(args);
+
+            assertEquals(1, exitCode);
         }
+    }
+    private IExecutionExceptionHandler createHandler(final String descr, final String prefix, final String suffix) {
+        return new IExecutionExceptionHandler() {
+            public int handleExecutionException(ExecutionException execEx, ParseResult parseResult) throws Exception {
+                try {
+                    execEx.rethrowCauseIf(Exception.class);
+                    throw execEx;
+                } catch (IllegalStateException ex) {
+                    String actual = ex.getMessage();
+                    assertTrue(descr + ": " + actual, actual.startsWith(prefix));
+                    assertTrue(descr + ": " + actual, actual.endsWith(suffix));
+                } catch (ExecutionException ex) {
+                    String actual = ex.getMessage();
+                    assertTrue(descr + ": " + actual, actual.startsWith(prefix));
+                    assertTrue(descr + ": " + actual, actual.endsWith(suffix));
+                } catch (Exception ex) {
+                    fail("Unexpected exception " + ex);
+                }
+                return 1;
+            }
+        };
     }
 
     @Test
@@ -220,15 +232,6 @@ public class ExecuteTest {
             int actual = factory.create().setExecutionStrategy(strategy).execute(args);
             assertEquals(descr + ": return value", expected, actual);
         }
-        for (IExecutionStrategy strategy : strategies) {
-            String descr = strategy.getClass().getSimpleName();
-            try {
-                int actual = factory.create().setExecutionStrategy(strategy).tryExecute(args);
-                assertEquals(descr + ": return value", expected, actual);
-            } catch (Exception ex) {
-                fail("Unexpected exception " + ex);
-            }
-        }
     }
 
     @Test
@@ -241,9 +244,6 @@ public class ExecuteTest {
         }
         new CommandLine(new App()).execute();
         assertEquals(1, runWasCalled[0]);
-
-        new CommandLine(new App()).tryExecute();
-        assertEquals(2, runWasCalled[0]);
     }
 
     @Test
@@ -256,9 +256,6 @@ public class ExecuteTest {
         }
         new CommandLine(new App()).execute();
         assertEquals(1, runWasCalled[0]);
-
-        new CommandLine(new App()).tryExecute();
-        assertEquals(2, runWasCalled[0]);
     }
 
     @Test
@@ -272,9 +269,6 @@ public class ExecuteTest {
         }
         new CommandLine(new App()).execute("mySubcommand");
         assertEquals(1, runWasCalled[0]);
-
-        new CommandLine(new App()).tryExecute("mySubcommand");
-        assertEquals(2, runWasCalled[0]);
     }
 
     @Test
@@ -296,16 +290,6 @@ public class ExecuteTest {
                             "Usage: <main class> [-number=<number>]%n" +
                             "      -number=<number>%n"), sw.toString());
         }
-        {
-            StringWriter sw = new StringWriter();
-            new CommandLine(new App()).setErr(new PrintWriter(sw)).tryExecute("-number", "not a number");
-
-            assertEquals(0, runWasCalled[0]);
-            assertEquals(String.format(
-                    "Invalid value for option '-number': 'not a number' is not an int%n" +
-                            "Usage: <main class> [-number=<number>]%n" +
-                            "      -number=<number>%n"), sw.toString());
-        }
     }
 
     @Test
@@ -316,10 +300,6 @@ public class ExecuteTest {
         }
         {
             int exitCode = new CommandLine(new App()).execute("-number", "not a number");
-            assertEquals(ExitCode.USAGE, exitCode);
-        }
-        {
-            int exitCode = new CommandLine(new App()).tryExecute("-number", "not a number");
             assertEquals(ExitCode.USAGE, exitCode);
         }
     }
@@ -333,10 +313,6 @@ public class ExecuteTest {
         }
         {
             int exitCode = new CommandLine(new App()).execute("-number", "not a number");
-            assertEquals(987, exitCode);
-        }
-        {
-            int exitCode = new CommandLine(new App()).tryExecute("-number", "not a number");
             assertEquals(987, exitCode);
         }
     }
@@ -503,26 +479,20 @@ public class ExecuteTest {
 
     @Test
     public void testCallWithFactory() {
-        try {
-            new CommandLine(MyCallable.class, new InnerClassFactory(this)).tryExecute("-x", "a");
-            fail("Expected exception");
-        } catch (IllegalStateException ex) {
-            assertEquals("this is a test", ex.getMessage());
-        } catch (Exception ex) {
-            fail("Unexpected exception " + ex);
-        }
+        StringWriter sw = new StringWriter();
+        int exitCode = new CommandLine(MyCallable.class, new InnerClassFactory(this))
+                .setErr(new PrintWriter(sw)).execute("-x", "a");
+        assertEquals(ExitCode.SOFTWARE, exitCode);
+        assertThat(sw.toString(), CoreMatchers.startsWith("java.lang.IllegalStateException: this is a test"));
     }
 
     @Test
     public void testRunWithFactory() {
-        try {
-            new CommandLine(MyRunnable.class, new InnerClassFactory(this)).tryExecute("-x", "a");
-            fail("Expected exception");
-        } catch (IllegalStateException ex) {
-            assertEquals("this is a test", ex.getMessage());
-        } catch (Exception ex) {
-            fail("Unexpected exception " + ex);
-        }
+        StringWriter sw = new StringWriter();
+        int exitCode = new CommandLine(MyRunnable.class, new InnerClassFactory(this))
+                .setErr(new PrintWriter(sw)).execute("-x", "a");
+        assertEquals(ExitCode.SOFTWARE, exitCode);
+        assertThat(sw.toString(), CoreMatchers.startsWith("java.lang.IllegalStateException: this is a test"));
     }
 
     @Test
@@ -574,12 +544,9 @@ public class ExecuteTest {
                 throw new ExecutionException(spec.commandLine(), "abc");
             }
         }
-        try {
-            new CommandLine(new App()).tryExecute();
-            fail("Expected exception");
-        } catch (ExecutionException ex) {
-            assertEquals("abc", ex.getMessage());
-        }
+        StringWriter sw = new StringWriter();
+        assertEquals(ExitCode.SOFTWARE, new CommandLine(new App()).setErr(new PrintWriter(sw)).execute());
+        assertThat(sw.toString(), CoreMatchers.startsWith("picocli.CommandLine$ExecutionException: abc"));
     }
 
     @Test
@@ -591,12 +558,9 @@ public class ExecuteTest {
                 throw new ExecutionException(spec.commandLine(), "abc");
             }
         }
-        try {
-            new CommandLine(new App()).tryExecute();
-            fail("Expected exception");
-        } catch (ExecutionException ex) {
-            assertEquals("abc", ex.getMessage());
-        }
+        StringWriter sw = new StringWriter();
+        assertEquals(ExitCode.SOFTWARE, new CommandLine(new App()).setErr(new PrintWriter(sw)).execute());
+        assertThat(sw.toString(), CoreMatchers.startsWith("picocli.CommandLine$ExecutionException: abc"));
     }
 
     @Test
@@ -608,7 +572,7 @@ public class ExecuteTest {
                 throw new ParameterException(spec.commandLine(), "xxx");
             }
         }
-        int exitCode = new CommandLine(new App()).tryExecute();
+        int exitCode = new CommandLine(new App()).execute();
         assertEquals(ExitCode.USAGE, exitCode);
     }
 
@@ -636,17 +600,6 @@ public class ExecuteTest {
                 "java.lang.IllegalArgumentException: abc%n" +
                 "\tat picocli.ExecuteTest$1FailingExecutionStrategy.execute(ExecuteTest.java");
         assertTrue(systemErrRule.getLog().startsWith(prefix));
-
-        systemErrRule.clearLog();
-        systemOutRule.clearLog();
-        try {
-            cmd.tryExecute();
-            fail("Expected exception");
-        } catch (IllegalArgumentException ex) {
-            assertEquals("abc", ex.getMessage());
-        } catch (Exception ex) {
-            fail("Unexpected exception " + ex);
-        }
     }
 
     @Test
@@ -662,14 +615,6 @@ public class ExecuteTest {
 
         CommandLine cmd = new CommandLine(new App()).setExecutionStrategy(new FailingExecutionStrategy());
         assertEquals(ExitCode.SOFTWARE, cmd.execute());
-        try {
-            cmd.tryExecute();
-            fail("Expected exception");
-        } catch (ExecutionException ex) {
-            assertEquals("abc", ex.getMessage());
-        } catch (Exception ex) {
-            fail("Unexpected exception " + ex);
-        }
     }
 
     @Test
@@ -689,7 +634,6 @@ public class ExecuteTest {
         };
         CommandLine cmd = new CommandLine(new App()).setExecutionStrategy(handler).setExecutionExceptionHandler(exceptionHandler);
         assertEquals(9876, cmd.execute());
-        assertEquals(9876, cmd.tryExecute());
     }
 
     @Test
