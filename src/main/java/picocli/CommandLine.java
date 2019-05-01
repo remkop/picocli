@@ -1508,7 +1508,7 @@ public class CommandLine {
     /** Convenience method that returns {@code new DefaultExceptionHandler<List<Object>>()}. */
     public static DefaultExceptionHandler<List<Object>> defaultExceptionHandler() { return new DefaultExceptionHandler<List<Object>>(); }
 
-    /** @deprecated use {@link #printHelpIfRequested(List, PrintStream, PrintStream, Help.Ansi)} instead
+    /** @deprecated use {@link #printHelpIfRequested(ParseResult)} instead
      * @since 2.0 */
     @Deprecated public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, Help.Ansi ansi) {
         return printHelpIfRequested(parsedCommands, out, out, ansi);
@@ -1664,41 +1664,20 @@ public class CommandLine {
      * To use this method, the annotated object that this {@code CommandLine} is constructed with needs to
      * either implement {@link Runnable}, {@link Callable}, or be a {@code Method} object.
      * See {@link #getCommandMethods(Class, String) getCommandMethods} for a convenient way to obtain a command {@code Method}.
-     * <p>This method is equivalent to the {@link #run(Runnable, String...) run}, {@link #call(Callable, String...) call}
-     * and {@link #invoke(String, Class, String...) invoke} convenience methods, except that this method is an
-     * instance method, not a static method, so it allows more configuration.
+     * <p>This method replaces the {@link #run(Runnable, String...) run}, {@link #call(Callable, String...) call}
+     * and {@link #invoke(String, Class, String...) invoke} convenience methods that were available with previous versions of picocli.
      * </p><p>
-     * A second difference is that this method returns an exit code that applications can use to call {@code System.exit()}.
+     * <b>Exit Code</b>
+     * </p><p>
+     * This method returns an exit code that applications can use to call {@code System.exit}.
+     * (The return value of the {@code Callable} or {@code Method} can still be obtained via {@link #getExecutionResult() getExecutionResult}.)
      * If the user object {@code Callable} or {@code Method} returns an {@code int} or {@code Integer},
      * this will be used as the exit code. Additionally, if the user object implements {@link CommandLine.IExitCodeGenerator IExitCodeGenerator},
      * an exit code is obtained by calling its {@code getExitCode()} method (after invoking the user object).
      * </p><p>
      * In the case of multiple exit codes the highest value will be used (or if all values are negative, the lowest value will be used).
-     * </p><p>Example usage:</p>
-     * <pre>
-     * &#064Command
-     * class MyCommand implements Callable&lt;Integer&gt; {
-     *     public Integer call() { return 123; }
-     * }
-     * CommandLine cmd = new CommandLine(new MyCommand());
-     * int exitCode = cmd.execute(args);
-     * assert exitCode == 123;
-     * System.exit(exitCode);
-     * </pre>
-     * <p>Since {@code execute} is an instance method, not a static method, applications can do configuration before invoking the command:</p>
-     * <pre>{@code
-     * CommandLine cmd = new CommandLine(new MyCallable())
-     *         .setCaseInsensitiveEnumValuesAllowed(true) // configure a non-default parser option
-     *         .setOut(myOutWriter()) // configure an alternative to System.out
-     *         .setErr(myErrWriter()) // configure an alternative to System.err
-     *         .setColorScheme(myColorScheme()); // configure a custom color scheme
-     * int exitCode = cmd.execute(args);
-     * System.exit(exitCode);
-     * }</pre>
-     * <p>
-     * If the specified command has subcommands, the {@linkplain RunLast last} subcommand specified on the
-     * command line is executed. This can be configured by setting the {@linkplain #setExecutionStrategy(IExecutionStrategy) execution strategy}.
-     * Built-in alternatives are executing the {@linkplain RunFirst first} subcommand, or executing {@linkplain RunAll all} specified subcommands.
+     * </p><p>
+     * <b>Exception Handling</b>
      * </p><p>
      * This method never throws an exception.
      * </p><p>
@@ -1716,12 +1695,41 @@ public class CommandLine {
      * </p><p>
      * If an {@code IExitCodeExceptionMapper} is not set, by default this method will return the {@code @Command} annotation's
      * {@link Command#exitCodeOnInvalidInput() exitCodeOnInvalidInput} or {@link Command#exitCodeOnExecutionException() exitCodeOnExecutionException} value, respectively.
+     * </p><p><b>Example Usage:</b></p>
+     * <pre>
+     * &#064Command
+     * class MyCommand implements Callable&lt;Integer&gt; {
+     *     public Integer call() { return 123; }
+     * }
+     * CommandLine cmd = new CommandLine(new MyCommand());
+     * int exitCode = cmd.execute(args);
+     * assert exitCode == 123;
+     * System.exit(exitCode);
+     * </pre>
+     * <p>Since {@code execute} is an instance method, not a static method, applications can do configuration before invoking the command. For example:</p>
+     * <pre>{@code
+     * CommandLine cmd = new CommandLine(new MyCallable())
+     *         .setCaseInsensitiveEnumValuesAllowed(true) // configure a non-default parser option
+     *         .setOut(myOutWriter()) // configure an alternative to System.out
+     *         .setErr(myErrWriter()) // configure an alternative to System.err
+     *         .setColorScheme(myColorScheme()); // configure a custom color scheme
+     * int exitCode = cmd.execute(args);
+     * System.exit(exitCode);
+     * }</pre>
+     * <p>
+     * If the specified command has subcommands, the {@linkplain RunLast last} subcommand specified on the
+     * command line is executed. This can be configured by setting the {@linkplain #setExecutionStrategy(IExecutionStrategy) execution strategy}.
+     * Built-in alternatives are executing the {@linkplain RunFirst first} subcommand, or executing {@linkplain RunAll all} specified subcommands.
      * </p>
      * @param args the command line arguments to parse
      * @return the exit code
      * @see ExitCode
      * @see IExitCodeGenerator
-     * @see IExitCodeExceptionMapper
+     * @see #getExecutionResult()
+     * @see #getExecutionStrategy()
+     * @see #getParameterExceptionHandler()
+     * @see #getExecutionExceptionHandler()
+     * @see #getExitCodeExceptionMapper()
      * @since 4.0
      */
     public int execute(String... args) {
@@ -2036,7 +2044,8 @@ public class CommandLine {
         @Override protected RunAll self() { return this; }
     }
 
-    /** @deprecated use {@link #parseWithHandler(IParseResultHandler2,  String[])} instead
+    /**
+     * @deprecated use {@link #execute(String...)} and {@link #getExecutionResult()} instead
      * @since 2.0 */
     @Deprecated public List<Object> parseWithHandler(IParseResultHandler handler, PrintStream out, String... args) {
         return parseWithHandlers(handler, out, Help.Ansi.AUTO, defaultExceptionHandler(), args);
@@ -2082,7 +2091,8 @@ public class CommandLine {
         return parseWithHandlers(handler, new DefaultExceptionHandler<R>(), args);
     }
 
-    /** @deprecated use {@link #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)} instead
+    /**
+     * @deprecated use {@link #execute(String...)} and {@link #getExecutionResult()} instead
      * @since 2.0 */
     @Deprecated public List<Object> parseWithHandlers(IParseResultHandler handler, PrintStream out, Help.Ansi ansi, IExceptionHandler exceptionHandler, String... args) {
         clearExecutionResults();
@@ -13501,6 +13511,8 @@ public class CommandLine {
         public InitializationException(String msg, Exception ex) { super(msg, ex); }
     }
     /** Exception indicating a problem while invoking a command or subcommand.
+     * Keeps a reference to the {@code CommandLine} object where the cause exception occurred,
+     * so that client code can tailor their handling for the specific command (print the command's usage help message, for example).
      * @since 2.0 */
     public static class ExecutionException extends PicocliException {
         private static final long serialVersionUID = 7764539594267007998L;
