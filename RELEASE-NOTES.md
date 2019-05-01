@@ -23,15 +23,12 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.0-alpha-3-new"></a> New and Noteworthy
 
-:toc: left
-//:numbered:
-
 ### <a name="4.0.0-alpha-3-execute"></a> Executing Commands
 
 Picocli 4.0 introduces new API to execute commands. Let’s take a quick look at what changed. 
 
 #### Exit Code
-Many command line applications return an https://en.wikipedia.org/wiki/Exit_status[exit code] to signify success or failure. Zero often means success, a non-zero exit code is often used for errors, but other than that, meanings differ per application. 
+Many command line applications return an [exit code](https://en.wikipedia.org/wiki/Exit_status) to signify success or failure. Zero often means success, a non-zero exit code is often used for errors, but other than that, meanings differ per application. 
 
 The new `CommandLine.execute` method introduced in picocli 4.0 returns an `int`, and applications can use this return value to call `System.exit` if desired. For example:
 
@@ -86,7 +83,7 @@ assert 3 == new CommandLine(new Gesture()).execute();
 
 #### Exception Exit Codes
 
-By default, the `execute` method returns `CommandLine.ExitCode.USAGE` (`64`) for invalid input, and `CommandLine.ExitCode.SOFTWARE` (`70`) when an exception occurred in the Runnable, Callable or command method. (For reference, these values are `EX_USAGE` and `EX_SOFTWARE`, respectively, from Unix and Linux https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3[sysexits.h]). This can be customized with the `@Command` annotation. For example:
+By default, the `execute` method returns `CommandLine.ExitCode.USAGE` (`64`) for invalid input, and `CommandLine.ExitCode.SOFTWARE` (`70`) when an exception occurred in the Runnable, Callable or command method. (For reference, these values are `EX_USAGE` and `EX_SOFTWARE`, respectively, from Unix and Linux [sysexits.h](https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3)). This can be customized with the `@Command` annotation. For example:
 
 ```java 
 @Command(exitCodeOnInvalidInput = 123,
