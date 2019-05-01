@@ -23,6 +23,134 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.0-alpha-3-new"></a> New and Noteworthy
 
+:toc: left
+//:numbered:
+
+### <a name="4.0.0-alpha-3-execute"></a> Executing Commands
+
+Picocli 4.0 introduces new API to execute commands. Let’s take a quick look at what changed. 
+
+#### Exit Code
+Many command line applications return an https://en.wikipedia.org/wiki/Exit_status[exit code] to signify success or failure. Zero often means success, a non-zero exit code is often used for errors, but other than that, meanings differ per application. 
+
+The new `CommandLine.execute` method introduced in picocli 4.0 returns an `int`, and applications can use this return value to call `System.exit` if desired. For example:
+
+```java
+public static void main(String... args) {
+  CommandLine cmd = new CommandLine(new App());
+  int exitCode = cmd.execute(args);
+  System.exit(exitCode);
+}
+```
+
+Older versions of picocli had some limited exit code support where picocli would call `System.exit`, but this is now deprecated.
+
+#### Generating an Exit Code
+
+`@Command`-annotated classes that implement `Callable` and `@Command`-annotated methods can simply return an `int` or `Integer`, and this value will be returned from `CommandLine.execute`. For example:
+
+```java
+@Command(name = "greet")
+class Greet implements Callable<Integer> {
+  public Integer call() {
+    System.out.println("hi");
+    return 1;
+  }
+
+  @Command
+  int shout() {
+    System.out.println("HI!");
+    return 2;
+  }
+}
+
+assert 1 == new CommandLine(new Greet()).execute();
+assert 2 == new CommandLine(new Greet()).execute("shout");
+```
+
+Commands with a user object that implements `Runnable` can implement the `IExitCodeGenerator` interface to generate an exit code. For example:
+
+```java
+@Command(name = "wave")
+class Gesture implements Runnable, IExitCodeGenerator {
+  public void run() {
+    System.out.println("wave");
+  }
+  public int getExitCode() {
+    return 3;
+  }
+}
+
+assert 3 == new CommandLine(new Gesture()).execute();
+```
+
+#### Exception Exit Codes
+
+By default, the `execute` method returns `CommandLine.ExitCode.USAGE` (`64`) for invalid input, and `CommandLine.ExitCode.SOFTWARE` (`70`) when an exception occurred in the Runnable, Callable or command method. (For reference, these values are `EX_USAGE` and `EX_SOFTWARE`, respectively, from Unix and Linux https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3[sysexits.h]). This can be customized with the `@Command` annotation. For example:
+
+```java 
+@Command(exitCodeOnInvalidInput = 123,
+   exitCodeOnExecutionException = 456)
+```
+
+Additionally, applications can configure a `IExitCodeExceptionMapper` to map a specific exception to an exit code:
+
+```java
+class MyMapper implements IExitCodeExceptionMapper {
+  public int getExitCode(Throwable t) {
+    if (t instance of FileNotFoundException) {
+      return 74;
+    }
+    return 1;
+  }
+}
+```
+
+When the end user specified invalid input, the `execute` method prints an error message followed by the usage help message of the command, and returns an exit code. This can be customized by configuring a `IParameterExceptionHandler`.
+
+If the business logic of the command throws an exception, the `execute` method prints the stack trace of the exception and returns an exit code. This can be customized by configuring a `IExecutionExceptionHandler`.
+
+
+#### Configuration
+The new `CommandLine.execute` method is an instance method. The older `run`, `call` and `invoke` methods are static methods. Static methods don’t allow configuration. The new API lets applications configure the parser or other aspects before execution. For example:
+
+```java
+public static void main(String... args) {
+  CommandLine cmd = new CommandLine(new App());
+  cmd.setCaseInsensitiveEnumValuesAllowed(true);
+  cmd.setUnmarchedArgumentsAllowed(true);
+  cmd.setStopAtPositional(true);
+  cmd.setExpandAtFiles(false);
+  cmd.execute(args);
+}
+```
+
+#### Execution Configuration
+
+The following configuration methods are new and are only applicable with the `execute` method (and `executeHelpRequest`):
+
+* get/setOut
+* get/setErr
+* get/setColorScheme
+* get/setExecutionStrategy
+* get/setParameterExceptionHandler
+* get/setExecutionExceptionHandler
+* get/setExitCodeExceptionMapper
+
+The above methods are not applicable (and ignored) with other entry points like `parse`, `parseArgs`, `populateCommand`, `run`, `call`, `invoke`, `parseWithHandler` and `parseWithHandlers`.
+
+#### API Evolution and Trade-offs
+
+Previous versions of picocli offered the `run`, `call` and `invoke` methods to execute a `Runnable`, `Callable` or `Method` command. Here are some trade-offs versus the new `execute` method:
+
+* *Static* - These are static methods, with the drawback that they don't allow configuration, as mentioned above.
+* *Type Safety* - It is a compile-time error when an application tries to pass anything else than a `Runnable` to the `run` method, and a `Callable` to the `call` method. The `execute` method does not have this type safety, since the `CommandLine` constructor allows any `Object` as a parameter.
+* *Return Value* - The `call` and `invoke` static methods allow commands to return _any_ value, while the `execute` method only returns an `int` exit code. From 4.0 the result object will be available from the `CommandLine.getExecutionResult` method. 
+
+#### Feedback Requested
+
+With the new execute API the ColorScheme class will start to play a more central role. I’m considering making the ColorScheme class immutable. This would be a breaking API change. Should it be deprecated first, or not changed at all, or is the upcoming 4.0 release a good time to make breaking changes? Your feedback is very welcome on https://github.com/remkop/picocli/issues/675. 
+
 
 ## <a name="4.0.0-alpha-3-fixes"></a> Fixed issues
 - [#516] Add support for color schemes in the convenience methods and associated classes and interfaces. Thanks to [Bob Tiernay](https://github.com/bobtiernay-okta) for the suggestion.
@@ -35,7 +163,14 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.0.0-alpha-3-deprecated"></a> Deprecations
-No features were deprecated in this release.
+All variants of the `run`, `call`, `invoke`, and `parseWithHandlers` methods are deprecated from this release, in favor of the new `execute` method.
+
+Similarly, the following classes and interfaces are deprecated:
+
+* `IParseResultHandler2` is deprecated in favor of the new `IExecutionStrategy` interface.
+* `IExceptionHandler2` is deprecated in favor of the new `IParameterExceptionHandler` `IExecutionExceptionHandler` interfaces.
+* The `AbstractHandler` and `AbstractParseResultHandler` classes are deprecated with no replacement.
+
 
 ## <a name="4.0.0-alpha-3-breaking-changes"></a> Potential breaking changes
 
