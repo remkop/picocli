@@ -1217,6 +1217,8 @@ When a `@Parameters` positional parameter is part of a group, its `index` is the
 * Positional parameters in a single group work fine, but take care (or avoid) defining positional parameters in multiple groups or positional parameters in a group as well as outside a group. Positional parameters are matched by index, and while the index of a group is reset when a new group multiple is encountered, the index of positional parameters outside a group only increases and is never reset.
 
 
+[#less-boilerplate]
+[#execute]
 == Executing Commands
 
 Picocli 4.0 introduces a new `execute` method to execute commands. This replaces the older `run`, `call`, `invoke` and `parseWithHandlers` methods. 
@@ -1305,27 +1307,101 @@ If the business logic of the command throws an exception, the `execute` method p
 
 ==== Migrating From `run` to `execute`
 
-
-
-==== Migrating From `run` to `execute`
-
-* *Static* - These are static methods, with the drawback that they don't allow configuration, as mentioned above.
-* *Type Safety* - It is a compile-time error when an application tries to pass anything else than a `Runnable` to the `run` method, and a `Callable` to the `call` method. The `execute` method does not have this type safety, since the `CommandLine` constructor allows any `Object` as a parameter.
-* *Return Value* - The `call` and `invoke` static methods allow commands to return _any_ value, while the `execute` method only returns an `int` exit code. From 4.0 the result object will be available from the `CommandLine.getExecutionResult` method. 
-
-=== Configuration
-The new `CommandLine.execute` method is an instance method. The older `run`, `call` and `invoke` methods are static methods. Static methods don’t allow configuration. The new API lets applications configure the parser or other aspects before execution. For example:
+.Before:
 
 ```java
-public static void main(String... args) {
-  CommandLine cmd = new CommandLine(new App());
-  cmd.setCaseInsensitiveEnumValuesAllowed(true);
-  cmd.setUnmarchedArgumentsAllowed(true);
-  cmd.setStopAtPositional(true);
-  cmd.setExpandAtFiles(false);
-  cmd.execute(args);
-}
+PrintStream out = // output stream for user-requested help
+PrintStream err = // output stream for error messages
+Ansi ansi = // to use ANSI colors and styles or not
+CommandLine.run(new MyRunnable(), out, err, ansi, args);
 ```
+
+.After:
+```java
+PrintWriter out = // output stream for user-requested help
+PrintWriter err = // output stream for error messages
+Ansi ansi = // to use ANSI colors and styles or not
+
+CommandLine cmd = new CommandLine(new MyRunnable());
+cmd.setOut(out);
+cmd.setErr(err);
+cmd.setColorScheme(Help.defaultColorScheme(ansi));
+
+int exitCode = cmd.execute(args);
+```
+
+==== Migrating From `call` to `execute`
+
+.Before:
+
+```java
+class MyCallable implements Callable<MyResult> {
+    public MyResult call() { ... }
+}
+
+MyResult result = CommandLine.call(new MyCallable(), args);
+```
+
+.After:
+```java
+CommandLine cmd = new CommandLine(new MyCallable());
+int exitCode = cmd.execute(args);
+MyResult result = cmd.getExecutionResult();
+```
+
+==== Migrating From `invoke` to `execute`
+
+.Before:
+
+```java
+class MyCommand {
+    @Command
+    public MyResult doit(@Option(names = "-x") int x) { ... }
+}
+
+MyResult result = CommandLine.invoke("doit", MyCommand.class, args);
+```
+
+.After:
+```java
+Method doit = CommandLine.getCommandMethods(MyCommand.class, "doit").get(0);
+CommandLine cmd = new CommandLine(doit);
+int exitCode = cmd.execute(args);
+MyResult result = cmd.getExecutionResult();
+```
+
+==== Migrating From `parseWithHandlers` to `execute`
+
+.Before
+
+[source,java]
+----
+CommandLine cmd = new CommandLine(MyTopLevelCommand())
+        .addSubcommand("status",   new GitStatus())
+        .addSubcommand("commit",   new GitCommit())
+        .addSubcommand("add",      new GitAdd());
+List<Object> result = cmd.parseWithHandler(new RunAll(), args);
+----
+
+The `IParseResultHandler2` has been replaced with `IExecutionStrategy`. The existing built-in handlers `RunLast`, `RunAll` and `RunFirst` can still be used:
+
+* the `RunLast` handler prints help if requested, and otherwise gets the last specified command or subcommand and tries to execute it as a `Runnable`, `Callable` or `Method`
+* the `RunFirst` handler prints help if requested, and otherwise executes the top-level command as a `Runnable`, `Callable` or `Method`
+* the `RunAll` handler prints help if requested, and otherwise executes all commands and subcommands that the user specified on the command line as `Runnable`, `Callable` or `Method` tasks
+
+.After
+[source,java]
+----
+CommandLine cmd = new CommandLine(MyTopLevelCommand())
+        .addSubcommand("status",   new GitStatus())
+        .addSubcommand("commit",   new GitCommit())
+        .addSubcommand("add",      new GitAdd());
+cmd.setExecutionStrategy(new RunAll());
+
+int exitCode = cmd.execute(args);
+Object topResult = cmd.getExecutionResult();
+Object statusResult = cmd.getSubcommands().get("status").getExecutionResult();
+----
 
 === Execution Configuration
 
@@ -1340,6 +1416,38 @@ The following configuration methods are new and are only applicable with the `ex
 * get/setExitCodeExceptionMapper
 
 The above methods are not applicable (and ignored) with other entry points like `parse`, `parseArgs`, `populateCommand`, `run`, `call`, `invoke`, `parseWithHandler` and `parseWithHandlers`.
+
+=== DIY Command Execution
+
+Alternatively, applications may want to use the `parseArgs` method directly and write their own "Do It Yourself" command execution logic.
+This will usually look something like the below:
+
+[source,java]
+----
+Callable<Object> callable = new MyCallable();
+CommandLine cmd = new CommandLine(callable);
+try {
+    ParseResult parseResult = cmd.parseArgs(args);
+    if (cmd.isUsageHelpRequested()) {
+        cmd.usage(cmd.getOut());
+        return cmd.getCommandSpec().exitCodeOnUsageHelp();
+    } else if (cmd.isVersionHelpRequested()) {
+        cmd.printVersionHelp(cmd.getOut());
+        return cmd.getCommandSpec().exitCodeOnVersionHelp();
+    }
+    cmd.setExecutionResult(callable.call());
+    return cmd.getCommandSpec().exitCodeOnSuccess();
+} catch (ParameterException ex) {
+    cmd.getErr().println(ex.getMessage());
+    if (!UnmatchedArgumentException.printSuggestions(ex, cmd.getErr())) {
+        ex.getCommandLine().usage(cmd.getErr());
+    }
+    return cmd.getCommandSpec().exitCodeOnInvalidInput();
+} catch (Exception ex) {
+    ex.printStackTrace(cmd.getErr());
+    return cmd.getCommandSpec().exitCodeOnExecutionException();
+}
+----
 
 
 == Parser Configuration
@@ -3368,143 +3476,6 @@ class App {
 ```
 
 In the above example, the `-x` and `-y` options are added to the other options of the `doit` command.
-
-[#less-boilerplate]
-=== Execute Commands with Less Boilerplate
-You can omit some of the boilerplate code from your application when the annotated object implements `Runnable` or `Callable`:
-
-.Before
-
-[source,java]
-----
-Callable<Object> callable = new MyCallable();
-CommandLine cmd = new CommandLine(callable);
-try {
-    cmd.parse(args);
-    if (cmd.isUsageHelpRequested()) {
-        cmd.usage(System.out);
-        return null;
-    } else if (cmd.isVersionHelpRequested()) {
-        cmd.printVersionHelp(System.out);
-        return null;
-    }
-    return callable.call();
-} catch (ParameterException ex) {
-    System.err.println(ex.getMessage());
-    if (!UnmatchedArgumentException.printSuggestions(ex, System.err)) {
-        ex.getCommandLine().usage(System.err);
-    }
-    return null;
-} catch (Exception ex) {
-    throw new ExecutionException(cmd, "Error while calling " + callable, ex);
-}
-----
-
-.After
-
-[source,java]
-----
-Object result = CommandLine.call(new MyCallable(), args);
-----
-The `CommandLine.call` method returns the result of the `Callable`, or `null` if the command line options were invalid. An error message and a usage help message are printed when the command line options were invalid. Exceptions thrown from the `Callable.call` method are caught, wrapped in an `ExecutionException` and rethrown.
-
-
-When the annotated object implements `Runnable`, use the `run` method. For example:
-[source,java]
-----
-CommandLine.run(new MyRunnable(), args);
-----
-
-If the command class has subcommands, the `CommandLine::call` and `CommandLine::run` convenience methods will execute the most specific subcommand on the command line. For example:
-
-----
-<command> -g global_option subcommand -x -y -z subsubcommand param1 param2
-----
-In the above example, the `subsubcommand` is the most specific subcommand, and only the `Runnable` or `Callable` associated with that subcommand will be executed by the `CommandLine::call` and `CommandLine::run` convenience methods.
-
-
-=== Convenience Methods for Subcommands
-Picocli v2.0 introduced the `CommandLine::parseWithHandler` and `CommandLine::parseWithHandlers` convenience methods.
-These methods are intended to offer the same ease of use as the `run` and `call` methods, but with more flexibility and better support for nested subcommands.
-
-For example:
-[source,java]
-----
-CommandLine cmd = new CommandLine(MyTopLevelCommand())
-        .addSubcommand("status",   new GitStatus())
-        .addSubcommand("commit",   new GitCommit())
-        .addSubcommand("add",      new GitAdd());
-List<Object> result = cmd.parseWithHandler(new RunAll(), args);
-----
-
-The `CommandLine::parseWithHandler` method will take care of the following:
-
-* parse the specified command line arguments
-* if the input was invalid, delegate to `DefaultExceptionHandler`, which will print the error message followed by the usage help message
-* otherwise, if the command line arguments were parsed successfully, let the specified `IParseResultHandler2` handle the parse result
-
-Picocli provides some default `IParseResultHandler2` implementations for common tasks:
-
-* the `RunLast` handler prints help if requested, and otherwise gets the last specified command or subcommand and tries to execute it as a `Runnable` or `Callable`
-* the `RunFirst` handler prints help if requested, and otherwise executes the top-level command as a `Runnable` or `Callable`
-* the `RunAll` handler prints help if requested, and otherwise executes all commands and subcommands that the user specified on the command line as `Runnable` or `Callable` tasks
-
-
-=== Stdout or Stderr
-From picocli v3.0, the `run`, `call` and `invoke` convenience methods follow unix conventions:
-print to stdout when the user requested help, and print to stderr when the input was invalid or an unexpected error occurred.
-
-Custom handlers can extend `AbstractHandler` to facilitate following this convention.
-`AbstractHandler` also provides `useOut` and `useErr` methods to allow customizing the target output streams,
-and `useAnsi` to customize the Ansi style to use:
-
-[source,java]
-----
-@Command class CustomizeTargetStreamsDemo implements Runnable {
-    public void run() { ... }
-
-    public static void main(String... args) {
-        CommandLine cmd = new CommandLine(new CustomizeTargetStreamsDemo());
-
-        PrintStream myOut = getOutputPrintStream(); // custom stream to send command output to
-        PrintStream myErr = getErrorPrintStream();  // custom stream for error messages
-
-        cmd.parseWithHandlers(
-                new RunLast().useOut(myOut).useAnsi(Help.Ansi.ON),
-                CommandLine.defaultExceptionHandler().useErr(myErr).useAnsi(Help.Ansi.OFF),
-                args);
-    }
-}
-----
-
-=== Exit Code
-From picocli v3.0, the built-in parse result handlers (`RunFirst`, `RunLast` and `RunAll`) and exception handler
-(`DefaultExceptionHandler`) can specify an exit code.
-If an exit code was specified, the handler terminates the JVM with the specified status code when finished.
-
-[source,java]
-----
-@Command class ExitCodeDemo implements Runnable {
-    public void run() { throw new ParameterException(new CommandLine(this), "exit code demo"); }
-
-    public static void main(String... args) {
-        CommandLine cmd = new CommandLine(new ExitCodeDemo());
-        cmd.parseWithHandlers(
-                new RunLast().andExit(123),
-                CommandLine.defaultExceptionHandler().andExit(456),
-                args);
-    }
-}
-----
-Running this command prints the following to stderr and exits the JVM with status code `456`.
-
-[source,bash]
-----
-exit code demo
-Usage: <main class>
-----
-
-Custom handlers can extend `AbstractHandler` to inherit this behaviour.
 
 === `@Spec` Annotation
 Picocli 3.2 introduces a `@Spec` annotation for injecting the `CommandSpec` model of the command into a command field.
