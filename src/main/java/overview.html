@@ -37,7 +37,7 @@ class CheckSum implements Callable&lt;Integer&gt; {
         // requests for usage help or version help can be done with one line of code.
 
         int exitCode = new CommandLine(new CheckSum()).execute(args);
-        // System.exit(exitCode);
+        System.exit(exitCode);
     }
 
     &#064;Override

@@ -52,7 +52,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
 
 /**
  * <p>
- * CommandLine interpreter that uses reflection to initialize an annotated domain object with values obtained from the
+ * CommandLine interpreter that uses reflection to initialize an annotated user object with values obtained from the
  * command line arguments.
  * </p><h2>Example</h2>
  * <pre>import static picocli.CommandLine.*;
@@ -61,7 +61,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  *         header = "Encrypt FILE(s), or standard input, to standard output or to the output file.")
  * public class Encrypt {
  *
- *     &#064;Parameters(type = File.class, description = "Any number of input files")
+ *     &#064;Parameters(description = "Any number of input files")
  *     private List&lt;File&gt; files = new ArrayList&lt;File&gt;();
  *
  *     &#064;Option(names = { "-o", "--out" }, description = "Output file (default: print to console)")
@@ -72,7 +72,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * }
  * </pre>
  * <p>
- * Use {@code CommandLine} to initialize a domain object as follows:
+ * Use {@code CommandLine} to initialize a user object as follows:
  * </p><pre>
  * public static void main(String... args) {
  *     Encrypt encrypt = new Encrypt();
@@ -105,7 +105,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * </p><a name = "checksum_example"></a>
  * <pre>
  *  &#064;Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
- *          name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0")
+ *           name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0")
  * class CheckSum implements Callable&lt;Integer&gt; {
  *
  *     &#064;Parameters(index = "0", description = "The file whose checksum to calculate.")
@@ -119,7 +119,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  *         // requests for usage help or version help can be done with one line of code.
  *
  *         int exitCode = new CommandLine(new CheckSum()).execute(args);
- *         // System.exit(exitCode);
+ *         System.exit(exitCode);
  *     }
  *
  *     &#064;Override
@@ -172,18 +172,22 @@ public class CommandLine {
     };
 
     /**
-     * Constructs a new {@code CommandLine} interpreter with the specified object (which may be an annotated user object or a {@link CommandSpec CommandSpec}) and a default subcommand factory.
+     * Constructs a new {@code CommandLine} interpreter with the specified object (which may be an annotated user object or a {@link CommandSpec CommandSpec}) and a default {@linkplain IFactory factory}.
      * <p>The specified object may be a {@link CommandSpec CommandSpec} object, or it may be a {@code @Command}-annotated
      * user object with {@code @Option} and {@code @Parameters}-annotated fields, in which case picocli automatically
      * constructs a {@code CommandSpec} from this user object.
-     * </p><p>
-     * When the {@link #parse(String...)} method is called, the {@link CommandSpec CommandSpec} object will be
-     * initialized based on command line arguments. If the commandSpec is created from an annotated user object, this
-     * user object will be initialized based on the command line arguments.
+     * </p><p> If the specified command object is an interface {@code Class} with {@code @Option} and {@code @Parameters}-annotated methods,
+     * picocli creates a {@link java.lang.reflect.Proxy Proxy} whose methods return the matched command line values.
+     * If the specified command object is a concrete {@code Class}, picocli delegates to the default factory to get an instance.
      * </p><p>
      * If the specified object implements {@code Runnable} or {@code Callable}, or if it is a {@code Method} object,
      * the command can be run as an application in a <a href="#checksum_example">single line of code</a> by using the
      * {@link #execute(String...) execute} method to omit some boilerplate code for handling help requests and invalid input.
+     * See {@link #getCommandMethods(Class, String) getCommandMethods} for a convenient way to obtain a command {@code Method}.
+     * </p><p>
+     * When the {@link #parseArgs(String...)} method is called, the {@link CommandSpec CommandSpec} object will be
+     * initialized based on command line arguments. If the commandSpec is created from an annotated user object, this
+     * user object will be initialized based on the command line arguments.
      * </p>
      * @param command an annotated user object or a {@code CommandSpec} object to initialize from the command line arguments
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
@@ -196,17 +200,18 @@ public class CommandLine {
      * <p>The specified object may be a {@link CommandSpec CommandSpec} object, or it may be a {@code @Command}-annotated
      * user object with {@code @Option} and {@code @Parameters}-annotated fields, in which case picocli automatically
      * constructs a {@code CommandSpec} from this user object.
-     *  </p><p> If the specified command object is an interface {@code Class} with {@code @Option} and {@code @Parameters}-annotated methods,
+     * </p><p> If the specified command object is an interface {@code Class} with {@code @Option} and {@code @Parameters}-annotated methods,
      * picocli creates a {@link java.lang.reflect.Proxy Proxy} whose methods return the matched command line values.
      * If the specified command object is a concrete {@code Class}, picocli delegates to the {@linkplain IFactory factory} to get an instance.
-     * </p><p>
-     * When the {@link #parse(String...)} method is called, the {@link CommandSpec CommandSpec} object will be
-     * initialized based on command line arguments. If the commandSpec is created from an annotated user object, this
-     * user object will be initialized based on the command line arguments.
      * </p><p>
      * If the specified object implements {@code Runnable} or {@code Callable}, or if it is a {@code Method} object,
      * the command can be run as an application in a <a href="#checksum_example">single line of code</a> by using the
      * {@link #execute(String...) execute} method to omit some boilerplate code for handling help requests and invalid input.
+     * See {@link #getCommandMethods(Class, String) getCommandMethods} for a convenient way to obtain a command {@code Method}.
+     * </p><p>
+     * When the {@link #parseArgs(String...)} method is called, the {@link CommandSpec CommandSpec} object will be
+     * initialized based on command line arguments. If the commandSpec is created from an annotated user object, this
+     * user object will be initialized based on the command line arguments.
      * </p>
      * @param command an annotated user object or a {@code CommandSpec} object to initialize from the command line arguments
      * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands}, {@linkplain Option#converter() converters}, etc., that are registered declaratively with annotation attributes
@@ -365,11 +370,11 @@ public class CommandLine {
     }
 
     /** Sets a new {@code IHelpFactory} to customize the usage help message.
-     * @param helpFactory the new help factory. Must be non-{@code null}.
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
      * subcommands, call the setter last, after adding subcommands.</p>
+     * @param helpFactory the new help factory. Must be non-{@code null}.
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 3.9
      */
@@ -453,11 +458,11 @@ public class CommandLine {
         return this;
     }
     /**
-     * Returns whether line breaks should take wide Chinese, Japanese and Korean characters into account for line-breaking purposes.
+     * Returns whether line breaks should take wide Chinese, Japanese and Korean characters into account for line-breaking purposes. The default is {@code true}.
      * @return true if wide Chinese, Japanese and Korean characters are counted as double the size of other characters for line-breaking purposes
      * @since 4.0 */
     public boolean isAdjustLineBreaksForWideCJKCharacters() { return getCommandSpec().usageMessage().adjustLineBreaksForWideCJKCharacters(); }
-    /** Sets whether line breaks should take wide Chinese, Japanese and Korean characters into account, and returns this UsageMessageSpec.
+    /** Sets whether line breaks should take wide Chinese, Japanese and Korean characters into account, and returns this UsageMessageSpec. The default is {@code true}.
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
@@ -499,10 +504,14 @@ public class CommandLine {
         return this;
     }
 
-    /** Returns whether whether variables should be interpolated in String values.
+    /** Returns whether whether variables should be interpolated in String values. The default is {@code true}.
      * @since 4.0 */
     public boolean isInterpolateVariables() { return getCommandSpec().interpolateVariables(); }
-    /** Sets whether whether variables should be interpolated in String values.
+    /** Sets whether whether variables should be interpolated in String values. The default is {@code true}.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
      * @since 4.0 */
     public CommandLine setInterpolateVariables(boolean interpolate) {
         getCommandSpec().interpolateVariables(interpolate);
@@ -900,15 +909,21 @@ public class CommandLine {
     }
 
     /** Returns the color scheme to use when printing help.
+     * The default value is the {@linkplain picocli.CommandLine.Help#defaultColorScheme(Help.Ansi) default color scheme} with {@link Help.Ansi#AUTO Ansi.AUTO}.
      * @see #execute(String...)
      * @see #usage(PrintStream)
      * @see #usage(PrintWriter)
      * @see #getUsageMessage()
+     * @see Help#defaultColorScheme(Help.Ansi)
      * @since 4.0
      */
     public Help.ColorScheme getColorScheme() { return colorScheme; }
 
     /** Sets the color scheme to use when printing help.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
      * @param colorScheme the new color scheme
      * @see #execute(String...)
      * @see #usage(PrintStream)
@@ -923,8 +938,8 @@ public class CommandLine {
     }
 
     /** Returns the writer used when printing user-requested usage help or version help during command {@linkplain #execute(String...) execution}.
-     * Defaults to a PrintWriter wrapper around {@code System.out} unless {@link #setOut(PrintWriter)} was called with a different stream.
-     * <p>This method is used by {@link #execute(String...)}. Custom {@code IExecutionStrategy} implementations should also use this writer.
+     * Defaults to a PrintWriter wrapper around {@code System.out} unless {@link #setOut(PrintWriter)} was called with a different writer.
+     * <p>This method is used by {@link #execute(String...)}. Custom {@link IExecutionStrategy IExecutionStrategy} implementations should also use this writer.
      * </p><p>
      * By <a href="http://www.gnu.org/prep/standards/html_node/_002d_002dhelp.html">convention</a>, when the user requests
      * help with a {@code --help} or similar option, the usage help message is printed to the standard output stream so that it can be easily searched and paged.</p>
@@ -932,7 +947,11 @@ public class CommandLine {
     public PrintWriter getOut() { return out != null ? out : new PrintWriter(System.out, true); }
 
     /** Sets the writer to use when printing user-requested usage help or version help during command {@linkplain #execute(String...) execution}.
-     * <p>This method is used by {@link #execute(String...)}. Custom {@code IExecutionStrategy} implementations should also use this writer.</p>
+     * <p>This method is used by {@link #execute(String...)}. Custom {@link IExecutionStrategy IExecutionStrategy} implementations should also use this writer.</p>
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
      * @param out the new PrintWriter to use
      * @return this CommandLine for method chaining
      * @since 4.0
@@ -943,16 +962,22 @@ public class CommandLine {
         return this;
     }
 
-    /** Returns the writer to use when printing diagnostic messages during command {@linkplain #execute(String...) execution}.
-     * Defaults to a PrintWriter wrapper around {@code System.err}, unless {@link #setErr(PrintWriter)} was called with a different stream.
+    /** Returns the writer to use when printing diagnostic (error) messages during command {@linkplain #execute(String...) execution}.
+     * Defaults to a PrintWriter wrapper around {@code System.err}, unless {@link #setErr(PrintWriter)} was called with a different writer.
      * <p>This method is used by {@link #execute(String...)}.
-     * {@code IParameterExceptionHandler} and {@link CommandLine.IExecutionExceptionHandler} implementations
-     * should use this stream to print error messages (which may include a usage help message) when an unexpected error occurs.</p>
+     * {@link IParameterExceptionHandler IParameterExceptionHandler} and {@link IExecutionExceptionHandler IExecutionExceptionHandler} implementations
+     * should use this writer to print error messages (which may include a usage help message) when an unexpected error occurs.</p>
      * @since 4.0 */
     public PrintWriter getErr() { return err != null ? err : new PrintWriter(System.err, true); }
 
-    /** Sets the writer to use when printing diagnostic messages during command {@linkplain #execute(String...) execution}.
-     * <p>This method is used by {@link #execute(String...)}. Custom {@code IExecutionStrategy} implementations should also use this writer.</p>
+    /** Sets the writer to use when printing diagnostic (error) messages during command {@linkplain #execute(String...) execution}.
+     * <p>This method is used by {@link #execute(String...)}.
+     * {@link IParameterExceptionHandler IParameterExceptionHandler} and {@link IExecutionExceptionHandler IExecutionExceptionHandler} implementations
+     * should use this writer to print error messages (which may include a usage help message) when an unexpected error occurs.</p>
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
      * @param err the new PrintWriter to use
      * @return this CommandLine for method chaining
      * @since 4.0 */
@@ -962,24 +987,67 @@ public class CommandLine {
         return this;
     }
 
+    /**
+     * Returns the mapper that was set by the application to map from exceptions to exit codes, for use by the {@link #execute(String...) execute} method.
+     * @return the mapper that was {@linkplain #setExitCodeExceptionMapper(IExitCodeExceptionMapper) set}, or {@code null} if none was set
+     * @since 4.0 */
     public IExitCodeExceptionMapper getExitCodeExceptionMapper() { return exitCodeExceptionMapper; }
 
+    /** Sets the mapper used by the {@link #execute(String...) execute} method to map exceptions to exit codes.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param exitCodeExceptionMapper the new value
+     * @return this CommandLine for method chaining
+     * @since 4.0 */
     public CommandLine setExitCodeExceptionMapper(IExitCodeExceptionMapper exitCodeExceptionMapper) {
         this.exitCodeExceptionMapper = Assert.notNull(exitCodeExceptionMapper, "exitCodeExceptionMapper");
         for (CommandLine sub : getSubcommands().values()) { sub.setExitCodeExceptionMapper(exitCodeExceptionMapper); }
         return this;
     }
 
+    /** Returns the execution strategy used by the {@link #execute(String...) execute} method to invoke
+     * the business logic on the user objects of this command and/or the user-specified subcommand(s).
+     * The default value is {@link RunLast RunLast}.
+     * @return the execution strategy to run the user-specified command
+     * @since 4.0 */
     public IExecutionStrategy getExecutionStrategy() { return executionStrategy; }
 
+    /** Sets the execution strategy that the {@link #execute(String...) execute} method should use to invoke
+     * the business logic on the user objects of this command and/or the user-specified subcommand(s).
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param executionStrategy the new execution strategy to run the user-specified command
+     * @return this CommandLine for method chaining
+     * @since 4.0 */
     public CommandLine setExecutionStrategy(IExecutionStrategy executionStrategy) {
         this.executionStrategy = Assert.notNull(executionStrategy, "executionStrategy");
         for (CommandLine sub : getSubcommands().values()) { sub.setExecutionStrategy(executionStrategy); }
         return this;
     }
 
+    /**
+     * Returns the handler for dealing with invalid user input when the command is {@linkplain #execute(String...) executed}.
+     * <p>The default implementation prints an error message describing the problem, followed by either {@linkplain UnmatchedArgumentException#printSuggestions(PrintWriter) suggested alternatives}
+     * for mistyped options, or the full {@linkplain #usage(PrintWriter, Help.ColorScheme) usage} help message of the {@linkplain ParameterException#getCommandLine() problematic command};
+     * it then delegates to the {@linkplain #getExitCodeExceptionMapper() exit code execution mapper} for an exit code, with
+     * {@link CommandSpec#exitCodeOnInvalidInput() exitCodeOnInvalidInput} as the default exit code.</p>
+     * @return the handler for dealing with invalid user input
+     * @since 4.0 */
     public IParameterExceptionHandler getParameterExceptionHandler() { return parameterExceptionHandler; }
 
+    /**
+     * Sets the handler for dealing with invalid user input when the command is {@linkplain #execute(String...) executed}.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param parameterExceptionHandler  the new handler for dealing with invalid user input
+     * @return this CommandLine for method chaining
+     * @since 4.0 */
     public CommandLine setParameterExceptionHandler(IParameterExceptionHandler parameterExceptionHandler) {
         this.parameterExceptionHandler = Assert.notNull(parameterExceptionHandler, "parameterExceptionHandler");
         for (CommandLine sub : getSubcommands().values()) { sub.setParameterExceptionHandler(parameterExceptionHandler); }
@@ -990,18 +1058,20 @@ public class CommandLine {
      * user object of a command when the command was {@linkplain #execute(String...) executed}.
      * <p>The default implementation unwraps the cause exception and {@linkplain PicocliException#rethrowCauseIf(Class) rethrows} it.</p>
      * @return the handler for dealing with exceptions that occurred in the business logic when the {@link #execute(String...) execute} method was invoked.
-     * @since 4.0
-     */
+     * @since 4.0 */
     public IExecutionExceptionHandler getExecutionExceptionHandler() { return executionExceptionHandler; }
 
     /**
      * Sets a custom handler for dealing with exceptions that occurred in the {@code Callable}, {@code Runnable} or {@code Method}
      * user object of a command when the command was executed via the {@linkplain #execute(String...) execute} method.
      * <p>Implementors may be interested in the {@link PicocliException#rethrowCauseIf(Class)} method.</p>
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
      * @param executionExceptionHandler the handler for dealing with exceptions that occurred in the business logic when the {@link #execute(String...) execute} method was invoked.
      * @return this CommandLine for method chaining
-     * @since 4.0
-     */
+     * @since 4.0 */
     public CommandLine setExecutionExceptionHandler(IExecutionExceptionHandler executionExceptionHandler) {
         this.executionExceptionHandler = Assert.notNull(executionExceptionHandler, "executionExceptionHandler");
         for (CommandLine sub : getSubcommands().values()) { sub.setExecutionExceptionHandler(executionExceptionHandler); }
@@ -1107,17 +1177,14 @@ public class CommandLine {
 
     /** Sets the result of calling the business logic on the command's user object.
      * @param result the business logic result, may be {@code null}
-     * @since 4.0
      * @see #execute(String...)
      * @see IExecutionStrategy
+     * @since 4.0
      */
     public void setExecutionResult(Object result) { executionResult = result; }
 
-    /** Clears the {@linkplain #getExecutionResult() execution result} of a previous invocation.
-     * <p>Custom {@link IExecutionStrategy IExecutionStrategy} implementations should call this method
-     * before invoking any business logic on the command user object.</p>
-     * @since 4.0
-     */
+    /** Clears the {@linkplain #getExecutionResult() execution result} of a previous invocation from this {@code CommandLine} and all subcommands.
+     * @since 4.0 */
     public void clearExecutionResults() {
         executionResult = null;
         for (CommandLine sub : getSubcommands().values()) { sub.clearExecutionResults(); }
@@ -1168,8 +1235,9 @@ public class CommandLine {
      * @see RunFirst
      * @see RunLast
      * @see RunAll
+     * @deprecated use {@link IParameterExceptionHandler} instead, see {@link #execute(String...)}
      * @since 3.0 */
-    public static interface IParseResultHandler2<R> {
+    @Deprecated public static interface IParseResultHandler2<R> {
         /** Processes the {@code ParseResult} object resulting from successfully
          * {@linkplain CommandLine#parseArgs(String...) parsing} the command line arguments and returns a return value.
          * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
@@ -1184,6 +1252,7 @@ public class CommandLine {
     /**
      * Implementations are responsible for "executing" the user input and returning an exit code.
      * The {@link #execute(String...)} method delegates to a {@linkplain #setExecutionStrategy(IExecutionStrategy) configured} execution strategy.
+     * <p><b>Implementation Requirements:</b></p>
      * <p>Implementers responsibilities are:</p>
      * <ul>
      *   <li>From the {@code ParseResult}, select which {@code CommandSpec} should be executed. This is especially important for commands that have subcommands.</li>
@@ -1193,8 +1262,8 @@ public class CommandLine {
      * </ul>
      * <p>Implementors that need to print messages to the console should use the {@linkplain #getOut() output} and {@linkplain #getErr() error} PrintWriters,
      * and the {@linkplain #getColorScheme() color scheme} from the CommandLine object obtained from ParseResult's CommandSpec.</p>
-     * <p>This interface supercedes {@link IParseResultHandler2}.</p>
-     *
+     * <p><b>API Note:</b></p>
+     * <p>This interface supersedes {@link IParseResultHandler2}.</p>
      * @since 4.0 */
     public interface IExecutionStrategy {
         /**
@@ -1244,8 +1313,9 @@ public class CommandLine {
      * </p>
      * @param <R> the return type of this handler
      * @see DefaultExceptionHandler
+     * @deprecated see {@link #execute(String...)}, {@link IParameterExceptionHandler} and {@link IExecutionExceptionHandler}
      * @since 3.0 */
-    public static interface IExceptionHandler2<R> {
+    @Deprecated public static interface IExceptionHandler2<R> {
         /** Handles a {@code ParameterException} that occurred while {@linkplain #parseArgs(String...) parsing} the command
          * line arguments and optionally returns a list of results.
          * @param ex the ParameterException describing the problem that occurred while parsing the command line arguments,
@@ -1265,9 +1335,13 @@ public class CommandLine {
     }
 
     /** Classes implementing this interface know how to handle {@code ParameterExceptions} (usually from invalid user input).
+     * <p><b>Implementation Requirements:</b></p>
      * <p>Implementors that need to print messages to the console should use the {@linkplain #getOut() output} and {@linkplain #getErr() error} PrintWriters,
      * and the {@linkplain #getColorScheme() color scheme} from the CommandLine object obtained from the exception.</p>
-     * <p>This interface supercedes {@link IParseResultHandler2}.</p>
+     * <p><b>Implementation Note:</b></p>
+     * <p>See {@link #getParameterExceptionHandler()} for a description of the default handler.</p>
+     * <p><b>API Note:</b></p>
+     * <p>This interface supersedes {@link IExceptionHandler2}.</p>
      * @see CommandLine#setParameterExceptionHandler(IParameterExceptionHandler)
      * @since 4.0
      */
@@ -1283,9 +1357,11 @@ public class CommandLine {
     }
     /**
      * Classes implementing this interface know how to handle {@code ExecutionExceptions} that occurred while executing the {@code Runnable}, {@code Callable} or {@code Method} user object of the command.
+     * <p><b>Implementation Requirements:</b></p>
      * <p>Implementors that need to print messages to the console should use the {@linkplain #getOut() output} and {@linkplain #getErr() error} PrintWriters,
      * and the {@linkplain #getColorScheme() color scheme} from the CommandLine object obtained from the exception.</p>
-     * <p>This interface supercedes {@link IParseResultHandler2}.</p>
+     * <p><b>API Note:</b></p>
+     * <p>This interface supersedes {@link IExceptionHandler2}.</p>
      * @see CommandLine#setExecutionExceptionHandler(IExecutionExceptionHandler)
      * @since 4.0
      */
@@ -1314,8 +1390,9 @@ public class CommandLine {
      * }</pre>
      * @param <R> the return type of this handler
      * @param <T> The type of the handler subclass; for fluent API method chaining
+     * @deprecated see {@link #execute(String...)}
      * @since 3.0 */
-    public static abstract class AbstractHandler<R, T extends AbstractHandler<R, T>> {
+    @Deprecated public static abstract class AbstractHandler<R, T extends AbstractHandler<R, T>> {
         private Help.ColorScheme colorScheme = Help.defaultColorScheme(Help.Ansi.AUTO);
         private Integer exitCode;
         private PrintStream out = System.out;
@@ -1396,9 +1473,9 @@ public class CommandLine {
      *     if (hasExitCode()) System.exit(exitCode()); else return returnValue;
      * </pre>
      * <p>{@code ExecutionExceptions} that occurred while executing the {@code Runnable} or {@code Callable} command are simply rethrown and not handled.</p>
+     * @deprecated see {@link #execute(String...)}, {@link #getParameterExceptionHandler()} and {@link #getExecutionExceptionHandler()}
      * @since 2.0 */
-    @SuppressWarnings("deprecation")
-    public static class DefaultExceptionHandler<R> extends AbstractHandler<R, DefaultExceptionHandler<R>> implements IExceptionHandler, IExceptionHandler2<R> {
+    @Deprecated public static class DefaultExceptionHandler<R> extends AbstractHandler<R, DefaultExceptionHandler<R>> implements IExceptionHandler, IExceptionHandler2<R> {
         public List<Object> handleException(ParameterException ex, PrintStream out, Help.Ansi ansi, String... args) {
             internalHandleParseException(ex, new PrintWriter(out, true), Help.defaultColorScheme(ansi)); return Collections.<Object>emptyList(); }
 
@@ -1586,6 +1663,7 @@ public class CommandLine {
      * Convenience method to allow command line application authors to avoid some boilerplate code in their application.
      * To use this method, the annotated object that this {@code CommandLine} is constructed with needs to
      * either implement {@link Runnable}, {@link Callable}, or be a {@code Method} object.
+     * See {@link #getCommandMethods(Class, String) getCommandMethods} for a convenient way to obtain a command {@code Method}.
      * <p>This method is equivalent to the {@link #run(Runnable, String...) run}, {@link #call(Callable, String...) call}
      * and {@link #invoke(String, Class, String...) invoke} convenience methods, except that this method is an
      * instance method, not a static method, so it allows more configuration.
@@ -1696,8 +1774,9 @@ public class CommandLine {
      *     protected MyResultHandler self() { return this; }
      * }
      * }</pre>
+     * @deprecated see {@link #execute(String...)}, {@link #getExecutionStrategy()}, {@link #getParameterExceptionHandler()}, {@link #getExecutionExceptionHandler()}
      * @since 3.0 */
-    public abstract static class AbstractParseResultHandler<R> extends AbstractHandler<R, AbstractParseResultHandler<R>> implements IParseResultHandler2<R>, IExecutionStrategy {
+    @Deprecated public abstract static class AbstractParseResultHandler<R> extends AbstractHandler<R, AbstractParseResultHandler<R>> implements IParseResultHandler2<R>, IExecutionStrategy {
         /** Prints help if requested, and otherwise calls {@link #handle(CommandLine.ParseResult)}.
          * Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.
          *
@@ -1766,10 +1845,11 @@ public class CommandLine {
         protected List<IExitCodeGenerator> extractExitCodeGenerators(ParseResult parseResult) { return Collections.emptyList(); }
     }
     /**
-     * Command line parse result handler that prints help if requested, and otherwise executes the top-level
+     * Command line {@linkplain IExecutionStrategy execution strategy} that prints help if requested, and otherwise executes the top-level
      * {@code Runnable} or {@code Callable} command.
-     * For use in the {@link #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...) parseWithHandler} methods.
+     * For use by the {@link #execute(String...) execute} method.
      * @since 2.0 */
+    @SuppressWarnings("deprecation")
     public static class RunFirst extends AbstractParseResultHandler<List<Object>> implements IParseResultHandler {
         /** Prints help if requested, and otherwise executes the top-level {@code Runnable} or {@code Callable} command.
          * Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.
@@ -1791,7 +1871,7 @@ public class CommandLine {
             return returnResultOrExit(executeUserObject(parsedCommands.get(0), new ArrayList<Object>()));
         }
         /** Executes the top-level {@code Runnable} or {@code Callable} subcommand.
-         * If the top-level command does not implement either {@code Runnable} or {@code Callable}, an {@code ExecutionException}
+         * If the top-level command does not implement either {@code Runnable} or {@code Callable} and is not a {@code Method}, an {@code ExecutionException}
          * is thrown detailing the problem and capturing the offending {@code CommandLine} object.
          *
          * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
@@ -1814,9 +1894,9 @@ public class CommandLine {
         @Override protected RunFirst self() { return this; }
     }
     /**
-     * Command line parse result handler that prints help if requested, and otherwise executes the most specific
+     * Command line {@linkplain IExecutionStrategy execution strategy} that prints help if requested, and otherwise executes the most specific
      * {@code Runnable} or {@code Callable} subcommand.
-     * For use in the {@link #parseWithHandlers(IParseResultHandler2,  IExceptionHandler2, String...) parseWithHandler} methods.
+     * For use by the {@link #execute(String...) execute} method.
      * <p>
      * Something like this:</p>
      * <pre>{@code
@@ -1843,7 +1923,7 @@ public class CommandLine {
      *     } else {
      *         throw new ExecutionException(last, "Parsed command (" + command + ") is not Runnable or Callable");
      *     }
-     *     if (hasExitCode()) { System.exit(exitCode()); }
+     *     last.setExecutionResult(result);
      *     return Arrays.asList(result);
      * }</pre>
      * <p>
@@ -1851,6 +1931,7 @@ public class CommandLine {
      * and {@link #call(Callable, PrintStream, PrintStream, Help.Ansi, String...) call} convenience methods.
      * </p>
      * @since 2.0 */
+    @SuppressWarnings("deprecation")
     public static class RunLast extends AbstractParseResultHandler<List<Object>> implements IParseResultHandler {
         /** Prints help if requested, and otherwise executes the most specific {@code Runnable} or {@code Callable} subcommand.
          * Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.
@@ -1872,7 +1953,7 @@ public class CommandLine {
             return returnResultOrExit(executeUserObject(parsedCommands.get(parsedCommands.size() - 1), new ArrayList<Object>()));
         }
         /** Executes the most specific {@code Runnable} or {@code Callable} subcommand.
-         * If the last (sub)command does not implement either {@code Runnable} or {@code Callable}, an {@code ExecutionException}
+         * If the last (sub)command does not implement either {@code Runnable} or {@code Callable} and is not a {@code Method}, an {@code ExecutionException}
          * is thrown detailing the problem and capturing the offending {@code CommandLine} object.
          *
          * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
@@ -1894,13 +1975,14 @@ public class CommandLine {
         @Override protected RunLast self() { return this; }
     }
     /**
-     * Command line parse result handler that prints help if requested, and otherwise executes the top-level command and
-     * all subcommands as {@code Runnable} or {@code Callable}.
-     * For use in the {@link #parseWithHandlers(IParseResultHandler2,  IExceptionHandler2, String...) parseWithHandler} methods.
+     * Command line {@linkplain IExecutionStrategy execution strategy} that prints help if requested, and otherwise executes the top-level command and
+     * all subcommands as {@code Runnable}, {@code Callable} or {@code Method}.
+     * For use by the {@link #execute(String...) execute} method.
      * @since 2.0 */
+    @SuppressWarnings("deprecation")
     public static class RunAll extends AbstractParseResultHandler<List<Object>> implements IParseResultHandler {
-        /** Prints help if requested, and otherwise executes the top-level command and all subcommands as {@code Runnable}
-         * or {@code Callable}. Finally, either a list of result objects is returned, or the JVM is terminated if an exit
+        /** Prints help if requested, and otherwise executes the top-level command and all subcommands as {@code Runnable},
+         * {@code Callable} or {@code Method}. Finally, either a list of result objects is returned, or the JVM is terminated if an exit
          * code {@linkplain #andExit(int) was set}. If any of the {@code CommandLine} commands does not implement either
          * {@code Runnable} or {@code Callable}, an {@code ExecutionException}
          * is thrown detailing the problem and capturing the offending {@code CommandLine} object.
@@ -1924,7 +2006,7 @@ public class CommandLine {
             return returnResultOrExit(result);
         }
         /** Executes the top-level command and all subcommands as {@code Runnable} or {@code Callable}.
-         * If any of the {@code CommandLine} commands does not implement either {@code Runnable} or {@code Callable}, an {@code ExecutionException}
+         * If any of the {@code CommandLine} commands does not implement either {@code Runnable} or {@code Callable} and is not a {@code Method}, an {@code ExecutionException}
          * is thrown detailing the problem and capturing the offending {@code CommandLine} object.
          *
          * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
@@ -1994,8 +2076,9 @@ public class CommandLine {
      *      parse results; use {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
      * @see RunLast
      * @see RunAll
+     * @deprecated use {@link #execute(String...)} and {@link #getExecutionResult()} instead
      * @since 3.0 */
-    public <R> R parseWithHandler(IParseResultHandler2<R> handler, String[] args) {
+    @Deprecated public <R> R parseWithHandler(IParseResultHandler2<R> handler, String[] args) {
         return parseWithHandlers(handler, new DefaultExceptionHandler<R>(), args);
     }
 
@@ -2053,8 +2136,9 @@ public class CommandLine {
      * @see RunLast
      * @see RunAll
      * @see DefaultExceptionHandler
+     * @deprecated use {@link #execute(String...)} and {@link #getExecutionResult()} instead
      * @since 3.0 */
-    public <R> R parseWithHandlers(IParseResultHandler2<R> handler, IExceptionHandler2<R> exceptionHandler, String... args) {
+    @Deprecated public <R> R parseWithHandlers(IParseResultHandler2<R> handler, IExceptionHandler2<R> exceptionHandler, String... args) {
         clearExecutionResults();
         ParseResult parseResult = null;
         try {
@@ -2266,8 +2350,9 @@ public class CommandLine {
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
      * @see #execute(String...)
      * @since 3.0
+     * @deprecated use {@link #execute(String...)} and {@link #getExecutionResult()} instead
      */
-    public static <C extends Callable<T>, T> T call(C callable, String... args) {
+    @Deprecated public static <C extends Callable<T>, T> T call(C callable, String... args) {
         CommandLine cmd = new CommandLine(callable);
         List<Object> results = cmd.parseWithHandler(new RunLast(), args);
         return firstElement(results);
@@ -2284,7 +2369,7 @@ public class CommandLine {
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
-     * @deprecated use {@link #execute(String...)} instead
+     * @deprecated use {@link #execute(String...)} and {@link #getExecutionResult()} instead
      * @see RunLast
      */
     @Deprecated public static <C extends Callable<T>, T> T call(C callable, PrintStream out, String... args) {
@@ -2301,7 +2386,7 @@ public class CommandLine {
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
-     * @deprecated use {@link #execute(String...)} instead
+     * @deprecated use {@link #execute(String...)} and {@link #getExecutionResult()} instead
      * @see RunLast
      */
     @Deprecated public static <C extends Callable<T>, T> T call(C callable, PrintStream out, Help.Ansi ansi, String... args) {
@@ -2333,7 +2418,7 @@ public class CommandLine {
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
-     * @deprecated use {@link #execute(String...)} instead
+     * @deprecated use {@link #execute(String...)} and {@link #getExecutionResult()} instead
      * @since 3.0
      */
     @Deprecated public static <C extends Callable<T>, T> T call(C callable, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
@@ -2353,8 +2438,9 @@ public class CommandLine {
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
      * @see #execute(String...)
      * @since 3.2
+     * @deprecated use {@link #execute(String...)} and {@link #getExecutionResult()} instead
      */
-    public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, String... args) {
+    @Deprecated public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, String... args) {
         CommandLine cmd = new CommandLine(callableClass, factory);
         List<Object> results = cmd.parseWithHandler(new RunLast(), args);
         return firstElement(results);
@@ -2371,7 +2457,7 @@ public class CommandLine {
      * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
-     * @deprecated use {@link #execute(String...)} instead
+     * @deprecated use {@link #execute(String...)} and {@link #getExecutionResult()} instead
      * @since 3.2
      */
     @Deprecated public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, PrintStream out, String... args) {
@@ -2390,7 +2476,7 @@ public class CommandLine {
      * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
-     * @deprecated use {@link #execute(String...)} instead
+     * @deprecated use {@link #execute(String...)} and {@link #getExecutionResult()} instead
      * @since 3.2
      */
     @Deprecated public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, PrintStream out, Help.Ansi ansi, String... args) {
@@ -2427,7 +2513,7 @@ public class CommandLine {
      * @throws InitializationException if the specified class cannot be instantiated by the factory, or does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ExecutionException if the Callable throws an exception
      * @return {@code null} if an error occurred while parsing the command line options, or if help was requested and printed. Otherwise returns the result of calling the Callable
-     * @deprecated use {@link #execute(String...)} instead
+     * @deprecated use {@link #execute(String...)} and {@link #getExecutionResult()} instead
      * @since 3.2
      */
     @Deprecated public static <C extends Callable<T>, T> T call(Class<C> callableClass, IFactory factory, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
@@ -2449,8 +2535,9 @@ public class CommandLine {
      * @throws ExecutionException if the Runnable throws an exception
      * @see #execute(String...)
      * @since 3.0
+     * @deprecated use {@link #execute(String...)} instead
      */
-    public static <R extends Runnable> void run(R runnable, String... args) {
+    @Deprecated public static <R extends Runnable> void run(R runnable, String... args) {
         run(runnable, System.out, System.err, Help.Ansi.AUTO, args);
     }
     /**
@@ -2526,8 +2613,9 @@ public class CommandLine {
      * @throws ExecutionException if the Runnable throws an exception
      * @see #execute(String...)
      * @since 3.2
+     * @deprecated use {@link #execute(String...)} instead
      */
-    public static <R extends Runnable> void run(Class<R> runnableClass, IFactory factory, String... args) {
+    @Deprecated public static <R extends Runnable> void run(Class<R> runnableClass, IFactory factory, String... args) {
         run(runnableClass, factory, System.out, System.err, Help.Ansi.AUTO, args);
     }
     /**
@@ -2620,8 +2708,9 @@ public class CommandLine {
      * @throws ExecutionException if the Runnable throws an exception
      * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
      * @since 3.6
+     * @deprecated use {@link #execute(String...)} and {@link #getExecutionResult()} instead
      */
-    public static Object invoke(String methodName, Class<?> cls, String... args) {
+    @Deprecated public static Object invoke(String methodName, Class<?> cls, String... args) {
         return invoke(methodName, cls, System.out, System.err, Help.Ansi.AUTO, args);
     }
     /**
@@ -2637,7 +2726,7 @@ public class CommandLine {
      *      or if the specified class contains multiple {@code @Command}-annotated methods with the specified name
      * @throws ExecutionException if the Runnable throws an exception
      * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
-     * @deprecated use {@link #execute(String...)} instead
+     * @deprecated use {@link #execute(String...)} and {@link #getExecutionResult()} instead
      * @since 3.6
      */
     @Deprecated public static Object invoke(String methodName, Class<?> cls, PrintStream out, String... args) {
@@ -2657,7 +2746,7 @@ public class CommandLine {
      *      or if the specified class contains multiple {@code @Command}-annotated methods with the specified name
      * @throws ExecutionException if the Runnable throws an exception
      * @see #parseWithHandlers(IParseResultHandler2, IExceptionHandler2, String...)
-     * @deprecated use {@link #execute(String...)} instead
+     * @deprecated use {@link #execute(String...)} and {@link #getExecutionResult()} instead
      * @since 3.6
      */
     @Deprecated public static Object invoke(String methodName, Class<?> cls, PrintStream out, Help.Ansi ansi, String... args) {
@@ -2688,7 +2777,7 @@ public class CommandLine {
      * @throws InitializationException if the specified method does not have a {@link Command} annotation,
      *      or if the specified class contains multiple {@code @Command}-annotated methods with the specified name
      * @throws ExecutionException if the method throws an exception
-     * @deprecated use {@link #execute(String...)} instead
+     * @deprecated use {@link #execute(String...)} and {@link #getExecutionResult()} instead
      * @since 3.6
      */
     @Deprecated public static Object invoke(String methodName, Class<?> cls, PrintStream out, PrintStream err, Help.Ansi ansi, String... args) {
@@ -4400,13 +4489,13 @@ public class CommandLine {
             static final String DEFAULT_COMMAND_NAME = "<main class>";
 
             /** Constant Boolean holding the default setting for whether this is a help command: <code>{@value}</code>.*/
-            static final Boolean DEFAULT_IS_HELP_COMMAND = Boolean.FALSE;
+            static final Boolean DEFAULT_IS_HELP_COMMAND = false;
 
             /** Constant Boolean holding the default setting for whether method commands should be added as subcommands: <code>{@value}</code>.*/
-            static final Boolean DEFAULT_IS_ADD_METHOD_SUBCOMMANDS = Boolean.TRUE;
+            static final Boolean DEFAULT_IS_ADD_METHOD_SUBCOMMANDS = true;
 
             /** Constant Boolean holding the default setting for whether variables should be interpolated in String values: <code>{@value}</code>.*/
-            static final Boolean DEFAULT_INTERPOLATE_VARIABLES = Boolean.TRUE;
+            static final Boolean DEFAULT_INTERPOLATE_VARIABLES = true;
 
             private final Map<String, CommandLine> commands = new LinkedHashMap<String, CommandLine>();
             private final Map<String, OptionSpec> optionsByNameMap = new LinkedHashMap<String, OptionSpec>();
@@ -4628,17 +4717,17 @@ public class CommandLine {
                 }
             }
 
-            /** Returns whether method commands should be added as subcommands. Used by the annotation processor.
+            /** Returns whether method commands should be added as subcommands. {@value #DEFAULT_IS_ADD_METHOD_SUBCOMMANDS} by default. Used by the annotation processor.
              * @since 4.0 */
             public boolean isAddMethodSubcommands() { return (isAddMethodSubcommands == null) ? DEFAULT_IS_ADD_METHOD_SUBCOMMANDS : isAddMethodSubcommands; }
-            /** Sets whether method commands should be added as subcommands. Used by the annotation processor.
+            /** Sets whether method commands should be added as subcommands. {@value #DEFAULT_IS_ADD_METHOD_SUBCOMMANDS} by default. Used by the annotation processor.
              * @since 4.0 */
             public CommandSpec setAddMethodSubcommands(Boolean addMethodSubcommands) { isAddMethodSubcommands = addMethodSubcommands; return this; }
 
-            /** Returns whether whether variables should be interpolated in String values.
+            /** Returns whether whether variables should be interpolated in String values. {@value #DEFAULT_COMMAND_NAME} by default.
              * @since 4.0 */
             public boolean interpolateVariables() { return (interpolateVariables == null) ? DEFAULT_INTERPOLATE_VARIABLES : interpolateVariables; }
-            /** Sets whether whether variables should be interpolated in String values.
+            /** Sets whether whether variables should be interpolated in String values. {@value #DEFAULT_COMMAND_NAME} by default.
              * @since 4.0 */
             public CommandSpec interpolateVariables(Boolean interpolate) { interpolateVariables = interpolate; return this; }
 
