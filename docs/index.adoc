@@ -1217,6 +1217,131 @@ When a `@Parameters` positional parameter is part of a group, its `index` is the
 * Positional parameters in a single group work fine, but take care (or avoid) defining positional parameters in multiple groups or positional parameters in a group as well as outside a group. Positional parameters are matched by index, and while the index of a group is reset when a new group multiple is encountered, the index of positional parameters outside a group only increases and is never reset.
 
 
+== Executing Commands
+
+Picocli 4.0 introduces a new `execute` method to execute commands. This replaces the older `run`, `call`, `invoke` and `parseWithHandlers` methods. 
+
+=== Exit Code
+Many command line applications return an https://en.wikipedia.org/wiki/Exit_status[exit code] to signify success or failure. Zero often means success, a non-zero exit code is often used for errors, but other than that, meanings differ per application. 
+
+The new `CommandLine.execute` method introduced in picocli 4.0 returns an `int`, and applications can use this return value to call `System.exit` if desired. For example:
+
+```java
+public static void main(String... args) {
+  CommandLine cmd = new CommandLine(new App());
+  int exitCode = cmd.execute(args);
+  System.exit(exitCode);
+}
+```
+
+Older versions of picocli had some limited exit code support where picocli would call `System.exit`, but this is now deprecated.
+
+=== Generating an Exit Code
+
+`@Command`-annotated classes that implement `Callable` and `@Command`-annotated methods can simply return an `int` or `Integer`, and this value will be returned from `CommandLine.execute`. For example:
+
+```java
+@Command(name = "greet")
+class Greet implements Callable<Integer> {
+  public Integer call() {
+    System.out.println("hi");
+    return 1;
+  }
+
+  @Command
+  int shout() {
+    System.out.println("HI!");
+    return 2;
+  }
+}
+
+assert 1 == new CommandLine(new Greet()).execute();
+assert 2 == new CommandLine(new Greet()).execute("shout");
+```
+
+Commands with a user object that implements `Runnable` can implement the `IExitCodeGenerator` interface to generate an exit code. For example:
+
+```java
+@Command(name = "wave")
+class Gesture implements Runnable, IExitCodeGenerator {
+  public void run() {
+    System.out.println("wave");
+  }
+  public int getExitCode() {
+    return 3;
+  }
+}
+
+assert 3 == new CommandLine(new Gesture()).execute();
+```
+
+=== Exception Exit Codes
+
+By default, the `execute` method returns `CommandLine.ExitCode.USAGE` (`64`) for invalid input, and `CommandLine.ExitCode.SOFTWARE` (`70`) when an exception occurred in the Runnable, Callable or command method. (For reference, these values are `EX_USAGE` and `EX_SOFTWARE`, respectively, from Unix and Linux https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3[sysexits.h]). This can be customized with the `@Command` annotation. For example:
+
+```java 
+@Command(exitCodeOnInvalidInput = 123,
+   exitCodeOnExecutionException = 456)
+```
+
+Additionally, applications can configure a `IExitCodeExceptionMapper` to map a specific exception to an exit code:
+
+```java
+class MyMapper implements IExitCodeExceptionMapper {
+  public int getExitCode(Throwable t) {
+    if (t instance of FileNotFoundException) {
+      return 74;
+    }
+    return 1;
+  }
+}
+```
+
+When the end user specified invalid input, the `execute` method prints an error message followed by the usage help message of the command, and returns an exit code. This can be customized by configuring a `IParameterExceptionHandler`.
+
+If the business logic of the command throws an exception, the `execute` method prints the stack trace of the exception and returns an exit code. This can be customized by configuring a `IExecutionExceptionHandler`.
+
+=== Migration
+
+==== Migrating From `run` to `execute`
+
+
+
+==== Migrating From `run` to `execute`
+
+* *Static* - These are static methods, with the drawback that they don't allow configuration, as mentioned above.
+* *Type Safety* - It is a compile-time error when an application tries to pass anything else than a `Runnable` to the `run` method, and a `Callable` to the `call` method. The `execute` method does not have this type safety, since the `CommandLine` constructor allows any `Object` as a parameter.
+* *Return Value* - The `call` and `invoke` static methods allow commands to return _any_ value, while the `execute` method only returns an `int` exit code. From 4.0 the result object will be available from the `CommandLine.getExecutionResult` method. 
+
+=== Configuration
+The new `CommandLine.execute` method is an instance method. The older `run`, `call` and `invoke` methods are static methods. Static methods don’t allow configuration. The new API lets applications configure the parser or other aspects before execution. For example:
+
+```java
+public static void main(String... args) {
+  CommandLine cmd = new CommandLine(new App());
+  cmd.setCaseInsensitiveEnumValuesAllowed(true);
+  cmd.setUnmarchedArgumentsAllowed(true);
+  cmd.setStopAtPositional(true);
+  cmd.setExpandAtFiles(false);
+  cmd.execute(args);
+}
+```
+
+=== Execution Configuration
+
+The following configuration methods are new and are only applicable with the `execute` method (and `executeHelpRequest`):
+
+* get/setOut
+* get/setErr
+* get/setColorScheme
+* get/setExecutionStrategy
+* get/setParameterExceptionHandler
+* get/setExecutionExceptionHandler
+* get/setExitCodeExceptionMapper
+
+The above methods are not applicable (and ignored) with other entry points like `parse`, `parseArgs`, `populateCommand`, `run`, `call`, `invoke`, `parseWithHandler` and `parseWithHandlers`.
+
+
 == Parser Configuration
 
 === Overwriting Single Options
