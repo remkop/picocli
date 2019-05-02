@@ -59,6 +59,14 @@ public class InterpolatorTest {
         System.clearProperty("myProp");
         assertEquals(expected, interpolator.interpolate(original));
     }
+    
+    @Test
+    public void issue676interpolateReturnsNullIfNotFound() {
+        CommandSpec hierarchy = createTestSpec();
+        Interpolator interpolator = new Interpolator(hierarchy);
+        String original = "${sys:notfound}";
+        assertEquals(null, interpolator.interpolate(original));
+    }
 
     @Test
     public void interpolateSystemPropertyWithLookupInDefaultNotFound() {
