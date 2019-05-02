@@ -1235,7 +1235,7 @@ public class CommandLine {
      * @see RunFirst
      * @see RunLast
      * @see RunAll
-     * @deprecated use {@link IParameterExceptionHandler} instead, see {@link #execute(String...)}
+     * @deprecated use {@link IExecutionStrategy} instead, see {@link #execute(String...)}
      * @since 3.0 */
     @Deprecated public static interface IParseResultHandler2<R> {
         /** Processes the {@code ParseResult} object resulting from successfully
@@ -8832,11 +8832,11 @@ public class CommandLine {
                 for (String lookupKey : lookups.keySet()) {
                     ILookup lookup = lookups.get(lookupKey);
                     String prefix = "${" + lookupKey;
-                    int sysStartPos = 0;
-                    while ((sysStartPos = findOpeningDollar(text, prefix, sysStartPos)) >= 0) {
-                        int endPos = findClosingBrace(text, sysStartPos + prefix.length());
+                    int startPos = 0;
+                    while ((startPos = findOpeningDollar(text, prefix, startPos)) >= 0) {
+                        int endPos = findClosingBrace(text, startPos + prefix.length());
                         if (endPos < 0) { endPos = text.length() - 1; }
-                        String fullKey = text.substring(sysStartPos + prefix.length(), endPos);
+                        String fullKey = text.substring(startPos + prefix.length(), endPos);
                         String actualKey = fullKey;
 
                         int defaultStartPos = fullKey.indexOf(":-");
@@ -8852,10 +8852,13 @@ public class CommandLine {
                             value = resolveLookups(defaultValue, visited, resolved);
                         }
                         resolved.put(prefix + actualKey, value);
+                        if (value == null && startPos == 0 && endPos == text.length() - 1) {
+                            return null;
+                        }
 
                         // interpolate
-                        text = text.substring(0, sysStartPos) + value + text.substring(endPos + 1);
-                        sysStartPos += value == null ? "null".length() : value.length();
+                        text = text.substring(0, startPos) + value + text.substring(endPos + 1);
+                        startPos += value == null ? "null".length() : value.length();
                     }
                 }
                 return text.replace("$$", "$");
