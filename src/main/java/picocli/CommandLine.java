@@ -4495,7 +4495,7 @@ public class CommandLine {
          * </p>
          * @since 3.0 */
         public static class CommandSpec {
-            /** Constant String holding the default program name: {@code "<main class>" }. */
+            /** Constant String holding the default program name: {@code "&lt;main class&gt;" }. */
             static final String DEFAULT_COMMAND_NAME = "<main class>";
 
             /** Constant Boolean holding the default setting for whether this is a help command: <code>{@value}</code>.*/
