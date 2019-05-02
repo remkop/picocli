@@ -113,6 +113,12 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 
 Glad to see more people are using picocli. We must be doing something right. :-) 
 
+### Help to promote picocli
+If you like picocli and your project is on GitHub, consider adding this badge to your README.md: [![picocli](https://img.shields.io/badge/picocli-3.9.6-green.svg)](https://github.com/remkop/picocli)
+```
+[![picocli](https://img.shields.io/badge/picocli-3.9.6-green.svg)](https://github.com/remkop/picocli)
+```
+
 
 ## Example
 
