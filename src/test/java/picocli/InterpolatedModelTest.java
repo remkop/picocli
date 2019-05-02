@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.MissingParameterException;
 import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Parameters;
@@ -263,6 +264,28 @@ public class InterpolatedModelTest {
         assertEquals(expected, actual);
 
         assertEquals(CommandLine.Range.valueOf("2..3"), status.getCommandSpec().findOption("x").arity());
+    }
+
+    // https://github.com/remkop/picocli/issues/676
+    @Test
+    public void testIssue676() {
+        class Issue676 {
+            @Option(names="--mypath", defaultValue = "${sys:MYPATH}", required = true)
+            private String path;
+        }
+        System.clearProperty("MYPATH");
+        Issue676 bean = new Issue676();
+        CommandLine cmd = new CommandLine(bean);
+        try {
+            cmd.parseArgs();
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required option '--mypath=<path>'", ex.getMessage());
+        }
+
+        System.setProperty("MYPATH", "abc");
+        cmd.parseArgs();
+        assertEquals("abc", bean.path);
     }
 
     static class CommonMixinOne {

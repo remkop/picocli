@@ -4825,12 +4825,13 @@ public class CommandLine {
             }
             private CommandSpec addArg(ArgSpec arg) {
                 args.add(arg);
-                if (arg.required() && arg.group() == null) { requiredArgs.add(arg); }
                 arg.messages(usageMessage().messages());
                 arg.commandSpec = this;
                 if (arg.arity().isUnresolved()) {
                     arg.arity = Range.valueOf(interpolator.interpolate(arg.arity().originalValue));
                 }
+                // do this last: arg.required() needs to resolve variables in arg.defaultValue()
+                if (arg.required() && arg.group() == null) { requiredArgs.add(arg); }
                 return this;
             }
 
@@ -6080,7 +6081,7 @@ public class CommandLine {
                 initialValue = builder.initialValue;
                 hasInitialValue = builder.hasInitialValue;
                 defaultValue = NO_DEFAULT_VALUE.equals(builder.defaultValue) ? null : builder.defaultValue;
-                required = builder.required && defaultValue == null; //#261 not required if it has a default
+                required = builder.required;
                 toString = builder.toString;
                 getter = builder.getter;
                 setter = builder.setter;
@@ -6130,11 +6131,13 @@ public class CommandLine {
                 }
             }
 
-            /** Returns whether this is a required option or positional parameter.
+            /** Returns whether this is a required option or positional parameter without a default value.
              * If this argument is part of a {@linkplain ArgGroup group}, this method returns whether this argument is required <em>within the group</em> (so it is not necessarily a required argument for the command).
              * @see Option#required() */
-            public boolean required()      { return required; }
-
+            public boolean required() {
+                //#261 not required if it has a default; #676 default value may be a variable
+                return required && defaultValue() == null && defaultValueFromProvider() == null;
+            }
             /** Returns whether this option will prompt the user to enter a value on the command line.
              * @see Option#interactive() */
             public boolean interactive()   { return interactive; }
