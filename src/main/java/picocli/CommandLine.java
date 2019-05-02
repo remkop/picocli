@@ -4727,10 +4727,10 @@ public class CommandLine {
                 }
             }
 
-            /** Returns whether method commands should be added as subcommands. {@value #DEFAULT_IS_ADD_METHOD_SUBCOMMANDS} by default. Used by the annotation processor.
+            /** Returns whether method commands should be added as subcommands. True by default. Used by the annotation processor.
              * @since 4.0 */
             public boolean isAddMethodSubcommands() { return (isAddMethodSubcommands == null) ? DEFAULT_IS_ADD_METHOD_SUBCOMMANDS : isAddMethodSubcommands; }
-            /** Sets whether method commands should be added as subcommands. {@value #DEFAULT_IS_ADD_METHOD_SUBCOMMANDS} by default. Used by the annotation processor.
+            /** Sets whether method commands should be added as subcommands. True by default. Used by the annotation processor.
              * @since 4.0 */
             public CommandSpec setAddMethodSubcommands(Boolean addMethodSubcommands) { isAddMethodSubcommands = addMethodSubcommands; return this; }
 
