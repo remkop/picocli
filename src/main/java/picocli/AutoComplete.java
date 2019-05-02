@@ -60,12 +60,7 @@ public class AutoComplete {
      *      Other parameters are optional. Specify {@code -h} to see details on the available options.
      */
     public static void main(String... args) {
-        AbstractParseResultHandler<List<Object>> resultHandler = new CommandLine.RunLast();
-        DefaultExceptionHandler<List<Object>> exceptionHandler = CommandLine.defaultExceptionHandler();
-        if (exitOnError()) { exceptionHandler.andExit(EXIT_CODE_INVALID_INPUT); }
-
-        List<Object> result = new CommandLine(new App()).parseWithHandlers(resultHandler, exceptionHandler, args);
-        int exitCode = result == null ? EXIT_CODE_SUCCESS : (Integer) result.get(0);
+        int exitCode = new CommandLine(new App()).execute(args);
         if ((exitCode == EXIT_CODE_SUCCESS && exitOnSuccess()) || (exitCode != EXIT_CODE_SUCCESS && exitOnError())) {
             System.exit(exitCode);
         }
@@ -96,7 +91,9 @@ public class AutoComplete {
                     " \"@|yellow picocli.autocomplete.systemExitOnError|@\"   - call `System.exit(ERROR_CODE)`",
                     "                                              when an error occurs",
                     "If these system properties are not defined or have value \"false\", this program completes without terminating the JVM."
-            })
+            },
+            exitCodeOnInvalidInput = EXIT_CODE_INVALID_INPUT,
+            exitCodeOnExecutionException = EXIT_CODE_EXECUTION_ERROR)
     private static class App implements Callable<Integer> {
 
         @Parameters(arity = "1", description = "Fully qualified class name of the annotated " +
