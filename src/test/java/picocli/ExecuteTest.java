@@ -38,6 +38,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
@@ -959,5 +960,21 @@ public class ExecuteTest {
         assertEquals(3, spec.exitCodeOnVersionHelp());
         assertEquals(4, spec.exitCodeOnInvalidInput());
         assertEquals(5, spec.exitCodeOnExecutionException());
+    }
+
+    @Test
+    public void testGetExecutionResult() {
+        @Command
+        class MyApp implements Callable<TimeUnit> {
+            public TimeUnit call() {
+                return TimeUnit.SECONDS;
+            }
+        }
+        CommandLine cmd = new CommandLine(new MyApp());
+        assertNull(cmd.getExecutionResult());
+
+        cmd.execute();
+
+        assertEquals(TimeUnit.SECONDS, cmd.getExecutionResult());
     }
 }

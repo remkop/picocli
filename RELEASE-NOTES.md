@@ -4,6 +4,10 @@
 # <a name="4.0.0-alpha-3"></a> Picocli 4.0.0-alpha-3 (UNRELEASED)
 The picocli community is pleased to announce picocli 4.0.0-alpha-3.
 
+This release adds improved support for command execution via the new `execute` method.
+This method returns an exit code that applications can use to call `System.exit`.
+
+The older `run`, `call`, `invoke` and `parseWithHandlers` convenience methods that were similar to `execute` but had limited support for parser configuration and and limited support for exit codes are deprecated from this release.
 
 _Please try this and provide feedback. We can still make changes._
 

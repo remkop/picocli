@@ -57,7 +57,7 @@ public class Example {
 }
 ----
 
-Then invoke `CommandLine.parse` or `CommandLine.populateCommand` with the command line parameters and an object you want to initialize.
+Then invoke `CommandLine.parseArgs` or `CommandLine.populateCommand` with the command line parameters and an object you want to initialize.
 
 [source,java]
 ----
@@ -67,8 +67,11 @@ assert  app.verbose;
 assert  app.inputFiles != null && app.inputFiles.length == 2;
 ----
 
-Here is a small example application that uses the `CommandLine.call` <<Less Boilerplate,convenience method>>
-to do parsing and error handling in one line of code. The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute is all
+A command can be <<Executing Commands,executed>> in one line of code. The example below uses the `CommandLine.execute` method
+to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic.
+Applications can call `System.exit` with the returned exit code to signal success or failure to their caller.
+
+The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute is all
 that is needed to give your application usage help and version help.
 
 [[CheckSum-application]]
@@ -76,7 +79,7 @@ that is needed to give your application usage help and version help.
 ----
 @Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
          name = "checksum", mixinStandardHelpOptions = true, version = "checksum 3.0")
-class CheckSum implements Callable<Void> {
+class CheckSum implements Callable<Integer> {
 
     @Parameters(index = "0", description = "The file whose checksum to calculate.")
     private File file;
@@ -87,16 +90,17 @@ class CheckSum implements Callable<Void> {
     public static void main(String[] args) throws Exception {
         // CheckSum implements Callable, so parsing, error handling and handling user
         // requests for usage help or version help can be done with one line of code.
-        CommandLine.call(new CheckSum(), args);
+
+        int exitCode = new CommandLine(new CheckSum()).execute(args);
+        System.exit(exitCode);
     }
 
     @Override
-    public Void call() throws Exception {
-        // your business logic goes here...
+    public Integer call() throws Exception { // your business logic goes here...
         byte[] fileContents = Files.readAllBytes(file.toPath());
         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
         System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(digest));
-        return null;
+        return 0;
     }
 }
 ----
@@ -139,7 +143,7 @@ Picocli matches the option names to set the field values.
 ----
 String[] args = { "-c", "--file", "result.tar", "file1.txt", "file2.txt" };
 Tar tar = new Tar();
-new CommandLine(tar).parse(args);
+new CommandLine(tar).parseArgs(args);
 
 assert !tar.helpRequested;
 assert  tar.create;
@@ -159,14 +163,14 @@ Example usage:
 
 [source,java]
 ----
-class Login implements Callable<Object> {
+class Login implements Callable<Integer> {
     @Option(names = {"-u", "--user"}, description = "User name")
     String user;
 
     @Option(names = {"-p", "--password"}, description = "Passphrase", interactive = true)
     char[] password;
 
-    public Object call() throws Exception {
+    public Integer call() throws Exception {
         byte[] bytes = new byte[password.length];
         for (int i = 0; i < bytes.length; i++) { bytes[i] = (byte) password[i]; }
 
@@ -179,7 +183,7 @@ class Login implements Callable<Object> {
         Arrays.fill(bytes, (byte) 0);
         Arrays.fill(password, ' ');
 
-        return null;
+        return 0;
     }
 
     private String base64(byte[] arr) { /* ... */ }
@@ -333,7 +337,7 @@ Any command line argument that is not an option or subcommand is interpreted as 
 ----
 String[] args = { "param0", "-o", "AAA", "param1", "param2", "-o", "BBB", "param3" };
 Mixed mixed = new Mixed();
-new CommandLine(mixed).parse(args);
+new CommandLine(mixed).parseArgs(args);
 
 assert mixed.positional.equals(Arrays.asList("param0", "param1", "param2", "param3");
 assert mixed.options.equals   (Arrays.asList("AAA", "BBB"));
@@ -358,7 +362,7 @@ The `--` end-of-options delimiter clarifies which of the arguments are positiona
 ----
 String[] args = { "-v", "--", "-files", "file1", "file2" };
 DoubleDashDemo demo = new DoubleDashDemo();
-new CommandLine(demo).parse(args);
+new CommandLine(demo).parseArgs(args);
 
 assert demo.verbose;
 assert demo.files == null;
@@ -505,7 +509,7 @@ cl.registerConverter(Locale.class, s -> new Locale.Builder().setLanguageTag(s).b
 cl.registerConverter(Cipher.class, s -> Cipher.getInstance(s));
 ----
 
-After registering custom converters, call the `parse(String...)` method on the `CommandLine` instance where the converters are registered. (The static `populateCommand` method cannot be used.) For example:
+After registering custom converters, call the `parseArgs(String...)` method on the `CommandLine` instance where the converters are registered. (The static `populateCommand` method cannot be used.) For example:
 
 [source,java]
 ----
@@ -522,7 +526,7 @@ CommandLine commandLine = new CommandLine(app)
     .registerConverter(Locale.class, s -> new Locale.Builder().setLanguageTag(s).build())
     .registerConverter(Cipher.class, s -> Cipher.getInstance(s));
 
-commandLine.parse("-a", "AES/CBC/NoPadding", "en-GB");
+commandLine.parseArgs("-a", "AES/CBC/NoPadding", "en-GB");
 assert app.locale.toLanguageTag().equals("en-GB");
 assert app.cipher.getAlgorithm().equals("AES/CBC/NoPadding"));
 ----
@@ -1221,12 +1225,28 @@ When a `@Parameters` positional parameter is part of a group, its `index` is the
 [#execute]
 == Executing Commands
 
-Picocli 4.0 introduces a new `execute` method to execute commands. This replaces the older `run`, `call`, `invoke` and `parseWithHandlers` methods. 
+Parsing the command line arguments is the first step. A robust real-world application needs to handle a number of scenarios:
+
+. Invalid user input
+. User request for usage help (potentially for a subcommand)
+. User request for version help (potentially for a subcommand)
+. None of the above: run the business logic (potentially for a subcommand)
+. The business logic may throw an exception
+
+Picocli 4.0 introduces an `execute` method for handling all of the above scenarios in a single line of code. For example:
+
+```java
+new CommandLine(new MyApp()).execute(args);
+```
+
+NOTE: The `execute` method replaces the older `run`, `call`, `invoke` and `parseWithHandlers` methods.
+
+The <<DIY Command Execution>> section shows an example of the boilerplate code that can be omitted with the `execute` method.
 
 === Exit Code
-Many command line applications return an https://en.wikipedia.org/wiki/Exit_status[exit code] to signify success or failure. Zero often means success, a non-zero exit code is often used for errors, but other than that, meanings differ per application. 
+Many command line applications return an https://en.wikipedia.org/wiki/Exit_status[exit code] to signify success or failure. Zero often means success, a non-zero exit code is often used for errors, but other than that, meanings differ per application.
 
-The new `CommandLine.execute` method introduced in picocli 4.0 returns an `int`, and applications can use this return value to call `System.exit` if desired. For example:
+The `CommandLine.execute` method introduced in picocli 4.0 returns an `int`, and applications can use this return value to call `System.exit` if desired. For example:
 
 ```java
 public static void main(String... args) {
@@ -1236,25 +1256,26 @@ public static void main(String... args) {
 }
 ```
 
-Older versions of picocli had some limited exit code support where picocli would call `System.exit`, but this is now deprecated.
+CAUTION: Older versions of picocli had some limited exit code support where picocli would call `System.exit`, but this is now deprecated.
 
 === Generating an Exit Code
 
-`@Command`-annotated classes that implement `Callable` and `@Command`-annotated methods can simply return an `int` or `Integer`, and this value will be returned from `CommandLine.execute`. For example:
+`@Command`-annotated classes that implement `Callable` and `@Command`-<<command-methods,annotated methods>> can simply return an `int` or `Integer`, and this value will be returned from `CommandLine.execute`. For example:
 
 ```java
 @Command(name = "greet")
 class Greet implements Callable<Integer> {
-  public Integer call() {
-    System.out.println("hi");
-    return 1;
-  }
+    public Integer call() {
+        System.out.println("hi");
+        return 1;
+    }
 
-  @Command
-  int shout() {
-    System.out.println("HI!");
-    return 2;
-  }
+    // define a "shout" subcommand with a @Command-annotated method
+    @Command
+    int shout() {
+        System.out.println("HI!");
+        return 2;
+    }
 }
 
 assert 1 == new CommandLine(new Greet()).execute();
@@ -1266,12 +1287,14 @@ Commands with a user object that implements `Runnable` can implement the `IExitC
 ```java
 @Command(name = "wave")
 class Gesture implements Runnable, IExitCodeGenerator {
-  public void run() {
-    System.out.println("wave");
-  }
-  public int getExitCode() {
-    return 3;
-  }
+
+    @Override public void run() {
+        System.out.println("wave");
+    }
+
+    @Override public int getExitCode() {
+        return 3;
+    }
 }
 
 assert 3 == new CommandLine(new Gesture()).execute();
@@ -1290,12 +1313,13 @@ Additionally, applications can configure a `IExitCodeExceptionMapper` to map a s
 
 ```java
 class MyMapper implements IExitCodeExceptionMapper {
-  public int getExitCode(Throwable t) {
-    if (t instance of FileNotFoundException) {
-      return 74;
+    @Override
+    public int getExitCode(Throwable t) {
+        if (t instance of FileNotFoundException) {
+            return 74;
+        }
+        return 1;
     }
-    return 1;
-  }
 }
 ```
 
@@ -1303,9 +1327,27 @@ When the end user specified invalid input, the `execute` method prints an error 
 
 If the business logic of the command throws an exception, the `execute` method prints the stack trace of the exception and returns an exit code. This can be customized by configuring a `IExecutionExceptionHandler`.
 
+=== Execution Configuration
+
+The following methods can be used to configure the behaviour of the `execute` method:
+
+* get/setOut
+* get/setErr
+* get/setColorScheme
+* get/setExecutionStrategy
+* get/setParameterExceptionHandler
+* get/setExecutionExceptionHandler
+* get/setExitCodeExceptionMapper
+
+CAUTION: The above methods are not applicable with (and ignored by) other entry points like `parse`, `parseArgs`, `populateCommand`, `run`, `call`, `invoke`, `parseWithHandler` and `parseWithHandlers`.
+
 === Migration
 
-==== Migrating From `run` to `execute`
+Older versions of picocli supported `run`, `call`, `invoke` and `parseWithHandlers` convenience methods that were similar to `execute` but had limited support for parser configuration and and limited support for exit codes.
+These methods are deprecated from picocli 4.0.
+The sections below show some common usages and how the same can be achieved with the `execute` API.
+
+==== Customizing Output Streams and ANSI settings
 
 .Before:
 
@@ -1322,15 +1364,15 @@ PrintWriter out = // output stream for user-requested help
 PrintWriter err = // output stream for error messages
 Ansi ansi = // to use ANSI colors and styles or not
 
-CommandLine cmd = new CommandLine(new MyRunnable());
-cmd.setOut(out);
-cmd.setErr(err);
-cmd.setColorScheme(Help.defaultColorScheme(ansi));
+CommandLine cmd = new CommandLine(new MyRunnable())
+        .setOut(out);
+        .setErr(err);
+        .setColorScheme(Help.defaultColorScheme(ansi));
 
 int exitCode = cmd.execute(args);
 ```
 
-==== Migrating From `call` to `execute`
+==== Return Value from Callable or Method
 
 .Before:
 
@@ -1349,7 +1391,7 @@ int exitCode = cmd.execute(args);
 MyResult result = cmd.getExecutionResult();
 ```
 
-==== Migrating From `invoke` to `execute`
+==== Invoking Command Methods
 
 .Before:
 
@@ -1370,10 +1412,15 @@ int exitCode = cmd.execute(args);
 MyResult result = cmd.getExecutionResult();
 ```
 
-==== Migrating From `parseWithHandlers` to `execute`
+==== Executing Commands with Subcommands
+
+The `IParseResultHandler2` interface has been deprecated in picocli 4.0 in favor of `IExecutionStrategy`. The existing built-in handlers `RunLast`, `RunAll` and `RunFirst` implement the `IExecutionStrategy` interface and can still be used:
+
+* the `RunLast` handler prints help if requested, and otherwise gets the _last specified_ command or subcommand and tries to execute it as a `Runnable`, `Callable` or `Method`. This is the default execution strategy.
+* the `RunFirst` handler prints help if requested, and otherwise executes the _top-level_ command as a `Runnable`, `Callable` or `Method`
+* the `RunAll` handler prints help if requested, and otherwise executes _all_ commands and subcommands that the user specified on the command line as `Runnable`, `Callable` or `Method` tasks
 
 .Before
-
 [source,java]
 ----
 CommandLine cmd = new CommandLine(MyTopLevelCommand())
@@ -1383,12 +1430,6 @@ CommandLine cmd = new CommandLine(MyTopLevelCommand())
 List<Object> result = cmd.parseWithHandler(new RunAll(), args);
 ----
 
-The `IParseResultHandler2` has been replaced with `IExecutionStrategy`. The existing built-in handlers `RunLast`, `RunAll` and `RunFirst` can still be used:
-
-* the `RunLast` handler prints help if requested, and otherwise gets the last specified command or subcommand and tries to execute it as a `Runnable`, `Callable` or `Method`
-* the `RunFirst` handler prints help if requested, and otherwise executes the top-level command as a `Runnable`, `Callable` or `Method`
-* the `RunAll` handler prints help if requested, and otherwise executes all commands and subcommands that the user specified on the command line as `Runnable`, `Callable` or `Method` tasks
-
 .After
 [source,java]
 ----
@@ -1396,31 +1437,39 @@ CommandLine cmd = new CommandLine(MyTopLevelCommand())
         .addSubcommand("status",   new GitStatus())
         .addSubcommand("commit",   new GitCommit())
         .addSubcommand("add",      new GitAdd());
-cmd.setExecutionStrategy(new RunAll());
 
+// the default is RunLast, this can be customized:
+cmd.setExecutionStrategy(new RunAll());
 int exitCode = cmd.execute(args);
-Object topResult = cmd.getExecutionResult();
-Object statusResult = cmd.getSubcommands().get("status").getExecutionResult();
 ----
 
-=== Execution Configuration
+The `ParseResult` can be used to get the return value from a Callable or Method subcommand:
 
-The following configuration methods are new and are only applicable with the `execute` method (and `executeHelpRequest`):
+[source,java]
+----
+// getting return value from Callable or Method command
+Object topResult = cmd.getExecutionResult();
 
-* get/setOut
-* get/setErr
-* get/setColorScheme
-* get/setExecutionStrategy
-* get/setParameterExceptionHandler
-* get/setExecutionExceptionHandler
-* get/setExitCodeExceptionMapper
-
-The above methods are not applicable (and ignored) with other entry points like `parse`, `parseArgs`, `populateCommand`, `run`, `call`, `invoke`, `parseWithHandler` and `parseWithHandlers`.
+// getting return value from Callable or Method subcommand
+ParseResult parseResult = cmd.getParseResult();
+if (parseResult.subcommand() != null) {
+    CommandLine sub = parseResult.subcommand().commandSpec().commandLine();
+    Object subResult = sub.getExecutionResult();
+}
+----
 
 === DIY Command Execution
 
 Alternatively, applications may want to use the `parseArgs` method directly and write their own "Do It Yourself" command execution logic.
-This will usually look something like the below:
+
+The example below covers the following common scenarios:
+
+. Handle invalid user input, and report any problems to the user (potentially suggesting alternative options and subcommands for simple typos if we want to get fancy).
+. Check if the user requested usage help, and print this help and abort processing if this was the case.
+. Check if the user requested version information, and print this information and abort processing if this was the case.
+. If none of the above, run the business logic of the application.
+. Handle any errors that occurred in the business logic.
+
 
 [source,java]
 ----
@@ -1428,21 +1477,31 @@ Callable<Object> callable = new MyCallable();
 CommandLine cmd = new CommandLine(callable);
 try {
     ParseResult parseResult = cmd.parseArgs(args);
+
+    // Did user request usage help (--help)?
     if (cmd.isUsageHelpRequested()) {
         cmd.usage(cmd.getOut());
         return cmd.getCommandSpec().exitCodeOnUsageHelp();
+
+    // Did user request version help (--version)?
     } else if (cmd.isVersionHelpRequested()) {
         cmd.printVersionHelp(cmd.getOut());
         return cmd.getCommandSpec().exitCodeOnVersionHelp();
     }
-    cmd.setExecutionResult(callable.call());
+    // invoke the business logic
+    Object result = callable.call();
+    cmd.setExecutionResult(result);
     return cmd.getCommandSpec().exitCodeOnSuccess();
+
+// invalid user input: print error message and usage help
 } catch (ParameterException ex) {
     cmd.getErr().println(ex.getMessage());
     if (!UnmatchedArgumentException.printSuggestions(ex, cmd.getErr())) {
         ex.getCommandLine().usage(cmd.getErr());
     }
     return cmd.getCommandSpec().exitCodeOnInvalidInput();
+
+// exception occurred in business logic
 } catch (Exception ex) {
     ex.printStackTrace(cmd.getErr());
     return cmd.getCommandSpec().exitCodeOnExecutionException();
@@ -1652,7 +1711,7 @@ usage help or version information was requested (without inspecting the annotate
 [source,java]
 ----
 CommandLine commandLine = new CommandLine(new App());
-commandLine.parse(args);
+commandLine.parseArgs(args);
 if (commandLine.isUsageHelpRequested()) {
    commandLine.usage(System.out);
    return;
@@ -1744,12 +1803,12 @@ public interface IHelpCommandInitializable {
 
 === Printing Help Automatically
 
-From picocli v2.0, the <<Less Boilerplate,convenience methods>> will automatically print usage help and version information
+From picocli v2.0, the <<Executing Commands,convenience methods>> will automatically print usage help and version information
 when a help option was specified on the command line (options annotated with the `versionHelp` or `usageHelp` attribute - but not the `help` attribute).
 
 The same holds for the `mixinStandardHelpOptions` attribute, the built-in `HelpCommand` and any custom help subcommands marked as a <<Help Subcommands,help command>>.
 
-The following <<Less Boilerplate,convenience methods>> automatically print help:
+The following <<Executing Commands,convenience methods>> automatically print help:
 
 * `CommandLine::call`
 * `CommandLine::run`
@@ -1785,7 +1844,7 @@ annotation and prints it to the specified `PrintStream`.
 [source,java]
 ----
 CommandLine commandLine = new CommandLine(new VersionedCommand());
-commandLine.parse(args);
+commandLine.parseArgs(args);
 if (commandLine.isVersionHelpRequested()) {
     commandLine.printVersionHelp(System.out);
     return;
@@ -2634,28 +2693,30 @@ public static void main(String... args) {
                .addSubcommand("commit",   new GitCommit())
                 ...
 
-    // Invoke the parse method to parse the arguments
-    List<CommandLine> parsed = commandLine.parse(args);
+    // Invoke the parseArgs method to parse the arguments
+    ParseResult parsed = commandLine.parseArgs(args);
     handleParseResult(parsed);
 }
 ----
 
-The `CommandLine.parse` method returns a List with the recognized commands. The top-level command (the Java class invoked by `git` in this example) is always the first element in the returned list.
-
-The returned List also contains all matched subcommands. Your application needs to inspect this list to see what subcommand was invoked and take appropriate action. For example:
+The `CommandLine.parseArgs` method returns a `ParseResult` that can be queried to get information about
+the top-level command (the Java class invoked by `git` in this example).
+The `ParseResult.subcommand()` method returns a nested `ParseResult` if the parser found a subcommand.
+This can be recursively queried until the last nested subcommand was found and the `ParseResult.subcommand()` method returns `null`.
 
 [source,java]
 ----
-private void handleParseResult(List<CommandLine> parsed) {
-    assert parsed.size() == 2 : "1 command and 1 subcommand found"
+private void handleParseResult(ParseResult parsed) {
+    assert parsed.subcommand() != null : "at least 1 command and 1 subcommand found"
 
-    assert parsed.get(0).getCommand().getClass() == Git.class       : "main command"
-    assert parsed.get(1).getCommand().getClass() == GitStatus.class : "subcommand"
+    ParseResult sub = parsed.subcommand();
+    assert parsed.commandSpec().userObject().getClass() == Git.class       : "main command"
+    assert    sub.commandSpec().userObject().getClass() == GitStatus.class : "subcommand"
 
-    Git git = (Git) parsed.get(0).getCommand();
+    Git git = (Git) parsed.commandSpec().userObject();
     assert git.gitDir.equals(new File("/home/rpopma/picocli"));
 
-    GitStatus gitstatus = (GitStatus) parsed.get(1).getCommand();
+    GitStatus gitstatus = (GitStatus) sub.commandSpec().userObject();
     assert  gitstatus.shortFormat              : "git status -s"
     assert  gitstatus.branchInfo               : "git status -b"
     assert !gitstatus.showIgnored              : "git status --showIgnored not specified"
@@ -2663,7 +2724,7 @@ private void handleParseResult(List<CommandLine> parsed) {
 }
 ----
 
-You may be interested in the <<Convenience Methods for Subcommands,convenience methods for subcommands>> to reduce error handling and other boilerplate code in your application.
+You may be interested in the <<Executing Commands,execute method>> to reduce error handling and other boilerplate code in your application.
 
 
 === `@ParentCommand` Annotation
