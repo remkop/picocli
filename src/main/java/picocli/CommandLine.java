@@ -4495,7 +4495,7 @@ public class CommandLine {
          * </p>
          * @since 3.0 */
         public static class CommandSpec {
-            /** Constant String holding the default program name: {@code "&lt;main class&gt;" }. */
+            /** Constant String holding the default program name: {@code "<main class>" }. */
             static final String DEFAULT_COMMAND_NAME = "<main class>";
 
             /** Constant Boolean holding the default setting for whether this is a help command: <code>{@value}</code>.*/
@@ -4734,10 +4734,10 @@ public class CommandLine {
              * @since 4.0 */
             public CommandSpec setAddMethodSubcommands(Boolean addMethodSubcommands) { isAddMethodSubcommands = addMethodSubcommands; return this; }
 
-            /** Returns whether whether variables should be interpolated in String values. {@value #DEFAULT_COMMAND_NAME} by default.
+            /** Returns whether whether variables should be interpolated in String values. {@value #DEFAULT_INTERPOLATE_VARIABLES} by default.
              * @since 4.0 */
             public boolean interpolateVariables() { return (interpolateVariables == null) ? DEFAULT_INTERPOLATE_VARIABLES : interpolateVariables; }
-            /** Sets whether whether variables should be interpolated in String values. {@value #DEFAULT_COMMAND_NAME} by default.
+            /** Sets whether whether variables should be interpolated in String values. {@value #DEFAULT_INTERPOLATE_VARIABLES} by default.
              * @since 4.0 */
             public CommandSpec interpolateVariables(Boolean interpolate) { interpolateVariables = interpolate; return this; }
 
