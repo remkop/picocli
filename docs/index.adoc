@@ -1221,16 +1221,17 @@ When a `@Parameters` positional parameter is part of a group, its `index` is the
 * Positional parameters in a single group work fine, but take care (or avoid) defining positional parameters in multiple groups or positional parameters in a group as well as outside a group. Positional parameters are matched by index, and while the index of a group is reset when a new group multiple is encountered, the index of positional parameters outside a group only increases and is never reset.
 
 
+
 [#less-boilerplate]
 [#execute]
 == Executing Commands
 
 Parsing the command line arguments is the first step. A robust real-world application needs to handle a number of scenarios:
 
-. Invalid user input
-. User request for usage help (potentially for a subcommand)
-. User request for version help (potentially for a subcommand)
-. None of the above: run the business logic (potentially for a subcommand)
+. User input was invalid
+. User requested usage help (potentially for a subcommand)
+. User requested version help (potentially for a subcommand)
+. None of the above: we can run the business logic (potentially for a subcommand)
 . The business logic may throw an exception
 
 Picocli 4.0 introduces an `execute` method for handling all of the above scenarios in a single line of code. For example:
@@ -1238,6 +1239,8 @@ Picocli 4.0 introduces an `execute` method for handling all of the above scenari
 ```java
 new CommandLine(new MyApp()).execute(args);
 ```
+
+IMPORTANT: A command is executable if its user object implements `Runnable` or `Callable`, or is a `@Command`-annotated `Method`. Examples follow below.
 
 NOTE: The `execute` method replaces the older `run`, `call`, `invoke` and `parseWithHandlers` methods.
 
