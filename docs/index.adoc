@@ -1511,6 +1511,7 @@ try {
 }
 ----
 
+The `CommandLine.execute` method is equivalent to the above, and additionally handles subcommands correctly.
 
 == Parser Configuration
 

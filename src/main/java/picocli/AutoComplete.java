@@ -60,7 +60,16 @@ public class AutoComplete {
      *      Other parameters are optional. Specify {@code -h} to see details on the available options.
      */
     public static void main(String... args) {
-        int exitCode = new CommandLine(new App()).execute(args);
+        IExecutionExceptionHandler errorHandler = new IExecutionExceptionHandler() {
+            public int handleExecutionException(Exception ex, CommandLine commandLine, ParseResult parseResult) {
+                ex.printStackTrace();
+                commandLine.usage(commandLine.getErr());
+                return EXIT_CODE_EXECUTION_ERROR;
+            }
+        };
+        int exitCode = new CommandLine(new App())
+                .setExecutionExceptionHandler(errorHandler)
+                .execute(args);
         if ((exitCode == EXIT_CODE_SUCCESS && exitOnSuccess()) || (exitCode != EXIT_CODE_SUCCESS && exitOnError())) {
             System.exit(exitCode);
         }
@@ -126,44 +135,37 @@ public class AutoComplete {
         @Option(names = { "-h", "--help"}, usageHelp = true, description = "Display this help message and quit.")
         boolean usageHelpRequested;
 
-        public Integer call() {
-            try {
-                IFactory factory = CommandLine.defaultFactory();
-                if (factoryClass != null) {
-                    factory = (IFactory) factory.create(Class.forName(factoryClass));
-                }
-                Class<?> cls = Class.forName(commandLineFQCN);
-                Object instance = factory.create(cls);
-                CommandLine commandLine = new CommandLine(instance, factory);
-
-                if (commandName == null) {
-                    commandName = commandLine.getCommandName(); //new CommandLine.Help(commandLine.commandDescriptor).commandName;
-                    if (CommandLine.Help.DEFAULT_COMMAND_NAME.equals(commandName)) {
-                        commandName = cls.getSimpleName().toLowerCase();
-                    }
-                }
-                if (autoCompleteScript == null) {
-                    autoCompleteScript = new File(commandName + "_completion");
-                }
-                File commandScript = null;
-                if (writeCommandScript) {
-                    commandScript = new File(autoCompleteScript.getAbsoluteFile().getParentFile(), commandName);
-                }
-                if (commandScript != null && !overwriteIfExists && checkExists(commandScript)) {
-                    return EXIT_CODE_COMMAND_SCRIPT_EXISTS;
-                }
-                if (!overwriteIfExists && checkExists(autoCompleteScript)) {
-                    return EXIT_CODE_COMPLETION_SCRIPT_EXISTS;
-                }
-
-                AutoComplete.bash(commandName, autoCompleteScript, commandScript, commandLine);
-                return EXIT_CODE_SUCCESS;
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                CommandLine.usage(new App(), System.err);
-                return EXIT_CODE_EXECUTION_ERROR;
+        public Integer call() throws Exception {
+            IFactory factory = CommandLine.defaultFactory();
+            if (factoryClass != null) {
+                factory = (IFactory) factory.create(Class.forName(factoryClass));
             }
+            Class<?> cls = Class.forName(commandLineFQCN);
+            Object instance = factory.create(cls);
+            CommandLine commandLine = new CommandLine(instance, factory);
+
+            if (commandName == null) {
+                commandName = commandLine.getCommandName(); //new CommandLine.Help(commandLine.commandDescriptor).commandName;
+                if (CommandLine.Help.DEFAULT_COMMAND_NAME.equals(commandName)) {
+                    commandName = cls.getSimpleName().toLowerCase();
+                }
+            }
+            if (autoCompleteScript == null) {
+                autoCompleteScript = new File(commandName + "_completion");
+            }
+            File commandScript = null;
+            if (writeCommandScript) {
+                commandScript = new File(autoCompleteScript.getAbsoluteFile().getParentFile(), commandName);
+            }
+            if (commandScript != null && !overwriteIfExists && checkExists(commandScript)) {
+                return EXIT_CODE_COMMAND_SCRIPT_EXISTS;
+            }
+            if (!overwriteIfExists && checkExists(autoCompleteScript)) {
+                return EXIT_CODE_COMPLETION_SCRIPT_EXISTS;
+            }
+
+            AutoComplete.bash(commandName, autoCompleteScript, commandScript, commandLine);
+            return EXIT_CODE_SUCCESS;
         }
 
         private boolean checkExists(final File file) {

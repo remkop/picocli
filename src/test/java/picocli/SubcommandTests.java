@@ -922,7 +922,7 @@ public class SubcommandTests {
         IExecutionExceptionHandler original = commandLine.getExecutionExceptionHandler();
         assertNotNull(original);
         IExecutionExceptionHandler strategy = new IExecutionExceptionHandler() {
-            public int handleExecutionException(ExecutionException ex, ParseResult parseResult) { return 0; }
+            public int handleExecutionException(Exception ex, CommandLine cmd, ParseResult parseResult) { return 0; }
         };
         commandLine.setExecutionExceptionHandler(strategy);
         assertEquals(strategy, commandLine.getExecutionExceptionHandler());
@@ -953,7 +953,7 @@ public class SubcommandTests {
         IExecutionExceptionHandler original = commandLine.getExecutionExceptionHandler();
         assertNotNull(original);
         IExecutionExceptionHandler strategy = new IExecutionExceptionHandler() {
-            public int handleExecutionException(ExecutionException ex, ParseResult parseResult) { return 0; }
+            public int handleExecutionException(Exception ex, CommandLine cmd, ParseResult parseResult) { return 0; }
         };
         commandLine.setExecutionExceptionHandler(strategy);
         assertEquals(strategy, commandLine.getExecutionExceptionHandler());

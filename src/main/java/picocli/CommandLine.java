@@ -164,9 +164,7 @@ public class CommandLine {
         }
     };
     private IExecutionExceptionHandler executionExceptionHandler = new IExecutionExceptionHandler() {
-        public int handleExecutionException(ExecutionException ex, ParseResult parseResult) throws Exception {
-            ex.rethrowCauseIf(Exception.class);
-            ex.rethrowCauseIf(Error.class);
+        public int handleExecutionException(Exception ex, CommandLine commandLine, ParseResult parseResult) throws Exception {
             throw ex;
         }
     };
@@ -905,7 +903,12 @@ public class CommandLine {
         int getExitCode(Throwable exception);
     }
     private static int mappedExitCode(Throwable t, IExitCodeExceptionMapper mapper, int defaultExitCode) {
-        return (mapper != null) ? mapper.getExitCode(t) : defaultExitCode;
+        try {
+            return (mapper != null) ? mapper.getExitCode(t) : defaultExitCode;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return defaultExitCode;
+        }
     }
 
     /** Returns the color scheme to use when printing help.
@@ -1201,7 +1204,7 @@ public class CommandLine {
      * @see RunFirst
      * @see RunLast
      * @see RunAll
-     * @deprecated Use {@link IParseResultHandler2} instead.
+     * @deprecated Use {@link IExecutionStrategy} instead.
      * @since 2.0 */
     @Deprecated public static interface IParseResultHandler {
         /** Processes a List of {@code CommandLine} objects resulting from successfully
@@ -1287,8 +1290,7 @@ public class CommandLine {
      * Implementations of this function can be passed to the {@link #parseWithHandlers(IParseResultHandler, PrintStream, Help.Ansi, IExceptionHandler, String...) CommandLine::parseWithHandlers}
      * methods to handle situations when the command line could not be parsed.
      * </p>
-     * @deprecated Use {@link IExceptionHandler2} instead.
-     * @see DefaultExceptionHandler
+     * @deprecated see {@link #execute(String...)}, {@link IParameterExceptionHandler} and {@link IExecutionExceptionHandler}
      * @since 2.0 */
     @Deprecated public static interface IExceptionHandler {
         /** Handles a {@code ParameterException} that occurred while {@linkplain #parse(String...) parsing} the command
@@ -1356,7 +1358,7 @@ public class CommandLine {
         int handleParseException(ParameterException ex, String[] args) throws Exception;
     }
     /**
-     * Classes implementing this interface know how to handle {@code ExecutionExceptions} that occurred while executing the {@code Runnable}, {@code Callable} or {@code Method} user object of the command.
+     * Classes implementing this interface know how to handle Exceptions that occurred while executing the {@code Runnable}, {@code Callable} or {@code Method} user object of the command.
      * <p><b>Implementation Requirements:</b></p>
      * <p>Implementors that need to print messages to the console should use the {@linkplain #getOut() output} and {@linkplain #getErr() error} PrintWriters,
      * and the {@linkplain #getColorScheme() color scheme} from the CommandLine object obtained from the exception.</p>
@@ -1366,15 +1368,14 @@ public class CommandLine {
      * @since 4.0
      */
     public interface IExecutionExceptionHandler {
-        /** Handles a {@code ExecutionException} that occurred while executing the {@code Runnable} or
+        /** Handles an {@code Exception} that occurred while executing the {@code Runnable} or
          * {@code Callable} command and returns an exit code suitable for returning from {@link #execute(String...)}.
-         * @param ex the ExecutionException describing the problem that occurred while executing the {@code Runnable},
-         *          {@code Callable} or {@code Method} user object of the command,
-         *           and the CommandLine representing the command or subcommand that was being executed
+         * @param ex the Exception thrown by the {@code Runnable}, {@code Callable} or {@code Method} user object of the command
+         * @param commandLine the CommandLine representing the command or subcommand where the exception occurred
          * @param parseResult the result of parsing the command line arguments
          * @return an exit code
          */
-        int handleExecutionException(ExecutionException ex, ParseResult parseResult) throws Exception;
+        int handleExecutionException(Exception ex, CommandLine commandLine, ParseResult parseResult) throws Exception;
     }
 
     /** Abstract superclass for {@link IParseResultHandler2} and {@link IExceptionHandler2} implementations.
@@ -1685,10 +1686,11 @@ public class CommandLine {
      * By default this prints an error message and the usage help message, and returns an exit code.
      * </p><p>
      * If an exception occurred while the user object {@code Runnable}, {@code Callable}, or {@code Method}
-     * was invoked, this exception is caught, wrapped in an {@link ExecutionException ExecutionException}, and
-     * passed to the {@linkplain #getExecutionExceptionHandler() execution exception handler}.
-     * The default {@code IExecutionExceptionHandler} will unwrap the {@code ExecutionException} and rethrow the <em>cause</em> Exception, which
-     * is then caught by this method and mapped to an exit code.
+     * was invoked, this exception is caught and passed to the {@linkplain #getExecutionExceptionHandler() execution exception handler}.
+     * The default {@code IExecutionExceptionHandler} will rethrow this Exception.
+     * </p><p>
+     * Any exception thrown from the {@code IParameterExceptionHandler} or {@code IExecutionExceptionHandler} is caught,
+     * it stacktrace is printed and is mapped to an exit code, using the following logic:
      * </p><p>
      * If an {@link CommandLine.IExitCodeExceptionMapper IExitCodeExceptionMapper} is {@linkplain #setExitCodeExceptionMapper(IExitCodeExceptionMapper) configured},
      * this mapper is used to determine the exit code based on the exception.
@@ -1746,7 +1748,9 @@ public class CommandLine {
             }
         } catch (ExecutionException ex) {
             try {
-                return getExecutionExceptionHandler().handleExecutionException(ex, parseResult[0]);
+                @SuppressWarnings("unchecked")
+                Exception cause = ex.getCause() instanceof Exception ? (Exception) ex.getCause() : ex;
+                return getExecutionExceptionHandler().handleExecutionException(cause, ex.getCommandLine(), parseResult[0]);
             } catch (Exception ex2) {
                 return handleUnhandled(ex2, ex.getCommandLine(), ex.getCommandLine().getCommandSpec().exitCodeOnExecutionException());
             }

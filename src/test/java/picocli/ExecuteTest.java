@@ -36,11 +36,14 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.Command;
 import static picocli.CommandLine.ExecutionException;
@@ -119,19 +122,12 @@ public class ExecuteTest {
     }
     private IExecutionExceptionHandler createHandler(final String descr, final String prefix, final String suffix) {
         return new IExecutionExceptionHandler() {
-            public int handleExecutionException(ExecutionException execEx, ParseResult parseResult) throws Exception {
-                try {
-                    execEx.rethrowCauseIf(Exception.class);
-                    throw execEx;
-                } catch (IllegalStateException ex) {
+            public int handleExecutionException(Exception ex, CommandLine cmd, ParseResult parseResult) throws Exception {
+                if (ex instanceof IllegalStateException || ex instanceof ExecutionException) {
                     String actual = ex.getMessage();
                     assertTrue(descr + ": " + actual, actual.startsWith(prefix));
                     assertTrue(descr + ": " + actual, actual.endsWith(suffix));
-                } catch (ExecutionException ex) {
-                    String actual = ex.getMessage();
-                    assertTrue(descr + ": " + actual, actual.startsWith(prefix));
-                    assertTrue(descr + ": " + actual, actual.endsWith(suffix));
-                } catch (Exception ex) {
+                } else {
                     fail("Unexpected exception " + ex);
                 }
                 return 1;
@@ -437,6 +433,28 @@ public class ExecuteTest {
     }
 
     @Test
+    public void testExitCodeExceptionMapperThrowsException() {
+        @Command(exitCodeOnExecutionException = 1234)
+        class MyCommand implements Callable  {
+            public Void call() throws IOException {
+                throw new IOException("error");
+            }
+        }
+        IExitCodeExceptionMapper mapper = new IExitCodeExceptionMapper() {
+            public int getExitCode(Throwable t) {
+                throw new IllegalStateException("test exception");
+            }
+        };
+        CommandLine cmd = new CommandLine(new MyCommand());
+        cmd.setExitCodeExceptionMapper(mapper);
+        int exitCode = cmd.execute();
+        assertEquals(1234, exitCode);
+
+        assertThat(this.systemErrRule.getLog(), startsWith("java.io.IOException: error"));
+        assertThat(this.systemErrRule.getLog(), containsString("java.lang.IllegalStateException: test exception"));
+    }
+
+    @Test
     public void testExecuteCallableThrowsException() {
         int exitCode = new CommandLine(new MyCallable()).execute("-x", "abc");
         String cmd = "mycmd";
@@ -484,7 +502,7 @@ public class ExecuteTest {
         int exitCode = new CommandLine(MyCallable.class, new InnerClassFactory(this))
                 .setErr(new PrintWriter(sw)).execute("-x", "a");
         assertEquals(ExitCode.SOFTWARE, exitCode);
-        assertThat(sw.toString(), CoreMatchers.startsWith("java.lang.IllegalStateException: this is a test"));
+        assertThat(sw.toString(), startsWith("java.lang.IllegalStateException: this is a test"));
     }
 
     @Test
@@ -493,7 +511,7 @@ public class ExecuteTest {
         int exitCode = new CommandLine(MyRunnable.class, new InnerClassFactory(this))
                 .setErr(new PrintWriter(sw)).execute("-x", "a");
         assertEquals(ExitCode.SOFTWARE, exitCode);
-        assertThat(sw.toString(), CoreMatchers.startsWith("java.lang.IllegalStateException: this is a test"));
+        assertThat(sw.toString(), startsWith("java.lang.IllegalStateException: this is a test"));
     }
 
     @Test
@@ -547,7 +565,7 @@ public class ExecuteTest {
         }
         StringWriter sw = new StringWriter();
         assertEquals(ExitCode.SOFTWARE, new CommandLine(new App()).setErr(new PrintWriter(sw)).execute());
-        assertThat(sw.toString(), CoreMatchers.startsWith("picocli.CommandLine$ExecutionException: abc"));
+        assertThat(sw.toString(), startsWith("picocli.CommandLine$ExecutionException: abc"));
     }
 
     @Test
@@ -561,7 +579,7 @@ public class ExecuteTest {
         }
         StringWriter sw = new StringWriter();
         assertEquals(ExitCode.SOFTWARE, new CommandLine(new App()).setErr(new PrintWriter(sw)).execute());
-        assertThat(sw.toString(), CoreMatchers.startsWith("picocli.CommandLine$ExecutionException: abc"));
+        assertThat(sw.toString(), startsWith("picocli.CommandLine$ExecutionException: abc"));
     }
 
     @Test
@@ -629,7 +647,7 @@ public class ExecuteTest {
             }
         };
         IExecutionExceptionHandler exceptionHandler = new IExecutionExceptionHandler() {
-            public int handleExecutionException(ExecutionException ex, ParseResult parseResult) {
+            public int handleExecutionException(Exception ex, CommandLine cmd, ParseResult parseResult) {
                 return 9876;
             }
         };
@@ -644,10 +662,18 @@ public class ExecuteTest {
         CommandLine cmd = new CommandLine(new App());
         ExecutionException ex = new ExecutionException(cmd, "", new InterruptedException("blah"));
         try {
-            cmd.getExecutionExceptionHandler().handleExecutionException(ex, null);
+            cmd.getExecutionExceptionHandler().handleExecutionException(ex, ex.getCommandLine(), null);
             fail("Expected exception");
-        } catch (InterruptedException e) {
-            assertEquals("blah", e.getMessage());
+        } catch (Exception e) {
+            assertSame(ex, e);
+        }
+
+        InterruptedException interruptedException = new InterruptedException("blah");
+        try {
+            cmd.getExecutionExceptionHandler().handleExecutionException(interruptedException, cmd, null);
+            fail("Expected exception");
+        } catch (Exception e) {
+            assertSame(interruptedException, e);
         }
     }
 
@@ -658,42 +684,73 @@ public class ExecuteTest {
         CommandLine cmd = new CommandLine(new App());
         ExecutionException ex = new ExecutionException(cmd, "exception without a Cause");
         try {
-            cmd.getExecutionExceptionHandler().handleExecutionException(ex, null);
+            cmd.getExecutionExceptionHandler().handleExecutionException(ex, ex.getCommandLine(), null);
             fail("Expected exception");
         } catch (ExecutionException e) {
             assertEquals("exception without a Cause", e.getMessage());
         }
     }
 
-    @Test
-    public void testDefaultExecutionExceptionHandlerRethrowsErrors() throws Exception {
+    static class Thrower {
         @Command
-        class App { }
-        CommandLine cmd = new CommandLine(new App());
-        ExecutionException ex = new ExecutionException(cmd, "", new InternalError("blah"));
-        try {
-            cmd.getExecutionExceptionHandler().handleExecutionException(ex, null);
-            fail("Expected error");
-        } catch (InternalError e) {
-            assertEquals("blah", e.getMessage());
+        public int throwThrowable() throws Throwable {
+            throw new Throwable("THROW");
         }
+        @Command
+        public int throwError() throws Error {
+            throw new InternalError("ERROR");
+        }
+        @Command
+        public int throwException() throws FileNotFoundException {
+            throw new FileNotFoundException("EXCEPTION");
+        }
+    }
+    @Test
+    public void testExecuteDoesNotUnwrapExecutionExceptionWithThrowableCause() {
+        Method throwThrowable = CommandLine.getCommandMethods(Thrower.class, "throwThrowable").get(0);
+        CommandLine cmd = new CommandLine(throwThrowable);
+        cmd.setExecutionExceptionHandler(new IExecutionExceptionHandler() {
+            public int handleExecutionException(Exception ex, CommandLine commandLine, ParseResult parseResult) {
+                assertTrue(ex instanceof ExecutionException);
+                Throwable cause = ex.getCause();
+                assertNotNull(cause);
+                assertEquals("THROW", cause.getMessage());
+                return -1;
+            }
+        });
+        assertEquals(-1, cmd.execute());
     }
 
     @Test
-    public void testDefaultExecutionExceptionHandlerDoesNotThrowThrowables() throws Exception {
-        @Command
-        class App { }
-        CommandLine cmd = new CommandLine(new App());
-        ExecutionException ex = new ExecutionException(cmd, "", new Throwable("blah"));
-        try {
-            cmd.getExecutionExceptionHandler().handleExecutionException(ex, null);
-            fail("Expected error");
-        } catch (ExecutionException e) {
-            Throwable cause = e.getCause();
-            assertFalse(cause instanceof Exception);
-            assertFalse(cause instanceof Error);
-            assertEquals("blah", cause.getMessage());
-        }
+    public void testExecuteDoesNotUnwrapExecutionExceptionWithErrorCause() {
+        Method throwError = CommandLine.getCommandMethods(Thrower.class, "throwError").get(0);
+        CommandLine cmd = new CommandLine(throwError);
+        cmd.setExecutionExceptionHandler(new IExecutionExceptionHandler() {
+            public int handleExecutionException(Exception ex, CommandLine commandLine, ParseResult parseResult) {
+                assertTrue(ex instanceof ExecutionException);
+                Throwable cause = ex.getCause();
+                assertNotNull(cause);
+                assertTrue(cause instanceof InternalError);
+                assertEquals("ERROR", cause.getMessage());
+                return -1;
+            }
+        });
+        assertEquals(-1, cmd.execute());
+    }
+
+    @Test
+    public void testExecuteDoesUnwrapExecutionExceptionWithExceptionCause() {
+        Method throwException = CommandLine.getCommandMethods(Thrower.class, "throwException").get(0);
+        CommandLine cmd = new CommandLine(throwException);
+        cmd.setExecutionExceptionHandler(new IExecutionExceptionHandler() {
+            public int handleExecutionException(Exception ex, CommandLine commandLine, ParseResult parseResult) {
+                assertTrue(ex instanceof FileNotFoundException);
+                assertNull(ex.getCause());
+                assertEquals("EXCEPTION", ex.getMessage());
+                return -1;
+            }
+        });
+        assertEquals(-1, cmd.execute());
     }
 
     @Test
