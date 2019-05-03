@@ -942,41 +942,6 @@ public class ExecuteTest {
     }
 
     @Test
-    public void testRethrowCauseIf() {
-        PicocliException exception = new PicocliException("", new IOException("blah"));
-        exception.rethrowCauseIf(IllegalStateException.class); // does nothing
-        try {
-            exception.rethrowCauseIf(IOException.class);
-            fail("Expected exception");
-        } catch (IOException ex) {
-            assertEquals("blah", ex.getMessage());
-        }
-    }
-
-    @Test
-    public void testRethrowCauseIfSubclass() {
-        PicocliException exception = new PicocliException("", new FileNotFoundException("blah"));
-        try {
-            exception.rethrowCauseIf(IOException.class);
-            fail("Expected exception");
-        } catch (IOException ex) {
-            assertEquals("blah", ex.getMessage());
-        }
-    }
-
-    @Test
-    public void testRethrowCauseNotRethrownIfSuperclass() throws FileNotFoundException {
-        PicocliException exception = new PicocliException("", new IOException("blah"));
-        exception.rethrowCauseIf(FileNotFoundException.class);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void testRethrowCauseIfDisallowsNull() throws Throwable {
-        PicocliException exception = new PicocliException("", new IOException("blah"));
-        exception.rethrowCauseIf(null);
-    }
-
-    @Test
     public void testCommandSpecDefaultExitCodes() {
         CommandSpec spec = CommandSpec.create();
         assertEquals(ExitCode.OK, spec.exitCodeOnSuccess());

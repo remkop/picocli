@@ -1059,7 +1059,7 @@ public class CommandLine {
 
     /** Returns the handler for dealing with exceptions that occurred in the {@code Callable}, {@code Runnable} or {@code Method}
      * user object of a command when the command was {@linkplain #execute(String...) executed}.
-     * <p>The default implementation unwraps the cause exception and {@linkplain PicocliException#rethrowCauseIf(Class) rethrows} it.</p>
+     * <p>The default implementation rethrows the specified exception.</p>
      * @return the handler for dealing with exceptions that occurred in the business logic when the {@link #execute(String...) execute} method was invoked.
      * @since 4.0 */
     public IExecutionExceptionHandler getExecutionExceptionHandler() { return executionExceptionHandler; }
@@ -1067,7 +1067,6 @@ public class CommandLine {
     /**
      * Sets a custom handler for dealing with exceptions that occurred in the {@code Callable}, {@code Runnable} or {@code Method}
      * user object of a command when the command was executed via the {@linkplain #execute(String...) execute} method.
-     * <p>Implementors may be interested in the {@link PicocliException#rethrowCauseIf(Class)} method.</p>
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
@@ -13500,18 +13499,6 @@ public class CommandLine {
         private static final long serialVersionUID = -2574128880125050818L;
         public PicocliException(String msg) { super(msg); }
         public PicocliException(String msg, Throwable t) { super(msg, t); }
-        /**
-         * Rethrows the wrapped cause exception in a type-safe manner:
-         * unwraps the cause of this {@code PicocliException} and rethrows it if the specified class {@link Class#isAssignableFrom(Class) matches} the cause Throwable.
-         * This may be useful to rethrow the cause exception of an {@link ExecutionException}.
-         * @param cls the class of the exception or error
-         * @param <E> type parameter of the throwable class to match
-         * @throws E the exception or error that was wrapped by this {@code PicocliException}
-         * @since 4.0
-         */
-        public <E extends Throwable> void rethrowCauseIf(Class<E> cls) throws E {
-            if (getCause() != null && cls.isAssignableFrom(getCause().getClass())) { throw cls.cast(getCause()); }
-        }
     }
     /** Exception indicating a problem during {@code CommandLine} initialization.
      * @since 2.0 */
