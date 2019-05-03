@@ -8,6 +8,7 @@ import org.junit.contrib.java.lang.system.SystemOutRule;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 
 import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
@@ -121,6 +122,7 @@ public class HelpSubCommandTest {
         assertEquals(expected, baos.toString());
     }
 
+    @SuppressWarnings("deprecation")
     @Command(name = "customHelp", helpCommand = true)
     static class LegacyCustomHelpCommand implements IHelpCommandInitializable, Runnable {
         private CommandLine helpCommandLine;
@@ -147,9 +149,53 @@ public class HelpSubCommandTest {
             public void run() { }
         }
 
-        CommandLine cmd = new CommandLine(new App());
-        cmd.parseWithHandler(new RunLast().useOut(System.out).useErr(System.err).useAnsi(Help.Ansi.OFF),new String[]{"customHelp"});
+        int exitCode = new CommandLine(new App())
+                .setExecutionStrategy(new RunLast())
+                .setOut(new PrintWriter(System.out, true))
+                .setErr(new PrintWriter(System.err, true))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute("customHelp");
+
+        assertEquals(0, exitCode);
         assertEquals(String.format("Hi, ansi is OFF%n"), systemOutRule.getLog());
         assertEquals(String.format("Hello, ansi is OFF%n"), systemErrRule.getLog());
+    }
+
+    @Command(name = "newCustomHelp", helpCommand = true)
+    static class CustomHelpCommand implements IHelpCommandInitializable2, Runnable {
+        private CommandLine helpCommandLine;
+        private Help.ColorScheme colorScheme;
+        private PrintWriter outWriter;
+        private PrintWriter errWriter;
+
+        public void init(CommandLine helpCommandLine, Help.ColorScheme colorScheme, PrintWriter outWriter, PrintWriter errWriter) {
+            this.helpCommandLine = helpCommandLine;
+            this.colorScheme = colorScheme;
+            this.outWriter = outWriter;
+            this.errWriter = errWriter;
+        }
+
+        public void run() {
+            outWriter.println("Hi, colorScheme.ansi is " + colorScheme.ansi());
+            errWriter.println("Hello, colorScheme.ansi is " + colorScheme.ansi());
+        }
+    }
+    @Test
+    public void testCustomHelpCommand() {
+        @Command(subcommands = CustomHelpCommand.class)
+        class App implements Runnable {
+            public void run() { }
+        }
+
+        int exitCode = new CommandLine(new App())
+                .setExecutionStrategy(new RunLast())
+                .setOut(new PrintWriter(System.out, true))
+                .setErr(new PrintWriter(System.err, true))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute("newCustomHelp");
+
+        assertEquals(0, exitCode);
+        assertEquals(String.format("Hi, colorScheme.ansi is OFF%n"), systemOutRule.getLog());
+        assertEquals(String.format("Hello, colorScheme.ansi is OFF%n"), systemErrRule.getLog());
     }
 }

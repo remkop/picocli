@@ -473,7 +473,7 @@ public class InteractiveArgTest {
             System.setIn(inputStream("password123"));
 
             Login login = new Login();
-            CommandLine.call(login, "-u", "user123", "-p");
+            new CommandLine(login).execute("-u", "user123", "-p");
 
             String expectedPrompt = format("Enter value for --password (Password or passphrase): " +
                     "Hi user123, your password is hashed to 75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=.%n");

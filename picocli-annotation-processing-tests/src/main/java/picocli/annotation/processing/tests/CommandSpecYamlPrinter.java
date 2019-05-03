@@ -28,7 +28,7 @@ import java.util.ResourceBundle;
 public class CommandSpecYamlPrinter {
 
     public static void main(String... args) {
-        CommandLine.run(new App(), args);
+        new CommandLine(new App()).execute(args);
     }
 
     static void print(Object userObject) {

@@ -75,7 +75,7 @@ public class AutoCompleteTest {
         public void run() {
             System.out.printf("BasicExample was invoked with %d %s.%n", timeout, timeUnit);
         }
-        public static void main(String[] args) { CommandLine.run(new BasicExample(), System.out, args); }
+        public static void main(String[] args) { new CommandLine(new BasicExample()).execute(args); }
     }
     @Test
     public void basic() throws Exception {

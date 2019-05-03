@@ -15,12 +15,12 @@
  */
 package picocli.examples.subcommands;
 
-import java.io.File;
-
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
+
+import java.io.File;
 
 public class ParentCommandDemo {
 

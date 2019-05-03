@@ -74,7 +74,8 @@ import java.util.jar.Manifest;
                 ""})
 public class Demo implements Runnable {
     public static void main(String[] args) {
-        CommandLine.run(new Demo(), System.err, args);
+        int exitCode = new CommandLine(new Demo()).execute(args);
+        assert exitCode == 0;
     }
 
     @Option(names = {"-a", "--autocomplete"}, description = "Generate sample autocomplete script for git")
@@ -671,7 +672,7 @@ public class Demo implements Runnable {
     // tag::CheckSum[]
     @Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
             name = "checksum", mixinStandardHelpOptions = true, version = "checksum 3.0")
-    class CheckSum implements Callable<Void> {
+    class CheckSum implements Callable<Integer> {
 
         @Parameters(index = "0", description = "The file whose checksum to calculate.")
         private File file;
@@ -679,17 +680,18 @@ public class Demo implements Runnable {
         @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
         private String algorithm = "MD5";
 
-        public static void main(String[] args) throws Exception {
+        public static void main(String[] args) {
             // CheckSum implements Callable,
             // so parsing and error handling can be done in one line of code
-            CommandLine.call(new CheckSum(), System.err, args);
+            int exitCode = new CommandLine(new CheckSum()).execute(args);
+            assert exitCode == 0;
         }
 
-        public Void call() throws Exception {
+        public Integer call() throws Exception {
             // business logic: do different things depending on options the user specified
             byte[] digest = MessageDigest.getInstance(algorithm).digest(readBytes(file));
             print(digest, System.out);
-            return null;
+            return 0;
         }
 
         byte[] readBytes(File f) throws IOException {

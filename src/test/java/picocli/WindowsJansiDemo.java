@@ -30,7 +30,7 @@ public class WindowsJansiDemo extends Demo {
         // Since https://github.com/remkop/picocli/issues/491 was fixed in picocli 3.6.0,
         // Ansi.AUTO is automatically enabled if the AnsiConsole is installed.
         AnsiConsole.systemInstall(); // Jansi magic
-        CommandLine.run(new WindowsJansiDemo(), System.out, Ansi.AUTO, args);
+        new CommandLine(new WindowsJansiDemo()).execute(args);
         AnsiConsole.systemUninstall();
     }
 }

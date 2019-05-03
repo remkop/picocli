@@ -56,6 +56,7 @@ import static picocli.HelpTestUtil.setTraceLevel;
 /**
  * Tests for {@code @Command} methods.
  */
+@SuppressWarnings("deprecation")
 public class CommandLineCommandMethodTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
@@ -959,6 +960,7 @@ public class CommandLineCommandMethodTest {
         public void cannotBeCalled() { }
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testCommandMethodsWhereConstructorThrowsException() {
         try {
@@ -990,6 +992,7 @@ public class CommandLineCommandMethodTest {
         @Command int mycommand(String[] args) { return 2;}
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testDuplicateCommandMethodNames() {
         try {

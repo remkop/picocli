@@ -20,7 +20,6 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.Callable;
 
 public class CustomExitCodeCommandMethod {
 

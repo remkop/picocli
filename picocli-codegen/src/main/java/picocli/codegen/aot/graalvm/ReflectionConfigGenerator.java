@@ -100,7 +100,7 @@ public class ReflectionConfigGenerator {
      * @param args one or more fully qualified class names of {@code @Command}-annotated classes.
      */
     public static void main(String... args) {
-        CommandLine.call(new App(), args);
+        new CommandLine(new App()).execute(args);
     }
 
     /**

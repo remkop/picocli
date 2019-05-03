@@ -16,14 +16,11 @@
 package picocli.examples.execute;
 
 import picocli.CommandLine;
-import picocli.CommandLine.AbstractParseResultHandler;
-import picocli.CommandLine.ExecutionException;
 import picocli.CommandLine.ExitCode;
 import picocli.CommandLine.IExecutionStrategy;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
-import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.ParseResult;
 
 import java.io.File;

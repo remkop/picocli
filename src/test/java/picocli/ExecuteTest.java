@@ -15,13 +15,11 @@
  */
 package picocli;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
-import picocli.CommandLine.AbstractParseResultHandler;
 import picocli.CommandLine.ExitCode;
 import picocli.CommandLine.IExecutionExceptionHandler;
 import picocli.CommandLine.IExitCodeExceptionMapper;
@@ -806,6 +804,7 @@ public class ExecuteTest {
         assertEquals(1, exitCode);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testModifiedExecutionStrategy() {
         @Command class App implements Runnable {
@@ -829,9 +828,10 @@ public class ExecuteTest {
         assertEquals(expected, bout.toString());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testAbstractParseResultHandler_extractExitCodeGenerators() {
-        AbstractParseResultHandler handler = new AbstractParseResultHandler() {
+        picocli.CommandLine.AbstractParseResultHandler handler = new picocli.CommandLine.AbstractParseResultHandler() {
             protected Object handle(ParseResult parseResult) throws ExecutionException { return null; }
             protected CommandLine.AbstractHandler self() { return null; }
         };

@@ -61,7 +61,7 @@ public class ParentCommandTest {
     @Test
     public void testParentInjectedOnRunWhenConfiguredAsSubcommand() {
         Top top = new Top();
-        CommandLine.run(top, System.out, "-d/tmp/blah", "sub", "3");
+        new CommandLine(top).execute("-d/tmp/blah", "sub", "3");
         assertEquals(new File("/tmp/blah"), top.baseDirectory);
         assertEquals(3 * "/tmp/blah".length(), top.result);
     }

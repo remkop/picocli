@@ -15,12 +15,12 @@
  */
 package picocli.examples.subcommands;
 
-import java.util.Locale;
-
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.RunAll;
+
+import java.util.Locale;
 
 public class SubcommandDemo {
 

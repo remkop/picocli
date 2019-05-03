@@ -19,8 +19,6 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IExitCodeGenerator;
 
-import java.util.concurrent.Callable;
-
 @Command
 public class CustomExitCodeGenerator implements Runnable, IExitCodeGenerator {
 

@@ -2125,7 +2125,7 @@ public class ArgGroupTest {
     public void testIssue661StackOverflow() {
         CommandLine cmd = new CommandLine(new TestCommand());
         cmd.parseArgs("-a=Foo");
-        cmd.parseWithHandler(new CommandLine.RunAll(), new String[0]);
+        cmd.setExecutionStrategy(new CommandLine.RunAll()).execute();
     }
 
     // TODO add tests with positional interactive params in group

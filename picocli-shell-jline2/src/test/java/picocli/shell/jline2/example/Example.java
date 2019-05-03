@@ -97,7 +97,7 @@ public class Example {
             while ((line = reader.readLine()) != null) {
                 ArgumentList list =
                         new WhitespaceArgumentDelimiter().delimit(line, line.length());
-                CommandLine.run(commands, list.getArguments());
+                new CommandLine(commands).execute(list.getArguments());
             }
         } catch (Throwable t) {
             t.printStackTrace();

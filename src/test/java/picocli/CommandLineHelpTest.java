@@ -2952,6 +2952,7 @@ public class CommandLineHelpTest {
         assertEquals(expected, systemOutRule.getLog());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testPrintHelpIfRequested2ReturnsTrueForUsageHelp() throws IOException {
         class App {
@@ -2968,6 +2969,7 @@ public class CommandLineHelpTest {
         assertEquals(expected, baos.toString());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testPrintHelpIfRequestedWithCustomColorScheme() {
         ColorScheme customColorScheme = new Help.ColorScheme(Help.Ansi.ON)
@@ -2995,6 +2997,7 @@ public class CommandLineHelpTest {
         assertEquals(expected, baos.toString());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testPrintHelpIfRequestedReturnsTrueForVersionHelp() throws IOException {
         @Command(version = "abc 1.2.3 myversion")
@@ -3032,6 +3035,7 @@ public class CommandLineHelpTest {
         assertEquals(String.format("abc 1.2.3 myversion%n"), sw.toString());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testPrintHelpIfRequestedReturnsFalseForNoHelp() throws IOException {
         class App {
@@ -3131,6 +3135,7 @@ public class CommandLineHelpTest {
             assertEquals("picocli.CommandLine$Help is not a valid subcommand. Did you mean picocli.CommandLine$HelpCommand?", ex.getMessage());
         }
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testAutoHelpMixinUsageHelpOption() {
         @Command(mixinStandardHelpOptions = true) class App {}
@@ -3152,6 +3157,7 @@ public class CommandLineHelpTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testAutoHelpMixinVersionHelpOption() {
         @Command(mixinStandardHelpOptions = true, version = "1.2.3") class App {}
@@ -3170,6 +3176,7 @@ public class CommandLineHelpTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testAutoHelpMixinUsageHelpSubcommandOnAppWithoutSubcommands() {
         @Command(mixinStandardHelpOptions = true, subcommands = HelpCommand.class) class App {}
@@ -3194,8 +3201,11 @@ public class CommandLineHelpTest {
         @Command(mixinStandardHelpOptions = true, subcommands = HelpCommand.class)
         class App implements Runnable{ public void run(){}}
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help");
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setOut(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute("help");
 
         String expected = String.format("" +
                 "Usage: <main class> [-hV] [COMMAND]%n" +
@@ -3203,19 +3213,22 @@ public class CommandLineHelpTest {
                 "  -V, --version   Print version information and exit.%n" +
                 "Commands:%n" +
                 "  help  Displays help information about the specified command%n");
-        assertEquals(expected, baos.toString());
+        assertEquals(expected, sw.toString());
     }
     @Test
     public void testHelpSubcommandWithValidCommand() {
         @Command(subcommands = {Sub.class, HelpCommand.class}) class App implements Runnable{ public void run(){}}
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help", "sub");
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setOut(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute("help", "sub");
 
         String expected = String.format("" +
                 "Usage: <main class> sub%n" +
                 "This is a subcommand%n");
-        assertEquals(expected, baos.toString());
+        assertEquals(expected, sw.toString());
     }
 
     @Test
@@ -3223,8 +3236,11 @@ public class CommandLineHelpTest {
         @Command(mixinStandardHelpOptions = true, subcommands = {Sub.class, HelpCommand.class})
         class App implements Runnable{ public void run(){}}
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), System.out, new PrintStream(baos), Help.Ansi.OFF, "help", "abcd");
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setErr(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute("help", "abcd");
 
         String expected = String.format("" +
                 "Unknown subcommand 'abcd'.%n" +
@@ -3234,7 +3250,7 @@ public class CommandLineHelpTest {
                 "Commands:%n" +
                 "  sub   This is a subcommand%n" +
                 "  help  Displays help information about the specified command%n");
-        assertEquals(expected, baos.toString());
+        assertEquals(expected, sw.toString());
     }
 
     @Test
@@ -3242,8 +3258,11 @@ public class CommandLineHelpTest {
         @Command(subcommands = {Sub.class, HelpCommand.class})
         class App implements Runnable{ public void run(){}}
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help", "-h");
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setOut(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute("help", "-h");
 
         String expected = String.format("" +
                 "Displays help information about the specified command%n" +
@@ -3255,9 +3274,9 @@ public class CommandLineHelpTest {
                 "%n" +
                 "      [COMMAND...]   The COMMAND to display the usage help message for.%n" +
                 "  -h, --help         Show usage help for the help command and exit.%n");
-        assertEquals(expected, baos.toString());
+        assertEquals(expected, sw.toString());
 
-        StringWriter sw = new StringWriter();
+        sw = new StringWriter();
         new CommandLine(new App()).getSubcommands().get("help").usage(new PrintWriter(sw));
         assertEquals(expected, sw.toString());
     }
@@ -3267,8 +3286,11 @@ public class CommandLineHelpTest {
         @Command(mixinStandardHelpOptions = true, subcommands = {Sub.class, HelpCommand.class})
         class App implements Runnable{ public void run(){}}
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help");
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setOut(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute("help");
 
         String expected = String.format("" +
                 "Usage: <main class> [-hV] [COMMAND]%n" +
@@ -3277,9 +3299,9 @@ public class CommandLineHelpTest {
                 "Commands:%n" +
                 "  sub   This is a subcommand%n" +
                 "  help  Displays help information about the specified command%n");
-        assertEquals(expected, baos.toString());
+        assertEquals(expected, sw.toString());
 
-        StringWriter sw = new StringWriter();
+        sw = new StringWriter();
         new CommandLine(new App()).usage(new PrintWriter(sw), Help.Ansi.OFF);
         assertEquals(expected, sw.toString());
     }
@@ -3395,14 +3417,17 @@ public class CommandLineHelpTest {
             public void run() { }
         }
         String[] args = new String[] {"-unknown"};
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), System.out, new PrintStream(baos), Help.Ansi.OFF, args);
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setErr(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute(args);
 
         String expected = format("" +
                 "Missing required parameter: FILES%n" +
                 "Usage: <main class> FILES...%n" +
                 "      FILES...   List of files%n");
-        assertEquals(expected, baos.toString());
+        assertEquals(expected, sw.toString());
     }
 
     @Test
@@ -3417,15 +3442,18 @@ public class CommandLineHelpTest {
             public void run() { }
         }
         String[] args = new String[] {"-unknown"};
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), System.out, new PrintStream(baos), Help.Ansi.OFF, args);
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setErr(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute(args);
 
         String expected = format("" +
                 "Missing required parameter: FILES%n" +
                 "Usage: <main class> [-v] FILES...%n" +
                 "      FILES...   List of files%n" +
                 "  -v             Print output%n");
-        assertEquals(expected, baos.toString());
+        assertEquals(expected, sw.toString());
     }
 
     @Test

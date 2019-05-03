@@ -33,6 +33,7 @@ import static java.lang.String.format;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
 
+@SuppressWarnings("deprecation")
 public class CommandLineParseWithHandlersTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
@@ -1007,6 +1008,7 @@ public class CommandLineParseWithHandlersTest {
         assertNull(result);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testDefaultExceptionHandler_handleExecutionException() {
         final int[] outerExitCode = {-1};

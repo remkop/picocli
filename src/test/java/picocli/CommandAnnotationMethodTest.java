@@ -1,13 +1,12 @@
 package picocli;
 
-import static org.junit.Assert.assertEquals;
-
-import java.lang.reflect.Method;
-import java.util.List;
-
 import org.junit.Test;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+
+import java.lang.reflect.Method;
+
+import static org.junit.Assert.*;
 
 public class CommandAnnotationMethodTest
 {
@@ -75,7 +74,8 @@ public class CommandAnnotationMethodTest
         Method contextMethod = CommandLine.getCommandMethods(Context.class, "context").get(0);
 
         CommandLine commandLine = new CommandLine(contextMethod, new StateFactory(state));
-        commandLine.parseWithHandlers(new CommandLine.RunLast(), new CommandLine.DefaultExceptionHandler<List<Object>>(), "-c", "new application state");
+        commandLine.setExecutionStrategy(new CommandLine.RunLast());
+        commandLine.execute("-c", "new application state");
 
         assertEquals(state.getState(), "new application state");
     }

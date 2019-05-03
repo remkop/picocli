@@ -115,7 +115,7 @@ public class Example {
                     line = reader.readLine(prompt, rightPrompt, (MaskingCallback) null, null);
                     ParsedLine pl = reader.getParser().parse(line, 0);
                     String[] arguments = pl.words().toArray(new String[0]);
-                    CommandLine.run(commands, arguments);
+                    new CommandLine(commands).execute(arguments);
                 } catch (UserInterruptException e) {
                     // Ignore
                 } catch (EndOfFileException e) {

@@ -142,8 +142,8 @@ public class SubcommandTests {
         Issue443TopLevelCommand top = new Issue443TopLevelCommand();
         SubCommandWithAlias sub = new SubCommandWithAlias();
         CommandLine cmd = new CommandLine(top).addSubcommand("task", sub);
-        String[] args = {"t"};
-        List<Object> result = cmd.parseWithHandler(new RunAll(), args);
+        cmd.setExecutionStrategy(new RunAll());
+        cmd.execute("t");
         assertTrue("top was executed", top.topWasExecuted);
         assertTrue("sub was executed", sub.subWasExecuted);
     }

@@ -38,7 +38,7 @@ import static picocli.CommandLine.Help.Column.Overflow.*;
 )
 public class CustomLayoutDemo implements Runnable {
     public static void main(String[] args) {
-        CommandLine.run(new CustomLayoutDemo(), System.err, args);
+        new CommandLine(new CustomLayoutDemo()).execute(args);
     }
 
     @Option(names = {"-z", "--zip"}, description = "Show usage help for a layout with 2 options per row.")
