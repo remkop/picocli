@@ -10739,6 +10739,10 @@ public class CommandLine {
         }
         private ITypeConverter<?> getTypeConverter(final Class<?> type, ArgSpec argSpec, int index) {
             if (argSpec.converters().length > index) { return argSpec.converters()[index]; }
+            // https://github.com/remkop/picocli/pull/648
+            // consider adding ParserSpec.charArraysCanCaptureStrings() to allow non-interactive options to capture multi-char values in a char[] array
+            // Note that this will require special logic for char[] types in CommandLine$Interpreter.applyValuesToArrayField;
+            // TBD: what to do with multiple values? Append or overwrite?
             if (char[].class.equals(argSpec.type()) && argSpec.interactive()) { return converterRegistry.get(char[].class); }
             if (converterRegistry.containsKey(type)) { return converterRegistry.get(type); }
             if (type.isEnum()) {
