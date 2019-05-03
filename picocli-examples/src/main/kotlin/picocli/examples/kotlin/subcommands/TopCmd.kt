@@ -19,7 +19,7 @@ class TopCmd : Runnable {
     }
     companion object {
         @JvmStatic fun main(args: Array<String>) {
-            CommandLine.run(TopCmd(), *args)
+            CommandLine(TopCmd()).execute(*args)
         }
     }
 }

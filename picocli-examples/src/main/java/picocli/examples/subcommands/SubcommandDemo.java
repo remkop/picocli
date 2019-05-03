@@ -20,6 +20,7 @@ import java.util.Locale;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.RunAll;
 
 public class SubcommandDemo {
 
@@ -61,7 +62,8 @@ public class SubcommandDemo {
 
     public static void main(String[] args) {
         CommandLine cmd = new CommandLine(new ParentCommand());
-        cmd.parseWithHandler(new CommandLine.RunAll(), args);
+        cmd.setExecutionStrategy(new RunAll()); // default is RunLast
+        cmd.execute(args);
 
         if (args.length == 0) { cmd.usage(System.out); }
     }

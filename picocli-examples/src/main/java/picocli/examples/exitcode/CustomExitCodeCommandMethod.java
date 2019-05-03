@@ -13,24 +13,26 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package picocli.examples;
+package picocli.examples.exitcode;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.Option;
 
-import java.util.Collections;
-import java.util.List;
+import java.lang.reflect.Method;
+import java.util.concurrent.Callable;
 
-@Command
-public class ExitCodeDemo implements Runnable {
-    public void run() { throw new ParameterException(new CommandLine(this), "exit code demo"); }
+public class CustomExitCodeCommandMethod {
+
+    @Command
+    public int doit(@Option(names = "-x") int x) {
+        return 456;
+    }
 
     public static void main(String... args) {
-        CommandLine cmd = new CommandLine(new ExitCodeDemo());
-        cmd.parseWithHandlers(
-                new CommandLine.RunLast().andExit(123),
-                CommandLine.defaultExceptionHandler().andExit(456),
-                args);
+        Method doit = CommandLine.getCommandMethods(CustomExitCodeCommandMethod.class, "doit").get(0);
+        int exitCode = new CommandLine(doit).execute(args);
+        assert exitCode == 456;
+        System.exit(exitCode);
     }
 }

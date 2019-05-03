@@ -20,8 +20,8 @@ class MyApp : Runnable {
     }
 //    companion object {
 //        @JvmStatic fun main(args: Array<String>) {
-//            CommandLine.run(MyApp(), *args)
+//            CommandLine(MyApp()).execute(*args)
 //        }
 //    }
 }
-fun main(args: Array<String>) = CommandLine.run(MyApp(), *args)
+fun main(args: Array<String>) = CommandLine(MyApp()).execute(*args)

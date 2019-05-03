@@ -47,6 +47,6 @@ public class Example implements Runnable {
     }
 
     public static void main(String[] args) {
-        CommandLine.run(new Example(), args);
+        new CommandLine(new Example()).execute(args);
     }
 }

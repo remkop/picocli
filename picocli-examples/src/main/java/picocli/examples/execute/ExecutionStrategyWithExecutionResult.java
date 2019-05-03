@@ -13,20 +13,24 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package picocli.examples.model;
+package picocli.examples.execute;
 
 import picocli.CommandLine;
 import picocli.CommandLine.AbstractParseResultHandler;
+import picocli.CommandLine.ExecutionException;
+import picocli.CommandLine.ExitCode;
+import picocli.CommandLine.IExecutionStrategy;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
+import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.ParseResult;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-public class ResultHandlerWithReturnValue {
+public class ExecutionStrategyWithExecutionResult {
     public static void main(final String[] args) {
 
         CommandSpec spec = CommandSpec.create();
@@ -42,8 +46,9 @@ public class ResultHandlerWithReturnValue {
                 .description("The files to process").build());
         CommandLine commandLine = new CommandLine(spec);
 
-        class Handler extends AbstractParseResultHandler<Integer> {
-            public Integer handle(ParseResult pr) {
+        class Handler implements IExecutionStrategy {
+            @Override
+            public int execute(ParseResult pr) {
                 int count = pr.matchedOptionValue('c', 1);
                 List<File> files = pr.matchedPositionalValue(0, Collections.<File>emptyList());
                 for (File f : files) {
@@ -51,11 +56,13 @@ public class ResultHandlerWithReturnValue {
                         System.out.println(i + " " + f.getName());
                     }
                 }
-                return files.size();
+                pr.commandSpec().commandLine().setExecutionResult(files.size());
+                return ExitCode.OK;
             }
-            protected Handler self() { return this; }
         }
 
-        int processed = commandLine.parseWithHandler(new Handler(), args);
+        commandLine.setExecutionStrategy(new Handler());
+        commandLine.execute(args);
+        int processed = commandLine.getExecutionResult();
     }
 }

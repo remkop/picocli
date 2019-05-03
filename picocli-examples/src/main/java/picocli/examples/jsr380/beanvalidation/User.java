@@ -72,7 +72,7 @@ public class User implements Runnable {
 
     public static void main(String... args) {
         args = "-d 2019-03-01 -n Remko -p \"\" -p a -w -e me@mail@com --aboutMe about".split(" ");
-        CommandLine.run(new User(), args);
+        new CommandLine(new User()).execute(args);
     }
 
     @Override

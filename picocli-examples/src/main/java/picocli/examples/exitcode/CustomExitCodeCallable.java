@@ -13,27 +13,24 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package picocli.examples;
+package picocli.examples.exitcode;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
 
-/**
- *
- */
-public class UserManualExamples {
+import java.util.concurrent.Callable;
 
-    @Command(mixinStandardHelpOptions = true, version = "1.0")
-    static class AutoHelpDemo implements Runnable {
+@Command
+public class CustomExitCodeCallable implements Callable<Integer> {
 
-        @Option(names = "--option", description = "Some option.")
-        String option;
-
-        public void run() { }
+    @Override
+    public Integer call() {
+        return 123;
     }
 
-    public static void main(String[] args) {
-        new CommandLine(new AutoHelpDemo()).execute("help");
+    public static void main(String... args) {
+        int exitCode = new CommandLine(new CustomExitCodeCallable()).execute(args);
+        assert exitCode == 123;
+        System.exit(exitCode);
     }
 }
