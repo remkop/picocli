@@ -18,6 +18,7 @@ package picocli;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 
 import static java.lang.String.*;
+import static picocli.CommandLine.Model.UsageMessageSpec.keyValuesMap;
 
 /**
  * Stand-alone tool that generates bash auto-complete scripts for picocli-based command line applications.
@@ -69,6 +71,14 @@ public class AutoComplete {
         };
         int exitCode = new CommandLine(new App())
                 .setExecutionExceptionHandler(errorHandler)
+                .setExitCodeHelpSection("%nExit Codes:%n",
+                        keyValuesMap("0:Successful program execution",
+                                     "1:Usage error: user input for the command was incorrect, " +
+                                             "e.g., the wrong number of arguments, a bad flag, " +
+                                             "a bad syntax in a parameter, etc.",
+                                     "2:The specified command script exists (Specify --force to overwrite).",
+                                     "3:The specified completion script exists (Specify --force to overwrite).",
+                                     "4:An exception occurred while generating the completion script."))
                 .execute(args);
         if ((exitCode == EXIT_CODE_SUCCESS && exitOnSuccess()) || (exitCode != EXIT_CODE_SUCCESS && exitOnError())) {
             System.exit(exitCode);
@@ -91,9 +101,10 @@ public class AutoComplete {
     /**
      * CLI command class for generating completion script.
      */
-    @Command(name = "picocli.AutoComplete", sortOptions = false,
+    @Command(name = "picocli.AutoComplete", mixinStandardHelpOptions = true,
+            version = "picocli.AutoComplete v4.0.0-alpha-3-SNAPSHOT", sortOptions = false,
             description = "Generates a bash completion script for the specified command class.",
-            footerHeading = "%n@|bold Exit Code|@%n",
+            footerHeading = "%n@|bold System Properties:|@%n",
             footer = {"Set the following system properties to control the exit code of this program:",
                     " \"@|yellow picocli.autocomplete.systemExitOnSuccess|@\" - call `System.exit(0)` when",
                     "                                              execution completes normally",
@@ -132,8 +143,7 @@ public class AutoComplete {
         @Option(names = {"-f", "--force"}, description = "Overwrite existing script files.")
         boolean overwriteIfExists;
 
-        @Option(names = { "-h", "--help"}, usageHelp = true, description = "Display this help message and quit.")
-        boolean usageHelpRequested;
+        @Spec CommandSpec spec;
 
         public Integer call() throws Exception {
             IFactory factory = CommandLine.defaultFactory();
@@ -170,8 +180,9 @@ public class AutoComplete {
 
         private boolean checkExists(final File file) {
             if (file.exists()) {
-                System.err.printf("ERROR: picocli.AutoComplete: %s exists. Specify --force to overwrite.%n", file.getAbsolutePath());
-                CommandLine.usage(this, System.err);
+                PrintWriter err = spec.commandLine().getErr();
+                err.printf("ERROR: picocli.AutoComplete: %s exists. Specify --force to overwrite.%n", file.getAbsolutePath());
+                spec.commandLine().usage(err);
                 return true;
             }
             return false;

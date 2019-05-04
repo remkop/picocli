@@ -162,6 +162,7 @@ With the new execute API the ColorScheme class will start to play a more central
 - [#663] How to remove stacktraces on error. Thanks to [Nicolas Mingo](https://github.com/nicolasmingo) and [jrevault](https://github.com/jrevault) for raising this and subsequent discussion.
 - [#672] Need way to send errors back from subcommand. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
 - [#678] Exit Status section in usage help message.
+- [#575] Use mixinStandardHelpOptions in `AutoComplete$App` (add the `--version` option)
 - [#676] Bugfix: non-defined variables in `defaultValue` now correctly resolve to `null`, and options and positional parameters are now correctly considered `required` only if their default value is `null` after variable interpolation. Thanks to [ifedorenko](https://github.com/ifedorenko) for raising this.
 - [#679] Documentation: Update examples for new execute API. Add examples for exit code control and custom exception handlers.
 

@@ -187,7 +187,7 @@ public class AutoCompleteTest {
     }
 
     private static final String AUTO_COMPLETE_APP_USAGE = String.format("" +
-            "Usage: picocli.AutoComplete [-fhw] [-c=<factoryClass>] [-n=<commandName>]%n" +
+            "Usage: picocli.AutoComplete [-fhVw] [-c=<factoryClass>] [-n=<commandName>]%n" +
             "                            [-o=<autoCompleteScript>] <commandLineFQCN>%n" +
             "Generates a bash completion script for the specified command class.%n" +
             "      <commandLineFQCN>      Fully qualified class name of the annotated @Command%n" +
@@ -210,9 +210,18 @@ public class AutoCompleteTest {
             "  -w, --writeCommandScript   Write a '<commandName>' sample command script to the%n" +
             "                               same directory as the completion script.%n" +
             "  -f, --force                Overwrite existing script files.%n" +
-            "  -h, --help                 Display this help message and quit.%n" +
+            "  -h, --help                 Show this help message and exit.%n" +
+            "  -V, --version              Print version information and exit.%n" +
             "%n" +
-            "Exit Code%n" +
+            "Exit Codes:%n" +
+            "  0   Successful program execution%n" +
+            "  1   Usage error: user input for the command was incorrect, e.g., the wrong%n" +
+            "        number of arguments, a bad flag, a bad syntax in a parameter, etc.%n" +
+            "  2   The specified command script exists (Specify --force to overwrite).%n" +
+            "  3   The specified completion script exists (Specify --force to overwrite).%n" +
+            "  4   An exception occurred while generating the completion script.%n" +
+            "%n" +
+            "System Properties:%n" +
             "Set the following system properties to control the exit code of this program:%n" +
             " \"picocli.autocomplete.systemExitOnSuccess\" - call `System.exit(0)` when%n" +
             "                                              execution completes normally%n" +
@@ -639,7 +648,7 @@ public class AutoCompleteTest {
                 "  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}\n" +
                 "\n" +
                 "  COMMANDS=\"\"\n" +
-                "  FLAG_OPTS=\"-w --writeCommandScript -f --force -h --help\"\n" +
+                "  FLAG_OPTS=\"-w --writeCommandScript -f --force -h --help -V --version\"\n" +
                 "  ARG_OPTS=\"-c --factory -n --name -o --completionScript\"\n" +
                 "\n" +
                 "  compopt +o default\n" +
