@@ -1253,8 +1253,7 @@ The `CommandLine.execute` method introduced in picocli 4.0 returns an `int`, and
 
 ```java
 public static void main(String... args) {
-  CommandLine cmd = new CommandLine(new App());
-  int exitCode = cmd.execute(args);
+  int exitCode = new CommandLine(new MyApp()).execute(args);
   System.exit(exitCode);
 }
 ```
@@ -1329,6 +1328,37 @@ class MyMapper implements IExitCodeExceptionMapper {
 When the end user specified invalid input, the `execute` method prints an error message followed by the usage help message of the command, and returns an exit code. This can be customized by configuring a `IParameterExceptionHandler`.
 
 If the business logic of the command throws an exception, the `execute` method prints the stack trace of the exception and returns an exit code. This can be customized by configuring a `IExecutionExceptionHandler`.
+
+=== Usage Help Exit Code Section
+By default, the usage help message does not display the exit code section.
+Applications that call `System.exit` need to configure this manually by calling `CommandLine.setExitCodeHelpSection(String, Map)`
+or by calling `UsageMessageSpec.exitCodeListHeading` and `UsageMessageSpec.exitCodeList`. For example:
+
+```java
+// import static picocli.CommandLine.Model.UsageMessageSpec.keyValuesMap;
+@Command class App {}
+CommandLine cmd = new CommandLine(new App());
+cmd.setExitCodeHelpSection("Exit Codes:%n",
+        keyValuesMap(" 0:Successful program execution",
+                     "64:Usage error: user input for the command was incorrect, " +
+                             "e.g., the wrong number of arguments, a bad flag, " +
+                             "a bad syntax in a parameter, etc.",
+                     "70:Internal software error: an exception occurred when invoking " +
+                             "the business logic of this command."));
+cmd.usage(System.out);
+```
+
+This will print the following message to the console:
+
+```
+Usage: <main class>
+Exit Codes:
+   0   Successful program execution
+  64   Usage error: user input for the command was incorrect, e.g., the wrong
+         number of arguments, a bad flag, a bad syntax in a parameter, etc.
+  70   Internal software error: an exception occurred when invoking the
+         business logic of this command.
+```
 
 === Execution Configuration
 

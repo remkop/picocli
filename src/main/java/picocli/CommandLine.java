@@ -387,7 +387,7 @@ public class CommandLine {
     /**
      * Returns the section keys in the order that the usage help message should render the sections.
      * This ordering may be modified with {@link #setHelpSectionKeys(List) setSectionKeys}. The default keys are (in order):
-     * <ol>
+     * <ol start="0">
      *   <li>{@link UsageMessageSpec#SECTION_KEY_HEADER_HEADING SECTION_KEY_HEADER_HEADING}</li>
      *   <li>{@link UsageMessageSpec#SECTION_KEY_HEADER SECTION_KEY_HEADER}</li>
      *   <li>{@link UsageMessageSpec#SECTION_KEY_SYNOPSIS_HEADING SECTION_KEY_SYNOPSIS_HEADING}</li>
@@ -400,6 +400,8 @@ public class CommandLine {
      *   <li>{@link UsageMessageSpec#SECTION_KEY_OPTION_LIST SECTION_KEY_OPTION_LIST}</li>
      *   <li>{@link UsageMessageSpec#SECTION_KEY_COMMAND_LIST_HEADING SECTION_KEY_COMMAND_LIST_HEADING}</li>
      *   <li>{@link UsageMessageSpec#SECTION_KEY_COMMAND_LIST SECTION_KEY_COMMAND_LIST}</li>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_EXIT_CODE_LIST_HEADING SECTION_KEY_EXIT_CODE_LIST_HEADING}</li>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_EXIT_CODE_LIST SECTION_KEY_EXIT_CODE_LIST}</li>
      *   <li>{@link UsageMessageSpec#SECTION_KEY_FOOTER_HEADING SECTION_KEY_FOOTER_HEADING}</li>
      *   <li>{@link UsageMessageSpec#SECTION_KEY_FOOTER SECTION_KEY_FOOTER}</li>
      * </ol>
@@ -822,6 +824,35 @@ public class CommandLine {
      */
     public List<String> getUnmatchedArguments() {
         return interpreter.parseResultBuilder == null ? Collections.<String>emptyList() : UnmatchedArgumentException.stripErrorMessage(interpreter.parseResultBuilder.unmatched);
+    }
+
+    /**
+     * Sets the header and exit code descriptions to show in the Exit Code section of the usage help.
+     * Callers may be interested in the {@link UsageMessageSpec#keyValuesMap(String...) keyValuesMap} method for creating a map from a list of {@code "key:value"} Strings.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     *
+     * @param exitCodeListHeading the heading preceding the exit codes section, ending in {@code "%n"}.
+     *                            May contain additional {@code "%n"} line separators.
+     *                            Common values are {@code "Exit Status%n"} or {@code "Exit Codes%n"}.
+     * @param exitCodeDescriptions map with values to be displayed in the exit codes section;
+     *                             each entry has an exit code key and its description as value.
+     *                             Descriptions containing {@code "%n"} line separators are broken up into multiple lines.
+     * @see UsageMessageSpec#keyValuesMap(String...)
+     * @see UsageMessageSpec#exitCodeList()
+     * @see UsageMessageSpec#exitCodeListHeading()
+     * @see UsageMessageSpec#SECTION_KEY_EXIT_CODE_LIST
+     * @see UsageMessageSpec#SECTION_KEY_EXIT_CODE_LIST_HEADING
+     * @since 4.0 */
+    public CommandLine setExitCodeHelpSection(String exitCodeListHeading, Map<String, String> exitCodeDescriptions) {
+        getCommandSpec().usageMessage().exitCodeListHeading(exitCodeListHeading);
+        getCommandSpec().usageMessage().exitCodeList(exitCodeDescriptions);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setExitCodeHelpSection(exitCodeListHeading, exitCodeDescriptions);
+        }
+        return this;
     }
 
     /**
@@ -5347,6 +5378,8 @@ public class CommandLine {
          * sectionMap.put(SECTION_KEY_OPTION_LIST,            help -> help.optionList());           //e.g. -h, --help   displays this help and exits
          * sectionMap.put(SECTION_KEY_COMMAND_LIST_HEADING,   help -> help.commandListHeading());   //e.g. %nCommands:%n%n
          * sectionMap.put(SECTION_KEY_COMMAND_LIST,           help -> help.commandList());          //e.g.    add       adds the frup to the frooble
+         * sectionMap.put(SECTION_KEY_EXIT_CODE_LIST_HEADING, help -> help.exitCodeListHeading());
+         * sectionMap.put(SECTION_KEY_EXIT_CODE_LIST,         help -> help.exitCodeList());
          * sectionMap.put(SECTION_KEY_FOOTER_HEADING,         help -> help.footerHeading());
          * sectionMap.put(SECTION_KEY_FOOTER,                 help -> help.footer());
          * }</pre>
@@ -5414,6 +5447,16 @@ public class CommandLine {
              * @since 3.9 */
             public static final String SECTION_KEY_COMMAND_LIST = "commandList";
 
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Exit Code List Heading section.
+             * The default renderer for this section calls {@link Help#exitCodeListHeading(Object...)}.
+             * @since 4.0 */
+            public static final String SECTION_KEY_EXIT_CODE_LIST_HEADING = "exitCodeListHeading";
+
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Exit Code List section.
+             * The default renderer for this section calls {@link Help#exitCodeList()}.
+             * @since 4.0 */
+            public static final String SECTION_KEY_EXIT_CODE_LIST = "exitCodeList";
+
             /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Footer Heading section.
              * The default renderer for this section calls {@link Help#footerHeading(Object...)}.
              * @since 3.9 */
@@ -5470,6 +5513,8 @@ public class CommandLine {
                     SECTION_KEY_OPTION_LIST,
                     SECTION_KEY_COMMAND_LIST_HEADING,
                     SECTION_KEY_COMMAND_LIST,
+                    SECTION_KEY_EXIT_CODE_LIST_HEADING,
+                    SECTION_KEY_EXIT_CODE_LIST,
                     SECTION_KEY_FOOTER_HEADING,
                     SECTION_KEY_FOOTER));
 
@@ -5491,6 +5536,8 @@ public class CommandLine {
             private String optionListHeading;
             private String commandListHeading;
             private String footerHeading;
+            private String exitCodeListHeading;
+            private Map<String, String> exitCodeList;
             private int width = DEFAULT_USAGE_WIDTH;
 
             private final Interpolator interpolator;
@@ -5560,6 +5607,8 @@ public class CommandLine {
                 result.put(SECTION_KEY_COMMAND_LIST_HEADING,   new IHelpSectionRenderer() { public String render(Help help) { return help.commandListHeading(); } });
                 //e.g.    add       adds the frup to the frooble
                 result.put(SECTION_KEY_COMMAND_LIST,           new IHelpSectionRenderer() { public String render(Help help) { return help.commandList(); } });
+                result.put(SECTION_KEY_EXIT_CODE_LIST_HEADING, new IHelpSectionRenderer() { public String render(Help help) { return help.exitCodeListHeading(); } });
+                result.put(SECTION_KEY_EXIT_CODE_LIST,         new IHelpSectionRenderer() { public String render(Help help) { return help.exitCodeList(); } });
                 result.put(SECTION_KEY_FOOTER_HEADING,         new IHelpSectionRenderer() { public String render(Help help) { return help.footerHeading(); } });
                 result.put(SECTION_KEY_FOOTER,                 new IHelpSectionRenderer() { public String render(Help help) { return help.footer(); } });
                 return result;
@@ -5568,7 +5617,7 @@ public class CommandLine {
             /**
              * Returns the section keys in the order that the usage help message should render the sections.
              * This ordering may be modified with the {@link #sectionKeys(List) sectionKeys setter}. The default keys are (in order):
-             * <ol>
+             * <ol start="0">
              *   <li>{@link UsageMessageSpec#SECTION_KEY_HEADER_HEADING SECTION_KEY_HEADER_HEADING}</li>
              *   <li>{@link UsageMessageSpec#SECTION_KEY_HEADER SECTION_KEY_HEADER}</li>
              *   <li>{@link UsageMessageSpec#SECTION_KEY_SYNOPSIS_HEADING SECTION_KEY_SYNOPSIS_HEADING}</li>
@@ -5581,6 +5630,8 @@ public class CommandLine {
              *   <li>{@link UsageMessageSpec#SECTION_KEY_OPTION_LIST SECTION_KEY_OPTION_LIST}</li>
              *   <li>{@link UsageMessageSpec#SECTION_KEY_COMMAND_LIST_HEADING SECTION_KEY_COMMAND_LIST_HEADING}</li>
              *   <li>{@link UsageMessageSpec#SECTION_KEY_COMMAND_LIST SECTION_KEY_COMMAND_LIST}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_EXIT_CODE_LIST_HEADING SECTION_KEY_EXIT_CODE_LIST_HEADING}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_EXIT_CODE_LIST SECTION_KEY_EXIT_CODE_LIST}</li>
              *   <li>{@link UsageMessageSpec#SECTION_KEY_FOOTER_HEADING SECTION_KEY_FOOTER_HEADING}</li>
              *   <li>{@link UsageMessageSpec#SECTION_KEY_FOOTER SECTION_KEY_FOOTER}</li>
              * </ol>
@@ -5613,7 +5664,7 @@ public class CommandLine {
              * @see #setHelpSectionMap(Map)
              * @since 3.9
              */
-            public UsageMessageSpec sectionMap(Map<String, IHelpSectionRenderer> map) { this.helpSectionRendererMap = new HashMap<String, IHelpSectionRenderer>(map); return this; }
+            public UsageMessageSpec sectionMap(Map<String, IHelpSectionRenderer> map) { this.helpSectionRendererMap = new LinkedHashMap<String, IHelpSectionRenderer>(map); return this; }
 
             /** Returns the {@code IHelpFactory} that is used to construct the usage help message.
              * @see #setHelpFactory(IHelpFactory)
@@ -5646,7 +5697,7 @@ public class CommandLine {
             private String   resourceStr(String key) { return messages == null ? null : messages.getString(key, null); }
             private String[] resourceArr(String key) { return messages == null ? null : messages.getStringArray(key, null); }
 
-            /** Returns the optional heading preceding the header section. Initialized from {@link Command#headerHeading()}, or null. */
+            /** Returns the optional heading preceding the header section. Initialized from {@link Command#headerHeading()}, or {@code ""} (empty string). */
             public String headerHeading() { return str(resourceStr("usage.headerHeading"), headerHeading, DEFAULT_SINGLE_VALUE); }
 
             /** Returns the optional header lines displayed at the top of the help message. For subcommands, the first header line is
@@ -5700,7 +5751,44 @@ public class CommandLine {
             /** Returns the optional heading preceding the subcommand list. Initialized from {@link Command#commandListHeading()}. {@code "Commands:%n"} by default. */
             public String commandListHeading() { return str(resourceStr("usage.commandListHeading"), commandListHeading, DEFAULT_COMMAND_LIST_HEADING); }
 
-            /** Returns the optional heading preceding the footer section. Initialized from {@link Command#footerHeading()}, or null. */
+            /** Returns the optional heading preceding the exit codes section, may contain {@code "%n"} line separators. {@code ""} (empty string) by default. */
+            public String exitCodeListHeading() { return str(resourceStr("usage.exitCodeListHeading"), exitCodeListHeading, DEFAULT_SINGLE_VALUE); }
+
+            /** Returns an unmodifiable map with values to be displayed in the exit codes section: keys are exit codes, values are descriptions.
+             * Descriptions may contain {@code "%n"} line separators.
+             * <p>This may be configured in a resource bundle by listing up multiple {@code "key:value"} pairs. For example:</p>
+             * <pre>
+             * usage.exitCodeList.0 = 0:Successful program execution.
+             * usage.exitCodeList.1 = 64:Invalid input: an unknown option or invalid parameter was specified.
+             * usage.exitCodeList.2 = 70:Execution exception: an exception occurred while executing the business logic.
+             * </pre>
+             * @return an unmodifiable map with values to be displayed in the exit codes section, or an empty map if no exit codes are {@linkplain #exitCodeList(Map) registered}.
+             * @see #keyValuesMap(String...)
+             * @since 4.0 */
+            public Map<String, String> exitCodeList() {
+                Map<String, String> result = keyValuesMap(resourceArr("usage.exitCodeList"));
+                return !result.isEmpty() ? Collections.unmodifiableMap(result) : (exitCodeList == null ? Collections.<String, String>emptyMap() : exitCodeList);
+            }
+
+            /** Creates and returns a {@code Map} that contains an entry for each specified String that is in {@code "key:value"} format.
+             * @param entries the strings to process; values that are not in {@code "key:value"} format are ignored
+             * @return a {@code Map} with an entry for each line, preserving the input order
+             * @since 4.0 */
+            public static Map<String, String> keyValuesMap(String... entries) {
+                Map<String, String> result = new LinkedHashMap<String, String>();
+                if (entries == null) { return result; }
+                for (int i = 0; i < entries.length; i++) {
+                    int pos = entries[i].indexOf(':');
+                    if (pos >= 0) {
+                        result.put(entries[i].substring(0, pos), entries[i].substring(pos + 1));
+                    } else {
+                        new Tracer().info("Ignoring line at index %d: cannot split '%s' into 'key:value'%n", i, entries[i]);
+                    }
+                }
+                return result;
+            }
+
+            /** Returns the optional heading preceding the footer section. Initialized from {@link Command#footerHeading()}, or {@code ""} (empty string). */
             public String footerHeading() { return str(resourceStr("usage.footerHeading"), footerHeading, DEFAULT_SINGLE_VALUE); }
 
             /** Returns the optional footer text lines displayed at the bottom of the help message. Initialized from
@@ -5769,6 +5857,23 @@ public class CommandLine {
             /** Sets the optional heading preceding the subcommand list.
              * @return this UsageMessageSpec for method chaining */
             public UsageMessageSpec commandListHeading(String newValue) {commandListHeading = newValue; return this;}
+
+            /** Sets the optional heading preceding the exit codes section, may contain {@code "%n"} line separators. {@code ""} (empty string) by default.
+             * @since 4.0 */
+            public UsageMessageSpec exitCodeListHeading(String newValue) { exitCodeListHeading = newValue; return this;}
+
+            /** Sets the values to be displayed in the exit codes section: keys are exit codes, values are descriptions.
+             * Descriptions may contain {@code "%n"} line separators.
+             * <p>This may be configured in a resource bundle by listing up multiple {@code "key:value"} pairs. For example:</p>
+             * <pre>
+             * usage.exitCodeList.0 = 0:Successful program execution.
+             * usage.exitCodeList.1 = 64:Invalid input: an unknown option or invalid parameter was specified.
+             * usage.exitCodeList.2 = 70:Execution exception: an exception occurred while executing the business logic.
+             * </pre>
+             * @newValue a map with values to be displayed in the exit codes section
+             * @see #keyValuesMap(String...)
+             * @since 4.0 */
+            public UsageMessageSpec exitCodeList(Map<String, String> newValue) { exitCodeList = newValue == null ? null : Collections.unmodifiableMap(new LinkedHashMap<String, String>(newValue)); return this;}
 
             /** Sets the optional heading preceding the footer section.
              * @return this UsageMessageSpec for method chaining */
@@ -11908,6 +12013,37 @@ public class CommandLine {
          * @return the formatted footer heading */
         public String footerHeading(Object... params) {
             return heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().footerHeading(), params);
+        }
+
+        /** Returns the text displayed before the exit code list text; the result of {@code String.format(exitCodeHeading, params)}.
+         * @param params the parameters to use to format the exit code heading
+         * @return the formatted heading of the exit code section of the usage help message
+         * @since 4.0 */
+        public String exitCodeListHeading(Object... params) {
+            return heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().exitCodeListHeading(), params);
+        }
+        /** Returns a 2-column list with exit codes and their description. Descriptions containing {@code "%n"} line separators are broken up into multiple lines.
+         * @return a usage help section describing the exit codes
+         * @since 4.0 */
+        public String exitCodeList() {
+            Map<String, String> map = commandSpec.usageMessage().exitCodeList();
+            if (map.isEmpty()) { return ""; }
+            int keyLength = maxLength(map.keySet());
+            Help.TextTable textTable = Help.TextTable.forColumns(ansi(),
+                    new Help.Column(keyLength + 3, 2, Help.Column.Overflow.SPAN),
+                    new Help.Column(width() - (keyLength + 3), 2, Help.Column.Overflow.WRAP));
+            textTable.setAdjustLineBreaksForWideCJKCharacters(adjustCJK());
+
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                Text[] keys = ansi().text(format(entry.getKey())).splitLines();
+                Text[] values = ansi().text(format(entry.getValue())).splitLines();
+                for (int i = 0; i < Math.max(keys.length, values.length); i++) {
+                    Text key = i < keys.length ? keys[i] : Ansi.EMPTY_TEXT;
+                    Text value = i < values.length ? values[i] : Ansi.EMPTY_TEXT;
+                    textTable.addRowValues(key, value);
+                }
+            }
+            return textTable.toString();
         }
         /** Returns a 2-column list with command names and the first line of their header or (if absent) description.
          * @return a usage help section describing the added commands */

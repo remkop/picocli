@@ -1695,7 +1695,7 @@ public class SubcommandTests {
 
         final List<String> DEFAULT_LIST = Arrays.asList("headerHeading", "header", "synopsisHeading", "synopsis",
                 "descriptionHeading", "description", "parameterListHeading", "parameterList", "optionListHeading",
-                "optionList", "commandListHeading", "commandList", "footerHeading", "footer");
+                "optionList", "commandListHeading", "commandList", "exitCodeListHeading", "exitCodeList", "footerHeading", "footer");
         assertEquals(DEFAULT_LIST, commandLine.getHelpSectionKeys());
 
         final List<String> NEW_LIST = Arrays.asList("a", "b", "c");
@@ -1726,7 +1726,7 @@ public class SubcommandTests {
         
         final List<String> DEFAULT_LIST = Arrays.asList("headerHeading", "header", "synopsisHeading", "synopsis",
                 "descriptionHeading", "description", "parameterListHeading", "parameterList", "optionListHeading",
-                "optionList", "commandListHeading", "commandList", "footerHeading", "footer");
+                "optionList", "commandListHeading", "commandList", "exitCodeListHeading", "exitCodeList", "footerHeading", "footer");
         assertEquals(DEFAULT_LIST, commandLine.getHelpSectionKeys());
 
         final List<String> NEW_LIST = Arrays.asList("a", "b", "c");
@@ -1755,7 +1755,7 @@ public class SubcommandTests {
 
         final Set<String> DEFAULT_KEYS = new HashSet<String>(Arrays.asList("headerHeading", "header", "synopsisHeading", "synopsis",
                 "descriptionHeading", "description", "parameterListHeading", "parameterList", "optionListHeading",
-                "optionList", "commandListHeading", "commandList", "footerHeading", "footer"));
+                "optionList", "commandListHeading", "commandList", "exitCodeListHeading", "exitCodeList", "footerHeading", "footer"));
         assertEquals(DEFAULT_KEYS, commandLine.getHelpSectionMap().keySet());
 
         Map<String, CommandLine.IHelpSectionRenderer> NEW_MAP = new HashMap<String, CommandLine.IHelpSectionRenderer>();
@@ -1789,7 +1789,7 @@ public class SubcommandTests {
 
         final Set<String> DEFAULT_KEYS = new HashSet<String>(Arrays.asList("headerHeading", "header", "synopsisHeading", "synopsis",
                 "descriptionHeading", "description", "parameterListHeading", "parameterList", "optionListHeading",
-                "optionList", "commandListHeading", "commandList", "footerHeading", "footer"));
+                "optionList", "commandListHeading", "commandList", "exitCodeListHeading", "exitCodeList", "footerHeading", "footer"));
         assertEquals(DEFAULT_KEYS, commandLine.getHelpSectionMap().keySet());
 
         Map<String, CommandLine.IHelpSectionRenderer> NEW_MAP = new HashMap<String, CommandLine.IHelpSectionRenderer>();

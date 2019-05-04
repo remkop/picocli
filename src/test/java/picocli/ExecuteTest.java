@@ -18,15 +18,17 @@ package picocli;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
+import org.junit.rules.TestRule;
 import picocli.CommandLine.ExitCode;
 import picocli.CommandLine.IExecutionExceptionHandler;
 import picocli.CommandLine.IExitCodeExceptionMapper;
 import picocli.CommandLine.IExitCodeGenerator;
 import picocli.CommandLine.IParameterExceptionHandler;
 import picocli.CommandLine.Model.CommandSpec;
-import picocli.CommandLine.PicocliException;
+import picocli.CommandLine.Model.UsageMessageSpec;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -35,7 +37,11 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -47,6 +53,7 @@ import static picocli.CommandLine.Command;
 import static picocli.CommandLine.ExecutionException;
 import static picocli.CommandLine.Help;
 import static picocli.CommandLine.IExecutionStrategy;
+import static picocli.CommandLine.Model.UsageMessageSpec.keyValuesMap;
 import static picocli.CommandLine.Option;
 import static picocli.CommandLine.ParameterException;
 import static picocli.CommandLine.Parameters;
@@ -59,6 +66,10 @@ import static picocli.CommandLine.Spec;
 public class ExecuteTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
+
+    @Rule
+    // allows tests to set any kind of properties they like, without having to individually roll them back
+    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
 
     @Rule
     public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
@@ -998,5 +1009,225 @@ public class ExecuteTest {
         cmd.execute();
 
         assertEquals(TimeUnit.SECONDS, cmd.getExecutionResult());
+    }
+
+    @Test
+    public void testSetExitCodeHelpSection() {
+        @Command(mixinStandardHelpOptions = true)
+        class App {}
+        CommandLine cmd = new CommandLine(new App());
+        String expected = String.format("" +
+                "Usage: <main class> [-hV]%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n");
+        assertEquals(expected, cmd.getUsageMessage());
+
+        cmd.setExitCodeHelpSection("Exit Codes:%n",
+                keyValuesMap(" 0:Successful program execution",
+                             "64:Usage error: user input for the command was incorrect, " +
+                                     "e.g., the wrong number of arguments, a bad flag, " +
+                                     "a bad syntax in a parameter, etc.",
+                             "70:Internal software error: an exception occurred when invoking " +
+                                     "the business logic of this command."));
+        expected = String.format("" +
+                "Usage: <main class> [-hV]%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "Exit Codes:%n" +
+                "   0   Successful program execution%n" +
+                "  64   Usage error: user input for the command was incorrect, e.g., the wrong%n" +
+                "         number of arguments, a bad flag, a bad syntax in a parameter, etc.%n" +
+                "  70   Internal software error: an exception occurred when invoking the%n" +
+                "         business logic of this command.%n");
+        assertEquals(expected, cmd.getUsageMessage());
+    }
+
+    @Test
+    public void testSetExitCodeHelpSectionSetsUsageMessageSpec() {
+        @Command(mixinStandardHelpOptions = true)
+        class App {}
+        CommandLine cmd = new CommandLine(new App());
+        CommandSpec spec = cmd.getCommandSpec();
+        UsageMessageSpec usage = spec.usageMessage();
+
+        assertEquals("", usage.exitCodeListHeading());
+        assertEquals(true, usage.exitCodeList().isEmpty());
+
+        cmd.setExitCodeHelpSection("My Exit Codes%n",
+                keyValuesMap(" 0:Normal Execution",
+                        "64:Invalid user input",
+                        "70:Internal error"));
+
+        assertEquals("My Exit Codes%n", usage.exitCodeListHeading());
+        assertEquals(3, usage.exitCodeList().size());
+        assertEquals("Invalid user input", usage.exitCodeList().get("64"));
+
+        usage.exitCodeListHeading("EXIT STATUS OVERWRITTEN%n");
+
+        String expected = String.format("" +
+                "Usage: <main class> [-hV]%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "EXIT STATUS OVERWRITTEN%n" +
+                "   0   Normal Execution%n" +
+                "  64   Invalid user input%n" +
+                "  70   Internal error%n");
+        assertEquals(expected, cmd.getUsageMessage());
+    }
+
+    @Test
+    public void testSetExitCodeHelpSectionReordered() {
+        @Command(mixinStandardHelpOptions = true)
+        class App {}
+        CommandLine cmd = new CommandLine(new App());
+
+        List<String> keys = new ArrayList<String>(cmd.getHelpSectionKeys());
+        keys.remove(UsageMessageSpec.SECTION_KEY_EXIT_CODE_LIST);
+        keys.remove(UsageMessageSpec.SECTION_KEY_EXIT_CODE_LIST_HEADING);
+        keys.add(8, UsageMessageSpec.SECTION_KEY_EXIT_CODE_LIST_HEADING);
+        keys.add(9, UsageMessageSpec.SECTION_KEY_EXIT_CODE_LIST);
+        cmd.setHelpSectionKeys(keys);
+
+        cmd.getCommandSpec().usageMessage().optionListHeading("Options:%n");
+        cmd.setExitCodeHelpSection("Exit Codes:%n",
+                keyValuesMap(" 0:Normal Execution", "64:Invalid user input", "70:Internal error"));
+        String expected = String.format("" +
+                "Usage: <main class> [-hV]%n" +
+                "Exit Codes:%n" +
+                "   0   Normal Execution%n" +
+                "  64   Invalid user input%n" +
+                "  70   Internal error%n" +
+                "Options:%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n");
+        assertEquals(expected, cmd.getUsageMessage());
+    }
+
+    @Test
+    public void testExitCodeHelpSectionFromResourceBundle() {
+        @Command(resourceBundle = "picocli.exitcodes")
+        class App {}
+
+        CommandLine cmd = new CommandLine(new App());
+        String expected = String.format("" +
+                "Usage: <main class>%n" +
+                "Exit Codes:%n" +
+                "These exit codes are blah blah etc.%n" +
+                "   0   Normal termination (notice leading space)%n" +
+                "  64   Multiline!%n" +
+                "       Invalid input%n" +
+                "  70   Very long line: aaaaa bbbbbbbb ccccc dddddddd eeeeeee fffffffff ggggg%n" +
+                "         hhhh iiii jjjjjjj kkkk lllll mmmmmmmm nn ooooo ppppp qqqqq%n");
+        assertEquals(expected, cmd.getUsageMessage());
+    }
+
+    @Test
+    public void testResourceBundleOverwritesSetExitCodeHelpSection() {
+        @Command(resourceBundle = "picocli.exitcodes")
+        class App {}
+
+        CommandLine cmd = new CommandLine(new App());
+        cmd.setExitCodeHelpSection("EXIT STATUS%n",
+                keyValuesMap("000:IGNORED 1", "11:IGNORED 2"));
+
+        String expected = String.format("" +
+                "Usage: <main class>%n" +
+                "Exit Codes:%n" +
+                "These exit codes are blah blah etc.%n" +
+                "   0   Normal termination (notice leading space)%n" +
+                "  64   Multiline!%n" +
+                "       Invalid input%n" +
+                "  70   Very long line: aaaaa bbbbbbbb ccccc dddddddd eeeeeee fffffffff ggggg%n" +
+                "         hhhh iiii jjjjjjj kkkk lllll mmmmmmmm nn ooooo ppppp qqqqq%n");
+        assertEquals(expected, cmd.getUsageMessage());
+    }
+
+    @Test
+    public void testSetExitCodeHelpSectionAllowsNullHeader() {
+        @Command
+        class App {}
+        CommandLine cmd = new CommandLine(new App());
+        String expected = String.format("" +
+                "Usage: <main class>%n");
+        assertEquals(expected, cmd.getUsageMessage());
+
+        cmd.setExitCodeHelpSection(null,
+                keyValuesMap(" 0:Normal Execution",
+                        "64:Invalid user input",
+                        "70:Internal error"));
+        expected = String.format("" +
+                "Usage: <main class>%n" +
+                "   0   Normal Execution%n" +
+                "  64   Invalid user input%n" +
+                "  70   Internal error%n");
+        assertEquals(expected, cmd.getUsageMessage());
+    }
+
+    @Test
+    public void testSetExitCodeHelpSectionAllowsNullMap() {
+        @Command
+        class App {}
+        CommandLine cmd = new CommandLine(new App());
+        String expected = String.format("" +
+                "Usage: <main class>%n");
+        assertEquals(expected, cmd.getUsageMessage());
+
+        cmd.setExitCodeHelpSection("Exit Codes%n", null);
+        expected = String.format("" +
+                "Usage: <main class>%n" +
+                "Exit Codes%n");
+        assertEquals(expected, cmd.getUsageMessage());
+    }
+
+    @Test
+    public void testSetExitCodeHelpSectionAllowsNullHeaderAndMap() {
+        @Command
+        class App {}
+        CommandLine cmd = new CommandLine(new App());
+        String expected = String.format("" +
+                "Usage: <main class>%n");
+        assertEquals(expected, cmd.getUsageMessage());
+
+        cmd.setExitCodeHelpSection(null, null);
+        assertEquals(expected, cmd.getUsageMessage());
+    }
+
+    @Test
+    public void testKeyValuesMapCreatesMapFromStrings() {
+        Map<String, String> map = keyValuesMap(" 0:Normal Execution",
+                "64:Invalid user input",
+                "70:Internal error");
+        assertTrue(map instanceof LinkedHashMap);
+        assertEquals(3, map.size());
+        assertEquals("Normal Execution", map.get(" 0"));
+        assertEquals("Invalid user input", map.get("64"));
+        assertEquals("Internal error", map.get("70"));
+    }
+
+    @Test
+    public void testKeyValuesMapIgnoresInvalidEntries() {
+        HelpTestUtil.setTraceLevel("INFO");
+        Map<String, String> map = keyValuesMap(" 0:Normal Execution",
+                "INVALID ENTRY",
+                "70:Internal error");
+        assertTrue(map instanceof LinkedHashMap);
+        assertEquals(2, map.size());
+        assertEquals("Normal Execution", map.get(" 0"));
+        assertEquals("Internal error", map.get("70"));
+
+        String expected = String.format("[picocli INFO] Ignoring line at index 1: cannot split 'INVALID ENTRY' into 'key:value'%n");
+        assertEquals(expected, systemErrRule.getLog());
+    }
+
+    @Test
+    public void testKeyValuesMapReturnsEmptyMapForNull() {
+        Map<String, String> map = keyValuesMap((String[]) null);
+        assertTrue(map instanceof LinkedHashMap);
+        assertEquals(0, map.size());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testKeyValuesMapDisallowsNullValues() {
+        keyValuesMap(null, null);
     }
 }

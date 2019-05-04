@@ -28,8 +28,10 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import java.io.File;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import static org.junit.Assert.*;
@@ -187,6 +189,13 @@ public class I18nTest {
                 "top command list heading%n" +
                 "  help      i18n-top HELP command header%n" +
                 "  i18n-sub  i18n-sub header (only one line)%n" +
+                "Shared Exit Codes Heading%n" +
+                "These exit codes are blah blah etc.%n" +
+                "  00   (From shared bundle) Normal termination%n" +
+                "  64   (From shared bundle)%n" +
+                "       Multiline!%n" +
+                "       Invalid input%n" +
+                "  70   (From shared bundle) Internal error%n" +
                 "Shared footer heading%n" +
                 "footer for i18n-top%n");
         Locale original = Locale.getDefault();
@@ -223,6 +232,13 @@ public class I18nTest {
                 "top command list heading%n" +
                 "  help      i18n-top\u7528 HELP \u30b3\u30de\u30f3\u30c9\u30d8\u30c3\u30c0\u30fc%n" +
                 "  i18n-sub  i18n-sub \u30d8\u30c3\u30c0\u30fc\uff08\u4e00\u884c\u306e\u307f\uff09%n" +
+                "\u7d42\u4e86\u30b9\u30c6\u30fc\u30bf\u30b9%n" +
+                "\u3053\u308c\u3089\u306e\u7d42\u4e86\u30b9\u30c6\u30fc\u30bf\u30b9\u306f\u7b49\u3005%n" +
+                "  00   (\u5171\u901a\u30d0\u30f3\u30c9\u30eb\u304b\u3089) \u6b63\u5e38\u7d42\u4e86%n" +
+                "  64   (\u5171\u901a\u30d0\u30f3\u30c9\u30eb\u304b\u3089)%n" +
+                "       \u8907\u6570\u884c!%n" +
+                "       \u7121\u52b9\u306e\u5165\u529b%n" +
+                "  70   (\u5171\u901a\u30d0\u30f3\u30c9\u30eb\u304b\u3089) \u5185\u90e8\u30a8\u30e9\u30fc%n" +
                 "\u5171\u901a\u30d5\u30c3\u30bf\u30fc\u898b\u51fa\u3057%n" +
                 "i18n-top\u7528\u30d5\u30c3\u30bf\u30fc%n");
         Locale original = Locale.getDefault();
@@ -258,6 +274,13 @@ public class I18nTest {
                 "  -z, --zzz=<z>   subcmd zzz description%n" +
                 "subcmd command list heading%n" +
                 "  help  i18n-sub HELP command header%n" +
+                "Shared Exit Codes Heading%n" +
+                "These exit codes are blah blah etc.%n" +
+                "  00   (From shared bundle) Normal termination%n" +
+                "  64   (From shared bundle)%n" +
+                "       Multiline!%n" +
+                "       Invalid input%n" +
+                "  70   (From shared bundle) Internal error%n" +
                 "Shared footer heading%n" +
                 "footer for i18n-sub%n");
         Locale original = Locale.getDefault();
@@ -316,6 +339,29 @@ public class I18nTest {
             ResourceBundle rb = ResourceBundle.getBundle("picocli.SharedMessages");
             cmd.setResourceBundle(rb);
             assertArrayEquals(new String[]{"Shared header first line", "Shared header second line"}, cmd.getCommandSpec().usageMessage().header());
+        } finally {
+            Locale.setDefault(original);
+        }
+    }
+
+    @Test
+    public void testExitCodeMapFromResourceBundle() {
+        @Command class Noop {}
+        CommandLine cmd = new CommandLine(new Noop());
+        Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+        try {
+            ResourceBundle rb = ResourceBundle.getBundle("picocli.SharedMessages");
+            cmd.setResourceBundle(rb);
+            CommandLine.Model.UsageMessageSpec usageMessageSpec = cmd.getCommandSpec().usageMessage();
+
+            assertEquals("Shared Exit Codes Heading%nThese exit codes are blah blah etc.%n", usageMessageSpec.exitCodeListHeading());
+
+            Map<String, String> exitCodes = new LinkedHashMap<String, String>();
+            exitCodes.put("00", "(From shared bundle) Normal termination");
+            exitCodes.put("64", "(From shared bundle)%nMultiline!%nInvalid input");
+            exitCodes.put("70", "(From shared bundle) Internal error");
+            assertEquals(exitCodes, usageMessageSpec.exitCodeList());
         } finally {
             Locale.setDefault(original);
         }
@@ -536,6 +582,13 @@ public class I18nTest {
                 "      [COMMAND...]   Shared description of COMMAND parameter of built-in help%n" +
                 "                       subcommand%n" +
                 "  -h, --help         Shared description of --help option of built-in help subcommand%n" +
+                "Shared Exit Codes Heading%n" +
+                "These exit codes are blah blah etc.%n" +
+                "  00   (From shared bundle) Normal termination%n" +
+                "  64   (From shared bundle)%n" +
+                "       Multiline!%n" +
+                "       Invalid input%n" +
+                "  70   (From shared bundle) Internal error%n" +
                 "Shared footer heading%n" +
                 "Shared footer%n");
 
@@ -564,6 +617,13 @@ public class I18nTest {
                 "                       subcommand%n" +
                 "  -h, --help         Specialized description of --help option of i18-top help%n" +
                 "                       subcommand%n" +
+                "Shared Exit Codes Heading%n" +
+                "These exit codes are blah blah etc.%n" +
+                "  00   (From shared bundle) Normal termination%n" +
+                "  64   (From shared bundle)%n" +
+                "       Multiline!%n" +
+                "       Invalid input%n" +
+                "  70   (From shared bundle) Internal error%n" +
                 "Shared footer heading%n" +
                 "Shared footer%n");
 
