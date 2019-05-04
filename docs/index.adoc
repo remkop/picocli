@@ -2528,14 +2528,17 @@ map.put(SECTION_KEY_OPTION_LIST,            help -> help.optionList());
 //e.g. %nCommands:%n%n
 map.put(SECTION_KEY_COMMAND_LIST_HEADING,   help -> help.commandListHeading());
 
-//e.g.    add       adds the frup to the frooble
+//e.g.    add       this command adds the frup to the frooble
 map.put(SECTION_KEY_COMMAND_LIST,           help -> help.commandList());
+map.put(SECTION_KEY_EXIT_CODE_LIST_HEADING, help -> help.exitCodeListHeading());
+map.put(SECTION_KEY_EXIT_CODE_LIST,         help -> help.exitCodeList());
 map.put(SECTION_KEY_FOOTER_HEADING,         help -> help.footerHeading());
 map.put(SECTION_KEY_FOOTER,                 help -> help.footer());
 ----
 
 Applications can add, remove or replace sections in this map. The `CommandLine::getHelpSectionKeys` method (or `UsageMessageSpec::sectionKeys` for a single `CommandSpec`) returns the section keys in the order that the usage help message should render the sections. The default keys are (in order):
 
+[start=0]
 . SECTION_KEY_HEADER_HEADING
 . SECTION_KEY_HEADER
 . SECTION_KEY_SYNOPSIS_HEADING
@@ -2548,6 +2551,8 @@ Applications can add, remove or replace sections in this map. The `CommandLine::
 . SECTION_KEY_OPTION_LIST
 . SECTION_KEY_COMMAND_LIST_HEADING
 . SECTION_KEY_COMMAND_LIST
+. SECTION_KEY_EXIT_CODE_LIST_HEADING
+. SECTION_KEY_EXIT_CODE_LIST
 . SECTION_KEY_FOOTER_HEADING
 . SECTION_KEY_FOOTER
 
