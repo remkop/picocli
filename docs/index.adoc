@@ -3174,6 +3174,12 @@ y.1 = This is the second line of the description for the -y option
 # Example descriptions for the standard help mixin options:
 help = Show this help message and exit.
 version = Print version information and exit.
+
+# Exit Code Description
+usage.exitCodeListHeading = Exit Codes:%n
+usage.exitCodeList.0 = \u00200:Successful program execution. (notice leading space '\u0020')
+usage.exitCodeList.1 = 64:Usage error: user input for the command was incorrect.
+usage.exitCodeList.2 = 70:An exception occurred when invoking the business logic of this command.
 ----
 
 For options and positional parameters, the optional annotation attribute `descriptionKey` can be used to localize the description. For example:
