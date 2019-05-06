@@ -1068,6 +1068,58 @@ public class ExecuteTest {
     }
 
     @Test
+    public void testExitCodeListGetSetProgrammatic() {
+        CommandSpec spec = CommandSpec.create();
+        Map<String, String> map = keyValuesMap(
+                " 0:AAA",
+                " 1:BBB",
+                "22:CCC");
+        spec.usageMessage().exitCodeList(map);
+        assertEquals(map, spec.usageMessage().exitCodeList());
+    }
+
+    @Test
+    public void testExitCodeListProgrammaticCanOverwriteAnnotationValues() {
+        @Command(mixinStandardHelpOptions = true,
+                exitCodeListHeading = "My Exit Codes%n",
+                exitCodeList = {
+                        " 0:Normal Execution",
+                        "64:Invalid user input",
+                        "70:Internal error"})
+        class App { }
+        CommandLine cmd = new CommandLine(new App());
+        CommandSpec spec = cmd.getCommandSpec();
+        Map<String, String> map = keyValuesMap(
+                " 0:AAA",
+                " 1:BBB",
+                "22:CCC");
+        spec.usageMessage().exitCodeList(map);
+        assertEquals(map, spec.usageMessage().exitCodeList());
+    }
+
+    @Test
+    public void testExitCodeListProgrammaticCannotOverwriteResourceBundleValues() {
+        @Command(resourceBundle = "picocli.exitcodes")
+        class App {}
+
+        Map<String, String> bundleValues = keyValuesMap(
+                " 0:Normal termination (notice leading space)",
+                        "64:Multiline!%nInvalid input",
+                        "70:Very long line: aaaaa bbbbbbbb ccccc dddddddd eeeeeee fffffffff ggggg hhhh iiii jjjjjjj kkkk lllll mmmmmmmm nn ooooo ppppp qqqqq"
+                );
+        CommandLine cmd = new CommandLine(new App());
+        CommandSpec spec = cmd.getCommandSpec();
+        assertEquals(bundleValues, spec.usageMessage().exitCodeList());
+
+        Map<String, String> map = keyValuesMap(
+                " 0:AAA",
+                " 1:BBB",
+                "22:CCC");
+        spec.usageMessage().exitCodeList(map); // ignored
+        assertEquals(bundleValues, spec.usageMessage().exitCodeList());
+    }
+
+    @Test
     public void testExitCodeListAnnotationReordered() {
         @Command(mixinStandardHelpOptions = true,
                 exitCodeListHeading = "My Exit Codes:%n",

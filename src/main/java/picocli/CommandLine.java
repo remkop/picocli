@@ -5762,9 +5762,10 @@ public class CommandLine {
              * @see #keyValuesMap(String...)
              * @since 4.0 */
             public Map<String, String> exitCodeList() {
-                Map<String, String> result = keyValuesMap(arr(resourceArr("usage.exitCodeList"), exitCodeListStrings, DEFAULT_MULTI_LINE));
-                if (result != null) { return Collections.unmodifiableMap(result); }
-                return exitCodeList == null ? Collections.<String, String>emptyMap() : exitCodeList;
+                String[] bundleValues = resourceArr("usage.exitCodeList");
+                if (bundleValues == null && exitCodeList != null) { return exitCodeList; }
+                Map<String, String> result = keyValuesMap(arr(bundleValues, exitCodeListStrings, DEFAULT_MULTI_LINE));
+                return result == null ? Collections.<String, String>emptyMap() : Collections.unmodifiableMap(result);
             }
 
             /** Creates and returns a {@code Map} that contains an entry for each specified String that is in {@code "key:value"} format.
