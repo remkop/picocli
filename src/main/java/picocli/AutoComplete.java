@@ -71,14 +71,6 @@ public class AutoComplete {
         };
         int exitCode = new CommandLine(new App())
                 .setExecutionExceptionHandler(errorHandler)
-                .setExitCodeHelpSection("%nExit Codes:%n",
-                        keyValuesMap("0:Successful program execution",
-                                     "1:Usage error: user input for the command was incorrect, " +
-                                             "e.g., the wrong number of arguments, a bad flag, " +
-                                             "a bad syntax in a parameter, etc.",
-                                     "2:The specified command script exists (Specify --force to overwrite).",
-                                     "3:The specified completion script exists (Specify --force to overwrite).",
-                                     "4:An exception occurred while generating the completion script."))
                 .execute(args);
         if ((exitCode == EXIT_CODE_SUCCESS && exitOnSuccess()) || (exitCode != EXIT_CODE_SUCCESS && exitOnError())) {
             System.exit(exitCode);
@@ -111,6 +103,16 @@ public class AutoComplete {
                     " \"@|yellow picocli.autocomplete.systemExitOnError|@\"   - call `System.exit(ERROR_CODE)`",
                     "                                              when an error occurs",
                     "If these system properties are not defined or have value \"false\", this program completes without terminating the JVM."
+            },
+            exitCodeListHeading = "%nExit Codes:%n",
+            exitCodeList = {
+                    "0:Successful program execution",
+                    "1:Usage error: user input for the command was incorrect, " +
+                            "e.g., the wrong number of arguments, a bad flag, " +
+                            "a bad syntax in a parameter, etc.",
+                    "2:The specified command script exists (Specify --force to overwrite).",
+                    "3:The specified completion script exists (Specify --force to overwrite).",
+                    "4:An exception occurred while generating the completion script."
             },
             exitCodeOnInvalidInput = EXIT_CODE_INVALID_INPUT,
             exitCodeOnExecutionException = EXIT_CODE_EXECUTION_ERROR)

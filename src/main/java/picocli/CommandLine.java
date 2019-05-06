@@ -827,35 +827,6 @@ public class CommandLine {
     }
 
     /**
-     * Sets the header and exit code descriptions to show in the Exit Code section of the usage help.
-     * Callers may be interested in the {@link UsageMessageSpec#keyValuesMap(String...) keyValuesMap} method for creating a map from a list of {@code "key:value"} Strings.
-     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
-     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
-     * later will have the default setting. To ensure a setting is applied to all
-     * subcommands, call the setter last, after adding subcommands.</p>
-     *
-     * @param exitCodeListHeading the heading preceding the exit codes section, ending in {@code "%n"}.
-     *                            May contain additional {@code "%n"} line separators.
-     *                            Common values are {@code "Exit Status%n"} or {@code "Exit Codes%n"}.
-     * @param exitCodeDescriptions map with values to be displayed in the exit codes section;
-     *                             each entry has an exit code key and its description as value.
-     *                             Descriptions containing {@code "%n"} line separators are broken up into multiple lines.
-     * @see UsageMessageSpec#keyValuesMap(String...)
-     * @see UsageMessageSpec#exitCodeList()
-     * @see UsageMessageSpec#exitCodeListHeading()
-     * @see UsageMessageSpec#SECTION_KEY_EXIT_CODE_LIST
-     * @see UsageMessageSpec#SECTION_KEY_EXIT_CODE_LIST_HEADING
-     * @since 4.0 */
-    public CommandLine setExitCodeHelpSection(String exitCodeListHeading, Map<String, String> exitCodeDescriptions) {
-        getCommandSpec().usageMessage().exitCodeListHeading(exitCodeListHeading);
-        getCommandSpec().usageMessage().exitCodeList(exitCodeDescriptions);
-        for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setExitCodeHelpSection(exitCodeListHeading, exitCodeDescriptions);
-        }
-        return this;
-    }
-
-    /**
      * Defines some exit codes used by picocli as default return values from the {@link #execute(String...) execute}
      * and {@link #executeHelpRequest(ParseResult) executeHelpRequest} methods.
      * <p>Commands can override these defaults with annotations (e.g. {@code @Command(exitCodeOnInvalidInput = 12345)}
@@ -3709,10 +3680,15 @@ public class CommandLine {
      * message. From 3.6, methods can also be annotated with {@code @Command}, where the method parameters define the
      * command options and positional parameters.
      * </p><pre>
-     * &#064;Command(name      = "Encrypt", mixinStandardHelpOptions = true,
-     *        description = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
-     *        version     = "Encrypt version 1.0",
-     *        footer      = "Copyright (c) 2017")
+     * &#064;Command(name              = "Encrypt", mixinStandardHelpOptions = true,
+     *        description         = "Encrypt FILE(s), or standard input, to standard output or to the output file.",
+     *        version             = "Encrypt version 1.0",
+     *        footer              = "Copyright (c) 2017",
+     *        exitCodeListHeading = "Exit Codes:%n",
+     *        exitCodeList        = { " 0:Successful program execution.",
+     *                                "64:Invalid input: an unknown option or invalid parameter was specified.",
+     *                                "70:Execution exception: an exception occurred while executing the business logic."}
+     *        )
      * public class Encrypt {
      *     &#064;Parameters(paramLabel = "FILE", description = "Any number of input files")
      *     private List&lt;File&gt; files = new ArrayList&lt;File&gt;();
@@ -3731,6 +3707,7 @@ public class CommandLine {
      *   <li>[description]</li>
      *   <li>[parameter list]: {@code      [FILE...]   Any number of input files}</li>
      *   <li>[option list]: {@code   -h, --help   prints this help message and exits}</li>
+     *   <li>[exit code list]</li>
      *   <li>[footer]</li>
      * </ul> */
     @Retention(RetentionPolicy.RUNTIME)
@@ -3999,6 +3976,23 @@ public class CommandLine {
          * @see #execute(String...)
          * @since 4.0 */
         int exitCodeOnExecutionException() default ExitCode.SOFTWARE;
+
+        /** Set the heading preceding the exit codes section, may contain {@code "%n"} line separators. {@code ""} (empty string) by default.
+         * @see Help#exitCodeListHeading(Object...)
+         * @since 4.0 */
+        String exitCodeListHeading() default "";
+
+        /** Set the values to be displayed in the exit codes section as a list of {@code "key:value"} pairs:
+         *  keys are exit codes, values are descriptions. Descriptions may contain {@code "%n"} line separators.
+         * <p>For example:</p>
+         * <pre>
+         * &#064;Command(exitCodeListHeading = "Exit Codes:%n",
+         *          exitCodeList = { " 0:Successful program execution.",
+         *                           "64:Invalid input: an unknown option or invalid parameter was specified.",
+         *                           "70:Execution exception: an exception occurred while executing the business logic."})
+         * </pre>
+         * @since 4.0 */
+        String[] exitCodeList() default {};
     }
     /** A {@code Command} may define one or more {@code ArgGroups}: a group of options, positional parameters or a mixture of the two.
      * Groups can be used to:
@@ -5537,6 +5531,7 @@ public class CommandLine {
             private String commandListHeading;
             private String footerHeading;
             private String exitCodeListHeading;
+            private String[] exitCodeListStrings;
             private Map<String, String> exitCodeList;
             private int width = DEFAULT_USAGE_WIDTH;
 
@@ -5756,6 +5751,7 @@ public class CommandLine {
 
             /** Returns an unmodifiable map with values to be displayed in the exit codes section: keys are exit codes, values are descriptions.
              * Descriptions may contain {@code "%n"} line separators.
+             * Callers may be interested in the {@link UsageMessageSpec#keyValuesMap(String...) keyValuesMap} method for creating a map from a list of {@code "key:value"} Strings.
              * <p>This may be configured in a resource bundle by listing up multiple {@code "key:value"} pairs. For example:</p>
              * <pre>
              * usage.exitCodeList.0 = 0:Successful program execution.
@@ -5766,8 +5762,9 @@ public class CommandLine {
              * @see #keyValuesMap(String...)
              * @since 4.0 */
             public Map<String, String> exitCodeList() {
-                Map<String, String> result = keyValuesMap(resourceArr("usage.exitCodeList"));
-                return !result.isEmpty() ? Collections.unmodifiableMap(result) : (exitCodeList == null ? Collections.<String, String>emptyMap() : exitCodeList);
+                Map<String, String> result = keyValuesMap(arr(resourceArr("usage.exitCodeList"), exitCodeListStrings, DEFAULT_MULTI_LINE));
+                if (result != null) { return Collections.unmodifiableMap(result); }
+                return exitCodeList == null ? Collections.<String, String>emptyMap() : exitCodeList;
             }
 
             /** Creates and returns a {@code Map} that contains an entry for each specified String that is in {@code "key:value"} format.
@@ -5901,6 +5898,9 @@ public class CommandLine {
             public UsageMessageSpec adjustLineBreaksForWideCJKCharacters(boolean adjustForWideChars) { adjustLineBreaksForWideCJKCharacters = adjustForWideChars; return this; }
 
             void updateFromCommand(Command cmd, CommandSpec commandSpec) {
+                if (!empty(cmd.resourceBundle())) { // else preserve superclass bundle
+                    messages(new Messages(commandSpec, cmd.resourceBundle()));
+                }
                 if (isNonDefault(cmd.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))            {synopsisHeading = cmd.synopsisHeading();}
                 if (isNonDefault(cmd.commandListHeading(), DEFAULT_COMMAND_LIST_HEADING))     {commandListHeading = cmd.commandListHeading();}
                 if (isNonDefault(cmd.requiredOptionMarker(), DEFAULT_REQUIRED_OPTION_MARKER)) {requiredOptionMarker = cmd.requiredOptionMarker();}
@@ -5913,15 +5913,13 @@ public class CommandLine {
                 if (isNonDefault(cmd.descriptionHeading(), DEFAULT_SINGLE_VALUE))             {descriptionHeading = cmd.descriptionHeading();}
                 if (isNonDefault(cmd.header(), DEFAULT_MULTI_LINE))                           {header = cmd.header().clone();}
                 if (isNonDefault(cmd.headerHeading(), DEFAULT_SINGLE_VALUE))                  {headerHeading = cmd.headerHeading();}
+                if (isNonDefault(cmd.exitCodeList(), DEFAULT_MULTI_LINE))                     {exitCodeListStrings = cmd.exitCodeList().clone();}
+                if (isNonDefault(cmd.exitCodeListHeading(), DEFAULT_SINGLE_VALUE))            {exitCodeListHeading = cmd.exitCodeListHeading();}
                 if (isNonDefault(cmd.footer(), DEFAULT_MULTI_LINE))                           {footer = cmd.footer().clone();}
                 if (isNonDefault(cmd.footerHeading(), DEFAULT_SINGLE_VALUE))                  {footerHeading = cmd.footerHeading();}
                 if (isNonDefault(cmd.parameterListHeading(), DEFAULT_SINGLE_VALUE))           {parameterListHeading = cmd.parameterListHeading();}
                 if (isNonDefault(cmd.optionListHeading(), DEFAULT_SINGLE_VALUE))              {optionListHeading = cmd.optionListHeading();}
                 if (isNonDefault(cmd.usageHelpWidth(), DEFAULT_USAGE_WIDTH))                  {width(cmd.usageHelpWidth());} // validate
-
-                if (!empty(cmd.resourceBundle())) { // else preserve superclass bundle
-                    messages(new Messages(commandSpec, cmd.resourceBundle()));
-                }
             }
             void initFromMixin(UsageMessageSpec mixin, CommandSpec commandSpec) {
                 if (initializable(synopsisHeading, mixin.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))                 {synopsisHeading = mixin.synopsisHeading();}
@@ -5936,6 +5934,8 @@ public class CommandLine {
                 if (initializable(descriptionHeading, mixin.descriptionHeading(), DEFAULT_SINGLE_VALUE))               {descriptionHeading = mixin.descriptionHeading();}
                 if (initializable(header, mixin.header(), DEFAULT_MULTI_LINE))                                         {header = mixin.header().clone();}
                 if (initializable(headerHeading, mixin.headerHeading(), DEFAULT_SINGLE_VALUE))                         {headerHeading = mixin.headerHeading();}
+                if (initializable(exitCodeList, mixin.exitCodeList(), Collections.emptyMap()) && exitCodeListStrings == null) {exitCodeList = Collections.unmodifiableMap(new LinkedHashMap<String, String>(mixin.exitCodeList()));}
+                if (initializable(exitCodeListHeading, mixin.exitCodeListHeading(), DEFAULT_SINGLE_VALUE))             {exitCodeListHeading = mixin.exitCodeListHeading();}
                 if (initializable(footer, mixin.footer(), DEFAULT_MULTI_LINE))                                         {footer = mixin.footer().clone();}
                 if (initializable(footerHeading, mixin.footerHeading(), DEFAULT_SINGLE_VALUE))                         {footerHeading = mixin.footerHeading();}
                 if (initializable(parameterListHeading, mixin.parameterListHeading(), DEFAULT_SINGLE_VALUE))           {parameterListHeading = mixin.parameterListHeading();}
@@ -8952,19 +8952,20 @@ public class CommandLine {
 
                         int defaultStartPos = fullKey.indexOf(":-");
                         if (defaultStartPos >= 0) { actualKey = fullKey.substring(0, defaultStartPos); }
-                        if (resolved.containsKey(prefix + actualKey)) { return resolved.get(prefix + actualKey); }
-                        if (visited.contains(prefix + actualKey)) {
+                        String value = resolved.containsKey(prefix + actualKey)
+                                ? resolved.get(prefix + actualKey)
+                                : lookup.get(actualKey);
+                        if (visited.contains(prefix + actualKey) && !resolved.containsKey(prefix + actualKey)) {
                             throw new InitializationException("Lookup '" + prefix + actualKey + "' has a circular reference.");
                         }
                         visited.add(prefix + actualKey);
-                        String value = lookup.get(actualKey);
                         if (value == null && defaultStartPos >= 0) {
                             String defaultValue = fullKey.substring(defaultStartPos + 2);
                             value = resolveLookups(defaultValue, visited, resolved);
                         }
                         resolved.put(prefix + actualKey, value);
                         if (value == null && startPos == 0 && endPos == text.length() - 1) {
-                            return null;
+                            return null; // #676 x="${var}" should resolve to x=null if not found (not x="null")
                         }
 
                         // interpolate

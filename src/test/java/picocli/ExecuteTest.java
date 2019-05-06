@@ -1012,24 +1012,19 @@ public class ExecuteTest {
     }
 
     @Test
-    public void testSetExitCodeHelpSection() {
-        @Command(mixinStandardHelpOptions = true)
+    public void testExitCodeListAnnotation() {
+        @Command(mixinStandardHelpOptions = true,
+                exitCodeListHeading = "Exit Codes:%n",
+                exitCodeList = {
+                    " 0:Successful program execution",
+                    "64:Usage error: user input for the command was incorrect, " +
+                            "e.g., the wrong number of arguments, a bad flag, " +
+                            "a bad syntax in a parameter, etc.",
+                    "70:Internal software error: an exception occurred when invoking " +
+                            "the business logic of this command."})
         class App {}
         CommandLine cmd = new CommandLine(new App());
         String expected = String.format("" +
-                "Usage: <main class> [-hV]%n" +
-                "  -h, --help      Show this help message and exit.%n" +
-                "  -V, --version   Print version information and exit.%n");
-        assertEquals(expected, cmd.getUsageMessage());
-
-        cmd.setExitCodeHelpSection("Exit Codes:%n",
-                keyValuesMap(" 0:Successful program execution",
-                             "64:Usage error: user input for the command was incorrect, " +
-                                     "e.g., the wrong number of arguments, a bad flag, " +
-                                     "a bad syntax in a parameter, etc.",
-                             "70:Internal software error: an exception occurred when invoking " +
-                                     "the business logic of this command."));
-        expected = String.format("" +
                 "Usage: <main class> [-hV]%n" +
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n" +
@@ -1043,20 +1038,17 @@ public class ExecuteTest {
     }
 
     @Test
-    public void testSetExitCodeHelpSectionSetsUsageMessageSpec() {
-        @Command(mixinStandardHelpOptions = true)
+    public void testExitCodeListAnnotationSetsUsageMessageSpec() {
+        @Command(mixinStandardHelpOptions = true,
+                exitCodeListHeading = "My Exit Codes%n",
+                exitCodeList = {
+                        " 0:Normal Execution",
+                        "64:Invalid user input",
+                        "70:Internal error"})
         class App {}
         CommandLine cmd = new CommandLine(new App());
         CommandSpec spec = cmd.getCommandSpec();
         UsageMessageSpec usage = spec.usageMessage();
-
-        assertEquals("", usage.exitCodeListHeading());
-        assertEquals(true, usage.exitCodeList().isEmpty());
-
-        cmd.setExitCodeHelpSection("My Exit Codes%n",
-                keyValuesMap(" 0:Normal Execution",
-                        "64:Invalid user input",
-                        "70:Internal error"));
 
         assertEquals("My Exit Codes%n", usage.exitCodeListHeading());
         assertEquals(3, usage.exitCodeList().size());
@@ -1076,8 +1068,13 @@ public class ExecuteTest {
     }
 
     @Test
-    public void testSetExitCodeHelpSectionReordered() {
-        @Command(mixinStandardHelpOptions = true)
+    public void testExitCodeListAnnotationReordered() {
+        @Command(mixinStandardHelpOptions = true,
+                exitCodeListHeading = "My Exit Codes:%n",
+                exitCodeList = {
+                        " 0:Normal Execution",
+                        "64:Invalid user input",
+                        "70:Internal error"})
         class App {}
         CommandLine cmd = new CommandLine(new App());
 
@@ -1089,11 +1086,9 @@ public class ExecuteTest {
         cmd.setHelpSectionKeys(keys);
 
         cmd.getCommandSpec().usageMessage().optionListHeading("Options:%n");
-        cmd.setExitCodeHelpSection("Exit Codes:%n",
-                keyValuesMap(" 0:Normal Execution", "64:Invalid user input", "70:Internal error"));
         String expected = String.format("" +
                 "Usage: <main class> [-hV]%n" +
-                "Exit Codes:%n" +
+                "My Exit Codes:%n" +
                 "   0   Normal Execution%n" +
                 "  64   Invalid user input%n" +
                 "  70   Internal error%n" +
@@ -1122,13 +1117,13 @@ public class ExecuteTest {
     }
 
     @Test
-    public void testResourceBundleOverwritesSetExitCodeHelpSection() {
-        @Command(resourceBundle = "picocli.exitcodes")
+    public void testResourceBundleOverwritesExitCodeListAnnotation() {
+        @Command(resourceBundle = "picocli.exitcodes",
+                exitCodeListHeading = "EXIT STATUS%n",
+                exitCodeList = {"000:IGNORED 1", "11:IGNORED 2"})
         class App {}
 
         CommandLine cmd = new CommandLine(new App());
-        cmd.setExitCodeHelpSection("EXIT STATUS%n",
-                keyValuesMap("000:IGNORED 1", "11:IGNORED 2"));
 
         String expected = String.format("" +
                 "Usage: <main class>%n" +
@@ -1143,19 +1138,15 @@ public class ExecuteTest {
     }
 
     @Test
-    public void testSetExitCodeHelpSectionAllowsNullHeader() {
-        @Command
+    public void testExitCodeListAnnotationAllowsNullHeader() {
+        @Command(
+                exitCodeList = {
+                        " 0:Normal Execution",
+                        "64:Invalid user input",
+                        "70:Internal error"})
         class App {}
         CommandLine cmd = new CommandLine(new App());
         String expected = String.format("" +
-                "Usage: <main class>%n");
-        assertEquals(expected, cmd.getUsageMessage());
-
-        cmd.setExitCodeHelpSection(null,
-                keyValuesMap(" 0:Normal Execution",
-                        "64:Invalid user input",
-                        "70:Internal error"));
-        expected = String.format("" +
                 "Usage: <main class>%n" +
                 "   0   Normal Execution%n" +
                 "  64   Invalid user input%n" +
@@ -1164,31 +1155,86 @@ public class ExecuteTest {
     }
 
     @Test
-    public void testSetExitCodeHelpSectionAllowsNullMap() {
-        @Command
+    public void testExitCodeListAnnotationAllowsNullMap() {
+        @Command(exitCodeListHeading = "Exit Codes%n")
         class App {}
         CommandLine cmd = new CommandLine(new App());
-        String expected = String.format("" +
-                "Usage: <main class>%n");
-        assertEquals(expected, cmd.getUsageMessage());
 
-        cmd.setExitCodeHelpSection("Exit Codes%n", null);
-        expected = String.format("" +
+        String expected = String.format("" +
                 "Usage: <main class>%n" +
                 "Exit Codes%n");
         assertEquals(expected, cmd.getUsageMessage());
     }
 
     @Test
-    public void testSetExitCodeHelpSectionAllowsNullHeaderAndMap() {
-        @Command
+    public void testExitCodeListAnnotationKeyVariableInterpolation() {
+        @Command(exitCodeListHeading = "My ${sys:HEADING} Exit Codes:%n",
+                exitCodeList = {
+                        "${sys:NORMAL}:Normal Execution",
+                        "${sys:INVALID}:Invalid user input",
+                        "${sys:INTERNAL}:Internal error"})
         class App {}
-        CommandLine cmd = new CommandLine(new App());
-        String expected = String.format("" +
-                "Usage: <main class>%n");
-        assertEquals(expected, cmd.getUsageMessage());
 
-        cmd.setExitCodeHelpSection(null, null);
+        System.setProperty("HEADING", "wonderful");
+        System.setProperty("NORMAL", "0000");
+        System.setProperty("INVALID", "1111");
+        System.setProperty("INTERNAL", "2222");
+        CommandLine cmd = new CommandLine(new App());
+
+        String expected = String.format("" +
+                "Usage: <main class>%n" +
+                "My wonderful Exit Codes:%n" +
+                "  0000   Normal Execution%n" +
+                "  1111   Invalid user input%n" +
+                "  2222   Internal error%n");
+        assertEquals(expected, cmd.getUsageMessage());
+    }
+
+    @Test
+    public void testExitCodeListAnnotationDescriptionVariableInterpolation() {
+        @Command(exitCodeListHeading = "My ${sys:HEADING} Exit Codes:%n",
+                exitCodeList = {
+                        " 0:Normal Execution (value is ${sys:NORMAL})",
+                        "64:Invalid user input (value is ${sys:INVALID})",
+                        "74:Internal error (value is ${sys:INTERNAL})"})
+        class App {}
+
+        System.setProperty("HEADING", "wonderful");
+        System.setProperty("NORMAL", "0000");
+        System.setProperty("INVALID", "1111");
+        System.setProperty("INTERNAL", "2222");
+        CommandLine cmd = new CommandLine(new App());
+
+        String expected = String.format("" +
+                "Usage: <main class>%n" +
+                "My wonderful Exit Codes:%n" +
+                "   0   Normal Execution (value is 0000)%n" +
+                "  64   Invalid user input (value is 1111)%n" +
+                "  74   Internal error (value is 2222)%n");
+        assertEquals(expected, cmd.getUsageMessage());
+    }
+
+    @Test
+    public void testExitCodeListAnnotationBothKeyAndDescriptionVariableInterpolation() {
+        @Command(exitCodeListHeading = "My ${sys:HEADING} Exit Codes:%n",
+                exitCodeList = {
+                        "${sys:NORMAL}:Normal Execution (value is ${sys:NORMAL})",
+                        "${sys:INVALID}:Invalid user input (value is ${sys:INVALID})",
+                        "${sys:INTERNAL}:Internal error (value is ${sys:INTERNAL})"})
+        class App {}
+
+        System.setProperty("HEADING", "wonderful");
+        System.setProperty("NORMAL", "0000");
+        System.setProperty("INVALID", "1111");
+        System.setProperty("INTERNAL", "2222");
+        CommandLine cmd = new CommandLine(new App());
+
+        String expected = String.format("" +
+                "Usage: <main class>%n" +
+                "My wonderful Exit Codes:%n" +
+                "  0000   Normal Execution (value is 0000)%n" +
+                "  1111   Invalid user input (value is 1111)%n" +
+                "  2222   Internal error (value is 2222)%n");
         assertEquals(expected, cmd.getUsageMessage());
     }
 

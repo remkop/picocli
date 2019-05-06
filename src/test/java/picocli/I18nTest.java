@@ -77,6 +77,11 @@ public class I18nTest {
                 "%n" +
                 "Commands from bundle:%n" +
                 "  help  header first line from bundle%n" +
+                "Exit Codes:%n" +
+                "This exit code description comes from top bundle%n" +
+                "   0   (top bundle) Normal termination (notice leading space)%n" +
+                "  64   (top bundle) Invalid input%n" +
+                "  70   (top bundle) internal error%n" +
                 "Powered by picocli from bundle%n" +
                 "footer from bundle%n");
         assertEquals(expected, new CommandLine(new I18nSuperclass()).getUsageMessage());
@@ -118,6 +123,11 @@ public class I18nTest {
                 "%n" +
                 "Commands from bundle:%n" +
                 "  help  header first line from bundle%n" +
+                "Exit Codes:%n" +
+                "This exit code description comes from top bundle%n" +
+                "   0   (top bundle) Normal termination (notice leading space)%n" +
+                "  64   (top bundle) Invalid input%n" +
+                "  70   (top bundle) internal error%n" +
                 "Powered by picocli from bundle%n" +
                 "footer from bundle%n");
         assertEquals(expected, new CommandLine(new I18nSubclass()).getUsageMessage());
@@ -157,6 +167,9 @@ public class I18nTest {
                 // not "header line from subbundle":
                 // help command is inherited from superclass, initialized with resource bundle from superclass
                 "  help  header first line from bundle%n" +
+                "super exit code list heading%n" +
+                "  000   super exit code 1%n" +
+                "  111   super exit code 2%n" +
                 "sub footer heading from subbundle%n" +
                 "sub footer from subbundle%n");
         System.setProperty("picocli.trace", "DEBUG");

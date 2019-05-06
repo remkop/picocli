@@ -1330,35 +1330,12 @@ When the end user specified invalid input, the `execute` method prints an error 
 If the business logic of the command throws an exception, the `execute` method prints the stack trace of the exception and returns an exit code. This can be customized by configuring a `IExecutionExceptionHandler`.
 
 === Usage Help Exit Code Section
-By default, the usage help message does not display the exit code section.
-Applications that call `System.exit` need to configure this manually by calling `CommandLine.setExitCodeHelpSection(String, Map)`
-or by calling `UsageMessageSpec.exitCodeListHeading` and `UsageMessageSpec.exitCodeList`. For example:
+By default, the usage help message does not include exit code information.
+Applications that call `System.exit` need to configure the usage help message to show exit code details,
+either with the `exitCodeListHeading` and `exitCodeList` annotation attributes,
+or programmatically by calling `UsageMessageSpec.exitCodeListHeading` and `UsageMessageSpec.exitCodeList`.
 
-```java
-// import static picocli.CommandLine.Model.UsageMessageSpec.keyValuesMap;
-@Command class App {}
-CommandLine cmd = new CommandLine(new App());
-cmd.setExitCodeHelpSection("Exit Codes:%n",
-        keyValuesMap(" 0:Successful program execution",
-                     "64:Usage error: user input for the command was incorrect, " +
-                             "e.g., the wrong number of arguments, a bad flag, " +
-                             "a bad syntax in a parameter, etc.",
-                     "70:Internal software error: an exception occurred when invoking " +
-                             "the business logic of this command."));
-cmd.usage(System.out);
-```
-
-This will print the following message to the console:
-
-```
-Usage: <main class>
-Exit Codes:
-   0   Successful program execution
-  64   Usage error: user input for the command was incorrect, e.g., the wrong
-         number of arguments, a bad flag, a bad syntax in a parameter, etc.
-  70   Internal software error: an exception occurred when invoking the
-         business logic of this command.
-```
+See <<Exit Code List>> for details.
 
 === Execution Configuration
 
@@ -2102,6 +2079,38 @@ The `header` will be shown at the top of the usage help message (before the syno
 Use the `footer` attribute to specify one or more lines to show below the generated usage help message.
 
 Each element of the attribute String array is displayed on a separate line.
+
+
+=== Exit Code List
+By default, the usage help message does not display <<Generating an Exit Code,exit code>> information.
+Applications that call `System.exit` need to configure the `exitCodeListHeading` and `exitCodeList` annotation attributes.
+For example:
+
+```java
+@Command(mixinStandardHelpOptions = true,
+        exitCodeListHeading = "Exit Codes:%n",
+        exitCodeList = {
+            " 0:Successful program execution",
+            "64:Usage error: user input for the command was incorrect, " +
+                    "e.g., the wrong number of arguments, a bad flag, " +
+                    "a bad syntax in a parameter, etc.",
+            "70:Internal software error: an exception occurred when invoking " +
+                    "the business logic of this command."})
+class App {}
+new CommandLine(new App()).usage(System.out);
+```
+
+This will print the following usage help message to the console:
+
+```
+Usage: <main class>
+Exit Codes:
+   0   Successful program execution
+  64   Usage error: user input for the command was incorrect, e.g., the wrong
+         number of arguments, a bad flag, a bad syntax in a parameter, etc.
+  70   Internal software error: an exception occurred when invoking the
+         business logic of this command.
+```
 
 === Format Specifiers
 All usage help message elements can have embedded line separator (`%n`) format specifiers.
