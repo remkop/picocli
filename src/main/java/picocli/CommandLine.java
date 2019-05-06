@@ -4194,8 +4194,9 @@ public class CommandLine {
          */
         <K> K create(Class<K> cls) throws Exception;
     }
-    /** Returns a default {@link IFactory} implementation. Package-protected for testing purposes. */
-    static IFactory defaultFactory() { return new DefaultFactory(); }
+    /** Returns the default {@link IFactory} implementation used if no factory was specified in the {@link #CommandLine(Object) CommandLine constructor}.
+     * @since 4.0 */
+    public static IFactory defaultFactory() { return new DefaultFactory(); }
     private static class DefaultFactory implements IFactory {
         public <T> T create(Class<T> cls) throws Exception {
             if (cls.isInterface() && Collection.class.isAssignableFrom(cls)) {
