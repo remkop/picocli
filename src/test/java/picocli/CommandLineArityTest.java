@@ -39,16 +39,16 @@ public class CommandLineArityTest {
     @Test
     public void testArityConstructor_fixedRange() {
         Range arity = new Range(1, 23, false, false, null);
-        assertEquals("min", 1, arity.min);
-        assertEquals("max", 23, arity.max);
+        assertEquals("min", 1, arity.min());
+        assertEquals("max", 23, arity.max());
         assertEquals("1..23", arity.toString());
         assertEquals(Range.valueOf("1..23"), arity);
     }
     @Test
     public void testArityConstructor_variableRange() {
         Range arity = new Range(1, Integer.MAX_VALUE, true, false, null);
-        assertEquals("min", 1, arity.min);
-        assertEquals("max", Integer.MAX_VALUE, arity.max);
+        assertEquals("min", 1, arity.min());
+        assertEquals("max", Integer.MAX_VALUE, arity.max());
         assertEquals("1..*", arity.toString());
         assertEquals(Range.valueOf("1..*"), arity);
     }
@@ -127,9 +127,9 @@ public class CommandLineArityTest {
     @Test
     public void testOptionArity_forNonAnnotatedField() throws Exception {
         Range arity = Range.optionArity(SupportedTypes2.class.getDeclaredField("nonOptionField"));
-        assertEquals(0, arity.max);
-        assertEquals(0, arity.min);
-        assertEquals(false, arity.isVariable);
+        assertEquals(0, arity.max());
+        assertEquals(0, arity.min());
+        assertEquals(false, arity.isVariable());
         assertEquals("0", arity.toString());
     }
     @Test
@@ -172,9 +172,9 @@ public class CommandLineArityTest {
     public void testParameterArityWithOptionMember() throws Exception {
         class ImplicitBoolField { @Option(names = "-x") boolean boolSingleValue; }
         Range arity = Range.parameterArity(ImplicitBoolField.class.getDeclaredField("boolSingleValue"));
-        assertEquals(0, arity.max);
-        assertEquals(0, arity.min);
-        assertEquals(false, arity.isVariable);
+        assertEquals(0, arity.max());
+        assertEquals(0, arity.min());
+        assertEquals(false, arity.isVariable());
         assertEquals("0", arity.toString());
     }
 
@@ -182,9 +182,9 @@ public class CommandLineArityTest {
     public void testParameterIndex_WhenUndefined() throws Exception {
         class ImplicitBoolField { @Parameters boolean boolSingleValue; }
         Range arity = Range.parameterIndex(ImplicitBoolField.class.getDeclaredField("boolSingleValue"));
-        assertEquals(Integer.MAX_VALUE, arity.max);
-        assertEquals(0, arity.min);
-        assertEquals(true, arity.isVariable);
+        assertEquals(Integer.MAX_VALUE, arity.max());
+        assertEquals(0, arity.min());
+        assertEquals(true, arity.isVariable());
         assertEquals("0..*", arity.toString());
     }
 
@@ -192,9 +192,9 @@ public class CommandLineArityTest {
     public void testParameterIndex_WhenDefined() throws Exception {
         class ImplicitBoolField { @Parameters(index = "2..3") boolean boolSingleValue; }
         Range arity = Range.parameterIndex(ImplicitBoolField.class.getDeclaredField("boolSingleValue"));
-        assertEquals(3, arity.max);
-        assertEquals(2, arity.min);
-        assertEquals(false, arity.isVariable);
+        assertEquals(3, arity.max());
+        assertEquals(2, arity.min());
+        assertEquals(false, arity.isVariable());
         assertEquals("2..3", arity.toString());
     }
 

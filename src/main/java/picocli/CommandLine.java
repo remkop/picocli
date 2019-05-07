@@ -4247,12 +4247,14 @@ public class CommandLine {
     /** Describes the number of parameters required and accepted by an option or a positional parameter.
      * @since 0.9.7
      */
+    @SuppressWarnings("deprecation")
     public static class Range implements Comparable<Range> {
-        /** Required number of parameters for an option or positional parameter. */
-        public final int min;
-        /** Maximum accepted number of parameters for an option or positional parameter. */
-        public final int max;
-        public final boolean isVariable;
+        /** @deprecated use {@link #min()} instead */
+        @Deprecated public final int min;
+        /** @deprecated use {@link #max()} instead */
+        @Deprecated public final int max;
+        /** @deprecated use {@link #isVariable()} instead */
+        @Deprecated public final boolean isVariable;
         private final boolean isUnspecified;
         private final String originalValue;
 
@@ -4416,6 +4418,15 @@ public class CommandLine {
          * {@code false} if this Range does not contain any variables.
          * @since 4.0 */
         public boolean isUnresolved() { return originalValue != null && originalValue.contains("${"); }
+        /** Returns the lower bound of this range (inclusive).
+         * @since 4.0 */
+        public int min() { return min; }
+        /** Returns the upper bound of this range (inclusive), or {@code Integer.MAX_VALUE} if this range has {@linkplain #isVariable() no upper bound}.
+         * @since 4.0 */
+        public int max() { return max; }
+        /** Returns {@code true} if this range has no fixed upper bound.
+         * @since 4.0 */
+        public boolean isVariable() { return isVariable; }
 
         /**
          * Returns {@code true} if this Range includes the specified value, {@code false} otherwise.

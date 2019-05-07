@@ -166,6 +166,7 @@ With the new execute API the ColorScheme class will start to play a more central
 - [#683] Ensure exitCodeList implementation is consistent with other usage message attributes.
 - [#575] Use mixinStandardHelpOptions in `AutoComplete$App` (add the `--version` option)
 - [#684] Make `CommandLine.defaultFactory` method public.
+- [#673] Deprecate `CommandLine.Range` public fields, add accessor methods to use instead.
 - [#676] Bugfix: non-defined variables in `defaultValue` now correctly resolve to `null`, and options and positional parameters are now correctly considered `required` only if their default value is `null` after variable interpolation. Thanks to [ifedorenko](https://github.com/ifedorenko) for raising this.
 - [#682] Bug: incorrect evaluation for multiple occurrences of a variable.
 - [#679] Documentation: Update examples for new execute API. Add examples for exit code control and custom exception handlers.

@@ -684,7 +684,7 @@ public class AutoComplete {
             }
             if (found instanceof ArgSpec) {
                 CommandLine.Range arity = ((ArgSpec) found).arity();
-                if (i < arity.min) {
+                if (i < arity.min()) {
                     return found; // not all parameters have been supplied yet
                 } else {
                     return findCommandFor((ArgSpec) found, parseResult.commandSpec());
