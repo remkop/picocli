@@ -165,11 +165,11 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Parameters(paramLabel = "FILE", arity = "1..*") File[] files;
         }
         Ansi ansi = Ansi.ON;
-        CommandLine.Help.ColorScheme explicit = new CommandLine.Help.ColorScheme(ansi)
+        CommandLine.Help.ColorScheme explicit = new CommandLine.Help.ColorScheme.Builder(ansi)
                 .commands(Ansi.Style.faint, Ansi.Style.bg_magenta)
                 .options(Ansi.Style.bg_red)
                 .parameters(Ansi.Style.reverse)
-                .optionParams(Ansi.Style.bg_green);
+                .optionParams(Ansi.Style.bg_green).build();
         // default color scheme
         assertEquals(ansi.new Text("@|faint,bg(magenta) <main class>|@ [@|bg(red) -v|@] [@|bg(red) -c|@=@|bg(green) <count>|@] @|reverse FILE|@..." + LINESEP),
                 new CommandLine.Help(CommandLine.Model.CommandSpec.forAnnotatedObject(new App(), CommandLine.defaultFactory()), explicit).synopsis(0));
@@ -183,8 +183,8 @@ public class CommandLineHelpAnsiTest {
     }
     @Test
     public void testUsageWithCustomColorScheme() throws UnsupportedEncodingException {
-        CommandLine.Help.ColorScheme scheme = new CommandLine.Help.ColorScheme(Ansi.ON)
-                .options(Ansi.Style.bg_magenta).parameters(Ansi.Style.bg_cyan).optionParams(Ansi.Style.bg_yellow).commands(Ansi.Style.reverse);
+        CommandLine.Help.ColorScheme scheme = new CommandLine.Help.ColorScheme.Builder(Ansi.ON)
+                .options(Ansi.Style.bg_magenta).parameters(Ansi.Style.bg_cyan).optionParams(Ansi.Style.bg_yellow).commands(Ansi.Style.reverse).build();
         class Args {
             @CommandLine.Parameters(description = "param desc") String[] params;
             @CommandLine.Option(names = "-x", description = "option desc") String[] options;
@@ -638,7 +638,7 @@ public class CommandLineHelpAnsiTest {
 
     @Test
     public void testColorSchemeDefaultConstructorHasAnsiAuto() {
-        CommandLine.Help.ColorScheme colorScheme = new CommandLine.Help.ColorScheme();
+        CommandLine.Help.ColorScheme colorScheme = new CommandLine.Help.ColorScheme.Builder().build();
         assertEquals(Ansi.AUTO, colorScheme.ansi());
     }
 

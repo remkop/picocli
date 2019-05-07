@@ -2451,7 +2451,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testLayoutConstructorCreatesDefaultColumns() {
-        ColorScheme colorScheme = new ColorScheme();
+        ColorScheme colorScheme = new ColorScheme.Builder().build();
         Help.Layout layout = new Help.Layout(colorScheme, 99);
 
         TextTable expected = TextTable.forDefaultColumns(Help.Ansi.OFF, 99);
@@ -2465,7 +2465,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testHelpCreateLayout_CreatesDefaultColumns() {
-        Help help = new Help(CommandSpec.create(), new ColorScheme(Help.Ansi.OFF));
+        Help help = new Help(CommandSpec.create(), new ColorScheme.Builder(Help.Ansi.OFF).build());
         Help.Layout layout = help.createDefaultLayout();
 
         TextTable expected = TextTable.forDefaultColumns(Help.Ansi.OFF, 80);
@@ -2487,7 +2487,7 @@ public class CommandLineHelpTest {
     public void testMinimalOptionRenderer() {
         Help.MinimalOptionRenderer renderer = new Help.MinimalOptionRenderer();
         Text[][] texts = renderer.render(OptionSpec.builder("-x").build(),
-                Help.createMinimalParamLabelRenderer(), new ColorScheme());
+                Help.createMinimalParamLabelRenderer(), new ColorScheme.Builder().build());
         assertEquals("", texts[0][1].plainString());
     }
 
@@ -2495,7 +2495,7 @@ public class CommandLineHelpTest {
     public void testMinimalParameterRenderer() {
         Help.MinimalParameterRenderer renderer = new Help.MinimalParameterRenderer();
         Text[][] texts = renderer.render(PositionalParamSpec.builder().build(),
-                Help.createMinimalParamLabelRenderer(), new ColorScheme());
+                Help.createMinimalParamLabelRenderer(), new ColorScheme.Builder().build());
         assertEquals("", texts[0][1].plainString());
     }
 
@@ -2611,21 +2611,21 @@ public class CommandLineHelpTest {
     @Test
     public void testHelpCreateDetailedSynopsisOptionsText() {
         Help help = new Help(CommandSpec.create().addOption(OptionSpec.builder("xx").build()),
-                new ColorScheme(Help.Ansi.OFF));
+                new ColorScheme.Builder(Help.Ansi.OFF).build());
         Text text = help.createDetailedSynopsisOptionsText(new ArrayList<ArgSpec>(), null, true);
         assertEquals(" [xx]", text.toString());
     }
 
     @Test
     public void testAddAllSubcommands() {
-        Help help = new Help(CommandSpec.create(), new Help.ColorScheme(Help.Ansi.OFF));
+        Help help = new Help(CommandSpec.create(), new ColorScheme.Builder(Help.Ansi.OFF).build());
         help.addAllSubcommands(null);
         assertTrue(help.subcommands().isEmpty());
     }
     @SuppressWarnings("deprecation")
     @Test
     public void testDetailedSynopsis() {
-        Help help = new Help(CommandSpec.create(), new Help.ColorScheme(Help.Ansi.OFF));
+        Help help = new Help(CommandSpec.create(), new ColorScheme.Builder(Help.Ansi.OFF).build());
         String str = help.detailedSynopsis(new Help.SortByShortestOptionNameAlphabetically(), true);
         assertEquals(String.format("<main class>%n"), str);
     }
@@ -2648,7 +2648,7 @@ public class CommandLineHelpTest {
         };
         for (int i = 0; i < input.length; i++) {
             String[] description = input[i];
-            Help.Ansi.Text[] result = (Help.Ansi.Text[]) m.invoke(null, new Help.ColorScheme(Help.Ansi.OFF), null, description, new boolean[3]);
+            Help.Ansi.Text[] result = (Help.Ansi.Text[]) m.invoke(null, new ColorScheme.Builder(Help.Ansi.OFF).build(), null, description, new boolean[3]);
             Help.Ansi.Text[] expected = expectedOutput[i];
 
             for (int j = 0; j < result.length; j++) {
@@ -2662,7 +2662,7 @@ public class CommandLineHelpTest {
         CommandSpec spec = CommandSpec.create();
         spec.addPositional(PositionalParamSpec.builder().paramLabel("a").hidden(true).build());
         spec.addPositional(PositionalParamSpec.builder().paramLabel("b").build());
-        Help help = new Help(spec, new Help.ColorScheme(Help.Ansi.OFF));
+        Help help = new Help(spec, new ColorScheme.Builder(Help.Ansi.OFF).build());
         String actual = help.abbreviatedSynopsis();
         assertEquals(String.format("<main class> b...%n"), actual);
     }
@@ -2670,7 +2670,7 @@ public class CommandLineHelpTest {
     @SuppressWarnings("deprecation")
     @Test
     public void testSynopsis() {
-        Help help = new Help(CommandSpec.create(), new Help.ColorScheme(Help.Ansi.OFF));
+        Help help = new Help(CommandSpec.create(), new ColorScheme.Builder(Help.Ansi.OFF).build());
         String actual = help.synopsis();
         assertEquals(String.format("<main class>%n"), actual);
     }
@@ -2680,7 +2680,7 @@ public class CommandLineHelpTest {
     public void testAddSubcommand() {
         @Command(name = "app", mixinStandardHelpOptions = true)
         class App { }
-        Help help = new Help(new CommandLine(CommandSpec.create()).getCommandSpec(), new Help.ColorScheme(Help.Ansi.OFF));
+        Help help = new Help(new CommandLine(CommandSpec.create()).getCommandSpec(), new ColorScheme.Builder(Help.Ansi.OFF).build());
         help.addSubcommand("boo", new App());
         assertEquals(1, help.subcommands().size());
         assertEquals("app", help.subcommands().get("boo").commandSpec().name());
@@ -2972,11 +2972,11 @@ public class CommandLineHelpTest {
     @SuppressWarnings("deprecation")
     @Test
     public void testPrintHelpIfRequestedWithCustomColorScheme() {
-        ColorScheme customColorScheme = new Help.ColorScheme(Help.Ansi.ON)
+        ColorScheme customColorScheme = new ColorScheme.Builder(Help.Ansi.ON)
                 .optionParams(Style.fg_magenta)
                 .commands(Style.bg_cyan)
                 .options(Style.fg_green)
-                .parameters(Style.bg_white);
+                .parameters(Style.bg_white).build();
     
         @Command(mixinStandardHelpOptions = true)
         class App {

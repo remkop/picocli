@@ -7487,7 +7487,7 @@ public class CommandLine {
             }
 
             public String synopsis() {
-                return synopsisText(new Help.ColorScheme(Help.Ansi.OFF)).toString();
+                return synopsisText(new Help.ColorScheme.Builder(Help.Ansi.OFF).build()).toString();
             }
 
             public Text synopsisText(Help.ColorScheme colorScheme) {
@@ -11455,7 +11455,7 @@ public class CommandLine {
             this.commandSpec = Assert.notNull(commandSpec, "commandSpec");
             this.aliases = new ArrayList<String>(Arrays.asList(commandSpec.aliases()));
             this.aliases.add(0, commandSpec.name());
-            this.colorScheme = Assert.notNull(colorScheme, "colorScheme").applySystemProperties();
+            this.colorScheme = new ColorScheme.Builder(colorScheme).applySystemProperties().build();
             parameterLabelRenderer = createDefaultParamLabelRenderer(); // uses help separator
 
             this.addAllSubcommands(commandSpec.subcommands());
@@ -13004,40 +13004,29 @@ public class CommandLine {
          * Users may customize these styles by creating Help with a custom color scheme.
          * <p>Note that these options and styles may not be rendered if ANSI escape codes are not
          * {@linkplain Ansi#enabled() enabled}.</p>
+         * <p>From 4.0, instances of this class are immutable.</p>
+         * @see Builder
          * @see Help#defaultColorScheme(Ansi)
          */
         public static class ColorScheme {
-            public final List<IStyle> commandStyles = new ArrayList<IStyle>();
-            public final List<IStyle> optionStyles = new ArrayList<IStyle>();
-            public final List<IStyle> parameterStyles = new ArrayList<IStyle>();
-            public final List<IStyle> optionParamStyles = new ArrayList<IStyle>();
+            private final List<IStyle> commandStyles;
+            private final List<IStyle> optionStyles;
+            private final List<IStyle> parameterStyles;
+            private final List<IStyle> optionParamStyles;
             private final Ansi ansi;
-
-            /** Constructs a new empty ColorScheme with {@link Help.Ansi#AUTO}. */
-            public ColorScheme() { this(Ansi.AUTO); }
 
             /** Constructs a new empty ColorScheme with the specified Ansi enabled mode.
              * @see Help#defaultColorScheme(Ansi)
-             * @param ansi whether to emit ANSI escape codes or not
+             * @param builder contains the color scheme attributes to use
              */
-            public ColorScheme(Ansi ansi) {this.ansi = Assert.notNull(ansi, "ansi"); }
-
-            /** Adds the specified styles to the registered styles for commands in this color scheme and returns this color scheme.
-             * @param styles the styles to add to the registered styles for commands in this color scheme
-             * @return this color scheme to enable method chaining for a more fluent API */
-            public ColorScheme commands(IStyle... styles)     { return addAll(commandStyles, styles); }
-            /** Adds the specified styles to the registered styles for options in this color scheme and returns this color scheme.
-             * @param styles the styles to add to registered the styles for options in this color scheme
-             * @return this color scheme to enable method chaining for a more fluent API */
-            public ColorScheme options(IStyle... styles)      { return addAll(optionStyles, styles);}
-            /** Adds the specified styles to the registered styles for positional parameters in this color scheme and returns this color scheme.
-             * @param styles the styles to add to registered the styles for parameters in this color scheme
-             * @return this color scheme to enable method chaining for a more fluent API */
-            public ColorScheme parameters(IStyle... styles)   { return addAll(parameterStyles, styles);}
-            /** Adds the specified styles to the registered styles for option parameters in this color scheme and returns this color scheme.
-             * @param styles the styles to add to the registered styles for option parameters in this color scheme
-             * @return this color scheme to enable method chaining for a more fluent API */
-            public ColorScheme optionParams(IStyle... styles) { return addAll(optionParamStyles, styles);}
+            ColorScheme(ColorScheme.Builder builder) {
+                Assert.notNull(builder, "builder");
+                this.ansi         = Assert.notNull(builder.ansi(), "ansi");
+                commandStyles     = Collections.unmodifiableList(new ArrayList<IStyle>(builder.commandStyles()));
+                optionStyles      = Collections.unmodifiableList(new ArrayList<IStyle>(builder.optionStyles()));
+                parameterStyles   = Collections.unmodifiableList(new ArrayList<IStyle>(builder.parameterStyles()));
+                optionParamStyles = Collections.unmodifiableList(new ArrayList<IStyle>(builder.optionParamStyles()));
+            }
             /** Returns a Text with all command styles applied to the specified command string.
              * @param command the command string to apply the registered command styles to
              * @return a Text with all command styles applied to the specified command string */
@@ -13055,34 +13044,122 @@ public class CommandLine {
              * @return a Text with all option parameter styles applied to the specified option parameter string */
             public Ansi.Text optionParamText(String optionParam) { return ansi().apply(optionParam, optionParamStyles); }
 
-            /** Replaces colors and styles in this scheme with ones specified in system properties, and returns this scheme.
-             * Supported property names:<ul>
-             *     <li>{@code picocli.color.commands}</li>
-             *     <li>{@code picocli.color.options}</li>
-             *     <li>{@code picocli.color.parameters}</li>
-             *     <li>{@code picocli.color.optionParams}</li>
-             * </ul><p>Property values can be anything that {@link Help.Ansi.Style#parse(String)} can handle.</p>
-             * @return this ColorScheme
-             */
-            public ColorScheme applySystemProperties() {
-                replace(commandStyles,     System.getProperty("picocli.color.commands"));
-                replace(optionStyles,      System.getProperty("picocli.color.options"));
-                replace(parameterStyles,   System.getProperty("picocli.color.parameters"));
-                replace(optionParamStyles, System.getProperty("picocli.color.optionParams"));
-                return this;
+            /** Returns the {@code Ansi} setting of this color scheme. */
+            public Ansi ansi() { return ansi; }
+            /** Returns the registered styles for commands in this color scheme.
+             * @since 4.0 */
+            public List<IStyle> commandStyles()     { return commandStyles; }
+            /** Returns the registered styles for options in this color scheme.
+             * @since 4.0 */
+            public List<IStyle> optionStyles()      { return optionStyles; }
+            /** Returns the registered styles for positional parameters in this color scheme.
+             * @since 4.0 */
+            public List<IStyle> parameterStyles()   { return parameterStyles; }
+            /** Returns the registered styles for option parameters in this color scheme.
+             * @since 4.0 */
+            public List<IStyle> optionParamStyles() { return optionParamStyles; }
+
+            @Override public boolean equals(Object obj) {
+                if (this == obj) { return true; }
+                if (!(obj instanceof ColorScheme)) { return false; }
+                ColorScheme other = (ColorScheme) obj;
+                return ansi.equals(other.ansi)
+                        && commandStyles.equals(other.commandStyles)
+                        && optionStyles.equals(other.optionStyles)
+                        && parameterStyles.equals(other.parameterStyles)
+                        && optionParamStyles.equals(other.optionParamStyles);
             }
-            private void replace(List<IStyle> styles, String property) {
-                if (property != null) {
-                    styles.clear();
-                    addAll(styles, Style.parse(property));
-                }
-            }
-            private ColorScheme addAll(List<IStyle> styles, IStyle... add) {
-                styles.addAll(Arrays.asList(add));
-                return this;
+            @Override public int hashCode() {
+                int result = 17;
+                result = result * 37 + ansi.hashCode();
+                result = result * 37 + commandStyles.hashCode();
+                result = result * 37 + optionStyles.hashCode();
+                result = result * 37 + parameterStyles.hashCode();
+                result = result * 37 + optionParamStyles.hashCode();
+                return result;
             }
 
-            public Ansi ansi() { return ansi; }
+            /** Builder class to create {@code ColorScheme} instances.
+             * @since 4.0 */
+            public static class Builder {
+                private final List<IStyle> commandStyles = new ArrayList<IStyle>();
+                private final List<IStyle> optionStyles = new ArrayList<IStyle>();
+                private final List<IStyle> parameterStyles = new ArrayList<IStyle>();
+                private final List<IStyle> optionParamStyles = new ArrayList<IStyle>();
+                private Ansi ansi = Ansi.AUTO;
+
+                /** Constructs an empty color scheme builder with Ansi.AUTO. */
+                public Builder() { }
+                /** Constructs an empty color scheme builder with the specified Ansi value. */
+                public Builder(Ansi ansi) { this.ansi = Assert.notNull(ansi, "ansi"); }
+                /** Constructs a color scheme builder with all attributes copied from the specified color scheme. */
+                public Builder(ColorScheme existing) {
+                    Assert.notNull(existing, "colorScheme");
+                    this.ansi = Assert.notNull(existing.ansi(), "ansi");
+                    this.commandStyles.addAll(existing.commandStyles());
+                    this.optionStyles.addAll(existing.optionStyles());
+                    this.parameterStyles.addAll(existing.parameterStyles());
+                    this.optionParamStyles.addAll(existing.optionParamStyles());
+                }
+                /** Returns the {@code Ansi} setting of this color scheme builder. */
+                public Ansi ansi() { return ansi; }
+                /** Returns the {@code Ansi} setting of this color scheme builder. */
+                public ColorScheme.Builder ansi(Ansi ansi) { this.ansi = Assert.notNull(ansi, "ansi"); return this; }
+                /** Returns the registered styles for commands in this color scheme builder. */
+                public List<IStyle> commandStyles()     { return commandStyles; }
+                /** Returns the registered styles for options in this color scheme builder. */
+                public List<IStyle> optionStyles()      { return optionStyles; }
+                /** Returns the registered styles for positional parameters in this color scheme builder. */
+                public List<IStyle> parameterStyles()   { return parameterStyles; }
+                /** Returns the registered styles for option parameters in this color scheme builder. */
+                public List<IStyle> optionParamStyles() { return optionParamStyles; }
+
+                /** Adds the specified styles to the registered styles for commands in this color scheme builder and returns this builder.
+                 * @param styles the styles to add to the registered styles for commands in this color scheme builder
+                 * @return this color scheme builder to enable method chaining for a more fluent API */
+                public ColorScheme.Builder commands(IStyle... styles)     { return addAll(commandStyles, styles); }
+                /** Adds the specified styles to the registered styles for options in this color scheme and returns this color scheme.
+                 * @param styles the styles to add to registered the styles for options in this color scheme builder
+                 * @return this color scheme builder to enable method chaining for a more fluent API */
+                public ColorScheme.Builder options(IStyle... styles)      { return addAll(optionStyles, styles);}
+                /** Adds the specified styles to the registered styles for positional parameters in this color scheme builder and returns this builder.
+                 * @param styles the styles to add to registered the styles for parameters in this color scheme builder
+                 * @return this color scheme builder to enable method chaining for a more fluent API */
+                public ColorScheme.Builder parameters(IStyle... styles)   { return addAll(parameterStyles, styles);}
+                /** Adds the specified styles to the registered styles for option parameters in this color scheme builder and returns this builder.
+                 * @param styles the styles to add to the registered styles for option parameters in this color scheme builder
+                 * @return this color scheme builder to enable method chaining for a more fluent API */
+                public ColorScheme.Builder optionParams(IStyle... styles) { return addAll(optionParamStyles, styles);}
+
+                /** Replaces colors and styles in this scheme builder with ones specified in system properties, and returns this builder.
+                 * Supported property names:<ul>
+                 *     <li>{@code picocli.color.commands}</li>
+                 *     <li>{@code picocli.color.options}</li>
+                 *     <li>{@code picocli.color.parameters}</li>
+                 *     <li>{@code picocli.color.optionParams}</li>
+                 * </ul><p>Property values can be anything that {@link Help.Ansi.Style#parse(String)} can handle.</p>
+                 * @return this ColorScheme builder
+                 */
+                public ColorScheme.Builder applySystemProperties() {
+                    replace(commandStyles,     System.getProperty("picocli.color.commands"));
+                    replace(optionStyles,      System.getProperty("picocli.color.options"));
+                    replace(parameterStyles,   System.getProperty("picocli.color.parameters"));
+                    replace(optionParamStyles, System.getProperty("picocli.color.optionParams"));
+                    return this;
+                }
+                private void replace(List<IStyle> styles, String property) {
+                    if (property != null) {
+                        styles.clear();
+                        addAll(styles, Style.parse(property));
+                    }
+                }
+                private ColorScheme.Builder addAll(List<IStyle> styles, IStyle... add) {
+                    styles.addAll(Arrays.asList(add));
+                    return this;
+                }
+                /** Creates and returns a new {@code ColorScheme} with the values configured on this builder. */
+                public ColorScheme build() { return new ColorScheme(this); }
+            }
         }
 
         /** Creates and returns a new {@link ColorScheme} initialized with picocli default values: commands are bold,
@@ -13091,11 +13168,11 @@ public class CommandLine {
          * @return a new default color scheme
          */
         public static ColorScheme defaultColorScheme(Ansi ansi) {
-            return new ColorScheme(ansi)
+            return new ColorScheme.Builder(ansi)
                     .commands(Style.bold)
                     .options(Style.fg_yellow)
                     .parameters(Style.fg_yellow)
-                    .optionParams(Style.italic);
+                    .optionParams(Style.italic).build();
         }
 
         /** Provides methods and inner classes to support using ANSI escape codes in usage help messages. */
@@ -13313,6 +13390,15 @@ public class CommandLine {
                 }
                 public String on() { return String.format(CSI + "%d;5;%dm", fgbg, color); }
                 public String off() { return CSI + (fgbg + 1) + "m"; }
+                public boolean equals(Object obj) {
+                    if (obj == this) { return true; }
+                    if (!(obj instanceof Palette256Color)) { return false; }
+                    Palette256Color other = (Palette256Color) obj;
+                    return other.fgbg == this.fgbg && other.color == this.color;
+                }
+                public int hashCode() {
+                    return (17 + fgbg) * 37 + color;
+                }
             }
             private static class StyledSection {
                 int startIndex, length;

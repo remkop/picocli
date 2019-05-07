@@ -96,7 +96,10 @@ public class HelpSubCommandTest {
         CommandLine commandLine = new CommandLine(new TopLevelCommand());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        commandLine.usage(new PrintStream(baos), CommandLine.Help.defaultColorScheme(Help.Ansi.ON).commands(Help.Ansi.Style.underline)); // add underline
+        commandLine.usage(new PrintStream(baos),
+                new Help.ColorScheme.Builder(CommandLine.Help.defaultColorScheme(Help.Ansi.ON))
+                        .commands(Help.Ansi.Style.underline)
+                        .build()); // add underline
         
         String expected = Help.Ansi.ON.new Text(String.format("" +
                 "Usage: @|bold,underline top|@ [COMMAND]%n" +
@@ -112,7 +115,10 @@ public class HelpSubCommandTest {
         CommandLine commandLine = new CommandLine(new TopLevelCommand());
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        commandLine.getSubcommands().get("sub").usage(new PrintStream(baos), CommandLine.Help.defaultColorScheme(Help.Ansi.ON).commands(Help.Ansi.Style.underline)); // add underline
+        commandLine.getSubcommands().get("sub").usage(new PrintStream(baos),
+                new CommandLine.Help.ColorScheme.Builder(CommandLine.Help.defaultColorScheme(Help.Ansi.ON))
+                        .commands(Help.Ansi.Style.underline)
+                        .build()); // add underline
 
         String expected = Help.Ansi.ON.new Text(String.format("" +
                 "Usage: @|bold,underline top sub|@ [COMMAND]%n" +

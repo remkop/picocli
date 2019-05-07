@@ -166,6 +166,7 @@ With the new execute API the ColorScheme class will start to play a more central
 - [#683] Ensure exitCodeList implementation is consistent with other usage message attributes.
 - [#575] Use mixinStandardHelpOptions in `AutoComplete$App` (add the `--version` option)
 - [#684] Make `CommandLine.defaultFactory` method public.
+- [#675] Make `Help.ColorScheme` immutable. This is a breaking API change. 
 - [#673] Deprecate `CommandLine.Range` public fields, add accessor methods to use instead.
 - [#676] Bugfix: non-defined variables in `defaultValue` now correctly resolve to `null`, and options and positional parameters are now correctly considered `required` only if their default value is `null` after variable interpolation. Thanks to [ifedorenko](https://github.com/ifedorenko) for raising this.
 - [#682] Bug: incorrect evaluation for multiple occurrences of a variable.
@@ -173,6 +174,8 @@ With the new execute API the ColorScheme class will start to play a more central
 - [#681] Documentation: Add exit code section to Internationalization example in user manual.
 
 ## <a name="4.0.0-alpha-3-deprecated"></a> Deprecations
+
+### Convenience Methods Replaced by `execute`
 All variants of the `run`, `call`, `invoke`, and `parseWithHandlers` methods are deprecated from this release, in favor of the new `execute` method.
 
 Similarly, the following classes and interfaces are deprecated:
@@ -181,9 +184,15 @@ Similarly, the following classes and interfaces are deprecated:
 * `IExceptionHandler2` is deprecated in favor of the new `IParameterExceptionHandler` `IExecutionExceptionHandler` interfaces.
 * The `AbstractHandler` and `AbstractParseResultHandler` classes are deprecated with no replacement.
 
+## Range
+The public fields of the `Range` class have been deprecated and public methods `min()`, `max()`, `isVariable()` have been added that should be used instead.
 
 ## <a name="4.0.0-alpha-3-breaking-changes"></a> Potential breaking changes
 
+The `Help.ColorScheme` class has been made immutable. Its public fields are no longer public.
+A new `Help.ColorScheme.Builder` class has been introduced to create `ColorScheme` instances.
+
+This is a breaking API change: I could not think of a way to do this without breaking backwards compatibility.
 
 # <a name="4.0.0-alpha-2"></a> Picocli 4.0.0-alpha-2
 The picocli community is pleased to announce picocli 4.0.0-alpha-2.

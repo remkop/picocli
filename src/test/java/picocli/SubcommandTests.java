@@ -1082,10 +1082,11 @@ public class SubcommandTests {
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         CommandLine.Help.ColorScheme original = commandLine.getColorScheme();
-        assertEquals(Arrays.asList(CommandLine.Help.Ansi.Style.bold), original.commandStyles);
+        assertEquals(Arrays.asList(CommandLine.Help.Ansi.Style.bold), original.commandStyles());
 
-        CommandLine.Help.ColorScheme scheme = new CommandLine.Help.ColorScheme();
-        scheme.commands(CommandLine.Help.Ansi.Style.fg_black, CommandLine.Help.Ansi.Style.bg_cyan);
+        CommandLine.Help.ColorScheme scheme = new CommandLine.Help.ColorScheme.Builder()
+                .commands(CommandLine.Help.Ansi.Style.fg_black, CommandLine.Help.Ansi.Style.bg_cyan)
+                .build();
         commandLine.setColorScheme(scheme);
         assertEquals(scheme, commandLine.getColorScheme());
 
@@ -1111,10 +1112,11 @@ public class SubcommandTests {
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
         CommandLine.Help.ColorScheme original = commandLine.getColorScheme();
-        assertEquals(Arrays.asList(CommandLine.Help.Ansi.Style.bold), original.commandStyles);
+        assertEquals(Arrays.asList(CommandLine.Help.Ansi.Style.bold), original.commandStyles());
 
-        CommandLine.Help.ColorScheme scheme = new CommandLine.Help.ColorScheme();
-        scheme.commands(CommandLine.Help.Ansi.Style.fg_black, CommandLine.Help.Ansi.Style.bg_cyan);
+        CommandLine.Help.ColorScheme scheme = new CommandLine.Help.ColorScheme.Builder()
+                .commands(CommandLine.Help.Ansi.Style.fg_black, CommandLine.Help.Ansi.Style.bg_cyan)
+                .build();
         commandLine.setColorScheme(scheme);
         assertEquals(scheme, commandLine.getColorScheme());
 
