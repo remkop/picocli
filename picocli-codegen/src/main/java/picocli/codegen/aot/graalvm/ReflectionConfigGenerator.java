@@ -142,7 +142,9 @@ public class ReflectionConfigGenerator {
 
             // ANSI color enabled detection
             getOrCreateClassName("java.lang.System").addMethod("console");
-            getOrCreateClassName("org.fusesource.jansi.AnsiConsole").addField("out", false);
+
+            // Issue #645: exclude Jansi Console from reflection configuration
+            //getOrCreateClassName("org.fusesource.jansi.AnsiConsole").addField("out", false);
 
             // picocli 4.0
             getOrCreateClassName("java.util.ResourceBundle").addMethod("getBaseBundleName");

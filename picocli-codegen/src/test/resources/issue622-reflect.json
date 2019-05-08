@@ -253,16 +253,6 @@
     ]
   },
   {
-    "name" : "org.fusesource.jansi.AnsiConsole",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true,
-    "fields" : [
-      { "name" : "out" }
-    ]
-  },
-  {
     "name" : "picocli.CommandLine$Model$ObjectScope",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,

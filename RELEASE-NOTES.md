@@ -154,23 +154,24 @@ With the new execute API the ColorScheme class will start to play a more central
 
 
 ## <a name="4.0.0-alpha-3-fixes"></a> Fixed issues
-- [#516] Add support for color schemes in the convenience methods and associated classes and interfaces. Thanks to [Bob Tiernay](https://github.com/bobtiernay-okta) for the suggestion.
-- [#561] Parser configuration for convenience methods.
-- [#650] Global parser configuration if using Runnable. Thanks to [gitfineon](https://github.com/gitfineon) for raising this.
-- [#424] Exit on help, version or invalid arguments. Thanks to [Gerard Bosch](https://github.com/gerardbosch) for raising this.
-- [#541] Improved exception handling for Runnable/Callable.
+- [#516] API: Add support for color schemes in the convenience methods and associated classes and interfaces. Thanks to [Bob Tiernay](https://github.com/bobtiernay-okta) for the suggestion.
+- [#561] API: Parser configuration for convenience methods.
+- [#650] API: Global parser configuration if using Runnable. Thanks to [gitfineon](https://github.com/gitfineon) for raising this.
+- [#424] API: Exit on help, version or invalid arguments. Thanks to [Gerard Bosch](https://github.com/gerardbosch) for raising this.
+- [#541] API: Improved exception handling for Runnable/Callable.
+- [#680] API: Add annotation API for exitCodeList and exitCodeListHeading.
+- [#611] API: Add `CommandLine.addSubcommand` overloaded method without name or alias. Thanks to [andrewbleonard](https://github.com/andrewbleonard) for the request.
+- [#684] API: Make `CommandLine.defaultFactory` method public.
+- [#675] API: Make `Help.ColorScheme` immutable. This is a breaking API change. 
+- [#673] API: Deprecate `CommandLine.Range` public fields, add accessor methods to use instead.
 - [#663] How to remove stacktraces on error. Thanks to [Nicolas Mingo](https://github.com/nicolasmingo) and [jrevault](https://github.com/jrevault) for raising this and subsequent discussion.
 - [#672] Need way to send errors back from subcommand. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
 - [#678] Exit Status section in usage help message.
-- [#680] Add annotation API for exitCodeList and exitCodeListHeading.
 - [#683] Ensure exitCodeList implementation is consistent with other usage message attributes.
-- [#611] Add `CommandLine.addSubcommand` overloaded method without name or alias. Thanks to [andrewbleonard](https://github.com/andrewbleonard) for the request.
-- [#575] Use mixinStandardHelpOptions in `AutoComplete$App` (add the `--version` option)
-- [#684] Make `CommandLine.defaultFactory` method public.
-- [#675] Make `Help.ColorScheme` immutable. This is a breaking API change. 
-- [#673] Deprecate `CommandLine.Range` public fields, add accessor methods to use instead.
+- [#575] Codegen: Use mixinStandardHelpOptions in `AutoComplete$App` (add support for the `--version` option)
+- [#645] Codegen: Exclude Jansi Console from generated GraalVM reflection configuration. Thanks to [shanetreacy](https://github.com/shanetreacy) for raising this.
 - [#676] Bugfix: non-defined variables in `defaultValue` now correctly resolve to `null`, and options and positional parameters are now correctly considered `required` only if their default value is `null` after variable interpolation. Thanks to [ifedorenko](https://github.com/ifedorenko) for raising this.
-- [#682] Bug: incorrect evaluation for multiple occurrences of a variable.
+- [#682] Bugfix: incorrect evaluation for multiple occurrences of a variable.
 - [#679] Documentation: Update examples for new execute API. Add examples for exit code control and custom exception handlers.
 - [#681] Documentation: Add exit code section to Internationalization example in user manual.
 

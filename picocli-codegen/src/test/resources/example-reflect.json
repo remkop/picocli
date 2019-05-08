@@ -288,16 +288,6 @@
     "allPublicMethods" : true
   },
   {
-    "name" : "org.fusesource.jansi.AnsiConsole",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true,
-    "fields" : [
-      { "name" : "out" }
-    ]
-  },
-  {
     "name" : "picocli.CommandLine$AutoHelpMixin",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
