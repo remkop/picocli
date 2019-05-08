@@ -94,7 +94,7 @@ public class AutoComplete {
      * CLI command class for generating completion script.
      */
     @Command(name = "picocli.AutoComplete", mixinStandardHelpOptions = true,
-            version = "picocli.AutoComplete v4.0.0-alpha-3-SNAPSHOT", sortOptions = false,
+            version = "picocli.AutoComplete " + CommandLine.VERSION, sortOptions = false,
             description = "Generates a bash completion script for the specified command class.",
             footerHeading = "%n@|bold System Properties:|@%n",
             footer = {"Set the following system properties to control the exit code of this program:",
