@@ -57,6 +57,111 @@ public class SubcommandTests {
         public CustomType convert(String value) { return new CustomType(value); }
     }
 
+    @Test
+    public void testAddSubcommandWithoutNameRequiresAnnotationName() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        try {
+            cmd.addSubcommand(new ChildCommand1());
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("Cannot add subcommand with null name to <main class>", ex.getMessage());
+        }
+    }
+
+    @Command(name = "annotationName")
+    static class SubcommandWithAnnotationName {}
+
+    @Test
+    public void testAddSubcommandWithoutNameUsesInstanceAnnotationName() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        Object userObject = new SubcommandWithAnnotationName();
+        cmd.addSubcommand(userObject);
+        assertTrue(cmd.getSubcommands().containsKey("annotationName"));
+        assertSame(userObject, cmd.getSubcommands().get("annotationName").getCommand());
+    }
+
+    @Test
+    public void testAddSubcommandWithoutNameUsesClassAnnotationName() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        cmd.addSubcommand(SubcommandWithAnnotationName.class);
+        assertTrue(cmd.getSubcommands().containsKey("annotationName"));
+        Object userObject = cmd.getSubcommands().get("annotationName").getCommand();
+        assertTrue(userObject instanceof SubcommandWithAnnotationName);
+    }
+
+    @Test
+    public void testAddSubcommandWithoutNameUsesInstanceSpecName() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        Object userObject = new SubcommandWithAnnotationName();
+        CommandSpec instanceSpec = CommandSpec.forAnnotatedObject(userObject);
+        cmd.addSubcommand(instanceSpec);
+        assertTrue(cmd.getSubcommands().containsKey("annotationName"));
+        assertSame(userObject, cmd.getSubcommands().get("annotationName").getCommand());
+    }
+
+    @Test
+    public void testAddSubcommandWithoutNameUsesClassSpecName() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        CommandSpec classSpec = CommandSpec.forAnnotatedObject(SubcommandWithAnnotationName.class);
+        cmd.addSubcommand(classSpec);
+        assertTrue(cmd.getSubcommands().containsKey("annotationName"));
+        Object userObject = cmd.getSubcommands().get("annotationName").getCommand();
+        assertTrue(userObject instanceof SubcommandWithAnnotationName);
+    }
+
+    @Test
+    public void testAddSubcommandWithoutNameUsesCustomSpecName() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        CommandSpec classSpec = CommandSpec.create().name("random");
+        cmd.addSubcommand(classSpec);
+        assertTrue(cmd.getSubcommands().containsKey("random"));
+        Object userObject = cmd.getSubcommands().get("random").getCommand();
+        assertNull(userObject);
+    }
+
+    @Test
+    public void testAddSubcommandWithoutNameUsesInstanceCommandLineName() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        Object userObject = new SubcommandWithAnnotationName();
+        CommandLine instanceCmd = new CommandLine(userObject);
+        cmd.addSubcommand(instanceCmd);
+        assertTrue(cmd.getSubcommands().containsKey("annotationName"));
+        assertSame(userObject, cmd.getSubcommands().get("annotationName").getCommand());
+    }
+
+    @Test
+    public void testAddSubcommandWithoutNameUsesClassCommandLineName() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        CommandLine classCmd = new CommandLine(SubcommandWithAnnotationName.class);
+        cmd.addSubcommand(classCmd);
+        assertTrue(cmd.getSubcommands().containsKey("annotationName"));
+        Object userObject = cmd.getSubcommands().get("annotationName").getCommand();
+        assertTrue(userObject instanceof SubcommandWithAnnotationName);
+    }
+
+    @Command(aliases = {"alias1", "alias2"})
+    static class SubcommandWithAliases {}
+
+    @Test
+    public void testAddSubcommandWithoutNameUsesInstanceAnnotationAliases() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        Object userObject = new SubcommandWithAliases();
+        cmd.addSubcommand(userObject);
+        assertTrue(cmd.getSubcommands().containsKey("alias1"));
+        assertSame(userObject, cmd.getSubcommands().get("alias1").getCommand());
+        assertArrayEquals(new String[]{"alias2"}, cmd.getSubcommands().get("alias1").getCommandSpec().aliases());
+    }
+
+    @Test
+    public void testAddSubcommandWithoutNameUsesClassAnnotationAliases() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        cmd.addSubcommand(SubcommandWithAliases.class);
+        assertTrue(cmd.getSubcommands().containsKey("alias1"));
+        Object userObject = cmd.getSubcommands().get("alias1").getCommand();
+        assertTrue(userObject instanceof SubcommandWithAliases);
+        assertArrayEquals(new String[]{"alias2"}, cmd.getSubcommands().get("alias1").getCommandSpec().aliases());
+    }
+
     private static CommandLine createNestedCommand() {
         CommandLine commandLine = new CommandLine(new MainCommand());
         commandLine

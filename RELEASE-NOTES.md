@@ -164,6 +164,7 @@ With the new execute API the ColorScheme class will start to play a more central
 - [#678] Exit Status section in usage help message.
 - [#680] Add annotation API for exitCodeList and exitCodeListHeading.
 - [#683] Ensure exitCodeList implementation is consistent with other usage message attributes.
+- [#611] Add `CommandLine.addSubcommand` overloaded method without name or alias. Thanks to [andrewbleonard](https://github.com/andrewbleonard) for the request.
 - [#575] Use mixinStandardHelpOptions in `AutoComplete$App` (add the `--version` option)
 - [#684] Make `CommandLine.defaultFactory` method public.
 - [#675] Make `Help.ColorScheme` immutable. This is a breaking API change. 

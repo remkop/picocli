@@ -257,6 +257,20 @@ public class CommandLine {
         return result;
     }
 
+    /** Registers a subcommand with the name obtained from the {@code @Command(name = "...")} {@linkplain Command#name() annotation attribute} of the specified command.
+     * @param command the object to initialize with command line arguments following the subcommand name.
+     *                This may be a {@code Class} that has a {@code @Command} annotation, or an instance of such a
+     *                class, or a {@code ComandSpec} or {@code CommandLine} instance with its own (nested) subcommands.
+     * @return this CommandLine object, to allow method chaining
+     * @since 4.0
+     * @throws InitializationException if no name could be found for the specified subcommand,
+     *          or if another subcommand was already registered under the same name, or if one of the aliases
+     *          of the specified subcommand was already used by another subcommand.
+     * @see #addSubcommand(String, Object) */
+    public CommandLine addSubcommand(Object command) {
+        return addSubcommand(null, command, new String[0]);
+    }
+
     /** Registers a subcommand with the specified name. For example:
      * <pre>
      * CommandLine commandLine = new CommandLine(new Git())
@@ -290,28 +304,38 @@ public class CommandLine {
      * adding subcommands.</p>
      * <p>See also the {@link Command#subcommands()} annotation to register subcommands declaratively.</p>
      *
-     * @param name the string to recognize on the command line as a subcommand
+     * @param name the string to recognize on the command line as a subcommand.
+     *             If {@code null}, the {@linkplain CommandSpec#name() name} of the specified subcommand is used;
+     *             if this is also {@code null}, the first {@linkplain CommandSpec#aliases() alias} is used.
      * @param command the object to initialize with command line arguments following the subcommand name.
-     *          This may be a {@code CommandLine} instance with its own (nested) subcommands
+     *                This may be a {@code Class} that has a {@code @Command} annotation, or an instance of such a
+     *                class, or a {@code ComandSpec} or {@code CommandLine} instance with its own (nested) subcommands.
      * @return this CommandLine object, to allow method chaining
      * @see #registerConverter(Class, ITypeConverter)
      * @since 0.9.7
      * @see Command#subcommands()
+     * @throws InitializationException if the specified name is {@code null}, and no alternative name could be found,
+     *          or if another subcommand was already registered under the same name, or if one of the aliases
+     *          of the specified subcommand was already used by another subcommand.
      */
     public CommandLine addSubcommand(String name, Object command) {
         return addSubcommand(name, command, new String[0]);
     }
 
     /** Registers a subcommand with the specified name and all specified aliases. See also {@link #addSubcommand(String, Object)}.
-     *
-     *
-     * @param name the string to recognize on the command line as a subcommand
+     * @param name the string to recognize on the command line as a subcommand.
+     *             If {@code null}, the {@linkplain CommandSpec#name() name} of the specified subcommand is used;
+     *             if this is also {@code null}, the first {@linkplain CommandSpec#aliases() alias} is used.
      * @param command the object to initialize with command line arguments following the subcommand name.
-     *          This may be a {@code CommandLine} instance with its own (nested) subcommands
+     *                This may be a {@code Class} that has a {@code @Command} annotation, or an instance of such a
+     *                class, or a {@code ComandSpec} or {@code CommandLine} instance with its own (nested) subcommands.
      * @param aliases zero or more alias names that are also recognized on the command line as this subcommand
      * @return this CommandLine object, to allow method chaining
      * @since 3.1
      * @see #addSubcommand(String, Object)
+     * @throws InitializationException if the specified name is {@code null}, and no alternative name could be found,
+     *          or if another subcommand was already registered under the same name, or if one of the aliases
+     *          of the specified subcommand was already used by another subcommand.
      */
     public CommandLine addSubcommand(String name, Object command, String... aliases) {
         CommandLine subcommandLine = toCommandLine(command, factory);
@@ -4730,34 +4754,63 @@ public class CommandLine {
     
             /** Adds the specified subcommand with the specified name.
              * If the specified subcommand does not have a ResourceBundle set, it is initialized to the ResourceBundle of this command spec.
-             * @param name subcommand name - when this String is encountered in the command line arguments the subcommand is invoked
+             * @param name subcommand name - the preferred subcommand name to register the subcommand under.
+             *             If {@code null}, the {@linkplain CommandSpec#name() name} of the specified subcommand is used;
+             *             if this is also {@code null}, the first {@linkplain CommandSpec#aliases() alias} is used.
+             *             When this String is encountered in the command line arguments, the subcommand is invoked.
              * @param subcommand describes the subcommand to envoke when the name is encountered on the command line
-             * @return this {@code CommandSpec} object for method chaining */
+             * @return this {@code CommandSpec} object for method chaining
+             * @throws InitializationException if the specified name is {@code null}, and no alternative name could be found,
+             *          or if another subcommand was already registered under the same name, or if one of the aliases
+             *          of the specified subcommand was already used by another subcommand.
+             */
             public CommandSpec addSubcommand(String name, CommandSpec subcommand) {
                 return addSubcommand(name, new CommandLine(subcommand));
             }
     
             /** Adds the specified subcommand with the specified name.
              * If the specified subcommand does not have a ResourceBundle set, it is initialized to the ResourceBundle of this command spec.
-             * @param name subcommand name - when this String is encountered in the command line arguments the subcommand is invoked
+             * @param name subcommand name - the preferred subcommand name to register the subcommand under.
+             *             If {@code null}, the {@linkplain CommandLine#getCommandName() name} of the specified subcommand is used;
+             *             if this is also {@code null}, the first {@linkplain CommandSpec#aliases() alias} is used.
+             *             When this String is encountered in the command line arguments, the subcommand is invoked.
              * @param subCommandLine the subcommand to envoke when the name is encountered on the command line
-             * @return this {@code CommandSpec} object for method chaining */
+             * @return this {@code CommandSpec} object for method chaining
+             * @throws InitializationException if the specified name is {@code null}, and no alternative name could be found,
+             *          or if another subcommand was already registered under the same name, or if one of the aliases
+             *          of the specified subcommand was already used by another subcommand.
+             */
             public CommandSpec addSubcommand(String name, CommandLine subCommandLine) {
-                Tracer t = new Tracer();
-                if (t.isDebug()) {t.debug("Adding subcommand '%s' to '%s'%n", name, this.qualifiedName());}
-                CommandLine previous = commands.put(name, subCommandLine);
-                if (previous != null && previous != subCommandLine) { throw new InitializationException("Another subcommand named '" + name + "' already exists for command '" + this.name() + "'"); }
                 CommandSpec subSpec = subCommandLine.getCommandSpec();
-                if (subSpec.name == null) { subSpec.name(name); }
+                String actualName = validateSubcommandName(name, subSpec);
+                Tracer t = new Tracer();
+                if (t.isDebug()) {t.debug("Adding subcommand '%s' to '%s'%n", actualName, this.qualifiedName());}
+                CommandLine previous = commands.put(actualName, subCommandLine);
+                if (previous != null && previous != subCommandLine) { throw new InitializationException("Another subcommand named '" + actualName + "' already exists for command '" + this.name() + "'"); }
+                if (subSpec.name == null) { subSpec.name(actualName); }
                 subSpec.parent(this);
                 for (String alias : subSpec.aliases()) {
-                    if (t.isDebug()) {t.debug("Adding alias '%s' for subcommand '%s' to '%s'%n", alias, name, this.qualifiedName());}
+                    if (t.isDebug()) {t.debug("Adding alias '%s' for subcommand '%s' to '%s'%n", alias, actualName, this.qualifiedName());}
                     previous = commands.put(alias, subCommandLine);
-                    if (previous != null && previous != subCommandLine) { throw new InitializationException("Alias '" + alias + "' for subcommand '" + name + "' is already used by another subcommand of '" + this.name() + "'"); }
+                    if (previous != null && previous != subCommandLine) { throw new InitializationException("Alias '" + alias + "' for subcommand '" + actualName + "' is already used by another subcommand of '" + this.name() + "'"); }
                 }
                 subSpec.initCommandHierarchyWithResourceBundle(resourceBundleBaseName(), resourceBundle());
                 return this;
             }
+
+            private String validateSubcommandName(String name, CommandSpec subSpec) {
+                String result = name == null ? subSpec.name : name; // NOTE: check subSpec.name field, not subSpec.name()!
+                if (result == null && !subSpec.aliases.isEmpty()) {
+                    Iterator<String> iter = subSpec.aliases.iterator();
+                    result = iter.next();
+                    iter.remove();
+                }
+                if (result == null) {
+                    throw new InitializationException("Cannot add subcommand with null name to " + this.qualifiedName());
+                }
+                return result;
+            }
+
             private void initCommandHierarchyWithResourceBundle(String bundleBaseName, ResourceBundle rb) {
                 if (resourceBundle() == null) {
                     setBundle(bundleBaseName, rb);
