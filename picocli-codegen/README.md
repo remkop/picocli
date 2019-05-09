@@ -74,7 +74,7 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
         <includePluginDependencies>true</includePluginDependencies>
         <mainClass>picocli.codegen.aot.graalvm.ReflectionConfigGenerator</mainClass>
         <arguments>
-          <argument>--output=target/reflect-config.json</argument>
+          <argument>--output=target/classes/META-INF/native-image/${project.groupId}/${project.artifactId}/reflect-config.json</argument>
           <argument>com.your.package.YourCommand1</argument>
           <argument>com.your.package.YourCommand2</argument>
         </arguments>
@@ -176,7 +176,7 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
         <includePluginDependencies>true</includePluginDependencies>
         <mainClass>picocli.codegen.aot.graalvm.ResourceConfigGenerator</mainClass>
         <arguments>
-          <argument>--output=target/resource-config.json</argument>
+          <argument>--output=target/classes/META-INF/native-image/${project.groupId}/${project.artifactId}/resource-config.json</argument>
           <argument>com.your.package.YourCommand1</argument>
           <argument>com.your.package.YourCommand2</argument>
         </arguments>
@@ -276,7 +276,7 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
         <includePluginDependencies>true</includePluginDependencies>
         <mainClass>picocli.codegen.aot.graalvm.DynamicProxyConfigGenerator</mainClass>
         <arguments>
-          <argument>--output=target/proxy-config.json</argument>
+          <argument>--output=target/classes/META-INF/native-image/${project.groupId}/${project.artifactId}/proxy-config.json</argument>
           <argument>com.your.package.YourCommand1</argument>
           <argument>com.your.package.YourCommand2</argument>
         </arguments>
