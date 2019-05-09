@@ -27,18 +27,19 @@ ext.moduleName = 'info.picocli'
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
-task copyRootProjectCode(type: Copy) {    
-    from("${rootProject.projectDir}/src/main/java"){
+dependencies {
+    compile rootProject
+    compile project(':picocli-codegen')
+}
+
+task copyRootProjectClasses(dependsOn: classes, type: Copy) {
+    from("${rootProject.buildDir}/classes/java/main") {
         exclude '**/groovy'
     }
-    into "${projectDir}/src/main/java"
+    from("${rootProject.buildDir}/resources/main")
+    into "${buildDir}/classes/java/main"
 }
-task cleanupRootProjectCode(type: Delete) {
-    delete "${projectDir}/src/main/java/picocli"
-    delete fileTree("${projectDir}/src/main/java") {
-        exclude '**/module-info.java'
-    }
-}
+jar.dependsOn(copyRootProjectClasses)
 
 compileJava {
     inputs.property("moduleName", moduleName)   
@@ -51,10 +52,6 @@ compileJava {
         classpath = files()
     }
 }
-compileJava.dependsOn(copyRootProjectCode)
-assemble.finalizedBy(cleanupRootProjectCode)
-clean.finalizedBy(cleanupRootProjectCode)
-
 
 test {
     // Excluding unit tests, should have been generated already with the root project.
@@ -71,8 +68,7 @@ jar {
                    'Implementation-Version': version,
                    'Main-Class'            : 'picocli.AutoComplete'
     }
-    baseName = project.name + '-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }    
+    multiRelease = false
 }
 
 

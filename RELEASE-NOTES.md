@@ -208,6 +208,7 @@ This allows picocli-based native image applications that use `@Command`-annotate
 - [#645] Codegen: Exclude Jansi Console from generated GraalVM reflection configuration. Thanks to [shanetreacy](https://github.com/shanetreacy) for raising this.
 - [#686] Codegen: Add support for `@Command` interfaces (dynamic proxies) in GraalVM native image.
 - [#669] Codegen: Add support for resource bundles in GraalVM native image.
+- [#674] JPMS module: move module-info.class to root of jar.
 - [#676] Bugfix: non-defined variables in `defaultValue` now correctly resolve to `null`, and options and positional parameters are now correctly considered `required` only if their default value is `null` after variable interpolation. Thanks to [ifedorenko](https://github.com/ifedorenko) for raising this.
 - [#682] Bugfix: incorrect evaluation for multiple occurrences of a variable.
 - [#679] Documentation: Update examples for new execute API. Add examples for exit code control and custom exception handlers.
