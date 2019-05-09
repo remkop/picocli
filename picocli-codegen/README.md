@@ -25,8 +25,8 @@ See also the SubstrateVM [configuration documentation](https://github.com/oracle
 
 ### ReflectionConfigGenerator
 
-GraalVM has <a href="https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md">limited support for Java
-reflection</a> and it needs to know ahead of time the reflectively accessed program elements.
+GraalVM has [limited support for Java reflection](https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md)
+and it needs to know ahead of time the reflectively accessed program elements.
 
 `ReflectionConfigGenerator` generates a JSON String with the program elements that will be accessed reflectively in a picocli-based application, in order to compile this application ahead-of-time into a native executable with GraalVM.
 
@@ -124,7 +124,7 @@ assemble.dependsOn generateGraalReflectionConfig
 ### ResourceConfigGenerator
 
 The GraalVM native-image builder by default will not integrate any of the
-<a href="https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md">classpath resources</a> into the image it creates.
+[classpath resources](https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md) into the image it creates.
 
 `ResourceConfigGenerator` generates a JSON String with the resource bundles and other classpath resources
 that should be included in the Substrate VM native image.
@@ -225,7 +225,7 @@ assemble.dependsOn generateGraalResourceConfig
 ### DynamicProxyConfigGenerator
 
 Substrate VM doesn't provide machinery for generating and interpreting bytecodes at run time. Therefore all dynamic proxy classes 
-<a href="https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md">need to be generated</a> at native image build time.
+[need to be generated](https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md) at native image build time.
 
 `DynamicProxyConfigGenerator` generates a JSON String with the fully qualified interface names for which
 dynamic proxy classes should be generated at native image build time.
@@ -234,7 +234,7 @@ The output of `DynamicProxyConfigGenerator` is intended to be passed to the `-H:
 or placed in a `META-INF/native-image/` subdirectory of the JAR.
 
 This allows picocli-based native image applications that use `@Command`-annotated interfaces with
-`@Option` and `@Parameters`-annotated methods to define options and positional parameters.
+`@Option` and `@Parameters`-annotated methods.
 
 #### Generating Dynamic Proxy Configuration During the Build
 

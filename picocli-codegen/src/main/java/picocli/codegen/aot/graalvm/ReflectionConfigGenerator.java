@@ -2,6 +2,7 @@ package picocli.codegen.aot.graalvm;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.IGetter;
@@ -9,11 +10,8 @@ import picocli.CommandLine.Model.ISetter;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Model.UnmatchedArgsBinding;
-import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -30,9 +28,17 @@ import java.util.concurrent.Callable;
  * GraalVM has <a href="https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md">limited support for Java
  * reflection</a> and it needs to know ahead of time the reflectively accessed program elements.
  * </p><p>
- * The output of {@code ReflectionConfigGenerator} is intended to be passed to the {@code -H:ReflectionConfigurationFiles=/path/to/reflectconfig}
+ * The output of {@code ReflectionConfigGenerator} is intended to be passed to the {@code -H:ReflectionConfigurationFiles=/path/to/reflect-config.json}
  * option of the {@code native-image} <a href="https://www.graalvm.org/docs/reference-manual/aot-compilation/">GraalVM utility</a>.
  * This allows picocli-based applications to be compiled to a native image.
+ * </p><p>
+ * Alternatively, the generated <a href="https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md">configuration</a>
+ * files can be supplied to the {@code native-image} tool by placing them in a
+ * {@code META-INF/native-image/} directory on the class path, for example, in a JAR file used in the image build.
+ * This directory (or any of its subdirectories) is searched for files with the names {@code jni-config.json},
+ * {@code reflect-config.json}, {@code proxy-config.json} and {@code resource-config.json}, which are then automatically
+ * included in the build. Not all of those files must be present.
+ * When multiple files with the same name are found, all of them are included.
  * </p><p>
  * If necessary, it is possible to exclude classes with system property {@code picocli.codegen.excludes},
  * which accepts a comma-separated list of regular expressions of the fully qualified class names that should
@@ -53,45 +59,26 @@ public class ReflectionConfigGenerator {
     @Command(name = "ReflectionConfigGenerator",
             description = {"Generates a JSON file with the program elements that will be " +
                     "accessed reflectively for the specified @Command classes. " +
-                    "The generated JSON file can be passed to the -H:ReflectionConfigurationFiles=/path/to/reflectconfig " +
+                    "The generated JSON file can be passed to the -H:ReflectionConfigurationFiles=/path/to/reflect-config.json " +
                     "option of the `native-image` GraalVM utility.",
                     "See https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md"},
-            mixinStandardHelpOptions = true, version = "picocli-codegen ReflectionConfigGenerator 3.7.0")
-    private static class App implements Callable<Void> {
+            mixinStandardHelpOptions = true, version = "picocli-codegen ReflectionConfigGenerator " + CommandLine.VERSION)
+    private static class App implements Callable<Integer> {
 
         @Parameters(arity = "1..*", description = "One or more classes to generate a GraalVM ReflectionConfiguration for.")
         Class<?>[] classes = new Class<?>[0];
 
-        @Option(names = {"-o", "--output"}, description = "Output file to write the configuration to. " +
-                "If not specified, the configuration is written to the standard output stream.")
-        File outputFile;
+        @Mixin
+        OutputFileMixin outputFile = new OutputFileMixin();
 
-        public Void call() throws NoSuchFieldException, IllegalAccessException, IOException {
+        public Integer call() throws NoSuchFieldException, IllegalAccessException, IOException {
             List<CommandSpec> specs = new ArrayList<CommandSpec>();
             for (Class<?> cls : classes) {
                 specs.add(new CommandLine(cls).getCommandSpec());
             }
-            String result = new ReflectionConfigGenerator().generateReflectionConfig(specs.toArray(new CommandSpec[0]));
-            if (result != null) {
-                if (outputFile == null) {
-                    System.out.print(result);
-                } else {
-                    writeToFile(result);
-                }
-            }
-            return null;
-        }
-
-        private void writeToFile(String result) throws IOException {
-            FileWriter writer = null;
-            try {
-                writer = new FileWriter(outputFile);
-                writer.write(result);
-            } finally {
-                if (writer != null) {
-                    writer.close();
-                }
-            }
+            String result = ReflectionConfigGenerator.generateReflectionConfig(specs.toArray(new CommandSpec[0]));
+            outputFile.write(result);
+            return 0;
         }
     }
 
@@ -109,11 +96,11 @@ public class ReflectionConfigGenerator {
      *
      * @param specs one or more {@code CommandSpec} objects to inspect
      * @return a JSON String in the <a href="https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md#manual-configuration">format</a>
-     *       required by the {@code -H:ReflectionConfigurationFiles=/path/to/reflectconfig} option of the GraalVM {@code native-image} utility.
+     *       required by the {@code -H:ReflectionConfigurationFiles=/path/to/reflect-config.json} option of the GraalVM {@code native-image} utility.
      * @throws NoSuchFieldException if a problem occurs while processing the specified specs
      * @throws IllegalAccessException if a problem occurs while processing the specified specs
      */
-    public String generateReflectionConfig(CommandSpec... specs) throws NoSuchFieldException, IllegalAccessException {
+    static String generateReflectionConfig(CommandSpec... specs) throws NoSuchFieldException, IllegalAccessException {
         Visitor visitor = new Visitor();
         for (CommandSpec spec : specs) {
             visitor.visitCommandSpec(spec);
@@ -121,7 +108,7 @@ public class ReflectionConfigGenerator {
         return generateReflectionConfig(visitor).toString();
     }
 
-    StringBuilder generateReflectionConfig(Visitor visited) {
+    static StringBuilder generateReflectionConfig(Visitor visited) {
         StringBuilder result = new StringBuilder(1024);
         String prefix = String.format("[%n");
         String suffix = String.format("%n]%n");
@@ -221,7 +208,7 @@ public class ReflectionConfigGenerator {
                 if (f.isAnnotationPresent(CommandLine.ParentCommand.class)) {
                     reflectedClass.addField(f.getName(), isFinal(f));
                 }
-                if (f.isAnnotationPresent(CommandLine.Mixin.class)) {
+                if (f.isAnnotationPresent(Mixin.class)) {
                     reflectedClass.addField(f.getName(), isFinal(f));
                 }
                 if (f.isAnnotationPresent(CommandLine.Unmatched.class)) {

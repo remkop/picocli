@@ -9,9 +9,11 @@ This method returns an exit code that applications can use to call `System.exit`
 
 The older `run`, `call`, `invoke` and `parseWithHandlers` convenience methods that were similar to `execute` but had limited support for parser configuration and and limited support for exit codes are deprecated from this release.
 
+This release also improves the picocli tools for configuring GraalVM native image builds: there is now support for commands with resource bundles and jewelcli-style `@Command`-annotated interfaces for which picocli generates a dynamic proxy.
+
 _Please try this and provide feedback. We can still make changes._
 
-_What do you think of the annotations API? What about the programmatic API? Does it work as expected? Are the input validation error messages correct and clear? Is the documentation clear and complete? Anything you want to change or improve? Any other feedback?_
+_What do you think of the `@ArgGroup` annotations API? What about the programmatic API? Does it work as expected? Are the input validation error messages correct and clear? Is the documentation clear and complete? Anything you want to change or improve? Any other feedback?_
 
 
 Many thanks to the picocli community for the contributions!
@@ -150,7 +152,41 @@ Previous versions of picocli offered the `run`, `call` and `invoke` methods to e
 
 #### Feedback Requested
 
-With the new execute API the ColorScheme class will start to play a more central role. I’m considering making the ColorScheme class immutable. This would be a breaking API change. Should it be deprecated first, or not changed at all, or is the upcoming 4.0 release a good time to make breaking changes? Your feedback is very welcome on https://github.com/remkop/picocli/issues/675. 
+With the new execute API the `ColorScheme` class will start to play a more central role. I decided to make the `ColorScheme` class immutable from this release. This is a breaking API change. 
+Should it be deprecated first, or not changed at all, or is the 4.0 release a good time to make breaking changes? Your feedback is very welcome on https://github.com/remkop/picocli/issues/675. 
+
+### <a name="4.0.0-alpha-3-codegen"></a> Tools for Configuring GraalVM Native Image Builds
+
+The `picocli-codegen` module now has two new tools, in addition to the existing `ReflectionConfigGenerator`:
+
+* ResourceConfigGenerator
+* DynamicProxyConfigGenerator
+
+#### ResourceConfigGenerator
+The GraalVM native-image builder by default will not integrate any of the
+[classpath resources](https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md) into the image it creates.
+
+`ResourceConfigGenerator` generates a JSON String with the resource bundles and other classpath resources
+that should be included in the Substrate VM native image.
+
+The output of `ResourceConfigGenerator` is intended to be passed to the `-H:ResourceConfigurationFiles=/path/to/reflect-config.json` option of the `native-image` GraalVM utility,
+or placed in a `META-INF/native-image/` subdirectory of the JAR. 
+
+This allows picocli-based native image applications to access these resources.
+
+#### DynamicProxyConfigGenerator
+
+Substrate VM doesn't provide machinery for generating and interpreting bytecodes at run time. Therefore all dynamic proxy classes 
+[need to be generated](https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md) at native image build time.
+
+`DynamicProxyConfigGenerator` generates a JSON String with the fully qualified interface names for which
+dynamic proxy classes should be generated at native image build time.
+
+The output of `DynamicProxyConfigGenerator` is intended to be passed to the `-H:DynamicProxyConfigurationFiles=/path/to/proxy-config.json` option of the `native-image` GraalVM utility,
+or placed in a `META-INF/native-image/` subdirectory of the JAR.
+
+This allows picocli-based native image applications that use `@Command`-annotated interfaces with
+`@Option` and `@Parameters`-annotated methods.
 
 
 ## <a name="4.0.0-alpha-3-fixes"></a> Fixed issues
@@ -170,6 +206,8 @@ With the new execute API the ColorScheme class will start to play a more central
 - [#683] Ensure exitCodeList implementation is consistent with other usage message attributes.
 - [#575] Codegen: Use mixinStandardHelpOptions in `AutoComplete$App` (add support for the `--version` option)
 - [#645] Codegen: Exclude Jansi Console from generated GraalVM reflection configuration. Thanks to [shanetreacy](https://github.com/shanetreacy) for raising this.
+- [#686] Codegen: Add support for `@Command` interfaces (dynamic proxies) in GraalVM native image.
+- [#669] Codegen: Add support for resource bundles in GraalVM native image.
 - [#676] Bugfix: non-defined variables in `defaultValue` now correctly resolve to `null`, and options and positional parameters are now correctly considered `required` only if their default value is `null` after variable interpolation. Thanks to [ifedorenko](https://github.com/ifedorenko) for raising this.
 - [#682] Bugfix: incorrect evaluation for multiple occurrences of a variable.
 - [#679] Documentation: Update examples for new execute API. Add examples for exit code control and custom exception handlers.
@@ -195,6 +233,7 @@ The `Help.ColorScheme` class has been made immutable. Its public fields are no l
 A new `Help.ColorScheme.Builder` class has been introduced to create `ColorScheme` instances.
 
 This is a breaking API change: I could not think of a way to do this without breaking backwards compatibility.
+
 
 # <a name="4.0.0-alpha-2"></a> Picocli 4.0.0-alpha-2
 The picocli community is pleased to announce picocli 4.0.0-alpha-2.
