@@ -211,6 +211,7 @@ This allows picocli-based native image applications that use `@Command`-annotate
 - [#674] JPMS module: move module-info.class to root of jar.
 - [#676] Bugfix: non-defined variables in `defaultValue` now correctly resolve to `null`, and options and positional parameters are now correctly considered `required` only if their default value is `null` after variable interpolation. Thanks to [ifedorenko](https://github.com/ifedorenko) for raising this.
 - [#682] Bugfix: incorrect evaluation for multiple occurrences of a variable.
+- [#689] NPE in codegen OutputFileMixin.
 - [#679] Documentation: Update examples for new execute API. Add examples for exit code control and custom exception handlers.
 - [#681] Documentation: Add exit code section to Internationalization example in user manual.
 
