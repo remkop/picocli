@@ -10,6 +10,7 @@ import picocli.CommandLine.Parameters;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import java.io.IOException;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -54,8 +55,9 @@ public class DynamicProxyConfigGenerator {
         Class<?>[] classes = new Class<?>[0];
 
         @Option(names = {"-i", "--interface"}, description = "Other fully qualified interface names to generate dynamic proxy classes for in the native image." +
-                "This option may be specified multiple times with different interface names.")
-        String[] interfaces;
+                "This option may be specified multiple times with different interface names. " +
+                "Specify multiple comma-separated interface names for dynamic proxies that implement multiple interfaces.")
+        String[] interfaces = new String[0];
 
         @Mixin OutputFileMixin outputFile = new OutputFileMixin();
 
@@ -104,8 +106,17 @@ public class DynamicProxyConfigGenerator {
         }
 
         void visitCommandSpec(CommandSpec spec) {
-            if (spec.userObject() instanceof Class && ((Class) spec.userObject()).isInterface()) {
-                commandInterfaces.add(((Class) spec.userObject()).getCanonicalName()); // TODO or Class.getName()?
+            Object userObject = spec.userObject();
+            if (Proxy.isProxyClass(userObject.getClass())) {
+                Class<?>[] interfaces = userObject.getClass().getInterfaces();
+                String names = "";
+                for (Class<?> interf : interfaces) {
+                    if (names.length() > 0) { names += ","; }
+                    names += interf.getCanonicalName(); // TODO or Class.getName()?
+                }
+                if (names.length() > 0) {
+                    commandInterfaces.add(names);
+                }
             } else if (spec.userObject() instanceof Element && ((Element) spec.userObject()).getKind() == ElementKind.INTERFACE) {
                 commandInterfaces.add(((Element) spec.userObject()).asType().toString());
             }
@@ -136,7 +147,15 @@ public class DynamicProxyConfigGenerator {
                     if (result.length() > 0) {
                         result.append(",");
                     }
-                    result.append(String.format("%n  [\"%s\"]", str));
+                    String[] names = str.split(",");
+                    String formatted = "";
+                    for (String name : names) {
+                        if (formatted.length() > 0) {
+                            formatted += ", ";
+                        }
+                        formatted += '"' + name + '"';
+                    }
+                    result.append(String.format("%n  [%s]", formatted));
                 }
             }
             return result;
