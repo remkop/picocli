@@ -92,7 +92,7 @@ public class ResourceConfigGenerator {
      * @return a JSON String in the <a href="https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md#resource-bundles-on-substrate-vm">format</a>
      *       required by the {@code -H:ResourceConfigurationFiles=/path/to/resource-config.json} option of the GraalVM {@code native-image} utility.
      */
-    static String generateResourceConfig(CommandSpec[] specs, String[] bundles, String[] resourceRegex) {
+    public static String generateResourceConfig(CommandSpec[] specs, String[] bundles, String[] resourceRegex) {
         Visitor visitor = new Visitor();
         visitor.bundles.addAll(Arrays.asList(bundles));
         visitor.resources.addAll(Arrays.asList(resourceRegex));

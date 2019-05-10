@@ -100,7 +100,7 @@ public class ReflectionConfigGenerator {
      * @throws NoSuchFieldException if a problem occurs while processing the specified specs
      * @throws IllegalAccessException if a problem occurs while processing the specified specs
      */
-    static String generateReflectionConfig(CommandSpec... specs) throws NoSuchFieldException, IllegalAccessException {
+    public static String generateReflectionConfig(CommandSpec... specs) throws NoSuchFieldException, IllegalAccessException {
         Visitor visitor = new Visitor();
         for (CommandSpec spec : specs) {
             visitor.visitCommandSpec(spec);

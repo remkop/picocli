@@ -87,7 +87,7 @@ public class DynamicProxyConfigGenerator {
      * @return a JSON String in the <a href="https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md#manual-configuration">format</a>
      *       required by the {@code -H:DynamicProxyConfigurationFiles=/path/to/proxy-config.json} option of the GraalVM {@code native-image} utility.
      */
-    static String generateProxyConfig(CommandSpec[] specs, String[] interfaceClasses) {
+    public static String generateProxyConfig(CommandSpec[] specs, String[] interfaceClasses) {
         Visitor visitor = new Visitor(interfaceClasses);
         for (CommandSpec spec : specs) {
             visitor.visitCommandSpec(spec);
