@@ -55,11 +55,11 @@ public class ResourceConfigGenerator {
         @Option(names = {"-b", "--bundle"}, paramLabel = "<bundle-base-name>",
                 description = "Additional resource bundle(s) to be included in the image. " +
                         "This option may be specified multiple times with different regular expression patterns.")
-        String[] bundles;
+        String[] bundles = new String[0];
 
         @Option(names = {"-p", "--pattern"}, description = "Java regexp that matches resource(s) to be included in the image. " +
                 "This option may be specified multiple times with different regular expression patterns.")
-        String[] resourceRegex;
+        String[] resourceRegex = new String[0];
 
         @Mixin OutputFileMixin outputFile = new OutputFileMixin();
 
