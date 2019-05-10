@@ -25,7 +25,7 @@ class OutputFileMixin {
     private void writeToFile(String result) throws IOException {
         FileWriter writer = null;
         try {
-            if (!outputFile.getParentFile().mkdirs()) {
+            if (!outputFile.getParentFile().exists() && !outputFile.getParentFile().mkdirs()) {
                 System.err.println("Unable to mkdirs for " + outputFile.getAbsolutePath());
             }
             writer = new FileWriter(outputFile);
