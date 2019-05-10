@@ -1389,6 +1389,22 @@ public class CommandLine {
      * and the {@linkplain #getColorScheme() color scheme} from the CommandLine object obtained from the exception.</p>
      * <p><b>API Note:</b></p>
      * <p>This interface supersedes {@link IExceptionHandler2}.</p>
+     * <p>Example usage:</p>
+     * <pre>
+     * IExecutionExceptionHandler errorHandler = new IExecutionExceptionHandler() {
+     *     public int handleExecutionException(Exception ex,
+     *                                         CommandLine commandLine,
+     *                                         ParseResult parseResult) {
+     *         //ex.printStackTrace(); // no stack trace
+     *         commandLine.getErr().println(ex.getMessage());
+     *         commandLine.usage(commandLine.getErr());
+     *         return commandLine.getCommandSpec().exitCodeOnExecutionException();
+     *     }
+     * };
+     * int exitCode = new CommandLine(new App())
+     *         .setExecutionExceptionHandler(errorHandler)
+     *         .execute(args);
+     * </pre>
      * @see CommandLine#setExecutionExceptionHandler(IExecutionExceptionHandler)
      * @since 4.0
      */
