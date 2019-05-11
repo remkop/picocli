@@ -11978,7 +11978,7 @@ public class CommandLine {
         }
 
         /**
-         * @deprecated Use {@link #join(String[], int, int, String)} instead
+         * @deprecated Use {@link #join(Ansi, int, boolean, String[], StringBuilder, Object...)}  instead
          */
         @Deprecated public static StringBuilder join(Ansi ansi, int usageHelpWidth, String[] values, StringBuilder sb, Object... params) {
             return join(ansi, usageHelpWidth, UsageMessageSpec.DEFAULT_ADJUST_CJK, values, sb, params);
