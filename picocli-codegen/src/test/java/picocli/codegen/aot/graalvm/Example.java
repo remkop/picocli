@@ -12,12 +12,18 @@ import picocli.CommandLine.Unmatched;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 
-@Command(name = "example", version = "3.7.0",
-        mixinStandardHelpOptions = true, subcommands = CommandLine.HelpCommand.class)
+/**
+ * This command's `run` method uses an extra ResourceBundle with base="some.extra.bundle".
+ * Make sure to add this to the native image with the ResourceConfigGenerator tool.
+ */
+@Command(name = "example", version = "Example " + CommandLine.VERSION,
+        mixinStandardHelpOptions = true,
+        subcommands = CommandLine.HelpCommand.class,
+        resourceBundle = "picocli.codegen.aot.graalvm.exampleResources")
 public class Example implements Runnable {
 
     @Command public static class ExampleMixin {
@@ -44,7 +50,7 @@ public class Example implements Runnable {
     private int minimum;
     private List<File> otherFiles;
 
-    @Command
+    @Command(resourceBundle = "picocli.codegen.aot.graalvm.exampleMultiplyResources")
     int multiply(@Option(names = "--count") int count,
                  @Parameters int multiplier) {
         System.out.println("Result is " + count * multiplier);
@@ -72,6 +78,9 @@ public class Example implements Runnable {
     public void run() {
         System.out.printf("timeUnit=%s, length=%s, file=%s, unmatched=%s, minimum=%s, otherFiles=%s%n",
                 timeUnit, mixin.length, file, unmatched, minimum, otherFiles);
+        System.out.println("Getting value from some.extra.bundle:");
+        ResourceBundle bundle = ResourceBundle.getBundle("some.extra.bundle");
+        System.out.println("Found bundle. Its value for 'key' is: " + bundle.getString("key"));
     }
 
     public static void main(String[] args) {

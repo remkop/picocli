@@ -104,8 +104,8 @@ public class ResourceConfigGenerator {
     }
 
     static final class Visitor {
-        List<String> resources = new ArrayList<String>();
-        List<String> bundles = new ArrayList<String>();
+        Set<String> resources = new LinkedHashSet<String>();
+        Set<String> bundles = new LinkedHashSet<String>();
 
         void visitCommandSpec(CommandSpec spec) {
             String bundle = spec.resourceBundleBaseName();
@@ -127,7 +127,7 @@ public class ResourceConfigGenerator {
                     "  \"bundles\" : [%s%n" +
                     "  ],%n" +
                     "  \"resources\" : [%s%n" +
-                    "  ],%n" +
+                    "  ]%n" +
                     "}%n", bundlesJson(), resourcesJson());
         }
 
@@ -139,7 +139,7 @@ public class ResourceConfigGenerator {
             return json(resources, "pattern");
         }
 
-        private static StringBuilder json(List<String> strings, String label) {
+        private static StringBuilder json(Collection<String> strings, String label) {
             StringBuilder result = new StringBuilder(1024);
             for (String str : strings) {
                 if (result.length() > 0) {
