@@ -310,17 +310,6 @@
     ]
   },
   {
-    "name" : "picocli.CommandLine$Model$ObjectScope",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true,
-    "methods" : [
-      { "name" : "setMinimum", "parameterTypes" : ["int"] },
-      { "name" : "setOtherFiles", "parameterTypes" : ["java.util.List"] }
-    ]
-  },
-  {
     "name" : "picocli.codegen.aot.graalvm.Example",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,

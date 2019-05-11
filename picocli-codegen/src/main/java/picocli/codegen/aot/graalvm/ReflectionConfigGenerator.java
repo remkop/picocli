@@ -6,6 +6,7 @@ import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.IGetter;
+import picocli.CommandLine.Model.IScope;
 import picocli.CommandLine.Model.ISetter;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
@@ -71,7 +72,7 @@ public class ReflectionConfigGenerator {
         @Mixin
         OutputFileMixin outputFile = new OutputFileMixin();
 
-        public Integer call() throws NoSuchFieldException, IllegalAccessException, IOException {
+        public Integer call() throws Exception {
             List<CommandSpec> specs = new ArrayList<CommandSpec>();
             for (Class<?> cls : classes) {
                 specs.add(new CommandLine(cls).getCommandSpec());
@@ -100,7 +101,7 @@ public class ReflectionConfigGenerator {
      * @throws NoSuchFieldException if a problem occurs while processing the specified specs
      * @throws IllegalAccessException if a problem occurs while processing the specified specs
      */
-    public static String generateReflectionConfig(CommandSpec... specs) throws NoSuchFieldException, IllegalAccessException {
+    public static String generateReflectionConfig(CommandSpec... specs) throws Exception {
         Visitor visitor = new Visitor();
         for (CommandSpec spec : specs) {
             visitor.visitCommandSpec(spec);
@@ -162,14 +163,14 @@ public class ReflectionConfigGenerator {
             getOrCreateClassName("java.sql.Timestamp").addMethod("valueOf", String.class);
         }
 
-        void visitCommandSpec(CommandSpec spec) throws NoSuchFieldException, IllegalAccessException {
+        void visitCommandSpec(CommandSpec spec) throws Exception {
             if (spec.userObject() != null) {
                 if (spec.userObject() instanceof Method) {
                     Method method = (Method) spec.userObject();
                     ReflectedClass cls = getOrCreateClass(method.getDeclaringClass());
                     cls.addMethod(method.getName(), method.getParameterTypes());
                 } else if (Proxy.isProxyClass(spec.userObject().getClass())) {
-                    // do nothing
+                    // do nothing: requires DynamicProxyConfigGenerator
                 } else {
                     visitAnnotatedFields(spec.userObject().getClass());
                 }
@@ -222,7 +223,7 @@ public class ReflectionConfigGenerator {
             return (f.getModifiers() & Modifier.FINAL) == Modifier.FINAL;
         }
 
-        private void visitArgSpec(ArgSpec argSpec) throws NoSuchFieldException, IllegalAccessException {
+        private void visitArgSpec(ArgSpec argSpec) throws Exception {
             visitGetter(argSpec.getter());
             visitSetter(argSpec.setter());
             visitType(argSpec.type());
@@ -249,7 +250,7 @@ public class ReflectionConfigGenerator {
             }
         }
 
-        private void visitGetter(IGetter getter) throws NoSuchFieldException, IllegalAccessException {
+        private void visitGetter(IGetter getter) throws Exception {
             if (getter == null) {
                 return;
             }
@@ -261,7 +262,7 @@ public class ReflectionConfigGenerator {
             }
         }
 
-        private void visitSetter(ISetter setter) throws NoSuchFieldException, IllegalAccessException {
+        private void visitSetter(ISetter setter) throws Exception {
             if (setter == null) {
                 return;
             }
@@ -273,22 +274,24 @@ public class ReflectionConfigGenerator {
             }
         }
 
-        private void visitFieldBinding(Object fieldBinding) throws IllegalAccessException, NoSuchFieldException {
+        private void visitFieldBinding(Object fieldBinding) throws Exception {
             Field field = (Field) accessibleField(fieldBinding.getClass(), REFLECTED_FIELD_BINDING_FIELD).get(fieldBinding);
             getOrCreateClass(field.getDeclaringClass())
                     .addField(field.getName(), isFinal(field));
 
-            Object scope = accessibleField(fieldBinding.getClass(), REFLECTED_BINDING_FIELD_SCOPE).get(fieldBinding);
-            getOrCreateClass(scope.getClass());
+            IScope scope = (IScope) accessibleField(fieldBinding.getClass(), REFLECTED_BINDING_FIELD_SCOPE).get(fieldBinding);
+            Object scopeValue = scope.get();
+            getOrCreateClass(scopeValue.getClass());
         }
 
-        private void visitMethodBinding(Object methodBinding) throws IllegalAccessException, NoSuchFieldException {
+        private void visitMethodBinding(Object methodBinding) throws Exception {
             Method method = (Method) accessibleField(methodBinding.getClass(), REFLECTED_METHOD_BINDING_METHOD).get(methodBinding);
             ReflectedClass cls = getOrCreateClass(method.getDeclaringClass());
             cls.addMethod(method.getName(), method.getParameterTypes());
 
-            Object scope = accessibleField(methodBinding.getClass(), REFLECTED_BINDING_FIELD_SCOPE).get(methodBinding);
-            ReflectedClass scopeClass = getOrCreateClass(scope.getClass());
+            IScope scope = (IScope) accessibleField(methodBinding.getClass(), REFLECTED_BINDING_FIELD_SCOPE).get(methodBinding);
+            Object scopeValue = scope.get();
+            ReflectedClass scopeClass = getOrCreateClass(scopeValue.getClass());
             if (!scope.getClass().equals(method.getDeclaringClass())) {
                 scopeClass.addMethod(method.getName(), method.getParameterTypes());
             }
