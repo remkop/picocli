@@ -8,12 +8,18 @@ This jar is generated in addition to the `picocli-${version}.jar` artifact. Star
 
 ## Contents of picocli-jpms-module
 
-* a `module-info.class` in `/META-INF/versions/9/`.
+* a `module-info.class` in the root of the jar.
 * the classes in the `picocli` package.
 * excludes (does not contain) any classes in the `picocli.groovy` package, so this module has no dependency on Groovy.
 
-Typically, a modular jar includes the `module-info.class` file in its root directory. This may cause problems for some older tools, which incorrectly process the module descriptor as if it were a normal Java class. To provide the best backward compatibility, the `picocli-jpms-module` artifact is a modular multi-release jar with the `module-info.class` file located in `META-INF/versions/9`.
+We considered making the `picocli-jpms-module` artifact a 
+modular multi-release jar with the `module-info.class` file located in `META-INF/versions/9`,
+in the hope that this would avoid problems for some older tools,
+which incorrectly process the module descriptor as if it were a normal Java class.
 
+However, putting the `module-info.class` file in `META-INF/versions/9` seems to have its own problems, as discussed [here](https://github.com/remkop/picocli/issues/674).
+
+I'm open to changing this, based on community feedback. Let us know what works or does not work for you!
 
 # Using picocli with Java 9 modules
 
