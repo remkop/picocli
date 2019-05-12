@@ -13300,9 +13300,8 @@ public class CommandLine {
             }
             static boolean isJansiConsoleInstalled() {
                 try {
-                    Class<?> ansiConsole = Class.forName("org.fusesource.jansi.AnsiConsole");
-                    Field out = ansiConsole.getField("out");
-                    return out.get(null) == System.out;
+                    Object wrapped = FilterOutputStream.class.getDeclaredField("out").get(System.out);
+                    return wrapped.getClass().getName().startsWith("org.fusesource.jansi");
                 } catch (Exception reflectionFailed) {
                     return false;
                 }
