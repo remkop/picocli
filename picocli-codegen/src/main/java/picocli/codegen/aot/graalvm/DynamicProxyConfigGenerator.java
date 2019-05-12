@@ -43,12 +43,12 @@ import java.util.concurrent.Callable;
  */
 public class DynamicProxyConfigGenerator {
 
-    @Command(name = "DynamicProxyConfigGenerator",
+    @Command(name = "gen-proxy-config",
             description = {"Generates a JSON file with the resources and resource bundles to include in the native image. " +
                     "The generated JSON file can be passed to the -H:DynamicProxyConfigurationFiles=/path/to/proxy-config.json " +
                     "option of the `native-image` GraalVM utility.",
                     "See https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md"},
-            mixinStandardHelpOptions = true, version = "picocli-codegen DynamicProxyConfigGenerator " + CommandLine.VERSION)
+            mixinStandardHelpOptions = true, version = "picocli-codegen gen-proxy-config " + CommandLine.VERSION)
     private static class App implements Callable<Integer> {
 
         @Parameters(arity = "0..*", description = "Zero or more @Command interfaces or classes with @Command interface subcommands to generate a Graal SubstrateVM proxy-config for.")

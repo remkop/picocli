@@ -58,13 +58,13 @@ public class ReflectionConfigGenerator {
     private static final String REFLECTED_METHOD_BINDING_METHOD = "method";
     private static final String REFLECTED_BINDING_FIELD_SCOPE = "scope";
 
-    @Command(name = "ReflectionConfigGenerator",
+    @Command(name = "gen-reflect-config",
             description = {"Generates a JSON file with the program elements that will be " +
                     "accessed reflectively for the specified @Command classes. " +
                     "The generated JSON file can be passed to the -H:ReflectionConfigurationFiles=/path/to/reflect-config.json " +
                     "option of the `native-image` GraalVM utility.",
                     "See https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md"},
-            mixinStandardHelpOptions = true, version = "picocli-codegen ReflectionConfigGenerator " + CommandLine.VERSION)
+            mixinStandardHelpOptions = true, version = "picocli-codegen gen-reflect-config " + CommandLine.VERSION)
     private static class App implements Callable<Integer> {
 
         @Parameters(arity = "1..*", description = "One or more classes to generate a GraalVM ReflectionConfiguration for.")
