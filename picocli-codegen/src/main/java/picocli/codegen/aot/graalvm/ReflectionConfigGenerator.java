@@ -53,6 +53,7 @@ public class ReflectionConfigGenerator {
     private static final String SYSPROP_CODEGEN_EXCLUDES = "picocli.codegen.excludes";
     private static final String REFLECTED_FIELD_BINDING_CLASS = "picocli.CommandLine$Model$FieldBinding";
     private static final String REFLECTED_METHOD_BINDING_CLASS = "picocli.CommandLine$Model$MethodBinding";
+    private static final String REFLECTED_PROXY_METHOD_BINDING_CLASS = "picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding";
     private static final String REFLECTED_FIELD_BINDING_FIELD = "field";
     private static final String REFLECTED_METHOD_BINDING_METHOD = "method";
     private static final String REFLECTED_BINDING_FIELD_SCOPE = "scope";
@@ -260,6 +261,9 @@ public class ReflectionConfigGenerator {
             if (REFLECTED_METHOD_BINDING_CLASS.equals(getter.getClass().getName())) {
                 visitMethodBinding(getter);
             }
+            if (REFLECTED_PROXY_METHOD_BINDING_CLASS.equals(getter.getClass().getName())) {
+                visitProxyMethodBinding(getter);
+            }
         }
 
         private void visitSetter(ISetter setter) throws Exception {
@@ -295,6 +299,12 @@ public class ReflectionConfigGenerator {
             if (!scope.getClass().equals(method.getDeclaringClass())) {
                 scopeClass.addMethod(method.getName(), method.getParameterTypes());
             }
+        }
+
+        private void visitProxyMethodBinding(Object methodBinding) throws Exception {
+            Method method = (Method) accessibleField(methodBinding.getClass(), REFLECTED_METHOD_BINDING_METHOD).get(methodBinding);
+            ReflectedClass cls = getOrCreateClass(method.getDeclaringClass());
+            cls.addMethod(method.getName(), method.getParameterTypes());
         }
 
         private static Field accessibleField(Class<?> cls, String fieldName) throws NoSuchFieldException {
