@@ -938,12 +938,12 @@ public class CommandLine {
     }
 
     /** Returns the color scheme to use when printing help.
-     * The default value is the {@linkplain picocli.CommandLine.Help#defaultColorScheme(Help.Ansi) default color scheme} with {@link Help.Ansi#AUTO Ansi.AUTO}.
+     * The default value is the {@linkplain picocli.CommandLine.Help#defaultColorScheme(CommandLine.Help.Ansi) default color scheme} with {@link Help.Ansi#AUTO Ansi.AUTO}.
      * @see #execute(String...)
      * @see #usage(PrintStream)
      * @see #usage(PrintWriter)
      * @see #getUsageMessage()
-     * @see Help#defaultColorScheme(Help.Ansi)
+     * @see Help#defaultColorScheme(CommandLine.Help.Ansi)
      * @since 4.0
      */
     public Help.ColorScheme getColorScheme() { return colorScheme; }
@@ -4843,10 +4843,10 @@ public class CommandLine {
              * @since 4.0 */
             public CommandSpec setAddMethodSubcommands(Boolean addMethodSubcommands) { isAddMethodSubcommands = addMethodSubcommands; return this; }
 
-            /** Returns whether whether variables should be interpolated in String values. {@value #DEFAULT_INTERPOLATE_VARIABLES} by default.
+            /** Returns whether whether variables should be interpolated in String values. True by default.
              * @since 4.0 */
             public boolean interpolateVariables() { return (interpolateVariables == null) ? DEFAULT_INTERPOLATE_VARIABLES : interpolateVariables; }
-            /** Sets whether whether variables should be interpolated in String values. {@value #DEFAULT_INTERPOLATE_VARIABLES} by default.
+            /** Sets whether whether variables should be interpolated in String values. True by default.
              * @since 4.0 */
             public CommandSpec interpolateVariables(Boolean interpolate) { interpolateVariables = interpolate; return this; }
 
@@ -5949,7 +5949,7 @@ public class CommandLine {
              * usage.exitCodeList.1 = 64:Invalid input: an unknown option or invalid parameter was specified.
              * usage.exitCodeList.2 = 70:Execution exception: an exception occurred while executing the business logic.
              * </pre>
-             * @newValue a map with values to be displayed in the exit codes section
+             * @param newValue a map with values to be displayed in the exit codes section
              * @see #keyValuesMap(String...)
              * @since 4.0 */
             public UsageMessageSpec exitCodeList(Map<String, String> newValue) { exitCodeList = newValue == null ? null : Collections.unmodifiableMap(new LinkedHashMap<String, String>(newValue)); return this;}

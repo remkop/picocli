@@ -157,6 +157,10 @@ jar {
 }
 
 javadoc.options.overview = "src/main/java/overview.html"
+javadoc.options.links += [
+        'https://docs.oracle.com/javase/8/docs/api/',
+        'http://docs.groovy-lang.org/2.4.9/html/gapi'
+]
 javadoc.dependsOn('asciidoctor')
 asciidoctorj {
     version = '1.5.5'
