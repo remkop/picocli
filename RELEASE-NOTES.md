@@ -1,7 +1,7 @@
 # picocli Release Notes
 
 
-# <a name="4.0.0-alpha-3"></a> Picocli 4.0.0-alpha-3 (UNRELEASED)
+# <a name="4.0.0-alpha-3"></a> Picocli 4.0.0-alpha-3
 The picocli community is pleased to announce picocli 4.0.0-alpha-3.
 
 This release adds improved support for command execution via the new `execute` method.
