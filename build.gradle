@@ -156,9 +156,16 @@ jar {
     }
 }
 
+Map<org.gradle.api.JavaVersion, String> linkMap = org.gradle.api.JavaVersion.values().collectEntries { version -> 
+        [(version) : 'https://docs.oracle.com/javase/8/docs/api/']
+}
+linkMap << [(org.gradle.api.JavaVersion.VERSION_1_9)  : 'https://docs.oracle.com/javase/9/docs/api/']
+linkMap << [(org.gradle.api.JavaVersion.VERSION_1_10) : 'https://docs.oracle.com/javase/10/docs/api/']
+linkMap << [(org.gradle.api.JavaVersion.VERSION_11)   : 'https://docs.oracle.com/en/java/javase/11/docs/api/']
+
 javadoc.options.overview = "src/main/java/overview.html"
 javadoc.options.links += [
-        'https://docs.oracle.com/javase/8/docs/api/',
+        linkMap.get(org.gradle.api.JavaVersion.current(), 'https://docs.oracle.com/en/java/javase/12/docs/api/'),
         'http://docs.groovy-lang.org/2.4.9/html/gapi'
 ]
 javadoc.dependsOn('asciidoctor')
