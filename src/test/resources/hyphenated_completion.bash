@@ -99,9 +99,9 @@ function _picocli_rcmd() {
   local arg_opts=""
 
   if [[ "${curr_word}" == -* ]]; then
-    read -d -a COMPREPLY < <(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}")
+    read -d ' ' -a COMPREPLY < <(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}")
   else
-    read -d -a COMPREPLY < <(compgen -W "${commands}" -- "${curr_word}")
+    read -d ' ' -a COMPREPLY < <(compgen -W "${commands}" -- "${curr_word}")
   fi
 }
 
@@ -124,9 +124,9 @@ function _picocli_rcmd_sub1() {
   esac
 
   if [[ "${curr_word}" == -* ]]; then
-    read -d -a COMPREPLY < <(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}")
+    read -d ' ' -a COMPREPLY < <(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}")
   else
-    read -d -a COMPREPLY < <(compgen -W "${commands}" -- "${curr_word}")
+    read -d ' ' -a COMPREPLY < <(compgen -W "${commands}" -- "${curr_word}")
   fi
 }
 
@@ -149,9 +149,9 @@ function _picocli_rcmd_sub2() {
   esac
 
   if [[ "${curr_word}" == -* ]]; then
-    read -d -a COMPREPLY < <(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}")
+    read -d ' ' -a COMPREPLY < <(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}")
   else
-    read -d -a COMPREPLY < <(compgen -W "${commands}" -- "${curr_word}")
+    read -d ' ' -a COMPREPLY < <(compgen -W "${commands}" -- "${curr_word}")
   fi
 }
 

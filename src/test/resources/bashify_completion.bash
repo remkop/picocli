@@ -100,15 +100,15 @@ function _picocli_bashify() {
 
   case ${prev_word} in
     -x)
-      read -d -a COMPREPLY < <(compgen -W "${_AB_C_option_args}" -- "${curr_word}")
+      read -d ' ' -a COMPREPLY < <(compgen -W "${_AB_C_option_args}" -- "${curr_word}")
       return $?
       ;;
   esac
 
   if [[ "${curr_word}" == -* ]]; then
-    read -d -a COMPREPLY < <(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}")
+    read -d ' ' -a COMPREPLY < <(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}")
   else
-    read -d -a COMPREPLY < <(compgen -W "${commands}" -- "${curr_word}")
+    read -d ' ' -a COMPREPLY < <(compgen -W "${commands}" -- "${curr_word}")
   fi
 }
 

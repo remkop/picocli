@@ -494,9 +494,9 @@ public class AutoComplete {
         String FOOTER = "" +
                 "\n" +
                 "  if [[ \"${curr_word}\" == -* ]]; then\n" +
-                "    read -d -a COMPREPLY < <(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\")\n" +
+                "    read -d ' ' -a COMPREPLY < <(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\")\n" +
                 "  else\n" +
-                "    read -d -a COMPREPLY < <(compgen -W \"${commands}\" -- \"${curr_word}\")\n" +
+                "    read -d ' ' -a COMPREPLY < <(compgen -W \"${commands}\" -- \"${curr_word}\")\n" +
                 "  fi\n" +
                 "}\n";
 
@@ -571,19 +571,19 @@ public class AutoComplete {
         for (OptionSpec option : argOptionFields) {
             if (option.completionCandidates() != null) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -u|--timeUnit)\n"
-                buff.append(format("%s      read -d -a COMPREPLY < <(compgen -W \"${%s_option_args}\" -- \"%s\")\n", indent, bashify(option.paramLabel()), currWord));
+                buff.append(format("%s      read -d ' ' -a COMPREPLY < <(compgen -W \"${%s_option_args}\" -- \"%s\")\n", indent, bashify(option.paramLabel()), currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else if (option.type().equals(File.class) || "java.nio.file.Path".equals(option.type().getName())) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -f|--file)\n"
                 buff.append(format("%s      compopt -o filenames\n", indent));
-                buff.append(format("%s      read -d -a COMPREPLY < <(compgen -f -- \"%s\") # files\n", indent, currWord));
+                buff.append(format("%s      read -d ' ' -a COMPREPLY < <(compgen -f -- \"%s\") # files\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else if (option.type().equals(InetAddress.class)) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -h|--host)\n"
                 buff.append(format("%s      compopt -o filenames\n", indent));
-                buff.append(format("%s      read -d -a COMPREPLY < <(compgen -A hostname -- \"%s\")\n", indent, currWord));
+                buff.append(format("%s      read -d ' ' -a COMPREPLY < <(compgen -A hostname -- \"%s\")\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else {
