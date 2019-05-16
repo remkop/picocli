@@ -159,15 +159,21 @@ jar {
 Map<org.gradle.api.JavaVersion, String> linkMap = org.gradle.api.JavaVersion.values().collectEntries { version -> 
         [(version) : 'https://docs.oracle.com/javase/8/docs/api/']
 }
+linkMap.remove(org.gradle.api.JavaVersion.VERSION_HIGHER)
+for (int i = 12; i < 20; i++) { try { linkMap.remove(org.gradle.api.JavaVersion.valueOf("VERSION_$i")); } catch (Exception ignored) {} }
 linkMap << [(org.gradle.api.JavaVersion.VERSION_1_9)  : 'https://docs.oracle.com/javase/9/docs/api/']
 linkMap << [(org.gradle.api.JavaVersion.VERSION_1_10) : 'https://docs.oracle.com/javase/10/docs/api/']
 linkMap << [(org.gradle.api.JavaVersion.VERSION_11)   : 'https://docs.oracle.com/en/java/javase/11/docs/api/']
+println linkMap
 
 javadoc.options.overview = "src/main/java/overview.html"
 javadoc.options.links += [
         linkMap.get(org.gradle.api.JavaVersion.current(), 'https://docs.oracle.com/en/java/javase/12/docs/api/'),
         'http://docs.groovy-lang.org/2.4.9/html/gapi'
 ]
+//javadoc.options.linksOffline linkMap.get(org.gradle.api.JavaVersion.current(), 'https://docs.oracle.com/en/java/javase/12/docs/api/'), 'gradle/javadocs/jdk/9/'
+//javadoc.options.linksOffline 'http://docs.groovy-lang.org/2.4.9/html/gapi', 'gradle/javadocs/jdk/9/'
+
 javadoc.dependsOn('asciidoctor')
 asciidoctorj {
     version = '1.5.5'
