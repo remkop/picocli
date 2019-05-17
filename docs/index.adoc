@@ -1880,6 +1880,27 @@ Build 12345
 (c) 2017
 ----
 
+Since 4.0, the version strings may contain <<Variable Interpolation,system properties and environment variables>>. For example:
+[source,java]
+----
+@Command(version = {
+    "Versioned Command 1.0",
+    "Picocli " + picocli.CommandLine.VERSION,
+    "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
+    "OS: ${os.name} ${os.version} ${os.arch}"})
+class VersionedCommand { ... }
+----
+Depending on your environment, that may print something like:
+
+----
+Versioned Command 1.0
+Picocli 4.0.0-beta-1-SNAPSHOT
+JVM: 1.8.0_202 (Oracle Corporation Substrate VM GraalVM 1.0.0-rc15 CE)
+OS: Linux 4.4.0-17134-Microsoft amd64
+----
+
+
+
 The version strings may contain <<Usage Help with Styles and Colors,markup>> to show ANSI styles and colors. For example:
 
 [source,java]

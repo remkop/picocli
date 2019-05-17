@@ -16,8 +16,14 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@Command(name = "example-interface", version = "example-interface 4.0.0",
-        mixinStandardHelpOptions = true, subcommands = CommandLine.HelpCommand.class)
+@Command(name = "example-interface",
+        mixinStandardHelpOptions = true,
+        subcommands = CommandLine.HelpCommand.class,
+        version = {
+                "example-interface " + CommandLine.VERSION,
+                "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
+                "OS: ${os.name} ${os.version} ${os.arch}"
+        })
 public interface ExampleInterface {
 
     @Spec

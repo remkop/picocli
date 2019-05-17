@@ -20,10 +20,15 @@ import java.util.concurrent.TimeUnit;
  * This command's `run` method uses an extra ResourceBundle with base="some.extra.bundle".
  * Make sure to add this to the native image with the ResourceConfigGenerator tool.
  */
-@Command(name = "example", version = "Example " + CommandLine.VERSION,
+@Command(name = "example",
         mixinStandardHelpOptions = true,
         subcommands = CommandLine.HelpCommand.class,
-        resourceBundle = "picocli.codegen.aot.graalvm.exampleResources")
+        resourceBundle = "picocli.codegen.aot.graalvm.exampleResources",
+        version = {
+                "Example " + CommandLine.VERSION,
+                "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
+                "OS: ${os.name} ${os.version} ${os.arch}"
+        })
 public class Example implements Runnable {
 
     @Command public static class ExampleMixin {
