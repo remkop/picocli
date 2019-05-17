@@ -861,11 +861,11 @@ public class CommandLine {
     public static final class ExitCode {
         /** Return value from the {@link #execute(String...) execute} and
          * {@link #executeHelpRequest(ParseResult) executeHelpRequest} methods signifying successful termination.
-         * <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.</p> */
+         * <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&amp;sektion=3">conventions</a>.</p> */
         public static final int OK = 0;
-        /** Return value from the {@link #execute(String...) execute} method signifying command line usage error: user input for the command was incorrect, e.g., the wrong number of arguments, a bad flag, a bad syntax in a parameter, or whatever. <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.</p>*/
+        /** Return value from the {@link #execute(String...) execute} method signifying command line usage error: user input for the command was incorrect, e.g., the wrong number of arguments, a bad flag, a bad syntax in a parameter, or whatever. <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&amp;sektion=3">conventions</a>.</p>*/
         public static final int USAGE = 64;
-        /** Return value from the {@link #execute(String...) execute} method signifying internal software error: an exception occurred when invoking the Runnable, Callable or Method user object of a command. <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3">conventions</a>.</p> */
+        /** Return value from the {@link #execute(String...) execute} method signifying internal software error: an exception occurred when invoking the Runnable, Callable or Method user object of a command. <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&amp;sektion=3">conventions</a>.</p> */
         public static final int SOFTWARE = 70;
         private ExitCode() {} // don't instantiate
     }
@@ -875,7 +875,7 @@ public class CommandLine {
      *
      * <p>Example usage:</p>
      * <pre>
-     * &#064Command
+     * &#064;Command
      * class MyCommand implements Runnable, IExitCodeGenerator {
      *     public void run() { System.out.println("Hello"); }
      *     public int getExitCode() { return 123; }
@@ -897,7 +897,7 @@ public class CommandLine {
      * method for an exception that occurred during parsing or while invoking the command's Runnable, Callable, or Method.
      * <p>Example usage:</p>
      * <pre>
-     * &#064Command
+     * &#064;Command
      * class FailingCommand implements Callable&lt;Void&gt; {
      *     public Void call() throws IOException {
      *         throw new IOException("error");
@@ -905,7 +905,7 @@ public class CommandLine {
      * }
      * IExitCodeExceptionMapper mapper = new IExitCodeExceptionMapper() {
      *     public int getExitCode(Throwable t) {
-     *         if (t instanceof IOException && "error".equals(t.getMessage())) {
+     *         if (t instanceof IOException &amp;&amp; "error".equals(t.getMessage())) {
      *             return 123;
      *         }
      *         return 987;
@@ -1740,7 +1740,7 @@ public class CommandLine {
      * {@link Command#exitCodeOnInvalidInput() exitCodeOnInvalidInput} or {@link Command#exitCodeOnExecutionException() exitCodeOnExecutionException} value, respectively.
      * </p><p><b>Example Usage:</b></p>
      * <pre>
-     * &#064Command
+     * &#064;Command
      * class MyCommand implements Callable&lt;Integer&gt; {
      *     public Integer call() { return 123; }
      * }
