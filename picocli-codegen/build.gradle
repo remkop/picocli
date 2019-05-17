@@ -10,9 +10,10 @@ description 'Picocli Code Generation - Tools to generate documentation, configur
 version "$projectVersion"
 
 // Java 13 cannot compile to target Java 6
-//sourceCompatibility = 1.6
-//targetCompatibility = 1.6
-
+if (org.gradle.api.JavaVersion.current().isJava8Compatible() && !org.gradle.api.JavaVersion.current().isJava11Compatible()) {
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+}
 dependencies {
     compile rootProject
     testCompile "junit:junit:$junitVersion"
