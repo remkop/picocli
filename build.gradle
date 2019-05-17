@@ -164,7 +164,6 @@ for (int i = 12; i < 20; i++) { try { linkMap.remove(org.gradle.api.JavaVersion.
 linkMap << [(org.gradle.api.JavaVersion.VERSION_1_9)  : 'https://docs.oracle.com/javase/9/docs/api/']
 linkMap << [(org.gradle.api.JavaVersion.VERSION_1_10) : 'https://docs.oracle.com/javase/10/docs/api/']
 linkMap << [(org.gradle.api.JavaVersion.VERSION_11)   : 'https://docs.oracle.com/en/java/javase/11/docs/api/']
-println linkMap
 
 javadoc.options.overview = "src/main/java/overview.html"
 javadoc.options.links += [
