@@ -1,12 +1,16 @@
 package picocli.codegen.annotation.processing.internal;
 
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
 import picocli.CommandLine.IDefaultValueProvider;
 import picocli.CommandLine.Model.ArgSpec;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.codegen.annotation.processing.ITypeMetaData;
 import picocli.codegen.util.Assert;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 
 /**
@@ -24,6 +28,27 @@ public class DefaultValueProviderMetaData implements IDefaultValueProvider, ITyp
     }
     public DefaultValueProviderMetaData(TypeMirror typeMirror) {
         this.typeMirror = Assert.notNull(typeMirror, "typeMirror");
+    }
+
+    /**
+     * Sets the specified {@code CommandSpec}'s
+     * {@linkplain CommandSpec#defaultValueProvider(CommandLine.IDefaultValueProvider) default value provider}
+     * to an {@code DefaultValueProviderMetaData} instance if the annotation attribute was present on the
+     * specified {@code Command} annotation.
+     *
+     * @param result the command spec to initialize
+     * @param cmd the {@code @Command} annotation to inspect
+     */
+    public static void initDefaultValueProvider(CommandSpec result, Command cmd) {
+        try {
+            // this is a hack to get access to the TypeMirror of the default provider class
+            cmd.defaultValueProvider();
+        } catch (MirroredTypeException ex) {
+            DefaultValueProviderMetaData provider = new DefaultValueProviderMetaData(ex.getTypeMirror());
+            if (!provider.isDefault()) {
+                result.defaultValueProvider(provider);
+            }
+        }
     }
 
     /**

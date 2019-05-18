@@ -1,11 +1,15 @@
 package picocli.codegen.annotation.processing.internal;
 
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
 import picocli.CommandLine.IVersionProvider;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.codegen.annotation.processing.ITypeMetaData;
 import picocli.codegen.util.Assert;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 
 /**
@@ -23,6 +27,27 @@ public class VersionProviderMetaData implements IVersionProvider, ITypeMetaData 
     }
     public VersionProviderMetaData(TypeMirror typeMirror) {
         this.typeMirror = Assert.notNull(typeMirror, "typeMirror");
+    }
+
+    /**
+     * Sets the specified {@code CommandSpec}'s
+     * {@linkplain CommandSpec#versionProvider(IVersionProvider) version provider}
+     * to an {@code VersionProviderMetaData} instance if the annotation attribute was present on the
+     * specified {@code Command} annotation.
+     *
+     * @param result the command spec to initialize
+     * @param cmd the {@code @Command} annotation to inspect
+     */
+    public static void initVersionProvider(CommandSpec result, Command cmd) {
+        try {
+            // this is a hack to get access to the TypeMirror of the version provider class
+            cmd.versionProvider();
+        } catch (MirroredTypeException ex) {
+            VersionProviderMetaData provider = new VersionProviderMetaData(ex.getTypeMirror());
+            if (!provider.isDefault()) {
+                result.versionProvider(provider);
+            }
+        }
     }
 
     /**
