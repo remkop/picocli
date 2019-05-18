@@ -28,6 +28,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.0-beta-1-fixes"></a> Fixed issues
 - [#697] Option sort in usage help should ignore option name prefix; long options without short name should be inserted alphabetically, instead of always appear at the top.
+- [#695] Fix runtime warnings about illegal reflective access to field `java.io.FilterOutputStream.out`. Thanks to [gitfineon](https://github.com/gitfineon) for reporting this issue.
 
 ## <a name="4.0.0-beta-1-deprecated"></a> Deprecations
 
