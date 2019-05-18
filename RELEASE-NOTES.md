@@ -1,6 +1,43 @@
 # picocli Release Notes
 
 
+# <a name="4.0.0-beta-1"></a> Picocli 4.0.0-beta-1
+The picocli community is pleased to announce picocli 4.0.0-beta-1.
+
+
+_Please try this and provide feedback. We can still make changes._
+
+_What do you think of the `@ArgGroup` annotations API? What about the programmatic API? Does it work as expected? Are the input validation error messages correct and clear? Is the documentation clear and complete? Anything you want to change or improve? Any other feedback?_
+
+
+Many thanks to the picocli community for the contributions!
+
+This is the fifty-fifth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.0.0-beta-1"></a> Table of Contents
+* [New and noteworthy](#4.0.0-beta-1-new)
+* [Fixed issues](#4.0.0-beta-1-fixes)
+* [Deprecations](#4.0.0-beta-1-deprecated)
+* [Potential breaking changes](#4.0.0-beta-1-breaking-changes)
+
+## <a name="4.0.0-beta-1-new"></a> New and Noteworthy
+
+### <a name="4.0.0-beta-1-execute"></a> XXX
+
+
+## <a name="4.0.0-beta-1-fixes"></a> Fixed issues
+- [#697] Option sort in usage help should ignore option name prefix; long options without short name should be inserted alphabetically, instead of always appear at the top.
+
+## <a name="4.0.0-beta-1-deprecated"></a> Deprecations
+
+
+## <a name="4.0.0-beta-1-breaking-changes"></a> Potential breaking changes
+
+Previously, options that only have a long name (and do not have a short name) were always shown before options with a short name.
+From this release, they are inserted in the option list by their first non-prefix letter.
+This may break tests that expect a specific help message.
+
 # <a name="4.0.0-alpha-3"></a> Picocli 4.0.0-alpha-3
 The picocli community is pleased to announce picocli 4.0.0-alpha-3.
 

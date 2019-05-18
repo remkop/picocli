@@ -2867,19 +2867,20 @@ public class CommandLineHelpTest {
                 "                    [--lib=<path>[,<path>[,<path>]]]... [--y=<y>,<y>,<y>]... [-P%n" +
                 "                    [=<key=ppp>...]]... [-S[=<key=sss>[,<key=sss>]...]]...%n" +
                 "                    [-D=<key=ddd>...]... [-T=<key=ttt>[,<key=ttt>]...]...%n" +
+                "  -D=<key=ddd>...        use value for given property%n" +
                 "      --help             print this message%n" +
                 "      --lib=<path>[,<path>[,<path>]]%n" +
                 "                         comma-separated list of up to 3 paths to search for jars%n" +
                 "                           and classes%n" +
                 "      --logfile=<file>   use given file for log%n" +
-                "      --x[=<x>[,<x>]]    comma-separated list of up to 2 xxx's%n" +
-                "      --y=<y>,<y>,<y>    exactly 3 y's%n" +
-                "  -D=<key=ddd>...        use value for given property%n" +
                 "  -P=[<key=ppp>...]      use value for project key%n" +
                 "  -S=[<key=sss>[,<key=sss>]...]%n" +
                 "                         use value for project key%n" +
                 "  -T=<key=ttt>[,<key=ttt>]...%n" +
-                "                         use value for given property%n");
+                "                         use value for given property%n" +
+                "      --x[=<x>[,<x>]]    comma-separated list of up to 2 xxx's%n" +
+                "      --y=<y>,<y>,<y>    exactly 3 y's%n"
+        );
         assertEquals(expected, actual);
     }
 
@@ -3582,15 +3583,16 @@ public class CommandLineHelpTest {
         @Option(names = "--very-very-very-looooooooooooooooong-option-name", description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
         String lengthyOption;
 
-        static final String expected = format("Usage: <main class> [--very-very-very-looooooooooooooooong-option-name=<lengthyOption>] [-s=<shortOption>]%n" +
+        static final String expected = format("Usage: <main class> [-s=<shortOption>] [--very-very-very-looooooooooooooooong-option-name=<lengthyOption>]%n" +
                 "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped%n" +
                 "over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The%n" +
                 "quick brown fox jumped over the lazy dog.%n" +
-                "      --very-very-very-looooooooooooooooong-option-name=<lengthyOption>%n" +
-                "                      The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick%n" +
-                "                        brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.%n" +
                 "  -s=<shortOption>    The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick%n" +
-                "                        brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.%n");
+                "                        brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.%n" +
+                "      --very-very-very-looooooooooooooooong-option-name=<lengthyOption>%n" +
+                        "                      The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick%n" +
+                        "                        brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.%n"
+        );
     }
 
     @Test

@@ -541,8 +541,8 @@ public class Demo implements Runnable {
             "ignored by gitignore(5)). The first are what you would commit by running git%n" +
             "commit; the second and third are what you could commit by running git add%n" +
             "before running git commit.%n" +
-            "      --ignored            Show ignored files as well%n" +
             "  -b, --branch             Show the branch and tracking info even in short-format%n" +
+            "      --ignored            Show ignored files as well%n" +
             "  -s, --short              Give the output in the short-format%n" +
             "  -u, --untracked=<mode>   Show untracked files.%n" +
             "                           The mode parameter is optional (defaults to `all`), and%n" +
@@ -562,8 +562,8 @@ public class Demo implements Runnable {
             "ignored by gitignore(5)). The first are what you would commit by running git%n" +
             "commit; the second and third are what you could commit by running git add%n" +
             "before running git commit.%n" +
-            "      @|yellow --ignored|@            Show ignored files as well%n" +
             "  @|yellow -b|@, @|yellow --branch|@             Show the branch and tracking info even in short-format%n" +
+            "      @|yellow --ignored|@            Show ignored files as well%n" +
             "  @|yellow -s|@, @|yellow --short|@              Give the output in the short-format%n" +
             "  @|yellow -u|@, @|yellow --untracked|@=@|italic <mode>|@   Show untracked files.%n" +
             "                           The mode parameter is optional (defaults to `all`), and%n" +
@@ -590,8 +590,8 @@ public class Demo implements Runnable {
             "%n" +
             "Record changes to the repository.%n" +
             "%n" +
-            "git-commit [-ap] [--fixup=<commit>] [--squash=<commit>] [-c=<commit>]%n" +
-            "           [-C=<commit>] [-F=<file>] [-m=<msg>]... [<files>...]%n" +
+            "git-commit [-ap] [-c=<commit>] [-C=<commit>] [-F=<file>] [--fixup=<commit>]%n" +
+            "           [--squash=<commit>] [-m=<msg>]... [<files>...]%n" +
             "%n" +
             "Description:%n" +
             "%n" +
@@ -631,8 +631,8 @@ public class Demo implements Runnable {
             "%n" +
             "Record changes to the repository.%n" +
             "%n" +
-            "@|bold git-commit|@ [@|yellow -ap|@] [@|yellow --fixup|@=@|italic <commit>|@] [@|yellow --squash|@=@|italic <commit>|@] [@|yellow -c|@=@|italic <commit>|@]%n" +
-            "           [@|yellow -C|@=@|italic <commit>|@] [@|yellow -F|@=@|italic <file>|@] [@|yellow -m|@=@|italic <msg>|@]... [@|yellow <files>|@...]%n" +
+            "@|bold git-commit|@ [@|yellow -ap|@] [@|yellow -c|@=@|italic <commit>|@] [@|yellow -C|@=@|italic <commit>|@] [@|yellow -F|@=@|italic <file>|@] [@|yellow --fixup|@=@|italic <commit>|@]%n" +
+            "           [@|yellow --squash|@=@|italic <commit>|@] [@|yellow -m|@=@|italic <msg>|@]... [@|yellow <files>|@...]%n" +
             "%n" +
             "@|bold,underline Description:|@%n" +
             "%n" +

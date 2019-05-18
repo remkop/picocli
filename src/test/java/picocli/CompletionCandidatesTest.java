@@ -197,15 +197,15 @@ public class CompletionCandidatesTest {
                 "                           intended, to, wrap, to, the, next, line., I, wonder, if,%n" +
                 "                           it, is, long, enough.%n" +
                 "      --logfile=<file>   Use given file for log. Default: %s%n" +
+                        "  -P=[<key=ppp>...]      Use value for project key.%n" +
+                        "                         Default={key1=veryveryverylonglonglongvaluevaluevalue,%n" +
+                        "                           key2=very2very2very2longlonglongvaluevaluevalue2,%n" +
+                        "                           key3=very3very3very3longlonglongvaluevaluevalue3}%n" +
                 "      --strNull=<str>    String without default. Default: null%n" +
                 "      --x=<x>[,<x>...]   Comma-separated list of some xxx's. Valid values: A, B, C, D%n" +
                 "      --y=<y>            Test long default. Default: This is a very long default%n" +
                 "                           value that is intended to wrap to the next line. I wonder%n" +
-                "                           if it is long enough.%n" +
-                "  -P=[<key=ppp>...]      Use value for project key.%n" +
-                "                         Default={key1=veryveryverylonglonglongvaluevaluevalue,%n" +
-                "                           key2=very2very2very2longlonglongvaluevaluevalue2,%n" +
-                "                           key3=very3very3very3longlonglongvaluevaluevalue3}%n", new File("/a/b/c"));
+                "                           if it is long enough.%n", new File("/a/b/c"));
         String actual = usageString(new CommandLine(new App(), new InnerClassFactory(this)), CommandLine.Help.Ansi.OFF);
         assertEquals(expected, actual);
     }

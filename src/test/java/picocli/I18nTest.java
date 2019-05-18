@@ -522,17 +522,17 @@ public class I18nTest {
         assertEquals(cloneUsage, git.getSubcommands().get("clone").getUsageMessage());
 
         String commitUsage = String.format("" +
-                "Usage: git commit [--squash=<commit>] [-m=<arg0>] [<file>...]%n" +
+                "Usage: git commit [-m=<arg0>] [--squash=<commit>] [<file>...]%n" +
                 "      [<file>...]%n" +
-                "      --squash=<commit>%n" +
-                "  -m, --message=<arg0>%n");
+                        "  -m, --message=<arg0>%n" +
+                "      --squash=<commit>%n");
         assertEquals(commitUsage, git.getSubcommands().get("commit").getUsageMessage());
 
         String pushUsage = String.format("" +
                 "Usage: git push [-f] [--tags] <repository>%n" +
                 "      <repository>%n" +
-                "      --tags%n" +
-                "  -f, --force%n");
+                "  -f, --force%n" +
+                "      --tags%n");
         assertEquals(pushUsage, git.getSubcommands().get("push").getUsageMessage());
     }
 
@@ -565,20 +565,20 @@ public class I18nTest {
         assertEquals(cloneUsage, git.getSubcommands().get("clone").getUsageMessage());
 
         String commitUsage = String.format("" +
-                "Usage: git commit [--squash=<commit>] [-m=<arg0>] [<file>...]%n" +
+                "Usage: git commit [-m=<arg0>] [--squash=<commit>] [<file>...]%n" +
                 "Record changes to the repository%n" +
                 "      [<file>...]         The files to commit.%n" +
+                "  -m, --message=<arg0>    Use the given <msg> as the commit message.%n" +
                 "      --squash=<commit>   Construct a commit message for use with rebase%n" +
-                "                            --autosquash.%n" +
-                "  -m, --message=<arg0>    Use the given <msg> as the commit message.%n");
+                "                            --autosquash.%n");
         assertEquals(commitUsage, git.getSubcommands().get("commit").getUsageMessage());
 
         String pushUsage = String.format("" +
                 "Usage: git push [-f] [--tags] <repository>%n" +
                 "Update remote refs along with associated objects%n" +
                 "      <repository>   The \"remote\" repository that is destination of a push operation.%n" +
-                "      --tags         All refs under refs/tags are pushed.%n" +
-                "  -f, --force        Disable checks.%n");
+                "  -f, --force        Disable checks.%n" +
+                "      --tags         All refs under refs/tags are pushed.%n");
         assertEquals(pushUsage, git.getSubcommands().get("push").getUsageMessage());
     }
 
