@@ -3760,7 +3760,7 @@ public class CommandLine {
          * @return the program name to show in the synopsis
          * @see CommandSpec#name()
          * @see Help#commandName() */
-        String name() default "<main class>";
+        String name() default CommandSpec.DEFAULT_COMMAND_NAME;
 
         /** Alternative command names by which this subcommand is recognized on the command line.
          * @return one or more alternative command names
@@ -4575,8 +4575,9 @@ public class CommandLine {
          * </p>
          * @since 3.0 */
         public static class CommandSpec {
-            /** Constant String holding the default program name: {@code "<main class>" }. */
-            static final String DEFAULT_COMMAND_NAME = "<main class>";
+            /** Constant String holding the default program name: {@code "<main class>" }.
+             * @since 4.0 */
+            public static final String DEFAULT_COMMAND_NAME = "<main class>";
 
             /** Constant Boolean holding the default setting for whether this is a help command: <code>{@value}</code>.*/
             static final Boolean DEFAULT_IS_HELP_COMMAND = false;
