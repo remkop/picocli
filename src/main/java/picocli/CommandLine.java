@@ -4223,6 +4223,7 @@ public class CommandLine {
      * @see picocli.CommandLine#CommandLine(Object, IFactory)
      * @see #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
      * @see #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
+     * @see #defaultFactory()
      * @since 2.2 */
     public interface IFactory {
         /**
