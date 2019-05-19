@@ -1,10 +1,10 @@
 package picocli.codegen.annotation.processing;
 
-import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IFactory;
 import picocli.CommandLine.Mixin;
+import picocli.CommandLine.Model.ArgGroupSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.IAnnotatedElement;
 import picocli.CommandLine.Model.ITypeInfo;
@@ -20,7 +20,6 @@ import picocli.codegen.annotation.processing.internal.DefaultValueProviderMetaDa
 import picocli.codegen.annotation.processing.internal.GetterSetterMetaData;
 import picocli.codegen.annotation.processing.internal.TypeConverterMetaData;
 import picocli.codegen.annotation.processing.internal.VersionProviderMetaData;
-import picocli.codegen.util.Assert;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -32,20 +31,16 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.SimpleElementVisitor6;
 import javax.tools.Diagnostic;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -88,7 +83,7 @@ import static javax.lang.model.element.ElementKind.ENUM;
  * @since 4.0
  */
 public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
-    private static final String COMMAND_DEFAULT_NAME = "<main class>";
+    private static final String COMMAND_DEFAULT_NAME = CommandSpec.DEFAULT_COMMAND_NAME;
     private static Logger logger = Logger.getLogger(AbstractCommandSpecProcessor.class.getName());
 
     /** The ProcessingEnvironment set by the {@link #init(ProcessingEnvironment)} method. */
@@ -130,123 +125,28 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     public synchronized void init(ProcessingEnvironment processingEnv) {
         this.processingEnv = processingEnv;
     }
-
     // inherit doc
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         logger.info("Entered process, processingOver=" + roundEnv.processingOver());
 
-        IFactory factory = null; //new NullFactory();
-        Map<Element, CommandSpec> commands = new LinkedHashMap<Element, CommandSpec>();
-        Map<TypeMirror, List<CommandSpec>> commandTypes = new LinkedHashMap<TypeMirror, List<CommandSpec>>();
-        Map<Element, OptionSpec.Builder> options = new LinkedHashMap<Element, OptionSpec.Builder>();
-        Map<Element, PositionalParamSpec.Builder> parameters = new LinkedHashMap<Element, PositionalParamSpec.Builder>();
-        List<MixinInfo> mixinInfoList = new ArrayList<MixinInfo>();
-        Map<Element, IAnnotatedElement> parentCommands = new LinkedHashMap<Element, IAnnotatedElement>();
-        Map<Element, IAnnotatedElement> specs = new LinkedHashMap<Element, IAnnotatedElement>();
-        Map<Element, IAnnotatedElement> unmatched = new LinkedHashMap<Element, IAnnotatedElement>();
+        Context context = new Context();
+        buildCommands(roundEnv, context);
+        buildMixins(roundEnv, context);
+        buildArgGroups(roundEnv, context);
+        buildOptions(roundEnv, context);
+        buildParameters(roundEnv, context);
+        buildParentCommands(roundEnv, context);
+        buildSpecs(roundEnv, context);
+        buildUnmatched(roundEnv, context);
 
-        logger.fine("Building commands...");
-        buildCommands(roundEnv, factory, commands, commandTypes, options, parameters);
+        context.connectModel(this);
 
-        logger.fine("Building mixins...");
-        buildMixins(roundEnv, factory, commands, mixinInfoList, commandTypes, options, parameters);
+        debugFoundAnnotations(annotations, roundEnv);
 
-        logger.fine("Building options...");
-        buildOptions(roundEnv, factory, options);
+        new AnnotationValidator(processingEnv).validateAnnotations(roundEnv);
 
-        logger.fine("Building parameters...");
-        buildParameters(roundEnv, factory, parameters);
-
-        logger.fine("Building parentCommands...");
-        buildParentCommands(roundEnv, factory, parentCommands);
-
-        logger.fine("Building specs...");
-        buildSpecs(roundEnv, factory, specs);
-
-        logger.fine("Building unmatched...");
-        buildUnmatched(roundEnv, factory, unmatched);
-
-        logger.fine("---------------------------");
-        logger.fine("Known commands...");
-        for (Map.Entry<Element, CommandSpec> cmd : commands.entrySet()) {
-            logger.fine(String.format("%s has CommandSpec[name=%s]", cmd.getKey(), cmd.getValue().name()));
-        }
-        logger.fine("Known mixins...");
-        for (MixinInfo mixinInfo : mixinInfoList) {
-            logger.fine(String.format("%s is mixin for %s", mixinInfo.mixin.userObject(), mixinInfo.mixee.userObject()));
-        }
-
-        for (Map.Entry<Element, OptionSpec.Builder> option : options.entrySet()) {
-            CommandSpec commandSpec = getOrCreateCommandSpecForArg(option, commands);
-            logger.fine("Building OptionSpec for " + option + " in spec " + commandSpec);
-            commandSpec.addOption(option.getValue().build());
-        }
-        for (Map.Entry<Element, PositionalParamSpec.Builder> parameter : parameters.entrySet()) {
-            CommandSpec commandSpec = getOrCreateCommandSpecForArg(parameter, commands);
-            logger.fine("Building PositionalParamSpec for " + parameter);
-            commandSpec.addPositional(parameter.getValue().build());
-        }
-        for (MixinInfo mixinInfo : mixinInfoList) {
-            mixinInfo.addMixin();
-        }
-
-        logger.fine("Found annotations: " + annotations);
-        //processingEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING, "Found annotations: " + annotations);
-        for (TypeElement annotation : annotations) {
-            Set<? extends Element> annotatedElements = roundEnv.getElementsAnnotatedWith(annotation);
-            //processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, annotatedElements + " is annotated with " + annotation);
-            logger.finest(annotatedElements + " is annotated with " + annotation);
-            // …
-        }
-
-        validateNoAnnotationsOnInterfaceField(roundEnv);
-        validateInvalidCombination(roundEnv, Mixin.class, Option.class);
-        validateInvalidCombination(roundEnv, Mixin.class, Parameters.class);
-        validateInvalidCombination(roundEnv, Mixin.class, Unmatched.class);
-        validateInvalidCombination(roundEnv, Mixin.class, Spec.class);
-        validateInvalidCombination(roundEnv, Unmatched.class, Option.class);
-        validateInvalidCombination(roundEnv, Unmatched.class, Parameters.class);
-        validateInvalidCombination(roundEnv, Spec.class, Option.class);
-        validateInvalidCombination(roundEnv, Spec.class, Parameters.class);
-        validateInvalidCombination(roundEnv, Spec.class, Unmatched.class);
-        validateInvalidCombination(roundEnv, Option.class, Parameters.class);
-
-        // TODO
-        //validateSpecFieldTypeIsCommandSpec(roundEnv);
-        //validateOptionOrParametersIsNotFinalPrimitiveOrFinalString(roundEnv);
-        //validateUnmatchedFieldTypeIsStringArrayOrListOfString(roundEnv);
-
-        return handleCommands(commands, annotations, roundEnv);
-    }
-
-    private void validateNoAnnotationsOnInterfaceField(RoundEnvironment roundEnv) {
-        validateNoAnnotationsOnInterfaceField(roundEnv.getElementsAnnotatedWith(Option.class));
-        validateNoAnnotationsOnInterfaceField(roundEnv.getElementsAnnotatedWith(Parameters.class));
-        validateNoAnnotationsOnInterfaceField(roundEnv.getElementsAnnotatedWith(Mixin.class));
-        validateNoAnnotationsOnInterfaceField(roundEnv.getElementsAnnotatedWith(ParentCommand.class));
-        validateNoAnnotationsOnInterfaceField(roundEnv.getElementsAnnotatedWith(Spec.class));
-        validateNoAnnotationsOnInterfaceField(roundEnv.getElementsAnnotatedWith(Unmatched.class));
-    }
-
-    private void validateNoAnnotationsOnInterfaceField(Set<? extends Element> all) {
-        for (Element element : all) {
-            if (element.getKind() == ElementKind.FIELD &&
-                    element.getEnclosingElement().getKind() == ElementKind.INTERFACE) {
-                error(element, "Invalid picocli annotation on interface field %s.%s",
-                        element.getEnclosingElement().toString(), element.getSimpleName());
-            }
-        }
-    }
-
-    private <T1 extends Annotation, T2 extends Annotation> void validateInvalidCombination(
-            RoundEnvironment roundEnv, Class<T1> c1, Class<T2> c2) {
-        for (Element element : roundEnv.getElementsAnnotatedWith(c1)) {
-            if (element.getAnnotation(c2) != null) {
-                error(element, "%s cannot have both @%s and @%s annotations",
-                        element, c1.getCanonicalName(), c2.getCanonicalName());
-            }
-        }
+        return handleCommands(context.commands, annotations, roundEnv);
     }
 
     /**
@@ -270,266 +170,111 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                                               Set<? extends TypeElement> annotations,
                                               RoundEnvironment roundEnv);
 
-    private CommandSpec getOrCreateCommandSpecForArg(Map.Entry<Element, ?> argElement,
-                                                     Map<Element, CommandSpec> commands) {
-        Element key = argElement.getKey().getEnclosingElement();
-        CommandSpec commandSpec = commands.get(key);
-        if (commandSpec == null) {
-            logger.fine("Element " + argElement.getKey() + " is enclosed by " + key + " which does not have a @Command annotation");
-            commandSpec = CommandSpec.forAnnotatedObjectLenient(key);
-            commandSpec.interpolateVariables(false);
-            commands.put(key, commandSpec);
-        }
-        return commandSpec;
-    }
-
-    private void buildUnmatched(RoundEnvironment roundEnv, IFactory factory, Map<Element, IAnnotatedElement> unmatched) {
-        Set<? extends Element> explicitUnmatched = roundEnv.getElementsAnnotatedWith(Unmatched.class);
-        for (Element element : explicitUnmatched) {
-            debugElement(element, "@Unmatched");
-            if (element.getKind() == ElementKind.FIELD) {
-
-            } else if (element.getKind() == ElementKind.METHOD) {
-
-            } else if (element.getKind() == ElementKind.PARAMETER) {
-
-            }
-        }
-    }
-
-    private void buildSpecs(RoundEnvironment roundEnv, IFactory factory, Map<Element, IAnnotatedElement> specs) {
-        Set<? extends Element> explicitSpecs = roundEnv.getElementsAnnotatedWith(Spec.class);
-        for (Element element : explicitSpecs) {
-            debugElement(element, "@Spec");
-            if (element.getKind() == ElementKind.FIELD) {
-
-            } else if (element.getKind() == ElementKind.METHOD) {
-
-            } else if (element.getKind() == ElementKind.PARAMETER) {
-
-            }
-        }
-    }
-
-    private void buildMixins(RoundEnvironment roundEnv,
-                             IFactory factory,
-                             Map<Element, CommandSpec> mixinsDeclared,
-                             List<MixinInfo> mixinInfoList,
-                             Map<TypeMirror, List<CommandSpec>> commandTypes,
-                             Map<Element, OptionSpec.Builder> options,
-                             Map<Element, PositionalParamSpec.Builder> parameters) {
-        Set<? extends Element> explicitMixins = roundEnv.getElementsAnnotatedWith(Mixin.class);
-        for (Element element : explicitMixins) {
-            if (element.asType().getKind() != TypeKind.DECLARED) {
-                error(element, "@Mixin must have a declared type, not %s", element.asType());
-                continue;
-            }
-            TypeElement type = (TypeElement) ((DeclaredType) element.asType()).asElement();
-            CommandSpec mixin = buildCommand(type, factory, mixinsDeclared, commandTypes, options, parameters);
-
-            logger.fine("Built mixin: " + mixin + " from " + element);
-            if (EnumSet.of(ElementKind.FIELD, ElementKind.PARAMETER).contains(element.getKind())) {
-                VariableElement variableElement = (VariableElement) element;
-                String name = element.getAnnotation(Mixin.class).name();
-                if (name.length() == 0) {
-                    name = variableElement.getSimpleName().toString();
-                }
-                Element targetType = element.getEnclosingElement();
-                CommandSpec mixee = buildCommand(targetType, factory, mixinsDeclared, commandTypes, options, parameters);
-                mixinInfoList.add(new MixinInfo(mixee, name, mixin));
-                logger.fine("Mixin name=" + name + ", target command=" + mixee.userObject());
-            }
-        }
-    }
-
-    private void buildParentCommands(RoundEnvironment roundEnv, IFactory factory, Map<Element, IAnnotatedElement> parentCommands) {
-        Set<? extends Element> explicitParentCommands = roundEnv.getElementsAnnotatedWith(ParentCommand.class);
-        for (Element element : explicitParentCommands) {
-            debugElement(element, "@ParentCommand");
-            if (element.getKind() == ElementKind.FIELD) {
-
-            } else if (element.getKind() == ElementKind.METHOD) {
-
-            } else if (element.getKind() == ElementKind.PARAMETER) {
-
-            }
-        }
-    }
-
-    private void buildOptions(RoundEnvironment roundEnv,
-                              IFactory factory,
-                              Map<Element, OptionSpec.Builder> options) {
-        Set<? extends Element> explicitOptions = roundEnv.getElementsAnnotatedWith(Option.class);
-        for (Element element : explicitOptions) {
-            if (options.containsKey(element)) { continue; }
-            TypedMember typedMember = extractTypedMember(element, "@Option");
-            if (typedMember != null) {
-                OptionSpec.Builder builder = OptionSpec.builder(typedMember, factory);
-                builder.completionCandidates(extractCompletionCandidates(element, element.getAnnotationMirrors()));
-                builder.converters(extractConverters(element, element.getAnnotationMirrors()));
-                options.put(element, builder);
-            }
-        }
-    }
-
-    private void buildParameters(RoundEnvironment roundEnv,
-                                 IFactory factory,
-                                 Map<Element, PositionalParamSpec.Builder> parameters) {
-        Set<? extends Element> explicitParameters = roundEnv.getElementsAnnotatedWith(Parameters.class);
-        for (Element element : explicitParameters) {
-            if (parameters.containsKey(element)) { continue; }
-            TypedMember typedMember = extractTypedMember(element, "@Parameters");
-            if (typedMember != null) {
-                PositionalParamSpec.Builder builder = PositionalParamSpec.builder(typedMember, factory);
-                builder.completionCandidates(extractCompletionCandidates(element, element.getAnnotationMirrors()));
-                builder.converters(extractConverters(element, element.getAnnotationMirrors()));
-                parameters.put(element, builder);
-            }
-        }
-    }
-
-    private TypedMember extractTypedMember(Element element, String annotation) {
-        debugElement(element, annotation);
-        if (element.getKind() == ElementKind.FIELD) { // || element.getKind() == ElementKind.PARAMETER) {
-            return new TypedMember((VariableElement) element, -1);
-        } else if (element.getKind() == ElementKind.METHOD) {
-            return new TypedMember((ExecutableElement) element);
-        }
-        error(element, "Cannot only process %s annotations on fields, " +
-                "methods and method parameters, not on %s", annotation, element.getKind());
-        return null;
-    }
-
-    private void buildCommands(RoundEnvironment roundEnv,
-                               IFactory factory,
-                               Map<Element, CommandSpec> commands,
-                               Map<TypeMirror, List<CommandSpec>> commandTypes,
-                               Map<Element, OptionSpec.Builder> options,
-                               Map<Element, PositionalParamSpec.Builder> parameters) {
+    private void buildCommands(RoundEnvironment roundEnv, Context context) {
+        logger.fine("Building commands...");
         Set<? extends Element> explicitCommands = roundEnv.getElementsAnnotatedWith(Command.class);
+
         for (Element element : explicitCommands) {
-            buildCommand(element, factory, commands, commandTypes, options, parameters);
+            buildCommand(element, context);
         }
     }
 
-    private CommandSpec buildCommand(Element element,
-                                     IFactory factory,
-                                     Map<Element, CommandSpec> commands,
-                                     Map<TypeMirror, List<CommandSpec>> commandTypes,
-                                     Map<Element, OptionSpec.Builder> options,
-                                     Map<Element, PositionalParamSpec.Builder> parameters) {
-        String commandClassName = element.asType().toString();
+    private CommandSpec buildCommand(Element element, Context context) {
         debugElement(element, "@Command");
 
-        CommandSpec result = commands.get(element);
+        CommandSpec result = context.commands.get(element);
         if (result != null) {
             return result;
         }
         result = CommandSpec.wrapWithoutInspection(element);
         result.interpolateVariables(false);
-        result.withToString(commandClassName);
-        commands.put(element, result);
+        context.commands.put(element, result);
 
-        boolean hasCommandAnnotation = false;
-        boolean mixinStandardHelpOptions = false;
         if (element.getKind() == ElementKind.CLASS) {
-            TypeElement superClass = superClassFor((TypeElement) element);
-            debugElement(superClass, "  super");
-
-            TypeElement typeElement = (TypeElement) element;
-            Stack<TypeElement> hierarchy = new Stack<TypeElement>();
-            int count = 0;
-            while (typeElement != null && count++ < 20) {
-                logger.fine("Adding to type hierarchy: " + typeElement);
-                hierarchy.add(typeElement);
-                typeElement = superClassFor(typeElement);
-            }
-            while (!hierarchy.isEmpty()) {
-                typeElement = hierarchy.pop();
-                Command cmd = typeElement.getAnnotation(Command.class);
-                if (cmd != null) {
-                    updateCommandAttributes(result, cmd);
-
-                    List<CommandSpec> subcommands = findSubcommands(typeElement.getAnnotationMirrors(),
-                            factory, commands, commandTypes, options, parameters);
-                    for (CommandSpec sub : subcommands) {
-                        result.addSubcommand(sub.name(), sub);
-                    }
-                    hasCommandAnnotation = true;
-                }
-                List<CommandSpec> forSubclass = commandTypes.get(typeElement.asType());
-                if (forSubclass == null) {
-                    forSubclass = new ArrayList<CommandSpec>();
-                    commandTypes.put(typeElement.asType(), forSubclass);
-                }
-                forSubclass.add(result);
-                //hasCommandAnnotation |= initFromAnnotatedFields(instance, typeElement, result, factory); // TODO
-                if (cmd != null) {
-                    mixinStandardHelpOptions |= cmd.mixinStandardHelpOptions();
-                }
-            }
-            result.mixinStandardHelpOptions(mixinStandardHelpOptions); //#377 Standard help options should be added last
+            updateCommandSpecFromTypeElement((TypeElement) element, context, result);
         } else if (element.getKind() == ElementKind.METHOD) {
-            ExecutableElement method = (ExecutableElement) element;
-            debugMethod(method);
-
-            Command cmd = method.getAnnotation(Command.class);
-            updateCommandAttributes(result, cmd);
-            result.setAddMethodSubcommands(false);
-            result.withToString(commandClassName + "." + method.getSimpleName());
-
-            // set command name to method name, unless @Command#name is set
-            if (result.name().equals(COMMAND_DEFAULT_NAME)) {
-                result.name(method.getSimpleName().toString());
-            }
-
-            Element cls = method.getEnclosingElement();
-            if (cls.getAnnotation(Command.class) != null && cls.getAnnotation(Command.class).addMethodSubcommands()) {
-                CommandSpec commandSpec = buildCommand(cls,
-                        factory, commands, commandTypes, options, parameters);
-                commandSpec.addSubcommand(result.name(), result);
-            }
-            hasCommandAnnotation = true;
-            result.mixinStandardHelpOptions(method.getAnnotation(Command.class).mixinStandardHelpOptions());
-            buildOptionsAndPositionalsFromMethodParameters(method, result, factory, options, parameters);
+            updateCommandFromMethodElement((ExecutableElement) element, context, result);
         }
-        //result.updateArgSpecMessages(); // TODO resource bundle
 
         // TODO run validation logic
-//            if (annotationsAreMandatory) { validateCommandSpec(result, hasCommandAnnotation, commandClassName); }
-//            result.withToString(commandClassName).validate();
+        //   if (annotationsAreMandatory) { validateCommandSpec(result, hasCommandAnnotation, commandClassName); }
+        //   result.validate();
         logger.fine(String.format("CommandSpec[name=%s] built for %s", result.name(), element));
         return result;
+    }
+
+    private void updateCommandSpecFromTypeElement(TypeElement typeElement, Context context, CommandSpec result) {
+        TypeElement superClass = superClassFor(typeElement);
+        debugElement(superClass, "  super");
+        result.withToString(typeElement.asType().toString());
+
+        Stack<TypeElement> hierarchy = buildTypeHierarchy(typeElement);
+        while (!hierarchy.isEmpty()) {
+            typeElement = hierarchy.pop();
+            updateCommandSpecFromCommandAnnotation(result, typeElement, context);
+            context.registerCommandType(result, typeElement); // FIXME: unnecessary?
+        }
+    }
+
+    private void updateCommandFromMethodElement(ExecutableElement method, Context context, CommandSpec result) {
+        debugMethod(method);
+        result.withToString(method.getEnclosingElement().asType().toString() + "." + method.getSimpleName());
+
+        updateCommandSpecFromCommandAnnotation(result, method, context);
+        result.setAddMethodSubcommands(false); // must reset: true by default in the @Command annotation
+
+        // set command name to method name, unless @Command#name is set
+        if (result.name().equals(COMMAND_DEFAULT_NAME)) {
+            result.name(method.getSimpleName().toString());
+        }
+
+        // add this commandSpec as a subcommand to its parent
+        // FIXME this logic does not cover the case where the enclosing class is a command without @Command annotation (but has @Option fields for example)
+        Element cls = method.getEnclosingElement();
+        if (cls.getAnnotation(Command.class) != null && cls.getAnnotation(Command.class).addMethodSubcommands()) {
+            CommandSpec commandSpec = buildCommand(cls, context);
+            commandSpec.addSubcommand(result.name(), result);
+        }
+        buildOptionsAndPositionalsFromMethodParameters(method, result, context);
+    }
+
+    private Stack<TypeElement> buildTypeHierarchy(TypeElement typeElement) {
+        Stack<TypeElement> hierarchy = new Stack<TypeElement>();
+        int count = 0;
+        while (typeElement != null && count++ < 20) {
+            logger.fine("Adding to type hierarchy: " + typeElement);
+            hierarchy.add(typeElement);
+            typeElement = superClassFor(typeElement);
+        }
+        return hierarchy;
+    }
+
+    private boolean updateCommandSpecFromCommandAnnotation(CommandSpec result, Element element, Context context) {
+        Command cmd = element.getAnnotation(Command.class);
+        if (cmd != null) {
+            updateCommandAttributes(result, cmd);
+
+            List<CommandSpec> subcommands = findSubcommands(element.getAnnotationMirrors(), context);
+            for (CommandSpec sub : subcommands) {
+                result.addSubcommand(sub.name(), sub);
+            }
+            if (cmd.mixinStandardHelpOptions()) {
+                context.commandsRequestingStandardHelpOptions.add(result);
+            }
+        }
+        return false;
     }
 
     private void updateCommandAttributes(CommandSpec result, Command cmd) {
         // null factory to prevent
         // javax.lang.model.type.MirroredTypeException: Attempt to access Class object for TypeMirror picocli.CommandLine.NoVersionProvider
         result.updateCommandAttributes(cmd, null);
-        try {
-            cmd.versionProvider();
-        } catch (MirroredTypeException ex) {
-            VersionProviderMetaData provider = new VersionProviderMetaData(ex.getTypeMirror());
-            if (!provider.isDefault()) {
-                result.versionProvider(provider);
-            }
-        }
-        try {
-            cmd.defaultValueProvider();
-        } catch (MirroredTypeException ex) {
-            DefaultValueProviderMetaData provider = new DefaultValueProviderMetaData(ex.getTypeMirror());
-            if (!provider.isDefault()) {
-                result.defaultValueProvider(provider);
-            }
-        }
+        VersionProviderMetaData.initVersionProvider(result, cmd);
+        DefaultValueProviderMetaData.initDefaultValueProvider(result, cmd);
     }
 
     private List<CommandSpec> findSubcommands(List<? extends AnnotationMirror> annotationMirrors,
-                                              IFactory factory,
-                                              Map<Element, CommandSpec> commands,
-                                              Map<TypeMirror, List<CommandSpec>> commandTypes,
-                                              Map<Element, OptionSpec.Builder> options,
-                                              Map<Element, PositionalParamSpec.Builder> parameters) {
+                                              Context context) {
         List<CommandSpec> result = new ArrayList<CommandSpec>();
         for (AnnotationMirror am : annotationMirrors) {
             if (am.getAnnotationType().toString().equals(COMMAND_TYPE)) {
@@ -539,23 +284,18 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
 
                         @SuppressWarnings("unchecked")
                         List<AnnotationValue> typeMirrors = (List<AnnotationValue>) list.getValue();
-                        registerSubcommands(typeMirrors, result, factory, commands, commandTypes, options, parameters);
+                        registerSubcommands(typeMirrors, result, context);
                         break;
                     }
                 }
             }
         }
-
         return result;
     }
 
     private void registerSubcommands(List<AnnotationValue> typeMirrors,
                                      List<CommandSpec> result,
-                                     IFactory factory,
-                                     Map<Element, CommandSpec> commands,
-                                     Map<TypeMirror, List<CommandSpec>> commandTypes,
-                                     Map<Element, OptionSpec.Builder> options,
-                                     Map<Element, PositionalParamSpec.Builder> parameters) {
+                                     Context context) {
 
         for (AnnotationValue typeMirror : typeMirrors) {
             Element subcommandElement = processingEnv.getElementUtils().getTypeElement(
@@ -563,8 +303,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             logger.fine("Processing subcommand: " + subcommandElement);
 
             if (isValidSubcommandHasNameAttribute(subcommandElement)) {
-                CommandSpec commandSpec = buildCommand(subcommandElement,
-                        factory, commands, commandTypes, options, parameters);
+                CommandSpec commandSpec = buildCommand(subcommandElement, context);
                 result.add(commandSpec);
             }
         }
@@ -582,85 +321,200 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         return true;
     }
 
+    private void buildMixins(RoundEnvironment roundEnv, Context context) {
+        logger.fine("Building mixins...");
+        Set<? extends Element> explicitMixins = roundEnv.getElementsAnnotatedWith(Mixin.class);
+        for (Element element : explicitMixins) {
+            if (element.asType().getKind() != TypeKind.DECLARED) {
+                error(element, "@Mixin must have a declared type, not %s", element.asType());
+                continue;
+            }
+            TypeElement type = (TypeElement) ((DeclaredType) element.asType()).asElement();
+            CommandSpec mixin = buildCommand(type, context);
+
+            logger.fine("Built mixin: " + mixin + " from " + element);
+            if (EnumSet.of(ElementKind.FIELD, ElementKind.PARAMETER).contains(element.getKind())) {
+                VariableElement variableElement = (VariableElement) element;
+                String name = element.getAnnotation(Mixin.class).name();
+                if (name.length() == 0) {
+                    name = variableElement.getSimpleName().toString();
+                }
+                Element targetType = element.getEnclosingElement();
+                CommandSpec mixee = buildCommand(targetType, context);
+                context.mixinInfoList.add(new MixinInfo(mixee, name, mixin));
+                logger.fine("Mixin name=" + name + ", target command=" + mixee.userObject());
+            }
+        }
+    }
+
+    private void buildArgGroups(RoundEnvironment roundEnv, Context context) {
+        logger.fine("Building argGroups...");
+        Set<? extends Element> explicitArgGroups = roundEnv.getElementsAnnotatedWith(ArgGroup.class);
+        for (Element element : explicitArgGroups) {
+            if (element.asType().getKind() != TypeKind.DECLARED && element.asType().getKind() != TypeKind.ARRAY) {
+                error(element, "@ArgGroup must have a declared or array type, not %s", element.asType());
+                continue;
+            }
+            ArgGroupSpec.Builder builder = element.accept(new SimpleElementVisitor6<ArgGroupSpec.Builder, Void>(null) {
+                @Override public ArgGroupSpec.Builder visitVariable(VariableElement e, Void aVoid) {
+                    return ArgGroupSpec.builder(new TypedMember(e, -1));
+                }
+                @Override public ArgGroupSpec.Builder visitExecutable(ExecutableElement e, Void aVoid) {
+                    return ArgGroupSpec.builder(new TypedMember(e));
+                }
+            }, null);
+            if (builder == null) {
+                error(element, "Only methods or variables can be annotated with @ArgGroup, not %s", element);
+            } else {
+                builder.updateArgGroupAttributes(element.getAnnotation(ArgGroup.class));
+                context.argGroups.put(element, builder);
+            }
+        }
+    }
+
+    private void buildOptions(RoundEnvironment roundEnv, Context context) {
+        logger.fine("Building options...");
+        Set<? extends Element> explicitOptions = roundEnv.getElementsAnnotatedWith(Option.class);
+        for (Element element : explicitOptions) {
+            if (context.options.containsKey(element)) { continue; }
+            TypedMember typedMember = extractTypedMember(element, "@Option");
+            if (typedMember != null) {
+                OptionSpec.Builder builder = OptionSpec.builder(typedMember, context.factory);
+                builder.completionCandidates(CompletionCandidatesMetaData.extract(element));
+                builder.converters(TypeConverterMetaData.extract(element));
+                context.options.put(element, builder);
+            }
+        }
+    }
+
+    private void buildParameters(RoundEnvironment roundEnv, Context context) {
+        logger.fine("Building parameters...");
+        Set<? extends Element> explicitParameters = roundEnv.getElementsAnnotatedWith(Parameters.class);
+        for (Element element : explicitParameters) {
+            if (context.parameters.containsKey(element)) { continue; }
+            TypedMember typedMember = extractTypedMember(element, "@Parameters");
+            if (typedMember != null) {
+                PositionalParamSpec.Builder builder = PositionalParamSpec.builder(typedMember, context.factory);
+                builder.completionCandidates(CompletionCandidatesMetaData.extract(element));
+                builder.converters(TypeConverterMetaData.extract(element));
+                context.parameters.put(element, builder);
+            }
+        }
+    }
+
+    private TypedMember extractTypedMember(Element element, String annotation) {
+        debugElement(element, annotation);
+        if (element.getKind() == ElementKind.FIELD) { // || element.getKind() == ElementKind.PARAMETER) {
+            return new TypedMember((VariableElement) element, -1);
+        } else if (element.getKind() == ElementKind.METHOD) {
+            return new TypedMember((ExecutableElement) element);
+        }
+        error(element, "Cannot only process %s annotations on fields, " +
+                "methods and method parameters, not on %s", annotation, element.getKind());
+        return null;
+    }
+
     private void buildOptionsAndPositionalsFromMethodParameters(ExecutableElement method,
                                                                 CommandSpec result,
-                                                                IFactory factory,
-                                                                Map<Element, OptionSpec.Builder> options,
-                                                                Map<Element, PositionalParamSpec.Builder> parameters) {
+                                                                Context context) {
         List<? extends VariableElement> params = method.getParameters();
         int position = -1;
         for (VariableElement variable : params) {
-            boolean isOption = variable.getAnnotation(Option.class) != null;
+            boolean isOption     = variable.getAnnotation(Option.class) != null;
             boolean isPositional = variable.getAnnotation(Parameters.class) != null;
-            boolean isMixin = variable.getAnnotation(Mixin.class) != null;
+            boolean isMixin      = variable.getAnnotation(Mixin.class) != null;
+            boolean isArgGroup   = variable.getAnnotation(ArgGroup.class) != null;
 
             if (isOption && isPositional) {
                 error(variable, "Method %s parameter %s should not have both @Option and @Parameters annotation", method.getSimpleName(), variable.getSimpleName());
             } else if ((isOption || isPositional) && isMixin) {
                 error(variable, "Method %s parameter %s should not have a @Mixin annotation as well as an @Option or @Parameters annotation", method.getSimpleName(), variable.getSimpleName());
+            } else if ((isOption || isPositional || isMixin) && isArgGroup) {
+                error(variable, "Method %s parameter %s should not have a @ArgGroup annotation as well as an @Option, @Parameters or @Mixin annotation", method.getSimpleName(), variable.getSimpleName());
             }
             if (isOption) {
                 TypedMember typedMember = new TypedMember(variable, -1);
-                OptionSpec.Builder builder = OptionSpec.builder(typedMember, factory);
+                OptionSpec.Builder builder = OptionSpec.builder(typedMember, context.factory);
 
-                builder.completionCandidates(extractCompletionCandidates(variable, variable.getAnnotationMirrors()));
-                builder.converters(extractConverters(variable, variable.getAnnotationMirrors()));
-                options.put(variable, builder);
-            } else if (!isMixin) {
+                builder.completionCandidates(CompletionCandidatesMetaData.extract(variable));
+                builder.converters(TypeConverterMetaData.extract(variable));
+                context.options.put(variable, builder);
+            } else if (isArgGroup) {
+                TypedMember typedMember = new TypedMember(variable, -1);
+                ArgGroupSpec.Builder builder = ArgGroupSpec.builder(typedMember);
+                builder.updateArgGroupAttributes(variable.getAnnotation(ArgGroup.class));
+                context.argGroups.put(variable, builder);
+
+            } else if (!isMixin) { // params without any annotation are also positional
                 position++;
                 TypedMember typedMember = new TypedMember(variable, position);
-                PositionalParamSpec.Builder builder = PositionalParamSpec.builder(typedMember, factory);
-                builder.completionCandidates(extractCompletionCandidates(variable, variable.getAnnotationMirrors()));
-                builder.converters(extractConverters(variable, variable.getAnnotationMirrors()));
-                parameters.put(variable, builder);
+                PositionalParamSpec.Builder builder = PositionalParamSpec.builder(typedMember, context.factory);
+                builder.completionCandidates(CompletionCandidatesMetaData.extract(variable));
+                builder.converters(TypeConverterMetaData.extract(variable));
+                context.parameters.put(variable, builder);
             }
         }
     }
 
-    private Iterable<String> extractCompletionCandidates(Element element, List<? extends AnnotationMirror> annotationMirrors) {
-        for (AnnotationMirror mirror : annotationMirrors) {
-            DeclaredType annotationType = mirror.getAnnotationType();
-            if (isOption(annotationType) || isParameter(annotationType)) {
-                Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = mirror.getElementValues();
-                for (ExecutableElement attribute : elementValues.keySet()) {
-                    if ("completionCandidates".equals(attribute.getSimpleName().toString())) {
-                        AnnotationValue typeMirror = elementValues.get(attribute);
-                        return new CompletionCandidatesMetaData((TypeMirror) typeMirror);
-                    }
-                }
+    /**
+     * Obtains the super type element for a given type element.
+     *
+     * @param element The type element
+     * @return The super type element or null if none exists
+     */
+    private static TypeElement superClassFor(TypeElement element) {
+        TypeMirror superclass = element.getSuperclass();
+        if (superclass.getKind() == TypeKind.NONE) {
+            return null;
+        }
+        logger.finest(format("Superclass of %s is %s (of kind %s)", element, superclass, superclass.getKind()));
+        DeclaredType kind = (DeclaredType) superclass;
+        return (TypeElement) kind.asElement();
+    }
+
+    private void buildUnmatched(RoundEnvironment roundEnv, Context context) {
+        logger.fine("Building unmatched...");
+        Set<? extends Element> explicitUnmatched = roundEnv.getElementsAnnotatedWith(Unmatched.class);
+        for (Element element : explicitUnmatched) {
+            debugElement(element, "@Unmatched");
+            if (element.getKind() == ElementKind.FIELD) {
+
+            } else if (element.getKind() == ElementKind.METHOD) {
+
+            } else if (element.getKind() == ElementKind.PARAMETER) {
+
             }
         }
-        return null;
     }
 
-    @SuppressWarnings("unchecked")
-    private TypeConverterMetaData[] extractConverters(Element element, List<? extends AnnotationMirror> annotationMirrors) {
-        for (AnnotationMirror mirror : annotationMirrors) {
-            DeclaredType annotationType = mirror.getAnnotationType();
-            if (isOption(annotationType) || isParameter(annotationType)) {
-                Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = mirror.getElementValues();
-                for (ExecutableElement attribute : elementValues.keySet()) {
-                    if ("converter".equals(attribute.getSimpleName().toString())) {
-                        AnnotationValue list = elementValues.get(attribute);
-                        List<AnnotationValue> typeMirrors = (List<AnnotationValue>) list.getValue();
-                        List<TypeConverterMetaData> result = new ArrayList<TypeConverterMetaData>();
-                        for (AnnotationValue annotationValue : typeMirrors) {
-                            result.add(new TypeConverterMetaData((TypeMirror) annotationValue));
-                        }
-                        return result.toArray(new TypeConverterMetaData[0]);
-                    }
-                }
+    private void buildSpecs(RoundEnvironment roundEnv, Context context) {
+        logger.fine("Building specs...");
+        Set<? extends Element> explicitSpecs = roundEnv.getElementsAnnotatedWith(Spec.class);
+        for (Element element : explicitSpecs) {
+            debugElement(element, "@Spec");
+            if (element.getKind() == ElementKind.FIELD) {
+
+            } else if (element.getKind() == ElementKind.METHOD) {
+
+            } else if (element.getKind() == ElementKind.PARAMETER) {
+
             }
         }
-        return new TypeConverterMetaData[0];
     }
 
-    private boolean isOption(DeclaredType annotationType) {
-        return Option.class.getName().equals(annotationType.toString());
-    }
+    private void buildParentCommands(RoundEnvironment roundEnv, Context context) {
+        logger.fine("Building parentCommands...");
+        Set<? extends Element> explicitParentCommands = roundEnv.getElementsAnnotatedWith(ParentCommand.class);
+        for (Element element : explicitParentCommands) {
+            debugElement(element, "@ParentCommand");
+            if (element.getKind() == ElementKind.FIELD) {
 
-    private boolean isParameter(DeclaredType annotationType) {
-        return Parameters.class.getName().equals(annotationType.toString());
+            } else if (element.getKind() == ElementKind.METHOD) {
+
+            } else if (element.getKind() == ElementKind.PARAMETER) {
+
+            }
+        }
     }
 
     private void debugMethod(ExecutableElement method) {
@@ -674,6 +528,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     }
 
     private void debugElement(Element element, String s) {
+        if (element == null) { return; }
         logger.finest(format(s + ": kind=%s, cls=%s, simpleName=%s, type=%s, typeKind=%s, enclosed=%s, enclosing=%s",
                 element.getKind(), element.getClass().getName(), element.getSimpleName(), element.asType(),
                 element.asType().getKind(), element.getEnclosedElements(), element.getEnclosingElement()));
@@ -719,6 +574,124 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         }
     }
 
+    private void debugFoundAnnotations(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        logger.fine("Found annotations: " + annotations);
+        //processingEnv.getMessager().printMessage(Diagnostic.Kind.MANDATORY_WARNING, "Found annotations: " + annotations);
+        for (TypeElement annotation : annotations) {
+            Set<? extends Element> annotatedElements = roundEnv.getElementsAnnotatedWith(annotation);
+            //processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, annotatedElements + " is annotated with " + annotation);
+            logger.finest(annotatedElements + " is annotated with " + annotation);
+            // …
+        }
+    }
+
+    /**
+     * Prints a compile-time error message for the specified element.
+     * @param element the problematic element
+     * @param msg the error message with optional format specifiers
+     * @param args the arguments to use to call {@code String.format} on the error message
+     */
+    protected void error(Element element, String msg, Object... args) {
+        processingEnv.getMessager().printMessage(
+                Diagnostic.Kind.ERROR,
+                format(msg, args),
+                element);
+    }
+
+    static class Context {
+        IFactory factory = null; //new NullFactory();
+        Map<Element, CommandSpec> commands = new LinkedHashMap<Element, CommandSpec>();
+        Map<TypeMirror, List<CommandSpec>> commandTypes = new LinkedHashMap<TypeMirror, List<CommandSpec>>();
+        Map<Element, OptionSpec.Builder> options = new LinkedHashMap<Element, OptionSpec.Builder>();
+        Map<Element, PositionalParamSpec.Builder> parameters = new LinkedHashMap<Element, PositionalParamSpec.Builder>();
+        Map<Element, ArgGroupSpec.Builder> argGroups = new LinkedHashMap<Element, ArgGroupSpec.Builder>();
+        List<MixinInfo> mixinInfoList = new ArrayList<MixinInfo>();
+        Map<Element, IAnnotatedElement> parentCommands = new LinkedHashMap<Element, IAnnotatedElement>();
+        Map<Element, IAnnotatedElement> specs = new LinkedHashMap<Element, IAnnotatedElement>();
+        Map<Element, IAnnotatedElement> unmatched = new LinkedHashMap<Element, IAnnotatedElement>();
+        Set<CommandSpec> commandsRequestingStandardHelpOptions = new LinkedHashSet<CommandSpec>();
+
+        private void connectModel(AbstractCommandSpecProcessor proc) {
+            logger.fine("---------------------------");
+            logger.fine("Known commands...");
+            for (Map.Entry<Element, CommandSpec> cmd : commands.entrySet()) {
+                logger.fine(String.format("%s has CommandSpec[name=%s]", cmd.getKey(), cmd.getValue().name()));
+            }
+            logger.fine("Known mixins...");
+            for (MixinInfo mixinInfo : mixinInfoList) {
+                logger.fine(String.format("%s is mixin for %s", mixinInfo.mixin.userObject(), mixinInfo.mixee.userObject()));
+            }
+
+            for (Map.Entry<Element, OptionSpec.Builder> option : options.entrySet()) {
+                ArgGroupSpec.Builder group = argGroups.get(option.getKey().getEnclosingElement());
+                if (group != null) {
+                    logger.fine("Building OptionSpec for " + option + " in arg group " + group);
+                    group.addArg(option.getValue().build());
+                } else {
+                    CommandSpec commandSpec = getOrCreateCommandSpecForArg(option, commands);
+                    logger.fine("Building OptionSpec for " + option + " in spec " + commandSpec);
+                    commandSpec.addOption(option.getValue().build());
+                }
+            }
+            for (Map.Entry<Element, PositionalParamSpec.Builder> parameter : parameters.entrySet()) {
+                ArgGroupSpec.Builder group = argGroups.get(parameter.getKey().getEnclosingElement());
+                if (group != null) {
+                    logger.fine("Building PositionalParamSpec for " + parameter + " in arg group " + group);
+                    group.addArg(parameter.getValue().build());
+                } else {
+                    CommandSpec commandSpec = getOrCreateCommandSpecForArg(parameter, commands);
+                    logger.fine("Building PositionalParamSpec for " + parameter);
+                    commandSpec.addPositional(parameter.getValue().build());
+                }
+            }
+            for (Map.Entry<Element, ArgGroupSpec.Builder> groups : argGroups.entrySet()) {
+                ArgGroupSpec.Builder group = argGroups.get(groups.getKey().getEnclosingElement());
+                if (group != null) {
+                    logger.fine("Building ArgGroupSpec for " + groups + " in arg group " + group);
+                    group.addSubgroup(groups.getValue().build());
+                } else {
+                    CommandSpec commandSpec = commands.get(groups.getKey());
+                    if (commandSpec == null) {
+                        proc.error(groups.getKey(), "@ArgGroups must be enclosed in a @Command or @ArgGroup-annotated element, but was %s: %s", groups.getKey().getEnclosingElement(), groups.getKey().getEnclosingElement().getSimpleName());
+                    } else {
+                        logger.fine("Building ArgGroupSpec for " + groups + " in command " + commandSpec);
+                        commandSpec.addArgGroup(groups.getValue().build());
+                    }
+                }
+            }
+            for (MixinInfo mixinInfo : mixinInfoList) {
+                mixinInfo.addMixin();
+            }
+
+            //#377 Standard help options should be added last
+            for (CommandSpec commandSpec : commandsRequestingStandardHelpOptions) {
+                commandSpec.mixinStandardHelpOptions(true);
+            }
+        }
+
+        private static CommandSpec getOrCreateCommandSpecForArg(Map.Entry<Element, ?> argElement,
+                                                                Map<Element, CommandSpec> commands) {
+            Element key = argElement.getKey().getEnclosingElement();
+            CommandSpec commandSpec = commands.get(key);
+            if (commandSpec == null) {
+                logger.fine("Element " + argElement.getKey() + " is enclosed by " + key + " which does not have a @Command annotation");
+                commandSpec = CommandSpec.forAnnotatedObjectLenient(key);
+                commandSpec.interpolateVariables(false);
+                commands.put(key, commandSpec);
+            }
+            return commandSpec;
+        }
+
+        private void registerCommandType(CommandSpec result, TypeElement typeElement) {
+            List<CommandSpec> forSubclass = commandTypes.get(typeElement.asType());
+            if (forSubclass == null) {
+                forSubclass = new ArrayList<CommandSpec>();
+                commandTypes.put(typeElement.asType(), forSubclass);
+            }
+            forSubclass.add(result);
+        }
+    }
+
     private static class MixinInfo {
         private final CommandSpec mixee;
         private final String name;
@@ -734,342 +707,6 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             logger.fine(String.format("Adding mixin %s to %s", mixin.name(), mixee.name()));
             mixee.addMixin(name, mixin);
         }
-    }
-
-    static class CompileTimeTypeInfo implements ITypeInfo {
-        private static Logger logger = Logger.getLogger(CompileTimeTypeInfo.class.getName());
-        private static final EnumSet<TypeKind> PRIMITIVES = EnumSet.of(TypeKind.BYTE, TypeKind.BOOLEAN, TypeKind.CHAR,
-                TypeKind.DOUBLE, TypeKind.FLOAT, TypeKind.INT, TypeKind.LONG, TypeKind.SHORT);
-
-        final TypeMirror typeMirror;
-        final List<? extends TypeMirror> auxTypeMirrors;
-        final List<String> actualGenericTypeArguments;
-        final TypeElement typeElement;
-        final boolean isCollection;
-        final boolean isMap;
-
-        public CompileTimeTypeInfo(TypeMirror asType) {
-            typeMirror = asType;
-
-            // for non-multi-value types, the auxiliary type is a single-value list with the type
-            List<? extends TypeMirror> aux = Arrays.asList(typeMirror);
-            TypeElement tempTypeElement = null;
-            boolean collection = false;
-            boolean map = false;
-
-            if (typeMirror.getKind() == TypeKind.DECLARED) {
-                logger.finest("CompileTimeTypeInfo DECLARED typeMirror " + typeMirror);
-                Element element = ((DeclaredType) typeMirror).asElement();
-                if (element.getKind().isClass() || element.getKind().isInterface()) {
-                    tempTypeElement = (TypeElement) element;
-                    logger.finest("element is class or interface " + tempTypeElement);
-                    map = find("java.util.Map", tempTypeElement);
-                    collection = !map && find("java.util.Collection", tempTypeElement);
-                }
-                aux = ((DeclaredType) typeMirror).getTypeArguments();
-                actualGenericTypeArguments = new ArrayList<String>();
-                for (TypeMirror typeMirror : aux) {
-                    actualGenericTypeArguments.add(typeMirror.toString());
-                }
-                logger.finest("aux (type args): " + aux);
-                if (aux.isEmpty()) {
-                    if (map || collection) {
-                        aux = Arrays.asList(createStringTypeMirror(), createStringTypeMirror());
-                        logger.finest("fixed aux (for multi type): " + aux);
-                    } else {
-                        aux = Arrays.asList(typeMirror);
-                        logger.finest("fixed aux (for single type): " + aux);
-                    }
-                }
-            } else if (typeMirror.getKind() == TypeKind.ARRAY) {
-                aux = Arrays.asList(((ArrayType) typeMirror).getComponentType());
-                actualGenericTypeArguments = Arrays.asList(aux.get(0).toString());
-            } else {
-                actualGenericTypeArguments = Collections.emptyList();
-            }
-            auxTypeMirrors = aux;
-            typeElement = tempTypeElement;
-            isCollection = collection;
-            isMap = map;
-        }
-
-        private TypeMirror createStringTypeMirror() {
-            TypeElement element = typeElement;
-            while (element.getSuperclass().getKind() != TypeKind.NONE) {
-                logger.finest("finding toString in " + element);
-
-                element = (TypeElement) ((DeclaredType) element.getSuperclass()).asElement();
-            }
-            for (Element enclosed : typeElement.getEnclosedElements()) {
-                if (enclosed.getKind() == ElementKind.METHOD) {
-                    ExecutableElement method = (ExecutableElement) enclosed;
-                    if (method.getSimpleName().contentEquals("toString")) {
-                        return method.getReturnType();
-                    }
-                }
-            }
-            throw new IllegalStateException("Cannot find toString method in Object");
-        }
-        private static boolean find(String interfaceName, TypeElement typeElement) {
-            return find(interfaceName, typeElement, new HashSet<Element>());
-        }
-        private static boolean find(String interfaceName, TypeElement typeElement, Set<Element> visited) {
-            if (visited.contains(typeElement)) { return false; }
-            visited.add(typeElement);
-            //logger.finest("trying to find " + interfaceName + " in " + typeElement);
-
-            if (typeElement.getQualifiedName().contentEquals(interfaceName)) {
-                return true;
-            }
-            for (TypeMirror implemented : typeElement.getInterfaces()) {
-                if (find(interfaceName, (TypeElement) ((DeclaredType) implemented).asElement())) {
-                    return true;
-                }
-            }
-            while (typeElement.getSuperclass().getKind() != TypeKind.NONE) {
-                typeElement = (TypeElement) ((DeclaredType) typeElement.getSuperclass()).asElement();
-                if (find(interfaceName, typeElement)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public List<ITypeInfo> getAuxiliaryTypeInfos() {
-            // for non-multi-value types, the auxiliary type is a single-value list with the type
-            if (!isMultiValue()) {
-                logger.fine("getAuxiliaryTypeInfos (non-multi) returning new list with this");
-                return Arrays.<ITypeInfo>asList(this);
-            }
-
-            List<ITypeInfo> result = new ArrayList<ITypeInfo>();
-            for (TypeMirror typeMirror : auxTypeMirrors) {
-                result.add(new CompileTimeTypeInfo(typeMirror));
-            }
-            logger.fine("getAuxiliaryTypeInfos (multi) returning list " + result);
-            return result;
-        }
-
-        @Override
-        public List<String> getActualGenericTypeArguments() {
-            return actualGenericTypeArguments;
-        }
-
-        @Override
-        public boolean isBoolean() {
-            TypeMirror type = auxTypeMirrors.get(0);
-            return type.getKind() == TypeKind.BOOLEAN || "java.lang.Boolean".equals(type.toString());
-        }
-
-        @Override
-        public boolean isMultiValue() {
-            return isArray() || isCollection() || isMap();
-        }
-
-        @Override
-        public boolean isArray() {
-            return typeMirror.getKind() == TypeKind.ARRAY;
-        }
-
-        @Override
-        public boolean isCollection() {
-            return isCollection;
-        }
-
-        @Override
-        public boolean isMap() {
-            return isMap;
-        }
-
-        @Override
-        public boolean isEnum() {
-            TypeMirror type = auxTypeMirrors.get(0);
-            return type.getKind() == TypeKind.DECLARED &&
-                    ((DeclaredType) type).asElement().getKind() == ElementKind.ENUM;
-        }
-
-        @Override
-        public List<String> getEnumConstantNames() {
-            if (!isEnum()) {
-                return Collections.emptyList();
-            }
-            List<String> result = new ArrayList<String>();
-            TypeMirror type = auxTypeMirrors.get(0);
-            List<? extends Element> enclosed = ((DeclaredType) type).asElement().getEnclosedElements();
-            for (Element element : enclosed) {
-                if (element.getKind() == ElementKind.ENUM_CONSTANT) {
-                    result.add(element.toString());
-                }
-            }
-            return result;
-        }
-
-        @Override
-        public String getClassName() {
-            return typeElement == null ? typeMirror.toString() : typeElement.getQualifiedName().toString();
-        }
-
-        @Override
-        public String getClassSimpleName() {
-            return typeElement == null ? typeMirror.toString() : typeElement.getSimpleName().toString();
-        }
-
-        @Override
-        public Class<?> getType() {
-            return null;
-        }
-
-        @Override
-        public Class<?>[] getAuxiliaryTypes() {
-            return new Class[0];
-        }
-
-        @Override
-        public String toString() {
-            return String.format("CompileTimeTypeInfo(%s, aux=%s, collection=%s, map=%s)",
-                    typeMirror, Arrays.toString(auxTypeMirrors.toArray()), isCollection, isMap);
-        }
-    }
-
-    static class TypedMember implements IAnnotatedElement {
-        final Element element;
-        final String name;
-        final ITypeInfo typeInfo;
-        final boolean hasInitialValue;
-        final int position;
-        private CommandLine.Model.IGetter getter;
-        private CommandLine.Model.ISetter setter;
-
-        static boolean isAnnotated(Element e) {
-            return false
-                    || e.getAnnotation(Option.class) == null
-                    || e.getAnnotation(Parameters.class) == null
-                    || e.getAnnotation(ArgGroup.class) == null
-                    || e.getAnnotation(Unmatched.class) == null
-                    || e.getAnnotation(Mixin.class) == null
-                    || e.getAnnotation(Spec.class) == null
-                    || e.getAnnotation(ParentCommand.class) == null;
-        }
-        TypedMember(VariableElement variable, int position) {
-            element = Assert.notNull(variable, "field");
-            name = variable.getSimpleName().toString();
-            hasInitialValue = variable.getConstantValue() != null;
-            typeInfo = new CompileTimeTypeInfo(variable.asType());
-            this.position = position;
-            getter = new GetterSetterMetaData(element);
-            setter = (GetterSetterMetaData) getter;
-        }
-
-        private TypedMember(ExecutableElement method) {
-            element = Assert.notNull(method, "method");
-            name = propertyName(method.getSimpleName().toString());
-            position = -1;
-            List<? extends TypeMirror> parameterTypes = ((ExecutableType) method.asType()).getParameterTypes();
-            boolean isGetter = parameterTypes.isEmpty() && method.getReturnType().getKind() != TypeKind.VOID;
-            boolean isSetter = !parameterTypes.isEmpty();
-            if (isSetter == isGetter) { throw new CommandLine.InitializationException("Invalid method, must be either getter or setter: " + method); }
-            if (isGetter) {
-                hasInitialValue = true; // TODO
-                typeInfo = new CompileTimeTypeInfo(method.getReturnType());
-                //if (Proxy.isProxyClass(scope.getClass())) {
-                //    CommandLine.Model.PicocliInvocationHandler handler = (CommandLine.Model.PicocliInvocationHandler) Proxy.getInvocationHandler(scope);
-                //    CommandLine.Model.PicocliInvocationHandler.ProxyBinding binding = handler.new ProxyBinding(method);
-                //    getter = binding; setter = binding;
-                //    initializeInitialValue(method);
-                //} else {
-                //    //throw new IllegalArgumentException("Getter method but not a proxy: " + scope + ": " + method);
-                //    CommandLine.Model.MethodBinding binding = new CommandLine.Model.MethodBinding(scope, method);
-                //    getter = binding; setter = binding;
-                //}
-            } else {
-                hasInitialValue = false;
-                typeInfo = new CompileTimeTypeInfo(parameterTypes.get(0));
-                //CommandLine.Model.MethodBinding binding = new CommandLine.Model.MethodBinding(scope, method);
-                //getter = binding; setter = binding;
-            }
-            getter = new GetterSetterMetaData(element);
-            setter = (GetterSetterMetaData) getter;
-        }
-
-        public Object userObject()      { return element; }
-        public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) { return getAnnotation(annotationClass) != null; }
-        public <T extends Annotation> T getAnnotation(Class<T> annotationClass) { return element.getAnnotation(annotationClass); }
-        public String getName()         { return name; }
-        public boolean isArgSpec()      { return isOption() || isParameter() || isMethodParameter(); }
-        public boolean isOption()       { return isAnnotationPresent(Option.class); }
-        public boolean isParameter()    { return isAnnotationPresent(Parameters.class); }
-        public boolean isArgGroup()     { return isAnnotationPresent(ArgGroup.class); }
-        public boolean isMixin()        { return isAnnotationPresent(Mixin.class); }
-        public boolean isUnmatched()    { return isAnnotationPresent(Unmatched.class); }
-        public boolean isInjectSpec()   { return isAnnotationPresent(Spec.class); }
-        public boolean isMultiValue()   { return getTypeInfo().isMultiValue(); }
-        public boolean isInteractive()  { return (isOption() && getAnnotation(Option.class).interactive()) || (isParameter() && getAnnotation(Parameters.class).interactive()); }
-        public ITypeInfo getTypeInfo()  { return typeInfo; }
-        public CommandLine.Model.IGetter getter()         { return getter; }
-        public CommandLine.Model.ISetter setter()         { return setter; }
-        public String toString() { return element.toString(); }
-        public String getToString() {
-            if (isMixin()) { return abbreviate("mixin from member " + toGenericString()); }
-            return (element.getKind() + " ") + abbreviate(toGenericString());
-        }
-        String toGenericString() { return element.asType().toString() + element.getEnclosingElement() + "." + element.getSimpleName(); }
-        public boolean hasInitialValue()    { return hasInitialValue; }
-        public boolean isMethodParameter()  { return position >= 0; }
-        public int getMethodParamPosition() { return position; }
-
-        @Override
-        public CommandLine.Model.IScope scope() {
-            return null; // FIXME
-        }
-
-        public String getMixinName() {
-            String annotationName = getAnnotation(Mixin.class).name();
-            return empty(annotationName) ? getName() : annotationName;
-        }
-
-        static String propertyName(String methodName) {
-            if (methodName.length() > 3 && (methodName.startsWith("get") || methodName.startsWith("set"))) { return decapitalize(methodName.substring(3)); }
-            return decapitalize(methodName);
-        }
-
-        private static String decapitalize(String name) {
-            if (name == null || name.length() == 0) { return name; }
-            char[] chars = name.toCharArray();
-            chars[0] = Character.toLowerCase(chars[0]);
-            return new String(chars);
-        }
-
-        static String abbreviate(String text) {
-            return text.replace("private ", "")
-                    .replace("protected ", "")
-                    .replace("public ", "")
-                    .replace("java.lang.", "");
-        }
-        static boolean empty(String str) { return str == null || str.trim().length() == 0; }
-    }
-
-    /**
-     * Obtains the super type element for a given type element.
-     *
-     * @param element The type element
-     * @return The super type element or null if none exists
-     */
-    static TypeElement superClassFor(TypeElement element) {
-        TypeMirror superclass = element.getSuperclass();
-        if (superclass.getKind() == TypeKind.NONE) {
-            return null;
-        }
-        logger.finest(format("Superclass of %s is %s (of kind %s)", element, superclass, superclass.getKind()));
-        DeclaredType kind = (DeclaredType) superclass;
-        return (TypeElement) kind.asElement();
-    }
-
-    void error(Element e, String msg, Object... args) {
-        processingEnv.getMessager().printMessage(
-                Diagnostic.Kind.ERROR,
-                format(msg, args),
-                e);
     }
 
     static class NullFactory implements IFactory {
