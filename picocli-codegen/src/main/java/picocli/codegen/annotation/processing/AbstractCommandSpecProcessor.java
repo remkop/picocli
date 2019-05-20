@@ -39,6 +39,7 @@ import javax.lang.model.util.SimpleElementVisitor6;
 import javax.tools.Diagnostic;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -175,11 +176,11 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         Set<? extends Element> explicitCommands = roundEnv.getElementsAnnotatedWith(Command.class);
 
         for (Element element : explicitCommands) {
-            buildCommand(element, context);
+            buildCommand(element, context, roundEnv);
         }
     }
 
-    private CommandSpec buildCommand(Element element, Context context) {
+    private CommandSpec buildCommand(Element element, Context context, RoundEnvironment roundEnv) {
         debugElement(element, "@Command");
 
         CommandSpec result = context.commands.get(element);
@@ -191,19 +192,18 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         context.commands.put(element, result);
 
         if (element.getKind() == ElementKind.CLASS) {
-            updateCommandSpecFromTypeElement((TypeElement) element, context, result);
+            updateCommandSpecFromTypeElement((TypeElement) element, context, result, roundEnv);
         } else if (element.getKind() == ElementKind.METHOD) {
-            updateCommandFromMethodElement((ExecutableElement) element, context, result);
+            updateCommandFromMethodElement((ExecutableElement) element, context, result, roundEnv);
         }
-
-        // TODO run validation logic
-        //   if (annotationsAreMandatory) { validateCommandSpec(result, hasCommandAnnotation, commandClassName); }
-        //   result.validate();
         logger.fine(String.format("CommandSpec[name=%s] built for %s", result.name(), element));
         return result;
     }
 
-    private void updateCommandSpecFromTypeElement(TypeElement typeElement, Context context, CommandSpec result) {
+    private void updateCommandSpecFromTypeElement(TypeElement typeElement,
+                                                  Context context,
+                                                  CommandSpec result,
+                                                  RoundEnvironment roundEnv) {
         TypeElement superClass = superClassFor(typeElement);
         debugElement(superClass, "  super");
         result.withToString(typeElement.asType().toString());
@@ -211,16 +211,16 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         Stack<TypeElement> hierarchy = buildTypeHierarchy(typeElement);
         while (!hierarchy.isEmpty()) {
             typeElement = hierarchy.pop();
-            updateCommandSpecFromCommandAnnotation(result, typeElement, context);
+            updateCommandSpecFromCommandAnnotation(result, typeElement, context, roundEnv);
             context.registerCommandType(result, typeElement); // FIXME: unnecessary?
         }
     }
 
-    private void updateCommandFromMethodElement(ExecutableElement method, Context context, CommandSpec result) {
+    private void updateCommandFromMethodElement(ExecutableElement method, Context context, CommandSpec result, RoundEnvironment roundEnv) {
         debugMethod(method);
         result.withToString(method.getEnclosingElement().asType().toString() + "." + method.getSimpleName());
 
-        updateCommandSpecFromCommandAnnotation(result, method, context);
+        updateCommandSpecFromCommandAnnotation(result, method, context, roundEnv);
         result.setAddMethodSubcommands(false); // must reset: true by default in the @Command annotation
 
         // set command name to method name, unless @Command#name is set
@@ -229,13 +229,30 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         }
 
         // add this commandSpec as a subcommand to its parent
-        // FIXME this logic does not cover the case where the enclosing class is a command without @Command annotation (but has @Option fields for example)
-        Element cls = method.getEnclosingElement();
-        if (cls.getAnnotation(Command.class) != null && cls.getAnnotation(Command.class).addMethodSubcommands()) {
-            CommandSpec commandSpec = buildCommand(cls, context);
+        if (isSubcommand(method, roundEnv)) {
+            CommandSpec commandSpec = buildCommand(method.getEnclosingElement(), context, roundEnv);
             commandSpec.addSubcommand(result.name(), result);
         }
         buildOptionsAndPositionalsFromMethodParameters(method, result, context);
+    }
+
+    private boolean isSubcommand(ExecutableElement method, RoundEnvironment roundEnv) {
+        Element typeElement = method.getEnclosingElement();
+        if (typeElement.getAnnotation(Command.class) != null && typeElement.getAnnotation(Command.class).addMethodSubcommands()) {
+            return true;
+        }
+        if (typeElement.getAnnotation(Command.class) == null) {
+            Set<Element> elements = new HashSet<Element>(typeElement.getEnclosedElements());
+
+            // The class is a Command if it has any fields or methods annotated with the below:
+            return roundEnv.getElementsAnnotatedWith(Option.class).removeAll(elements)
+                    || roundEnv.getElementsAnnotatedWith(Parameters.class).removeAll(elements)
+                    || roundEnv.getElementsAnnotatedWith(Mixin.class).removeAll(elements)
+                    || roundEnv.getElementsAnnotatedWith(ArgGroup.class).removeAll(elements)
+                    || roundEnv.getElementsAnnotatedWith(Unmatched.class).removeAll(elements)
+                    || roundEnv.getElementsAnnotatedWith(Spec.class).removeAll(elements);
+        }
+        return false;
     }
 
     private Stack<TypeElement> buildTypeHierarchy(TypeElement typeElement) {
@@ -249,12 +266,15 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         return hierarchy;
     }
 
-    private boolean updateCommandSpecFromCommandAnnotation(CommandSpec result, Element element, Context context) {
+    private void updateCommandSpecFromCommandAnnotation(CommandSpec result,
+                                                        Element element,
+                                                        Context context,
+                                                        RoundEnvironment roundEnv) {
         Command cmd = element.getAnnotation(Command.class);
         if (cmd != null) {
             updateCommandAttributes(result, cmd);
 
-            List<CommandSpec> subcommands = findSubcommands(element.getAnnotationMirrors(), context);
+            List<CommandSpec> subcommands = findSubcommands(element.getAnnotationMirrors(), context, roundEnv);
             for (CommandSpec sub : subcommands) {
                 result.addSubcommand(sub.name(), sub);
             }
@@ -262,7 +282,6 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 context.commandsRequestingStandardHelpOptions.add(result);
             }
         }
-        return false;
     }
 
     private void updateCommandAttributes(CommandSpec result, Command cmd) {
@@ -274,7 +293,8 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     }
 
     private List<CommandSpec> findSubcommands(List<? extends AnnotationMirror> annotationMirrors,
-                                              Context context) {
+                                              Context context,
+                                              RoundEnvironment roundEnv) {
         List<CommandSpec> result = new ArrayList<CommandSpec>();
         for (AnnotationMirror am : annotationMirrors) {
             if (am.getAnnotationType().toString().equals(COMMAND_TYPE)) {
@@ -284,7 +304,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
 
                         @SuppressWarnings("unchecked")
                         List<AnnotationValue> typeMirrors = (List<AnnotationValue>) list.getValue();
-                        registerSubcommands(typeMirrors, result, context);
+                        registerSubcommands(typeMirrors, result, context, roundEnv);
                         break;
                     }
                 }
@@ -295,7 +315,8 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
 
     private void registerSubcommands(List<AnnotationValue> typeMirrors,
                                      List<CommandSpec> result,
-                                     Context context) {
+                                     Context context,
+                                     RoundEnvironment roundEnv) {
 
         for (AnnotationValue typeMirror : typeMirrors) {
             Element subcommandElement = processingEnv.getElementUtils().getTypeElement(
@@ -303,7 +324,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             logger.fine("Processing subcommand: " + subcommandElement);
 
             if (isValidSubcommandHasNameAttribute(subcommandElement)) {
-                CommandSpec commandSpec = buildCommand(subcommandElement, context);
+                CommandSpec commandSpec = buildCommand(subcommandElement, context, roundEnv);
                 result.add(commandSpec);
             }
         }
@@ -330,7 +351,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 continue;
             }
             TypeElement type = (TypeElement) ((DeclaredType) element.asType()).asElement();
-            CommandSpec mixin = buildCommand(type, context);
+            CommandSpec mixin = buildCommand(type, context, roundEnv);
 
             logger.fine("Built mixin: " + mixin + " from " + element);
             if (EnumSet.of(ElementKind.FIELD, ElementKind.PARAMETER).contains(element.getKind())) {
@@ -340,7 +361,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                     name = variableElement.getSimpleName().toString();
                 }
                 Element targetType = element.getEnclosingElement();
-                CommandSpec mixee = buildCommand(targetType, context);
+                CommandSpec mixee = buildCommand(targetType, context, roundEnv);
                 context.mixinInfoList.add(new MixinInfo(mixee, name, mixin));
                 logger.fine("Mixin name=" + name + ", target command=" + mixee.userObject());
             }

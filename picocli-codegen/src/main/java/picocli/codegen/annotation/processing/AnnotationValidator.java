@@ -11,15 +11,15 @@ import javax.tools.Diagnostic;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import static java.lang.String.format;
 
 public class AnnotationValidator {
 
-    private static final Set<Class<? extends Annotation>> ALL = Collections.unmodifiableSet(
-            new LinkedHashSet<Class<? extends Annotation>>(Arrays.asList(
+    private static final List<Class<? extends Annotation>> ALL = Collections.unmodifiableList(
+            Arrays.asList(
                     CommandLine.Command.class,
                     CommandLine.Option.class,
                     CommandLine.Parameters.class,
@@ -28,8 +28,7 @@ public class AnnotationValidator {
                     CommandLine.Spec.class,
                     CommandLine.Unmatched.class,
                     CommandLine.ArgGroup.class
-            ))
-    );
+            ));
     private ProcessingEnvironment processingEnv;
 
     public AnnotationValidator(ProcessingEnvironment processingEnv) {
@@ -38,16 +37,7 @@ public class AnnotationValidator {
 
     public void validateAnnotations(RoundEnvironment roundEnv) {
         validateNoAnnotationsOnInterfaceField(roundEnv);
-        validateInvalidCombination(roundEnv, CommandLine.Mixin.class, CommandLine.Option.class);
-        validateInvalidCombination(roundEnv, CommandLine.Mixin.class, CommandLine.Parameters.class);
-        validateInvalidCombination(roundEnv, CommandLine.Mixin.class, CommandLine.Unmatched.class);
-        validateInvalidCombination(roundEnv, CommandLine.Mixin.class, CommandLine.Spec.class);
-        validateInvalidCombination(roundEnv, CommandLine.Unmatched.class, CommandLine.Option.class);
-        validateInvalidCombination(roundEnv, CommandLine.Unmatched.class, CommandLine.Parameters.class);
-        validateInvalidCombination(roundEnv, CommandLine.Spec.class, CommandLine.Option.class);
-        validateInvalidCombination(roundEnv, CommandLine.Spec.class, CommandLine.Parameters.class);
-        validateInvalidCombination(roundEnv, CommandLine.Spec.class, CommandLine.Unmatched.class);
-        validateInvalidCombination(roundEnv, CommandLine.Option.class, CommandLine.Parameters.class);
+        validateInvalidCombinations(roundEnv);
 
         // TODO
         //validateSpecFieldTypeIsCommandSpec(roundEnv);
@@ -67,6 +57,14 @@ public class AnnotationValidator {
                     element.getEnclosingElement().getKind() == ElementKind.INTERFACE) {
                 error(element, "Invalid picocli annotation on interface field %s.%s",
                         element.getEnclosingElement().toString(), element.getSimpleName());
+            }
+        }
+    }
+
+    private void validateInvalidCombinations(RoundEnvironment roundEnv) {
+        for (int i = 0; i < ALL.size(); i++) {
+            for (int j = i + 1; j < ALL.size(); j++) {
+                validateInvalidCombination(roundEnv, ALL.get(i), ALL.get(j));
             }
         }
     }
