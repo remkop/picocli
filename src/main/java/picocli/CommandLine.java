@@ -5297,7 +5297,7 @@ public class CommandLine {
                 updateVersion(cmd.version());
                 updateHelpCommand(cmd.helpCommand());
                 updateAddMethodSubcommands(cmd.addMethodSubcommands());
-                usageMessage().updateFromCommand(cmd, this);
+                usageMessage().updateFromCommand(cmd, this, factory != null);
 
                 if (factory != null) {
                     updateVersionProvider(cmd.versionProvider(), factory);
@@ -5981,9 +5981,13 @@ public class CommandLine {
              * @since 4.0 */
             public UsageMessageSpec adjustLineBreaksForWideCJKCharacters(boolean adjustForWideChars) { adjustLineBreaksForWideCJKCharacters = adjustForWideChars; return this; }
 
-            void updateFromCommand(Command cmd, CommandSpec commandSpec) {
+            void updateFromCommand(Command cmd, CommandSpec commandSpec, boolean loadResourceBundle) {
                 if (!empty(cmd.resourceBundle())) { // else preserve superclass bundle
-                    messages(new Messages(commandSpec, cmd.resourceBundle()));
+                    if (loadResourceBundle) {
+                        messages(new Messages(commandSpec, cmd.resourceBundle()));
+                    } else {
+                        messages(new Messages(commandSpec, cmd.resourceBundle(), null));
+                    }
                 }
                 if (isNonDefault(cmd.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))            {synopsisHeading = cmd.synopsisHeading();}
                 if (isNonDefault(cmd.commandListHeading(), DEFAULT_COMMAND_LIST_HEADING))     {commandListHeading = cmd.commandListHeading();}
