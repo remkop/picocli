@@ -5990,10 +5990,12 @@ public class CommandLine {
 
             void updateFromCommand(Command cmd, CommandSpec commandSpec, boolean loadResourceBundle) {
                 if (!empty(cmd.resourceBundle())) { // else preserve superclass bundle
-                    if (loadResourceBundle) {
+                    if (loadResourceBundle) { // error if resource bundle does not exist
                         messages(new Messages(commandSpec, cmd.resourceBundle()));
                     } else {
-                        messages(new Messages(commandSpec, cmd.resourceBundle(), null));
+                        ResourceBundle rb = null; // from annotation processor, we may not be able to load the ResourceBundle
+                        try { rb = ResourceBundle.getBundle(cmd.resourceBundle()); } catch (MissingResourceException ignored) {}
+                        messages(new Messages(commandSpec, cmd.resourceBundle(), rb));
                     }
                 }
                 if (isNonDefault(cmd.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))            {synopsisHeading = cmd.synopsisHeading();}

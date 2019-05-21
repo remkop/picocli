@@ -619,6 +619,27 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 element);
     }
 
+    /**
+     * Prints a compile-time warning message for the specified element.
+     * @param element the problematic element, may be {@code null}
+     * @param msg the warning message with optional format specifiers
+     * @param args the arguments to use to call {@code String.format} on the warning message
+     */
+    protected void warn(Element element, String msg, Object... args) {
+        processingEnv.getMessager().printMessage(
+                Diagnostic.Kind.WARNING,
+                format(msg, args),
+                element);
+    }
+
+    /**
+     * Prints a compile-time error message prefixed with "FATAL ERROR".
+     * @param msg the error message with optional format specifiers
+     */
+    protected void fatalError(String msg) {
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "FATAL ERROR: " + msg);
+    }
+
     static class Context {
         IFactory factory = null; //new NullFactory();
         Map<Element, CommandSpec> commands = new LinkedHashMap<Element, CommandSpec>();

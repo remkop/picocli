@@ -109,16 +109,21 @@ public class AbstractCommandSpecProcessorTest {
             "Subcommand is missing @Command annotation with a name attribute",
             "Subcommand @Command annotation should have a name attribute",
             "@Mixin must have a declared type, not int",
-            "invalidOptionAndMixin cannot have both @picocli.CommandLine.Mixin and @picocli.CommandLine.Option annotations",
-            "invalidParametersAndMixin cannot have both @picocli.CommandLine.Mixin and @picocli.CommandLine.Parameters annotations",
+            "invalidOptionAndMixin cannot have both @picocli.CommandLine.Option and @picocli.CommandLine.Mixin annotations",
+            "invalidOptionAndParentCommand cannot have both @picocli.CommandLine.Option and @picocli.CommandLine.ParentCommand annotations",
+            "invalidParametersAndMixin cannot have both @picocli.CommandLine.Parameters and @picocli.CommandLine.Mixin annotations",
+            "invalidParametersAndParentCommand cannot have both @picocli.CommandLine.Parameters and @picocli.CommandLine.ParentCommand annotations",
             "invalidUnmatchedAndMixin cannot have both @picocli.CommandLine.Mixin and @picocli.CommandLine.Unmatched annotations",
             "invalidSpecAndMixin cannot have both @picocli.CommandLine.Mixin and @picocli.CommandLine.Spec annotations",
-            "invalidOptionAndUnmatched cannot have both @picocli.CommandLine.Unmatched and @picocli.CommandLine.Option annotations",
-            "invalidParametersAndUnmatched cannot have both @picocli.CommandLine.Unmatched and @picocli.CommandLine.Parameters annotations",
-            "invalidOptionAndSpec cannot have both @picocli.CommandLine.Spec and @picocli.CommandLine.Option annotations",
-            "invalidParametersAndSpec cannot have both @picocli.CommandLine.Spec and @picocli.CommandLine.Parameters annotations",
+            "invalidOptionAndUnmatched cannot have both @picocli.CommandLine.Option and @picocli.CommandLine.Unmatched annotations",
+            "invalidParametersAndUnmatched cannot have both @picocli.CommandLine.Parameters and @picocli.CommandLine.Unmatched annotations",
+            "invalidOptionAndSpec cannot have both @picocli.CommandLine.Option and @picocli.CommandLine.Spec annotations",
+            "invalidParametersAndSpec cannot have both @picocli.CommandLine.Parameters and @picocli.CommandLine.Spec annotations",
             "invalidUnmatchedAndSpec cannot have both @picocli.CommandLine.Spec and @picocli.CommandLine.Unmatched annotations",
-            "invalidOptionAndParameters cannot have both @picocli.CommandLine.Option and @picocli.CommandLine.Parameters annotations"
+            "invalidOptionAndParameters cannot have both @picocli.CommandLine.Option and @picocli.CommandLine.Parameters annotations",
+            "invalidParentCommandAndMixin cannot have both @picocli.CommandLine.Mixin and @picocli.CommandLine.ParentCommand annotations",
+            "invalidSpecAndParentCommand cannot have both @picocli.CommandLine.ParentCommand and @picocli.CommandLine.Spec annotations",
+            "invalidUnmatchedAndParentCommand cannot have both @picocli.CommandLine.ParentCommand and @picocli.CommandLine.Unmatched annotations"
         ));
         ImmutableList<Diagnostic<? extends JavaFileObject>> errors = compilation.errors();
         for (Diagnostic<? extends JavaFileObject> diag : errors) {
