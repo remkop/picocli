@@ -3408,8 +3408,15 @@ public class CommandLine {
 
         /**
          * Set {@code interactive=true} if this option will prompt the end user for a value (like a password).
-         * Only supported for single-value options (not arrays, collections or maps).
+         * Only supported for single-value options and {@code char[]} arrays (no collections, maps or other array types).
          * When running on Java 6 or greater, this will use the {@link Console#readPassword()} API to get a value without echoing input to the console.
+         * <p>
+         * Best security practice is to use type {@code char[]} instead of {@code String}, and to to null out the array after use.
+         * </p><p>
+         * When defined with {@code arity = "0..1"}, the option can also take a value from the command line.
+         * (The user will still be prompted if no option parameter was specified on the command line.)
+         * This is useful for commands that need to be run interactively as well as in batch mode.
+         * </p>
          * @return whether this option prompts the end user for a value to be entered on the command line
          * @since 3.5
          */
