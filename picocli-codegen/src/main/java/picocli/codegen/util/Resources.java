@@ -1,7 +1,9 @@
 package picocli.codegen.util;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -18,7 +20,11 @@ public final class Resources {
 
     public static String slurp(String resource) {
         try {
-            return slurp(Resources.class.getResource(resource).openStream());
+            URL url = Resources.class.getResource(resource);
+            if (url == null) {
+                throw new FileNotFoundException(resource);
+            }
+            return slurp(url.openStream());
         } catch (IOException ex) {
             throw new IllegalStateException(ex);
         }
