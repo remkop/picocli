@@ -409,7 +409,7 @@ public class CommandLineTypeConversionTest {
     @Test
     public void testISO8601TimeConverterWhenJavaSqlModuleAvailable() throws Exception {
         Class<?> c = Class.forName("picocli.CommandLine$BuiltIn$ISO8601TimeConverter");
-        Object converter = c.newInstance();
+        Object converter = c.getDeclaredConstructor(Class.class).newInstance(java.sql.Time.class);
         Method createTime = c.getDeclaredMethod("createTime", long.class);
         createTime.setAccessible(true);
         long now = System.currentTimeMillis();
@@ -417,49 +417,45 @@ public class CommandLineTypeConversionTest {
         assertEquals("ISO8601TimeConverter works if java.sql module is available", new Time(now), actual);
     }
     @Test
-    public void testISO8601TimeConverterExceptionHandling() throws Exception {
+    public void testISO8601TimeConverterExceptionHandlingIfJavaSqlTimeNotAvailable() throws Exception {
         Class<?> c = Class.forName("picocli.CommandLine$BuiltIn$ISO8601TimeConverter");
-        Object converter = c.newInstance();
-        Method createTime = c.getDeclaredMethod("createTime", long.class);
-        createTime.setAccessible(true);
-        long now = System.currentTimeMillis();
+        Method registerIfAvailable = c.getDeclaredMethod("registerIfAvailable", Map.class, CommandLine.Tracer.class, String.class);
 
-        // simulate the absence of the java.sql module
-        Field fqcn = c.getDeclaredField("FQCN");
-        fqcn.setAccessible(true);
+        System.setProperty("picocli.trace", "DEBUG");
+        CommandLine.Tracer tracer = new CommandLine.Tracer();
+        Map<Class<?>, ITypeConverter<?>> map = new HashMap<Class<?>, ITypeConverter<?>>();
 
-        Object original = fqcn.get(null);
-        fqcn.set(null, "a.b.c"); // change FQCN to an unknown class
-        assertEquals("a.b.c", fqcn.get(null));
+        registerIfAvailable.invoke(null, map, tracer, "java.doesnotexist.Time");
+        assertTrue(map.isEmpty());
+        String expected = String.format("[picocli DEBUG] Could not register converter for java.doesnotexist.Time: java.lang.ClassNotFoundException: java.doesnotexist.Time%n");
+        assertEquals(expected, systemErrRule.getLog());
 
-        try {
-            createTime.invoke(converter, now);
-            fail("Expect exception");
-        } catch (InvocationTargetException outer) {
-            TypeConversionException ex = (TypeConversionException) outer.getTargetException();
-            assertTrue(ex.getMessage().startsWith("Unable to create new java.sql.Time with long value " + now));
-        } finally {
-            fqcn.set(null, original); // change FQCN back to java.sql.Time for other tests
-        }
+        systemErrRule.clearLog();
+        registerIfAvailable.invoke(null, map, tracer, "java.sql.Time");
+        assertEquals("logged only once", "", systemErrRule.getLog());
     }
+
     @Test
     public void testISO8601TimeConverterRegisterIfAvailableExceptionHandling() throws Exception {
         Class<?> c = Class.forName("picocli.CommandLine$BuiltIn$ISO8601TimeConverter");
-        Object converter = c.newInstance();
-
-        Method registerIfAvailable = c.getDeclaredMethod("registerIfAvailable", Map.class, CommandLine.Tracer.class);
+        Method registerIfAvailable = c.getDeclaredMethod("registerIfAvailable", Map.class, CommandLine.Tracer.class, String.class);
 
         System.setProperty("picocli.trace", "DEBUG");
         CommandLine.Tracer tracer = new CommandLine.Tracer();
 
-        registerIfAvailable.invoke(converter, null, tracer);
+        registerIfAvailable.invoke(null, null, tracer, "java.sql.Time");
 
         String expected = String.format("[picocli DEBUG] Could not register converter for java.sql.Time: java.lang.NullPointerException%n");
         assertEquals(expected, systemErrRule.getLog());
 
         systemErrRule.clearLog();
-        registerIfAvailable.invoke(null, null, tracer);
+        registerIfAvailable.invoke(null, null, tracer, "java.sql.Time");
         assertEquals("logged only once", "", systemErrRule.getLog());
+
+        Map<Class<?>, ITypeConverter<?>> map = new HashMap<Class<?>, ITypeConverter<?>>();
+        registerIfAvailable.invoke(null, map, tracer, "java.sql.Time");
+        assertEquals(1, map.size());
+        assertNotNull(map.get(java.sql.Time.class));
     }
 
     @Test

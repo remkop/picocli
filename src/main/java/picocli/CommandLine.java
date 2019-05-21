@@ -9906,7 +9906,7 @@ public class CommandLine {
             converterRegistry.put(Class.class,         new BuiltIn.ClassConverter());
             converterRegistry.put(NetworkInterface.class, new BuiltIn.NetworkInterfaceConverter());
 
-            BuiltIn.ISO8601TimeConverter.registerIfAvailable(converterRegistry, tracer);
+            BuiltIn.ISO8601TimeConverter.registerIfAvailable(converterRegistry, tracer, "java.sql.Time");
             BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.sql.Connection", "java.sql.DriverManager","getConnection", String.class);
             BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.sql.Driver", "java.sql.DriverManager","getDriver", String.class);
             BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.sql.Timestamp", "java.sql.Timestamp","valueOf", String.class);
@@ -11142,7 +11142,12 @@ public class CommandLine {
          * {@code HH:mm:ss.SSS}, {@code HH:mm:ss,SSS}. Other formats result in a ParameterException. */
         static class ISO8601TimeConverter implements ITypeConverter<Object> {
             // Implementation note: use reflection so that picocli only requires the java.base module in Java 9.
-            private static /*final*/ String FQCN = "java.sql.Time"; // non-final for testing
+            private final Class<?> timeClass;
+            private final Constructor<?> constructor;
+            ISO8601TimeConverter(Class<?> timeClass) throws NoSuchMethodException {
+                this.timeClass = Assert.notNull(timeClass, "time class");
+                constructor = timeClass.getDeclaredConstructor(long.class);
+            }
             public Object convert(String value) {
                 try {
                     if (value.length() <= 5) {
@@ -11163,24 +11168,20 @@ public class CommandLine {
             }
 
             private Object createTime(long epochMillis) {
-                try {
-                    Class<?> timeClass = Class.forName(FQCN);
-                    Constructor<?> constructor = timeClass.getDeclaredConstructor(long.class);
-                    return constructor.newInstance(epochMillis);
-                } catch (Exception e) {
-                    throw new TypeConversionException("Unable to create new java.sql.Time with long value " + epochMillis + ": " + e.getMessage());
-                }
+                try { return constructor.newInstance(epochMillis); }
+                catch (Exception e) { throw new TypeConversionException("Unable to create new java.sql.Time with long value " + epochMillis + ": " + e.getMessage()); }
             }
 
-            public static void registerIfAvailable(Map<Class<?>, ITypeConverter<?>> registry, Tracer tracer) {
-                if (excluded(FQCN, tracer)) { return; }
+            public static void registerIfAvailable(Map<Class<?>, ITypeConverter<?>> registry, Tracer tracer, String fqcn) {
+                if (excluded(fqcn, tracer)) { return; }
                 try {
-                    registry.put(Class.forName(FQCN), new ISO8601TimeConverter());
+                    Class<?> timeClass = Class.forName(fqcn);
+                    registry.put(timeClass, new ISO8601TimeConverter(timeClass));
                 } catch (Exception e) {
-                    if (!traced.contains(FQCN)) {
-                        tracer.debug("Could not register converter for %s: %s%n", FQCN, e.toString());
+                    if (!traced.contains(fqcn)) {
+                        tracer.debug("Could not register converter for %s: %s%n", fqcn, e.toString());
                     }
-                    traced.add(FQCN);
+                    traced.add(fqcn);
                 }
             }
         }
