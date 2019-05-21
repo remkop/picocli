@@ -18,6 +18,7 @@ import static java.lang.String.format;
 
 public class AnnotationValidator {
 
+    @SuppressWarnings("unchecked")
     private static final List<Class<? extends Annotation>> ALL = Collections.unmodifiableList(
             Arrays.asList(
                     CommandLine.Command.class,
