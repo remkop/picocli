@@ -12,7 +12,19 @@ import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Model.UnmatchedArgsBinding;
 import picocli.CommandLine.Parameters;
+import picocli.codegen.annotation.processing.ITypeMetaData;
+import picocli.codegen.annotation.processing.internal.GetterSetterMetaData;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.util.SimpleElementVisitor6;
+import javax.lang.model.util.SimpleTypeVisitor6;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -129,10 +141,21 @@ public class ReflectionConfigGenerator {
 
     static final class Visitor {
         static Set<String> excluded = new HashSet<String>(Arrays.asList(
+                boolean.class.getName(), boolean[].class.getName(), boolean[].class.getCanonicalName(),
+                byte.class.getName(),    byte[].class.getName(),    byte[].class.getCanonicalName(),
+                char.class.getName(),    char[].class.getName(),    char[].class.getCanonicalName(),
+                double.class.getName(),  double[].class.getName(),  double[].class.getCanonicalName(),
+                float.class.getName(),   float[].class.getName(),   float[].class.getCanonicalName(),
+                int.class.getName(),     int[].class.getName(),     int[].class.getCanonicalName(),
+                long.class.getName(),    long[].class.getName(),    long[].class.getCanonicalName(),
+                short.class.getName(),   short[].class.getName(),   short[].class.getCanonicalName(),
                 Method.class.getName(),
                 Object.class.getName(),
                 String.class.getName(),
                 String[].class.getName(),
+                List.class.getName(),
+                Set.class.getName(),
+                Map.class.getName(),
                 "java.lang.reflect.Executable", // addMethod("getParameters")
                 "java.lang.reflect.Parameter", // addMethod("getName");
                 "org.fusesource.jansi.AnsiConsole", // addField("out", false);
@@ -157,16 +180,20 @@ public class ReflectionConfigGenerator {
                 "java.sql.Connection",
                 "java.sql.Driver",
                 "java.sql.DriverManager", // .addMethod("getConnection", String.class) .addMethod("getDriver", String.class);
+                "java.sql.Time", // constructor long
                 "java.sql.Timestamp"  // addMethod("valueOf", String.class);
         ));
         Map<String, ReflectedClass> visited = new TreeMap<String, ReflectedClass>();
 
         void visitCommandSpec(CommandSpec spec) throws Exception {
-            if (spec.userObject() != null) {
-                if (spec.userObject() instanceof Method) {
+            Object userObject = spec.userObject();
+            if (userObject != null) {
+                if (userObject instanceof Method) {
                     Method method = (Method) spec.userObject();
                     ReflectedClass cls = getOrCreateClass(method.getDeclaringClass());
                     cls.addMethod(method.getName(), method.getParameterTypes());
+                } else if (userObject instanceof Element) {
+                    visitElement((Element) userObject);
                 } else if (Proxy.isProxyClass(spec.userObject().getClass())) {
                     // do nothing: requires DynamicProxyConfigGenerator
                 } else {
@@ -192,6 +219,60 @@ public class ReflectionConfigGenerator {
             for (CommandLine sub : spec.subcommands().values()) {
                 visitCommandSpec(sub.getCommandSpec());
             }
+        }
+
+        private void visitElement(Element element) {
+            element.accept(new SimpleElementVisitor6<Void, Void>() {
+                @Override
+                public Void visitVariable(VariableElement e, Void aVoid) {
+                    if (!e.asType().getKind().isPrimitive() &&
+                            !(e.getKind() == ElementKind.INTERFACE && e.asType().toString().startsWith("java"))) {
+                        getOrCreateClassByName(e.asType().toString());
+                    }
+                    if (e.getKind() == ElementKind.FIELD) {
+                        TypeElement type = (TypeElement) e.getEnclosingElement();
+                        ReflectedClass cls = getOrCreateClassByName(type.getQualifiedName().toString());
+                        cls.addField(e.getSimpleName().toString(), e.getModifiers().contains(javax.lang.model.element.Modifier.FINAL));
+                    }
+                    return null;
+                }
+                @Override public Void visitType(TypeElement e, Void aVoid) {
+                    if (!e.asType().getKind().isPrimitive() &&
+                            !(e.getKind() == ElementKind.INTERFACE && e.getQualifiedName().toString().startsWith("java"))) {
+                        getOrCreateClassByName(e.getQualifiedName().toString());
+                    }
+                    return null;
+                }
+                @Override public Void visitExecutable(ExecutableElement method, Void aVoid) {
+                    TypeElement type = (TypeElement) method.getEnclosingElement();
+                    ReflectedClass cls = getOrCreateClassByName(type.getQualifiedName().toString());
+                    List<? extends VariableElement> parameters = method.getParameters();
+                    List<String> paramTypeNames = new ArrayList<String>();
+                    for (VariableElement param : parameters) {
+                        param.asType().accept(new SimpleTypeVisitor6<Void, List<String>>() {
+                            @Override
+                            public Void visitPrimitive(PrimitiveType t, List<String> collect) {
+                                collect.add(t.toString());
+                                return null;
+                            }
+                            @Override
+                            public Void visitArray(ArrayType t, List<String> collect) {
+                                collect.add(t.toString());
+                                return null;
+                            }
+                            @Override
+                            public Void visitDeclared(DeclaredType t, List<String> collect) {
+                                TypeElement typeElement = (TypeElement) t.asElement();
+                                String s = typeElement.getQualifiedName().toString();
+                                collect.add(s); // t.toString() would give "java.util.List<java.io.File>"
+                                return null;
+                            }
+                        }, paramTypeNames);
+                    }
+                    cls.addMethod(method.getSimpleName().toString(), paramTypeNames);
+                    return null;
+                }
+            }, null);
         }
 
         private void visitAnnotatedFields(Class<?> cls) {
@@ -224,14 +305,16 @@ public class ReflectionConfigGenerator {
         private void visitArgSpec(ArgSpec argSpec) throws Exception {
             visitGetter(argSpec.getter());
             visitSetter(argSpec.setter());
-            visitType(argSpec.type());
-            visitTypes(argSpec.auxiliaryTypes());
+            visitTypeInfo(argSpec.typeInfo());
             visitObjectType(argSpec.completionCandidates());
             visitObjectTypes(argSpec.converters());
         }
 
-        private void visitTypes(Class<?>[] classes) {
-            for (Class<?> cls : classes) { visitType(cls); }
+        private void visitTypeInfo(CommandLine.Model.ITypeInfo typeInfo) {
+            getOrCreateClassByName(typeInfo.getClassName());
+            for (CommandLine.Model.ITypeInfo aux : typeInfo.getAuxiliaryTypeInfos()) {
+                getOrCreateClassByName(aux.getClassName());
+            }
         }
 
         private void visitType(Class<?> type) {
@@ -239,7 +322,14 @@ public class ReflectionConfigGenerator {
         }
 
         private void visitObjectType(Object object) {
-            if (object != null) { visitType(object.getClass()); }
+            if (object == null) {
+                return;
+            }
+            if (object instanceof ITypeMetaData) {
+                visitElement(((ITypeMetaData) object).getTypeElement());
+            } else {
+                visitType(object.getClass());
+            }
         }
 
         private void visitObjectTypes(Object[] array) {
@@ -252,13 +342,14 @@ public class ReflectionConfigGenerator {
             if (getter == null) {
                 return;
             }
-            if (REFLECTED_FIELD_BINDING_CLASS.equals(getter.getClass().getName())) {
+            if (getter instanceof GetterSetterMetaData) {
+                GetterSetterMetaData metaData = (GetterSetterMetaData) getter;
+                visitElement(metaData.getElement());
+            } else if (REFLECTED_FIELD_BINDING_CLASS.equals(getter.getClass().getName())) {
                 visitFieldBinding(getter);
-            }
-            if (REFLECTED_METHOD_BINDING_CLASS.equals(getter.getClass().getName())) {
+            } else if (REFLECTED_METHOD_BINDING_CLASS.equals(getter.getClass().getName())) {
                 visitMethodBinding(getter);
-            }
-            if (REFLECTED_PROXY_METHOD_BINDING_CLASS.equals(getter.getClass().getName())) {
+            } else if (REFLECTED_PROXY_METHOD_BINDING_CLASS.equals(getter.getClass().getName())) {
                 visitProxyMethodBinding(getter);
             }
         }
@@ -267,10 +358,12 @@ public class ReflectionConfigGenerator {
             if (setter == null) {
                 return;
             }
-            if (REFLECTED_FIELD_BINDING_CLASS.equals(setter.getClass().getName())) {
+            if (setter instanceof GetterSetterMetaData) {
+                GetterSetterMetaData metaData = (GetterSetterMetaData) setter;
+                visitElement(metaData.getElement());
+            } else if (REFLECTED_FIELD_BINDING_CLASS.equals(setter.getClass().getName())) {
                 visitFieldBinding(setter);
-            }
-            if (REFLECTED_METHOD_BINDING_CLASS.equals(setter.getClass().getName())) {
+            } else if (REFLECTED_METHOD_BINDING_CLASS.equals(setter.getClass().getName())) {
                 visitMethodBinding(setter);
             }
         }
@@ -314,9 +407,9 @@ public class ReflectionConfigGenerator {
             if (cls.isPrimitive() || (cls.isInterface() && cls.getName().startsWith("java"))) {
                 return new ReflectedClass(cls.getName()); // don't store
             }
-            return getOrCreateClassName(cls.getName());
+            return getOrCreateClassByName(cls.getName());
         }
-        private ReflectedClass getOrCreateClassName(String name) {
+        private ReflectedClass getOrCreateClassByName(String name) {
             ReflectedClass result = visited.get(name);
             if (result == null) {
                 result = new ReflectedClass(name);
@@ -364,6 +457,10 @@ public class ReflectionConfigGenerator {
                 paramTypes[i] = paramClasses[i].getName();
             }
             return addMethod0(methodName, paramTypes);
+        }
+
+        public ReflectedClass addMethod(String methodName, List<String> paramTypeNames) {
+            return addMethod0(methodName, paramTypeNames.toArray(new String[0]));
         }
 
         @Override
