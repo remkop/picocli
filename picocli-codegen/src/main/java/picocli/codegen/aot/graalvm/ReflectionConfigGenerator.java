@@ -13,12 +13,18 @@ import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Model.UnmatchedArgsBinding;
 import picocli.CommandLine.Parameters;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 
 /**
@@ -110,7 +116,7 @@ public class ReflectionConfigGenerator {
         return generateReflectionConfig(visitor).toString();
     }
 
-    static StringBuilder generateReflectionConfig(Visitor visited) {
+    private static StringBuilder generateReflectionConfig(Visitor visited) {
         StringBuilder result = new StringBuilder(1024);
         String prefix = String.format("[%n");
         String suffix = String.format("%n]%n");
@@ -122,47 +128,38 @@ public class ReflectionConfigGenerator {
     }
 
     static final class Visitor {
+        static Set<String> excluded = new HashSet<String>(Arrays.asList(
+                Method.class.getName(),
+                Object.class.getName(),
+                String.class.getName(),
+                String[].class.getName(),
+                "java.lang.reflect.Executable", // addMethod("getParameters")
+                "java.lang.reflect.Parameter", // addMethod("getName");
+                "org.fusesource.jansi.AnsiConsole", // addField("out", false);
+                "java.util.ResourceBundle", // addMethod("getBaseBundleName");
+                "java.time.Duration", // addMethod("parse", CharSequence.class);
+                "java.time.Instant", // addMethod("parse", CharSequence.class);
+                "java.time.LocalDate", // addMethod("parse", CharSequence.class);
+                "java.time.LocalDateTime", // addMethod("parse", CharSequence.class);
+                "java.time.LocalTime", // addMethod("parse", CharSequence.class);
+                "java.time.MonthDay", // addMethod("parse", CharSequence.class);
+                "java.time.OffsetDateTime", // addMethod("parse", CharSequence.class);
+                "java.time.OffsetTime", // addMethod("parse", CharSequence.class);
+                "java.time.Period", // addMethod("parse", CharSequence.class);
+                "java.time.Year", // addMethod("parse", CharSequence.class);
+                "java.time.YearMonth", // addMethod("parse", CharSequence.class);
+                "java.time.ZonedDateTime", // addMethod("parse", CharSequence.class);
+                "java.time.ZoneId", // addMethod("of", String.class);
+                "java.time.ZoneOffset", // addMethod("of", String.class);
+                "java.nio.file.Path",
+                "java.nio.file.Paths", // addMethod("get", String.class, String[].class);
+
+                "java.sql.Connection",
+                "java.sql.Driver",
+                "java.sql.DriverManager", // .addMethod("getConnection", String.class) .addMethod("getDriver", String.class);
+                "java.sql.Timestamp"  // addMethod("valueOf", String.class);
+        ));
         Map<String, ReflectedClass> visited = new TreeMap<String, ReflectedClass>();
-
-        Visitor() {
-            getOrCreateClass(Method.class);
-            getOrCreateClassName("java.lang.reflect.Executable").addMethod("getParameters");
-            getOrCreateClassName("java.lang.reflect.Parameter").addMethod("getName");
-
-            // ANSI color enabled detection
-            getOrCreateClassName("java.lang.System").addMethod("console");
-
-            // Issue #645: exclude Jansi Console from reflection configuration
-            //getOrCreateClassName("org.fusesource.jansi.AnsiConsole").addField("out", false);
-
-            // picocli 4.0
-            getOrCreateClassName("java.util.ResourceBundle").addMethod("getBaseBundleName");
-
-            // type converters registered with reflection
-            getOrCreateClassName("java.time.Duration").addMethod("parse", CharSequence.class);
-            getOrCreateClassName("java.time.Instant").addMethod("parse", CharSequence.class);
-            getOrCreateClassName("java.time.LocalDate").addMethod("parse", CharSequence.class);
-            getOrCreateClassName("java.time.LocalDateTime").addMethod("parse", CharSequence.class);
-            getOrCreateClassName("java.time.LocalTime").addMethod("parse", CharSequence.class);
-            getOrCreateClassName("java.time.MonthDay").addMethod("parse", CharSequence.class);
-            getOrCreateClassName("java.time.OffsetDateTime").addMethod("parse", CharSequence.class);
-            getOrCreateClassName("java.time.OffsetTime").addMethod("parse", CharSequence.class);
-            getOrCreateClassName("java.time.Period").addMethod("parse", CharSequence.class);
-            getOrCreateClassName("java.time.Year").addMethod("parse", CharSequence.class);
-            getOrCreateClassName("java.time.YearMonth").addMethod("parse", CharSequence.class);
-            getOrCreateClassName("java.time.ZonedDateTime").addMethod("parse", CharSequence.class);
-            getOrCreateClassName("java.time.ZoneId").addMethod("of", String.class);
-            getOrCreateClassName("java.time.ZoneOffset").addMethod("of", String.class);
-            getOrCreateClassName("java.nio.file.Path");
-            getOrCreateClassName("java.nio.file.Paths").addMethod("get", String.class, String[].class);
-
-            getOrCreateClassName("java.sql.Connection");
-            getOrCreateClassName("java.sql.Driver");
-            getOrCreateClassName("java.sql.DriverManager")
-                    .addMethod("getConnection", String.class)
-                    .addMethod("getDriver", String.class);
-            getOrCreateClassName("java.sql.Timestamp").addMethod("valueOf", String.class);
-        }
 
         void visitCommandSpec(CommandSpec spec) throws Exception {
             if (spec.userObject() != null) {
@@ -314,7 +311,7 @@ public class ReflectionConfigGenerator {
         }
 
         ReflectedClass getOrCreateClass(Class<?> cls) {
-            if (cls.isPrimitive()) {
+            if (cls.isPrimitive() || (cls.isInterface() && cls.getName().startsWith("java"))) {
                 return new ReflectedClass(cls.getName()); // don't store
             }
             return getOrCreateClassName(cls.getName());
@@ -331,6 +328,7 @@ public class ReflectionConfigGenerator {
         }
 
         static boolean excluded(String fqcn) {
+            if (excluded.contains(fqcn)) { return true; }
             String[] excludes = System.getProperty(SYSPROP_CODEGEN_EXCLUDES, "").split(",");
             for (String regex : excludes) {
                 if (fqcn.matches(regex)) {
