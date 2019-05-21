@@ -15,8 +15,24 @@
  */
 package picocli;
 
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.contrib.java.lang.system.SystemErrRule;
+import org.junit.rules.TestRule;
+import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.TypeConversionException;
+import picocli.CommandLine.UnmatchedArgumentException;
+
 import java.io.File;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -32,20 +48,22 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Currency;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.contrib.java.lang.system.SystemErrRule;
-import org.junit.rules.TestRule;
-import picocli.CommandLine.*;
-
-import static java.util.concurrent.TimeUnit.*;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.*;
 import static picocli.CommandLineTypeConversionTest.ResultTypes.COMPLETE;
 import static picocli.CommandLineTypeConversionTest.ResultTypes.PARTIAL;
@@ -409,53 +427,14 @@ public class CommandLineTypeConversionTest {
     @Test
     public void testISO8601TimeConverterWhenJavaSqlModuleAvailable() throws Exception {
         Class<?> c = Class.forName("picocli.CommandLine$BuiltIn$ISO8601TimeConverter");
-        Object converter = c.getDeclaredConstructor(Class.class).newInstance(java.sql.Time.class);
+        Constructor<?> converterConstructor = c.getDeclaredConstructor(Constructor.class);
+        Object converter = converterConstructor.newInstance(java.sql.Time.class.getDeclaredConstructor(long.class));
+
         Method createTime = c.getDeclaredMethod("createTime", long.class);
         createTime.setAccessible(true);
         long now = System.currentTimeMillis();
         Time actual = (Time) createTime.invoke(converter, now);
         assertEquals("ISO8601TimeConverter works if java.sql module is available", new Time(now), actual);
-    }
-    @Test
-    public void testISO8601TimeConverterExceptionHandlingIfJavaSqlTimeNotAvailable() throws Exception {
-        Class<?> c = Class.forName("picocli.CommandLine$BuiltIn$ISO8601TimeConverter");
-        Method registerIfAvailable = c.getDeclaredMethod("registerIfAvailable", Map.class, CommandLine.Tracer.class, String.class);
-
-        System.setProperty("picocli.trace", "DEBUG");
-        CommandLine.Tracer tracer = new CommandLine.Tracer();
-        Map<Class<?>, ITypeConverter<?>> map = new HashMap<Class<?>, ITypeConverter<?>>();
-
-        registerIfAvailable.invoke(null, map, tracer, "java.doesnotexist.Time");
-        assertTrue(map.isEmpty());
-        String expected = String.format("[picocli DEBUG] Could not register converter for java.doesnotexist.Time: java.lang.ClassNotFoundException: java.doesnotexist.Time%n");
-        assertEquals(expected, systemErrRule.getLog());
-
-        systemErrRule.clearLog();
-        registerIfAvailable.invoke(null, map, tracer, "java.sql.Time");
-        assertEquals("logged only once", "", systemErrRule.getLog());
-    }
-
-    @Test
-    public void testISO8601TimeConverterRegisterIfAvailableExceptionHandling() throws Exception {
-        Class<?> c = Class.forName("picocli.CommandLine$BuiltIn$ISO8601TimeConverter");
-        Method registerIfAvailable = c.getDeclaredMethod("registerIfAvailable", Map.class, CommandLine.Tracer.class, String.class);
-
-        System.setProperty("picocli.trace", "DEBUG");
-        CommandLine.Tracer tracer = new CommandLine.Tracer();
-
-        registerIfAvailable.invoke(null, null, tracer, "java.sql.Time");
-
-        String expected = String.format("[picocli DEBUG] Could not register converter for java.sql.Time: java.lang.NullPointerException%n");
-        assertEquals(expected, systemErrRule.getLog());
-
-        systemErrRule.clearLog();
-        registerIfAvailable.invoke(null, null, tracer, "java.sql.Time");
-        assertEquals("logged only once", "", systemErrRule.getLog());
-
-        Map<Class<?>, ITypeConverter<?>> map = new HashMap<Class<?>, ITypeConverter<?>>();
-        registerIfAvailable.invoke(null, map, tracer, "java.sql.Time");
-        assertEquals(1, map.size());
-        assertNotNull(map.get(java.sql.Time.class));
     }
 
     @Test
@@ -1005,24 +984,6 @@ public class CommandLineTypeConversionTest {
             TypeConversionException actual = (TypeConversionException) ex.getTargetException();
             assertTrue(actual.getMessage().startsWith("Internal error converting 'command line parameter' to class java.lang.String"));
         }
-    }
-
-    @Test
-    public void testRegisterIfAvailableExceptionHandling() throws Exception {
-        Class<?> c = Class.forName("picocli.CommandLine$BuiltIn");
-        Method registerIfAvailable = c.getDeclaredMethod("registerIfAvailable", Map.class, CommandLine.Tracer.class,
-                String.class, String.class, String.class, Class[].class);
-
-        System.setProperty("picocli.trace", "DEBUG");
-        CommandLine.Tracer tracer = new CommandLine.Tracer();
-
-        registerIfAvailable.invoke(null, null, tracer, "a.b.c", null, null, null);
-        String expected = String.format("[picocli DEBUG] Could not register converter for a.b.c: java.lang.ClassNotFoundException: a.b.c%n");
-        assertEquals(expected, systemErrRule.getLog());
-
-        systemErrRule.clearLog();
-        registerIfAvailable.invoke(null, null, tracer, "a.b.c", null, null, null);
-        assertEquals("logged only once", "", systemErrRule.getLog());
     }
 
     @Ignore("NetworkInterface.getByName returns null - does not throw an exception")

@@ -9917,27 +9917,37 @@ public class CommandLine {
             converterRegistry.put(Class.class,         new BuiltIn.ClassConverter());
             converterRegistry.put(NetworkInterface.class, new BuiltIn.NetworkInterfaceConverter());
 
-            BuiltIn.ISO8601TimeConverter.registerIfAvailable(converterRegistry, tracer, "java.sql.Time");
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.sql.Connection", "java.sql.DriverManager","getConnection", String.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.sql.Driver", "java.sql.DriverManager","getDriver", String.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.sql.Timestamp", "java.sql.Timestamp","valueOf", String.class);
+            // #698 use direct calls to Class.forName() and Class.getDeclaredMethod() with constant Strings
+            // to allow GraalVM static analysis to resolve the target elements
+            if (!excl("java.sql.Time")) { try { reg(Class.forName("java.sql.Time"), new BuiltIn.ISO8601TimeConverter(Class.forName("java.sql.Time").getDeclaredConstructor(long.class))); } catch (Exception e) {BuiltIn.handle(e, "java.sql.Time", tracer);} }
 
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.Duration", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.Instant", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.LocalDate", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.LocalDateTime", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.LocalTime", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.MonthDay", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.OffsetDateTime", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.OffsetTime", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.Period", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.Year", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.YearMonth", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.ZonedDateTime", "parse", CharSequence.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.ZoneId", "of", String.class);
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.time.ZoneOffset", "of", String.class);
+            if (!excl("java.sql.Connection")) { try { reg(Class.forName("java.sql.Connection"), Class.forName("java.sql.DriverManager").getDeclaredMethod("getConnection", String.class), String.class); } catch (Exception e) {BuiltIn.handle(e, "java.sql.Connection", tracer);} }
+            if (!excl("java.sql.Driver"))     { try { reg(Class.forName("java.sql.Driver"),     Class.forName("java.sql.DriverManager").getDeclaredMethod("getDriver",     String.class), String.class); } catch (Exception e) {BuiltIn.handle(e, "java.sql.DriverManager", tracer);} }
+            if (!excl("java.sql.Timestamp"))  { try { reg(Class.forName("java.sql.Timestamp"),  Class.forName("java.sql.Timestamp")    .getDeclaredMethod("valueOf",       String.class), String.class); } catch (Exception e) {BuiltIn.handle(e, "java.sql.Timestamp", tracer);} }
 
-            BuiltIn.registerIfAvailable(converterRegistry, tracer, "java.nio.file.Path", "java.nio.file.Paths", "get", String.class, String[].class);
+            if (!excl("java.time.Duration")) {       try { reg(Class.forName("java.time.Duration"),       Class.forName("java.time.Duration")      .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.Duration", tracer);} }
+            if (!excl("java.time.Instant")) {        try { reg(Class.forName("java.time.Instant"),        Class.forName("java.time.Instant")       .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.Instant", tracer);} }
+            if (!excl("java.time.LocalDate")) {      try { reg(Class.forName("java.time.LocalDate"),      Class.forName("java.time.LocalDate")     .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.LocalDate", tracer);} }
+            if (!excl("java.time.LocalDateTime")) {  try { reg(Class.forName("java.time.LocalDateTime"),  Class.forName("java.time.LocalDateTime") .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.LocalDateTime", tracer);} }
+            if (!excl("java.time.LocalTime")) {      try { reg(Class.forName("java.time.LocalTime"),      Class.forName("java.time.LocalTime")     .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.LocalTime", tracer);} }
+            if (!excl("java.time.MonthDay")) {       try { reg(Class.forName("java.time.MonthDay"),       Class.forName("java.time.MonthDay")      .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.MonthDay", tracer);} }
+            if (!excl("java.time.OffsetDateTime")) { try { reg(Class.forName("java.time.OffsetDateTime"), Class.forName("java.time.OffsetDateTime").getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.OffsetDateTime", tracer);} }
+            if (!excl("java.time.OffsetTime")) {     try { reg(Class.forName("java.time.OffsetTime"),     Class.forName("java.time.OffsetTime")    .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.OffsetTime", tracer);} }
+            if (!excl("java.time.Period")) {         try { reg(Class.forName("java.time.Period"),         Class.forName("java.time.Period")        .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.Period", tracer);} }
+            if (!excl("java.time.Year")) {           try { reg(Class.forName("java.time.Year"),           Class.forName("java.time.Year")          .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.Year", tracer);} }
+            if (!excl("java.time.YearMonth")) {      try { reg(Class.forName("java.time.YearMonth"),      Class.forName("java.time.YearMonth")     .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.YearMonth", tracer);} }
+            if (!excl("java.time.ZonedDateTime")) {  try { reg(Class.forName("java.time.ZonedDateTime"),  Class.forName("java.time.ZonedDateTime") .getDeclaredMethod("parse", CharSequence.class), CharSequence.class); } catch (Exception e) {BuiltIn.handle(e, "java.time.ZonedDateTime", tracer);} }
+            if (!excl("java.time.ZoneId")) {         try { reg(Class.forName("java.time.ZoneId"),         Class.forName("java.time.ZoneId")        .getDeclaredMethod("of",    String.class),       String.class);       } catch (Exception e) {BuiltIn.handle(e, "java.time.ZoneId", tracer);} }
+            if (!excl("java.time.ZoneOffset")) {     try { reg(Class.forName("java.time.ZoneOffset"),     Class.forName("java.time.ZoneOffset")    .getDeclaredMethod("of",    String.class),       String.class);       } catch (Exception e) {BuiltIn.handle(e, "java.time.ZoneOffset", tracer);} }
+
+            if (!excl("java.nio.file.Path")) {     try { reg(Class.forName("java.nio.file.Path"),  Class.forName("java.nio.file.Paths").getDeclaredMethod("get", String.class, String[].class), String.class, String[].class); } catch (Exception e) {BuiltIn.handle(e, "java.nio.file.Path", tracer);} }
+        }
+        private boolean excl(String fqcn) { return BuiltIn.excluded(fqcn, tracer); }
+        private void reg(Class<?> cls, Method method, Class<?>... paramTypes) {
+            converterRegistry.put(cls, new BuiltIn.ReflectionConverter(method, paramTypes));
+        }
+        private void reg(Class<?> timeClass, BuiltIn.ISO8601TimeConverter converter) {
+            converterRegistry.put(timeClass, converter);
         }
         private ParserSpec config() { return commandSpec.parser(); }
         /**
@@ -11153,11 +11163,9 @@ public class CommandLine {
          * {@code HH:mm:ss.SSS}, {@code HH:mm:ss,SSS}. Other formats result in a ParameterException. */
         static class ISO8601TimeConverter implements ITypeConverter<Object> {
             // Implementation note: use reflection so that picocli only requires the java.base module in Java 9.
-            private final Class<?> timeClass;
             private final Constructor<?> constructor;
-            ISO8601TimeConverter(Class<?> timeClass) throws NoSuchMethodException {
-                this.timeClass = Assert.notNull(timeClass, "time class");
-                constructor = timeClass.getDeclaredConstructor(long.class);
+            ISO8601TimeConverter(Constructor<?> constructor) throws NoSuchMethodException {
+                this.constructor = Assert.notNull(constructor, "time class constructor");
             }
             public Object convert(String value) {
                 try {
@@ -11181,19 +11189,6 @@ public class CommandLine {
             private Object createTime(long epochMillis) {
                 try { return constructor.newInstance(epochMillis); }
                 catch (Exception e) { throw new TypeConversionException("Unable to create new java.sql.Time with long value " + epochMillis + ": " + e.getMessage()); }
-            }
-
-            public static void registerIfAvailable(Map<Class<?>, ITypeConverter<?>> registry, Tracer tracer, String fqcn) {
-                if (excluded(fqcn, tracer)) { return; }
-                try {
-                    Class<?> timeClass = Class.forName(fqcn);
-                    registry.put(timeClass, new ISO8601TimeConverter(timeClass));
-                } catch (Exception e) {
-                    if (!traced.contains(fqcn)) {
-                        tracer.debug("Could not register converter for %s: %s%n", fqcn, e.toString());
-                    }
-                    traced.add(fqcn);
-                }
             }
         }
         static class BigDecimalConverter implements ITypeConverter<BigDecimal> {
@@ -11244,22 +11239,11 @@ public class CommandLine {
                 }
             }
         }
-        static void registerIfAvailable(Map<Class<?>, ITypeConverter<?>> registry, Tracer tracer, String fqcn, String factoryMethodName, Class<?>... paramTypes) {
-            registerIfAvailable(registry, tracer, fqcn, fqcn, factoryMethodName, paramTypes);
-        }
-        static void registerIfAvailable(Map<Class<?>, ITypeConverter<?>> registry, Tracer tracer, String fqcn, String factoryClass, String factoryMethodName, Class<?>... paramTypes) {
-            if (excluded(fqcn, tracer)) { return; }
-            try {
-                Class<?> cls = Class.forName(fqcn);
-                Class<?> factory = Class.forName(factoryClass);
-                Method method = factory.getDeclaredMethod(factoryMethodName, paramTypes);
-                registry.put(cls, new ReflectionConverter(method, paramTypes));
-            } catch (Exception e) {
-                if (!traced.contains(fqcn)) {
-                    tracer.debug("Could not register converter for %s: %s%n", fqcn, e.toString());
-                }
-                traced.add(fqcn);
+        static void handle(Exception e, String fqcn, Tracer tracer) {
+            if (!traced.contains(fqcn)) {
+                tracer.debug("Could not register converter for %s: %s%n", fqcn, e.toString());
             }
+            traced.add(fqcn);
         }
         static boolean excluded(String fqcn, Tracer tracer) {
             String[] excludes = System.getProperty("picocli.converters.excludes", "").split(",");
