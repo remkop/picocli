@@ -82,7 +82,7 @@ public class AnnotatedCommandSourceGeneratorProcessor extends AbstractCommandSpe
                 PrintWriter pw = new PrintWriter(sw);
                 generator.writeTo(pw, "");
                 pw.flush();
-                System.out.println(sw);
+                //System.out.println(sw);
                 writer.write(sw.toString());
                 writer.flush();
             } finally {
