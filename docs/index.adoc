@@ -1307,7 +1307,7 @@ assert 3 == new CommandLine(new Gesture()).execute();
 
 === Exception Exit Codes
 
-By default, the `execute` method returns `CommandLine.ExitCode.USAGE` (`64`) for invalid input, and `CommandLine.ExitCode.SOFTWARE` (`70`) when an exception occurred in the Runnable, Callable or command method. (For reference, these values are `EX_USAGE` and `EX_SOFTWARE`, respectively, from Unix and Linux https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3[sysexits.h]). This can be customized with the `@Command` annotation. For example:
+By default, the `execute` method returns `CommandLine.ExitCode.OK` (`0`) on success, `CommandLine.ExitCode.SOFTWARE` (`1`) when an exception occurred in the Runnable, Callable or command method, and `CommandLine.ExitCode.USAGE` (`2`) for invalid input. (These are common values according to https://stackoverflow.com/questions/1101957/are-there-any-standard-exit-status-codes-in-linux/40484670#40484670[this StackOverflow answer]). This can be customized with the `@Command` annotation. For example:
 
 ```java 
 @Command(exitCodeOnInvalidInput = 123,

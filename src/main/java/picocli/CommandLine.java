@@ -853,20 +853,33 @@ public class CommandLine {
     /**
      * Defines some exit codes used by picocli as default return values from the {@link #execute(String...) execute}
      * and {@link #executeHelpRequest(ParseResult) executeHelpRequest} methods.
-     * <p>Commands can override these defaults with annotations (e.g. {@code @Command(exitCodeOnInvalidInput = 12345)}
+     * <p>Commands can override these defaults with annotations (e.g. {@code @Command(exitCodeOnInvalidInput = 64, exitCodeOnExecutionException = 70)}
      * or programmatically (e.g. {@link CommandSpec#exitCodeOnInvalidInput(int)}).</p>
      * <p>Additionally, there are several mechanisms for commands to return custom exit codes.
      * See the javadoc of the {@link #execute(String...) execute} method for details.</p>
+     * <h3>Standard Exit Codes</h3>
+     * <p>There are a few conventions, but there is <a href="https://stackoverflow.com/questions/1101957/are-there-any-standard-exit-status-codes-in-linux/40484670#40484670">no
+     * standard</a>. The specific set of codes returned is unique to the program that sets it.
+     * Typically an exit code of zero indicates success, any non-zero exit code indicates failure. For reference, here are a few conventions:</p>
+     * <ul>
+     *   <li><a href="https://en.wikipedia.org/wiki/Exit_status">Wikipedia page on Exit Status</a></li>
+     *   <li><a href="http://www.faqs.org/docs/abs/HTML/exitcodes.html#EXITCODESREF">Bash exit codes</a></li>
+     *   <li><a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&amp;sektion=3">FreeBSD exit codes</a></li>
+     *   <li><a href="http://www.hiteksoftware.com/knowledge/articles/049.htm">Windows exit codes</a></li>
+     * </ul>
+     * <h3>Valid Ranges</h3>
+     * <p>Note that *nix shells may restrict exit codes to the 0-255 range, DOS seems to allow larger numbers.
+     * See this <a href="https://stackoverflow.com/questions/179565/exitcodes-bigger-than-255-possible">StackOverflow question</a>.</p>
      * @since 4.0 */
     public static final class ExitCode {
         /** Return value from the {@link #execute(String...) execute} and
          * {@link #executeHelpRequest(ParseResult) executeHelpRequest} methods signifying successful termination.
-         * <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&amp;sektion=3">conventions</a>.</p> */
+         * <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="">conventions</a>.</p> */
         public static final int OK = 0;
-        /** Return value from the {@link #execute(String...) execute} method signifying command line usage error: user input for the command was incorrect, e.g., the wrong number of arguments, a bad flag, a bad syntax in a parameter, or whatever. <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&amp;sektion=3">conventions</a>.</p>*/
-        public static final int USAGE = 64;
-        /** Return value from the {@link #execute(String...) execute} method signifying internal software error: an exception occurred when invoking the Runnable, Callable or Method user object of a command. <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&amp;sektion=3">conventions</a>.</p> */
-        public static final int SOFTWARE = 70;
+        /** Return value from the {@link #execute(String...) execute} method signifying internal software error: an exception occurred when invoking the Runnable, Callable or Method user object of a command. <p>The value of this constant is {@value}.</p> */
+        public static final int SOFTWARE = 1;
+        /** Return value from the {@link #execute(String...) execute} method signifying command line usage error: user input for the command was incorrect, e.g., the wrong number of arguments, a bad flag, a bad syntax in a parameter, or whatever. <p>The value of this constant is {@value}.</p>*/
+        public static final int USAGE = 2;
         private ExitCode() {} // don't instantiate
     }
 
