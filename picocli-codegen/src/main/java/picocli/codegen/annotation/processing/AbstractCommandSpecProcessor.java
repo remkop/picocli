@@ -549,6 +549,8 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         }
     }
 
+    // TODO capture enough information to eventually be able to do this:
+    //   commandSpec.addUnmatchedArgsBinding(buildUnmatchedForMember(member));
     private void buildUnmatched(Element element, Context context) {
         debugElement(element, "@Unmatched");
         if (element.getKind() == ElementKind.FIELD) {
@@ -568,6 +570,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         }
     }
 
+    // TODO update model: add SpecBinding
     private void buildSpec(Element element, Context context) {
         debugElement(element, "@Spec");
         if (element.getKind() == ElementKind.FIELD) {
@@ -587,6 +590,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         }
     }
 
+    // TODO update model: add ParentCommandBinding
     private void buildParentCommand(Element element, Context context) {
         debugElement(element, "@ParentCommand");
         if (element.getKind() == ElementKind.FIELD) {
