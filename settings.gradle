@@ -4,7 +4,7 @@ include 'picocli-shell-jline2'
 include 'picocli-shell-jline3'
 include 'picocli-codegen'
 
-if (org.gradle.api.JavaVersion.current().isJava8Compatible() && !org.gradle.api.JavaVersion.current().isJava9Compatible()) {
+if (org.gradle.api.JavaVersion.current().isJava8Compatible()) {
     include 'picocli-jpms-module'
     include 'picocli-annotation-processing-tests'
 } else {
