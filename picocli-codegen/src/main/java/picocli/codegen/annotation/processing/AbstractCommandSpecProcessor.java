@@ -1,6 +1,5 @@
 package picocli.codegen.annotation.processing;
 
-import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IFactory;
@@ -330,6 +329,9 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
 
                 List<? extends Element> enclosedElements = subcommandElement.getEnclosedElements();
                 for (Element enclosed : enclosedElements) {
+                    if (enclosed.getAnnotation(Command.class) != null) {
+                        buildCommand(enclosed, context, roundEnv);
+                    }
                     if (enclosed.getAnnotation(ArgGroup.class) != null) {
                         buildArgGroup(enclosed, context);
                     }
@@ -341,6 +343,15 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                     }
                     if (enclosed.getAnnotation(Parameters.class) != null) {
                         buildParameter(enclosed, context);
+                    }
+                    if (enclosed.getAnnotation(Unmatched.class) != null) {
+                        buildUnmatched(enclosed, context);
+                    }
+                    if (enclosed.getAnnotation(Spec.class) != null) {
+                        buildSpec(enclosed, context);
+                    }
+                    if (enclosed.getAnnotation(ParentCommand.class) != null) {
+                        buildParentCommand(enclosed, context);
                     }
                 }
             }
@@ -534,14 +545,18 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         logger.fine("Building unmatched...");
         Set<? extends Element> explicitUnmatched = roundEnv.getElementsAnnotatedWith(Unmatched.class);
         for (Element element : explicitUnmatched) {
-            debugElement(element, "@Unmatched");
-            if (element.getKind() == ElementKind.FIELD) {
+            buildUnmatched(element, context);
+        }
+    }
 
-            } else if (element.getKind() == ElementKind.METHOD) {
+    private void buildUnmatched(Element element, Context context) {
+        debugElement(element, "@Unmatched");
+        if (element.getKind() == ElementKind.FIELD) {
 
-            } else if (element.getKind() == ElementKind.PARAMETER) {
+        } else if (element.getKind() == ElementKind.METHOD) {
 
-            }
+        } else if (element.getKind() == ElementKind.PARAMETER) {
+
         }
     }
 
@@ -549,14 +564,18 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         logger.fine("Building specs...");
         Set<? extends Element> explicitSpecs = roundEnv.getElementsAnnotatedWith(Spec.class);
         for (Element element : explicitSpecs) {
-            debugElement(element, "@Spec");
-            if (element.getKind() == ElementKind.FIELD) {
+            buildSpec(element, context);
+        }
+    }
 
-            } else if (element.getKind() == ElementKind.METHOD) {
+    private void buildSpec(Element element, Context context) {
+        debugElement(element, "@Spec");
+        if (element.getKind() == ElementKind.FIELD) {
 
-            } else if (element.getKind() == ElementKind.PARAMETER) {
+        } else if (element.getKind() == ElementKind.METHOD) {
 
-            }
+        } else if (element.getKind() == ElementKind.PARAMETER) {
+
         }
     }
 
@@ -564,14 +583,18 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         logger.fine("Building parentCommands...");
         Set<? extends Element> explicitParentCommands = roundEnv.getElementsAnnotatedWith(ParentCommand.class);
         for (Element element : explicitParentCommands) {
-            debugElement(element, "@ParentCommand");
-            if (element.getKind() == ElementKind.FIELD) {
+            buildParentCommand(element, context);
+        }
+    }
 
-            } else if (element.getKind() == ElementKind.METHOD) {
+    private void buildParentCommand(Element element, Context context) {
+        debugElement(element, "@ParentCommand");
+        if (element.getKind() == ElementKind.FIELD) {
 
-            } else if (element.getKind() == ElementKind.PARAMETER) {
+        } else if (element.getKind() == ElementKind.METHOD) {
 
-            }
+        } else if (element.getKind() == ElementKind.PARAMETER) {
+
         }
     }
 
