@@ -1,5 +1,6 @@
 package picocli.codegen.annotation.processing;
 
+import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IFactory;
@@ -326,6 +327,22 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             if (isValidSubcommandHasNameAttribute(subcommandElement)) {
                 CommandSpec commandSpec = buildCommand(subcommandElement, context, roundEnv);
                 result.add(commandSpec);
+
+                List<? extends Element> enclosedElements = subcommandElement.getEnclosedElements();
+                for (Element enclosed : enclosedElements) {
+                    if (enclosed.getAnnotation(ArgGroup.class) != null) {
+                        buildArgGroup(enclosed, context);
+                    }
+                    if (enclosed.getAnnotation(Mixin.class) != null) {
+                        buildMixin(enclosed, roundEnv, context);
+                    }
+                    if (enclosed.getAnnotation(Option.class) != null) {
+                        buildOption(enclosed, context);
+                    }
+                    if (enclosed.getAnnotation(Parameters.class) != null) {
+                        buildParameter(enclosed, context);
+                    }
+                }
             }
         }
     }
@@ -346,25 +363,29 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         logger.fine("Building mixins...");
         Set<? extends Element> explicitMixins = roundEnv.getElementsAnnotatedWith(Mixin.class);
         for (Element element : explicitMixins) {
-            if (element.asType().getKind() != TypeKind.DECLARED) {
-                error(element, "@Mixin must have a declared type, not %s", element.asType());
-                continue;
-            }
-            TypeElement type = (TypeElement) ((DeclaredType) element.asType()).asElement();
-            CommandSpec mixin = buildCommand(type, context, roundEnv);
+            buildMixin(element, roundEnv, context);
+        }
+    }
 
-            logger.fine("Built mixin: " + mixin + " from " + element);
-            if (EnumSet.of(ElementKind.FIELD, ElementKind.PARAMETER).contains(element.getKind())) {
-                VariableElement variableElement = (VariableElement) element;
-                String name = element.getAnnotation(Mixin.class).name();
-                if (name.length() == 0) {
-                    name = variableElement.getSimpleName().toString();
-                }
-                Element targetType = element.getEnclosingElement();
-                CommandSpec mixee = buildCommand(targetType, context, roundEnv);
-                context.mixinInfoList.add(new MixinInfo(mixee, name, mixin));
-                logger.fine("Mixin name=" + name + ", target command=" + mixee.userObject());
+    private void buildMixin(Element element, RoundEnvironment roundEnv, Context context) {
+        if (element.asType().getKind() != TypeKind.DECLARED) {
+            error(element, "@Mixin must have a declared type, not %s", element.asType());
+            return;
+        }
+        TypeElement type = (TypeElement) ((DeclaredType) element.asType()).asElement();
+        CommandSpec mixin = buildCommand(type, context, roundEnv);
+
+        logger.fine("Built mixin: " + mixin + " from " + element);
+        if (EnumSet.of(ElementKind.FIELD, ElementKind.PARAMETER).contains(element.getKind())) {
+            VariableElement variableElement = (VariableElement) element;
+            String name = element.getAnnotation(Mixin.class).name();
+            if (name.length() == 0) {
+                name = variableElement.getSimpleName().toString();
             }
+            Element targetType = element.getEnclosingElement();
+            CommandSpec mixee = buildCommand(targetType, context, roundEnv);
+            context.mixinInfoList.add(new MixinInfo(mixee, name, mixin));
+            logger.fine("Mixin name=" + name + ", target command=" + mixee.userObject());
         }
     }
 
@@ -372,24 +393,28 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         logger.fine("Building argGroups...");
         Set<? extends Element> explicitArgGroups = roundEnv.getElementsAnnotatedWith(ArgGroup.class);
         for (Element element : explicitArgGroups) {
-            if (element.asType().getKind() != TypeKind.DECLARED && element.asType().getKind() != TypeKind.ARRAY) {
-                error(element, "@ArgGroup must have a declared or array type, not %s", element.asType());
-                continue;
+            buildArgGroup(element, context);
+        }
+    }
+
+    private void buildArgGroup(Element element, Context context) {
+        if (element.asType().getKind() != TypeKind.DECLARED && element.asType().getKind() != TypeKind.ARRAY) {
+            error(element, "@ArgGroup must have a declared or array type, not %s", element.asType());
+            return;
+        }
+        ArgGroupSpec.Builder builder = element.accept(new SimpleElementVisitor6<ArgGroupSpec.Builder, Void>(null) {
+            @Override public ArgGroupSpec.Builder visitVariable(VariableElement e, Void aVoid) {
+                return ArgGroupSpec.builder(new TypedMember(e, -1));
             }
-            ArgGroupSpec.Builder builder = element.accept(new SimpleElementVisitor6<ArgGroupSpec.Builder, Void>(null) {
-                @Override public ArgGroupSpec.Builder visitVariable(VariableElement e, Void aVoid) {
-                    return ArgGroupSpec.builder(new TypedMember(e, -1));
-                }
-                @Override public ArgGroupSpec.Builder visitExecutable(ExecutableElement e, Void aVoid) {
-                    return ArgGroupSpec.builder(new TypedMember(e));
-                }
-            }, null);
-            if (builder == null) {
-                error(element, "Only methods or variables can be annotated with @ArgGroup, not %s", element);
-            } else {
-                builder.updateArgGroupAttributes(element.getAnnotation(ArgGroup.class));
-                context.argGroups.put(element, builder);
+            @Override public ArgGroupSpec.Builder visitExecutable(ExecutableElement e, Void aVoid) {
+                return ArgGroupSpec.builder(new TypedMember(e));
             }
+        }, null);
+        if (builder == null) {
+            error(element, "Only methods or variables can be annotated with @ArgGroup, not %s", element);
+        } else {
+            builder.updateArgGroupAttributes(element.getAnnotation(ArgGroup.class));
+            context.argGroups.put(element, builder);
         }
     }
 
@@ -397,14 +422,20 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         logger.fine("Building options...");
         Set<? extends Element> explicitOptions = roundEnv.getElementsAnnotatedWith(Option.class);
         for (Element element : explicitOptions) {
-            if (context.options.containsKey(element)) { continue; }
-            TypedMember typedMember = extractTypedMember(element, "@Option");
-            if (typedMember != null) {
-                OptionSpec.Builder builder = OptionSpec.builder(typedMember, context.factory);
-                builder.completionCandidates(CompletionCandidatesMetaData.extract(element));
-                builder.converters(TypeConverterMetaData.extract(element));
-                context.options.put(element, builder);
-            }
+            buildOption(element, context);
+        }
+    }
+
+    private void buildOption(Element element, Context context) {
+        if (context.options.containsKey(element)) {
+            return;
+        }
+        TypedMember typedMember = extractTypedMember(element, "@Option");
+        if (typedMember != null) {
+            OptionSpec.Builder builder = OptionSpec.builder(typedMember, context.factory);
+            builder.completionCandidates(CompletionCandidatesMetaData.extract(element));
+            builder.converters(TypeConverterMetaData.extract(element));
+            context.options.put(element, builder);
         }
     }
 
@@ -412,14 +443,20 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         logger.fine("Building parameters...");
         Set<? extends Element> explicitParameters = roundEnv.getElementsAnnotatedWith(Parameters.class);
         for (Element element : explicitParameters) {
-            if (context.parameters.containsKey(element)) { continue; }
-            TypedMember typedMember = extractTypedMember(element, "@Parameters");
-            if (typedMember != null) {
-                PositionalParamSpec.Builder builder = PositionalParamSpec.builder(typedMember, context.factory);
-                builder.completionCandidates(CompletionCandidatesMetaData.extract(element));
-                builder.converters(TypeConverterMetaData.extract(element));
-                context.parameters.put(element, builder);
-            }
+            buildParameter(element, context);
+        }
+    }
+
+    private void buildParameter(Element element, Context context) {
+        if (context.parameters.containsKey(element)) {
+            return;
+        }
+        TypedMember typedMember = extractTypedMember(element, "@Parameters");
+        if (typedMember != null) {
+            PositionalParamSpec.Builder builder = PositionalParamSpec.builder(typedMember, context.factory);
+            builder.completionCandidates(CompletionCandidatesMetaData.extract(element));
+            builder.converters(TypeConverterMetaData.extract(element));
+            context.parameters.put(element, builder);
         }
     }
 
