@@ -1,12 +1,5 @@
 [
   {
-    "name" : "java.io.File",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true
-  },
-  {
     "name" : "picocli.codegen.aot.graalvm.Issue622AbstractCommand",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,

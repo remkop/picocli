@@ -20,11 +20,10 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.*;
 import javax.lang.model.util.SimpleElementVisitor6;
 import javax.lang.model.util.SimpleTypeVisitor6;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -152,7 +151,9 @@ public class ReflectionConfigGenerator {
                 Method.class.getName(),
                 Object.class.getName(),
                 String.class.getName(),
-                String[].class.getName(),
+                String[].class.getName(), String[].class.getCanonicalName(),
+                File.class.getName(),
+                File[].class.getName(), File[].class.getCanonicalName(),
                 List.class.getName(),
                 Set.class.getName(),
                 Map.class.getName(),
@@ -227,11 +228,11 @@ public class ReflectionConfigGenerator {
                 public Void visitVariable(VariableElement e, Void aVoid) {
                     if (!e.asType().getKind().isPrimitive() &&
                             !(e.getKind() == ElementKind.INTERFACE && e.asType().toString().startsWith("java"))) {
-                        getOrCreateClassByName(e.asType().toString());
+                        getOrCreateClassByName(elementTypeName(e.asType()));
                     }
                     if (e.getKind() == ElementKind.FIELD) {
                         TypeElement type = (TypeElement) e.getEnclosingElement();
-                        ReflectedClass cls = getOrCreateClassByName(type.getQualifiedName().toString());
+                        ReflectedClass cls = getOrCreateClassByName(elementTypeName(type.asType()));
                         cls.addField(e.getSimpleName().toString(), e.getModifiers().contains(javax.lang.model.element.Modifier.FINAL));
                     }
                     return null;
@@ -239,13 +240,13 @@ public class ReflectionConfigGenerator {
                 @Override public Void visitType(TypeElement e, Void aVoid) {
                     if (!e.asType().getKind().isPrimitive() &&
                             !(e.getKind() == ElementKind.INTERFACE && e.getQualifiedName().toString().startsWith("java"))) {
-                        getOrCreateClassByName(e.getQualifiedName().toString());
+                        getOrCreateClassByName(elementTypeName(e.asType()));
                     }
                     return null;
                 }
                 @Override public Void visitExecutable(ExecutableElement method, Void aVoid) {
                     TypeElement type = (TypeElement) method.getEnclosingElement();
-                    ReflectedClass cls = getOrCreateClassByName(type.getQualifiedName().toString());
+                    ReflectedClass cls = getOrCreateClassByName(elementTypeName(type.asType()));
                     List<? extends VariableElement> parameters = method.getParameters();
                     List<String> paramTypeNames = new ArrayList<String>();
                     for (VariableElement param : parameters) {
@@ -262,9 +263,7 @@ public class ReflectionConfigGenerator {
                             }
                             @Override
                             public Void visitDeclared(DeclaredType t, List<String> collect) {
-                                TypeElement typeElement = (TypeElement) t.asElement();
-                                String s = typeElement.getQualifiedName().toString();
-                                collect.add(s); // t.toString() would give "java.util.List<java.io.File>"
+                                collect.add(elementTypeName(t)); // t.toString() would give "java.util.List<java.io.File>"
                                 return null;
                             }
                         }, paramTypeNames);
@@ -273,6 +272,31 @@ public class ReflectionConfigGenerator {
                     return null;
                 }
             }, null);
+        }
+
+        // convert canonical type names (picocli.AutoComplete.App) to class name (picocli.AutoComplete$App)
+        // convert generic (java.util.List<java.io.File>) to raw (java.util.List)
+        private String elementTypeName(TypeMirror typeMirror) {
+            String result = typeMirror.accept(new SimpleTypeVisitor6<String, Void>() {
+                @Override
+                public String visitDeclared(DeclaredType declaredType, Void aVoid) {
+                    TypeElement typeElement = (TypeElement) declaredType.asElement();
+                    if (typeElement.getNestingKind().isNested()) {
+                        return elementTypeName(typeElement.getEnclosingElement().asType()) + "$" + typeElement.getSimpleName();
+                    }
+                    String raw = typeElement.getQualifiedName().toString();
+                    return raw;
+                }
+
+                @Override
+                public String visitArray(ArrayType arrayType, Void aVoid) {
+                    return elementTypeName(arrayType.getComponentType()) + "[]";
+                }
+            }, null);
+            if (result == null) {
+                return typeMirror.toString();
+            }
+            return result;
         }
 
         private void visitAnnotatedFields(Class<?> cls) {

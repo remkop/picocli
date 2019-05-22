@@ -1,13 +1,6 @@
 [
   {
-    "name" : "java.io.File",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true
-  },
-  {
-    "name" : "picocli.examples.subcommands.ParentCommandDemo.FileUtils",
+    "name" : "picocli.examples.subcommands.ParentCommandDemo$FileUtils",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
@@ -17,7 +10,7 @@
     ]
   },
   {
-    "name" : "picocli.examples.subcommands.ParentCommandDemo.List",
+    "name" : "picocli.examples.subcommands.ParentCommandDemo$List",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,

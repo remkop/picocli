@@ -32,7 +32,7 @@ public class ReflectionConfigGeneratorProcessorTest {
     }
 
     @Test
-    public void generate() {
+    public void generateNestedWithSubcommands() {
         ReflectionConfigGeneratorProcessor processor = new ReflectionConfigGeneratorProcessor();
         Compilation compilation =
                 javac()
