@@ -16,6 +16,7 @@
     "allDeclaredMethods" : true,
     "allPublicMethods" : true,
     "fields" : [
+      { "name" : "parent" },
       { "name" : "recursive" }
     ]
   }

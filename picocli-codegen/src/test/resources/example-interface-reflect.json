@@ -45,6 +45,7 @@
       { "name" : "file", "parameterTypes" : [] },
       { "name" : "minimum", "parameterTypes" : [] },
       { "name" : "otherFiles", "parameterTypes" : [] },
+      { "name" : "spec", "parameterTypes" : [] },
       { "name" : "timeUnit", "parameterTypes" : [] }
     ]
   }

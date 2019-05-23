@@ -5,6 +5,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Model.IAnnotatedElement;
 import picocli.CommandLine.Model.IGetter;
 import picocli.CommandLine.Model.IScope;
 import picocli.CommandLine.Model.ISetter;
@@ -148,6 +149,7 @@ public class ReflectionConfigGenerator {
                 int.class.getName(),     int[].class.getName(),     int[].class.getCanonicalName(),
                 long.class.getName(),    long[].class.getName(),    long[].class.getCanonicalName(),
                 short.class.getName(),   short[].class.getName(),   short[].class.getCanonicalName(),
+                CommandSpec.class.getName(),
                 Method.class.getName(),
                 Object.class.getName(),
                 String.class.getName(),
@@ -207,6 +209,14 @@ public class ReflectionConfigGenerator {
             for (UnmatchedArgsBinding binding : spec.unmatchedArgsBindings()) {
                 visitGetter(binding.getter());
                 visitSetter(binding.setter());
+            }
+            for (IAnnotatedElement specElement : spec.specElements()) {
+                visitGetter(specElement.getter());
+                visitSetter(specElement.setter());
+            }
+            for (IAnnotatedElement parentCommandElement : spec.parentCommandElements()) {
+                visitGetter(parentCommandElement.getter());
+                visitSetter(parentCommandElement.setter());
             }
             for (OptionSpec option : spec.options()) {
                 visitArgSpec(option);
