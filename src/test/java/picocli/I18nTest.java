@@ -662,15 +662,15 @@ public class I18nTest {
             @Option(names = {"-u", "--upload"}, descriptionKey = "upload.desc") String upload;
         }
 
-        String expected = String.format("" +
-                "Usage: tests [-a] [-u=<upload>]%n" +
-                "  -a, --auth              Vérifie si l'utilisateur est connecte%n" +
-                "  -u, --upload=<upload>   Tester le téléversement de fichiers.%n" +
-                "                          Attend un chemin complet de fichier.%n");
         Locale original = Locale.getDefault();
         Locale.setDefault(Locale.FRENCH);
+        String expected = String.format(Locale.FRENCH, "" +
+                "Usage: tests [-a] [-u=<upload>]%n" +
+                "  -a, --auth              V\u00e9rifie si l'utilisateur est connecte%n" +
+                "  -u, --upload=<upload>   Tester le t\u00e9l\u00e9versement de fichiers.%n" +
+                "                          Attend un chemin complet de fichier.%n");
         try {
-            assertEquals(expected, new CommandLine(new App()).getUsageMessage());
+            assertEquals(new CommandLine(new App()).getUsageMessage(), expected, new CommandLine(new App()).getUsageMessage());
         } finally {
             Locale.setDefault(original);
         }
