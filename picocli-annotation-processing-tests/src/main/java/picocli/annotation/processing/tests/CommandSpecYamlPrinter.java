@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -80,8 +79,9 @@ public class CommandSpecYamlPrinter {
         }
         pw.printf("%sResourceBundle:%n", indent);
         indent += "  ";
-        for (Enumeration<String> keys = resourceBundle.getKeys(); keys.hasMoreElements();) {
-            String key = keys.nextElement();
+        ArrayList<String> keys = Collections.list(resourceBundle.getKeys());
+        Collections.sort(keys);
+        for (String key : keys) {
             pw.printf("%s%s: '%s'%n", indent, key, resourceBundle.getString(key));
         }
     }

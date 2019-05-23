@@ -5,6 +5,7 @@ import picocli.codegen.util.Assert;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.tools.Diagnostic;
@@ -56,7 +57,8 @@ public class AnnotationValidator {
         for (Element element : all) {
             if (element.getKind() == ElementKind.FIELD &&
                     element.getEnclosingElement().getKind() == ElementKind.INTERFACE) {
-                error(element, "Invalid picocli annotation on interface field %s.%s",
+                AnnotationMirror annotationMirror = getPicocliAnnotationMirror(element);
+                error(element, annotationMirror, "Invalid picocli annotation on interface field %s.%s",
                         element.getEnclosingElement().toString(), element.getSimpleName());
             }
         }
@@ -74,16 +76,27 @@ public class AnnotationValidator {
             RoundEnvironment roundEnv, Class<T1> c1, Class<T2> c2) {
         for (Element element : roundEnv.getElementsAnnotatedWith(c1)) {
             if (element.getAnnotation(c2) != null) {
-                error(element, "%s cannot have both @%s and @%s annotations",
+                AnnotationMirror annotationMirror = getPicocliAnnotationMirror(element);
+                error(element, annotationMirror, "%s cannot have both @%s and @%s annotations",
                         element, c1.getCanonicalName(), c2.getCanonicalName());
             }
         }
     }
 
-    void error(Element e, String msg, Object... args) {
+    private AnnotationMirror getPicocliAnnotationMirror(Element element) {
+        AnnotationMirror annotationMirror = null;
+        for (AnnotationMirror mirror : element.getAnnotationMirrors()) {
+            if (mirror.getAnnotationType().toString().startsWith("picocli")) {
+                annotationMirror = mirror;
+            }
+        }
+        return annotationMirror;
+    }
+
+    void error(Element e, AnnotationMirror mirror, String msg, Object... args) {
         processingEnv.getMessager().printMessage(
                 Diagnostic.Kind.ERROR,
                 format(msg, args),
-                e);
+                e, mirror);
     }
 }
