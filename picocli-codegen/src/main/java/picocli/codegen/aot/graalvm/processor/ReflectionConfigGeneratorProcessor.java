@@ -8,8 +8,6 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.tools.FileObject;
-import javax.tools.StandardLocation;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -32,13 +30,7 @@ public class ReflectionConfigGeneratorProcessor extends AbstractCommandSpecProce
             String reflectionConfig = ReflectionConfigGenerator.generateReflectionConfig(
                     allCommands.values().toArray(new CommandSpec[0]));
 
-            String relativeName = ProcessorUtil.createRelativeName(processingEnv.getOptions());
-            FileObject resource = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT,
-                    "",
-                    relativeName,
-                    commands.keySet().toArray(new Element[0]));
-
-            ProcessorUtil.write(reflectionConfig, resource);
+            ProcessorUtil.generate("reflect-config.json", reflectionConfig, commands, processingEnv);
         } catch (Exception e) {
             // We don't allow exceptions of any kind to propagate to the compiler
             fatalError(ProcessorUtil.stacktrace(e));
