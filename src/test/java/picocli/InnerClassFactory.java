@@ -56,7 +56,9 @@ public class InnerClassFactory implements IFactory {
                 return constructor.newInstance(outer);
             } catch (Exception ex) {
                 try {
-                    return cls.newInstance();
+                    @SuppressWarnings("deprecation") // Class.newInstance is deprecated in Java 9
+                    K result = cls.newInstance();
+                    return result;
                 } catch (Exception ex2) {
                     try {
                         Constructor<K> constructor = cls.getDeclaredConstructor();

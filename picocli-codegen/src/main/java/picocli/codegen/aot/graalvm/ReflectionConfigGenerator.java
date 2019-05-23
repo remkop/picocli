@@ -232,6 +232,7 @@ public class ReflectionConfigGenerator {
             }
         }
 
+        @SuppressWarnings("deprecation") // SimpleElementVisitor6 is deprecated in Java 9
         private void visitElement(Element element) {
             element.accept(new SimpleElementVisitor6<Void, Void>() {
                 @Override
@@ -287,6 +288,7 @@ public class ReflectionConfigGenerator {
         // convert canonical type names (picocli.AutoComplete.App) to class name (picocli.AutoComplete$App)
         // convert generic (java.util.List<java.io.File>) to raw (java.util.List)
         private String elementTypeName(TypeMirror typeMirror) {
+            @SuppressWarnings("deprecation") // SimpleElementVisitor6 is deprecated in Java 9
             String result = typeMirror.accept(new SimpleTypeVisitor6<String, Void>() {
                 @Override
                 public String visitDeclared(DeclaredType declaredType, Void aVoid) {

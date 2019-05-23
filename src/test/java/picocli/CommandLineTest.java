@@ -2274,10 +2274,10 @@ public class CommandLineTest {
         assertEquals(new File("/path/to/file"), app.d.get(0));
 
         assertEquals(app.e.size(), 1);
-        assertEquals(new Long(67890), app.e.get(12345));
+        assertEquals(Long.valueOf(67890), app.e.get(12345));
 
         assertEquals(app.f.size(), 1);
-        assertEquals(67.89f, app.f.get(new Long(12345)));
+        assertEquals(67.89f, app.f.get(Long.valueOf(12345)));
 
         assertEquals(app.g.size(), 1);
         assertEquals(12.34f, app.g.get(TimeUnit.MILLISECONDS));

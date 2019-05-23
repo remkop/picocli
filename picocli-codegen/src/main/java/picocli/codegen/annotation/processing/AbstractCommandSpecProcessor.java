@@ -415,6 +415,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             error(element, "@ArgGroup must have a declared or array type, not %s", element.asType());
             return;
         }
+        @SuppressWarnings("deprecation") // SimpleElementVisitor6 is deprecated in Java 9
         ArgGroupSpec.Builder builder = element.accept(new SimpleElementVisitor6<ArgGroupSpec.Builder, Void>(null) {
             @Override public ArgGroupSpec.Builder visitVariable(VariableElement e, Void aVoid) {
                 return ArgGroupSpec.builder(new TypedMember(e, -1));
@@ -597,6 +598,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         }
     }
 
+    @SuppressWarnings("deprecation") // SimpleElementVisitor6 is deprecated in Java 9
     private IAnnotatedElement buildTypedMember(Element element) {
         return element.accept(new SimpleElementVisitor6<TypedMember, Void>(null) {
             @Override
