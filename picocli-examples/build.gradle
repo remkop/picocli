@@ -38,6 +38,10 @@ Application-name: $rootProject.name $project.name
     }
 }
 
+tasks.withType(Javadoc).all { enabled = false }
+//tasks.withType(Javadoc) {
+//    options.addBooleanOption('Xdoclint:none', true)
+//}
 //tasks.withType(JavaCompile) {
 //    options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation' <<
 //            '-processorpath' << 'C:\\Users\\remko\\IdeaProjects\\picocli3\\picocli-codegen\\build\\libs\\picocli-codegen-4.0.0-SNAPSHOT.jar;C:\\Users\\remko\\IdeaProjects\\picocli3\\build\\libs\\picocli-4.0.0-SNAPSHOT.jar' <<
