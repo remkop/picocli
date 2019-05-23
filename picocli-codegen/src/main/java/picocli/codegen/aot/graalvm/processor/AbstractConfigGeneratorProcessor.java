@@ -24,7 +24,7 @@ public abstract class AbstractConfigGeneratorProcessor extends AbstractCommandSp
         }
 
         try {
-            String path = createRelativeName(processingEnv.getOptions(), fileName());
+            String path = createRelativePath(processingEnv.getOptions(), fileName());
             ProcessorUtil.generate(path, generateConfig(), processingEnv, commands.keySet().toArray(new Element[0]));
         } catch (Exception e) {
             // We don't allow exceptions of any kind to propagate to the compiler
@@ -33,7 +33,7 @@ public abstract class AbstractConfigGeneratorProcessor extends AbstractCommandSp
         return false;
     }
 
-    static String createRelativeName(Map<String, String> options, String fileName) {
+    protected String createRelativePath(Map<String, String> options, String fileName) {
         String groupId = options.get("groupId");
         String artifactId = options.get("artifactId");
 
