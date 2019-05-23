@@ -1,5 +1,6 @@
 package picocli.codegen.annotation.processing;
 
+import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IFactory;
@@ -10,6 +11,7 @@ import picocli.CommandLine.Model.IAnnotatedElement;
 import picocli.CommandLine.Model.ITypeInfo;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
+import picocli.CommandLine.Model.UnmatchedArgsBinding;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
@@ -549,16 +551,13 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         }
     }
 
-    // TODO capture enough information to eventually be able to do this:
-    //   commandSpec.addUnmatchedArgsBinding(buildUnmatchedForMember(member));
     private void buildUnmatched(Element element, Context context) {
         debugElement(element, "@Unmatched");
-        if (element.getKind() == ElementKind.FIELD) {
-
-        } else if (element.getKind() == ElementKind.METHOD) {
-
-        } else if (element.getKind() == ElementKind.PARAMETER) {
-
+        IAnnotatedElement specElement = buildTypedMember(element);
+        if (specElement == null) {
+            error(element, "Only methods or variables can be annotated with @Unmatched, not %s", element);
+        } else {
+            context.unmatchedElements.put(element, specElement);
         }
     }
 
@@ -570,15 +569,13 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         }
     }
 
-    // TODO update model: add SpecBinding
     private void buildSpec(Element element, Context context) {
         debugElement(element, "@Spec");
-        if (element.getKind() == ElementKind.FIELD) {
-
-        } else if (element.getKind() == ElementKind.METHOD) {
-
-        } else if (element.getKind() == ElementKind.PARAMETER) {
-
+        IAnnotatedElement specElement = buildTypedMember(element);
+        if (specElement == null) {
+            error(element, "Only methods or variables can be annotated with @Spec, not %s", element);
+        } else {
+            context.specElements.put(element, specElement);
         }
     }
 
@@ -590,16 +587,28 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         }
     }
 
-    // TODO update model: add ParentCommandBinding
     private void buildParentCommand(Element element, Context context) {
         debugElement(element, "@ParentCommand");
-        if (element.getKind() == ElementKind.FIELD) {
-
-        } else if (element.getKind() == ElementKind.METHOD) {
-
-        } else if (element.getKind() == ElementKind.PARAMETER) {
-
+        IAnnotatedElement parentCommandElement = buildTypedMember(element);
+        if (parentCommandElement == null) {
+            error(element, "Only methods or variables can be annotated with @ParentCommand, not %s", element);
+        } else {
+            context.parentCommandElements.put(element, parentCommandElement);
         }
+    }
+
+    private IAnnotatedElement buildTypedMember(Element element) {
+        return element.accept(new SimpleElementVisitor6<TypedMember, Void>(null) {
+            @Override
+            public TypedMember visitVariable(VariableElement e, Void aVoid) {
+                return new TypedMember(e, -1);
+            }
+
+            @Override
+            public TypedMember visitExecutable(ExecutableElement e, Void aVoid) {
+                return new TypedMember(e);
+            }
+        }, null);
     }
 
     private void debugMethod(ExecutableElement method) {
@@ -712,9 +721,9 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         Map<Element, PositionalParamSpec.Builder> parameters = new LinkedHashMap<Element, PositionalParamSpec.Builder>();
         Map<Element, ArgGroupSpec.Builder> argGroups = new LinkedHashMap<Element, ArgGroupSpec.Builder>();
         List<MixinInfo> mixinInfoList = new ArrayList<MixinInfo>();
-        Map<Element, IAnnotatedElement> parentCommands = new LinkedHashMap<Element, IAnnotatedElement>();
-        Map<Element, IAnnotatedElement> specs = new LinkedHashMap<Element, IAnnotatedElement>();
-        Map<Element, IAnnotatedElement> unmatched = new LinkedHashMap<Element, IAnnotatedElement>();
+        Map<Element, IAnnotatedElement> parentCommandElements = new LinkedHashMap<Element, IAnnotatedElement>();
+        Map<Element, IAnnotatedElement> specElements = new LinkedHashMap<Element, IAnnotatedElement>();
+        Map<Element, IAnnotatedElement> unmatchedElements = new LinkedHashMap<Element, IAnnotatedElement>();
         Set<CommandSpec> commandsRequestingStandardHelpOptions = new LinkedHashSet<CommandSpec>();
 
         private void connectModel(AbstractCommandSpecProcessor proc) {
@@ -763,6 +772,41 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                         logger.fine("Building ArgGroupSpec for " + groups + " in command " + commandSpec);
                         commandSpec.addArgGroup(groups.getValue().build());
                     }
+                }
+            }
+            for (Map.Entry<Element, IAnnotatedElement> entry : specElements.entrySet()) {
+                CommandSpec commandSpec1 = commands.get(entry.getKey().getEnclosingElement());
+                if (commandSpec1 != null) {
+                    logger.fine("Adding " + entry + " to commandSpec " + commandSpec1);
+                    commandSpec1.addSpecElement(entry.getValue());
+                } else {
+                    proc.error(entry.getKey(), "@Spec must be enclosed in a @Command, but was %s: %s", entry.getKey().getEnclosingElement(), entry.getKey().getEnclosingElement().getSimpleName());
+                }
+            }
+            for (Map.Entry<Element, IAnnotatedElement> entry : parentCommandElements.entrySet()) {
+                CommandSpec commandSpec1 = commands.get(entry.getKey().getEnclosingElement());
+                if (commandSpec1 != null) {
+                    logger.fine("Adding " + entry + " to commandSpec " + commandSpec1);
+                    commandSpec1.addParentCommandElement(entry.getValue());
+                } else {
+                    proc.error(entry.getKey(), "@ParentCommand must be enclosed in a @Command, but was %s: %s", entry.getKey().getEnclosingElement(), entry.getKey().getEnclosingElement().getSimpleName());
+                }
+            }
+            for (Map.Entry<Element, IAnnotatedElement> entry : unmatchedElements.entrySet()) {
+                CommandSpec commandSpec1 = commands.get(entry.getKey().getEnclosingElement());
+                if (commandSpec1 != null) {
+                    logger.fine("Adding " + entry + " to commandSpec " + commandSpec1);
+                    IAnnotatedElement annotatedElement = entry.getValue();
+                    if (annotatedElement.getTypeInfo().isArray() || annotatedElement.getTypeInfo().isCollection()) {
+                        UnmatchedArgsBinding unmatchedArgsBinding = annotatedElement.getTypeInfo().isArray()
+                                ? UnmatchedArgsBinding.forStringArrayConsumer(annotatedElement.setter())
+                                : UnmatchedArgsBinding.forStringCollectionSupplier(annotatedElement.getter());
+                        commandSpec1.addUnmatchedArgsBinding(unmatchedArgsBinding);
+                    } else {
+                        proc.error(entry.getKey(), "@Unmatched must be of type String[] or List<String> but was: %s", annotatedElement.getTypeInfo().getClassName());
+                    }
+                } else {
+                    proc.error(entry.getKey(), "@Unmatched must be enclosed in a @Command, but was %s: %s", entry.getKey().getEnclosingElement(), entry.getKey().getEnclosingElement().getSimpleName());
                 }
             }
             for (MixinInfo mixinInfo : mixinInfoList) {

@@ -82,7 +82,8 @@ class TypedMember implements CommandLine.Model.IAnnotatedElement {
     public boolean isArgGroup()     { return isAnnotationPresent(CommandLine.ArgGroup.class); }
     public boolean isMixin()        { return isAnnotationPresent(CommandLine.Mixin.class); }
     public boolean isUnmatched()    { return isAnnotationPresent(CommandLine.Unmatched.class); }
-    public boolean isInjectSpec()   { return isAnnotationPresent(CommandLine.Spec.class); }
+    public boolean isSpec()         { return isAnnotationPresent(CommandLine.Spec.class); }
+    public boolean isParentCommand(){ return isAnnotationPresent(CommandLine.ParentCommand.class); }
     public boolean isMultiValue()   { return getTypeInfo().isMultiValue(); }
     public boolean isInteractive()  { return (isOption() && getAnnotation(CommandLine.Option.class).interactive()) || (isParameter() && getAnnotation(CommandLine.Parameters.class).interactive()); }
     public CommandLine.Model.ITypeInfo getTypeInfo()  { return typeInfo; }

@@ -341,7 +341,7 @@ public class CommandLine {
         CommandLine subcommandLine = toCommandLine(command, factory);
         subcommandLine.getCommandSpec().aliases.addAll(Arrays.asList(aliases));
         getCommandSpec().addSubcommand(name, subcommandLine);
-        CommandLine.Model.CommandReflection.initParentCommand(subcommandLine.getCommandSpec().userObject(), getCommandSpec().userObject());
+        subcommandLine.getCommandSpec().initParentCommand(getCommandSpec().userObject());
         return this;
     }
     /** Returns a map with the subcommands {@linkplain #addSubcommand(String, Object) registered} on this instance.
@@ -4618,6 +4618,8 @@ public class CommandLine {
             private final List<OptionSpec> options = new ArrayList<OptionSpec>();
             private final List<PositionalParamSpec> positionalParameters = new ArrayList<PositionalParamSpec>();
             private final List<UnmatchedArgsBinding> unmatchedArgs = new ArrayList<UnmatchedArgsBinding>();
+            private final List<IAnnotatedElement> specElements = new ArrayList<IAnnotatedElement>();
+            private final List<IAnnotatedElement> parentCommandElements = new ArrayList<IAnnotatedElement>();
             private final List<ArgGroupSpec> groups = new ArrayList<ArgGroupSpec>();
             private final ParserSpec parser = new ParserSpec();
             private final Interpolator interpolator = new Interpolator(this);
@@ -5044,7 +5046,25 @@ public class CommandLine {
              * @param spec the unmatched arguments binding to capture unmatched arguments
              * @return this CommandSpec for method chaining */
             public CommandSpec addUnmatchedArgsBinding(UnmatchedArgsBinding spec) { unmatchedArgs.add(spec); parser().unmatchedArgumentsAllowed(true); return this; }
-    
+
+            /** Adds the specified {@code {@literal @}Spec}-annotated program element to the list of elements for this command.
+             * @return this CommandSpec for method chaining
+             * @since 4.0 */
+            public CommandSpec addSpecElement(IAnnotatedElement spec) { specElements.add(spec); return this; }
+            /** Adds the specified {@code {@literal @}ParentCommand}-annotated program element to the list of elements for this command.
+             * @return this CommandSpec for method chaining
+             * @since 4.0 */
+            public CommandSpec addParentCommandElement(IAnnotatedElement spec) { parentCommandElements.add(spec); return this; }
+            void initParentCommand(Object parent) {
+                try {
+                    for (IAnnotatedElement injectParentCommand : parentCommandElements()) {
+                        injectParentCommand.setter().set(parent);
+                    }
+                } catch (Exception ex) {
+                    throw new InitializationException("Unable to initialize @ParentCommand field: " + ex, ex);
+                }
+            }
+
             /** Returns a map of the mixin names to mixin {@code CommandSpec} objects configured for this command.
              * @return an immutable map of mixins added to this command. */
             public Map<String, CommandSpec> mixins() { return Collections.unmodifiableMap(mixins); }
@@ -5078,7 +5098,14 @@ public class CommandLine {
             /** Returns the list of {@link UnmatchedArgsBinding UnmatchedArgumentsBindings} configured for this command;
              * each {@code UnmatchedArgsBinding} captures the arguments that could not be matched to any options or positional parameters. */
             public List<UnmatchedArgsBinding> unmatchedArgsBindings() { return Collections.unmodifiableList(unmatchedArgs); }
-    
+
+            /** Returns the list of program elements annotated with {@code {@literal @}Spec} configured for this command.
+             * @since 4.0 */
+            public List<IAnnotatedElement> specElements() { return Collections.unmodifiableList(specElements); }
+            /** Returns the list of program elements annotated with {@code {@literal @}ParentCommand} configured for this command.
+             * @since 4.0 */
+            public List<IAnnotatedElement> parentCommandElements() { return Collections.unmodifiableList(parentCommandElements); }
+
             /** Returns name of this command. Used in the synopsis line of the help message.
              * {@link #DEFAULT_COMMAND_NAME} by default, initialized from {@link Command#name()} if defined.
              * @see #qualifiedName() */
@@ -8222,7 +8249,8 @@ public class CommandLine {
             boolean isArgGroup();
             boolean isMixin();
             boolean isUnmatched();
-            boolean isInjectSpec();
+            boolean isSpec();
+            boolean isParentCommand();
             boolean isMultiValue();
             boolean isInteractive();
             boolean hasInitialValue();
@@ -8359,7 +8387,8 @@ public class CommandLine {
             public boolean isArgGroup()     { return isAnnotationPresent(ArgGroup.class); }
             public boolean isMixin()        { return isAnnotationPresent(Mixin.class); }
             public boolean isUnmatched()    { return isAnnotationPresent(Unmatched.class); }
-            public boolean isInjectSpec()   { return isAnnotationPresent(Spec.class); }
+            public boolean isSpec()         { return isAnnotationPresent(Spec.class); }
+            public boolean isParentCommand(){ return isAnnotationPresent(ParentCommand.class); }
             public boolean isMultiValue()   { return CommandLine.isMultiValue(getType()); }
             public boolean isInteractive()  { return (isOption() && getAnnotation(Option.class).interactive()) || (isParameter() && getAnnotation(Parameters.class).interactive()); }
             public IScope  scope()          { return scope; }
@@ -8677,7 +8706,7 @@ public class CommandLine {
                         if (Help.class == sub) { throw new InitializationException(Help.class.getName() + " is not a valid subcommand. Did you mean " + HelpCommand.class.getName() + "?"); }
                         CommandLine subcommandLine = toCommandLine(factory.create(sub), factory);
                         parent.addSubcommand(subcommandName(sub), subcommandLine);
-                        initParentCommand(subcommandLine.getCommandSpec().userObject(), parent.userObject());
+                        subcommandLine.getCommandSpec().initParentCommand(parent.userObject());
                     }
                     catch (InitializationException ex) { throw ex; }
                     catch (NoSuchMethodException ex) { throw new InitializationException("Cannot instantiate subcommand " +
@@ -8691,23 +8720,6 @@ public class CommandLine {
                     for (CommandLine sub : CommandSpec.createMethodSubcommands(cls, factory)) {
                         parent.addSubcommand(sub.getCommandName(), sub);
                     }
-                }
-            }
-            static void initParentCommand(Object subcommand, Object parent) {
-                if (subcommand == null) { return; }
-                try {
-                    Class<?> cls = subcommand.getClass();
-                    while (cls != null) {
-                        for (Field f : cls.getDeclaredFields()) {
-                            if (f.isAnnotationPresent(ParentCommand.class)) {
-                                f.setAccessible(true);
-                                f.set(subcommand, parent);
-                            }
-                        }
-                        cls = cls.getSuperclass();
-                    }
-                } catch (Exception ex) {
-                    throw new InitializationException("Unable to initialize @ParentCommand field: " + ex, ex);
                 }
             }
             private static String subcommandName(Class<?> sub) {
@@ -8772,9 +8784,13 @@ public class CommandLine {
                     }
                     result = true;
                 }
-                if (member.isInjectSpec()) {
+                if (member.isSpec()) {
                     validateInjectSpec(member);
+                    commandSpec.addSpecElement(member);
                     try { member.setter().set(commandSpec); } catch (Exception ex) { throw new InitializationException("Could not inject spec", ex); }
+                }
+                if (member.isParentCommand()) {
+                    commandSpec.addParentCommandElement(member);
                 }
                 return result;
             }
@@ -8819,7 +8835,7 @@ public class CommandLine {
             }
             @SuppressWarnings("unchecked")
             private static void validateInjectSpec(TypedMember member) {
-                if (!member.isInjectSpec()) { throw new IllegalStateException("Bug: validateInjectSpec() should only be called with @Spec members"); }
+                if (!member.isSpec()) { throw new IllegalStateException("Bug: validateInjectSpec() should only be called with @Spec members"); }
                 assertNoDuplicateAnnotations(member, Spec.class, Parameters.class, Option.class, Unmatched.class, Mixin.class, ArgGroup.class);
                 if (!CommandSpec.class.getName().equals(member.getTypeInfo().getClassName())) {
                     throw new InitializationException("@picocli.CommandLine.Spec annotation is only supported on fields of type " + CommandSpec.class.getName());

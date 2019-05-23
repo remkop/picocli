@@ -108,9 +108,9 @@ public class ParentCommandTest {
             new CommandLine(top1).addSubcommand("sub1", sub1);
             fail("expected failure");
         } catch (InitializationException ex) {
-            String prefix = "Unable to initialize @ParentCommand field: java.lang.IllegalArgumentException";
+            String prefix = "Unable to initialize @ParentCommand field: picocli.CommandLine$PicocliException";
             if (prefix.equals(ex.getMessage())) { return; }
-            String expected = prefix + ": Can not set java.lang.String field " + sub1.getClass().getName() + ".parent to " + top1.getClass().getName();
+            String expected = prefix + ": Could not set value for field private java.lang.String " + sub1.getClass().getName() + ".parent to " + top1;
             assertEquals(expected, ex.getMessage());
         }
     }

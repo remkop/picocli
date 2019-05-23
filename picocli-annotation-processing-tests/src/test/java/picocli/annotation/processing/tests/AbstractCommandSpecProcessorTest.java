@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -105,7 +106,7 @@ public class AbstractCommandSpecProcessorTest {
 
         assertThat(compilation).failed();
 
-        Set<String> expected = new TreeSet<>(Arrays.asList(
+        List<String> expected = new ArrayList<>(Arrays.asList(
             "Subcommand is missing @Command annotation with a name attribute",
             "Subcommand @Command annotation should have a name attribute",
             "@Mixin must have a declared type, not int",
@@ -113,17 +114,22 @@ public class AbstractCommandSpecProcessorTest {
             "invalidOptionAndParentCommand cannot have both @picocli.CommandLine.Option and @picocli.CommandLine.ParentCommand annotations",
             "invalidParametersAndMixin cannot have both @picocli.CommandLine.Parameters and @picocli.CommandLine.Mixin annotations",
             "invalidParametersAndParentCommand cannot have both @picocli.CommandLine.Parameters and @picocli.CommandLine.ParentCommand annotations",
-            "invalidUnmatchedAndMixin cannot have both @picocli.CommandLine.Mixin and @picocli.CommandLine.Unmatched annotations",
+            //"invalidUnmatchedAndMixin cannot have both @picocli.CommandLine.Mixin and @picocli.CommandLine.Unmatched annotations",
             "invalidSpecAndMixin cannot have both @picocli.CommandLine.Mixin and @picocli.CommandLine.Spec annotations",
-            "invalidOptionAndUnmatched cannot have both @picocli.CommandLine.Option and @picocli.CommandLine.Unmatched annotations",
-            "invalidParametersAndUnmatched cannot have both @picocli.CommandLine.Parameters and @picocli.CommandLine.Unmatched annotations",
+            //"invalidOptionAndUnmatched cannot have both @picocli.CommandLine.Option and @picocli.CommandLine.Unmatched annotations",
+            //"invalidParametersAndUnmatched cannot have both @picocli.CommandLine.Parameters and @picocli.CommandLine.Unmatched annotations",
             "invalidOptionAndSpec cannot have both @picocli.CommandLine.Option and @picocli.CommandLine.Spec annotations",
             "invalidParametersAndSpec cannot have both @picocli.CommandLine.Parameters and @picocli.CommandLine.Spec annotations",
-            "invalidUnmatchedAndSpec cannot have both @picocli.CommandLine.Spec and @picocli.CommandLine.Unmatched annotations",
+            //"invalidUnmatchedAndSpec cannot have both @picocli.CommandLine.Spec and @picocli.CommandLine.Unmatched annotations",
             "invalidOptionAndParameters cannot have both @picocli.CommandLine.Option and @picocli.CommandLine.Parameters annotations",
             "invalidParentCommandAndMixin cannot have both @picocli.CommandLine.Mixin and @picocli.CommandLine.ParentCommand annotations",
             "invalidSpecAndParentCommand cannot have both @picocli.CommandLine.ParentCommand and @picocli.CommandLine.Spec annotations",
-            "invalidUnmatchedAndParentCommand cannot have both @picocli.CommandLine.ParentCommand and @picocli.CommandLine.Unmatched annotations"
+            //"invalidUnmatchedAndParentCommand cannot have both @picocli.CommandLine.ParentCommand and @picocli.CommandLine.Unmatched annotations",
+            "@Unmatched must be of type String[] or List<String> but was: int",
+            "@Unmatched must be of type String[] or List<String> but was: int",
+            "@Unmatched must be of type String[] or List<String> but was: int",
+            "@Unmatched must be of type String[] or List<String> but was: int",
+            "@Unmatched must be of type String[] or List<String> but was: java.lang.Integer"
         ));
         ImmutableList<Diagnostic<? extends JavaFileObject>> errors = compilation.errors();
         for (Diagnostic<? extends JavaFileObject> diag : errors) {
