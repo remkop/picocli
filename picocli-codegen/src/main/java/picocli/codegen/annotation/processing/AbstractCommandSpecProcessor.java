@@ -1,6 +1,5 @@
 package picocli.codegen.annotation.processing;
 
-import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IFactory;
@@ -131,7 +130,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     // inherit doc
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        logger.info("Entered process, processingOver=" + roundEnv.processingOver());
+        logger.fine("entered process, processingOver=" + roundEnv.processingOver());
 
         Context context = new Context();
         buildCommands(roundEnv, context);
@@ -182,7 +181,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         }
     }
 
-    private CommandSpec buildCommand(Element element, Context context, RoundEnvironment roundEnv) {
+    private CommandSpec buildCommand(Element element, final Context context, final RoundEnvironment roundEnv) {
         debugElement(element, "@Command");
 
         CommandSpec result = context.commands.get(element);
@@ -193,11 +192,20 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         result.interpolateVariables(false);
         context.commands.put(element, result);
 
-        if (element.getKind() == ElementKind.CLASS) {
-            updateCommandSpecFromTypeElement((TypeElement) element, context, result, roundEnv);
-        } else if (element.getKind() == ElementKind.METHOD) {
-            updateCommandFromMethodElement((ExecutableElement) element, context, result, roundEnv);
-        }
+        element.accept(new SimpleElementVisitor6<Void, CommandSpec>(){
+            @Override
+            public Void visitType(TypeElement e, CommandSpec commandSpec) {
+                updateCommandSpecFromTypeElement(e, context, commandSpec, roundEnv);
+                return null;
+            }
+
+            @Override
+            public Void visitExecutable(ExecutableElement e, CommandSpec commandSpec) {
+                updateCommandFromMethodElement(e, context, commandSpec, roundEnv);
+                return null;
+            }
+        }, result);
+
         logger.fine(String.format("CommandSpec[name=%s] built for %s", result.name(), element));
         return result;
     }
@@ -381,6 +389,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     }
 
     private void buildMixin(Element element, RoundEnvironment roundEnv, Context context) {
+        debugElement(element, "@Mixin");
         if (element.asType().getKind() != TypeKind.DECLARED) {
             error(element, "@Mixin must have a declared type, not %s", element.asType());
             return;
@@ -411,6 +420,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     }
 
     private void buildArgGroup(Element element, Context context) {
+        debugElement(element, "@ArgGroup");
         if (element.asType().getKind() != TypeKind.DECLARED && element.asType().getKind() != TypeKind.ARRAY) {
             error(element, "@ArgGroup must have a declared or array type, not %s", element.asType());
             return;
@@ -625,13 +635,17 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
 
     private void debugElement(Element element, String s) {
         if (element == null) { return; }
+        logElementDetails(element, s);
+    }
+
+    private void logElementDetails(Element element, String s) {
         logger.finest(format(s + ": kind=%s, cls=%s, simpleName=%s, type=%s, typeKind=%s, enclosed=%s, enclosing=%s",
                 element.getKind(), element.getClass().getName(), element.getSimpleName(), element.asType(),
                 element.asType().getKind(), element.getEnclosedElements(), element.getEnclosingElement()));
         TypeMirror typeMirror = element.asType();
         if (element.getKind() == ENUM) {
             for (Element enclosed : element.getEnclosedElements()) {
-                debugElement(enclosed, s + "  ");
+                logElementDetails(enclosed, s + "  ");
             }
         } else {
             debugType(typeMirror, element, s + "  ");
@@ -653,7 +667,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 }
             }
             if (declaredType.asElement().getKind() == ENUM && !element.equals(declaredType.asElement())) {
-                debugElement(declaredType.asElement(), indent + "  --> ");
+                logElementDetails(declaredType.asElement(), indent + "  --> ");
             }
         } else if (typeMirror.getKind() == TypeKind.EXECUTABLE) {
             ExecutableType type = (ExecutableType) typeMirror;
@@ -679,6 +693,14 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             logger.finest(annotatedElements + " is annotated with " + annotation);
             // …
         }
+    }
+
+    /**
+     * Prints a compile-time NOTE message.
+     * @param msg the info message
+     */
+    protected void logInfo(String msg) {
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, getClass().getName() + " " + msg);
     }
 
     /**

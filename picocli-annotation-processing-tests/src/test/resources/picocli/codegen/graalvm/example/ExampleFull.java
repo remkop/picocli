@@ -36,6 +36,7 @@ import java.util.concurrent.Callable;
 @Command(name = "example-full",
         mixinStandardHelpOptions = true,
         subcommands = CommandLine.HelpCommand.class,
+        resourceBundle = "picocli.codegen.aot.graalvm.exampleResources",
         version = {
                 "ExampleFull " + CommandLine.VERSION,
                 "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
@@ -121,6 +122,13 @@ public class ExampleFull implements Callable<Integer> {
     @Command
     public void generateReflectConfig() throws Exception {
         System.out.println(ReflectionConfigGenerator.generateReflectionConfig(spec));
+    }
+
+    @Command(resourceBundle = "picocli.codegen.aot.graalvm.exampleMultiplyResources")
+    int multiply(@Option(names = "--count") int count,
+                 @Parameters int multiplier) {
+        System.out.println("Result is " + count * multiplier);
+        return count * multiplier;
     }
 
     public Integer call() {

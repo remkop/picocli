@@ -4854,7 +4854,7 @@ public class CommandLine {
             }
 
             private void initCommandHierarchyWithResourceBundle(String bundleBaseName, ResourceBundle rb) {
-                if (resourceBundle() == null) {
+                if (resourceBundle() == null && resourceBundleBaseName() == null) {
                     setBundle(bundleBaseName, rb);
                 }
                 for (CommandLine sub : commands.values()) { // percolate down the hierarchy
@@ -6079,7 +6079,7 @@ public class CommandLine {
                 if (initializable(footerHeading, mixin.footerHeading(), DEFAULT_SINGLE_VALUE))                         {footerHeading = mixin.footerHeading();}
                 if (initializable(parameterListHeading, mixin.parameterListHeading(), DEFAULT_SINGLE_VALUE))           {parameterListHeading = mixin.parameterListHeading();}
                 if (initializable(optionListHeading, mixin.optionListHeading(), DEFAULT_SINGLE_VALUE))                 {optionListHeading = mixin.optionListHeading();}
-                if (Messages.empty(messages)) { messages(Messages.copy(commandSpec, mixin.messages())); }
+                if (Messages.empty(messages) && Messages.resourceBundleBaseName(messages) == null) { messages(Messages.copy(commandSpec, mixin.messages())); }
                 if (initializable(adjustLineBreaksForWideCJKCharacters, mixin.adjustLineBreaksForWideCJKCharacters(), DEFAULT_ADJUST_CJK)) {adjustLineBreaksForWideCJKCharacters = mixin.adjustLineBreaksForWideCJKCharacters();}
             }
             void initFrom(UsageMessageSpec settings, CommandSpec commandSpec) {

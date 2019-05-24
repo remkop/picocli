@@ -5,7 +5,11 @@ import picocli.codegen.aot.graalvm.ReflectionConfigGenerator;
 
 import javax.annotation.processing.SupportedOptions;
 
-@SupportedOptions({"groupId", "artifactId"})
+/**
+ * @see ReflectionConfigGenerator
+ * @since 4.0
+ */
+@SupportedOptions({AbstractConfigGeneratorProcessor.OPTION_RELATIVE_PATH})
 public class ReflectionConfigGeneratorProcessor extends AbstractConfigGeneratorProcessor {
 
     @Override

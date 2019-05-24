@@ -49,6 +49,7 @@
     ],
     "methods" : [
       { "name" : "generateReflectConfig", "parameterTypes" : [] },
+      { "name" : "multiply", "parameterTypes" : ["int", "int"] },
       { "name" : "setExitCode", "parameterTypes" : ["int"] },
       { "name" : "setFiles", "parameterTypes" : ["java.util.List"] }
     ]

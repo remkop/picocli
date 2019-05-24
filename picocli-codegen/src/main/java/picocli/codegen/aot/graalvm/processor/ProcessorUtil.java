@@ -3,17 +3,18 @@ package picocli.codegen.aot.graalvm.processor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.tools.FileObject;
-import javax.tools.StandardLocation;
+import javax.tools.JavaFileManager.Location;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 
-public final class ProcessorUtil {
+final class ProcessorUtil {
     private ProcessorUtil() {}
 
-    static void generate(String fileName, String content, ProcessingEnvironment processingEnv, Element... elements) throws IOException {
-        FileObject resource = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT,
+    static void generate(Location location, String fileName, String content, ProcessingEnvironment processingEnv, Element... elements) throws IOException {
+        FileObject resource = processingEnv.getFiler().createResource(
+                location,
                 "",
                 fileName,
                 elements);
