@@ -164,6 +164,8 @@ See the [Gradle documentation](https://docs.gradle.org/current/dsl/org.gradle.ap
 - [#698] Reduce `reflect-config.json` used by GraalVM native-image generation
 - [#500] Add a generic and extensible picocli annotation processor
 - [#699] Add annotation processor that generates `reflect-config.json` during build
+- [#703] Add annotation processor that generates `resource-config.json` during build
+- [#704] Add annotation processor that generates `proxy-config.json` during build
 - [#700] Change default exit codes to `1` for Exceptions in client code, `2` for invalid usage. Add links to `ExitCode` javadoc.
 
 ## <a name="4.0.0-beta-1-deprecated"></a> Deprecations

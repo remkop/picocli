@@ -4,10 +4,12 @@ import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
 import org.junit.Test;
 
+import javax.tools.JavaFileManager;
 import javax.tools.StandardLocation;
 
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
+import static org.junit.Assert.*;
 import static picocli.codegen.aot.graalvm.processor.NativeImageConfigGeneratorProcessor.OPTION_PROJECT;
 import static picocli.codegen.aot.graalvm.processor.ProxyConfigGen.OPTION_INTERFACE_CLASSES;
 import static picocli.codegen.aot.graalvm.processor.ResourceConfigGen.OPTION_BUNDLES;
@@ -15,6 +17,36 @@ import static picocli.codegen.aot.graalvm.processor.ResourceConfigGen.OPTION_RES
 import static picocli.codegen.util.Resources.slurp;
 
 public class NativeImageConfigGeneratorProcessorTest {
+
+    private void assertNoGeneratedFile(Compilation compilation, JavaFileManager.Location location, String path) {
+        boolean success = true;
+        try {
+            assertThat(compilation).generatedFile(location, path);
+            success = false;
+        } catch (AssertionError expected) {
+        }
+        if (!success) {
+            fail("Found unexpected generated file: " + location + path);
+        }
+    }
+
+    private void expectGeneratedWithNotes(Compilation compilation, String[][] allParams) {
+        for (String[] params : allParams) {
+            boolean generated = Boolean.parseBoolean(params[2]);
+            if (generated) {
+                assertThat(compilation)
+                        .generatedFile(StandardLocation.CLASS_OUTPUT,
+                                "META-INF/native-image/picocli-generated/" + params[1]);
+                assertThat(compilation).hadNoteContaining(String.format(
+                        "%s writing to: CLASS_OUTPUT/META-INF/native-image/picocli-generated/%s", params[0], params[1]));
+            } else {
+                assertThat(compilation).hadNoteContaining(params[0] + " is not enabled");
+                assertNoGeneratedFile(compilation, StandardLocation.CLASS_OUTPUT,
+                        "META-INF/native-image/picocli-generated/" + params[1]);
+            }
+        }
+        assertThat(compilation).hadNoteCount(allParams.length);
+    }
 
     @Test
     public void testNothingDisabledByDefault() {
@@ -25,16 +57,12 @@ public class NativeImageConfigGeneratorProcessorTest {
                         .compile(JavaFileObjects.forResource(
                                 "picocli/examples/subcommands/ParentCommandDemo.java"));
         assertThat(compilation).succeeded();
-        String[] all = {
-                "reflect-config.json",
-                "proxy-config.json",
-                "resource-config.json",
+        String[][] allParams = {
+                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" },
+                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" },
+                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "true" },
         };
-        for (String file : all) {
-            assertThat(compilation)
-                    .generatedFile(StandardLocation.CLASS_OUTPUT,
-                            "META-INF/native-image/picocli-generated/" + file);
-        }
+        expectGeneratedWithNotes(compilation, allParams);
     }
 
     @Test
@@ -47,17 +75,12 @@ public class NativeImageConfigGeneratorProcessorTest {
                         .compile(JavaFileObjects.forResource(
                                 "picocli/examples/subcommands/ParentCommandDemo.java"));
         assertThat(compilation).succeeded();
-        String[] all = {
-                //"reflect-config.json",
-                "proxy-config.json",
-                "resource-config.json",
+        String[][] allParams = {
+                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "false" },
+                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" },
+                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "true" },
         };
-        for (String file : all) {
-            assertThat(compilation)
-                    .generatedFile(StandardLocation.CLASS_OUTPUT,
-                            "META-INF/native-image/picocli-generated/" + file);
-        }
-        assertThat(compilation).hadNoteContaining(ReflectConfigGen.class.getSimpleName() + " is available but not enabled");
+        expectGeneratedWithNotes(compilation, allParams);
     }
 
     @Test
@@ -70,17 +93,12 @@ public class NativeImageConfigGeneratorProcessorTest {
                         .compile(JavaFileObjects.forResource(
                                 "picocli/examples/subcommands/ParentCommandDemo.java"));
         assertThat(compilation).succeeded();
-        String[] all = {
-                "reflect-config.json",
-                "proxy-config.json",
-                //"resource-config.json",
+        String[][] allParams = {
+                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" },
+                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "false" },
+                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "true" },
         };
-        for (String file : all) {
-            assertThat(compilation)
-                    .generatedFile(StandardLocation.CLASS_OUTPUT,
-                            "META-INF/native-image/picocli-generated/" + file);
-        }
-        assertThat(compilation).hadNoteContaining(ResourceConfigGen.class.getSimpleName() + " is available but not enabled");
+        expectGeneratedWithNotes(compilation, allParams);
     }
 
     @Test
@@ -93,17 +111,12 @@ public class NativeImageConfigGeneratorProcessorTest {
                         .compile(JavaFileObjects.forResource(
                                 "picocli/examples/subcommands/ParentCommandDemo.java"));
         assertThat(compilation).succeeded();
-        String[] all = {
-                "reflect-config.json",
-                //"proxy-config.json",
-                "resource-config.json",
+        String[][] allParams = {
+                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" },
+                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" },
+                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "false" },
         };
-        for (String file : all) {
-            assertThat(compilation)
-                    .generatedFile(StandardLocation.CLASS_OUTPUT,
-                            "META-INF/native-image/picocli-generated/" + file);
-        }
-        assertThat(compilation).hadNoteContaining(ProxyConfigGen.class.getSimpleName() + " is available but not enabled");
+        expectGeneratedWithNotes(compilation, allParams);
     }
 
     @Test

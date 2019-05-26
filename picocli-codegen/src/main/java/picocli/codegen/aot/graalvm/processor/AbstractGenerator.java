@@ -24,7 +24,7 @@ abstract class AbstractGenerator implements IGenerator {
     @Override
     public void generate(Map<Element, CommandLine.Model.CommandSpec> allCommands) {
         if (!enabled()) {
-            logInfo(getClass().getSimpleName() + " is available but not enabled");
+            logInfo("is not enabled");
             return;
         }
         try {
@@ -62,7 +62,7 @@ abstract class AbstractGenerator implements IGenerator {
      * @param msg the info message
      */
     protected void logInfo(String msg) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, getClass().getName() + " " + msg);
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, getClass().getSimpleName() + " " + msg);
     }
     /**
      * Prints a compile-time error message prefixed with "FATAL ERROR".
