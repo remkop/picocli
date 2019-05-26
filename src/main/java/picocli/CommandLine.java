@@ -38,6 +38,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import picocli.CommandLine.Help.Ansi.IStyle;
 import picocli.CommandLine.Help.Ansi.Style;
@@ -3448,6 +3449,14 @@ public class CommandLine {
          * @since 3.9
          */
         int order() default -1;
+
+        /** (Only for boolean options): controls whether a negative version for this boolean option is automatically added.
+         * For example, for a {@code --force} option the negative version would be {@code --no-force},
+         * and for a {@code -XX:+PrintGCDetails} option, the negative version would be {@code -XX:-PrintGCDetails}.
+         * <p>The form of the negative name is determined by the {@link INegatableOptionTransformer}.</p>
+         * @see Option#negatable()
+         * @since 4.0 */
+        boolean negatable() default false;
     }
     /**
      * <p>
@@ -4211,6 +4220,54 @@ public class CommandLine {
     }
     private static class NoDefaultProvider implements IDefaultValueProvider {
         public String defaultValue(ArgSpec argSpec) { throw new UnsupportedOperationException(); }
+    }
+
+    /** Determines the option name transformation of {@linkplain Option#negatable() negatable} options.
+     * @since 4.0
+     */
+    public interface INegatableOptionTransformer {
+        String makeNegative(String optionName, CommandSpec cmd);
+        String makeSynopsis(String optionName, CommandSpec cmd);
+    }
+    /** Determines the option name transformation of {@linkplain Option#negatable() negatable} options.
+     * @since 4.0
+     */
+    public static class RegexTransformer implements INegatableOptionTransformer {
+        Map<Pattern, String> replacements = new LinkedHashMap<Pattern, String>();
+        Map<Pattern, String> synopsis = new LinkedHashMap<Pattern, String>();
+
+        public RegexTransformer addPattern(String regex, String negativeReplacement, String synopsisReplacement) {
+            Pattern pattern = Pattern.compile(regex);
+            replacements.put(pattern, negativeReplacement);
+            synopsis.put(pattern, synopsisReplacement);
+            return this;
+        }
+        public RegexTransformer removePattern(String regex) {
+            for (Iterator<Pattern> iter = replacements.keySet().iterator(); iter.hasNext(); ) {
+                Pattern pattern = iter.next();
+                if (pattern.toString().equals(regex)) {
+                    iter.remove();
+                    synopsis.remove(pattern);
+                }
+            }
+            return this;
+        }
+
+        public String makeNegative(String optionName, CommandSpec cmd) {
+            for (Map.Entry<Pattern, String> entry : replacements.entrySet()) {
+                Matcher matcher = entry.getKey().matcher(optionName);
+                if (matcher.find()) { return matcher.replaceAll(entry.getValue()); }
+            }
+            return optionName;
+        }
+
+        public String makeSynopsis(String optionName, CommandSpec cmd) {
+            for (Map.Entry<Pattern, String> entry : synopsis.entrySet()) {
+                Matcher matcher = entry.getKey().matcher(optionName);
+                if (matcher.find()) { return matcher.replaceAll(entry.getValue()); }
+            }
+            return optionName;
+        }
     }
 
     /**
@@ -7136,6 +7193,7 @@ public class CommandLine {
             private boolean help;
             private boolean usageHelp;
             private boolean versionHelp;
+            private boolean negatable;
             private int order;
 
             public static OptionSpec.Builder builder(String name, String... names) {
@@ -7219,6 +7277,11 @@ public class CommandLine {
             /** Returns whether this option allows the user to request version information.
              * @see Option#versionHelp()  */
             public boolean versionHelp()  { return versionHelp; }
+            /** Returns whether a negative version for this boolean option is automatically added.
+             * The form of the negative name is determined by the {@link INegatableOptionTransformer}.
+             * @see Option#negatable()
+             * @since 4.0 */
+            public boolean negatable()    { return negatable; }
             public boolean equals(Object obj) {
                 if (obj == this) { return true; }
                 if (!(obj instanceof OptionSpec)) { return false; }
@@ -7248,6 +7311,7 @@ public class CommandLine {
                 private boolean help;
                 private boolean usageHelp;
                 private boolean versionHelp;
+                private boolean negatable;
                 private int order = DEFAULT_ORDER;
 
                 private Builder(String[] names) { this.names = names; }
@@ -7257,6 +7321,7 @@ public class CommandLine {
                     help = original.help;
                     usageHelp = original.usageHelp;
                     versionHelp = original.versionHelp;
+                    negatable = original.negatable;
                     order = original.order;
                 }
                 private Builder(IAnnotatedElement member, IFactory factory) {
@@ -7266,6 +7331,7 @@ public class CommandLine {
                     help = option.help();
                     usageHelp = option.usageHelp();
                     versionHelp = option.versionHelp();
+                    negatable = option.negatable();
                     order = option.order();
                 }
 
@@ -7291,6 +7357,12 @@ public class CommandLine {
                  * @see Option#versionHelp()  */
                 public boolean versionHelp()  { return versionHelp; }
 
+                /** Returns whether a negative version for this boolean option is automatically added.
+                 * The form of the negative name is determined by the {@link INegatableOptionTransformer}.
+                 * @see Option#negatable()
+                 * @since 4.0 */
+                public boolean negatable()    { return negatable; }
+
                 /** Returns the position in the options list in the usage help message at which this option should be shown.
                  * Options with a lower number are shown before options with a higher number.
                  * This attribute is only honored if {@link UsageMessageSpec#sortOptions()} is {@code false} for this command.
@@ -7310,6 +7382,9 @@ public class CommandLine {
     
                 /** Sets whether this option allows the user to request version information, and returns this builder.*/
                 public Builder versionHelp(boolean versionHelp) { this.versionHelp = versionHelp; return self(); }
+                /** Sets whether a negative version for this boolean option is automatically added, and returns this builder.
+                 * @since 4.0 */
+                public Builder negatable(boolean negatable)     { this.negatable = negatable; return self(); }
 
                 /** Sets the position in the options list in the usage help message at which this option should be shown, and returns this builder.
                  * @since 3.9 */
