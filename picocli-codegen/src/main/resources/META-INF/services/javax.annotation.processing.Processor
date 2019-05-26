@@ -1,3 +1,1 @@
-picocli.codegen.aot.graalvm.processor.DynamicProxyConfigGeneratorProcessor
-picocli.codegen.aot.graalvm.processor.ReflectionConfigGeneratorProcessor
-picocli.codegen.aot.graalvm.processor.ResourceConfigGeneratorProcessor
+picocli.codegen.aot.graalvm.processor.NativeImageConfigGeneratorProcessor

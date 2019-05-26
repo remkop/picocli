@@ -4,6 +4,11 @@
 # <a name="4.0.0-beta-1"></a> Picocli 4.0.0-beta-1
 The picocli community is pleased to announce picocli 4.0.0-beta-1.
 
+This release includes the first cut of an annotation processor that can build a model from the picocli annotations at compile time rather than at runtime. 
+
+Use this if you’re interested in:
+* **Compile time error checking**. Some combinations of annotations and attributes are invalid. The annotation processor will show compile time errors immediately, instead of runtime errors when you run your tests, resulting in shorter feedback cycles.
+* **Graal native images**. The annotation processor generates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md) files under `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar. By embedding these configuration files, your jar is instantly Graal-enabled. In most cases no further configuration is needed when generating a native image. 
 
 _Please try this and provide feedback. We can still make changes._
 
@@ -23,7 +28,134 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.0-beta-1-new"></a> New and Noteworthy
 
-### <a name="4.0.0-beta-1-execute"></a> XXX
+### <a name="4.0.0-beta-1-processor"></a> Annotation Processor
+
+This release includes the first cut of an annotation processor that can build a model from the picocli annotations at compile time rather than at runtime. 
+
+Use this if you’re interested in:
+* **Compile time error checking**. Some combinations of annotations and attributes are invalid. The annotation processor will show compile time errors immediately, instead of runtime errors when you run your tests, resulting in shorter feedback cycles.
+* **Graal native images**. The annotation processor generates and updates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md) files for [reflection](https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md), [resources](https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md) and [dynamic proxies](https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md) under `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar. By embedding these configuration files, your jar is instantly Graal-enabled. In most cases no further configuration is needed when generating a native image. 
+
+#### Enabling the Annotation Processor
+
+Since Java 6, annotation processing is part of the standard `javac` compiler, but many IDEs and build tools require something extra to enable annotation processing. 
+
+##### IDE
+[This page](https://immutables.github.io/apt.html) shows the steps to configure Eclipse and IntelliJ IDEA to enable annotation processing.
+
+##### Maven
+In Maven, the simplest is to specify the `picocli-codegen` module on the classpath as a `provided` dependency. This prevents it from being a transitive dependency included in the artifact the module produces. 
+
+```
+<dependency>
+  <groupId>info.picocli</groupId>
+  <artifactId>picocli</artifactId>
+  <version>4.0.0-beta-1</version>
+</dependency>
+
+<dependency>
+  <groupId>info.picocli</groupId>
+  <artifactId>picocli-codegen</artifactId>
+  <version>4.0.0-beta-1</version>
+  <provided>true</provided>
+</dependency>
+```
+
+This is simple but won’t let you configure any options to the processor. See Processor Options below. 
+
+
+##### Gradle
+Use the `annotationProcessor` path in Gradle [4.6 and higher](https://docs.gradle.org/4.6/release-notes.html#convenient-declaration-of-annotation-processor-dependencies):
+```
+dependencies {
+    compile 'info.picocli:picocli:4.0.0-beta-1'
+    annotationProcessor 'info.picocli:picocli-codegen:4.0.0-beta-1'
+}
+```
+
+For Gradle versions prior to 4.6, use `compileOnly`, to prevent the `picocli-codegen` jar from being a transitive dependency included in the artifact the module produces.
+```
+dependencies {
+    compile 'info.picocli:picocli:4.0.0-beta-1'
+    compileOnly 'info.picocli:picocli-codegen:4.0.0-beta-1'
+}
+```
+
+#### Picocli Processor Options
+
+The picocli annotation processor supports the options below.
+
+##### Recommended Options
+* `project` - output subdirectory
+
+The generated files are written to `META-INF/native-image/picocli-generated/${project}`. 
+
+The `project` option can be omitted, but it is a good idea to specify the `project` option with a unique value for your project (e.g. `$groupId/$artifactId`) if your jar may be [shaded](https://stackoverflow.com/a/49811665) with other jars into an uberjar.
+
+
+##### Other Options
+* `other.resource.patterns` - comma-separated list of regular expressions matching additional resources to include in the image
+* `other.resource.bundles` - comma-separated list of the base names of additional resource bundles to include in the image
+* `other.proxy.interfaces` - comma-separated list of the fully qualified class names of additional interfaces for which to generate proxy classes when building the image
+* `disable.proxy.config` - don’t generate `proxy-config.json`
+* `disable.reflect.config` - don’t generate `reflect-config.json`
+* `disable.resources.config` - don’t generate `resources-config.json`
+
+
+##### Javac
+To pass an annotation processor option with `javac`, specify the `-A` command line option:
+
+```
+javac -Aproject=org.myorg.myproject/myapp -cp ...
+```
+The `-A` option lets you pass options to annotation processors. See the [javac documentation](https://docs.oracle.com/javase/8/docs/technotes/tools/unix/javac.html) for details.
+
+##### Maven
+
+To set an annotation processor option in Maven, you need to use the `maven-compiler-plugin` and configure `annotationProcessorPaths` and `compilerArgs` sections. 
+
+```
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <version>${maven-compiler-plugin-version}</version>
+      <configuration>
+        <!-- minimum 1.6 -->
+        <source>${java-version}</source>
+        <target>${java-version}</target>
+        <annotationProcessorPaths>
+          <path>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli-codegen</artifactId>
+            <version>4.0.0-beta-1</version>
+          </path>
+        </annotationProcessorPaths>
+        <compilerArgs>
+          <arg>-Aproject=$groupId/$artifactId</arg>
+        </compilerArgs>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
+```
+
+See https://maven.apache.org/plugins/maven-compiler-plugin/compile-mojo.html for details. 
+
+#### Graal Example
+To set an annotation processor option in Graal, add these options to the `options.compilerArgs` list in the `compileJava` block. 
+
+```
+compileJava {
+    // minimum 1.6
+    sourceCompatibility = ${java-version}
+    targetCompatibility = ${java-version}
+    options.compilerArgs += ["-Aproject=$group/$name"]
+}
+```
+
+See the [Gradle documentation](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.compile.CompileOptions.html) for details.
 
 
 ## <a name="4.0.0-beta-1-fixes"></a> Fixed issues
