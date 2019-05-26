@@ -231,3 +231,9 @@ libraryDependencies += "info.picocli" % "picocli" % "4.0.0-alpha-3"
 ```
 'info.picocli:picocli:jar:4.0.0-alpha-3'
 ```
+
+
+## Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+<a href="https://github.com/badges/shields/graphs/contributors"><img src="https://opencollective.com/shields/contributors.svg?width=890" /></a>
