@@ -133,7 +133,7 @@ To set an annotation processor option in Maven, you need to use the `maven-compi
           </path>
         </annotationProcessorPaths>
         <compilerArgs>
-          <arg>-Aproject=$groupId/$artifactId</arg>
+          <arg>-Aproject=${groupId}/${artifactId}</arg>
         </compilerArgs>
       </configuration>
     </plugin>
@@ -143,15 +143,15 @@ To set an annotation processor option in Maven, you need to use the `maven-compi
 
 See https://maven.apache.org/plugins/maven-compiler-plugin/compile-mojo.html for details. 
 
-#### Graal Example
-To set an annotation processor option in Graal, add these options to the `options.compilerArgs` list in the `compileJava` block. 
+#### Gradle Example
+To set an annotation processor option in Gradle, add these options to the `options.compilerArgs` list in the `compileJava` block. 
 
 ```
 compileJava {
     // minimum 1.6
     sourceCompatibility = ${java-version}
     targetCompatibility = ${java-version}
-    options.compilerArgs += ["-Aproject=$group/$name"]
+    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
 }
 ```
 
@@ -166,6 +166,7 @@ See the [Gradle documentation](https://docs.gradle.org/current/dsl/org.gradle.ap
 - [#699] Add annotation processor that generates `reflect-config.json` during build
 - [#703] Add annotation processor that generates `resource-config.json` during build
 - [#704] Add annotation processor that generates `proxy-config.json` during build
+- [#707] Add example maven/gradle projects that demonstrate using the annotation processor
 - [#700] Change default exit codes to `1` for Exceptions in client code, `2` for invalid usage. Add links to `ExitCode` javadoc.
 
 ## <a name="4.0.0-beta-1-deprecated"></a> Deprecations
