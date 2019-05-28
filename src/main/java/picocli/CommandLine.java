@@ -4236,6 +4236,18 @@ public class CommandLine {
         Map<Pattern, String> replacements = new LinkedHashMap<Pattern, String>();
         Map<Pattern, String> synopsis = new LinkedHashMap<Pattern, String>();
 
+        public static RegexTransformer createDefault() {
+            CommandLine.RegexTransformer transformer = new CommandLine.RegexTransformer()
+                    .addPattern("^-(\\w)$", "+$1", "±$1") // TBD include short option transforms by default?
+                    .addPattern("^+(\\w)$", "-$1", "±$1") // (same: transform +x to -x)
+                    .addPattern("^--no-(\\w(-|\\w)*)$", "--$1", "--[no-]$1")
+                    .addPattern("^--(\\w(-|\\w)*)$", "--no-$1", "--[no-]$1")
+                    .addPattern("^(-|--)(\\w*:)\\+(\\w(-|\\w)*)$", "$1$2-$3", "$1$2±$3")
+                    .addPattern("^(-|--)(\\w*:)\\-(\\w(-|\\w)*)$", "$1$2+$3", "$1$2±$3")
+                    ;
+            return transformer;
+        }
+
         public RegexTransformer addPattern(String regex, String negativeReplacement, String synopsisReplacement) {
             Pattern pattern = Pattern.compile(regex);
             replacements.put(pattern, negativeReplacement);
@@ -4670,6 +4682,7 @@ public class CommandLine {
 
             private final Map<String, CommandLine> commands = new LinkedHashMap<String, CommandLine>();
             private final Map<String, OptionSpec> optionsByNameMap = new LinkedHashMap<String, OptionSpec>();
+            private final Map<String, OptionSpec> negatedOptionsByNameMap = new LinkedHashMap<String, OptionSpec>();
             private final Map<Character, OptionSpec> posixOptionsByKeyMap = new LinkedHashMap<Character, OptionSpec>();
             private final Map<String, CommandSpec> mixins = new LinkedHashMap<String, CommandSpec>();
             private final List<ArgSpec> requiredArgs = new ArrayList<ArgSpec>();
@@ -4997,6 +5010,17 @@ public class CommandLine {
                     if (name.length() == 2 && name.startsWith("-")) { posixOptionsByKeyMap.put(name.charAt(1), option); }
                 }
                 options.add(option);
+                if (option.negatable()) {
+                    INegatableOptionTransformer transformer = RegexTransformer.createDefault();
+                    for (String name : interpolator.interpolate(option.names())) { // cannot be null or empty
+                        String negatedName = transformer.makeNegative(name, this);
+                        OptionSpec existing = negatedOptionsByNameMap.put(negatedName, option);
+                        if (existing == null) { existing = optionsByNameMap.get(negatedName); }
+                        if (existing != null) {
+                            throw DuplicateOptionAnnotationsException.create(negatedName, option, existing);
+                        }
+                    }
+                }
                 return addArg(option);
             }
             /** Adds the specified positional parameter spec to the list of configured arguments to expect.
@@ -5144,7 +5168,12 @@ public class CommandLine {
             /** Returns a map of the option names to option spec objects configured for this command.
              * @return an immutable map of options that this command recognizes. */
             public Map<String, OptionSpec> optionsMap() { return Collections.unmodifiableMap(optionsByNameMap); }
-    
+
+            /** Returns a map of the negated option names to option spec objects configured for this command.
+             * @return an immutable map of negatable options that this command recognizes.
+             * @since 4.0 */
+            public Map<String, OptionSpec> negatedOptionsMap() { return Collections.unmodifiableMap(negatedOptionsByNameMap); }
+
             /** Returns a map of the short (single character) option names to option spec objects configured for this command.
              * @return an immutable map of options that this command recognizes. */
             public Map<Character, OptionSpec> posixOptionsMap() { return Collections.unmodifiableMap(posixOptionsByKeyMap); }
@@ -6585,10 +6614,8 @@ public class CommandLine {
              * @see CommandSpec#defaultValueProvider()
              * @see ArgSpec#defaultValue() */
             public String defaultValueString() {
-                String fromProvider = defaultValueFromProvider();
                 // implementation note: don't call this.defaultValue(), that will interpolate variables too soon!
-                String defaultVal = fromProvider == null ? this.defaultValue : fromProvider;
-                Object value = defaultVal == null ? initialValue() : defaultVal;
+                Object value = calcDefaultValue(false);
                 if (value != null && value.getClass().isArray()) {
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < Array.getLength(value); i++) {
@@ -6597,6 +6624,14 @@ public class CommandLine {
                     return sb.insert(0, "[").append("]").toString();
                 }
                 return String.valueOf(value);
+            }
+
+            private Object calcDefaultValue(boolean interpolate) {
+                String result = defaultValueFromProvider();
+                if (result == null) {
+                    result = interpolate ? this.defaultValue() : this.defaultValue;
+                }
+                return result == null ? initialValue() : result;
             }
 
             private String defaultValueFromProvider() {
@@ -7216,6 +7251,7 @@ public class CommandLine {
                 usageHelp = builder.usageHelp;
                 versionHelp = builder.versionHelp;
                 order = builder.order;
+                negatable = builder.negatable;
 
                 if (names.length == 0 || Arrays.asList(names).contains("")) {
                     throw new InitializationException("Invalid names: " + Arrays.toString(names));
@@ -7725,7 +7761,7 @@ public class CommandLine {
 
             private Text concatOptionText(Text text, Help.ColorScheme colorScheme, OptionSpec option) {
                 if (!option.hidden()) {
-                    Text name = colorScheme.optionText(option.shortestName());
+                    Text name = colorScheme.optionText(RegexTransformer.createDefault().makeSynopsis(option.shortestName(), option.commandSpec));
                     Text param = createLabelRenderer(option.commandSpec).renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
                     text = text.concat(open(option)).concat(name).concat(param).concat(close(option));
                     if (option.isMultiValue()) { // e.g., -x=VAL [-x=VAL]...
@@ -10242,7 +10278,7 @@ public class CommandLine {
             if (defaultValue != null) {
                 if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s) to %s%n", defaultValue, arg);}
                 Range arity = arg.arity().min(Math.max(1, arg.arity().min));
-                applyOption(arg, LookBehind.SEPARATE, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
+                applyOption(arg, false, LookBehind.SEPARATE, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
             }
             return defaultValue != null;
         }
@@ -10342,7 +10378,7 @@ public class CommandLine {
         }
 
         private boolean isStandaloneOption(String arg) {
-            return commandSpec.optionsMap().containsKey(arg);
+            return commandSpec.optionsMap().containsKey(arg) || commandSpec.negatedOptionsMap().containsKey(arg);
         }
         private void handleUnmatchedArgument(Stack<String> args) throws Exception {
             if (!args.isEmpty()) { handleUnmatchedArgument(args.pop()); }
@@ -10390,7 +10426,7 @@ public class CommandLine {
                 if (tracer.isDebug()) {tracer.debug("Position %s is in index range %s. Trying to assign args to %s, arity=%s%n", positionDesc(positionalParam), indexRange, positionalParam, arity);}
                 if (!assertNoMissingParameters(positionalParam, arity, argsCopy)) { break; } // #389 collectErrors parsing
                 int originalSize = argsCopy.size();
-                int actuallyConsumed = applyOption(positionalParam, LookBehind.SEPARATE, arity, argsCopy, initialized, "args[" + indexRange + "] at position " + localPosition);
+                int actuallyConsumed = applyOption(positionalParam, false, LookBehind.SEPARATE, arity, argsCopy, initialized, "args[" + indexRange + "] at position " + localPosition);
                 int count = originalSize - argsCopy.size();
                 if (count > 0 || actuallyConsumed > 0) {
                     required.remove(positionalParam);
@@ -10429,6 +10465,8 @@ public class CommandLine {
                                              Stack<String> args,
                                              boolean paramAttachedToKey) throws Exception {
             ArgSpec argSpec = commandSpec.optionsMap().get(arg);
+            boolean negated = argSpec == null;
+            if (negated) { argSpec = commandSpec.negatedOptionsMap().get(arg); }
             required.remove(argSpec);
             Range arity = argSpec.arity();
             if (paramAttachedToKey) {
@@ -10437,7 +10475,7 @@ public class CommandLine {
             LookBehind lookBehind = paramAttachedToKey ? LookBehind.ATTACHED_WITH_SEPARATOR : LookBehind.SEPARATE;
             if (tracer.isDebug()) {tracer.debug("Found option named '%s': %s, arity=%s%n", arg, argSpec, arity);}
             parseResultBuilder.nowProcessing.add(argSpec);
-            applyOption(argSpec, lookBehind, arity, args, initialized, "option " + arg);
+            applyOption(argSpec, negated, lookBehind, arity, args, initialized, "option " + arg);
         }
 
         private void processClusteredShortOptions(Collection<ArgSpec> required,
@@ -10480,7 +10518,7 @@ public class CommandLine {
                         parseResultBuilder.nowProcessing.set(parseResultBuilder.nowProcessing.size() - 1, argSpec); // replace
                     }
                     int argCount = args.size();
-                    int consumed = applyOption(argSpec, lookBehind, arity, args, initialized, argDescription);
+                    int consumed = applyOption(argSpec, false, lookBehind, arity, args, initialized, argDescription);
                     // if cluster was consumed as a parameter or if this field was the last in the cluster we're done; otherwise continue do-while loop
                     if (empty(cluster) || args.isEmpty() || args.size() < argCount) {
                         return;
@@ -10517,6 +10555,7 @@ public class CommandLine {
         }
 
         private int applyOption(ArgSpec argSpec,
+                                boolean negated,
                                 LookBehind lookBehind,
                                 Range arity,
                                 Stack<String> args,
@@ -10535,13 +10574,13 @@ public class CommandLine {
 
             int result;
             if (argSpec.type().isArray() && !(argSpec.interactive() && argSpec.type() == char[].class)) {
-                result = applyValuesToArrayField(argSpec, lookBehind, arity, workingStack, initialized, argDescription);
+                result = applyValuesToArrayField(argSpec, negated, lookBehind, arity, workingStack, initialized, argDescription);
             } else if (Collection.class.isAssignableFrom(argSpec.type())) {
-                result = applyValuesToCollectionField(argSpec, lookBehind, arity, workingStack, initialized, argDescription);
+                result = applyValuesToCollectionField(argSpec, negated, lookBehind, arity, workingStack, initialized, argDescription);
             } else if (Map.class.isAssignableFrom(argSpec.type())) {
                 result = applyValuesToMapField(argSpec, lookBehind, arity, workingStack, initialized, argDescription);
             } else {
-                result = applyValueToSingleValuedField(argSpec, lookBehind, arity, workingStack, initialized, argDescription);
+                result = applyValueToSingleValuedField(argSpec, negated, lookBehind, arity, workingStack, initialized, argDescription);
             }
             if (workingStack != args && !workingStack.isEmpty()) {
                 args.push(workingStack.pop());
@@ -10551,6 +10590,7 @@ public class CommandLine {
         }
 
         private int applyValueToSingleValuedField(ArgSpec argSpec,
+                                                  boolean negated,
                                                   LookBehind lookBehind,
                                                   Range derivedArity,
                                                   Stack<String> args,
@@ -10578,12 +10618,21 @@ public class CommandLine {
                     // boolean option with arity = 0..1 or 0..*: value MAY be a param
                     boolean optionalWithBooleanValue = arity.max > 0 && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value));
                     if (!optionalWithBooleanValue && lookBehind != LookBehind.ATTACHED_WITH_SEPARATOR) { // if attached, try converting the value to boolean (and fail if invalid value)
-                        // don't process cmdline arg: it's okay to ignore value if not attached to option
-                        if (commandSpec.parser().toggleBooleanFlags()) {
-                            Boolean currentValue = (Boolean) argSpec.getValue();
-                            actualValue = String.valueOf(currentValue == null || !currentValue); // #147 toggle existing boolean value
+                        if (argSpec.isOption() && ((OptionSpec) argSpec).negatable()) {
+                            Boolean defaultValue = Boolean.valueOf(String.valueOf(argSpec.calcDefaultValue(true)));
+                            if (negated) {
+                                actualValue = defaultValue.toString();
+                            } else {
+                                actualValue = (defaultValue ? Boolean.FALSE : Boolean.TRUE).toString();
+                            }
                         } else {
-                            actualValue = "true";
+                            // don't process cmdline arg: it's okay to ignore value if not attached to option
+                            if (commandSpec.parser().toggleBooleanFlags()) {
+                                Boolean currentValue = (Boolean) argSpec.getValue();
+                                actualValue = String.valueOf(currentValue == null || !currentValue); // #147 toggle existing boolean value
+                            } else {
+                                actualValue = "true";
+                            }
                         }
                         optionalValueExists = false;
                         consumed = 0;
@@ -10787,6 +10836,7 @@ public class CommandLine {
             }
         }
         private int applyValuesToArrayField(ArgSpec argSpec,
+                                            boolean negated,
                                             LookBehind lookBehind,
                                             Range arity,
                                             Stack<String> args,
@@ -10796,7 +10846,7 @@ public class CommandLine {
             int length = existing == null ? 0 : Array.getLength(existing);
             Class<?> type = argSpec.auxiliaryTypes()[0];
             int pos = getPosition(argSpec);
-            List<Object> converted = consumeArguments(argSpec, lookBehind, arity, args, type, argDescription);
+            List<Object> converted = consumeArguments(argSpec, negated, lookBehind, arity, args, type, argDescription);
             List<Object> newValues = new ArrayList<Object>();
             if (initialized.contains(argSpec)) { // existing values are default values if initialized does NOT contain argsSpec
                 for (int i = 0; i < length; i++) {
@@ -10822,6 +10872,7 @@ public class CommandLine {
 
         @SuppressWarnings("unchecked")
         private int applyValuesToCollectionField(ArgSpec argSpec,
+                                                 boolean negated,
                                                  LookBehind lookBehind,
                                                  Range arity,
                                                  Stack<String> args,
@@ -10830,7 +10881,7 @@ public class CommandLine {
             Collection<Object> collection = (Collection<Object>) argSpec.getValue();
             Class<?> type = argSpec.auxiliaryTypes()[0];
             int pos = getPosition(argSpec);
-            List<Object> converted = consumeArguments(argSpec, lookBehind, arity, args, type, argDescription);
+            List<Object> converted = consumeArguments(argSpec, negated, lookBehind, arity, args, type, argDescription);
             if (collection == null || (!collection.isEmpty() && !initialized.contains(argSpec))) {
                 tracer.debug("Initializing binding for %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.type().getSimpleName());
                 collection = createCollection(argSpec.type(), type); // collection type, element type
@@ -10850,6 +10901,7 @@ public class CommandLine {
         }
 
         private List<Object> consumeArguments(ArgSpec argSpec,
+                                              boolean negated,
                                               LookBehind lookBehind,
                                               Range arity,
                                               Stack<String> args,
@@ -10894,7 +10946,20 @@ public class CommandLine {
                 }
             }
             if (result.isEmpty() && arity.min == 0 && arity.max <= 1 && isBoolean(type)) {
-                return Arrays.asList((Object) Boolean.TRUE);
+                if (argSpec.isOption() && ((OptionSpec) argSpec).negatable()) {
+                    Object defaultValue = argSpec.calcDefaultValue(true);
+                    boolean booleanDefault = false;
+                    if (defaultValue instanceof String) {
+                        booleanDefault = Boolean.valueOf(String.valueOf(defaultValue));
+                    }
+                    if (negated) {
+                        return Arrays.asList((Object) booleanDefault);
+                    } else {
+                        return Arrays.asList((Object) !booleanDefault);
+                    }
+                } else {
+                    return Arrays.asList((Object) Boolean.TRUE);
+                }
             }
             return result;
         }
@@ -11875,7 +11940,7 @@ public class CommandLine {
             }
             for (OptionSpec option : options) {
                 if (!option.hidden()) {
-                    Text name = colorScheme.optionText(option.shortestName());
+                    Text name = colorScheme.optionText(RegexTransformer.createDefault().makeSynopsis(option.shortestName(), option.commandSpec));
                     Text param = parameterLabelRenderer().renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
                     if (option.required()) { // e.g., -x=VAL
                         optionText = optionText.concat(" ").concat(name).concat(param).concat("");
@@ -12437,6 +12502,13 @@ public class CommandLine {
                 String shortOption = shortOptionCount > 0 ? names[0] : "";
                 sep = shortOptionCount > 0 && names.length > 1 ? "," : "";
 
+                if (option.negatable()) {
+                    INegatableOptionTransformer transformer = RegexTransformer.createDefault();
+                    for (int i = 0; i < names.length; i++) {
+                        names[i] = transformer.makeSynopsis(names[i], option.commandSpec);
+                    }
+                }
+
                 String longOption = join(names, shortOptionCount, names.length - shortOptionCount, ", ");
                 Text longOptionText = createLongOptionText(option, paramLabelRenderer, scheme, longOption);
 
@@ -12489,7 +12561,7 @@ public class CommandLine {
          * option name and a description. If multiple names or description lines exist, the first value is used. */
         static class MinimalOptionRenderer implements IOptionRenderer {
             public Text[][] render(OptionSpec option, IParamLabelRenderer parameterLabelRenderer, ColorScheme scheme) {
-                Text optionText = scheme.optionText(option.names()[0]);
+                Text optionText = scheme.optionText(RegexTransformer.createDefault().makeSynopsis(option.names()[0], option.commandSpec));
                 Text paramLabelText = parameterLabelRenderer.renderParameterLabel(option, scheme.ansi(), scheme.optionParamStyles);
                 optionText = optionText.concat(paramLabelText);
                 return new Text[][] {{ optionText,
