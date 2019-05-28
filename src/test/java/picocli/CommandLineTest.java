@@ -3851,6 +3851,7 @@ public class CommandLineTest {
         Class lookBehindClass = Class.forName("picocli.CommandLine$LookBehind");
         Method applyValueToSingleValuedField = c.getDeclaredMethod("applyValueToSingleValuedField",
                 ArgSpec.class,
+                boolean.class,
                 lookBehindClass,
                 Range.class,
                 Stack.class, Set.class, String.class);
@@ -3868,7 +3869,7 @@ public class CommandLineTest {
         Object SEPARATE = lookBehindClass.getDeclaredField("SEPARATE").get(null);
 
         int value = (Integer) applyValueToSingleValuedField.invoke(interpreter,
-                arg, SEPARATE, Range.valueOf("1"), new Stack<String>(), new HashSet<String>(), "");
+                arg, false, SEPARATE, Range.valueOf("1"), new Stack<String>(), new HashSet<String>(), "");
         assertEquals(0, value);
     }
 

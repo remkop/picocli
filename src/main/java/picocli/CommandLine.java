@@ -7761,7 +7761,9 @@ public class CommandLine {
 
             private Text concatOptionText(Text text, Help.ColorScheme colorScheme, OptionSpec option) {
                 if (!option.hidden()) {
-                    Text name = colorScheme.optionText(RegexTransformer.createDefault().makeSynopsis(option.shortestName(), option.commandSpec));
+                    Text name = option.negatable()
+                            ? colorScheme.optionText(RegexTransformer.createDefault().makeSynopsis(option.shortestName(), option.commandSpec))
+                            : colorScheme.optionText(option.shortestName());
                     Text param = createLabelRenderer(option.commandSpec).renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
                     text = text.concat(open(option)).concat(name).concat(param).concat(close(option));
                     if (option.isMultiValue()) { // e.g., -x=VAL [-x=VAL]...
@@ -11940,7 +11942,9 @@ public class CommandLine {
             }
             for (OptionSpec option : options) {
                 if (!option.hidden()) {
-                    Text name = colorScheme.optionText(RegexTransformer.createDefault().makeSynopsis(option.shortestName(), option.commandSpec));
+                    Text name = option.negatable()
+                            ? colorScheme.optionText(RegexTransformer.createDefault().makeSynopsis(option.shortestName(), option.commandSpec))
+                            : colorScheme.optionText(option.shortestName());
                     Text param = parameterLabelRenderer().renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
                     if (option.required()) { // e.g., -x=VAL
                         optionText = optionText.concat(" ").concat(name).concat(param).concat("");
@@ -12561,7 +12565,9 @@ public class CommandLine {
          * option name and a description. If multiple names or description lines exist, the first value is used. */
         static class MinimalOptionRenderer implements IOptionRenderer {
             public Text[][] render(OptionSpec option, IParamLabelRenderer parameterLabelRenderer, ColorScheme scheme) {
-                Text optionText = scheme.optionText(RegexTransformer.createDefault().makeSynopsis(option.names()[0], option.commandSpec));
+                Text optionText = option.negatable()
+                        ? scheme.optionText(RegexTransformer.createDefault().makeSynopsis(option.names()[0], option.commandSpec))
+                        : scheme.optionText(option.names()[0]);
                 Text paramLabelText = parameterLabelRenderer.renderParameterLabel(option, scheme.ansi(), scheme.optionParamStyles);
                 optionText = optionText.concat(paramLabelText);
                 return new Text[][] {{ optionText,
