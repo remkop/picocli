@@ -61,7 +61,28 @@ In Maven, the simplest is to specify the `picocli-codegen` module on the classpa
 </dependency>
 ```
 
-This is simple but won’t let you configure any options to the processor. See Processor Options below. 
+This is simple and will work with versions of the `maven-compiler-plugin` plugin prior to 3.5. 
+
+An alternative is to use `annotationProcessorPaths` in the `configuration` of the `maven-compiler-plugin`.
+
+```
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-compiler-plugin</artifactId>
+  <!-- annotationProcessorPaths requires maven-compiler-plugin version 3.5 or higher -->
+  <version>${maven-compiler-plugin-version}</version>
+  <configuration>
+    <annotationProcessorPaths>
+      <path>
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli-codegen</artifactId>
+        <version>4.0.0-beta-1</version>
+      </path>
+    </annotationProcessorPaths>
+  </configuration>
+</plugin>
+```
+See Processor Options below. 
 
 
 ##### Gradle
@@ -90,7 +111,7 @@ The picocli annotation processor supports the options below.
 
 The generated files are written to `META-INF/native-image/picocli-generated/${project}`. 
 
-The `project` option can be omitted, but it is a good idea to specify the `project` option with a unique value for your project (e.g. `$groupId/$artifactId`) if your jar may be [shaded](https://stackoverflow.com/a/49811665) with other jars into an uberjar.
+The `project` option can be omitted, but it is a good idea to specify the `project` option with a unique value for your project (e.g. `${groupId}/${artifactId}`) if your jar may be [shaded](https://stackoverflow.com/a/49811665) with other jars into an uberjar.
 
 
 ##### Other Options
@@ -112,7 +133,7 @@ The `-A` option lets you pass options to annotation processors. See the [javac d
 
 ##### Maven
 
-To set an annotation processor option in Maven, you need to use the `maven-compiler-plugin` and configure `annotationProcessorPaths` and `compilerArgs` sections. 
+To set an annotation processor option in Maven, you need to use the `maven-compiler-plugin` and configure the `compilerArgs` section. 
 
 ```
 <build>
@@ -120,6 +141,7 @@ To set an annotation processor option in Maven, you need to use the `maven-compi
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-compiler-plugin</artifactId>
+      <!-- annotationProcessorPaths requires maven-compiler-plugin version 3.5 or higher -->
       <version>${maven-compiler-plugin-version}</version>
       <configuration>
         <!-- minimum 1.6 -->
