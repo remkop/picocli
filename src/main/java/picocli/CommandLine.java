@@ -4238,12 +4238,12 @@ public class CommandLine {
 
         public static RegexTransformer createDefault() {
             CommandLine.RegexTransformer transformer = new CommandLine.RegexTransformer()
-                    .addPattern("^-(\\w)$", "+$1", "±$1") // TBD include short option transforms by default?
-                    .addPattern("^+(\\w)$", "-$1", "±$1") // (same: transform +x to -x)
+                    .addPattern("^-(\\w)$", "+$1", "\u00b1$1") // TBD include short option transforms by default?
+                    .addPattern("^+(\\w)$", "-$1", "\u00b1$1") // (same: transform +x to -x)
                     .addPattern("^--no-(\\w(-|\\w)*)$", "--$1", "--[no-]$1")
                     .addPattern("^--(\\w(-|\\w)*)$", "--no-$1", "--[no-]$1")
-                    .addPattern("^(-|--)(\\w*:)\\+(\\w(-|\\w)*)$", "$1$2-$3", "$1$2±$3")
-                    .addPattern("^(-|--)(\\w*:)\\-(\\w(-|\\w)*)$", "$1$2+$3", "$1$2±$3")
+                    .addPattern("^(-|--)(\\w*:)\\+(\\w(-|\\w)*)$", "$1$2-$3", "$1$2\u00b1$3")
+                    .addPattern("^(-|--)(\\w*:)\\-(\\w(-|\\w)*)$", "$1$2+$3", "$1$2\u00b1$3")
                     ;
             return transformer;
         }

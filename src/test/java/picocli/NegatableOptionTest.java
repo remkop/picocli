@@ -17,12 +17,12 @@ public class NegatableOptionTest {
 
         CommandSpec dummy = CommandSpec.create();
         assertEquals("-X:-option", transformer.makeNegative("-X:+option", dummy));
-        assertEquals("-X:±option", transformer.makeSynopsis("-X:+option", dummy));
+        assertEquals("-X:\u00b1option", transformer.makeSynopsis("-X:+option", dummy));
         assertEquals("-X:+option", transformer.makeNegative("-X:-option", dummy));
-        assertEquals("-X:±option", transformer.makeSynopsis("-X:-option", dummy));
+        assertEquals("-X:\u00b1option", transformer.makeSynopsis("-X:-option", dummy));
 
         assertEquals("+x", transformer.makeNegative("-x", dummy));
-        assertEquals("±x", transformer.makeSynopsis("-x", dummy));
+        assertEquals("\u00b1x", transformer.makeSynopsis("-x", dummy));
 
         assertEquals("--no-verbose", transformer.makeNegative("--verbose", dummy));
         assertEquals("--[no-]verbose", transformer.makeSynopsis("--verbose", dummy));
@@ -63,18 +63,18 @@ public class NegatableOptionTest {
         }
 
         String expected = String.format("" +
-                "Usage: <main class> [-abcfghn] [--[no-]long] [--[no-]verbose] [-X:±java2] [-XX:±java3]%n" +
+                "Usage: <main class> [-abcfghn] [--[no-]long] [--[no-]verbose] [-X:\u00b1java2] [-XX:\u00b1java3]%n" +
                 "  -a                     ...%n" +
                 "  -b, --[no-]long-b      ...%n" +
-                "  -c, --X:±java1         ...%n" +
-                "  -f, --X:±java4         ...%n" +
-                "  -g, -X:±java5          ...%n" +
-                "  -h, -XX:±java6         ...%n" +
+                "  -c, --X:\u00b1java1         ...%n" +
+                "  -f, --X:\u00b1java4         ...%n" +
+                "  -g, -X:\u00b1java5          ...%n" +
+                "  -h, -XX:\u00b1java6         ...%n" +
                 "      --[no-]long        ...%n" +
                 "  -n, --[no-]verbose-b   ...%n" +
                 "      --[no-]verbose     ...%n" +
-                "      -X:±java2          ...%n" +
-                "      -XX:±java3         ...%n");
+                "      -X:\u00b1java2          ...%n" +
+                "      -XX:\u00b1java3         ...%n");
         String actual = new CommandLine(new App()).getUsageMessage(Ansi.OFF);
         assertEquals(expected, actual);
     }
