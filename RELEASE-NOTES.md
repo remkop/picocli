@@ -44,26 +44,8 @@ Since Java 6, annotation processing is part of the standard `javac` compiler, bu
 [This page](https://immutables.github.io/apt.html) shows the steps to configure Eclipse and IntelliJ IDEA to enable annotation processing.
 
 ##### Maven
-In Maven, the simplest is to specify the `picocli-codegen` module on the classpath as a `provided` dependency. This prevents it from being a transitive dependency included in the artifact the module produces. 
-
-```
-<dependency>
-  <groupId>info.picocli</groupId>
-  <artifactId>picocli</artifactId>
-  <version>4.0.0-beta-1</version>
-</dependency>
-
-<dependency>
-  <groupId>info.picocli</groupId>
-  <artifactId>picocli-codegen</artifactId>
-  <version>4.0.0-beta-1</version>
-  <provided>true</provided>
-</dependency>
-```
-
-This is simple and will work with versions of the `maven-compiler-plugin` plugin prior to 3.5. 
-
-An alternative is to use `annotationProcessorPaths` in the `configuration` of the `maven-compiler-plugin`.
+In Maven, use `annotationProcessorPaths` in the `configuration` of the `maven-compiler-plugin`.
+This requires `maven-compiler-plugin` plugin version 3.5 or higher.
 
 ```
 <plugin>
@@ -82,6 +64,25 @@ An alternative is to use `annotationProcessorPaths` in the `configuration` of th
   </configuration>
 </plugin>
 ```
+
+An alternative that works with older versions of the `maven-compiler-plugin` is to specify the `picocli-codegen` module on the classpath as a `provided` dependency. This also prevents the `picocli-codegen` module from being included in the artifact the module produces as a transitive dependency. 
+
+```
+<dependency>
+  <groupId>info.picocli</groupId>
+  <artifactId>picocli</artifactId>
+  <version>4.0.0-beta-1</version>
+</dependency>
+
+<dependency>
+  <groupId>info.picocli</groupId>
+  <artifactId>picocli-codegen</artifactId>
+  <version>4.0.0-beta-1</version>
+  <provided>true</provided>
+</dependency>
+```
+
+
 See Processor Options below. 
 
 
@@ -144,16 +145,6 @@ To set an annotation processor option in Maven, you need to use the `maven-compi
       <!-- annotationProcessorPaths requires maven-compiler-plugin version 3.5 or higher -->
       <version>${maven-compiler-plugin-version}</version>
       <configuration>
-        <!-- minimum 1.6 -->
-        <source>${java-version}</source>
-        <target>${java-version}</target>
-        <annotationProcessorPaths>
-          <path>
-            <groupId>info.picocli</groupId>
-            <artifactId>picocli-codegen</artifactId>
-            <version>4.0.0-beta-1</version>
-          </path>
-        </annotationProcessorPaths>
         <compilerArgs>
           <arg>-Aproject=${groupId}/${artifactId}</arg>
         </compilerArgs>
