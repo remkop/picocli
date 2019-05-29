@@ -3081,6 +3081,29 @@ public class CommandLine {
         }
         return this;
     }
+    /** Returns the {@code INegatableOptionTransformer} used to create the negative form of {@linkplain Option#negatable() negatable} options.
+     * By default this returns the result of {@link RegexTransformer#createDefault()}.
+     * @return the {@code INegatableOptionTransformer} used to create negative option names.
+     * @see Option#negatable()
+     * @since 4.0 */
+    public INegatableOptionTransformer getNegatableOptionTransformer() { return getCommandSpec().negatableOptionTransformer(); }
+
+    /** Sets the {@code INegatableOptionTransformer} used to create the negative form of {@linkplain Option#negatable() negatable} options.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param transformer the {@code INegatableOptionTransformer} used to create negative option names.
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @see Option#negatable()
+     * @since 4.0 */
+    public CommandLine setNegatableOptionTransformer(INegatableOptionTransformer transformer) {
+        getCommandSpec().negatableOptionTransformer(transformer);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setNegatableOptionTransformer(transformer);
+        }
+        return this;
+    }
     private static boolean empty(String str) { return str == null || str.trim().length() == 0; }
     private static boolean empty(Object[] array) { return array == null || array.length == 0; }
     private static String str(String[] arr, int i) { return (arr == null || arr.length <= i) ? "" : arr[i]; }
@@ -3450,11 +3473,18 @@ public class CommandLine {
          */
         int order() default -1;
 
-        /** (Only for boolean options): controls whether a negative version for this boolean option is automatically added.
+        /** (Only for boolean options): set this to automatically add a negative version for this boolean option.
          * For example, for a {@code --force} option the negative version would be {@code --no-force},
          * and for a {@code -XX:+PrintGCDetails} option, the negative version would be {@code -XX:-PrintGCDetails}.
-         * <p>The form of the negative name is determined by the {@link INegatableOptionTransformer}.</p>
-         * @see Option#negatable()
+         * The synopsis would show {@code --[no-]force} and {@code -XX:±PrintGCDetails}, respectively.
+         * <p>The form of the negative name can be customized by modifying the regular expressions and replacements
+         * used by {@linkplain RegexTransformer#createDefault() default}, or by replacing the default
+         * {@link INegatableOptionTransformer} with a custom implementation entirely.</p>
+         * <p>Negative option names used to parse the command line are collected when the command is constructed
+         * (so any variables in the option names will be resolved at that time).
+         * Documentation strings for negatable options are generated on demand when the usage help message is shown.</p>
+         * @see CommandLine#getNegatableOptionTransformer()
+         * @see CommandLine#setNegatableOptionTransformer(INegatableOptionTransformer)
          * @since 4.0 */
         boolean negatable() default false;
     }
@@ -4222,20 +4252,84 @@ public class CommandLine {
         public String defaultValue(ArgSpec argSpec) { throw new UnsupportedOperationException(); }
     }
 
-    /** Determines the option name transformation of {@linkplain Option#negatable() negatable} options.
+    /** Determines the option name transformation of {@linkplain Option#negatable() negatable} boolean options.
+     * Making an option negatable has two aspects:
+     * <ul>
+     *   <li>the negative form recognized by the parser while parsing the command line</li>
+     *   <li>the documentation string showing both the positive and the negative form in the usage help message</li>
+     * </ul><p>
+     * Additionally, this transformer controls which names of a negatable option are actually negatable:
+     * for example, by default short options like {@code -v} do not have a negative form, even if the same option's
+     * long form, {@code --verbose}, may have a negative form, {@code --no-verbose}.
+     * </p>
+     * @see RegexTransformer
      * @since 4.0
      */
     public interface INegatableOptionTransformer {
+        /** Returns the negative form of the specified option name for the parser to recognize when parsing command line arguments.
+         * @param optionName the option name to create a negative form for, for example {@code --force}
+         * @param cmd the command that the option is part of
+         * @return the negative form of the specified option name, for example {@code --no-force}
+         */
         String makeNegative(String optionName, CommandSpec cmd);
+        /** Returns the documentation string to show in the synopsis and usage help message for the specified option.
+         * The returned value should be concise and clearly suggest that both the positive and the negative form are valid option names
+         * @param optionName the option name to create a documentation string for, for example {@code --force}, or {@code -XX:+<option>}
+         * @param cmd the command that the option is part of
+         * @return the documentation string for the negatable option, for example {@code --[no-]force}, or {@code -XX:[+|-]<option>}
+         */
         String makeSynopsis(String optionName, CommandSpec cmd);
     }
-    /** Determines the option name transformation of {@linkplain Option#negatable() negatable} options.
+    /** A regular expression-based option name transformation for {@linkplain Option#negatable() negatable} options.
+     * <p>A common way to negate GNU *nix long options is to prefix them with {@code "no-"}, so
+     * for a {@code --force} option the negative version would be {@code --no-force}.
+     * Java has the {@code -XX:[+|-]} JVM options, where
+     * "Boolean options are turned on with {@code -XX:+<option>} and turned off with {@code -XX:-<option>}".
+     * These are the negative forms {@linkplain #createDefault() supported by default} by this class.
+     * </p><p>
+     * See the {@link #addPattern(String, String, String) addPattern} method for an example of customizing this to create negative forms for short options.
+     * </p>
      * @since 4.0
      */
     public static class RegexTransformer implements INegatableOptionTransformer {
         Map<Pattern, String> replacements = new LinkedHashMap<Pattern, String>();
         Map<Pattern, String> synopsis = new LinkedHashMap<Pattern, String>();
 
+        /**
+         * Returns the {@code RegexTransformer} used by default for negatable options.
+         * <table border="1">
+         *   <tr>
+         *     <th id="t01">Regex</th>
+         *     <th id="t01">Negative Replacement</th>
+         *     <th id="t01">Synopsis Replacement</th>
+         *     <th id="t01">Comment</th>
+         *   </tr>
+         *   <tr>
+         *     <td id="t01">^--no-(\w(-|\w)*)$</td>
+         *     <td id="t01">--$1</td>
+         *     <td id="t01">--[no-]$1</td>
+         *     <td id="t01">Converts <tt>--no-force</tt> to <tt>--force</tt></td>
+         *   </tr>
+         *   <tr>
+         *     <td id="t01">^--(\w(-|\w)*)$</td>
+         *     <td id="t01">--no-$1</td>
+         *     <td id="t01">--[no-]$1</td>
+         *     <td id="t01">Converts <tt>--force</tt> to <tt>--no-force</tt></td>
+         *   </tr>
+         *   <tr>
+         *     <td id="t01">^(-|--)(\w*:)\+(\w(-|\w)*)$</td>
+         *     <td id="t01">$1$2-$3</td>
+         *     <td id="t01">$1$2&#x00b1$3</td>
+         *     <td id="t01">Converts <tt>-XX:+Inline</tt> to <tt>-XX:-Inline</tt></td>
+         *   </tr>
+         *   <tr>
+         *     <td id="t01">^(-|--)(\w*:)\-(\w(-|\w)*)$</td>
+         *     <td id="t01">$1$2+$3</td>
+         *     <td id="t01">$1$2&#x00b1$3</td>
+         *     <td id="t01">Converts <tt>-XX:-Inline</tt> to <tt>-XX:+Inline</tt></td>
+         *   </tr>
+         * </table>
+         */
         public static RegexTransformer createDefault() {
             CommandLine.RegexTransformer transformer = new CommandLine.RegexTransformer()
                     .addPattern("^-(\\w)$", "+$1", "\u00b1$1") // TBD include short option transforms by default?
@@ -4248,12 +4342,46 @@ public class CommandLine {
             return transformer;
         }
 
+        /**
+         * Adds the specified negative replacement and synopsis replacement for the specified regular expression.
+         * For example, to add negative forms for short options:
+         * <table border="1">
+         *   <tr>
+         *     <th id="t01">Regex</th>
+         *     <th id="t01">Negative Replacement</th>
+         *     <th id="t01">Synopsis Replacement</th>
+         *     <th id="t01">Comment</th>
+         *   </tr>
+         *   <tr>
+         *     <td id="t01">^-(\w)$</td>
+         *     <td id="t01">+$1</td>
+         *     <td id="t01">&#x00b1$1</td>
+         *     <td id="t01">Converts <tt>-v</tt> to <tt>+v</tt></td>
+         *   </tr>
+         *   <tr>
+         *     <td id="t01">^+(\w)$</td>
+         *     <td id="t01">-$1</td>
+         *     <td id="t01">&#x00b1$1</td>
+         *     <td id="t01">Converts <tt>-v</tt> to <tt>+v</tt></td>
+         *   </tr>
+         * </table>
+         *
+         * @param regex regular expression to match an option name
+         * @param negativeReplacement the replacement to use to generate a {@linkplain #makeNegative(String, CommandSpec) negative name} when the option name matches
+         * @param synopsisReplacement the replacement to use to generate a {@linkplain #makeSynopsis(String, CommandSpec) documentation string} when the option name matches
+         * @return this {@code RegexTransformer} for method chaining
+         */
         public RegexTransformer addPattern(String regex, String negativeReplacement, String synopsisReplacement) {
             Pattern pattern = Pattern.compile(regex);
             replacements.put(pattern, negativeReplacement);
             synopsis.put(pattern, synopsisReplacement);
             return this;
         }
+        /**
+         * Removes the negative replacement and synopsis replacement for the specified regular expression.
+         * @param regex regular expression to remove
+         * @return this {@code RegexTransformer} for method chaining
+         */
         public RegexTransformer removePattern(String regex) {
             for (Iterator<Pattern> iter = replacements.keySet().iterator(); iter.hasNext(); ) {
                 Pattern pattern = iter.next();
@@ -4265,6 +4393,7 @@ public class CommandLine {
             return this;
         }
 
+        /** {@inheritDoc} */
         public String makeNegative(String optionName, CommandSpec cmd) {
             for (Map.Entry<Pattern, String> entry : replacements.entrySet()) {
                 Matcher matcher = entry.getKey().matcher(optionName);
@@ -4273,6 +4402,7 @@ public class CommandLine {
             return optionName;
         }
 
+        /** {@inheritDoc} */
         public String makeSynopsis(String optionName, CommandSpec cmd) {
             for (Map.Entry<Pattern, String> entry : synopsis.entrySet()) {
                 Matcher matcher = entry.getKey().matcher(optionName);
@@ -4708,6 +4838,7 @@ public class CommandLine {
             private Boolean isHelpCommand;
             private IVersionProvider versionProvider;
             private IDefaultValueProvider defaultValueProvider;
+            private INegatableOptionTransformer negatableOptionTransformer = RegexTransformer.createDefault();
             private String[] version;
             private String toString;
 
@@ -5011,9 +5142,8 @@ public class CommandLine {
                 }
                 options.add(option);
                 if (option.negatable()) {
-                    INegatableOptionTransformer transformer = RegexTransformer.createDefault();
                     for (String name : interpolator.interpolate(option.names())) { // cannot be null or empty
-                        String negatedName = transformer.makeNegative(name, this);
+                        String negatedName = negatableOptionTransformer().makeNegative(name, this);
                         OptionSpec existing = negatedOptionsByNameMap.put(negatedName, option);
                         if (existing == null) { existing = optionsByNameMap.get(negatedName); }
                         if (existing != null) {
@@ -5316,6 +5446,10 @@ public class CommandLine {
              * @see #execute(String...)
              * @since 4.0 */
             public int exitCodeOnExecutionException() { return exitCodeOnExecutionException == null ? ExitCode.SOFTWARE : exitCodeOnExecutionException; }
+            /** Returns the {@code INegatableOptionTransformer} used to create the negative form of {@linkplain Option#negatable() negatable} options.
+             * @see Option#negatable()
+             * @since 4.0 */
+            public INegatableOptionTransformer negatableOptionTransformer() { return negatableOptionTransformer; }
 
             /** Returns {@code true} if the standard help options have been mixed in with this command, {@code false} otherwise. */
             public boolean mixinStandardHelpOptions() { return mixins.containsKey(AutoHelpMixin.KEY); }
@@ -5382,6 +5516,10 @@ public class CommandLine {
              * @see #execute(String...)
              * @since 4.0 */
             public CommandSpec exitCodeOnExecutionException(int newValue) { exitCodeOnExecutionException = newValue; return this; }
+             /** Sets the {@code INegatableOptionTransformer} used to create the negative form of {@linkplain Option#negatable() negatable} options.
+             * @see Option#negatable()
+             * @since 4.0 */
+            public CommandSpec negatableOptionTransformer(INegatableOptionTransformer newValue) { negatableOptionTransformer = newValue; return this; }
 
             /** Sets whether the standard help options should be mixed in with this command.
              * @return this CommandSpec for method chaining
@@ -7762,7 +7900,7 @@ public class CommandLine {
             private Text concatOptionText(Text text, Help.ColorScheme colorScheme, OptionSpec option) {
                 if (!option.hidden()) {
                     Text name = option.negatable()
-                            ? colorScheme.optionText(RegexTransformer.createDefault().makeSynopsis(option.shortestName(), option.commandSpec))
+                            ? colorScheme.optionText(option.commandSpec.negatableOptionTransformer().makeSynopsis(option.shortestName(), option.commandSpec))
                             : colorScheme.optionText(option.shortestName());
                     Text param = createLabelRenderer(option.commandSpec).renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
                     text = text.concat(open(option)).concat(name).concat(param).concat(close(option));
@@ -11943,7 +12081,7 @@ public class CommandLine {
             for (OptionSpec option : options) {
                 if (!option.hidden()) {
                     Text name = option.negatable()
-                            ? colorScheme.optionText(RegexTransformer.createDefault().makeSynopsis(option.shortestName(), option.commandSpec))
+                            ? colorScheme.optionText(option.commandSpec.negatableOptionTransformer().makeSynopsis(option.shortestName(), option.commandSpec))
                             : colorScheme.optionText(option.shortestName());
                     Text param = parameterLabelRenderer().renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
                     if (option.required()) { // e.g., -x=VAL
@@ -12507,7 +12645,7 @@ public class CommandLine {
                 sep = shortOptionCount > 0 && names.length > 1 ? "," : "";
 
                 if (option.negatable()) {
-                    INegatableOptionTransformer transformer = RegexTransformer.createDefault();
+                    INegatableOptionTransformer transformer = option.commandSpec.negatableOptionTransformer();
                     for (int i = 0; i < names.length; i++) {
                         names[i] = transformer.makeSynopsis(names[i], option.commandSpec);
                     }
@@ -12566,7 +12704,7 @@ public class CommandLine {
         static class MinimalOptionRenderer implements IOptionRenderer {
             public Text[][] render(OptionSpec option, IParamLabelRenderer parameterLabelRenderer, ColorScheme scheme) {
                 Text optionText = option.negatable()
-                        ? scheme.optionText(RegexTransformer.createDefault().makeSynopsis(option.names()[0], option.commandSpec))
+                        ? scheme.optionText(option.commandSpec.negatableOptionTransformer().makeSynopsis(option.names()[0], option.commandSpec))
                         : scheme.optionText(option.names()[0]);
                 Text paramLabelText = parameterLabelRenderer.renderParameterLabel(option, scheme.ansi(), scheme.optionParamStyles);
                 optionText = optionText.concat(paramLabelText);
