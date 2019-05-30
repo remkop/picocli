@@ -13169,7 +13169,7 @@ public class CommandLine {
                 return forColumns(ansi,
                         new Column(2,                                       0, TRUNCATE), // "*"
                         new Column(2,                                       0, SPAN), // "-c"
-                        new Column(1,                                       0, SPAN), // ","
+                        new Column(1,                                       0, TRUNCATE), // ","
                         new Column(longOptionsColumnWidth,                         1, SPAN),  // " --create"
                         new Column(usageHelpWidth - longOptionsColumnWidth, 1, WRAP)); // " Creates a ..."
             }
