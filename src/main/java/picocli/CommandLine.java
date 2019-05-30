@@ -3025,6 +3025,7 @@ public class CommandLine {
      * contents should be expanded into separate arguments for each line in the specified file.
      * This property is {@code true} by default.
      * @return whether "argument files" or {@code @files} should be expanded into their content
+     * @see ParserSpec#expandAtFiles()
      * @since 2.1 */
     public boolean isExpandAtFiles() { return getCommandSpec().parser().expandAtFiles(); }
 
@@ -3032,6 +3033,7 @@ public class CommandLine {
      * contents should be expanded into separate arguments for each line in the specified file. ({@code true} by default.)
      * @param expandAtFiles whether "argument files" or {@code @files} should be expanded into their content
      * @return this {@code CommandLine} object, to allow method chaining
+     * @see ParserSpec#expandAtFiles(boolean)
      * @since 2.1 */
     public CommandLine setExpandAtFiles(boolean expandAtFiles) {
         getCommandSpec().parser().expandAtFiles(expandAtFiles);
@@ -3042,6 +3044,7 @@ public class CommandLine {
      * be interpreted as arguments (without comments).
      * If specified, all characters from the comment character to the end of the line are ignored.
      * @return the character that starts a single-line comment or {@code null}. The default is {@code '#'}.
+     * @see ParserSpec#atFileCommentChar()
      * @since 3.5 */
     public Character getAtFileCommentChar() { return getCommandSpec().parser().atFileCommentChar(); }
 
@@ -3050,6 +3053,7 @@ public class CommandLine {
      * If specified, all characters from the comment character to the end of the line are ignored.
      * @param atFileCommentChar the character that starts a single-line comment or {@code null}. The default is {@code '#'}.
      * @return this {@code CommandLine} object, to allow method chaining
+     * @see ParserSpec#atFileCommentChar(Character)
      * @since 3.5 */
     public CommandLine setAtFileCommentChar(Character atFileCommentChar) {
         getCommandSpec().parser().atFileCommentChar(atFileCommentChar);
@@ -3064,6 +3068,7 @@ public class CommandLine {
      * is interpreted as a single argument. Arguments containing whitespace do not need to be quoted.
      * When system property {@code "picocli.useSimplifiedAtFiles"} is defined, the system property value overrides the programmatically set value.
      * @return whether to use a simplified argument file format. The default is {@code false}.
+     * @see ParserSpec#useSimplifiedAtFiles()
      * @since 3.9 */
     public boolean isUseSimplifiedAtFiles() { return getCommandSpec().parser().useSimplifiedAtFiles(); }
 
@@ -3073,6 +3078,7 @@ public class CommandLine {
      * When system property {@code "picocli.useSimplifiedAtFiles"} is defined, the system property value overrides the programmatically set value.
      * @param simplifiedAtFiles whether to use a simplified argument file format. The default is {@code false}.
      * @return this {@code CommandLine} object, to allow method chaining
+     * @see ParserSpec#useSimplifiedAtFiles(boolean)
      * @since 3.9 */
     public CommandLine setUseSimplifiedAtFiles(boolean simplifiedAtFiles) {
         getCommandSpec().parser().useSimplifiedAtFiles(simplifiedAtFiles);
@@ -3085,6 +3091,7 @@ public class CommandLine {
      * By default this returns the result of {@link RegexTransformer#createDefault()}.
      * @return the {@code INegatableOptionTransformer} used to create negative option names.
      * @see Option#negatable()
+     * @see CommandSpec#negatableOptionTransformer()
      * @since 4.0 */
     public INegatableOptionTransformer getNegatableOptionTransformer() { return getCommandSpec().negatableOptionTransformer(); }
 
@@ -3096,6 +3103,7 @@ public class CommandLine {
      * @param transformer the {@code INegatableOptionTransformer} used to create negative option names.
      * @return this {@code CommandLine} object, to allow method chaining
      * @see Option#negatable()
+     * @see CommandSpec#negatableOptionTransformer(INegatableOptionTransformer)
      * @since 4.0 */
     public CommandLine setNegatableOptionTransformer(INegatableOptionTransformer transformer) {
         getCommandSpec().negatableOptionTransformer(transformer);
@@ -4287,13 +4295,18 @@ public class CommandLine {
      * "Boolean options are turned on with {@code -XX:+<option>} and turned off with {@code -XX:-<option>}".
      * These are the negative forms {@linkplain #createDefault() supported by default} by this class.
      * </p><p>
-     * See the {@link #addPattern(String, String, String) addPattern} method for an example of customizing this to create negative forms for short options.
+     * See the {@link picocli.CommandLine.RegexTransformer.Builder} for an example of customizing this to create negative forms for short options.
      * </p>
      * @since 4.0
      */
     public static class RegexTransformer implements INegatableOptionTransformer {
-        Map<Pattern, String> replacements = new LinkedHashMap<Pattern, String>();
-        Map<Pattern, String> synopsis = new LinkedHashMap<Pattern, String>();
+        final Map<Pattern, String> replacements;
+        final Map<Pattern, String> synopsis;
+
+        RegexTransformer(RegexTransformer.Builder builder) {
+            replacements = Collections.unmodifiableMap(new LinkedHashMap<Pattern, String>(builder.replacements));
+            synopsis = Collections.unmodifiableMap(new LinkedHashMap<Pattern, String>(builder.synopsis));
+        }
 
         /**
          * Returns the {@code RegexTransformer} used by default for negatable options.
@@ -4331,66 +4344,13 @@ public class CommandLine {
          * </table>
          */
         public static RegexTransformer createDefault() {
-            CommandLine.RegexTransformer transformer = new CommandLine.RegexTransformer()
-                    .addPattern("^-(\\w)$", "+$1", "\u00b1$1") // TBD include short option transforms by default?
-                    .addPattern("^+(\\w)$", "-$1", "\u00b1$1") // (same: transform +x to -x)
+            CommandLine.RegexTransformer transformer = new CommandLine.RegexTransformer.Builder()
                     .addPattern("^--no-(\\w(-|\\w)*)$", "--$1", "--[no-]$1")
                     .addPattern("^--(\\w(-|\\w)*)$", "--no-$1", "--[no-]$1")
                     .addPattern("^(-|--)(\\w*:)\\+(\\w(-|\\w)*)$", "$1$2-$3", "$1$2\u00b1$3")
                     .addPattern("^(-|--)(\\w*:)\\-(\\w(-|\\w)*)$", "$1$2+$3", "$1$2\u00b1$3")
-                    ;
+                    .build();
             return transformer;
-        }
-
-        /**
-         * Adds the specified negative replacement and synopsis replacement for the specified regular expression.
-         * For example, to add negative forms for short options:
-         * <table border="1">
-         *   <tr>
-         *     <th id="t01">Regex</th>
-         *     <th id="t01">Negative Replacement</th>
-         *     <th id="t01">Synopsis Replacement</th>
-         *     <th id="t01">Comment</th>
-         *   </tr>
-         *   <tr>
-         *     <td id="t01">^-(\w)$</td>
-         *     <td id="t01">+$1</td>
-         *     <td id="t01">&#x00b1$1</td>
-         *     <td id="t01">Converts <tt>-v</tt> to <tt>+v</tt></td>
-         *   </tr>
-         *   <tr>
-         *     <td id="t01">^+(\w)$</td>
-         *     <td id="t01">-$1</td>
-         *     <td id="t01">&#x00b1$1</td>
-         *     <td id="t01">Converts <tt>-v</tt> to <tt>+v</tt></td>
-         *   </tr>
-         * </table>
-         *
-         * @param regex regular expression to match an option name
-         * @param negativeReplacement the replacement to use to generate a {@linkplain #makeNegative(String, CommandSpec) negative name} when the option name matches
-         * @param synopsisReplacement the replacement to use to generate a {@linkplain #makeSynopsis(String, CommandSpec) documentation string} when the option name matches
-         * @return this {@code RegexTransformer} for method chaining
-         */
-        public RegexTransformer addPattern(String regex, String negativeReplacement, String synopsisReplacement) {
-            Pattern pattern = Pattern.compile(regex);
-            replacements.put(pattern, negativeReplacement);
-            synopsis.put(pattern, synopsisReplacement);
-            return this;
-        }
-        /**
-         * Removes the negative replacement and synopsis replacement for the specified regular expression.
-         * @param regex regular expression to remove
-         * @return this {@code RegexTransformer} for method chaining
-         */
-        public RegexTransformer removePattern(String regex) {
-            for (Iterator<Pattern> iter = replacements.keySet().iterator(); iter.hasNext(); ) {
-                Pattern pattern = iter.next();
-                if (pattern.toString().equals(regex)) {
-                    iter.remove();
-                    synopsis.remove(pattern);
-                }
-            }
-            return this;
         }
 
         /** {@inheritDoc} */
@@ -4409,6 +4369,76 @@ public class CommandLine {
                 if (matcher.find()) { return matcher.replaceAll(entry.getValue()); }
             }
             return optionName;
+        }
+
+        public String toString() {
+            return getClass().getName() + "[replacements=" + replacements + ", synopsis=" + synopsis + "]@" + System.identityHashCode(this);
+        }
+
+        /** Builder for creating {@code RegexTransformer} objects.
+         * @since 4.0  */
+        public static class Builder {
+            Map<Pattern, String> replacements = new LinkedHashMap<Pattern, String>();
+            Map<Pattern, String> synopsis = new LinkedHashMap<Pattern, String>();
+            /** Constructs an empty builder. */
+            public Builder() {}
+            /** Constructs a builder populated with the values from the specified RegexTransformer. */
+            public Builder(RegexTransformer old) {
+                replacements.putAll(old.replacements);
+                synopsis.putAll(old.synopsis);
+            }
+            /**
+             * Adds the specified negative replacement and synopsis replacement for the specified regular expression.
+             * For example, to add negative forms for short options:
+             * <table border="1">
+             *   <tr>
+             *     <th id="t01">Regex</th>
+             *     <th id="t01">Negative Replacement</th>
+             *     <th id="t01">Synopsis Replacement</th>
+             *     <th id="t01">Comment</th>
+             *   </tr>
+             *   <tr>
+             *     <td id="t01">^-(\w)$</td>
+             *     <td id="t01">+$1</td>
+             *     <td id="t01">&#x00b1$1</td>
+             *     <td id="t01">Converts <tt>-v</tt> to <tt>+v</tt></td>
+             *   </tr>
+             *   <tr>
+             *     <td id="t01">^\+(\w)$</td>
+             *     <td id="t01">-$1</td>
+             *     <td id="t01">&#x00b1$1</td>
+             *     <td id="t01">Converts <tt>-v</tt> to <tt>+v</tt></td>
+             *   </tr>
+             * </table>
+             *
+             * @param regex regular expression to match an option name
+             * @param negativeReplacement the replacement to use to generate a {@linkplain #makeNegative(String, CommandSpec) negative name} when the option name matches
+             * @param synopsisReplacement the replacement to use to generate a {@linkplain #makeSynopsis(String, CommandSpec) documentation string} when the option name matches
+             * @return this {@code RegexTransformer} for method chaining
+             */
+            public RegexTransformer.Builder addPattern(String regex, String negativeReplacement, String synopsisReplacement) {
+                Pattern pattern = Pattern.compile(regex);
+                replacements.put(pattern, negativeReplacement);
+                synopsis.put(pattern, synopsisReplacement);
+                return this;
+            }
+            /**
+             * Removes the negative replacement and synopsis replacement for the specified regular expression.
+             * @param regex regular expression to remove
+             * @return this {@code RegexTransformer} for method chaining
+             */
+            public RegexTransformer.Builder removePattern(String regex) {
+                for (Iterator<Pattern> iter = replacements.keySet().iterator(); iter.hasNext(); ) {
+                    Pattern pattern = iter.next();
+                    if (pattern.toString().equals(regex)) {
+                        iter.remove();
+                        synopsis.remove(pattern);
+                    }
+                }
+                return this;
+            }
+
+            public RegexTransformer build() { return new RegexTransformer(this); }
         }
     }
 
@@ -5133,6 +5163,7 @@ public class CommandLine {
              * @return this CommandSpec for method chaining
              * @throws DuplicateOptionAnnotationsException if any of the names of the specified option is the same as the name of another option */
             public CommandSpec addOption(OptionSpec option) {
+                Tracer tracer = new Tracer();
                 for (String name : interpolator.interpolate(option.names())) { // cannot be null or empty
                     OptionSpec existing = optionsByNameMap.put(name, option);
                     if (existing != null) { /* was: && !existing.equals(option)) {*/ // since 4.0 ArgGroups: an option cannot be in multiple groups
@@ -5141,18 +5172,40 @@ public class CommandLine {
                     if (name.length() == 2 && name.startsWith("-")) { posixOptionsByKeyMap.put(name.charAt(1), option); }
                 }
                 options.add(option);
+                addOptionNegative(option, tracer);
+                return addArg(option);
+            }
+
+            private void addOptionNegative(OptionSpec option, Tracer tracer) {
                 if (option.negatable()) {
+                    if (!option.typeInfo().isBoolean()) {
+                        throw new InitializationException("Only boolean options can be negatable, but " + option + " is of type " + option.typeInfo().getClassName());
+                    }
                     for (String name : interpolator.interpolate(option.names())) { // cannot be null or empty
                         String negatedName = negatableOptionTransformer().makeNegative(name, this);
-                        OptionSpec existing = negatedOptionsByNameMap.put(negatedName, option);
-                        if (existing == null) { existing = optionsByNameMap.get(negatedName); }
-                        if (existing != null) {
-                            throw DuplicateOptionAnnotationsException.create(negatedName, option, existing);
+                        if (name.equals(negatedName)) {
+                            tracer.debug("Option %s is negatable, but has no negative form.%n", name);
+                        } else {
+                            tracer.debug("Option %s is negatable, registering negative name %s.%n", name, negatedName);
+                            OptionSpec existing = negatedOptionsByNameMap.put(negatedName, option);
+                            if (existing == null) { existing = optionsByNameMap.get(negatedName); }
+                            if (existing != null) {
+                                throw DuplicateOptionAnnotationsException.create(negatedName, option, existing);
+                            }
                         }
                     }
                 }
-                return addArg(option);
             }
+
+            private void resetNegativeOptionNames() {
+                Tracer tracer = new Tracer();
+                tracer.debug("Clearing negatedOptionsByNameMap...%n");
+                negatedOptionsByNameMap.clear();
+                for (OptionSpec option : options) {
+                    addOptionNegative(option, tracer);
+                }
+            }
+
             /** Adds the specified positional parameter spec to the list of configured arguments to expect.
              * The positional parameter's {@linkplain PositionalParamSpec#description()} may
              * now return Strings from this CommandSpec's {@linkplain UsageMessageSpec#messages() messages}.
@@ -5519,7 +5572,13 @@ public class CommandLine {
              /** Sets the {@code INegatableOptionTransformer} used to create the negative form of {@linkplain Option#negatable() negatable} options.
              * @see Option#negatable()
              * @since 4.0 */
-            public CommandSpec negatableOptionTransformer(INegatableOptionTransformer newValue) { negatableOptionTransformer = newValue; return this; }
+            public CommandSpec negatableOptionTransformer(INegatableOptionTransformer newValue) {
+                Tracer tracer = new Tracer();
+                tracer.debug("Replacing negatableOptionTransformer %s with %s%n", negatableOptionTransformer, newValue);
+                negatableOptionTransformer = newValue;
+                resetNegativeOptionNames();
+                return this;
+            }
 
             /** Sets whether the standard help options should be mixed in with this command.
              * @return this CommandSpec for method chaining
@@ -10483,9 +10542,9 @@ public class CommandLine {
                 if (separatorIndex > 0) {
                     String key = arg.substring(0, separatorIndex);
                     // be greedy. Consume the whole arg as an option if possible.
-                    if (commandSpec.optionsMap().containsKey(key) && commandSpec.optionsMap().containsKey(arg)) {
+                    if (isStandaloneOption(key) && isStandaloneOption(arg)) {
                         tracer.warn("Both '%s' and '%s' are valid option names in %s. Using '%s'...%n", arg, key, getCommandName(), arg);
-                    } else if (commandSpec.optionsMap().containsKey(key)) {
+                    } else if (isStandaloneOption(key)) {
                         paramAttachedToOption = true;
                         String optionParam = arg.substring(separatorIndex + separator.length());
                         args.push(optionParam);
@@ -12060,12 +12119,15 @@ public class CommandLine {
                     boolean isFlagOption = option.typeInfo().isBoolean();
                     if (isFlagOption && option.arity().max <= 0) { // #612 consider arity: boolean options may require a parameter
                         String shortestName = option.shortestName();
-                        if (shortestName.length() == 2 && shortestName.startsWith("-")) {
-                            booleanOptions.add(option);
-                            if (option.required()) {
-                                clusteredRequired.append(shortestName.substring(1));
-                            } else {
-                                clusteredOptional.append(shortestName.substring(1));
+                        if (shortestName.length() == 2 && shortestName.startsWith("-")) { // POSIX short option
+                            // we don't want to show negatable options as clustered options in the synopsis
+                            if (!option.negatable() || shortestName.equals(commandSpec.negatableOptionTransformer().makeSynopsis(shortestName, commandSpec))) {
+                                booleanOptions.add(option);
+                                if (option.required()) {
+                                    clusteredRequired.append(shortestName.substring(1));
+                                } else {
+                                    clusteredOptional.append(shortestName.substring(1));
+                                }
                             }
                         }
                     }
@@ -12646,6 +12708,9 @@ public class CommandLine {
 
                 if (option.negatable()) {
                     INegatableOptionTransformer transformer = option.commandSpec.negatableOptionTransformer();
+                    if (shortOptionCount > 0) {
+                        shortOption = transformer.makeSynopsis(shortOption, option.commandSpec);
+                    }
                     for (int i = 0; i < names.length; i++) {
                         names[i] = transformer.makeSynopsis(names[i], option.commandSpec);
                     }
@@ -13103,8 +13168,8 @@ public class CommandLine {
                 // "* -c, --create                Creates a ...."
                 return forColumns(ansi,
                         new Column(2,                                       0, TRUNCATE), // "*"
-                        new Column(2,                                       0, TRUNCATE), // "-c"
-                        new Column(1,                                       0, TRUNCATE), // ","
+                        new Column(2,                                       0, SPAN), // "-c"
+                        new Column(1,                                       0, SPAN), // ","
                         new Column(longOptionsColumnWidth,                         1, SPAN),  // " --create"
                         new Column(usageHelpWidth - longOptionsColumnWidth, 1, WRAP)); // " Creates a ..."
             }
