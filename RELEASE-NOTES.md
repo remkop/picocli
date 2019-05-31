@@ -10,8 +10,8 @@ Use this if you’re interested in:
 * **Compile time error checking**. Some combinations of annotations and attributes are invalid. The annotation processor will show compile time errors immediately, instead of runtime errors when you run your tests, resulting in shorter feedback cycles.
 * **Graal native images**. The annotation processor generates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md) files under `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar. By embedding these configuration files, your jar is instantly Graal-enabled. In most cases no further configuration is needed when generating a native image. 
 
-Also, from this release the `picocli-jpms-module` will no longer publish a separate artifact.
-Instead, the main `picocli-$version.jar` is an explicit JPMS module, with a `module-info.class` located in `META-INF/versions/9`.
+Also, from this release the main `picocli-$version.jar` is an explicit JPMS module, with a `module-info.class` located in `META-INF/versions/9`.
+The `picocli-jpms-module` will no longer publish a separate artifact.
 
 From picocli 4.0, options can be `negatable`.
 When an option is negatable, picocli will recognize negative aliases of the option on the command line.
