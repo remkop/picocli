@@ -29,7 +29,7 @@ jar {
 ext {
     bintrayPackage    = 'picocli-groovy'
     bintrayWebsiteUrl = 'https://github.com/remkop/picocli/tree/master/picocli-groovy'
-    bintrayLabels     = ['cli', 'shell', 'commandline', 'shell', 'picocli', 'groovy']
+    bintrayLabels     = ['cli', 'script', 'commandline', 'picocli', 'groovy']
 }
 bintray {
     user = bintrayUsername
