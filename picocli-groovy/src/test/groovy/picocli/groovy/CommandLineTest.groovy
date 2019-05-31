@@ -2,7 +2,6 @@ package picocli.groovy
 
 import org.junit.Test
 import picocli.CommandLine
-import picocli.PicocliTestUtil
 
 import static org.junit.Assert.assertEquals
 
@@ -34,7 +33,7 @@ class CommandLineTest {
                 "[picocli INFO] Setting field Object picocli.groovy.CommandLineTest\$Params.option to 'anOption' (was 'null') for option -o%n" +
                 "[picocli INFO] Adding [A] to field String[] picocli.groovy.CommandLineTest\$Params.positional for args[0..*] at position 0%n" +
                 "[picocli INFO] Adding [B] to field String[] picocli.groovy.CommandLineTest\$Params.positional for args[0..*] at position 1%n",
-            PicocliTestUtil.versionString())
+            CommandLine.versionString())
         String actual = new String(baos.toByteArray(), "UTF8")
         // println actual
         assertEquals(expected, actual)

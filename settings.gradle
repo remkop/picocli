@@ -1,4 +1,5 @@
 rootProject.name = 'picocli'
+include 'picocli-groovy'
 include 'picocli-examples'
 include 'picocli-shell-jline2'
 include 'picocli-shell-jline3'

@@ -4,6 +4,7 @@ sourceCompatibility = 1.8 // for the JSR-380 BeanValidation example
 targetCompatibility = 1.8
 dependencies {
     compile rootProject
+    compile project(':picocli-groovy')
     compile "org.apache.ivy:ivy:$ivyVersion", // for Intelli/J
             "org.codehaus.groovy:groovy-all:$groovyVersion",
 

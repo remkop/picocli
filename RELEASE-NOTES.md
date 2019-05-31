@@ -182,6 +182,7 @@ See the [Gradle documentation](https://docs.gradle.org/current/dsl/org.gradle.ap
 - [#707] Add example maven/gradle projects that demonstrate using the annotation processor
 - [#700] Change default exit codes to `1` for Exceptions in client code, `2` for invalid usage. Add links to `ExitCode` javadoc.
 - [#709] Fix scrambled characters for the `±` character when running on system with non-UTF8 encoding
+- [#711] Create separate `picocli-groovy` module
 
 ## <a name="4.0.0-beta-1-deprecated"></a> Deprecations
 
