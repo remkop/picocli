@@ -4007,6 +4007,44 @@ Output:
 Picocli-based applications can now have command line completion in Bash or Zsh Unix shells.
 See the link:autocomplete.html[Autocomplete for Java Command Line Applications] manual for how to generate an autocompletion script tailored to your application.
 
+== Java 9 JPMS Modules
+
+The main `picocli-${version}.jar` is a JPMS module named `info.picocli`.
+
+Starting from picocli 4.0, this jar will be an explicit module instead of an https://openjdk.java.net/projects/jigsaw/spec/sotms/#automatic-modules[automatic module],
+so the `jlink` tool can be used to provide a trimmed binary image that has only the required modules.
+
+Typically, a modular jar includes the `module-info.class` file in its root directory.
+This causes problems for some older tools, which incorrectly process the module descriptor as if it were a normal Java class.
+To provide the best backward compatibility, the main picocli artifact is a https://openjdk.java.net/jeps/238#Modular-multi-release-JAR-files[modular multi-release jar] with the `module-info.class` file located in `META-INF/versions/9`.
+
+
+=== Module Configuration
+Applications that use Java 9's modules need to configure their module to allow picocli reflective access to the annotated classes and fields.
+
+Often applications want the annotated classes and fields to be **private**; there should be no need to make them part of the exported API of your module just to allow picocli to access them. The below settings make this possible.
+
+Example `module-info.java`:
+```
+module com.yourorg.yourapp {
+   requires info.picocli;
+
+   // Open this package for reflection to external frameworks.
+   opens your.package.using.picocli;
+
+   // or: limit access to picocli only
+   opens other.package.using.picocli to info.picocli;
+}
+```
+Note that neither package is `exported`, so other modules cannot accidentally compile against types in these packages.
+
+Alternatively:
+```
+// open all packages in the module to reflective access
+open module com.yourorg.yourapp {
+   requires info.picocli;
+}
+```
 
 == Picocli in Other Languages
 Picocli may be used in other JVM languages that support annotations.
