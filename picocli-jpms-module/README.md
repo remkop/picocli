@@ -1,25 +1,12 @@
-<p align="center"><img src="https://picocli.info/images/logo/horizontal-400x150.png" alt="picocli" height="150px"></p>
-
 # Picocli JPMS Module
 
-This subproject generates a [modular jar](https://openjdk.java.net/projects/jigsaw/spec/sotms/#module-artifacts) `picocli-jpms-module-${version}.jar` for applications that want to use picocli while taking full advantage of the Java Platform Module System (JPMS) introduced in Java 9.
+This subproject does not produce any artifacts,
+but generates a `picocli-jpms-module/build/classes/java/main/META-INF/versions/9/module-info.class` file,
+for inclusion in the main `picocli-${version}.jar` artifact.
+ 
+Starting from picocli 4.0, `picocli-${version}.jar` will no longer be an [automatic module](https://openjdk.java.net/projects/jigsaw/spec/sotms/#automatic-modules),
+but will be a [modular multi-release jar](https://openjdk.java.net/jeps/238#Modular-multi-release-JAR-files).
 
-This jar is generated in addition to the `picocli-${version}.jar` artifact. Starting from picocli 4.0, `picocli-${version}.jar` will no longer be an [automatic module](https://openjdk.java.net/projects/jigsaw/spec/sotms/#automatic-modules).
-
-## Contents of picocli-jpms-module
-
-* a `module-info.class` in the root of the jar.
-* the classes in the `picocli` package.
-* excludes (does not contain) any classes in the `picocli.groovy` package, so this module has no dependency on Groovy.
-
-We considered making the `picocli-jpms-module` artifact a 
-modular multi-release jar with the `module-info.class` file located in `META-INF/versions/9`,
-in the hope that this would avoid problems for some older tools,
-which incorrectly process the module descriptor as if it were a normal Java class.
-
-However, putting the `module-info.class` file in `META-INF/versions/9` seems to have its own problems, as discussed [here](https://github.com/remkop/picocli/issues/674).
-
-I'm open to changing this, based on community feedback. Let us know what works or does not work for you!
 
 # Using picocli with Java 9 modules
 

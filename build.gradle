@@ -5,12 +5,16 @@ version "$projectVersion"
 buildscript {
     repositories {
         jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
 
     dependencies {
         classpath "org.asciidoctor:asciidoctor-gradle-plugin:$asciidoctorGradlePluginVersion"
         classpath 'org.asciidoctor:asciidoctorj-pdf:1.5.0-alpha.15'
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:$gradleBintrayPluginVersion"
+        classpath "gradle.plugin.org.beryx:badass-jar:1.1.3"
     }
 }
 
@@ -18,6 +22,7 @@ apply plugin: 'org.asciidoctor.convert' // version '1.5.8.1'
 apply plugin: 'distribution'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
+
 
 allprojects {
     apply plugin: 'groovy'
@@ -143,6 +148,16 @@ allprojects {
         }
     }
 }
+
+dependencies {
+    compile project(':picocli-jpms-module')
+}
+task copyModuleInfo(dependsOn: classes, type: Copy) {
+    dependsOn(':picocli-jpms-module:jar') // the jar task in picocli-jpms-module writes ${project(':picocli-jpms-module').buildDir}/classes/java/main/META-INF/versions/9/module-info.class
+    from("${project(':picocli-jpms-module').buildDir}/classes/java/main")
+    into "${buildDir}/classes/java/main"
+}
+jar.dependsOn(copyModuleInfo)
 
 jar {
     manifest {
