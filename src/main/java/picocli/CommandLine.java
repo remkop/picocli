@@ -3485,7 +3485,7 @@ public class CommandLine {
          * For example, for a {@code --force} option the negative version would be {@code --no-force},
          * and for a {@code -XX:+PrintGCDetails} option, the negative version would be {@code -XX:-PrintGCDetails}.
          * The synopsis would show {@code --[no-]force} and {@code -XX:±PrintGCDetails}, respectively.
-         * <p>The form of the negative name can be customized by modifying the regular expressions and replacements
+         * <p>The form of the negative name can be customized by modifying the regular expressions
          * used by {@linkplain RegexTransformer#createDefault() default}, or by replacing the default
          * {@link INegatableOptionTransformer} with a custom implementation entirely.</p>
          * <p>Negative option names used to parse the command line are collected when the command is constructed

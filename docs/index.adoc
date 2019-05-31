@@ -280,6 +280,26 @@ The following command line arguments are all equivalent and parsing them will gi
 ...
 ----
 
+=== Negatable Options
+
+From picocli 4.0, options can be `negatable`.
+
+```java
+class App {
+    @Option(names = "--verbose",           negatable = true) boolean verbose;
+    @Option(names = "-XX:+PrintGCDetails", negatable = true) boolean printGCDetails;
+    @Option(names = "-XX:-UseG1GC",        negatable = true) boolean useG1GC = true;
+}
+```
+
+When an option is negatable, picocli will recognize negative aliases of the option on the command line.
+
+For *nix-style long options, aliases have the prefix `no-` to the given names.
+For Java JVM-style options, the `:+` is turned into `:-` and vice versa.
+Short option names are not given a negative alias by default. (This is <<Customizing Negatable Options,customizable>>.)
+
+If the negated form of the option is found, for example `--no-verbose`, the value is set to the provided default. Otherwise, with a regular call, for example `--verbose`, it is set to the opposite of the default.
+
 
 === Positional Parameters
 Any command line arguments that are not subcommands or options (or option parameters) are interpreted as positional parameters.
@@ -1688,6 +1708,45 @@ f
 When the `splitQuotedStrings` parser attribute is set to `true` the `split` regex is applied to the parameter value regardless of quotes.
 This can be useful when using a regular expression that is designed to handle quotes.
 
+=== Customizing Negatable Options
+
+<<Negatable Options,Negatable options>> can be customized via the `INegatableOptionTransformer` interface:
+
+```java
+interface INegatableOptionTransformer {
+    /**
+     * Returns the negative form of the specified option name for the parser to recognize
+     * when parsing command line arguments.
+     * @param optionName the option name to create a negative form for,
+     *                   for example {@code --force}
+     * @param cmd the command that the option is part of
+     * @return the negative form of the specified option name, for example {@code --no-force}
+     */
+    String makeNegative(String optionName, CommandSpec cmd);
+
+    /**
+     * Returns the documentation string to show in the synopsis and usage help message for
+     * the specified option. The returned value should be concise and clearly suggest that
+     * both the positive and the negative form are valid option names.
+     * @param optionName the option name to create a documentation string for,
+     *                   for example {@code --force}, or {@code -XX:+<option>}
+     * @param cmd the command that the option is part of
+     * @return the documentation string for the negatable option,
+     *         for example {@code --[no-]force}, or {@code -XX:[+|-]<option>}
+     */
+    String makeSynopsis(String optionName, CommandSpec cmd);
+}
+```
+
+This allows you to control:
+
+* which option names should have a negative form
+* the negative form recognized by the parser while parsing the command line
+* the documentation string showing both the positive and the negative form in the usage help message
+
+By default, a set of https://picocli.info/apidocs/picocli/CommandLine.RegexTransformer.html#createDefault--[regular expressions] is used to control the above.
+Use `CommandLine.setNegatableOptionTransformer` to replace the https://picocli.info/apidocs/picocli/CommandLine.INegatableOptionTransformer[`INegatableOptionTransformer`] with a custom version.
+See the javadoc for details.
 
 == Help
 

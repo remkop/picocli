@@ -13,6 +13,8 @@ Use this if you’re interested in:
 Also, from this release the `picocli-jpms-module` will no longer publish a separate artifact.
 Instead, the main `picocli-$version.jar` is an explicit JPMS module, with a `module-info.class` located in `META-INF/versions/9`.
 
+From picocli 4.0, options can be `negatable`.
+When an option is negatable, picocli will recognize negative aliases of the option on the command line.
 
 
 _Please try this and provide feedback. We can still make changes._
@@ -174,6 +176,26 @@ compileJava {
 ```
 
 See the [Gradle documentation](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.compile.CompileOptions.html) for details.
+
+
+### <a name="4.0.0-beta-1-negatable"></a> Negatable Options
+From picocli 4.0, options can be `negatable`.
+
+```java
+class App {
+    @Option(names = "--verbose",           negatable = true) boolean verbose;
+    @Option(names = "-XX:+PrintGCDetails", negatable = true) boolean printGCDetails;
+    @Option(names = "-XX:-UseG1GC",        negatable = true) boolean useG1GC = true;
+}
+```
+
+When an option is negatable, picocli will recognize negative aliases of the option on the command line.
+
+For *nix-style long options, aliases have the prefix 'no-' to the given names.
+For Java JVM-style options, the `:+` is turned into `:-` and vice versa. (This can be changed by customizing the `INegatableOptionTransformer`.)
+
+If the negated form of the option is found, for example '--no-verbose', the value is set to the provided default. Otherwise, with a regular call, for example '--verbose', it is set to the opposite of the default.
+
 
 
 ## <a name="4.0.0-beta-1-fixes"></a> Fixed issues
