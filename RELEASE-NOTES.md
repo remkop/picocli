@@ -7,14 +7,15 @@ The picocli community is pleased to announce picocli 4.0.0-beta-1.
 This release includes the first cut of an annotation processor that can build a model from the picocli annotations at compile time rather than at runtime. 
 
 Use this if you’re interested in:
-* **Compile time error checking**. Some combinations of annotations and attributes are invalid. The annotation processor will show compile time errors immediately, instead of runtime errors when you run your tests, resulting in shorter feedback cycles.
+* **Compile time error checking**. The annotation processor will show compile time errors for invalid annotations and attributes immediately, instead of runtime errors when you run your tests, resulting in shorter feedback cycles.
 * **Graal native images**. The annotation processor generates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md) files under `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar. By embedding these configuration files, your jar is instantly Graal-enabled. In most cases no further configuration is needed when generating a native image. 
 
-Also, from this release the main `picocli-$version.jar` is an explicit JPMS module, with a `module-info.class` located in `META-INF/versions/9`.
+Also, from this release the main `picocli-4.x` artifact no longer contains the `picocli.groovy` classes: these have been split off into a separate `picocli-groovy-4.x` artifact.
+The main `picocli-4.x.jar` is now an explicit JPMS module, with a `module-info.class` located in `META-INF/versions/9`.
 The `picocli-jpms-module` will no longer publish a separate artifact.
 
 From picocli 4.0, options can be `negatable`.
-When an option is negatable, picocli will recognize negative aliases of the option on the command line.
+When an option is negatable, picocli will recognize negative aliases of the option on the command line. See the New and Noteworthy section below for more details. 
 
 
 _Please try this and provide feedback. We can still make changes._
@@ -40,7 +41,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 This release includes the first cut of an annotation processor that can build a model from the picocli annotations at compile time rather than at runtime. 
 
 Use this if you’re interested in:
-* **Compile time error checking**. Some combinations of annotations and attributes are invalid. The annotation processor will show compile time errors immediately, instead of runtime errors when you run your tests, resulting in shorter feedback cycles.
+* **Compile time error checking**. Some combinations of  are invalid. The annotation processor will show compile time errors for invalid immediately, instead of runtime errors when you run your tests, resulting in shorter feedback cycles.
 * **Graal native images**. The annotation processor generates and updates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md) files for [reflection](https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md), [resources](https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md) and [dynamic proxies](https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md) under `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar. By embedding these configuration files, your jar is instantly Graal-enabled. In most cases no further configuration is needed when generating a native image. 
 
 #### Enabling the Annotation Processor
@@ -216,6 +217,11 @@ If the negated form of the option is found, for example '--no-verbose', the valu
 
 ## <a name="4.0.0-beta-1-breaking-changes"></a> Potential breaking changes
 
+### `picocli.groovy` Classes Moved to Separate Artifact
+From this release the main `picocli-4.x` artifact no longer contains the `picocli.groovy` classes: these have been split off into a separate `picocli-groovy-4.x` artifact.
+
+
+### Option Order Changed 
 Previously, options that only have a long name (and do not have a short name) were always shown before options with a short name.
 From this release, they are inserted in the option list by their first non-prefix letter.
 This may break tests that expect a specific help message.
