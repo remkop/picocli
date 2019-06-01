@@ -1,3 +1,6 @@
+<p align="center"><img src="https://picocli.info/images/groovy-logo.png" height="150px"><img src="https://picocli.info/images/logo/horizontal-400x150.png" alt="picocli" height="150px"></p>
+
+
 # Picocli in Groovy Scripts
 
 This module contains classes to allow the use of picocli annotations in Groovy scripts. 
@@ -31,4 +34,3 @@ files.each {
 ```
 
 See the [Groovy Scripts on Steroids](https://picocli.info/picocli-2.0-groovy-scripts-on-steroids.html) article for more details. 
-
