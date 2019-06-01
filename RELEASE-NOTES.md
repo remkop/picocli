@@ -41,7 +41,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 This release includes the first cut of an annotation processor that can build a model from the picocli annotations at compile time rather than at runtime. 
 
 Use this if you’re interested in:
-* **Compile time error checking**. Some combinations of  are invalid. The annotation processor will show compile time errors for invalid immediately, instead of runtime errors when you run your tests, resulting in shorter feedback cycles.
+* **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
 * **Graal native images**. The annotation processor generates and updates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md) files for [reflection](https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md), [resources](https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md) and [dynamic proxies](https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md) under `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar. By embedding these configuration files, your jar is instantly Graal-enabled. In most cases no further configuration is needed when generating a native image. 
 
 #### Enabling the Annotation Processor
