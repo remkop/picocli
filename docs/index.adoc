@@ -1732,7 +1732,7 @@ interface INegatableOptionTransformer {
      *                   for example {@code --force}, or {@code -XX:+<option>}
      * @param cmd the command that the option is part of
      * @return the documentation string for the negatable option,
-     *         for example {@code --[no-]force}, or {@code -XX:[+|-]<option>}
+     *         for example {@code --[no-]force}, or {@code -XX:(+|-)<option>}
      */
     String makeSynopsis(String optionName, CommandSpec cmd);
 }
@@ -4070,8 +4070,9 @@ See the link:autocomplete.html[Autocomplete for Java Command Line Applications] 
 
 The main `picocli-${version}.jar` is a JPMS module named `info.picocli`.
 
-Starting from picocli 4.0, this jar will be an explicit module instead of an https://openjdk.java.net/projects/jigsaw/spec/sotms/#automatic-modules[automatic module],
-so the `jlink` tool can be used to provide a trimmed binary image that has only the required modules.
+Starting from picocli 4.0, this jar will be an explicit module instead of an automatic module,
+so the https://docs.oracle.com/en/java/javase/12/tools/jlink.html[`jlink` tool] can be used to provide a trimmed binary image that has only the required modules.
+(Note that https://medium.com/azulsystems/using-jlink-to-build-java-runtimes-for-non-modular-applications-9568c5e70ef4[there are ways] to use jlink with non-modular applications.)
 
 Typically, a modular jar includes the `module-info.class` file in its root directory.
 This causes problems for some older tools, which incorrectly process the module descriptor as if it were a normal Java class.

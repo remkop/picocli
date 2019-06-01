@@ -4284,7 +4284,7 @@ public class CommandLine {
          * The returned value should be concise and clearly suggest that both the positive and the negative form are valid option names
          * @param optionName the option name to create a documentation string for, for example {@code --force}, or {@code -XX:+<option>}
          * @param cmd the command that the option is part of
-         * @return the documentation string for the negatable option, for example {@code --[no-]force}, or {@code -XX:[+|-]<option>}
+         * @return the documentation string for the negatable option, for example {@code --[no-]force}, or {@code -XX:(+|-)<option>}
          */
         String makeSynopsis(String optionName, CommandSpec cmd);
     }
@@ -4332,13 +4332,13 @@ public class CommandLine {
          *   <tr>
          *     <td id="t01">^(-|--)(\w*:)\+(\w(-|\w)*)$</td>
          *     <td id="t01">$1$2-$3</td>
-         *     <td id="t01">$1$2&#x00b1$3</td>
+         *     <td id="t01">$1$2&#x00b1;$3</td>
          *     <td id="t01">Converts <tt>-XX:+Inline</tt> to <tt>-XX:-Inline</tt></td>
          *   </tr>
          *   <tr>
          *     <td id="t01">^(-|--)(\w*:)\-(\w(-|\w)*)$</td>
          *     <td id="t01">$1$2+$3</td>
-         *     <td id="t01">$1$2&#x00b1$3</td>
+         *     <td id="t01">$1$2&#x00b1;$3</td>
          *     <td id="t01">Converts <tt>-XX:-Inline</tt> to <tt>-XX:+Inline</tt></td>
          *   </tr>
          * </table>
@@ -4400,13 +4400,13 @@ public class CommandLine {
              *   <tr>
              *     <td id="t01">^-(\w)$</td>
              *     <td id="t01">+$1</td>
-             *     <td id="t01">&#x00b1$1</td>
+             *     <td id="t01">&#x00b1;$1</td>
              *     <td id="t01">Converts <tt>-v</tt> to <tt>+v</tt></td>
              *   </tr>
              *   <tr>
              *     <td id="t01">^\+(\w)$</td>
              *     <td id="t01">-$1</td>
-             *     <td id="t01">&#x00b1$1</td>
+             *     <td id="t01">&#x00b1;$1</td>
              *     <td id="t01">Converts <tt>-v</tt> to <tt>+v</tt></td>
              *   </tr>
              * </table>
