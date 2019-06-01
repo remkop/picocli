@@ -7,7 +7,7 @@ The picocli community is pleased to announce picocli 4.0.0-beta-1.
 This release includes the first cut of an annotation processor that can build a model from the picocli annotations at compile time rather than at runtime. 
 
 Use this if you’re interested in:
-* **Compile time error checking**. The annotation processor will show compile time errors for invalid annotations and attributes immediately, instead of runtime errors when you run your tests, resulting in shorter feedback cycles.
+* **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
 * **Graal native images**. The annotation processor generates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md) files under `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar. By embedding these configuration files, your jar is instantly Graal-enabled. In most cases no further configuration is needed when generating a native image. 
 
 Also, from this release the main `picocli-4.x` artifact no longer contains the `picocli.groovy` classes: these have been split off into a separate `picocli-groovy-4.x` artifact.
@@ -195,7 +195,7 @@ When an option is negatable, picocli will recognize negative aliases of the opti
 For *nix-style long options, aliases have the prefix 'no-' to the given names.
 For Java JVM-style options, the `:+` is turned into `:-` and vice versa. (This can be changed by customizing the `INegatableOptionTransformer`.)
 
-If the negated form of the option is found, for example '--no-verbose', the value is set to the provided default. Otherwise, with a regular call, for example '--verbose', it is set to the opposite of the default.
+If the negated form of the option is found, for example `--no-verbose`, the value is set to the provided default. Otherwise, with a regular call, for example `--verbose`, it is set to the opposite of the default.
 
 
 
