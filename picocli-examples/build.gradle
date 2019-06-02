@@ -1,12 +1,18 @@
 description 'Java and Groovy examples for the picocli project.'
 
+apply plugin: 'groovy'
+
 sourceCompatibility = 1.8 // for the JSR-380 BeanValidation example
 targetCompatibility = 1.8
+
+configurations {
+    ivy
+}
 dependencies {
     compile rootProject
     compile project(':picocli-groovy')
-    compile "org.apache.ivy:ivy:$ivyVersion", // for Intelli/J
-            "org.codehaus.groovy:groovy-all:$groovyVersion",
+    ivy     "org.apache.ivy:ivy:$ivyVersion" // for Intelli/J
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion",
 
             // for the JSR-380 BeanValidation example
             "javax.validation:validation-api:2.0.0.Final",
@@ -14,6 +20,13 @@ dependencies {
             "org.hibernate.validator:hibernate-validator-annotation-processor:6.0.2.Final",
             "javax.el:javax.el-api:3.0.0",
             "org.glassfish.web:javax.el:2.2.6"
+}
+tasks.withType(GroovyCompile) {
+    // this, and the `configurations {ivy}` section, are a workaround for the dreaded
+    // java.lang.NoClassDefFoundError: org/apache/ivy/core/report/ResolveReport
+    // that occurs when trying to compile a groovy script containing a @Grab annotation in gradle.
+    // see https://stackoverflow.com/questions/18173908/error-compiling-a-groovy-project-using-grab-annotation
+    groovyClasspath += configurations.ivy
 }
 
 def generatedResources = "$buildDir/generated-resources/main"

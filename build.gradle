@@ -28,7 +28,6 @@ apply plugin: 'com.jfrog.bintray'
 
 
 allprojects {
-    apply plugin: 'groovy'
     apply plugin: 'java'
     apply plugin: 'java-library' // to avoid https://github.com/gradle/gradle/issues/1118
     sourceCompatibility = !org.gradle.api.JavaVersion.current().isJava9Compatible() ?
@@ -46,25 +45,12 @@ allprojects {
             force "junit:junit-dep:$junitDepVersion"
         }
     }
-    configurations {
-        ivy
-    }
     dependencies {
-        compileOnly "org.codehaus.groovy:groovy-all:$groovyVersion"
-        ivy         "org.apache.ivy:ivy:$ivyVersion" // for Gradle
         testCompile "junit:junit:$junitVersion",
                     "org.hamcrest:hamcrest-core:$hamcrestCoreVersion",
                     "org.fusesource.jansi:jansi:$jansiVersion",
                     "org.codehaus.groovy:groovy-all:$groovyVersion",
                     "com.github.stefanbirkner:system-rules:$systemRulesVersion"
-
-    }
-    tasks.withType(GroovyCompile) {
-        // this, and the `configurations {ivy}` section, are a workaround for the dreaded
-        // java.lang.NoClassDefFoundError: org/apache/ivy/core/report/ResolveReport
-        // that occurs when trying to compile a groovy script containing a @Grab annotation in gradle.
-        // see https://stackoverflow.com/questions/18173908/error-compiling-a-groovy-project-using-grab-annotation
-        groovyClasspath += configurations.ivy
     }
     tasks.withType(JavaCompile) {
         options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
@@ -193,18 +179,28 @@ javadoc {
     File javadocExe = new File(System.getenv("JAVA_11_HOME"), "bin/javadoc.exe")
     if (javadocExe.exists()) {
         executable = javadocExe
-        javadoc.options.addStringOption('--frames')
+        javadoc.options.links = [ 'https://docs.oracle.com/en/java/javase/11/docs/api/' ]
+        inputs.property("moduleName", 'info.picocli')
+        source(new File("picocli-jpms-module/src/main/java/module-info.java").absolutePath, project.sourceSets.main.java)
+        //source(project(':picocli-jpms-module').sourceSets.main.java, project.sourceSets.main.java)
+        options.addStringOption('-module-path', classpath.asPath)
+        options.addStringOption('-module', 'info.picocli')
+        options.addStringsOption("-module-source-path", ";").setValue([new File("picocli-jpms-module/src/main/java").absolutePath, new File("src/main/java").absolutePath])
+        options.addBooleanOption('-frames')
     }
 }
-javadoc.doFirst {
-    File moduleInfo = new File("src/main/java9/module-info.java").absoluteFile
-    if (moduleInfo.exists()) {
-        Files.copy(moduleInfo.toPath(), new File("src/main/java/module-info.java").absoluteFile.toPath())
-    }
-}
-javadoc.doLast {
-    new File("src/main/java/module-info.java").delete()
-}
+//javadoc.options.addBooleanOption('--frames')
+//javadoc.options.addStringOption("--module-source-path=picocli-jpms-module/src/main/java;src/main/java")
+//javadoc.options.addBooleanOption("-verbose")
+//javadoc.doFirst {
+//    File moduleInfo = new File("picocli-jpms-module/src/main/java/module-info.java").absoluteFile
+//    if (moduleInfo.exists()) {
+//        Files.copy(moduleInfo.toPath(), new File("src/main/java/module-info.java").absoluteFile.toPath())
+//    }
+//}
+//javadoc.doLast {
+//    new File("src/main/java/module-info.java").delete()
+//}
 javadoc.dependsOn('asciidoctor')
 asciidoctorj {
     version = '1.5.5'

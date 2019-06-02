@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'groovy'
     id 'distribution'
     id 'maven-publish'
     id 'com.jfrog.bintray'
@@ -9,10 +10,23 @@ group 'info.picocli'
 description 'Picocli Groovy - easily use picocli in Groovy scripts.'
 version "$projectVersion"
 
+configurations {
+    ivy
+}
 dependencies {
     compile rootProject
+    compileOnly "org.codehaus.groovy:groovy-all:$groovyVersion"
+    ivy         "org.apache.ivy:ivy:$ivyVersion" // for Gradle
     testCompile "junit:junit:$junitVersion"
 }
+tasks.withType(GroovyCompile) {
+    // this, and the `configurations {ivy}` section, are a workaround for the dreaded
+    // java.lang.NoClassDefFoundError: org/apache/ivy/core/report/ResolveReport
+    // that occurs when trying to compile a groovy script containing a @Grab annotation in gradle.
+    // see https://stackoverflow.com/questions/18173908/error-compiling-a-groovy-project-using-grab-annotation
+    groovyClasspath += configurations.ivy
+}
+
 javadoc.options.links += [
         'http://docs.groovy-lang.org/2.4.9/html/gapi'
 ]
