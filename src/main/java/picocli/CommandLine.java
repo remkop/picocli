@@ -101,9 +101,9 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * -v -ooutfile in1 in2
  * -vooutfile in1 in2
  * </pre>
- * <p>
+ * <p id="checksum_example">
  * Another example that implements {@code Callable} and uses the {@link #execute(String...) CommandLine.execute} convenience API to run in a single line of code:
- * </p><a name = "checksum_example"></a>
+ * </p>
  * <pre>
  *  &#064;Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
  *           name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0")
@@ -875,7 +875,7 @@ public class CommandLine {
     public static final class ExitCode {
         /** Return value from the {@link #execute(String...) execute} and
          * {@link #executeHelpRequest(ParseResult) executeHelpRequest} methods signifying successful termination.
-         * <p>The value of this constant is {@value}, following unix C/C++ system programming <a href="">conventions</a>.</p> */
+         * <p>The value of this constant is {@value}.</p> */
         public static final int OK = 0;
         /** Return value from the {@link #execute(String...) execute} method signifying internal software error: an exception occurred when invoking the Runnable, Callable or Method user object of a command. <p>The value of this constant is {@value}.</p> */
         public static final int SOFTWARE = 1;
@@ -4311,35 +4311,36 @@ public class CommandLine {
         /**
          * Returns the {@code RegexTransformer} used by default for negatable options.
          * <table border="1">
+         *   <caption>The regular expressions used by default for negatable options</caption>
          *   <tr>
-         *     <th id="t01">Regex</th>
-         *     <th id="t01">Negative Replacement</th>
-         *     <th id="t01">Synopsis Replacement</th>
-         *     <th id="t01">Comment</th>
+         *     <th>Regex</th>
+         *     <th>Negative Replacement</th>
+         *     <th>Synopsis Replacement</th>
+         *     <th>Comment</th>
          *   </tr>
          *   <tr>
-         *     <td id="t01">^--no-(\w(-|\w)*)$</td>
-         *     <td id="t01">--$1</td>
-         *     <td id="t01">--[no-]$1</td>
-         *     <td id="t01">Converts <tt>--no-force</tt> to <tt>--force</tt></td>
+         *     <td>^--no-(\w(-|\w)*)$</td>
+         *     <td>--$1</td>
+         *     <td>--[no-]$1</td>
+         *     <td>Converts <code>--no-force</code> to <code>--force</code></td>
          *   </tr>
          *   <tr>
-         *     <td id="t01">^--(\w(-|\w)*)$</td>
-         *     <td id="t01">--no-$1</td>
-         *     <td id="t01">--[no-]$1</td>
-         *     <td id="t01">Converts <tt>--force</tt> to <tt>--no-force</tt></td>
+         *     <td>^--(\w(-|\w)*)$</td>
+         *     <td>--no-$1</td>
+         *     <td>--[no-]$1</td>
+         *     <td>Converts <code>--force</code> to <code>--no-force</code></td>
          *   </tr>
          *   <tr>
-         *     <td id="t01">^(-|--)(\w*:)\+(\w(-|\w)*)$</td>
-         *     <td id="t01">$1$2-$3</td>
-         *     <td id="t01">$1$2&#x00b1;$3</td>
-         *     <td id="t01">Converts <tt>-XX:+Inline</tt> to <tt>-XX:-Inline</tt></td>
+         *     <td>^(-|--)(\w*:)\+(\w(-|\w)*)$</td>
+         *     <td>$1$2-$3</td>
+         *     <td>$1$2&#x00b1;$3</td>
+         *     <td>Converts <code>-XX:+Inline</code> to <code>-XX:-Inline</code></td>
          *   </tr>
          *   <tr>
-         *     <td id="t01">^(-|--)(\w*:)\-(\w(-|\w)*)$</td>
-         *     <td id="t01">$1$2+$3</td>
-         *     <td id="t01">$1$2&#x00b1;$3</td>
-         *     <td id="t01">Converts <tt>-XX:-Inline</tt> to <tt>-XX:+Inline</tt></td>
+         *     <td>^(-|--)(\w*:)\-(\w(-|\w)*)$</td>
+         *     <td>$1$2+$3</td>
+         *     <td>$1$2&#x00b1;$3</td>
+         *     <td>Converts <code>-XX:-Inline</code> to <code>-XX:+Inline</code></td>
          *   </tr>
          * </table>
          */
@@ -4391,23 +4392,24 @@ public class CommandLine {
              * Adds the specified negative replacement and synopsis replacement for the specified regular expression.
              * For example, to add negative forms for short options:
              * <table border="1">
+             *   <caption>Regular expressions for adding negative forms for short options</caption>
              *   <tr>
-             *     <th id="t01">Regex</th>
-             *     <th id="t01">Negative Replacement</th>
-             *     <th id="t01">Synopsis Replacement</th>
-             *     <th id="t01">Comment</th>
+             *     <th>Regex</th>
+             *     <th>Negative Replacement</th>
+             *     <th>Synopsis Replacement</th>
+             *     <th>Comment</th>
              *   </tr>
              *   <tr>
-             *     <td id="t01">^-(\w)$</td>
-             *     <td id="t01">+$1</td>
-             *     <td id="t01">&#x00b1;$1</td>
-             *     <td id="t01">Converts <tt>-v</tt> to <tt>+v</tt></td>
+             *     <td>^-(\w)$</td>
+             *     <td>+$1</td>
+             *     <td>&#x00b1;$1</td>
+             *     <td>Converts <code>-v</code> to <code>+v</code></td>
              *   </tr>
              *   <tr>
-             *     <td id="t01">^\+(\w)$</td>
-             *     <td id="t01">-$1</td>
-             *     <td id="t01">&#x00b1;$1</td>
-             *     <td id="t01">Converts <tt>-v</tt> to <tt>+v</tt></td>
+             *     <td>^\+(\w)$</td>
+             *     <td>-$1</td>
+             *     <td>&#x00b1;$1</td>
+             *     <td>Converts <code>-v</code> to <code>+v</code></td>
              *   </tr>
              * </table>
              *
