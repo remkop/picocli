@@ -13,6 +13,10 @@ dependencies {
     compile rootProject
     testCompile "junit:junit:$junitVersion"
 }
+javadoc.options.links += [
+        'http://docs.groovy-lang.org/2.4.9/html/gapi'
+]
+//javadoc.options.linksOffline 'http://docs.groovy-lang.org/2.4.9/html/gapi', 'gradle/javadocs/jdk/9/'
 
 jar {
     manifest {

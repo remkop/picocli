@@ -1,3 +1,6 @@
+import java.nio.file.Files
+import java.nio.file.Paths
+
 group 'info.picocli'
 description 'Java command line parser with both an annotations API and a programmatic API. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
 version "$projectVersion"
@@ -183,11 +186,25 @@ linkMap << [(org.gradle.api.JavaVersion.VERSION_11)   : 'https://docs.oracle.com
 javadoc.options.overview = "src/main/java/overview.html"
 javadoc.options.links += [
         linkMap.get(org.gradle.api.JavaVersion.current(), 'https://docs.oracle.com/en/java/javase/12/docs/api/'),
-        'http://docs.groovy-lang.org/2.4.9/html/gapi'
 ]
 //javadoc.options.linksOffline linkMap.get(org.gradle.api.JavaVersion.current(), 'https://docs.oracle.com/en/java/javase/12/docs/api/'), 'gradle/javadocs/jdk/9/'
-//javadoc.options.linksOffline 'http://docs.groovy-lang.org/2.4.9/html/gapi', 'gradle/javadocs/jdk/9/'
 
+javadoc {
+    File javadocExe = new File(System.getenv("JAVA_11_HOME"), "bin/javadoc.exe")
+    if (javadocExe.exists()) {
+        executable = javadocExe
+        javadoc.options.addStringOption('--frames')
+    }
+}
+javadoc.doFirst {
+    File moduleInfo = new File("src/main/java9/module-info.java").absoluteFile
+    if (moduleInfo.exists()) {
+        Files.copy(moduleInfo.toPath(), new File("src/main/java/module-info.java").absoluteFile.toPath())
+    }
+}
+javadoc.doLast {
+    new File("src/main/java/module-info.java").delete()
+}
 javadoc.dependsOn('asciidoctor')
 asciidoctorj {
     version = '1.5.5'
