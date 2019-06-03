@@ -4133,7 +4133,7 @@ class MyApp implements Runnable {
 }
 ----
 
-Picocli 2.0 introduced special support for Groovy scripts.
+Picocli 2.0 introduced special support for Groovy scripts. (From picocli 4.0 this was moved into a separate module, `picocli-groovy`.)
 
 Scripts annotated with `@picocli.groovy.PicocliScript` are automatically transformed to use
 `picocli.groovy.PicocliBaseScript` as their base class and can also use the `@Command` annotation to
@@ -4165,7 +4165,10 @@ count.times {
 assert this.commandLine.commandName == "myScript"
 ----
 
-WARNING: From picocli 4.0, the `@picocli.groovy.PicocliScript` annotation class and supporting classes have been moved into a separate module, `picocli-groovy`. Use `@Grab('info.picocli:picocli-groovy:4.0.0-beta-1-SNAPSHOT')` from version 4.0, since `@Grab('info.picocli:picocli:4.0.0-beta-1-SNAPSHOT')` will not work.
+WARNING: When upgrading scripts to picocli 4.0, just changing the version number is not enough!
+Scripts should use `@Grab('info.picocli:picocli-groovy:4.0.0-beta-1-SNAPSHOT')`. The old artifact id `@Grab('info.picocli:picocli:4.0.0-beta-1-SNAPSHOT')` will not work,
+because the `@picocli.groovy.PicocliScript` annotation class and supporting classes have been moved into a separate module, `picocli-groovy`.
+
 
 NOTE: When using a Groovy version older than 2.4.7, use this workaround for the https://issues.apache.org/jira/browse/GROOVY-7613[Grape bug] that causes this error:
 `java.lang.ClassNotFoundException: # Licensed to the Apache Software Foundation (ASF) under one or more`.

@@ -4,8 +4,9 @@ This subproject does not produce any artifacts,
 but generates a `picocli-jpms-module/build/classes/java/main/META-INF/versions/9/module-info.class` file,
 for inclusion in the main `picocli-${version}.jar` artifact.
  
-Starting from picocli 4.0, `picocli-${version}.jar` will no longer be an [automatic module](https://openjdk.java.net/projects/jigsaw/spec/sotms/#automatic-modules),
-but will be a [modular multi-release jar](https://openjdk.java.net/jeps/238#Modular-multi-release-JAR-files).
+Starting from picocli 4.0, `picocli-${version}.jar` is an explicit module instead of an automatic module.
+For maximum backwards compatibility it is structured as a [modular multi-release jar](https://openjdk.java.net/jeps/238#Modular-multi-release-JAR-files)
+with the `module-info.class` file in `META-INF/versions/9` instead of in the root of the jar.
 
 
 # Using picocli with Java 9 modules

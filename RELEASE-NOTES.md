@@ -228,7 +228,8 @@ If the negated form of the option is found, for example `--no-verbose`, the valu
 ### `picocli.groovy` Classes Moved to Separate Artifact
 From this release the main `picocli-4.x` artifact no longer contains the `picocli.groovy` classes: these have been split off into a separate `picocli-groovy-4.x` artifact.
 
-Use `@Grab('info.picocli:picocli-groovy:4.x')` from version 4.0, since `@Grab('info.picocli:picocli:4.x')` will not work.
+Scripts upgrading to picocli 4.0 must change more than just the version number!
+Scripts should use `@Grab('info.picocli:picocli-groovy:4.x')` from version 4.0, `@Grab('info.picocli:picocli:4.x')` will not work.
 
 
 ### Option Order Changed 
