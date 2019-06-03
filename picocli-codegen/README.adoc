@@ -15,12 +15,18 @@ Picocli Code Generation contains tools for generating source code, documentation
 for picocli-based applications.
 
 == Annotation Processor
-This release includes the first cut of an annotation processor that can build a model from the picocli annotations at compile time rather than at runtime.
+The `picocli-codegen` module includes an annotation processor that can build a model from the picocli annotations at compile time rather than at runtime.
 
 Use this if you’re interested in:
 
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **Graal native images**. The annotation processor generates and updates https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[Graal configuration] files for https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md[resources] and https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md[dynamic proxies] under `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar. By embedding these configuration files, your jar is instantly Graal-enabled. In most cases no further configuration is needed when generating a native image.
+* **Graal native images**. The annotation processor generates and updates https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[Graal configuration]
+files under `META-INF/native-image/picocli-generated/$project` during compilation,
+to be included in the application jar.
+This includes configuration files for https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md[resources] and https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md[dynamic proxies].
+By embedding these configuration files, your jar is instantly Graal-enabled.
+The `$project` location is configurable, see <<Picocli Processor Options,processor options>> below.
+In most cases no further configuration is needed when generating a native image.
 
 === Enabling the Annotation Processor
 
@@ -157,6 +163,8 @@ compileJava {
 See the https://docs.gradle.org/current/dsl/org.gradle.api.tasks.compile.CompileOptions.html[Gradle documentation] for details.
 
 == Manually Running the Tools for Configuring GraalVM Native Image Builds
+
+The annotation processor is the recommended way to generate configuration files for GraalVM native images, but there may be cases where you want to generate these configuration files manually. The sections below give details on how to do this.
 
 The `picocli-codegen` module contains the following tools to assist with AOT compilation to GraalVM native image builds:
 
