@@ -175,32 +175,30 @@ javadoc.options.links += [
 ]
 //javadoc.options.linksOffline linkMap.get(org.gradle.api.JavaVersion.current(), 'https://docs.oracle.com/en/java/javase/12/docs/api/'), 'gradle/javadocs/jdk/9/'
 
+task copyModuleInfoSource(dependsOn: classes, type: Copy) {
+    from('picocli-jpms-module/src/main/java') {
+        include "**/*.java"
+    }
+    from('src/main/java') {
+        include "**/*.java"
+    }
+    into "${buildDir}/tmp/javadocModuleSources/"
+}
+javadoc.dependsOn(copyModuleInfoSource)
 javadoc {
-    File javadocExe = new File((String) System.getenv("JAVA_11_HOME"), "bin/javadoc.exe")
+    File javadocModuleSources = new File("${project.buildDir}/tmp/javadocModuleSources")
+    File javadocExe = new File((String) System.getenv("JAVA_11_HOME@@@@"), "bin/javadoc.exe")
     if (javadocExe.exists()) {
         executable = javadocExe
         javadoc.options.links = [ 'https://docs.oracle.com/en/java/javase/11/docs/api/' ]
         inputs.property("moduleName", 'info.picocli')
-        source(new File("picocli-jpms-module/src/main/java/module-info.java").absolutePath, project.sourceSets.main.java)
-        //source(project(':picocli-jpms-module').sourceSets.main.java, project.sourceSets.main.java)
-        options.addStringOption('-module-path', classpath.asPath)
-        options.addStringOption('-module', 'info.picocli')
-        options.addStringsOption("-module-source-path", ";").setValue([new File("picocli-jpms-module/src/main/java").absolutePath, new File("src/main/java").absolutePath])
+        //options.addStringOption('-module', 'info.picocli')
+        source(javadocModuleSources.absolutePath)
+        //options.addStringOption('-module-path', classpath.asPath)
+        options.addStringsOption("-module-source-path", ";").setValue([javadocModuleSources.absolutePath])
         options.addBooleanOption('-frames')
     }
 }
-//javadoc.options.addBooleanOption('--frames')
-//javadoc.options.addStringOption("--module-source-path=picocli-jpms-module/src/main/java;src/main/java")
-//javadoc.options.addBooleanOption("-verbose")
-//javadoc.doFirst {
-//    File moduleInfo = new File("picocli-jpms-module/src/main/java/module-info.java").absoluteFile
-//    if (moduleInfo.exists()) {
-//        Files.copy(moduleInfo.toPath(), new File("src/main/java/module-info.java").absoluteFile.toPath())
-//    }
-//}
-//javadoc.doLast {
-//    new File("src/main/java/module-info.java").delete()
-//}
 javadoc.dependsOn('asciidoctor')
 asciidoctorj {
     version = '1.5.5'
