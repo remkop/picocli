@@ -4145,7 +4145,7 @@ The script body is executed if the user input was valid and did not request usag
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli:4.0.0-beta-1-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.0.0-beta-1-SNAPSHOT')
 @Command(name = "myScript",
         mixinStandardHelpOptions = true, // add --help and --version options
         description = "@|bold Groovy script|@ @|underline picocli|@ example")
@@ -4165,12 +4165,14 @@ count.times {
 assert this.commandLine.commandName == "myScript"
 ----
 
-CAUTION: When using a Groovy version older than 2.4.7, use this workaround for the https://issues.apache.org/jira/browse/GROOVY-7613[Grape bug] that causes this error:
+WARNING: From picocli 4.0, the `@picocli.groovy.PicocliScript` annotation class and supporting classes have been moved into a separate module, `picocli-groovy`. Use `@Grab('info.picocli:picocli-groovy:4.0.0-beta-1-SNAPSHOT')` from version 4.0, since `@Grab('info.picocli:picocli:4.0.0-beta-1-SNAPSHOT')` will not work.
+
+NOTE: When using a Groovy version older than 2.4.7, use this workaround for the https://issues.apache.org/jira/browse/GROOVY-7613[Grape bug] that causes this error:
 `java.lang.ClassNotFoundException: # Licensed to the Apache Software Foundation (ASF) under one or more`.
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli:4.0.0-beta-1-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.0.0-beta-1-SNAPSHOT')
 @GrabExclude('org.codehaus.groovy:groovy-all') // work around GROOVY-7613
 ...
 ----

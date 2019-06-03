@@ -220,6 +220,8 @@ If the negated form of the option is found, for example `--no-verbose`, the valu
 ### `picocli.groovy` Classes Moved to Separate Artifact
 From this release the main `picocli-4.x` artifact no longer contains the `picocli.groovy` classes: these have been split off into a separate `picocli-groovy-4.x` artifact.
 
+Use `@Grab('info.picocli:picocli-groovy:4.x')` from version 4.0, since `@Grab('info.picocli:picocli:4.x')` will not work.
+
 
 ### Option Order Changed 
 Previously, options that only have a long name (and do not have a short name) were always shown before options with a short name.
