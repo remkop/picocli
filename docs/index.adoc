@@ -33,6 +33,9 @@ Picocli is a one-file framework for creating Java command line applications with
 Supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more.
 Generates highly customizable usage help messages with <<ANSI Colors and Styles,ANSI colors and styles>>.
 Picocli-based applications can have link:autocomplete.html[command line TAB completion] showing available options, option parameters and subcommands, for any level of nested subcommands.
+Picocli-based applications can be ahead-of-time compiled to image:https://www.graalvm.org/resources/img/logo-colored.svg[GraalVM]
+<<GraalVM Native Images,native images>>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.
+
 
 image:ExampleUsageANSI.png[Screenshot of usage help with Ansi codes enabled]
 
@@ -4078,7 +4081,6 @@ Typically, a modular jar includes the `module-info.class` file in its root direc
 This causes problems for some older tools, which incorrectly process the module descriptor as if it were a normal Java class.
 To provide the best backward compatibility, the main picocli artifact is a https://openjdk.java.net/jeps/238#Modular-multi-release-JAR-files[modular multi-release jar] with the `module-info.class` file located in `META-INF/versions/9`.
 
-
 === Module Configuration
 Applications that use Java 9's modules need to configure their module to allow picocli reflective access to the annotated classes and fields.
 
@@ -4105,6 +4107,33 @@ open module com.yourorg.yourapp {
    requires info.picocli;
 }
 ```
+
+
+== GraalVM Native Images
+
+image:exe-picocli-on-graalvm.png[Turn your picocli-based application into a native image,width=265,height=150]
+
+https://www.graalvm.org/docs/reference-manual/aot-compilation/[GraalVM Native Image] allows you to
+ahead-of-time compile Java code to a standalone executable, called a native image.
+This executable includes the application, the libraries, and the JDK and does not require a separate Java VM to be installed.
+The resulting program has faster startup time and lower runtime memory overhead compared to a Java VM.
+
+GraalVM native images have some limitations and require some extra configuration
+to be able to use features like reflection, resources (including resource bundles) and dynamic proxies.
+
+The `picocli-codegen` module contains an annotation processor that generates these configuration files
+under `META-INF/native-image/picocli-generated/$project` during compilation,
+to be included in the application jar. The https://github.com/remkop/picocli/tree/master/picocli-codegen[picocli-codegen README]
+file has details on configuring the annotation processor.
+
+By embedding these configuration files, your jar is instantly Graal-enabled: the
+https://www.graalvm.org/docs/reference-manual/aot-compilation/#install-native-image[`native-image` tool]
+used to generate the native executable is able to get the configuration from the jar.
+
+In most cases no further configuration is needed when generating a native image.
+
+This https://picocli.info/picocli-on-graalvm.html[older article], "Picocli on GraalVM: Blazingly Fast Command Line Apps", may still be useful.
+
 
 == Picocli in Other Languages
 Picocli may be used in other JVM languages that support annotations.
