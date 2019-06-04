@@ -1244,19 +1244,19 @@ public class SubcommandTests {
         @Command
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
-        assertEquals(true, commandLine.isToggleBooleanFlags());
-        commandLine.setToggleBooleanFlags(false);
         assertEquals(false, commandLine.isToggleBooleanFlags());
+        commandLine.setToggleBooleanFlags(true);
+        assertEquals(true, commandLine.isToggleBooleanFlags());
 
         int childCount = 0;
         int grandChildCount = 0;
         commandLine.addSubcommand("main", createNestedCommand());
         for (CommandLine sub : commandLine.getSubcommands().values()) {
             childCount++;
-            assertEquals("subcommand added afterwards is not impacted", true, sub.isToggleBooleanFlags());
+            assertEquals("subcommand added afterwards is not impacted", false, sub.isToggleBooleanFlags());
             for (CommandLine subsub : sub.getSubcommands().values()) {
                 grandChildCount++;
-                assertEquals("subcommand added afterwards is not impacted", true, subsub.isToggleBooleanFlags());
+                assertEquals("subcommand added afterwards is not impacted", false, subsub.isToggleBooleanFlags());
             }
         }
         assertTrue(childCount > 0);
@@ -1269,18 +1269,18 @@ public class SubcommandTests {
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
-        assertEquals(true, commandLine.isToggleBooleanFlags());
-        commandLine.setToggleBooleanFlags(false);
         assertEquals(false, commandLine.isToggleBooleanFlags());
+        commandLine.setToggleBooleanFlags(true);
+        assertEquals(true, commandLine.isToggleBooleanFlags());
 
         int childCount = 0;
         int grandChildCount = 0;
         for (CommandLine sub : commandLine.getSubcommands().values()) {
             childCount++;
-            assertEquals("subcommand added before IS impacted", false, sub.isToggleBooleanFlags());
+            assertEquals("subcommand added before IS impacted", true, sub.isToggleBooleanFlags());
             for (CommandLine subsub : sub.getSubcommands().values()) {
                 grandChildCount++;
-                assertEquals("subsubcommand added before IS impacted", false, sub.isToggleBooleanFlags());
+                assertEquals("subsubcommand added before IS impacted", true, sub.isToggleBooleanFlags());
             }
         }
         assertTrue(childCount > 0);

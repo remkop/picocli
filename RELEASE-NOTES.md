@@ -208,17 +208,19 @@ If the negated form of the option is found, for example `--no-verbose`, the valu
 
 
 ## <a name="4.0.0-beta-1-fixes"></a> Fixed issues
-- [#697] Option sort in usage help should ignore option name prefix; long options without short name should be inserted alphabetically, instead of always appear at the top.
-- [#695] Fix runtime warnings about illegal reflective access to field `java.io.FilterOutputStream.out`. Thanks to [gitfineon](https://github.com/gitfineon) for reporting this issue.
-- [#698] Reduce `reflect-config.json` used by GraalVM native-image generation
 - [#500] Add a generic and extensible picocli annotation processor
 - [#699] Add annotation processor that generates `reflect-config.json` during build
 - [#703] Add annotation processor that generates `resource-config.json` during build
 - [#704] Add annotation processor that generates `proxy-config.json` during build
 - [#707] Add example maven/gradle projects that demonstrate using the annotation processor
-- [#700] Change default exit codes to `1` for Exceptions in client code, `2` for invalid usage. Add links to `ExitCode` javadoc.
+- [#711] API: Create separate `picocli-groovy` module
+- [#694] API: `negatable` boolean options. Thanks to [Michael D. Adams](https://github.com/adamsmd) for the feature request.
+- [#712] Boolean options should not toggle by default, to be consistent with negatable options
 - [#709] Fix scrambled characters for the `±` character when running on system with non-UTF8 encoding
-- [#711] Create separate `picocli-groovy` module
+- [#697] Option sort in usage help should ignore option name prefix; long options without short name should be inserted alphabetically, instead of always appear at the top.
+- [#695] Fix runtime warnings about illegal reflective access to field `java.io.FilterOutputStream.out`. Thanks to [gitfineon](https://github.com/gitfineon) for reporting this issue.
+- [#698] Reduce `reflect-config.json` used by GraalVM native-image generation
+- [#700] Change default exit codes to `1` for Exceptions in client code, `2` for invalid usage. Add links to `ExitCode` javadoc.
 - [#715] processor tests should not fail when running in different locale
 
 ## <a name="4.0.0-beta-1-deprecated"></a> Deprecations
@@ -232,11 +234,20 @@ From this release the main `picocli-4.x` artifact no longer contains the `picocl
 Scripts upgrading to picocli 4.0 must change more than just the version number!
 Scripts should use `@Grab('info.picocli:picocli-groovy:4.x')` from version 4.0, `@Grab('info.picocli:picocli:4.x')` will not work.
 
-
 ### Option Order Changed 
 Previously, options that only have a long name (and do not have a short name) were always shown before options with a short name.
 From this release, they are inserted in the option list by their first non-prefix letter.
 This may break tests that expect a specific help message.
+
+### Boolean Options Do Not Toggle By Default
+From this release, when a flag option is specified on the command line picocli will set its value to the opposite of its _default_ value.
+
+Prior to 4.0, the default was to "toggle" boolean flags to the opposite of their _current_ value:
+if the previous value was `true` it is set to `false`, and when the value was `false` it is set to `true`.
+
+Applications can call `CommandLine.setToggleBooleanFlags(true)` to enable toggling.
+Note that when toggling is enabled, specifying a flag option twice on the command line will have no effect because they cancel each other out.
+
 
 # <a name="4.0.0-alpha-3"></a> Picocli 4.0.0-alpha-3
 The picocli community is pleased to announce picocli 4.0.0-alpha-3.

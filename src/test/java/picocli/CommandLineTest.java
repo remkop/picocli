@@ -843,7 +843,7 @@ public class CommandLineTest {
                         "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLineTest$CompactFields with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli INFO] Picocli version: %3$s%n" +
                         "[picocli INFO] Parsing 6 command line args [-oout, --, -r, -v, p1, p2]%n" +
-                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, useSimplifiedAtFiles=false, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false, toggleBooleanFlags=true, unmatchedOptionsArePositionalParams=false, collectErrors=false,caseInsensitiveEnumValuesAllowed=false, trimQuotes=false, splitQuotedStrings=false%n" +
+                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, useSimplifiedAtFiles=false, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false, toggleBooleanFlags=false, unmatchedOptionsArePositionalParams=false, collectErrors=false,caseInsensitiveEnumValuesAllowed=false, trimQuotes=false, splitQuotedStrings=false%n" +
                         "[picocli DEBUG] (ANSI is disabled by default: isatty=...)%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLineTest$CompactFields.verbose of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLineTest$CompactFields.recursive of type boolean to false.%n" +
@@ -1792,7 +1792,7 @@ public class CommandLineTest {
                         "[picocli DEBUG] Created Messages from resourceBundle[base=null] for command 'git-tag' (picocli.Demo$GitTag)%n" +
                         "[picocli INFO] Picocli version: %3$s%n" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
-                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, useSimplifiedAtFiles=false, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false, toggleBooleanFlags=true, unmatchedOptionsArePositionalParams=false, collectErrors=false,caseInsensitiveEnumValuesAllowed=false, trimQuotes=false, splitQuotedStrings=false%n" +
+                        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, useSimplifiedAtFiles=false, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false, toggleBooleanFlags=false, unmatchedOptionsArePositionalParams=false, collectErrors=false,caseInsensitiveEnumValuesAllowed=false, trimQuotes=false, splitQuotedStrings=false%n" +
                         "[picocli DEBUG] (ANSI is disabled by default: isatty=...)%n" +
                         "[picocli DEBUG] Set initial value for field java.io.File picocli.Demo$Git.gitDir of type class java.io.File to null.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLine$AutoHelpMixin.helpRequested of type boolean to false.%n" +
@@ -3298,6 +3298,7 @@ public class CommandLineTest {
         setTraceLevel("OFF");
         App app = new App();
         CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
+        commandLine.setToggleBooleanFlags(true);
         commandLine.parse("-f", "fVal1", "@" + file.getAbsolutePath(), "-x", "@" + file2.getAbsolutePath(),  "-f", "fVal2");
         assertFalse("invoked twice", app.verbose);
         assertEquals(Arrays.asList("1111", "2222", ";3333", "1111", "2222", "3333"), app.files);
@@ -3677,7 +3678,7 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testToggleBooleanFlagsByDefault() {
+    public void testToggleBooleanFlagsWhenEnabled() {
         class Flags {
             @Option(names = "-a") boolean a;
             @Option(names = "-b") boolean b = true;
@@ -3686,6 +3687,9 @@ public class CommandLineTest {
         }
         Flags flags = new Flags();
         CommandLine commandLine = new CommandLine(flags);
+        commandLine.setToggleBooleanFlags(true);
+        commandLine.setOverwrittenOptionsAllowed(true);
+
         assertFalse(flags.a);
         assertFalse(flags.p0);
         assertTrue (flags.b);
@@ -3700,10 +3704,15 @@ public class CommandLineTest {
         assertTrue (!flags.b);
         assertFalse(!flags.p0);
         assertTrue (!flags.p1);
+
+        commandLine.parse("-a", "-a", "-b", "-b", "true", "false");
+        // multiple occurrences DO cancel each other out
+        assertFalse(flags.a);
+        assertTrue (flags.b);
     }
 
     @Test
-    public void testNoToggleBooleanFlagsWhenSwitchedOff() {
+    public void testNoToggleBooleanFlagsByDefault() {
         class Flags {
             @Option(names = "-a") boolean a;
             @Option(names = "-b") boolean b = true;
@@ -3712,23 +3721,33 @@ public class CommandLineTest {
         }
         Flags flags = new Flags();
         CommandLine commandLine = new CommandLine(flags);
-        commandLine.setToggleBooleanFlags(false);
-        // initial
+        commandLine.setOverwrittenOptionsAllowed(true);
+        assertFalse(commandLine.isToggleBooleanFlags());
+
+        // initial/default values
         assertFalse(flags.a);
-        assertFalse(flags.p0);
         assertTrue (flags.b);
+        assertFalse(flags.p0);
         assertTrue (flags.p1);
         commandLine.parse("-a", "-b", "true", "false");
-        assertTrue(flags.a);
-        assertTrue (flags.b);
+        // specified flags now opposite of default
+        assertTrue (flags.a);
+        assertFalse(flags.b);
         assertTrue (flags.p0);
         assertFalse(flags.p1);
         commandLine.parse("-a", "-b", "true", "false");
-        assertTrue(flags.a);
-        assertTrue (flags.b);
+        // specified flags again opposite of default
+        assertTrue (flags.a);
+        assertFalse(flags.b);
         assertTrue (flags.p0);
         assertFalse(flags.p1);
+
+        commandLine.parse("-a", "-a", "-b", "-b", "true", "false");
+        // multiple occurrences do NOT cancel each other out
+        assertTrue (flags.a);
+        assertFalse(flags.b);
     }
+
     @Test
     public void testMapValuesContainingSeparator() {
         class MyCommand {

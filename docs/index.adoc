@@ -903,7 +903,7 @@ If no `arity` is specified, the number of parameters depends on the field's type
 [grid=cols,cols="30,5,65",options="header"]
 |===
 | @Option Field Type | Default Arity | Notes
-| boolean      | 0 |Boolean options by default don't require an option parameter. The field is toggled to its logical negative when the option name is recognized. (This can be <<Toggle Boolean Flags,switched off>>.)
+| boolean      | 0 |Boolean options by default don't require an option parameter. The field is set to the opposite of its default value when the option name is recognized. (This can be <<Toggle Boolean Flags,configured>>.)
 | Single-valued type (e.g., `int`, `String`, `File`) | 1 | The option name must be followed by a value.
 | Multi-valued type (arrays, collections or maps) | 1 | The option name must be followed by a value.
 |===
@@ -1652,10 +1652,13 @@ When this flag is set, the first unmatched argument and all subsequent command l
 unmatched arguments list returned by `CommandLine.getUnmatchedArguments()`.
 
 === Toggle Boolean Flags
-By default, boolean flag options without a parameter are "toggled" when the option is matched on the command line:
+When a flag option is specified on the command line picocli will set its value to the opposite of its _default_ value.
+
+Prior to 4.0, the default was to "toggle" boolean flags to the opposite of their _current_ value:
 if the previous value was `true` it is set to `false`, and when the value was `false` it is set to `true`.
-From picocli 3.0, applications can call `CommandLine.setToggleBooleanFlags(false)` to switch this behaviour off.
-If toggling is off, flags are simply set to `true` when the option is matched on the command line.
+
+Applications can call `CommandLine.setToggleBooleanFlags(true)` to enable toggling.
+Note that when toggling is enabled, specifying a flag option twice on the command line will have no effect because they cancel each other out.
 
 
 === POSIX Clustered Short Options
