@@ -217,6 +217,7 @@ If the negated form of the option is found, for example `--no-verbose`, the valu
 - [#694] API: `negatable` boolean options. Thanks to [Michael D. Adams](https://github.com/adamsmd) for the feature request.
 - [#712] Boolean options should not toggle by default, to be consistent with negatable options
 - [#709] Fix scrambled characters for the `±` character when running on system with non-UTF8 encoding
+- [#717] Fix unmappable character for encoding ASCII by setting compiler encoding to UTF8 explicitly. Thanks to [Liam Esteban Prince](https://github.com/leliamesteban) for raising this.
 - [#697] Option sort in usage help should ignore option name prefix; long options without short name should be inserted alphabetically, instead of always appear at the top.
 - [#695] Fix runtime warnings about illegal reflective access to field `java.io.FilterOutputStream.out`. Thanks to [gitfineon](https://github.com/gitfineon) for reporting this issue.
 - [#698] Reduce `reflect-config.json` used by GraalVM native-image generation

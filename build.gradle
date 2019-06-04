@@ -35,6 +35,9 @@ allprojects {
     targetCompatibility = !org.gradle.api.JavaVersion.current().isJava9Compatible() ?
             1.5 : org.gradle.api.JavaVersion.current().isJava11Compatible() ? 1.7 : 1.6
 
+    compileJava.options.encoding = "UTF-8"
+    compileTestJava.options.encoding = "UTF-8"
+
     repositories {
         jcenter()
     }
