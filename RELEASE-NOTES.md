@@ -224,6 +224,7 @@ If the negated form of the option is found, for example `--no-verbose`, the valu
 - [#700] Change default exit codes to `1` for Exceptions in client code, `2` for invalid usage. Add links to `ExitCode` javadoc.
 - [#715] processor tests should not fail when running in different locale
 - [#710] Let annotation processor validate negatable options, usageHelp options
+- [#716] Revert `@Inherited` annotation for `@Command`. Thanks to [Mikusch](https://github.com/Mikusch) for raising this.
 
 ## <a name="4.0.0-beta-1-deprecated"></a> Deprecations
 
@@ -249,6 +250,10 @@ if the previous value was `true` it is set to `false`, and when the value was `f
 
 Applications can call `CommandLine.setToggleBooleanFlags(true)` to enable toggling.
 Note that when toggling is enabled, specifying a flag option twice on the command line will have no effect because they cancel each other out.
+
+### Revert `@Inherited` annotation on `@Command`
+The `@Inherited` annotated that was added to `@Command` in picocli 4.0.0-alpha-2 turned out to cause 
+issues in scenarios with multiple levels of inheritance and is reverted in this release.
 
 
 # <a name="4.0.0-alpha-3"></a> Picocli 4.0.0-alpha-3

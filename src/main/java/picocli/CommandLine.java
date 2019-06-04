@@ -3822,7 +3822,6 @@ public class CommandLine {
      *   <li>[footer]</li>
      * </ul> */
     @Retention(RetentionPolicy.RUNTIME)
-    @Inherited
     @Target({ElementType.TYPE, ElementType.LOCAL_VARIABLE, ElementType.FIELD, ElementType.PACKAGE, ElementType.METHOD})
     public @interface Command {
         /** Program name to show in the synopsis. If omitted, {@code "<main class>"} is used.
