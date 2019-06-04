@@ -4,7 +4,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
 import org.hamcrest.MatcherAssert;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.tools.Diagnostic;
@@ -28,6 +30,18 @@ import static picocli.codegen.util.Resources.slurp;
 import static picocli.codegen.util.Resources.slurpAll;
 
 public class AbstractCommandSpecProcessorTest {
+    static Locale old;
+
+    @BeforeClass
+    public static void beforeClass() {
+        old = Locale.getDefault();
+        Locale.setDefault(Locale.UK); // #715 get English diagnostic messages
+    }
+
+    @AfterClass
+    public static void afterClass() {
+        Locale.setDefault(old); // #715 get English diagnostic messages
+    }
 
     @Test
     public void testCommandWithMixin() {

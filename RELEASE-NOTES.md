@@ -219,6 +219,7 @@ If the negated form of the option is found, for example `--no-verbose`, the valu
 - [#700] Change default exit codes to `1` for Exceptions in client code, `2` for invalid usage. Add links to `ExitCode` javadoc.
 - [#709] Fix scrambled characters for the `±` character when running on system with non-UTF8 encoding
 - [#711] Create separate `picocli-groovy` module
+- [#715] processor tests should not fail when running in different locale
 
 ## <a name="4.0.0-beta-1-deprecated"></a> Deprecations
 
