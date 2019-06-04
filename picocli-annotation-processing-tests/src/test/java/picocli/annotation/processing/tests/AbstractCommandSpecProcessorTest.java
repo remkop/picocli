@@ -120,7 +120,7 @@ public class AbstractCommandSpecProcessorTest {
 
         assertThat(compilation).failed();
 
-        List<String> expected = new ArrayList<>(Arrays.asList(
+        List<String> expected = new ArrayList<String>(Arrays.asList(
             "Subcommand is missing @Command annotation with a name attribute",
             "Subcommand @Command annotation should have a name attribute",
             "@Mixin must have a declared type, not int",
@@ -145,10 +145,66 @@ public class AbstractCommandSpecProcessorTest {
             "@Unmatched must be of type String[] or List<String> but was: int",
             "@Unmatched must be of type String[] or List<String> but was: java.lang.Integer"
         ));
+        validateErrorMessages(compilation, expected);
+    }
+
+    @Test
+    public void testInvalidAnnotationCombinations2() {
+        Compilation compilation =
+                javac()
+                        .withProcessors(new CommandSpec2YamlProcessor())
+                        .compile(JavaFileObjects.forResource(
+                                "picocli/examples/validation/Invalid2.java"));
+
+        assertThat(compilation).failed();
+
+        List<String> expected = new ArrayList<String>(Arrays.asList(
+                "FATAL ERROR: picocli.CommandLine$InitializationException: Only boolean options can be negatable, but field int picocli.examples.validation.Invalid2.invalidNegatableShouldBeBoolean is of type int"
+        ));
+        validateErrorMessages(compilation, expected);
+    }
+
+    @Test
+    public void testInvalidAnnotationCombinations3() {
+        Compilation compilation =
+                javac()
+                        .withProcessors(new CommandSpec2YamlProcessor())
+                        .compile(JavaFileObjects.forResource(
+                                "picocli/examples/validation/Invalid3.java"));
+
+        assertThat(compilation).failed();
+
+        List<String> expected = new ArrayList<String>(Arrays.asList(
+                "Only getter or setter methods can be annotated with @Option, but invalidNeitherGetterNorSetter is neither."
+        ));
+        validateErrorMessages(compilation, expected);
+    }
+
+    @Test
+    public void testInvalidAnnotationCombinations4() {
+        Compilation compilation =
+                javac()
+                        .withProcessors(new CommandSpec2YamlProcessor())
+                        .compile(JavaFileObjects.forResource(
+                                "picocli/examples/validation/Invalid4.java"));
+
+        assertThat(compilation).failed();
+
+        List<String> expected = new ArrayList<String>(Arrays.asList(
+                "invalidUsageHelpShouldBeBoolean must be a boolean: a command can have max one usageHelp boolean flag that triggers display of the usage help message.",
+                "invalidVersionHelpShouldBeBoolean must be a boolean: a command can have max one versionHelp boolean flag that triggers display of the version information.",
+                "An option can be usageHelp or versionHelp, but invalidDuplicateUsageAndVersionHelp is both.",
+                "An command can only have one usageHelp option, but Invalid4 has 3."
+        ));
+        validateErrorMessages(compilation, expected);
+    }
+
+    private void validateErrorMessages(Compilation compilation, List<String> expected) {
         ImmutableList<Diagnostic<? extends JavaFileObject>> errors = compilation.errors();
         for (Diagnostic<? extends JavaFileObject> diag : errors) {
-            assertTrue("Unexpected error: " + diag.getMessage(Locale.ENGLISH),
-                    expected.remove(diag.getMessage(Locale.ENGLISH)));
+            String msg = diag.getMessage(Locale.ENGLISH);
+            String firstLine = msg.split("\\r?\\n")[0];
+            assertTrue("Unexpected error: " + msg, expected.remove(firstLine));
         }
         assertTrue("Expected errors: " + expected, expected.isEmpty());
     }

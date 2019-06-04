@@ -38,6 +38,8 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.SimpleElementVisitor6;
 import javax.tools.Diagnostic;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -132,6 +134,23 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         logger.fine("entered process, processingOver=" + roundEnv.processingOver());
 
+        try {
+            return tryProcess(annotations, roundEnv);
+        } catch (Exception e) {
+            // Generators are supposed to do their own error handling, but let's be paranoid.
+            // We don't allow exceptions of any kind to propagate to the compiler
+            fatalError(stacktrace(e));
+            return false;
+        }
+    }
+
+    private static String stacktrace(Exception e) {
+        StringWriter writer = new StringWriter();
+        e.printStackTrace(new PrintWriter(writer));
+        return writer.toString();
+    }
+
+    private boolean tryProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         Context context = new Context();
         buildCommands(roundEnv, context);
         buildMixins(roundEnv, context);
@@ -431,7 +450,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 return ArgGroupSpec.builder(new TypedMember(e, -1));
             }
             @Override public ArgGroupSpec.Builder visitExecutable(ExecutableElement e, Void aVoid) {
-                return ArgGroupSpec.builder(new TypedMember(e));
+                return ArgGroupSpec.builder(new TypedMember(e, AbstractCommandSpecProcessor.this));
             }
         }, null);
         if (builder == null) {
@@ -489,7 +508,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         if (element.getKind() == ElementKind.FIELD) { // || element.getKind() == ElementKind.PARAMETER) {
             return new TypedMember((VariableElement) element, -1);
         } else if (element.getKind() == ElementKind.METHOD) {
-            return new TypedMember((ExecutableElement) element);
+            return new TypedMember((ExecutableElement) element, AbstractCommandSpecProcessor.this);
         }
         error(element, "Cannot only process %s annotations on fields, " +
                 "methods and method parameters, not on %s", annotation, element.getKind());
@@ -618,7 +637,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
 
             @Override
             public TypedMember visitExecutable(ExecutableElement e, Void aVoid) {
-                return new TypedMember(e);
+                return new TypedMember(e, AbstractCommandSpecProcessor.this);
             }
         }, null);
     }

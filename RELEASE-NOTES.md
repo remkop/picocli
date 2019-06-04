@@ -222,6 +222,7 @@ If the negated form of the option is found, for example `--no-verbose`, the valu
 - [#698] Reduce `reflect-config.json` used by GraalVM native-image generation
 - [#700] Change default exit codes to `1` for Exceptions in client code, `2` for invalid usage. Add links to `ExitCode` javadoc.
 - [#715] processor tests should not fail when running in different locale
+- [#710] Let annotation processor validate negatable options, usageHelp options
 
 ## <a name="4.0.0-beta-1-deprecated"></a> Deprecations
 

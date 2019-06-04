@@ -12,6 +12,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Locale;
 
 class TypedMember implements CommandLine.Model.IAnnotatedElement {
     final Element element;
@@ -41,14 +42,19 @@ class TypedMember implements CommandLine.Model.IAnnotatedElement {
         setter = (GetterSetterMetaData) getter;
     }
 
-    TypedMember(ExecutableElement method) {
+    TypedMember(ExecutableElement method, AbstractCommandSpecProcessor processor) {
         element = Assert.notNull(method, "method");
         name = propertyName(method.getSimpleName().toString());
         position = -1;
         List<? extends TypeMirror> parameterTypes = ((ExecutableType) method.asType()).getParameterTypes();
         boolean isGetter = parameterTypes.isEmpty() && method.getReturnType().getKind() != TypeKind.VOID;
         boolean isSetter = !parameterTypes.isEmpty();
-        if (isSetter == isGetter) { throw new CommandLine.InitializationException("Invalid method, must be either getter or setter: " + method); }
+        if (isSetter == isGetter) {
+            processor.error(method, "Only getter or setter methods can be annotated with @Option, but %s is neither.",
+                    method.getSimpleName());
+            //throw new CommandLine.InitializationException("Invalid method, must be either getter or setter: " + method);
+            isGetter = true; // soldier on... :-(
+        }
         if (isGetter) {
             hasInitialValue = true; // TODO
             typeInfo = new CompileTimeTypeInfo(method.getReturnType());
@@ -92,9 +98,9 @@ class TypedMember implements CommandLine.Model.IAnnotatedElement {
     public String toString() { return element.toString(); }
     public String getToString() {
         if (isMixin()) { return abbreviate("mixin from member " + toGenericString()); }
-        return (element.getKind() + " ") + abbreviate(toGenericString());
+        return (String.valueOf(element.getKind()).toLowerCase(Locale.ENGLISH) + " ") + abbreviate(toGenericString());
     }
-    String toGenericString() { return element.asType().toString() + element.getEnclosingElement() + "." + element.getSimpleName(); }
+    String toGenericString() { return element.asType().toString() + " " + element.getEnclosingElement() + "." + element.getSimpleName(); }
     public boolean hasInitialValue()    { return hasInitialValue; }
     public boolean isMethodParameter()  { return position >= 0; }
     public int getMethodParamPosition() { return position; }
