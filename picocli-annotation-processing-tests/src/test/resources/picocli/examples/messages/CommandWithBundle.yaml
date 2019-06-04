@@ -44,7 +44,7 @@ CommandSpec:
     caseInsensitiveEnumValuesAllowed: false
     collectErrors: false
     limitSplit: false
-    toggleBooleanFlags: true
+    toggleBooleanFlags: false
   ResourceBundle:
     usage.description: 'Version control system'
     usage.description.0: 'description0'

@@ -191,5 +191,5 @@ CommandSpec:
     caseInsensitiveEnumValuesAllowed: false
     collectErrors: false
     limitSplit: false
-    toggleBooleanFlags: true
+    toggleBooleanFlags: false
   Subcommands: []

@@ -65,7 +65,7 @@ CommandSpec:
     caseInsensitiveEnumValuesAllowed: false
     collectErrors: false
     limitSplit: false
-    toggleBooleanFlags: true
+    toggleBooleanFlags: false
   Subcommands:
   # list
   - name: 'list'
@@ -133,5 +133,5 @@ CommandSpec:
       caseInsensitiveEnumValuesAllowed: false
       collectErrors: false
       limitSplit: false
-      toggleBooleanFlags: true
+      toggleBooleanFlags: false
     Subcommands: []
