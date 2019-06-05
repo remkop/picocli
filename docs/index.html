@@ -514,8 +514,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 4.0.0-alpha-3,</span>
-<span id="revdate">2019-05-13</span>
+<span id="revnumber">version 4.0.0-beta-1b,</span>
+<span id="revdate">2019-06-05</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -526,10 +526,11 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_options">2.1. Options</a></li>
 <li><a href="#_interactive_password_options">2.2. Interactive (Password) Options</a></li>
 <li><a href="#_short_options">2.3. Short Options</a></li>
-<li><a href="#_positional_parameters">2.4. Positional Parameters</a></li>
-<li><a href="#_mixing_options_and_positional_parameters">2.5. Mixing Options and Positional Parameters</a></li>
-<li><a href="#_double_dash_code_code">2.6. Double dash (<code>--</code>)</a></li>
-<li><a href="#AtFiles">2.7. @-files</a></li>
+<li><a href="#_negatable_options">2.4. Negatable Options</a></li>
+<li><a href="#_positional_parameters">2.5. Positional Parameters</a></li>
+<li><a href="#_mixing_options_and_positional_parameters">2.6. Mixing Options and Positional Parameters</a></li>
+<li><a href="#_double_dash_code_code">2.7. Double dash (<code>--</code>)</a></li>
+<li><a href="#AtFiles">2.8. @-files</a></li>
 </ul>
 </li>
 <li><a href="#_strongly_typed_everything">3. Strongly Typed Everything</a>
@@ -597,6 +598,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_posix_clustered_short_options">9.8. POSIX Clustered Short Options</a></li>
 <li><a href="#_lenient_mode_incubating">9.9. Lenient Mode (Incubating)</a></li>
 <li><a href="#_quoted_values">9.10. Quoted Values</a></li>
+<li><a href="#_customizing_negatable_options">9.11. Customizing Negatable Options</a></li>
 </ul>
 </li>
 <li><a href="#_help">10. Help</a>
@@ -715,26 +717,32 @@ table.CodeRay td.code>pre{padding:0}
 </li>
 <li><a href="#_tracing">21. Tracing</a></li>
 <li><a href="#_tab_autocomplete">22. TAB Autocomplete</a></li>
-<li><a href="#_picocli_in_other_languages">23. Picocli in Other Languages</a>
+<li><a href="#_java_9_jpms_modules">23. Java 9 JPMS Modules</a>
 <ul class="sectlevel2">
-<li><a href="#_groovy">23.1. Groovy</a></li>
-<li><a href="#_kotlin">23.2. Kotlin</a></li>
-<li><a href="#_scala">23.3. Scala</a></li>
+<li><a href="#_module_configuration">23.1. Module Configuration</a></li>
 </ul>
 </li>
-<li><a href="#_api_javadoc">24. API Javadoc</a></li>
-<li><a href="#_github_project">25. GitHub Project</a></li>
-<li><a href="#_issue_tracker">26. Issue Tracker</a></li>
-<li><a href="#_mailing_list">27. Mailing List</a></li>
-<li><a href="#_license">28. License</a></li>
-<li><a href="#_releases">29. Releases</a></li>
-<li><a href="#_download">30. Download</a>
+<li><a href="#_graalvm_native_images">24. GraalVM Native Images</a></li>
+<li><a href="#_picocli_in_other_languages">25. Picocli in Other Languages</a>
 <ul class="sectlevel2">
-<li><a href="#_gradle">30.1. Gradle</a></li>
-<li><a href="#_maven">30.2. Maven</a></li>
-<li><a href="#_scala_sbt">30.3. Scala SBT</a></li>
-<li><a href="#_ivy">30.4. Ivy</a></li>
-<li><a href="#_source">30.5. Source</a></li>
+<li><a href="#_groovy">25.1. Groovy</a></li>
+<li><a href="#_kotlin">25.2. Kotlin</a></li>
+<li><a href="#_scala">25.3. Scala</a></li>
+</ul>
+</li>
+<li><a href="#_api_javadoc">26. API Javadoc</a></li>
+<li><a href="#_github_project">27. GitHub Project</a></li>
+<li><a href="#_issue_tracker">28. Issue Tracker</a></li>
+<li><a href="#_mailing_list">29. Mailing List</a></li>
+<li><a href="#_license">30. License</a></li>
+<li><a href="#_releases">31. Releases</a></li>
+<li><a href="#_download">32. Download</a>
+<ul class="sectlevel2">
+<li><a href="#_gradle">32.1. Gradle</a></li>
+<li><a href="#_maven">32.2. Maven</a></li>
+<li><a href="#_scala_sbt">32.3. Scala SBT</a></li>
+<li><a href="#_ivy">32.4. Ivy</a></li>
+<li><a href="#_source">32.5. Source</a></li>
 </ul>
 </li>
 </ul>
@@ -771,7 +779,9 @@ For the busy and impatient: there is also a <a href="quick-guide.html">Quick Gui
 <p>Picocli is a one-file framework for creating Java command line applications with almost zero code.
 Supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more.
 Generates highly customizable usage help messages with <a href="#_ansi_colors_and_styles">ANSI colors and styles</a>.
-Picocli-based applications can have <a href="autocomplete.html">command line TAB completion</a> showing available options, option parameters and subcommands, for any level of nested subcommands.</p>
+Picocli-based applications can have <a href="autocomplete.html">command line TAB completion</a> showing available options, option parameters and subcommands, for any level of nested subcommands.
+Picocli-based applications can be ahead-of-time compiled to <span class="image"><img src="https://www.graalvm.org/resources/img/logo-colored.svg" alt="GraalVM"></span>
+<a href="#_graalvm_native_images">native images</a>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.</p>
 </div>
 <div class="paragraph">
 <p><span class="image"><img src="images/ExampleUsageANSI.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
@@ -1090,7 +1100,33 @@ one or more single-character options without option-arguments, followed by at mo
 </div>
 </div>
 <div class="sect2">
-<h3 id="_positional_parameters">2.4. Positional Parameters</h3>
+<h3 id="_negatable_options">2.4. Negatable Options</h3>
+<div class="paragraph">
+<p>From picocli 4.0, options can be <code>negatable</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">App</span> {
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span>,           negatable = <span class="predefined-constant">true</span>) <span class="type">boolean</span> verbose;
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-XX:+PrintGCDetails</span><span class="delimiter">&quot;</span></span>, negatable = <span class="predefined-constant">true</span>) <span class="type">boolean</span> printGCDetails;
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-XX:-UseG1GC</span><span class="delimiter">&quot;</span></span>,        negatable = <span class="predefined-constant">true</span>) <span class="type">boolean</span> useG1GC = <span class="predefined-constant">true</span>;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When an option is negatable, picocli will recognize negative aliases of the option on the command line.</p>
+</div>
+<div class="paragraph">
+<p>For *nix-style long options, aliases have the prefix <code>no-</code> to the given names.
+For Java JVM-style options, the <code>:+</code> is turned into <code>:-</code> and vice versa.
+Short option names are not given a negative alias by default. (This is <a href="#_customizing_negatable_options">customizable</a>.)</p>
+</div>
+<div class="paragraph">
+<p>If the negated form of the option is found, for example <code>--no-verbose</code>, the value is set to the provided default. Otherwise, with a regular call, for example <code>--verbose</code>, it is set to the opposite of the default.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_positional_parameters">2.5. Positional Parameters</h3>
 <div class="paragraph">
 <p>Any command line arguments that are not subcommands or options (or option parameters) are interpreted as positional parameters.
 Positional parameters generally follow the options but from picocli v2.0, positional parameters can be mixed with options on the command line.</p>
@@ -1137,7 +1173,7 @@ PositionalParameters params = CommandLine.populateCommand(<span class="keyword">
 </div>
 </div>
 <div class="sect2">
-<h3 id="_mixing_options_and_positional_parameters">2.5. Mixing Options and Positional Parameters</h3>
+<h3 id="_mixing_options_and_positional_parameters">2.6. Mixing Options and Positional Parameters</h3>
 <div class="paragraph">
 <p>From picocli v2.0, positional parameters can be mixed with options on the command line.</p>
 </div>
@@ -1170,7 +1206,7 @@ Mixed mixed = <span class="keyword">new</span> Mixed();
 </div>
 </div>
 <div class="sect2">
-<h3 id="_double_dash_code_code">2.6. Double dash (<code>--</code>)</h3>
+<h3 id="_double_dash_code_code">2.7. Double dash (<code>--</code>)</h3>
 <div class="paragraph">
 <p>When one of the command line arguments is just two dashes without any characters attached (<code>--</code>),
 picocli interprets all following arguments as positional parameters, even arguments that match an option name.</p>
@@ -1203,9 +1239,9 @@ DoubleDashDemo demo = <span class="keyword">new</span> DoubleDashDemo();
 </div>
 </div>
 <div class="sect2">
-<h3 id="AtFiles">2.7. @-files</h3>
+<h3 id="AtFiles">2.8. @-files</h3>
 <div class="sect3">
-<h4 id="_argument_files_for_long_command_lines">2.7.1. Argument Files for Long Command Lines</h4>
+<h4 id="_argument_files_for_long_command_lines">2.8.1. Argument Files for Long Command Lines</h4>
 <div class="paragraph">
 <p>Users sometimes run into system limitations on the length of a command line when creating a
 command line with lots of options or with long arguments for options.</p>
@@ -1276,7 +1312,7 @@ The documentation for these tools shows further examples.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_simplified_format">2.7.2. Simplified Format</h4>
+<h4 id="_simplified_format">2.8.2. Simplified Format</h4>
 <div class="paragraph">
 <p>From picocli 3.8.1, a simpler argument file format is also supported where every line (except empty lines and comment lines)
 is interpreted as a single argument. Arguments containing whitespace do not need to be quoted,
@@ -1988,7 +2024,7 @@ the <code>-f</code> argument is recognized as a separate option.</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">boolean</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Boolean options by default don&#8217;t require an option parameter. The field is toggled to its logical negative when the option name is recognized. (This can be <a href="#_toggle_boolean_flags">switched off</a>.)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Boolean options by default don&#8217;t require an option parameter. The field is set to the opposite of its default value when the option name is recognized. (This can be <a href="#_toggle_boolean_flags">configured</a>.)</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Single-valued type (e.g., <code>int</code>, <code>String</code>, <code>File</code>)</p></td>
@@ -2604,7 +2640,7 @@ Older versions of picocli had some limited exit code support where picocli would
 <div class="sect2">
 <h3 id="_exception_exit_codes">8.3. Exception Exit Codes</h3>
 <div class="paragraph">
-<p>By default, the <code>execute</code> method returns <code>CommandLine.ExitCode.USAGE</code> (<code>64</code>) for invalid input, and <code>CommandLine.ExitCode.SOFTWARE</code> (<code>70</code>) when an exception occurred in the Runnable, Callable or command method. (For reference, these values are <code>EX_USAGE</code> and <code>EX_SOFTWARE</code>, respectively, from Unix and Linux <a href="https://www.freebsd.org/cgi/man.cgi?query=sysexits&amp;sektion=3">sysexits.h</a>). This can be customized with the <code>@Command</code> annotation. For example:</p>
+<p>By default, the <code>execute</code> method returns <code>CommandLine.ExitCode.OK</code> (<code>0</code>) on success, <code>CommandLine.ExitCode.SOFTWARE</code> (<code>1</code>) when an exception occurred in the Runnable, Callable or command method, and <code>CommandLine.ExitCode.USAGE</code> (<code>2</code>) for invalid input. (These are common values according to <a href="https://stackoverflow.com/questions/1101957/are-there-any-standard-exit-status-codes-in-linux/40484670#40484670">this StackOverflow answer</a>). This can be customized with the <code>@Command</code> annotation. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -3055,10 +3091,15 @@ unmatched arguments list returned by <code>CommandLine.getUnmatchedArguments()</
 <div class="sect2">
 <h3 id="_toggle_boolean_flags">9.7. Toggle Boolean Flags</h3>
 <div class="paragraph">
-<p>By default, boolean flag options without a parameter are "toggled" when the option is matched on the command line:
-if the previous value was <code>true</code> it is set to <code>false</code>, and when the value was <code>false</code> it is set to <code>true</code>.
-From picocli 3.0, applications can call <code>CommandLine.setToggleBooleanFlags(false)</code> to switch this behaviour off.
-If toggling is off, flags are simply set to <code>true</code> when the option is matched on the command line.</p>
+<p>When a flag option is specified on the command line picocli will set its value to the opposite of its <em>default</em> value.</p>
+</div>
+<div class="paragraph">
+<p>Prior to 4.0, the default was to "toggle" boolean flags to the opposite of their <em>current</em> value:
+if the previous value was <code>true</code> it is set to <code>false</code>, and when the value was <code>false</code> it is set to <code>true</code>.</p>
+</div>
+<div class="paragraph">
+<p>Applications can call <code>CommandLine.setToggleBooleanFlags(true)</code> to enable toggling.
+Note that when toggling is enabled, specifying a flag option twice on the command line will have no effect because they cancel each other out.</p>
 </div>
 </div>
 <div class="sect2">
@@ -3140,6 +3181,60 @@ f
 <div class="paragraph">
 <p>When the <code>splitQuotedStrings</code> parser attribute is set to <code>true</code> the <code>split</code> regex is applied to the parameter value regardless of quotes.
 This can be useful when using a regular expression that is designed to handle quotes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_customizing_negatable_options">9.11. Customizing Negatable Options</h3>
+<div class="paragraph">
+<p><a href="#_negatable_options">Negatable options</a> can be customized via the <code>INegatableOptionTransformer</code> interface:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">interface</span> <span class="class">INegatableOptionTransformer</span> {
+    <span class="comment">/**
+     * Returns the negative form of the specified option name for the parser to recognize
+     * when parsing command line arguments.
+     * @param optionName the option name to create a negative form for,
+     *                   for example {@code --force}
+     * @param cmd the command that the option is part of
+     * @return the negative form of the specified option name, for example {@code --no-force}
+     */</span>
+    <span class="predefined-type">String</span> makeNegative(<span class="predefined-type">String</span> optionName, CommandSpec cmd);
+
+    <span class="comment">/**
+     * Returns the documentation string to show in the synopsis and usage help message for
+     * the specified option. The returned value should be concise and clearly suggest that
+     * both the positive and the negative form are valid option names.
+     * @param optionName the option name to create a documentation string for,
+     *                   for example {@code --force}, or {@code -XX:+&lt;option&gt;}
+     * @param cmd the command that the option is part of
+     * @return the documentation string for the negatable option,
+     *         for example {@code --[no-]force}, or {@code -XX:(+|-)&lt;option&gt;}
+     */</span>
+    <span class="predefined-type">String</span> makeSynopsis(<span class="predefined-type">String</span> optionName, CommandSpec cmd);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This allows you to control:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>which option names should have a negative form</p>
+</li>
+<li>
+<p>the negative form recognized by the parser while parsing the command line</p>
+</li>
+<li>
+<p>the documentation string showing both the positive and the negative form in the usage help message</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>By default, a set of <a href="https://picocli.info/apidocs/picocli/CommandLine.RegexTransformer.html#createDefault--">regular expressions</a> is used to control the above.
+Use <code>CommandLine.setNegatableOptionTransformer</code> to replace the <a href="https://picocli.info/apidocs/picocli/CommandLine.INegatableOptionTransformer"><code>INegatableOptionTransformer</code></a> with a custom version.
+See the javadoc for details.</p>
 </div>
 </div>
 </div>
@@ -3407,6 +3502,30 @@ commandLine.parseArgs(args);
 <pre>Versioned Command 1.0
 Build 12345
 (c) 2017</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Since 4.0, the version strings may contain <a href="#_variable_interpolation">system properties and environment variables</a>. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(version = {
+    <span class="string"><span class="delimiter">&quot;</span><span class="content">Versioned Command 1.0</span><span class="delimiter">&quot;</span></span>,
+    <span class="string"><span class="delimiter">&quot;</span><span class="content">Picocli </span><span class="delimiter">&quot;</span></span> + picocli.CommandLine.VERSION,
+    <span class="string"><span class="delimiter">&quot;</span><span class="content">JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})</span><span class="delimiter">&quot;</span></span>,
+    <span class="string"><span class="delimiter">&quot;</span><span class="content">OS: ${os.name} ${os.version} ${os.arch}</span><span class="delimiter">&quot;</span></span>})
+<span class="type">class</span> <span class="class">VersionedCommand</span> { ... }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Depending on your environment, that may print something like:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Versioned Command 1.0
+Picocli 4.0.0-beta-1-SNAPSHOT
+JVM: 1.8.0_202 (Oracle Corporation Substrate VM GraalVM 1.0.0-rc15 CE)
+OS: Linux 4.4.0-17134-Microsoft amd64</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -6300,13 +6419,105 @@ See the <a href="autocomplete.html">Autocomplete for Java Command Line Applicati
 </div>
 </div>
 <div class="sect1">
-<h2 id="_picocli_in_other_languages">23. Picocli in Other Languages</h2>
+<h2 id="_java_9_jpms_modules">23. Java 9 JPMS Modules</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The main <code>picocli-${version}.jar</code> is a JPMS module named <code>info.picocli</code>.</p>
+</div>
+<div class="paragraph">
+<p>Starting from picocli 4.0, this jar will be an explicit module instead of an automatic module,
+so the <a href="https://docs.oracle.com/en/java/javase/12/tools/jlink.html"><code>jlink</code> tool</a> can be used to provide a trimmed binary image that has only the required modules.
+(Note that <a href="https://medium.com/azulsystems/using-jlink-to-build-java-runtimes-for-non-modular-applications-9568c5e70ef4">there are ways</a> to use jlink with non-modular applications.)</p>
+</div>
+<div class="paragraph">
+<p>Typically, a modular jar includes the <code>module-info.class</code> file in its root directory.
+This causes problems for some older tools, which incorrectly process the module descriptor as if it were a normal Java class.
+To provide the best backward compatibility, the main picocli artifact is a <a href="https://openjdk.java.net/jeps/238#Modular-multi-release-JAR-files">modular multi-release jar</a> with the <code>module-info.class</code> file located in <code>META-INF/versions/9</code>.</p>
+</div>
+<div class="sect2">
+<h3 id="_module_configuration">23.1. Module Configuration</h3>
+<div class="paragraph">
+<p>Applications that use Java 9&#8217;s modules need to configure their module to allow picocli reflective access to the annotated classes and fields.</p>
+</div>
+<div class="paragraph">
+<p>Often applications want the annotated classes and fields to be <strong>private</strong>; there should be no need to make them part of the exported API of your module just to allow picocli to access them. The below settings make this possible.</p>
+</div>
+<div class="paragraph">
+<p>Example <code>module-info.java</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>module com.yourorg.yourapp {
+   requires info.picocli;
+
+   // Open this package for reflection to external frameworks.
+   opens your.package.using.picocli;
+
+   // or: limit access to picocli only
+   opens other.package.using.picocli to info.picocli;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that neither package is <code>exported</code>, so other modules cannot accidentally compile against types in these packages.</p>
+</div>
+<div class="paragraph">
+<p>Alternatively:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>// open all packages in the module to reflective access
+open module com.yourorg.yourapp {
+   requires info.picocli;
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_graalvm_native_images">24. GraalVM Native Images</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><span class="image"><img src="images/exe-picocli-on-graalvm.png" alt="Turn your picocli-based application into a native image" width="265" height="150"></span></p>
+</div>
+<div class="paragraph">
+<p><a href="https://www.graalvm.org/docs/reference-manual/aot-compilation/">GraalVM Native Image</a> allows you to
+ahead-of-time compile Java code to a standalone executable, called a native image.
+This executable includes the application, the libraries, and the JDK and does not require a separate Java VM to be installed.
+The resulting program has faster startup time and lower runtime memory overhead compared to a Java VM.</p>
+</div>
+<div class="paragraph">
+<p>GraalVM native images have some limitations and require some extra configuration
+to be able to use features like reflection, resources (including resource bundles) and dynamic proxies.</p>
+</div>
+<div class="paragraph">
+<p>The <code>picocli-codegen</code> module contains an annotation processor that generates these configuration files
+under <code>META-INF/native-image/picocli-generated/$project</code> during compilation,
+to be included in the application jar. The <a href="https://github.com/remkop/picocli/tree/master/picocli-codegen">picocli-codegen README</a>
+file has details on configuring the annotation processor.</p>
+</div>
+<div class="paragraph">
+<p>By embedding these configuration files, your jar is instantly Graal-enabled: the
+<a href="https://www.graalvm.org/docs/reference-manual/aot-compilation/#install-native-image"><code>native-image</code> tool</a>
+used to generate the native executable is able to get the configuration from the jar.</p>
+</div>
+<div class="paragraph">
+<p>In most cases no further configuration is needed when generating a native image.</p>
+</div>
+<div class="paragraph">
+<p>This <a href="https://picocli.info/picocli-on-graalvm.html">older article</a>, "Picocli on GraalVM: Blazingly Fast Command Line Apps", may still be useful.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_picocli_in_other_languages">25. Picocli in Other Languages</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli may be used in other JVM languages that support annotations.</p>
 </div>
 <div class="sect2">
-<h3 id="_groovy">23.1. Groovy</h3>
+<h3 id="_groovy">25.1. Groovy</h3>
 <div class="paragraph">
 <p>In Groovy, use <code>[</code> and <code>]</code> to surround array values, instead of the <code>{</code> and <code>}</code> used in Java.</p>
 </div>
@@ -6332,7 +6543,7 @@ See the <a href="autocomplete.html">Autocomplete for Java Command Line Applicati
 </div>
 </div>
 <div class="paragraph">
-<p>Picocli 2.0 introduced special support for Groovy scripts.</p>
+<p>Picocli 2.0 introduced special support for Groovy scripts. (From picocli 4.0 this was moved into a separate module, <code>picocli-groovy</code>.)</p>
 </div>
 <div class="paragraph">
 <p>Scripts annotated with <code>@picocli.groovy.PicocliScript</code> are automatically transformed to use
@@ -6346,7 +6557,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:4.0.0-alpha-3</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.0.0-beta-1-SNAPSHOT</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -6366,11 +6577,25 @@ count.times {
 <span class="keyword">assert</span> <span class="local-variable">this</span>.commandLine.commandName == <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span></code></pre>
 </div>
 </div>
-<div class="admonitionblock caution">
+<div class="admonitionblock warning">
 <table>
 <tr>
 <td class="icon">
-<i class="fa icon-caution" title="Caution"></i>
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+When upgrading scripts to picocli 4.0, just changing the version number is not enough!
+Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.0.0-beta-1-SNAPSHOT')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.0.0-beta-1b')</code> will not work,
+because the <code>@picocli.groovy.PicocliScript</code> annotation class and supporting classes have been moved into a separate module, <code>picocli-groovy</code>.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
 When using a Groovy version older than 2.4.7, use this workaround for the <a href="https://issues.apache.org/jira/browse/GROOVY-7613">Grape bug</a> that causes this error:
@@ -6381,14 +6606,14 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli:4.0.0-alpha-3</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.0.0-beta-1-SNAPSHOT</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_kotlin">23.2. Kotlin</h3>
+<h3 id="_kotlin">25.2. Kotlin</h3>
 <div class="paragraph">
 <p>Kotlin 1.2 (released Nov 28, 2017) officially supports <a href="http://kotlinlang.org/docs/reference/whatsnew12.html#array-literals-in-annotations">array literals in annotations</a>, allowing a more compact notation:</p>
 </div>
@@ -6452,7 +6677,7 @@ fun main(args: Array&lt;String&gt;) = CommandLine.run(MyApp(), *args)</code></pr
 </div>
 </div>
 <div class="sect2">
-<h3 id="_scala">23.3. Scala</h3>
+<h3 id="_scala">25.3. Scala</h3>
 <div class="paragraph">
 <p>Scala does not allow specifying array annotation attribute as a single value,
 so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for the <code>names</code>, <code>description</code> and <code>type</code> attributes.</p>
@@ -6485,7 +6710,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_api_javadoc">24. API Javadoc</h2>
+<h2 id="_api_javadoc">26. API Javadoc</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli API Javadoc can be found <a href="apidocs/">here</a>.</p>
@@ -6496,7 +6721,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_github_project">25. GitHub Project</h2>
+<h2 id="_github_project">27. GitHub Project</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="https://github.com/remkop/picocli">GitHub project</a> has the source code, tests, build scripts, etc.</p>
@@ -6510,7 +6735,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_issue_tracker">26. Issue Tracker</h2>
+<h2 id="_issue_tracker">28. Issue Tracker</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The GitHub <a href="https://github.com/remkop/picocli/issues">Issue Tracker</a> can be used to report bugs or request features. There is also a <a href="#_mailing_list">Mailing List</a>, and for questions where the user community may know the answer, <a href="https://stackoverflow.com/questions/tagged/picocli">StackOverflow</a> is both a good resource and a great way to build an online knowledge base.</p>
@@ -6518,7 +6743,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_mailing_list">27. Mailing List</h2>
+<h2 id="_mailing_list">29. Mailing List</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Join the <a href="https://groups.google.com/d/forum/picocli">picocli Google group</a> if you are interested in discussing anything picocli-related and receiving announcements on new releases.</p>
@@ -6526,7 +6751,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_license">28. License</h2>
+<h2 id="_license">30. License</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli is licensed under the <a href="https://github.com/remkop/picocli/blob/master/LICENSE">Apache License 2.0</a>.</p>
@@ -6534,7 +6759,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_releases">29. Releases</h2>
+<h2 id="_releases">31. Releases</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Previous versions are available from the GitHub project <a href="https://github.com/remkop/picocli/releases">Releases</a>.</p>
@@ -6542,50 +6767,50 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_download">30. Download</h2>
+<h2 id="_download">32. Download</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>You can add picocli as an external dependency to your project, or you can include it as source.
 See the <a href="#_source">source code</a> below. Copy and paste it into a file called <code>CommandLine.java</code>, add it to your project, and enjoy!</p>
 </div>
 <div class="sect2">
-<h3 id="_gradle">30.1. Gradle</h3>
+<h3 id="_gradle">32.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.0.0-alpha-3'</pre>
+<pre>compile 'info.picocli:picocli:4.0.0-beta-1b'</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_maven">30.2. Maven</h3>
+<h3 id="_maven">32.2. Maven</h3>
 <div class="listingblock">
 <div class="content">
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.0.0-alpha-3&lt;/version&gt;
+  &lt;version&gt;4.0.0-beta-1b&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_scala_sbt">30.3. Scala SBT</h3>
+<h3 id="_scala_sbt">32.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "4.0.0-alpha-3"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "4.0.0-beta-1b"</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_ivy">30.4. Ivy</h3>
+<h3 id="_ivy">32.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.0.0-alpha-3" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.0.0-beta-1b" /&gt;</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_source">30.5. Source</h3>
+<h3 id="_source">32.5. Source</h3>
 <div class="paragraph">
 <p>Picocli has only one source file: <a href="https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java">CommandLine.java</a>.
 This facilitates including it in your project in source form to avoid having an external dependency on picocli.</p>
@@ -6596,8 +6821,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.0.0-alpha-3<br>
-Last updated 2019-05-13 21:09:41 JST
+Version 4.0.0-beta-1b<br>
+Last updated 2019-06-05 20:55:08 JST
 </div>
 </div>
 </body>

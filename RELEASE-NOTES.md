@@ -1,8 +1,8 @@
 # picocli Release Notes
 
 
-# <a name="4.0.0-beta-1"></a> Picocli 4.0.0-beta-1 (UNRELEASED)
-The picocli community is pleased to announce picocli 4.0.0-beta-1.
+# <a name="4.0.0-beta-1b"></a> Picocli 4.0.0-beta-1b
+The picocli community is pleased to announce picocli 4.0.0-beta-1b.
 
 This release includes the first cut of an annotation processor that can build a model from the picocli annotations at compile time rather than at runtime. 
 
@@ -31,15 +31,15 @@ Many thanks to the picocli community for the contributions!
 This is the fifty-fifth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
-## <a name="4.0.0-beta-1"></a> Table of Contents
-* [New and noteworthy](#4.0.0-beta-1-new)
-* [Fixed issues](#4.0.0-beta-1-fixes)
-* [Deprecations](#4.0.0-beta-1-deprecated)
-* [Potential breaking changes](#4.0.0-beta-1-breaking-changes)
+## <a name="4.0.0-beta-1b"></a> Table of Contents
+* [New and noteworthy](#4.0.0-beta-1b-new)
+* [Fixed issues](#4.0.0-beta-1b-fixes)
+* [Deprecations](#4.0.0-beta-1b-deprecated)
+* [Potential breaking changes](#4.0.0-beta-1b-breaking-changes)
 
-## <a name="4.0.0-beta-1-new"></a> New and Noteworthy
+## <a name="4.0.0-beta-1b-new"></a> New and Noteworthy
 
-### <a name="4.0.0-beta-1-processor"></a> Annotation Processor
+### <a name="4.0.0-beta-1b-processor"></a> Annotation Processor
 
 This release includes the first cut of an annotation processor that can build a model from the picocli annotations at compile time rather than at runtime. 
 
@@ -74,7 +74,7 @@ This requires `maven-compiler-plugin` plugin version 3.5 or higher.
       <path>
         <groupId>info.picocli</groupId>
         <artifactId>picocli-codegen</artifactId>
-        <version>4.0.0-beta-1</version>
+        <version>4.0.0-beta-1b</version>
       </path>
     </annotationProcessorPaths>
   </configuration>
@@ -87,13 +87,13 @@ An alternative that works with older versions of the `maven-compiler-plugin` is 
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.0.0-beta-1</version>
+  <version>4.0.0-beta-1b</version>
 </dependency>
 
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli-codegen</artifactId>
-  <version>4.0.0-beta-1</version>
+  <version>4.0.0-beta-1b</version>
   <provided>true</provided>
 </dependency>
 ```
@@ -106,16 +106,16 @@ See Processor Options below.
 Use the `annotationProcessor` path in Gradle [4.6 and higher](https://docs.gradle.org/4.6/release-notes.html#convenient-declaration-of-annotation-processor-dependencies):
 ```
 dependencies {
-    compile 'info.picocli:picocli:4.0.0-beta-1'
-    annotationProcessor 'info.picocli:picocli-codegen:4.0.0-beta-1'
+    compile 'info.picocli:picocli:4.0.0-beta-1b'
+    annotationProcessor 'info.picocli:picocli-codegen:4.0.0-beta-1b'
 }
 ```
 
 For Gradle versions prior to 4.6, use `compileOnly`, to prevent the `picocli-codegen` jar from being a transitive dependency included in the artifact the module produces.
 ```
 dependencies {
-    compile 'info.picocli:picocli:4.0.0-beta-1'
-    compileOnly 'info.picocli:picocli-codegen:4.0.0-beta-1'
+    compile 'info.picocli:picocli:4.0.0-beta-1b'
+    compileOnly 'info.picocli:picocli-codegen:4.0.0-beta-1b'
 }
 ```
 
@@ -187,7 +187,7 @@ compileJava {
 See the [Gradle documentation](https://docs.gradle.org/current/dsl/org.gradle.api.tasks.compile.CompileOptions.html) for details.
 
 
-### <a name="4.0.0-beta-1-negatable"></a> Negatable Options
+### <a name="4.0.0-beta-1b-negatable"></a> Negatable Options
 From picocli 4.0, options can be `negatable`.
 
 ```java
@@ -207,7 +207,7 @@ If the negated form of the option is found, for example `--no-verbose`, the valu
 
 
 
-## <a name="4.0.0-beta-1-fixes"></a> Fixed issues
+## <a name="4.0.0-beta-1b-fixes"></a> Fixed issues
 - [#500] Add a generic and extensible picocli annotation processor
 - [#699] Add annotation processor that generates `reflect-config.json` during build
 - [#703] Add annotation processor that generates `resource-config.json` during build
@@ -226,10 +226,10 @@ If the negated form of the option is found, for example `--no-verbose`, the valu
 - [#710] Let annotation processor validate negatable options, usageHelp options
 - [#716] Revert `@Inherited` annotation for `@Command`. Thanks to [Mikusch](https://github.com/Mikusch) for raising this.
 
-## <a name="4.0.0-beta-1-deprecated"></a> Deprecations
+## <a name="4.0.0-beta-1b-deprecated"></a> Deprecations
 
 
-## <a name="4.0.0-beta-1-breaking-changes"></a> Potential breaking changes
+## <a name="4.0.0-beta-1b-breaking-changes"></a> Potential breaking changes
 
 ### `picocli.groovy` Classes Moved to Separate Artifact
 From this release the main `picocli-4.x` artifact no longer contains the `picocli.groovy` classes: these have been split off into a separate `picocli-groovy-4.x` artifact.

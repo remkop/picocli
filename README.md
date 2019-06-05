@@ -46,7 +46,7 @@ Picocli-based applications can easily [integrate](https://picocli.info/#_depende
 
 ### Releases
 * [All Releases](https://github.com/remkop/picocli/releases)
-* Latest: 4.0.0-alpha-3 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.0.0-alpha-3)
+* Latest: 4.0.0-beta-1b [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.0.0-beta-1b)
 * Stable: Picocli 3.9.6 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.9.6)
 * Older: Picocli 3.0.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0)
 * Older: Picocli 2.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0)
@@ -199,35 +199,35 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:4.0.0-alpha-3'
+compile 'info.picocli:picocli:4.0.0-beta-1b'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.0.0-alpha-3</version>
+  <version>4.0.0-beta-1b</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "4.0.0-alpha-3"
+libraryDependencies += "info.picocli" % "picocli" % "4.0.0-beta-1b"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="4.0.0-alpha-3" />
+<dependency org="info.picocli" name="picocli" rev="4.0.0-beta-1b" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='4.0.0-alpha-3')
+    @Grab(group='info.picocli', module='picocli', version='4.0.0-beta-1b')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "4.0.0-alpha-3"]
+[info.picocli/picocli "4.0.0-beta-1b"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:4.0.0-alpha-3'
+'info.picocli:picocli:jar:4.0.0-beta-1b'
 ```
