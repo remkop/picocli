@@ -13,6 +13,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
@@ -177,7 +178,10 @@ public class AbstractCommandSpecProcessorTest {
         List<String> expected = new ArrayList<String>(Arrays.asList(
                 "Only getter or setter methods can be annotated with @Option, but invalidNeitherGetterNorSetter is neither."
         ));
-        validateErrorMessages(compilation, expected);
+        List<String> optional = new ArrayList<>(Arrays.asList(
+                "Only getter or setter methods can be annotated with @Option, but invalidNeitherGetterNorSetter is neither."
+        ));
+        validateErrorMessages(compilation, expected, optional);
     }
 
     @Test
@@ -195,16 +199,25 @@ public class AbstractCommandSpecProcessorTest {
                 "invalidVersionHelpShouldBeBoolean must be a boolean: a command can have max one versionHelp boolean flag that triggers display of the version information.",
                 "An option can be usageHelp or versionHelp, but invalidDuplicateUsageAndVersionHelp is both.",
                 "An command can only have one usageHelp option, but Invalid4 has 3."
+
         ));
-        validateErrorMessages(compilation, expected);
+        List<String> optional = new ArrayList<>(Arrays.asList(
+                "An command can only have one versionHelp option, but Invalid4 has 3."
+        ));
+        validateErrorMessages(compilation, expected, optional);
     }
 
     private void validateErrorMessages(Compilation compilation, List<String> expected) {
+        validateErrorMessages(compilation, expected, Collections.emptyList());
+    }
+    private void validateErrorMessages(Compilation compilation, List<String> expected, List<String> optional) {
         ImmutableList<Diagnostic<? extends JavaFileObject>> errors = compilation.errors();
         for (Diagnostic<? extends JavaFileObject> diag : errors) {
             String msg = diag.getMessage(Locale.ENGLISH);
             String firstLine = msg.split("\\r?\\n")[0];
-            assertTrue("Unexpected error: " + msg, expected.remove(firstLine));
+            if (!expected.remove(firstLine)) {
+                assertTrue("Unexpected error: " + msg, optional.remove(firstLine));
+            }
         }
         assertTrue("Expected errors: " + expected, expected.isEmpty());
     }
