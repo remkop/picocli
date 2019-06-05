@@ -15,7 +15,7 @@ In most cases no further configuration is needed when generating a native image.
 
 Also, from this release the main `picocli-4.x` artifact no longer contains the `picocli.groovy` classes: these have been split off into a separate `picocli-groovy-4.x` artifact.
 The main `picocli-4.x.jar` is now an explicit JPMS module, with a `module-info.class` located in `META-INF/versions/9`.
-The `picocli-jpms-module` will no longer publish a separate artifact.
+The `picocli-jpms-module` subproject has been removed.
 
 From picocli 4.0, options can be `negatable`.
 When an option is negatable, picocli will recognize negative aliases of the option on the command line. See the New and Noteworthy section below for more details. 
@@ -213,7 +213,7 @@ If the negated form of the option is found, for example `--no-verbose`, the valu
 - [#703] Add annotation processor that generates `resource-config.json` during build
 - [#704] Add annotation processor that generates `proxy-config.json` during build
 - [#707] Add example maven/gradle projects that demonstrate using the annotation processor
-- [#711] API: Create separate `picocli-groovy` module
+- [#711] API: Create separate `picocli-groovy` module, make `picocli` an explicit module (a modular multiversion jar)
 - [#694] API: `negatable` boolean options. Thanks to [Michael D. Adams](https://github.com/adamsmd) for the feature request.
 - [#712] Boolean options should not toggle by default, to be consistent with negatable options
 - [#709] Fix scrambled characters for the `±` character when running on system with non-UTF8 encoding

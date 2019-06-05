@@ -4,6 +4,7 @@ import java.nio.file.Paths
 group 'info.picocli'
 description 'Java command line parser with both an annotations API and a programmatic API. Usage help with ANSI styles and colors. Autocomplete. Nested subcommands. Easily included as source to avoid adding a dependency.'
 version "$projectVersion"
+ext.moduleName = 'info.picocli'
 
 buildscript {
     repositories {
@@ -25,6 +26,7 @@ apply plugin: 'org.asciidoctor.convert' // version '1.5.8.1'
 apply plugin: 'distribution'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
+apply plugin: "org.beryx.jar"
 
 
 allprojects {
@@ -141,15 +143,18 @@ allprojects {
     }
 }
 
-dependencies {
-    compile project(':picocli-jpms-module')
+sourceSets.main.java.srcDirs = ['src/main/java', 'src/main/java9']
+compileJava {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        if (org.gradle.api.JavaVersion.current().isJava9Compatible()) {
+            options.compilerArgs = [
+                    '--module-path', classpath.asPath,
+            ]
+        }
+        classpath = files()
+    }
 }
-task copyModuleInfo(dependsOn: classes, type: Copy) {
-    dependsOn(':picocli-jpms-module:jar') // the jar task in picocli-jpms-module writes ${project(':picocli-jpms-module').buildDir}/classes/java/main/META-INF/versions/9/module-info.class
-    from("${project(':picocli-jpms-module').buildDir}/classes/java/main")
-    into "${buildDir}/classes/java/main"
-}
-jar.dependsOn(copyModuleInfo)
 
 jar {
     manifest {
@@ -161,6 +166,8 @@ jar {
                    'Implementation-Version': version,
                    'Main-Class'            : 'picocli.AutoComplete'
     }
+    // copy module-info.class to META-INF/versions/9
+    multiRelease = true
 }
 
 Map<org.gradle.api.JavaVersion, String> linkMap = org.gradle.api.JavaVersion.values().collectEntries { version -> 
@@ -178,30 +185,22 @@ javadoc.options.links += [
 ]
 //javadoc.options.linksOffline linkMap.get(org.gradle.api.JavaVersion.current(), 'https://docs.oracle.com/en/java/javase/12/docs/api/'), 'gradle/javadocs/jdk/9/'
 
-task copyModuleInfoSource(dependsOn: classes, type: Copy) {
-    from('picocli-jpms-module/src/main/java') {
-        include "**/*.java"
-    }
-    from('src/main/java') {
-        include "**/*.java"
-    }
-    into "${buildDir}/tmp/javadocModuleSources/"
-}
-javadoc.dependsOn(copyModuleInfoSource)
 javadoc {
-    File javadocModuleSources = new File("${project.buildDir}/tmp/javadocModuleSources")
-    File javadocExe = new File((String) System.getenv("JAVA_11_HOME@@@@"), "bin/javadoc.exe")
+    //logger.warn(sourceSets.main.allJava.sourceDirectories.files.toString())
+    File javadocExe = new File((String) System.getenv("JAVA_11_HOME@@@"), "bin/javadoc.exe")
     if (javadocExe.exists()) {
         executable = javadocExe
         javadoc.options.links = [ 'https://docs.oracle.com/en/java/javase/11/docs/api/' ]
-        inputs.property("moduleName", 'info.picocli')
-        //options.addStringOption('-module', 'info.picocli')
-        source(javadocModuleSources.absolutePath)
-        //options.addStringOption('-module-path', classpath.asPath)
-        options.addStringsOption("-module-source-path", ";").setValue([javadocModuleSources.absolutePath])
+        inputs.property("moduleName", moduleName)
+        options.addStringOption('-module', moduleName)
+        //source(sourceSets.main.java)
+        source = sourceSets.main.allJava
+        options.addStringsOption("-module-source-path", ";").setValue(["C:\\Users\\remko\\IdeaProjects\\picocli3\\src\\main\\java", "C:\\Users\\remko\\IdeaProjects\\picocli3\\src\\main\\java9"])
+        options.addStringOption('-module-path', classpath.asPath)
         options.addBooleanOption('-frames')
     }
 }
+javadoc.dependsOn(jar)
 javadoc.dependsOn('asciidoctor')
 asciidoctorj {
     version = '1.5.5'
@@ -276,6 +275,7 @@ task bumpVersion {
             fileset(dir: 'docs', includes: 'quick-guide.adoc')
             fileset(dir: 'docs', includes: 'autocomplete.adoc')
             fileset(dir: 'docs', includes: 'picocli-3.0-programmatic-api.adoc')
+            fileset(dir: 'picocli-codegen', includes: 'README.adoc')
         }
     }
 }

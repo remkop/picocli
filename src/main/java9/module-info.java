@@ -12,8 +12,18 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 
-module info.picocli {     
+// When compiling in Gradle, the org.beryx.jar plugin will be able to
+// compile this file even with Java versions 8 or older.
+
+// Your IDE may complain that "Modules are not supported at language level '5'",
+// and javac may give an error: "java: class, interface or enum expected".
+// To resolve this, exclude the 'java9' folder from the sources.
+// IntelliJ IDEA:
+//     File > Project Structure... > Modules > picocli_main > Sources:
+//     select the 'java9' folder and click 'Mark as: Excluded'.
+
+module info.picocli {
     exports picocli;
 }

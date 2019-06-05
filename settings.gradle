@@ -6,8 +6,7 @@ include 'picocli-shell-jline3'
 include 'picocli-codegen'
 
 if (org.gradle.api.JavaVersion.current().isJava8Compatible()) {
-    include 'picocli-jpms-module'
     include 'picocli-annotation-processing-tests'
 } else {
-    println("Excluding modules picocli-jpms-module and picocli-annotation-processing-tests from the build: they require Java 8 but we have Java version ${org.gradle.api.JavaVersion.current()}")
+    println("Excluding module picocli-annotation-processing-tests from the build: they require Java 8 but we have Java version ${org.gradle.api.JavaVersion.current()}")
 }
