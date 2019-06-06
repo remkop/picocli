@@ -1,6 +1,6 @@
 package picocli.examples
 
-@Grab('info.picocli:picocli:2.0.1')
+@Grab('info.picocli:picocli-groovy:4.0.0-beta-1b')
 @GrabExclude('org.codehaus.groovy:groovy-all')
 import java.security.MessageDigest
 import picocli.CommandLine
