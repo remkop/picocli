@@ -11251,7 +11251,7 @@ public class CommandLine {
          */
         private boolean isOption(String arg) {
             if (arg == null)      { return false; }
-            if ("--".equals(arg)) { return true; }
+            if (commandSpec.parser().endOfOptionsDelimiter().equals(arg)) { return true; }
 
             // not just arg prefix: we may be in the middle of parsing -xrvfFILE
             if (commandSpec.optionsMap().containsKey(arg)) { // -v or -f or --file (not attached to param or other option)
