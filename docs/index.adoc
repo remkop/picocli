@@ -1959,7 +1959,7 @@ Depending on your environment, that may print something like:
 
 ----
 Versioned Command 1.0
-Picocli 4.0.0-beta-1-SNAPSHOT
+Picocli 4.0.0-beta-1b
 JVM: 1.8.0_202 (Oracle Corporation Substrate VM GraalVM 1.0.0-rc15 CE)
 OS: Linux 4.4.0-17134-Microsoft amd64
 ----
@@ -4177,7 +4177,7 @@ The script body is executed if the user input was valid and did not request usag
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli-groovy:4.0.0-beta-1-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.0.0-beta-1b')
 @Command(name = "myScript",
         mixinStandardHelpOptions = true, // add --help and --version options
         description = "@|bold Groovy script|@ @|underline picocli|@ example")
@@ -4198,7 +4198,7 @@ assert this.commandLine.commandName == "myScript"
 ----
 
 WARNING: When upgrading scripts to picocli 4.0, just changing the version number is not enough!
-Scripts should use `@Grab('info.picocli:picocli-groovy:4.0.0-beta-1-SNAPSHOT')`. The old artifact id `@Grab('info.picocli:picocli:4.0.0-rc-1-SNAPSHOT')` will not work,
+Scripts should use `@Grab('info.picocli:picocli-groovy:4.0.0-beta-1b')`. The old artifact id `@Grab('info.picocli:picocli:4.0.0-rc-1-SNAPSHOT')` will not work,
 because the `@picocli.groovy.PicocliScript` annotation class and supporting classes have been moved into a separate module, `picocli-groovy`.
 
 
@@ -4207,7 +4207,7 @@ NOTE: When using a Groovy version older than 2.4.7, use this workaround for the 
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli-groovy:4.0.0-beta-1-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.0.0-beta-1b')
 @GrabExclude('org.codehaus.groovy:groovy-all') // work around GROOVY-7613
 ...
 ----
