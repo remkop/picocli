@@ -1631,4 +1631,24 @@ public class CommandLineArityTest {
         new CommandLine(app).parseArgs("-x", "a", "b", ";", "x", "y");
         assertEquals(Arrays.asList("a", "b", ";", "x", "y"), app.option);
     }
+
+    @Test
+    public void testUnmatchedListCleared() {
+        class App {
+            @Unmatched
+            List<String> unmatchedList;
+
+            @Unmatched
+            String[] unmatchedArray;
+        }
+
+        App app = new App();
+        new CommandLine(app).parseArgs("--", "a", "b");
+        assertEquals(Arrays.asList("a", "b"), app.unmatchedList);
+        assertArrayEquals(new String[]{"a", "b"}, app.unmatchedArray);
+
+        new CommandLine(app).parseArgs("--", "x", "y");
+        assertEquals(Arrays.asList("x", "y"), app.unmatchedList);
+        assertArrayEquals(new String[]{"x", "y"}, app.unmatchedArray);
+    }
 }

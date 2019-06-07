@@ -8308,6 +8308,7 @@ public class CommandLine {
         public static class UnmatchedArgsBinding {
             private final IGetter getter;
             private final ISetter setter;
+            private Object initialValue;
 
             /** Creates a {@code UnmatchedArgsBinding} for a setter that consumes {@code String[]} objects.
              * @param setter consumes the String[] array with unmatched arguments. */
@@ -8321,6 +8322,13 @@ public class CommandLine {
                 if (getter == null && setter == null) { throw new IllegalArgumentException("Getter and setter cannot both be null"); }
                 this.setter = setter;
                 this.getter = getter;
+                if (setter instanceof IGetter) {
+                    try {
+                        initialValue = ((IGetter) setter).get();
+                    } catch (Exception ex) {
+                        new Tracer().debug("Could not obtain initial value for unmatched from setter %s%n", setter);
+                    }
+                }
             }
             /** Returns the getter responsible for producing a {@code Collection} that the unmatched arguments can be added to. */
             public IGetter getter() { return getter; }
@@ -8342,6 +8350,25 @@ public class CommandLine {
                     } catch (Exception ex) {
                         throw new PicocliException(String.format("Could not add unmatched argument array '%s' to collection returned by getter (%s): %s",
                                 Arrays.toString(unmatched), getter, ex), ex);
+                    }
+                }
+            }
+            void clear() {
+                if (setter != null) {
+                    try {
+                        setter.set(initialValue);
+                    } catch (Exception ex) {
+                        throw new PicocliException(String.format("Could not invoke setter (%s) with empty array: %s", setter, ex), ex);
+                    }
+                }
+                if (getter != null) {
+                    try {
+                        Collection<String> collection = getter.get();
+                        Assert.notNull(collection, "getter returned null Collection");
+                        collection.clear();
+                    } catch (Exception ex) {
+                        throw new PicocliException(String.format("Could not clear unmatched argument collection returned by getter (%s): %s",
+                                getter, ex), ex);
                     }
                 }
             }
@@ -10468,6 +10495,9 @@ public class CommandLine {
                 if (arg.group() == null) {
                     if (applyDefault(commandSpec.defaultValueProvider(), arg)) { required.remove(arg); }
                 }
+            }
+            for (UnmatchedArgsBinding unmatched : commandSpec.unmatchedArgsBindings()) {
+                unmatched.clear();
             }
             parseResultBuilder.isInitializingDefaultValues = false;
         }
