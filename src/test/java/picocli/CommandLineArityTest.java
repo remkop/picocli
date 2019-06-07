@@ -1606,4 +1606,29 @@ public class CommandLineArityTest {
         assertFalse(r1.overlaps(Range.valueOf("6")));
         assertFalse(r1.overlaps(Range.valueOf("0")));
     }
+
+    @Test
+    public void testCustomEndOfOptionsDelimiter() {
+        class App {
+            @Option(names = "-x", arity = "*")
+            List<String> option;
+
+            @Unmatched
+            List<String> unmatched;
+        }
+
+        App app = new App();
+        new CommandLine(app).setEndOfOptionsDelimiter(";").parseArgs("-x", "a", "b", ";", "x", "y");
+        assertEquals(Arrays.asList("a", "b"), app.option);
+        assertEquals(Arrays.asList("x", "y"), app.unmatched);
+
+        app = new App();
+        new CommandLine(app).parseArgs("-x", "a", "b", "--", "x", "y");
+        assertEquals(Arrays.asList("a", "b"), app.option);
+        assertEquals(Arrays.asList("x", "y"), app.unmatched);
+
+        app = new App();
+        new CommandLine(app).parseArgs("-x", "a", "b", ";", "x", "y");
+        assertEquals(Arrays.asList("a", "b", ";", "x", "y"), app.option);
+    }
 }
