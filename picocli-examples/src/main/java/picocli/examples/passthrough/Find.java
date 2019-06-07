@@ -59,7 +59,7 @@ public class Find implements Callable<Integer> {
     public Integer call() throws Exception {
         System.out.printf("Finding files of type %s, startingPoint: %s, invoking command '%s' on each...%n", types, startingPoint, execCommandAndArgs);
         System.out.printf("Unmatched positional arguments following ';' were: %s%n", unmatched);
-        return null;
+        return 0;
     }
 
     public static void main(String[] args) {
