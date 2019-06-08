@@ -5996,6 +5996,35 @@ public class CommandLine {
              * @return the maximum usage help message width. Never returns less than 55. */
             public int width() { return getSysPropertyWidthOrDefault(width); }
 
+            /**
+             * Given a character, is this character considered to be a CJK character?
+             * Shamelessly stolen from
+             * <a href="http://stackoverflow.com/questions/1499804/how-can-i-detect-japanese-text-in-a-java-string">StackOverflow</a>
+             * where it was contributed by user Rakesh N. (Upvote! :-) )
+             * @param c Character to test
+             * @return {@code true} if the character is a CJK character
+             */
+            static boolean isCharCJK(char c) {
+                Character.UnicodeBlock unicodeBlock = Character.UnicodeBlock.of(c);
+                return (c == 0x00b1
+                        || unicodeBlock == Character.UnicodeBlock.HIRAGANA)
+                        || (unicodeBlock == Character.UnicodeBlock.KATAKANA)
+                        || (unicodeBlock == Character.UnicodeBlock.KATAKANA_PHONETIC_EXTENSIONS)
+                        || (unicodeBlock == Character.UnicodeBlock.HANGUL_COMPATIBILITY_JAMO)
+                        || (unicodeBlock == Character.UnicodeBlock.HANGUL_JAMO)
+                        || (unicodeBlock == Character.UnicodeBlock.HANGUL_SYLLABLES)
+                        || (unicodeBlock == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS)
+                        || (unicodeBlock == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A)
+                        || (unicodeBlock == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B)
+                        || (unicodeBlock == Character.UnicodeBlock.CJK_COMPATIBILITY_FORMS)
+                        || (unicodeBlock == Character.UnicodeBlock.CJK_COMPATIBILITY_IDEOGRAPHS)
+                        || (unicodeBlock == Character.UnicodeBlock.CJK_RADICALS_SUPPLEMENT)
+                        || (unicodeBlock == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION)
+                        || (unicodeBlock == Character.UnicodeBlock.ENCLOSED_CJK_LETTERS_AND_MONTHS)
+                        //The magic number here is the separating index between full-width and half-width
+                        || (unicodeBlock == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS && c < 0xFF61);
+            }
+
             /** Returns the help section renderers for the predefined section keys. see: {@link #sectionKeys()} */
             private Map<String, IHelpSectionRenderer> createHelpSectionRendererMap() {
                 Map<String, IHelpSectionRenderer> result = new HashMap<String, IHelpSectionRenderer>();
@@ -12274,15 +12303,16 @@ public class CommandLine {
         private int calcLongOptionColumnWidth() {
             int max = 0;
             IOptionRenderer optionRenderer = new DefaultOptionRenderer(false, " ");
+            boolean cjk = commandSpec.usageMessage().adjustLineBreaksForWideCJKCharacters();
             for (OptionSpec option : commandSpec.options()) {
                 Text[][] values = optionRenderer.render(option, parameterLabelRenderer(), colorScheme);
-                int len = values[0][3].length;
+                int len = cjk ? values[0][3].getCJKAdjustedLength() : values[0][3].length;
                 if (len < Help.defaultOptionsColumnWidth - 3) { max = Math.max(max, len); }
             }
             IParameterRenderer paramRenderer = new DefaultParameterRenderer(false, " ");
             for (PositionalParamSpec positional : commandSpec.positionalParameters()) {
                 Text[][] values = paramRenderer.render(positional, parameterLabelRenderer(), colorScheme);
-                int len = values[0][3].length;
+                int len = cjk ? values[0][3].getCJKAdjustedLength() : values[0][3].length;
                 if (len < Help.defaultOptionsColumnWidth - 3) { max = Math.max(max, len); }
             }
             return max + 3;
@@ -13363,43 +13393,11 @@ public class CommandLine {
                 throw new IllegalStateException(column.overflow.toString());
             }
             private int length(Text str) {
-                return length(str, str.from, str.length);
+                return str.getCJKAdjustedLength();
             }
             private int length(Text str, int from, int length) {
-                int result = 0;
-                for (int i = from; i < str.from + length; i++) {
-                    result += isCharCJK(str.plain.charAt(i)) ? 2 : 1;
-                }
-                return result;
-            }
-
-            /**
-             * Given a character, is this character considered to be a CJK character?
-             * Shamelessly stolen from
-             * <a href="http://stackoverflow.com/questions/1499804/how-can-i-detect-japanese-text-in-a-java-string">StackOverflow</a>
-             * where it was contributed by user Rakesh N. (Upvote! :-) )
-             * @param c Character to test
-             * @return {@code true} if the character is a CJK character
-             */
-            boolean isCharCJK(char c) {
-                if (!adjustLineBreaksForWideCJKCharacters) { return false; }
-                Character.UnicodeBlock unicodeBlock = Character.UnicodeBlock.of(c);
-                return (unicodeBlock == Character.UnicodeBlock.HIRAGANA)
-                        || (unicodeBlock == Character.UnicodeBlock.KATAKANA)
-                        || (unicodeBlock == Character.UnicodeBlock.KATAKANA_PHONETIC_EXTENSIONS)
-                        || (unicodeBlock == Character.UnicodeBlock.HANGUL_COMPATIBILITY_JAMO)
-                        || (unicodeBlock == Character.UnicodeBlock.HANGUL_JAMO)
-                        || (unicodeBlock == Character.UnicodeBlock.HANGUL_SYLLABLES)
-                        || (unicodeBlock == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS)
-                        || (unicodeBlock == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A)
-                        || (unicodeBlock == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B)
-                        || (unicodeBlock == Character.UnicodeBlock.CJK_COMPATIBILITY_FORMS)
-                        || (unicodeBlock == Character.UnicodeBlock.CJK_COMPATIBILITY_IDEOGRAPHS)
-                        || (unicodeBlock == Character.UnicodeBlock.CJK_RADICALS_SUPPLEMENT)
-                        || (unicodeBlock == Character.UnicodeBlock.CJK_SYMBOLS_AND_PUNCTUATION)
-                        || (unicodeBlock == Character.UnicodeBlock.ENCLOSED_CJK_LETTERS_AND_MONTHS)
-                        //The magic number here is the separating index between full-width and half-width
-                        || (unicodeBlock == Character.UnicodeBlock.HALFWIDTH_AND_FULLWIDTH_FORMS && c < 0xFF61);
+                if (!adjustLineBreaksForWideCJKCharacters) { return length - from; }
+                return str.getCJKAdjustedLength(from, length);
             }
 
             static class Count {
@@ -14130,6 +14128,26 @@ public class CommandLine {
                         }
                     }
                     return null;
+                }
+
+                /** Returns the number of columns this Text will occupy on the console, adjusted for wide CJK characters.
+                 * @return the number of columns this Text will occupy on the console, adjusted for wide CJK characters
+                 * @since 4.0 */
+                public int getCJKAdjustedLength() {
+                    return getCJKAdjustedLength(from, length);
+                }
+
+                /** Returns the number of columns that the specified portion of this Text will occupy on the console, adjusted for wide CJK characters.
+                 * @param fromPosition the position to start counting
+                 * @param charCount the number of characters in this Text to consider
+                 * @return the number of columns that the specified portion of this Text will occupy on the console, adjusted for wide CJK characters
+                 * @since 4.0 */
+                public int getCJKAdjustedLength(int fromPosition, int charCount) {
+                    int result = 0;
+                    for (int i = fromPosition; i < fromPosition + charCount; i++) {
+                        result += UsageMessageSpec.isCharCJK(plain.charAt(i)) ? 2 : 1;
+                    }
+                    return result;
                 }
             }
         }

@@ -27,6 +27,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 ## <a name="4.0.0-rc-1-fixes"></a> Fixed issues
 - [#719] Bugfix: options with variable arity should stop consuming arguments on custom end-of-options delimiter
 - [#720] `@Unmatched` list should be cleared prior to subsequent invocations
+- [#721] Add public method Text.getCJKAdjustedLength()
 
 ## <a name="4.0.0-rc-1-deprecated"></a> Deprecations
 

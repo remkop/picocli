@@ -105,6 +105,31 @@ public class NegatableOptionTest {
     }
 
     @Test
+    public void testPlusMinusWidth() {
+        @Command(name = "negatable-options-demo", mixinStandardHelpOptions = true)
+        class Demo {
+            @Option(names = "--verbose", negatable = true, description = "Show verbose output")
+            boolean verbose;
+
+            @Option(names = "-XX:+PrintGCDetails", negatable = true, description = "Prints GC details")
+            boolean printGCDetails;
+
+            @Option(names = "-XX:-UseG1GC", negatable = true, description = "Use G1 algorithm for GC")
+            boolean useG1GC = true;
+        }
+        String expected = String.format("" +
+                "Usage: negatable-options-demo [-hV] [--[no-]verbose] [-XX:\u00b1PrintGCDetails]%n" +
+                "                              [-XX:\u00b1UseG1GC]%n" +
+                "  -h, --help                 Show this help message and exit.%n" +
+                "  -V, --version              Print version information and exit.%n" +
+                "      --[no-]verbose         Show verbose output%n" +
+                "      -XX:\u00b1PrintGCDetails    Prints GC details%n" +
+                "      -XX:\u00b1UseG1GC           Use G1 algorithm for GC%n");
+        String actual = new CommandLine(new Demo()).getUsageMessage();
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testParser() {
         class App {
             @Option(names = "-a",                     negatable = true, description = "...") boolean a;
