@@ -1643,11 +1643,12 @@ public class CommandLineArityTest {
         }
 
         App app = new App();
-        new CommandLine(app).parseArgs("--", "a", "b");
+        CommandLine cmd = new CommandLine(app);
+        cmd.parseArgs("--", "a", "b");
         assertEquals(Arrays.asList("a", "b"), app.unmatchedList);
         assertArrayEquals(new String[]{"a", "b"}, app.unmatchedArray);
 
-        new CommandLine(app).parseArgs("--", "x", "y");
+        cmd.parseArgs("--", "x", "y");
         assertEquals(Arrays.asList("x", "y"), app.unmatchedList);
         assertArrayEquals(new String[]{"x", "y"}, app.unmatchedArray);
     }

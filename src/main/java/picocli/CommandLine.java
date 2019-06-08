@@ -8309,6 +8309,7 @@ public class CommandLine {
             private final IGetter getter;
             private final ISetter setter;
             private Object initialValue;
+            private boolean isStringArray;
 
             /** Creates a {@code UnmatchedArgsBinding} for a setter that consumes {@code String[]} objects.
              * @param setter consumes the String[] array with unmatched arguments. */
@@ -8322,14 +8323,14 @@ public class CommandLine {
                 if (getter == null && setter == null) { throw new IllegalArgumentException("Getter and setter cannot both be null"); }
                 this.setter = setter;
                 this.getter = getter;
-                if (setter instanceof IGetter) {
-                    try {
-                        initialValue = ((IGetter) setter).get();
-                    } catch (Exception ex) {
-                        new Tracer().debug("Could not obtain initial value for unmatched from setter %s%n", setter);
-                    }
+                IGetter initialValueHolder = (setter instanceof IGetter) ? (IGetter) setter : getter;
+                try {
+                    initialValue = initialValueHolder.get();
+                } catch (Exception ex) {
+                    new Tracer().debug("Could not obtain initial value for unmatched from %s%n", initialValueHolder);
                 }
             }
+
             /** Returns the getter responsible for producing a {@code Collection} that the unmatched arguments can be added to. */
             public IGetter getter() { return getter; }
             /** Returns the setter responsible for consuming the unmatched arguments. */
@@ -8341,11 +8342,13 @@ public class CommandLine {
                     } catch (Exception ex) {
                         throw new PicocliException(String.format("Could not invoke setter (%s) with unmatched argument array '%s': %s", setter, Arrays.toString(unmatched), ex), ex);
                     }
-                }
-                if (getter != null) {
+                } else {
                     try {
                         Collection<String> collection = getter.get();
-                        Assert.notNull(collection, "getter returned null Collection");
+                        if (collection == null) {
+                            collection = new ArrayList<String>();
+                            ((ISetter) getter).set(collection);
+                        }
                         collection.addAll(Arrays.asList(unmatched));
                     } catch (Exception ex) {
                         throw new PicocliException(String.format("Could not add unmatched argument array '%s' to collection returned by getter (%s): %s",
@@ -8354,22 +8357,18 @@ public class CommandLine {
                 }
             }
             void clear() {
-                if (setter != null) {
-                    try {
-                        setter.set(initialValue);
-                    } catch (Exception ex) {
-                        throw new PicocliException(String.format("Could not invoke setter (%s) with empty array: %s", setter, ex), ex);
+                ISetter initialValueHolder = setter;
+                if (initialValueHolder == null) {
+                    if (getter instanceof ISetter) { initialValueHolder = (ISetter) getter; }
+                    else {
+                        new Tracer().warn("Unable to clear %s: it does not implement ISetter", getter);
+                        return;
                     }
                 }
-                if (getter != null) {
-                    try {
-                        Collection<String> collection = getter.get();
-                        Assert.notNull(collection, "getter returned null Collection");
-                        collection.clear();
-                    } catch (Exception ex) {
-                        throw new PicocliException(String.format("Could not clear unmatched argument collection returned by getter (%s): %s",
-                                getter, ex), ex);
-                    }
+                try {
+                    initialValueHolder.set(initialValue);
+                } catch (Exception ex) {
+                    throw new PicocliException(String.format("Could not invoke setter (%s) with initial value: %s", initialValueHolder, ex), ex);
                 }
             }
         }
@@ -9231,16 +9230,7 @@ public class CommandLine {
                 if (info.getClassName().equals(String[].class.getName())) {
                     return UnmatchedArgsBinding.forStringArrayConsumer(member.setter());
                 } else {
-                    return UnmatchedArgsBinding.forStringCollectionSupplier(new IGetter() {
-                        @SuppressWarnings("unchecked") public <T> T get() throws Exception {
-                            List<String> result = (List<String>) member.getter().get();
-                            if (result == null) {
-                                result = new ArrayList<String>();
-                                member.setter().set(result);
-                            }
-                            return (T) result;
-                        }
-                    });
+                    return UnmatchedArgsBinding.forStringCollectionSupplier(member.getter());
                 }
             }
         }
