@@ -16,9 +16,9 @@ public class NegatableOptionTest {
 
         CommandSpec dummy = CommandSpec.create();
         assertEquals("-X:-option", transformer.makeNegative("-X:+option", dummy));
-        assertEquals("-X:\u00b1option", transformer.makeSynopsis("-X:+option", dummy));
+        assertEquals("-X:(+|-)option", transformer.makeSynopsis("-X:+option", dummy));
         assertEquals("-X:+option", transformer.makeNegative("-X:-option", dummy));
-        assertEquals("-X:\u00b1option", transformer.makeSynopsis("-X:-option", dummy));
+        assertEquals("-X:(+|-)option", transformer.makeSynopsis("-X:-option", dummy));
 
         assertEquals("--no-verbose", transformer.makeNegative("--verbose", dummy));
         assertEquals("--[no-]verbose", transformer.makeSynopsis("--verbose", dummy));
@@ -88,18 +88,19 @@ public class NegatableOptionTest {
         }
 
         String expected = String.format("" +
-                "Usage: <main class> [-abcfghn] [--[no-]long] [--[no-]verbose] [-X:\u00b1java2] [-XX:\u00b1java3]%n" +
+                "Usage: <main class> [-abcfghn] [--[no-]long] [--[no-]verbose] [-X:(+|-)java2] [-XX:(+|-)%n" +
+                "                    java3]%n" +
                 "  -a                     ...%n" +
                 "  -b, --[no-]long-b      ...%n" +
-                "  -c, --X:\u00b1java1         ...%n" +
-                "  -f, --X:\u00b1java4         ...%n" +
-                "  -g, -X:\u00b1java5          ...%n" +
-                "  -h, -XX:\u00b1java6         ...%n" +
+                "  -c, --X:(+|-)java1     ...%n" +
+                "  -f, --X:(+|-)java4     ...%n" +
+                "  -g, -X:(+|-)java5      ...%n" +
+                "  -h, -XX:(+|-)java6     ...%n" +
                 "      --[no-]long        ...%n" +
                 "  -n, --[no-]verbose-b   ...%n" +
                 "      --[no-]verbose     ...%n" +
-                "      -X:\u00b1java2          ...%n" +
-                "      -XX:\u00b1java3         ...%n");
+                "      -X:(+|-)java2      ...%n" +
+                "      -XX:(+|-)java3     ...%n");
         String actual = new CommandLine(new App()).getUsageMessage(Ansi.OFF);
         assertEquals(expected, actual);
     }
@@ -118,13 +119,14 @@ public class NegatableOptionTest {
             boolean useG1GC = true;
         }
         String expected = String.format("" +
-                "Usage: negatable-options-demo [-hV] [--[no-]verbose] [-XX:\u00b1PrintGCDetails]%n" +
-                "                              [-XX:\u00b1UseG1GC]%n" +
-                "  -h, --help                 Show this help message and exit.%n" +
-                "  -V, --version              Print version information and exit.%n" +
-                "      --[no-]verbose         Show verbose output%n" +
-                "      -XX:\u00b1PrintGCDetails    Prints GC details%n" +
-                "      -XX:\u00b1UseG1GC           Use G1 algorithm for GC%n");
+                "Usage: negatable-options-demo [-hV] [--[no-]verbose] [-XX:(+|-)PrintGCDetails]%n" +
+                "                              [-XX:(+|-)UseG1GC]%n" +
+                "  -h, --help             Show this help message and exit.%n" +
+                "  -V, --version          Print version information and exit.%n" +
+                "      --[no-]verbose     Show verbose output%n" +
+                "      -XX:(+|-)PrintGCDetails%n" +
+                "                         Prints GC details%n" +
+                "      -XX:(+|-)UseG1GC   Use G1 algorithm for GC%n");
         String actual = new CommandLine(new Demo()).getUsageMessage();
         assertEquals(expected, actual);
     }

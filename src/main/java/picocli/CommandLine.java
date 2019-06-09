@@ -3488,7 +3488,7 @@ public class CommandLine {
         /** (Only for boolean options): set this to automatically add a negative version for this boolean option.
          * For example, for a {@code --force} option the negative version would be {@code --no-force},
          * and for a {@code -XX:+PrintGCDetails} option, the negative version would be {@code -XX:-PrintGCDetails}.
-         * The synopsis would show {@code --[no-]force} and {@code -XX:}&#x00b1;{@code PrintGCDetails}, respectively.
+         * The synopsis would show {@code --[no-]force} and {@code -XX:(+|-)PrintGCDetails}, respectively.
          * <p>The form of the negative name can be customized by modifying the regular expressions
          * used by {@linkplain RegexTransformer#createDefault() default}, or by replacing the default
          * {@link INegatableOptionTransformer} with a custom implementation entirely.</p>
@@ -4336,13 +4336,13 @@ public class CommandLine {
          *   <tr>
          *     <td>^(-|--)(\w*:)\+(\w(-|\w)*)$</td>
          *     <td>$1$2-$3</td>
-         *     <td>$1$2&#x00b1;$3</td>
+         *     <td>$1$2(+|-)$3</td>
          *     <td>Converts <code>-XX:+Inline</code> to <code>-XX:-Inline</code></td>
          *   </tr>
          *   <tr>
          *     <td>^(-|--)(\w*:)\-(\w(-|\w)*)$</td>
          *     <td>$1$2+$3</td>
-         *     <td>$1$2&#x00b1;$3</td>
+         *     <td>$1$2(+|-)$3</td>
          *     <td>Converts <code>-XX:-Inline</code> to <code>-XX:+Inline</code></td>
          *   </tr>
          * </table>
@@ -4351,8 +4351,8 @@ public class CommandLine {
             CommandLine.RegexTransformer transformer = new CommandLine.RegexTransformer.Builder()
                     .addPattern("^--no-(\\w(-|\\w)*)$", "--$1", "--[no-]$1")
                     .addPattern("^--(\\w(-|\\w)*)$", "--no-$1", "--[no-]$1")
-                    .addPattern("^(-|--)(\\w*:)\\+(\\w(-|\\w)*)$", "$1$2-$3", "$1$2\u00b1$3")
-                    .addPattern("^(-|--)(\\w*:)\\-(\\w(-|\\w)*)$", "$1$2+$3", "$1$2\u00b1$3")
+                    .addPattern("^(-|--)(\\w*:)\\+(\\w(-|\\w)*)$", "$1$2-$3", "$1$2(+|-)$3")
+                    .addPattern("^(-|--)(\\w*:)\\-(\\w(-|\\w)*)$", "$1$2+$3", "$1$2(+|-)$3")
                     .build();
             return transformer;
         }
@@ -4405,13 +4405,13 @@ public class CommandLine {
              *   <tr>
              *     <td>^-(\w)$</td>
              *     <td>+$1</td>
-             *     <td>&#x00b1;$1</td>
+             *     <td>(+|-)$1</td>
              *     <td>Converts <code>-v</code> to <code>+v</code></td>
              *   </tr>
              *   <tr>
              *     <td>^\+(\w)$</td>
              *     <td>-$1</td>
-             *     <td>&#x00b1;$1</td>
+             *     <td>(+|-)$1</td>
              *     <td>Converts <code>-v</code> to <code>+v</code></td>
              *   </tr>
              * </table>
