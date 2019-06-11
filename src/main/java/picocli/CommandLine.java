@@ -7959,11 +7959,19 @@ public class CommandLine {
                 return Collections.unmodifiableList(result);
             }
 
+            /** Returns the synopsis of this group. */
             public String synopsis() {
-                return synopsisText(new Help.ColorScheme.Builder(Help.Ansi.OFF).build()).toString();
+                return synopsisText(new Help.ColorScheme.Builder(Help.Ansi.OFF).build(), new HashSet<ArgSpec>()).toString();
             }
 
-            public Text synopsisText(Help.ColorScheme colorScheme) {
+            /**
+             * Returns the synopsis of this group.
+             * @param colorScheme the color scheme to use for options and positional parameters in this group and subgroups
+             * @param outparam_groupArgs all options and positional parameters in the groups this method generates a synopsis for;
+             *                           these options and positional parameters should be excluded from appearing elsewhere in the synopsis
+             * @return the synopsis Text
+             */
+            public Text synopsisText(Help.ColorScheme colorScheme, Set<ArgSpec> outparam_groupArgs) {
                 String infix = exclusive() ? " | " : " ";
                 Text synopsis = colorScheme.ansi().new Text(0);
                 for (ArgSpec arg : args()) {
@@ -7973,10 +7981,11 @@ public class CommandLine {
                     } else {
                         synopsis = concatPositionalText(synopsis, colorScheme, (PositionalParamSpec) arg);
                     }
+                    outparam_groupArgs.add(arg);
                 }
                 for (ArgGroupSpec subgroup : subgroups()) {
                     if (synopsis.length > 0) { synopsis = synopsis.concat(infix); }
-                    synopsis = synopsis.concat(subgroup.synopsisText(colorScheme));
+                    synopsis = synopsis.concat(subgroup.synopsisText(colorScheme, outparam_groupArgs));
                 }
                 String prefix = multiplicity().min > 0 ? "(" : "[";
                 String postfix = multiplicity().min > 0 ? ")" : "]";
@@ -12128,28 +12137,11 @@ public class CommandLine {
          * @return the formatted groups synopsis elements, starting with a {@code " "} space, or an empty Text if this command has no validating groups
          * @since 4.0 */
         protected Text createDetailedSynopsisGroupsText(Set<ArgSpec> outparam_groupArgs) {
-            Set<ArgGroupSpec> remove = new HashSet<ArgGroupSpec>();
-            List<ArgGroupSpec> groups = new ArrayList<ArgGroupSpec>(commandSpec().argGroups());
-            for (ArgGroupSpec group : groups) {
-                if (group.validate()) {
-                    // remove subgroups
-                    remove.addAll(group.subgroups());
-
-                    // exclude options and positional parameters in this group
-                    outparam_groupArgs.addAll(group.args());
-
-                    // exclude options and positional parameters in the subgroups
-                    for (ArgGroupSpec subgroup : group.subgroups()) {
-                        outparam_groupArgs.addAll(subgroup.args());
-                    }
-                } else {
-                    remove.add(group); // non-validating groups should not impact synopsis
-                }
-            }
-            groups.removeAll(remove);
             Text groupText = ansi().new Text(0);
-            for (ArgGroupSpec group : groups) {
-                groupText = groupText.concat(" ").concat(group.synopsisText(colorScheme()));
+            for (ArgGroupSpec group : commandSpec().argGroups()) {
+                if (group.validate()) { // non-validating groups are not shown in the synopsis
+                    groupText = groupText.concat(" ").concat(group.synopsisText(colorScheme(), outparam_groupArgs));
+                }
             }
             return groupText;
         }

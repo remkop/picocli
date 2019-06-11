@@ -30,6 +30,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#721] Add public method Text.getCJKAdjustedLength()
 - [#717] Negatable options change: avoid unmappable character `±` for synopsis: it renders as scrambled characters in encoding ASCII and in some terminals
 - [#723] Bugfix: variables in `defaultValue` were not expanded in usage help option description line for `showDefaultValues = true`. Thanks to [Mikaël Barbero](https://github.com/mbarbero) for raising this.
+- [#722] Bugfix: synopsis of deeply nested `@ArgGroup` shows `@Options` duplicate on outer level of command. Thanks to [Shane Rowatt](https://github.com/srowatt) for raising this.
 
 ## <a name="4.0.0-rc-1-deprecated"></a> Deprecations
 

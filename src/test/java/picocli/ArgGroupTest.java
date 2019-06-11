@@ -2130,4 +2130,74 @@ public class ArgGroupTest {
 
     // TODO add tests with positional interactive params in group
     // TODO add tests with positional params in multiple groups
+
+    static class Issue722 {
+        static class Level1Argument {
+            @Option(names = "--level-1", required = true)
+            private String l1;
+
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            private Level2aArgument level2a;
+
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            private Level2bArgument level2b;
+        }
+
+        static class Level2aArgument {
+            @Option(names = "--level-2a", required = true)
+            private String l2a;
+        }
+
+        static class Level2bArgument {
+            @Option(names = "--level-2b", required = true)
+            private String l2b;
+
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            private Level3aArgument level3a;
+
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            private Level3bArgument level3b;
+        }
+
+        static class Level3aArgument {
+            @Option(names = "--level-3a", required = true)
+            private String l3a;
+        }
+
+        static class Level3bArgument {
+            @Option(names = { "--level-3b"}, required = true)
+            private String l3b;
+        }
+
+        @Command(name = "arg-group-test", separator = " ", subcommands = {CreateCommand.class, CommandLine.HelpCommand.class})
+        public static class ArgGroupCommand implements Runnable {
+            public void run() {
+            }
+        }
+
+        @Command(name = "create", separator = " ", helpCommand = true)
+        public static class CreateCommand implements Runnable {
+            @Option(names = "--level-0", required = true)
+            private String l0;
+            
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            private Level1Argument level1;
+
+            public void run() {
+            }
+        }
+    }
+    // https://github.com/remkop/picocli/issues/722
+    @Test
+    public void testIssue722() {
+        String expected = String.format("" +
+                "create (--level-1 <l1> (--level-2a <l2a>) (--level-2b <l2b> (--level-3a <l3a>)%n" +
+                "       (--level-3b <l3b>))) --level-0 <l0>%n");
+
+        CommandLine cmd = new CommandLine(new Issue722.CreateCommand());
+        Help help = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF));
+        String actual = help.synopsis(0);
+
+        assertEquals(expected, actual);
+    }
 }
