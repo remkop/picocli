@@ -41,7 +41,8 @@ This is useful to define options that can function as a boolean "switch" and opt
 The option description may contain the `${FALLBACK-VALUE}` variable which will be replaced with the actual fallback value when the usage help is shown.
 
 ## <a name="4.0.0-rc-1-fixes"></a> Fixed issues
-- [#280] API: `fallbackValue` for options with optional parameter: assign this value when the option was specified on the command line without parameter. Thanks to [Paolo Di Tommaso](https://github.com/pditommaso) and [marinier](https://github.com/marinier) for the suggestion and in-depth discussion.
+- [#280] API: `@Option(fallbackValue = "...")` for options with optional parameter: assign this value when the option was specified on the command line without parameter. Thanks to [Paolo Di Tommaso](https://github.com/pditommaso) and [marinier](https://github.com/marinier) for the suggestion and in-depth discussion.
+- [#625] API: `@Command(synopsisSubcommands = "...")` to allow customization of the subcommands part of the synopsis: by default this is `[COMMAND]`. Thanks to [Sebastian Thomschke](https://github.com/sebthom) and [AlcaYezz](https://github.com/AlcaYezz) for the feature request and subsequent discussion.
 - [#721] API: Add public method Text.getCJKAdjustedLength().
 - [#717] Negatable options change: avoid unmappable character `±` for synopsis: it renders as scrambled characters in encoding ASCII and in some terminals.
 - [#719] Bugfix: options with variable arity should stop consuming arguments on custom end-of-options delimiter.

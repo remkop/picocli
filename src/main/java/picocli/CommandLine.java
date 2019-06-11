@@ -3981,11 +3981,11 @@ public class CommandLine {
          * @see Help#synopsisHeading(Object...)  */
         String synopsisHeading() default "Usage: ";
 
-        /** Specify {@code true} to generate an abbreviated synopsis like {@code "<main> [OPTIONS] [PARAMETERS...]"}.
+        /** Specify {@code true} to generate an abbreviated synopsis like {@code "<main> [OPTIONS] [PARAMETERS...] [COMMAND]"}.
          * By default, a detailed synopsis with individual option names and parameters is generated.
          * @return whether the synopsis should be abbreviated
          * @see Help#abbreviatedSynopsis()
-         * @see Help#detailedSynopsis(Comparator, boolean) */
+         * @see Help#detailedSynopsis(int, Comparator, boolean) */
         boolean abbreviateSynopsis() default false;
 
         /** Specify one or more custom synopsis lines to display instead of an auto-generated synopsis. Each element of the array is rendered on a separate line.
@@ -3993,6 +3993,13 @@ public class CommandLine {
          * @return custom synopsis text to replace the auto-generated synopsis
          * @see Help#customSynopsis(Object...) */
         String[] customSynopsis() default {};
+
+        /**
+         * Specify the String to show in the synopsis for the subcommands of this command. The default is
+         * {@code "[COMMAND]"}. Ignored if this command has no {@linkplain #subcommands() subcommands}.
+         * @since 4.0
+         */
+        String synopsisSubcommands() default "[COMMAND]";
 
         /** Set the heading preceding the description section.
          * <p>May contain embedded {@linkplain java.util.Formatter format specifiers} like {@code %n} line separators. Literal percent {@code '%'} characters must be escaped with another {@code %}.</p>
@@ -5908,6 +5915,9 @@ public class CommandLine {
             /** Constant String holding the default synopsis heading: <code>{@value}</code>. */
             static final String DEFAULT_SYNOPSIS_HEADING = "Usage: ";
 
+            /** Constant String holding the default synopsis subcommands: <code>{@value}</code>. */
+            static final String DEFAULT_SYNOPSIS_SUBCOMMANDS = "[COMMAND]";
+
             /** Constant String holding the default command list heading: <code>{@value}</code>. */
             static final String DEFAULT_COMMAND_LIST_HEADING = "Commands:%n";
 
@@ -5965,6 +5975,7 @@ public class CommandLine {
             private Character requiredOptionMarker;
             private String headerHeading;
             private String synopsisHeading;
+            private String synopsisSubcommands;
             private String descriptionHeading;
             private String parameterListHeading;
             private String optionListHeading;
@@ -6173,6 +6184,9 @@ public class CommandLine {
             /** Returns the optional heading preceding the synopsis. Initialized from {@link Command#synopsisHeading()}, {@code "Usage: "} by default. */
             public String synopsisHeading() { return str(resourceStr("usage.synopsisHeading"), synopsisHeading, DEFAULT_SYNOPSIS_HEADING); }
 
+            /** Returns the String representing the subcommands in the synopsis. Initialized from {@link Command#synopsisSubcommands()}, {@code "[COMMANDS]"} by default. */
+            public String synopsisSubcommands() { return str(resourceStr("usage.synopsisSubcommands"), synopsisSubcommands, DEFAULT_SYNOPSIS_SUBCOMMANDS); }
+
             /** Returns whether the synopsis line(s) should show an abbreviated synopsis without detailed option names. */
             public boolean abbreviateSynopsis() { return (abbreviateSynopsis == null) ? DEFAULT_ABBREVIATE_SYNOPSIS : abbreviateSynopsis; }
 
@@ -6277,6 +6291,10 @@ public class CommandLine {
              * @return this UsageMessageSpec for method chaining */
             public UsageMessageSpec synopsisHeading(String newValue) {synopsisHeading = newValue; return this;}
 
+            /** Sets the String representing the subcommands in the synopsis.
+             * @return this UsageMessageSpec for method chaining */
+            public UsageMessageSpec synopsisSubcommands(String newValue) {synopsisSubcommands = newValue; return this;}
+
             /** Sets whether the synopsis line(s) should show an abbreviated synopsis without detailed option names.
              * @return this UsageMessageSpec for method chaining */
             public UsageMessageSpec abbreviateSynopsis(boolean newValue) {abbreviateSynopsis = newValue; return this;}
@@ -6378,6 +6396,7 @@ public class CommandLine {
                     }
                 }
                 if (isNonDefault(cmd.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))            {synopsisHeading = cmd.synopsisHeading();}
+                if (isNonDefault(cmd.synopsisSubcommands(), DEFAULT_SYNOPSIS_SUBCOMMANDS))    {synopsisSubcommands = cmd.synopsisSubcommands();}
                 if (isNonDefault(cmd.commandListHeading(), DEFAULT_COMMAND_LIST_HEADING))     {commandListHeading = cmd.commandListHeading();}
                 if (isNonDefault(cmd.requiredOptionMarker(), DEFAULT_REQUIRED_OPTION_MARKER)) {requiredOptionMarker = cmd.requiredOptionMarker();}
                 if (isNonDefault(cmd.abbreviateSynopsis(), DEFAULT_ABBREVIATE_SYNOPSIS))      {abbreviateSynopsis = cmd.abbreviateSynopsis();}
@@ -6399,6 +6418,7 @@ public class CommandLine {
             }
             void initFromMixin(UsageMessageSpec mixin, CommandSpec commandSpec) {
                 if (initializable(synopsisHeading, mixin.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))                 {synopsisHeading = mixin.synopsisHeading();}
+                if (initializable(synopsisSubcommands, mixin.synopsisSubcommands(), DEFAULT_SYNOPSIS_SUBCOMMANDS))                 {synopsisHeading = mixin.synopsisHeading();}
                 if (initializable(commandListHeading, mixin.commandListHeading(), DEFAULT_COMMAND_LIST_HEADING))       {commandListHeading = mixin.commandListHeading();}
                 if (initializable(requiredOptionMarker, mixin.requiredOptionMarker(), DEFAULT_REQUIRED_OPTION_MARKER)) {requiredOptionMarker = mixin.requiredOptionMarker();}
                 if (initializable(abbreviateSynopsis, mixin.abbreviateSynopsis(), DEFAULT_ABBREVIATE_SYNOPSIS))        {abbreviateSynopsis = mixin.abbreviateSynopsis();}
@@ -6431,6 +6451,7 @@ public class CommandLine {
                 requiredOptionMarker = settings.requiredOptionMarker;
                 headerHeading = settings.headerHeading;
                 synopsisHeading = settings.synopsisHeading;
+                synopsisSubcommands = settings.synopsisSubcommands;
                 descriptionHeading = settings.descriptionHeading;
                 parameterListHeading = settings.parameterListHeading;
                 optionListHeading = settings.optionListHeading;
@@ -12162,7 +12183,7 @@ public class CommandLine {
 
             // only show if object has subcommands
             if (!commandSpec.subcommands().isEmpty()) {
-                sb.append(" [COMMAND]");
+                sb.append(" ").append(commandSpec.usageMessage().synopsisSubcommands());
             }
 
             return colorScheme.commandText(commandSpec.qualifiedName()).toString()
@@ -12299,14 +12320,12 @@ public class CommandLine {
 
         /** Returns a Text object containing a partial detailed synopsis showing only the subcommands, starting with a {@code " "} space.
          * Follows the unix convention of showing optional elements in square brackets ({@code [ ]}).
-         * @return this implementation returns a hard-coded string {@code " [COMMAND]"} if this command has subcommands, an empty Text otherwise
+         * @return this implementation returns " " + {@link UsageMessageSpec#synopsisSubcommands()} if this command has subcommands, an empty Text otherwise.
          * @since 3.9 */
         protected Text createDetailedSynopsisCommandText() {
             Text commandText = ansi().new Text(0);
-            if (!commandSpec.subcommands().isEmpty()){
-                commandText = commandText.concat(" [")
-                        .concat("COMMAND")
-                        .concat("]");
+            if (!commandSpec.subcommands().isEmpty()) {
+                return commandText.concat(" ").concat(commandSpec.usageMessage().synopsisSubcommands());
             }
             return commandText;
         }

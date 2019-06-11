@@ -1920,4 +1920,32 @@ public class SubcommandTests {
         assertTrue(grandChildCount > 0);
     }
 
+    // https://github.com/remkop/picocli/issues/625
+    static class MandatorySubcommand625 {
+        @Command(name = "top", subcommands = Sub.class, synopsisSubcommands = "COMMAND")
+        static class Top implements Runnable {
+            @CommandLine.Spec
+            CommandSpec spec;
+            public void run() {
+                throw new ParameterException(spec.commandLine(), "Missing required subcommand");
+            }
+        }
+        @Command(name = "sub")
+        static class Sub implements Runnable {
+            public void run() {
+            }
+        }
+    }
+    @Test
+    public void testMandatorySubcommand625() {
+        int exitCode = new CommandLine(new MandatorySubcommand625.Top()).execute();
+        assertEquals(CommandLine.ExitCode.USAGE, exitCode);
+        
+        String expected = String.format("" +
+                "Missing required subcommand%n" +
+                "Usage: top COMMAND%n" +
+                "Commands:%n" +
+                "  sub%n");
+        assertEquals(expected, systemErrRule.getLog());
+    }
 }
