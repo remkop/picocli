@@ -2948,7 +2948,7 @@ commandLine.usage(System.out);
 ----
 The usage help message shows the commands in the order they were registered:
 ----
-Usage: git [-hV] [--git-dir=<gitDir>]
+Usage: git [-hV] [--git-dir=<gitDir>] [COMMAND]
 Git is a fast, scalable, distributed revision control system with an unusually
 rich command set that provides both high-level operations and full access to
 internals.
