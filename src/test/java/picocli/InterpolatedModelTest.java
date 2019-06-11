@@ -289,6 +289,23 @@ public class InterpolatedModelTest {
     }
 
     @Test
+    public void testInterpolateFallbackValue() {
+        @Command(mixinStandardHelpOptions = false)
+        class AppWithFallback {
+            @Option(names="--mypath", fallbackValue = "${sys:user.home}",
+                    description = "Path. Fallback=${FALLBACK-VALUE}.")
+            private String path;
+        }
+        String expected = String.format("" +
+                        "Usage: <main class> [--mypath=<path>]%n" +
+                        "      --mypath=<path>   Path. Fallback=%1$s.%n",
+                System.getProperty("user.home"));
+
+        String actual = new CommandLine(new AppWithFallback()).getUsageMessage(CommandLine.Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testIssue723() {
         @Command(mixinStandardHelpOptions = false, showDefaultValues = true)
         class Issue723 {

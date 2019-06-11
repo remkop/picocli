@@ -536,9 +536,35 @@ public class CommandLineModelTest {
 
         List<CommandLine> parsed3 = new CommandLine(new Sample()).parse("--foo", "value");// specified with value
         OptionSpec option3 = parsed3.get(0).getCommandSpec().optionsMap().get("--foo");
-        assertEquals("optional option is empty string when specified without args", "value", option3.getValue());
-        assertEquals("optional option string value when specified without args", "value", option3.stringValues().get(0));
-        assertEquals("optional option typed value when specified without args", "value", option3.typedValues().get(0));
+        assertEquals("optional option is empty string when specified with args", "value", option3.getValue());
+        assertEquals("optional option string value when specified with args", "value", option3.stringValues().get(0));
+        assertEquals("optional option typed value when specified with args", "value", option3.typedValues().get(0));
+    }
+
+    /** see <a href="https://github.com/remkop/picocli/issues/280">issue #280</a>  */
+    @Test
+    public void testSingleValueFieldWithOptionalParameter_280() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names="--foo", arity="0..1", fallbackValue = "123") Integer foo;
+        }
+        List<CommandLine> parsed1 = new CommandLine(new Sample()).parse();// not specified
+        OptionSpec option1 = parsed1.get(0).getCommandSpec().optionsMap().get("--foo");
+        assertNull("optional option is null when option not specified", option1.getValue());
+        assertTrue("optional option has no string value when option not specified", option1.stringValues().isEmpty());
+        assertTrue("optional option has no typed value when option not specified", option1.typedValues().isEmpty());
+
+        List<CommandLine> parsed2 = new CommandLine(new Sample()).parse("--foo");// specified without value
+        OptionSpec option2 = parsed2.get(0).getCommandSpec().optionsMap().get("--foo");
+        assertEquals("optional option is fallback when specified without args", 123, option2.getValue());
+        assertEquals("optional option string fallback value when specified without args", "123", option2.stringValues().get(0));
+        assertEquals("optional option typed value when specified without args", 123, option2.typedValues().get(0));
+
+        List<CommandLine> parsed3 = new CommandLine(new Sample()).parse("--foo", "999");// specified with value
+        OptionSpec option3 = parsed3.get(0).getCommandSpec().optionsMap().get("--foo");
+        assertEquals("optional option is empty string when specified with args", 999, option3.getValue());
+        assertEquals("optional option string value when specified with args", "999", option3.stringValues().get(0));
+        assertEquals("optional option typed value when specified with args", 999, option3.typedValues().get(0));
     }
 
     /** see <a href="https://github.com/remkop/picocli/issues/279">issue #279</a>  */
@@ -557,6 +583,25 @@ public class CommandLineModelTest {
         assertEquals("optional option string value when specified without args", "", option3.stringValues().get(0));
         assertEquals("optional option typed value when specified without args", "", option3.typedValues().get(0));
         assertEquals("", sample.foo);
+        assertEquals(true, sample.x);
+    }
+
+    /** see <a href="https://github.com/remkop/picocli/issues/280">issue #280</a>  */
+    @Test
+    public void testSingleValueFieldWithOptionalParameterFollowedByOption_280() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names = "-x") boolean x;
+            @Option(names="--foo", arity="0..1", fallbackValue = "-1") Long foo;
+        }
+
+        Sample sample = new Sample();
+        List<CommandLine> parsed3 = new CommandLine(sample).parse("--foo", "-x");// specified without value
+        OptionSpec option3 = parsed3.get(0).getCommandSpec().optionsMap().get("--foo");
+        assertEquals("optional option is fallback typed value when specified without args", -1L, option3.getValue());
+        assertEquals("optional option fallback string value when specified without args", "-1", option3.stringValues().get(0));
+        assertEquals("optional option fallback typed value when specified without args", -1L, option3.typedValues().get(0));
+        assertEquals(Long.valueOf(-1L), sample.foo);
         assertEquals(true, sample.x);
     }
 

@@ -3875,6 +3875,23 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testDescriptionWithFallbackValueContainingPercentChar() {
+        class App {
+            @Option(names = {"-f"},
+                    fallbackValue = "%s - page %d of %d",
+                    description = "format string. Fallback: ${FALLBACK-VALUE}")
+            public String formatString;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [-f=<formatString>]%n" +
+                "  -f=<formatString>    format string. Fallback: %%s - page %%d of %%d%n");
+        String actual = new CommandLine(new App()).getUsageMessage();
+        assertEquals(expected, actual);
+
+        assertFalse(systemErrRule.getLog().contains( "picocli WARN"));
+    }
+
+    @Test
     public void testCharCJKDoubleWidthTextByDefault() {
         @Command(name = "cjk", mixinStandardHelpOptions = true, description = {
                 "12345678901234567890123456789012345678901234567890123456789012345678901234567890",

@@ -3425,7 +3425,8 @@ public class CommandLine {
         boolean hidden() default false;
 
         /** Returns the default value of this option, before splitting and type conversion.
-         * @return a String that (after type conversion) will be used as the value for this option if no value was specified on the command line
+         * @return a String that (after type conversion) will be used as the value for this option if the option was not specified on the command line
+         * @see #fallbackValue()
          * @since 3.2 */
         String defaultValue() default "__no_default_value__";
 
@@ -3499,6 +3500,25 @@ public class CommandLine {
          * @see CommandLine#setNegatableOptionTransformer(INegatableOptionTransformer)
          * @since 4.0 */
         boolean negatable() default false;
+
+        /**
+         * For options with an optional parameter (for example, {@code arity = "0..1"}), this value is assigned to the annotated element
+         * if the option is specified on the command line without an option parameter.
+         * <p>
+         * This is different from the {@link #defaultValue()}, which is assigned if the option is not specified at all on the command line.
+         * </p><p>
+         * Using a {@code fallbackValue} allows applications to distinguish between</p>
+         * <ul>
+         *   <li>option was not specified on the command line (default value assigned)</li>
+         *   <li>option was specified without parameter on the command line (fallback value assigned)</li>
+         *   <li>option was specified with parameter on the command line (command line argument value assigned)</li>
+         * </ul>
+         * <p>This is useful to define options that can function as a boolean "switch"
+         * and optionally allow users to provide a (strongly typed) extra parameter value.
+         * </p>
+         * @see OptionSpec#fallbackValue()
+         * @since 4.0 */
+        String fallbackValue() default "";
     }
     /**
      * <p>
@@ -6595,6 +6615,7 @@ public class CommandLine {
          * @since 3.0 */
         public abstract static class ArgSpec {
             static final String DESCRIPTION_VARIABLE_DEFAULT_VALUE = "${DEFAULT-VALUE}";
+            static final String DESCRIPTION_VARIABLE_FALLBACK_VALUE = "${FALLBACK-VALUE}";
             static final String DESCRIPTION_VARIABLE_COMPLETION_CANDIDATES = "${COMPLETION-CANDIDATES}";
             private static final String NO_DEFAULT_VALUE = "__no_default_value__";
 
@@ -6761,9 +6782,11 @@ public class CommandLine {
                     }
                 }
                 String defaultValueString = defaultValueString(false); // interpolate later
+                String fallbackValueString = isOption() ? ((OptionSpec) this).fallbackValue : ""; // interpolate later
                 String[] result = new String[desc.length];
                 for (int i = 0; i < desc.length; i++) {
                     result[i] = format(desc[i].replace(DESCRIPTION_VARIABLE_DEFAULT_VALUE, defaultValueString.replace("%", "%%"))
+                            .replace(DESCRIPTION_VARIABLE_FALLBACK_VALUE, fallbackValueString.replace("%", "%%"))
                             .replace(DESCRIPTION_VARIABLE_COMPLETION_CANDIDATES, candidates.toString()));
                 }
                 return interpolate(result);
@@ -6816,7 +6839,7 @@ public class CommandLine {
              * @since 4.0 */
             public Object userObject()     { return userObject; }
     
-            /** Returns the default value of this option or positional parameter, before splitting and type conversion.
+            /** Returns the default value to assign if this option or positional parameter was not specified on the command line, before splitting and type conversion.
              * This method returns the programmatically set value; this may differ from the default value that is actually used:
              * if this ArgSpec is part of a CommandSpec with a {@link IDefaultValueProvider}, picocli will first try to obtain
              * the default value from the default value provider, and this method is only called if the default provider is
@@ -6824,6 +6847,7 @@ public class CommandLine {
              * @return the programmatically set default value of this option/positional parameter,
              *      returning {@code null} means this option or positional parameter does not have a default
              * @see CommandSpec#defaultValueProvider()
+             * @see OptionSpec#fallbackValue()
              */
             public String defaultValue()   { return interpolate(defaultValue); }
             /** Returns the initial value this option or positional parameter. If {@link #hasInitialValue()} is true,
@@ -7465,6 +7489,7 @@ public class CommandLine {
             private boolean usageHelp;
             private boolean versionHelp;
             private boolean negatable;
+            private String fallbackValue;
             private int order;
 
             public static OptionSpec.Builder builder(String name, String... names) {
@@ -7488,6 +7513,7 @@ public class CommandLine {
                 versionHelp = builder.versionHelp;
                 order = builder.order;
                 negatable = builder.negatable;
+                fallbackValue = builder.fallbackValue;
 
                 if (names.length == 0 || Arrays.asList(names).contains("")) {
                     throw new InitializationException("Invalid names: " + Arrays.toString(names));
@@ -7554,6 +7580,14 @@ public class CommandLine {
              * @see Option#negatable()
              * @since 4.0 */
             public boolean negatable()    { return negatable; }
+
+            /** Returns the fallback value for this option: the value that is assigned for options with an optional parameter
+             * (for example, {@code arity = "0..1"}) if the option was specified on the command line without parameter.
+             * @see Option#fallbackValue()
+             * @see #defaultValue()
+             * @since 4.0 */
+            public String fallbackValue() { return interpolate(fallbackValue); }
+
             public boolean equals(Object obj) {
                 if (obj == this) { return true; }
                 if (!(obj instanceof OptionSpec)) { return false; }
@@ -7563,6 +7597,8 @@ public class CommandLine {
                         && usageHelp == other.usageHelp
                         && versionHelp == other.versionHelp
                         && order == other.order
+                        && negatable == other.negatable
+                        && Assert.equals(fallbackValue, other.fallbackValue)
                         && new HashSet<String>(Arrays.asList(names)).equals(new HashSet<String>(Arrays.asList(other.names)));
                 return result;
             }
@@ -7572,6 +7608,8 @@ public class CommandLine {
                         + 37 * Assert.hashCode(usageHelp)
                         + 37 * Assert.hashCode(versionHelp)
                         + 37 * Arrays.hashCode(names)
+                        + 37 * Assert.hashCode(negatable)
+                        + 37 * Assert.hashCode(fallbackValue)
                         + 37 * order;
             }
     
@@ -7584,6 +7622,7 @@ public class CommandLine {
                 private boolean usageHelp;
                 private boolean versionHelp;
                 private boolean negatable;
+                private String fallbackValue = "";
                 private int order = DEFAULT_ORDER;
 
                 private Builder(String[] names) { this.names = names; }
@@ -7594,6 +7633,7 @@ public class CommandLine {
                     usageHelp = original.usageHelp;
                     versionHelp = original.versionHelp;
                     negatable = original.negatable;
+                    fallbackValue = original.fallbackValue;
                     order = original.order;
                 }
                 private Builder(IAnnotatedElement member, IFactory factory) {
@@ -7604,6 +7644,7 @@ public class CommandLine {
                     usageHelp = option.usageHelp();
                     versionHelp = option.versionHelp();
                     negatable = option.negatable();
+                    fallbackValue = option.fallbackValue();
                     order = option.order();
                 }
 
@@ -7635,6 +7676,12 @@ public class CommandLine {
                  * @since 4.0 */
                 public boolean negatable()    { return negatable; }
 
+                /** Returns the fallback value for this option: the value that is assigned for options with an optional
+                 * parameter if the option was specified on the command line without parameter.
+                 * @see Option#fallbackValue()
+                 * @since 4.0 */
+                public String fallbackValue() { return fallbackValue; }
+
                 /** Returns the position in the options list in the usage help message at which this option should be shown.
                  * Options with a lower number are shown before options with a higher number.
                  * This attribute is only honored if {@link UsageMessageSpec#sortOptions()} is {@code false} for this command.
@@ -7657,6 +7704,12 @@ public class CommandLine {
                 /** Sets whether a negative version for this boolean option is automatically added, and returns this builder.
                  * @since 4.0 */
                 public Builder negatable(boolean negatable)     { this.negatable = negatable; return self(); }
+
+                /** Sets the fallback value for this option: the value that is assigned for options with an optional
+                 * parameter if the option was specified on the command line without parameter, and returns this builder.
+                 * @see Option#fallbackValue()
+                 * @since 4.0 */
+                public Builder fallbackValue(String fallbackValue) { this.fallbackValue = fallbackValue; return self(); }
 
                 /** Sets the position in the options list in the usage help message at which this option should be shown, and returns this builder.
                  * @since 3.9 */
@@ -10903,12 +10956,13 @@ public class CommandLine {
                         consumed = 0;
                     }
                 } else { // non-boolean option with optional value #325, #279
+                    String fallbackValue = argSpec.isOption() ? ((OptionSpec) argSpec).fallbackValue() : "";
                     if (isOption(value)) { // value is not a parameter
-                        actualValue = "";
+                        actualValue = fallbackValue;
                         optionalValueExists = false;
                         consumed = 0;
                     } else if (value == null) { // stack is empty, option with arity=0..1 was the last arg
-                        actualValue = "";
+                        actualValue = fallbackValue;
                         optionalValueExists = false;
                         consumed = 0;
                     }

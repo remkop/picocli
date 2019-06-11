@@ -764,6 +764,37 @@ public class CommandLineArityTest {
         Sample sample3 = CommandLine.populateCommand(new Sample(), "--foo", "value"); // no arguments
         assertEquals("optional option has value when specified", "value", sample3.foo);
     }
+    /** see <a href="https://github.com/remkop/picocli/issues/280">issue #280</a>  */
+    @Test
+    public void testSingleValueFieldWithOptionalParameter_280() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names="--foo", arity="0..1", fallbackValue = "213") String foo;
+        }
+        Sample sample1 = CommandLine.populateCommand(new Sample()); // not specified
+        assertNull("optional option is null when option not specified", sample1.foo);
+
+        Sample sample2 = CommandLine.populateCommand(new Sample(), "--foo"); // no arguments
+        assertEquals("optional option is empty string when specified without args", "213", sample2.foo);
+
+        Sample sample3 = CommandLine.populateCommand(new Sample(), "--foo", "value"); // no arguments
+        assertEquals("optional option has value when specified", "value", sample3.foo);
+    }
+    @Test
+    public void testSingleValueFieldWithTypedOptionalParameter_280() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names="--unit", arity="0..1", fallbackValue = "SECONDS") TimeUnit unit;
+        }
+        Sample sample1 = CommandLine.populateCommand(new Sample()); // not specified
+        assertNull("optional option is null when option not specified", sample1.unit);
+
+        Sample sample2 = CommandLine.populateCommand(new Sample(), "--unit"); // no arguments
+        assertEquals("optional option is empty string when specified without args", TimeUnit.SECONDS, sample2.unit);
+
+        Sample sample3 = CommandLine.populateCommand(new Sample(), "--unit", "MINUTES"); // no arguments
+        assertEquals("optional option has value when specified", TimeUnit.MINUTES, sample3.unit);
+    }
 
     @Test
     public void testIntOptionArity1_nConsumes1Argument() { // ignores varargs
@@ -943,6 +974,44 @@ public class CommandLineArityTest {
             fail("Should not accept input with missing parameter");
         } catch (MissingParameterException ex) {
             assertEquals("Missing required parameter: <params>", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testMapOptionArity1_n() {
+        class MapParamsArity1_n {
+            @Option(names = {"-D", "--def"}, arity = "1..*", split = ",")
+            Map<String, Integer> params;
+        }
+        // most verbose
+        MapParamsArity1_n params = CommandLine.populateCommand(new MapParamsArity1_n(), "--def", "a=1", "--def", "b=2", "--def", "c=3");
+        Map<String, Integer> expected = new LinkedHashMap<String, Integer>();
+        expected.put("a", 1);
+        expected.put("b", 2);
+        expected.put("c", 3);
+        assertEquals(expected, params.params);
+
+        // option name once, followed by values
+        params = CommandLine.populateCommand(new MapParamsArity1_n(), "--def", "aa=11", "bb=22", "cc=33");
+        expected.clear();
+        expected.put("aa", 11);
+        expected.put("bb", 22);
+        expected.put("cc", 33);
+        assertEquals(expected, params.params);
+
+        // most compact
+        params = CommandLine.populateCommand(new MapParamsArity1_n(), "-Dx=4,y=5,z=6");
+        expected.clear();
+        expected.put("x", 4);
+        expected.put("y", 5);
+        expected.put("z", 6);
+        assertEquals(expected, params.params);
+
+        try {
+            params = CommandLine.populateCommand(new MapParamsArity1_n(), "--def");
+            fail("Should not accept input with missing parameter");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameter for option '--def' at index 0 (<String=Integer>)", ex.getMessage());
         }
     }
 

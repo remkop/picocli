@@ -1,10 +1,12 @@
 # picocli Release Notes
 
 
-# <a name="4.0.0-rc-1"></a> Picocli 4.0.0-rc-1
+# <a name="4.0.0-rc-1"></a> Picocli 4.0.0-rc-1 (UNRELEASED)
 The picocli community is pleased to announce picocli 4.0.0-rc-1.
 
 Bugfixes and improvements.
+
+This release introduces a new attribute on the `Option` annotation: `fallbackValue` for options with optional parameter: assign this value when the option was specified on the command line without parameter.
 
 _Please try this and provide feedback. We can still make changes._
 
@@ -24,11 +26,26 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.0-rc-1-new"></a> New and Noteworthy
 
+### `fallbackValue` API
+This release introduces a new attribute on the `Option` annotation: `fallbackValue` for options with optional parameter: assign this value when the option was specified on the command line without parameter.
+
+This is different from the `defaultValue`, which is assigned if the option is not specified at all on the command line.
+
+Using a `fallbackValue` allows applications to distinguish between cases where
+* the option was not specified on the command line (default value assigned)
+* the option was specified without parameter on the command line (fallback value assigned)
+* the option was specified with parameter on the command line (command line argument value assigned)
+
+This is useful to define options that can function as a boolean "switch" and optionally allow users to provide a (strongly typed) extra parameter value.
+
+The option description may contain the `${FALLBACK-VALUE}` variable which will be replaced with the actual fallback value when the usage help is shown.
+
 ## <a name="4.0.0-rc-1-fixes"></a> Fixed issues
-- [#719] Bugfix: options with variable arity should stop consuming arguments on custom end-of-options delimiter
-- [#720] `@Unmatched` list should be cleared prior to subsequent invocations
-- [#721] Add public method Text.getCJKAdjustedLength()
-- [#717] Negatable options change: avoid unmappable character `±` for synopsis: it renders as scrambled characters in encoding ASCII and in some terminals
+- [#280] API: `fallbackValue` for options with optional parameter: assign this value when the option was specified on the command line without parameter. Thanks to [Paolo Di Tommaso](https://github.com/pditommaso) and [marinier](https://github.com/marinier) for the suggestion and in-depth discussion.
+- [#721] API: Add public method Text.getCJKAdjustedLength().
+- [#717] Negatable options change: avoid unmappable character `±` for synopsis: it renders as scrambled characters in encoding ASCII and in some terminals.
+- [#719] Bugfix: options with variable arity should stop consuming arguments on custom end-of-options delimiter.
+- [#720] Bugfix: `@Unmatched` list should be cleared prior to subsequent invocations.
 - [#723] Bugfix: variables in `defaultValue` were not expanded in usage help option description line for `showDefaultValues = true`. Thanks to [Mikaël Barbero](https://github.com/mbarbero) for raising this.
 - [#722] Bugfix: synopsis of deeply nested `@ArgGroup` shows `@Options` duplicate on outer level of command. Thanks to [Shane Rowatt](https://github.com/srowatt) for raising this.
 

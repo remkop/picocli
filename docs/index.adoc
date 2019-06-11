@@ -726,6 +726,7 @@ For annotated fields, it is simplest to declare the field with a value:
 int count = 123; // default value is 123
 ----
 
+[#defaultValue-annotation]
 === `defaultValue` Annotation
 For <<option-parameters-methods,@Option and @Parameters-annotated methods>> and <<command-methods,@Command-annotated methods>>, use the `defaultValue` annotation attribute. For example, for an annotated interface:
 [source,java]
@@ -758,7 +759,7 @@ class CommandMethod {
 }
 ----
 
-Note that you can use the `${DEFAULT-VALUE}` variable in the `description` of the option or positional parameter and picocli will <<Show Default Values,show>> the actual default value.
+Note that you can use the `${DEFAULT-VALUE}` <<Predefined Variables,variable>> in the `description` of the option or positional parameter and picocli will <<Show Default Values,show>> the actual default value.
 
 === Default Provider
 Finally, you can specify a default provider in the `@Command` annotation:
@@ -791,6 +792,15 @@ public interface IDefaultValueProvider {
 }
 ----
 
+[#fallbackValue-annotation]
+=== `fallbackValue` Annotation
+
+For options with an optional parameter, the fallback value (introduced in picocli 4.0) is assigned to the annotated element
+if the option is specified on the command line without an option parameter.
+
+This is different from the `defaultValue`, which is assigned if the option is not specified at all on the command line.
+
+See <<Optional Values>> for details.
 
 == Multiple Values
 Multi-valued options and positional parameters are annotated fields that can capture multiple values from the command line.
@@ -933,16 +943,21 @@ When a `@Parameters` field is applied (because its index matches the index of th
 
 === Optional Values
 If an option is defined with `arity = "0..1"`, it may or not have a parameter value.
-If such an option is specified without a value on the command line, it is assigned an empty String (starting from picocli 2.3).
-If the option is not specified, it keeps its default value. For example:
+If such an option is specified without a value on the command line, it is assigned the <<fallbackValue-annotation,fallback value>>.
+The `fallbackValue` annotation was introduced in picocli 4.0; prior to this, (from picocli 2.3) an empty String was assigned.
+
+If the option is not specified on the command line at all, it keeps its default value. For example:
 
 [source, java]
 ----
 class OptionalValueDemo implements Runnable {
-    @Option(names = "-x", arity = "0..1", description = "optional parameter")
-    String x;
+    @Option(names = "-x", arity = "0..1",
+            defaultValue = "-1", fallbackValue = "-2",
+            description = "Optional parameter. Default: ${DEFAULT-VALUE}, " +
+                          "if specified without parameter: ${FALLBACK-VALUE}")
+    int x;
 
-    public void run() { System.out.printf("x = '%s'%n", x); }
+    public void run() { System.out.printf("x = %s%n", x); }
 
     public static void main(String... args) {
        CommandLine.run(new OptionalValueDemo(), args);
@@ -952,18 +967,19 @@ class OptionalValueDemo implements Runnable {
 Gives the following results:
 [source, bash]
 ----
-java OptionalValueDemo -x value
-x = 'value'
+java OptionalValueDemo -x 100
+x = 100
 
 java OptionalValueDemo -x
-x = ''
+x = -2
 
 java OptionalValueDemo
-x = 'null'
+x = -1
 ----
-From picocli 3.0, options with non-String types can specify a <<Custom Type Converters,type converter>> to convert the empty String to a strongly typed value when the option is specified without a value.
 
+Any String value is converted to the type of the annotated element before it is assigned to the element. Options and positional parameters may define a <<Custom Type Converters,custom type converter>> if necessary.
 
+Note that the option description may contain the `${FALLBACK-VALUE}` <<Predefined Variables,variable>> which will be replaced with the actual fallback value when the usage help is shown.
 
 == Required Arguments
 === Required Options
@@ -3402,7 +3418,8 @@ The following variables are predefined:
 [grid=cols,cols=".<3,.^1,.<3,.<3",options="header"]
 |===
 |Variable | Since | Use in | Meaning
-|`${DEFAULT-VALUE}`| 3.2 | the description for an option or positional parameter|replaced with the default value for that option or positional parameter
+|`${DEFAULT-VALUE}`| 3.2 | the description for an option or positional parameter|replaced with the <<defaultValue-annotation,default value>> for that option or positional parameter
+|`${FALLBACK-VALUE}`| 4.0 | the description for an option with optional parameter|replaced with the <<fallbackValue-annotation,fallback value>> for that option or positional parameter
 |`${COMPLETION-CANDIDATES}`| 3.2 | the description for an option or positional parameter| replaced with the completion candidates for that option or positional parameter
 |`${COMMAND-NAME}`| 4.0 | any section of the usage help message for a command|replaced with the name of the command
 |`${COMMAND-FULL-NAME}`| 4.0 | any section of the usage help message for a command| replaced with the fully qualified name of the command (that is, preceded by its parent fully qualified name)
