@@ -29,6 +29,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#720] `@Unmatched` list should be cleared prior to subsequent invocations
 - [#721] Add public method Text.getCJKAdjustedLength()
 - [#717] Negatable options change: avoid unmappable character `±` for synopsis: it renders as scrambled characters in encoding ASCII and in some terminals
+- [#723] Bugfix: variables in `defaultValue` were not expanded in usage help option description line for `showDefaultValues = true`. Thanks to [Mikaël Barbero](https://github.com/mbarbero) for raising this.
 
 ## <a name="4.0.0-rc-1-deprecated"></a> Deprecations
 

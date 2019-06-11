@@ -288,6 +288,44 @@ public class InterpolatedModelTest {
         assertEquals("abc", bean.path);
     }
 
+    @Test
+    public void testIssue723() {
+        @Command(mixinStandardHelpOptions = false, showDefaultValues = true)
+        class Issue723 {
+            @Option(names="--mypath", defaultValue = "${sys:user.home}",
+                    description = "Path. Default=${DEFAULT-VALUE}.")
+            private String path;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [--mypath=<path>]%n" +
+                "      --mypath=<path>   Path. Default=%1$s.%n" +
+                "                          Default: %1$s%n",
+                System.getProperty("user.home"));
+
+        String actual = new CommandLine(new Issue723()).getUsageMessage(CommandLine.Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testIssue723_withStandardHelpOptions() {
+        @Command(mixinStandardHelpOptions = true, showDefaultValues = true)
+        class Issue723 {
+            @Option(names="--mypath", defaultValue = "${sys:user.home}",
+                    description = "Path. Default=${DEFAULT-VALUE}.")
+            private String path;
+        }
+        String expected = String.format("" +
+                        "Usage: <main class> [-hV] [--mypath=<path>]%n" +
+                        "  -h, --help            Show this help message and exit.%n" +
+                        "      --mypath=<path>   Path. Default=%1$s.%n" +
+                        "                          Default: %1$s%n" +
+                        "  -V, --version         Print version information and exit.%n",
+                System.getProperty("user.home"));
+
+        String actual = new CommandLine(new Issue723()).getUsageMessage(CommandLine.Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+
     static class CommonMixinOne {
         @Parameters(index = "${sys:commonParam1}", paramLabel = "COMMON-PARAM-ONE")
         private String commonMixinOneParam;

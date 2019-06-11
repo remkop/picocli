@@ -6760,7 +6760,7 @@ public class CommandLine {
                         candidates.append(c);
                     }
                 }
-                String defaultValueString = defaultValueString();
+                String defaultValueString = defaultValueString(false); // interpolate later
                 String[] result = new String[desc.length];
                 for (int i = 0; i < desc.length; i++) {
                     result[i] = format(desc[i].replace(DESCRIPTION_VARIABLE_DEFAULT_VALUE, defaultValueString.replace("%", "%%"))
@@ -6837,16 +6837,21 @@ public class CommandLine {
             /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
             public Help.Visibility showDefaultValue() { return showDefaultValue; }
 
-            /** Returns the default value String displayed in the description. If this ArgSpec is part of a
+            /** Returns the default value String for the purpose of displaying it in the description, without interpolating variables.
+             * @see #defaultValueString(boolean) */
+            public String defaultValueString() { return defaultValueString(false); }
+            /** Returns the default value String displayed in the description; interpolating variables if specified. If this ArgSpec is part of a
              * CommandSpec with a {@link IDefaultValueProvider}, this method will first try to obtain
              * the default value from the default value provider; if the provider is {@code null} or if it
              * returns a {@code null} value, then next any value set to {@link ArgSpec#defaultValue()}
              * is returned, and if this is also {@code null}, finally the {@linkplain ArgSpec#initialValue() initial value} is returned.
+             * @param interpolateVariables whether to interpolate variables in the {@code defaultValue} attribute of this ArgSpec
              * @see CommandSpec#defaultValueProvider()
-             * @see ArgSpec#defaultValue() */
-            public String defaultValueString() {
+             * @see ArgSpec#defaultValue()
+             * @since 4.0 */
+            public String defaultValueString(boolean interpolateVariables) {
                 // implementation note: don't call this.defaultValue(), that will interpolate variables too soon!
-                Object value = calcDefaultValue(false);
+                Object value = calcDefaultValue(interpolateVariables);
                 if (value != null && value.getClass().isArray()) {
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < Array.getLength(value); i++) {
@@ -12898,14 +12903,14 @@ public class CommandLine {
 
         private static void addTrailingDefaultLine(List<Text[]> result, ArgSpec arg, ColorScheme scheme) {
             Text EMPTY = Ansi.EMPTY_TEXT;
-            result.add(new Text[]{EMPTY, EMPTY, EMPTY, EMPTY, scheme.ansi().new Text("  Default: " + arg.defaultValueString())});
+            result.add(new Text[]{EMPTY, EMPTY, EMPTY, EMPTY, scheme.ansi().new Text("  Default: " + arg.defaultValueString(true))});
         }
 
         private static Text[] createDescriptionFirstLines(ColorScheme scheme, ArgSpec arg, String[] description, boolean[] showDefault) {
             Text[] result = scheme.ansi().new Text(str(description, 0)).splitLines();
             if (result.length == 0 || (result.length == 1 && result[0].plain.length() == 0)) {
                 if (showDefault[0]) {
-                    result = new Text[]{scheme.ansi().new Text("  Default: " + arg.defaultValueString())};
+                    result = new Text[]{scheme.ansi().new Text("  Default: " + arg.defaultValueString(true))};
                     showDefault[0] = false; // don't show the default value twice
                 } else {
                     result = new Text[]{ Ansi.EMPTY_TEXT };
