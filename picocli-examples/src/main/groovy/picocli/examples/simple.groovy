@@ -8,3 +8,4 @@ import picocli.CommandLine
 
 println "Groovy version ${GroovySystem.version}"
 println "Picocli version $CommandLine.VERSION"
+println "picocli location: ${CommandLine.class.getResource("/picocli/CommandLine.class")}"
