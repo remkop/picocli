@@ -7483,6 +7483,7 @@ public class CommandLine {
          * </p>
          * @since 3.0 */
         public static class OptionSpec extends ArgSpec implements IOrdered {
+            public static final String DEFAULT_FALLBACK_VALUE = "";
             static final int DEFAULT_ORDER = -1;
             private String[] names;
             private boolean help;
@@ -7622,7 +7623,7 @@ public class CommandLine {
                 private boolean usageHelp;
                 private boolean versionHelp;
                 private boolean negatable;
-                private String fallbackValue = "";
+                private String fallbackValue = DEFAULT_FALLBACK_VALUE;
                 private int order = DEFAULT_ORDER;
 
                 private Builder(String[] names) { this.names = names; }
@@ -11074,6 +11075,12 @@ public class CommandLine {
                 lookBehind = LookBehind.SEPARATE;
             }
             // now process the varargs if any
+            String fallback = consumed == 0 && argSpec.isOption() && !OptionSpec.DEFAULT_FALLBACK_VALUE.equals(((OptionSpec) argSpec).fallbackValue())
+                    ? ((OptionSpec) argSpec).fallbackValue()
+                    : null;
+            if (fallback != null && (args.isEmpty() || !varargCanConsumeNextValue(argSpec, args.peek()))) {
+                args.push(fallback);
+            }
             for (int i = consumed; consumed < arity.max && !args.isEmpty(); i++) {
                 if (!varargCanConsumeNextValue(argSpec, args.peek())) { break; }
 
@@ -11247,6 +11254,12 @@ public class CommandLine {
                 consumed = addPasswordToList(argSpec, type, result, consumed, argDescription);
             }
             // now process the varargs if any
+            String fallback = consumed == 0 && argSpec.isOption() && !OptionSpec.DEFAULT_FALLBACK_VALUE.equals(((OptionSpec) argSpec).fallbackValue())
+                    ? ((OptionSpec) argSpec).fallbackValue()
+                    : null;
+            if (fallback != null && (args.isEmpty() || !varargCanConsumeNextValue(argSpec, args.peek()))) {
+                args.push(fallback);
+            }
             for (int i = consumed; consumed < arity.max && !args.isEmpty(); i++) {
                 if (argSpec.interactive() && argSpec.arity().max == 1 && !varargCanConsumeNextValue(argSpec, args.peek())) {
                     // if interactive and arity = 0..1, we consume from command line if possible (if next arg not an option or subcommand)

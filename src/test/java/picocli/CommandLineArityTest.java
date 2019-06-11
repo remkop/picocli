@@ -795,6 +795,93 @@ public class CommandLineArityTest {
         Sample sample3 = CommandLine.populateCommand(new Sample(), "--unit", "MINUTES"); // no arguments
         assertEquals("optional option has value when specified", TimeUnit.MINUTES, sample3.unit);
     }
+    @Test
+    public void testListFieldOptionalParamWithFallback_280() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names="--foo", arity="0..*", fallbackValue = "213", defaultValue = "567") List<String> foo;
+
+            @Option(names = "-x") boolean x;
+        }
+        Sample sample1 = CommandLine.populateCommand(new Sample()); // not specified
+        assertEquals("option gets default when option not specified", Arrays.asList("567"), sample1.foo);
+
+        Sample sample2 = CommandLine.populateCommand(new Sample(), "--foo"); // no arguments
+        assertEquals("optional option is fallback list when specified without args",
+                Arrays.asList("213"), sample2.foo);
+
+        Sample sample2a = CommandLine.populateCommand(new Sample(), "--foo", "--foo"); // no arguments, twice
+        assertEquals("optional option is fallback list for each specified without args",
+                Arrays.asList("213", "213"), sample2a.foo);
+
+        Sample sample2b = CommandLine.populateCommand(new Sample(), "--foo", "-x"); // no arguments
+        assertEquals("optional option is fallback list for each specified without args",
+                Arrays.asList("213"), sample2b.foo);
+
+        Sample sample3 = CommandLine.populateCommand(new Sample(), "--foo", "value"); // no arguments
+        assertEquals("optional option has value when specified", Arrays.asList("value"), sample3.foo);
+    }
+    @Test
+    public void testArrayFieldOptionalParamWithFallback_280() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names="--foo", arity="0..*", fallbackValue = "213", defaultValue = "567")
+            String[] foo;
+
+            @Option(names = "-x") boolean x;
+        }
+        Sample sample1 = CommandLine.populateCommand(new Sample()); // not specified
+        assertArrayEquals("option gets default when option not specified", new String[]{"567"}, sample1.foo);
+
+        Sample sample2 = CommandLine.populateCommand(new Sample(), "--foo"); // no arguments
+        assertArrayEquals("optional option is fallback list when specified without args",
+                new String[]{"213"}, sample2.foo);
+
+        Sample sample2a = CommandLine.populateCommand(new Sample(), "--foo", "--foo"); // no arguments, twice
+        assertArrayEquals("optional option is fallback list for each specified without args",
+                new String[]{"213", "213"}, sample2a.foo);
+
+        Sample sample2b = CommandLine.populateCommand(new Sample(), "--foo", "-x"); // no arguments
+        assertArrayEquals("optional option is fallback list for each specified without args",
+                new String[]{"213"}, sample2b.foo);
+
+        Sample sample3 = CommandLine.populateCommand(new Sample(), "--foo", "value"); // no arguments
+        assertArrayEquals("optional option has value when specified", new String[]{"value"}, sample3.foo);
+    }
+    @Test
+    public void testMapFieldOptionalParamWithFallback_280() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names="--foo", arity="0..*", fallbackValue = "a=b", defaultValue = "x=z")
+            Map<String,String> foo;
+
+            @Option(names = "-x") boolean x;
+        }
+        Map<String, String> expected = new LinkedHashMap<String, String>();
+        expected.put("x", "z");
+        Sample sample1 = CommandLine.populateCommand(new Sample()); // not specified
+        assertEquals("default when option not specified", expected, sample1.foo);
+
+        expected.clear();
+        expected.put("a", "b");
+        Sample sample2 = CommandLine.populateCommand(new Sample(), "--foo"); // no arguments
+        assertEquals("fallback when specified without args", expected, sample2.foo);
+
+        expected.clear();
+        expected.put("a", "b");
+        Sample sample2a = CommandLine.populateCommand(new Sample(), "--foo", "--foo"); // no arguments, twice
+        assertEquals("fallback when specified without args twice", expected, sample2a.foo);
+
+        expected.clear();
+        expected.put("a", "b");
+        Sample sample2b = CommandLine.populateCommand(new Sample(), "--foo", "-x"); // no arguments, followed by other option
+        assertEquals("fallback when specified without args followed by other option", expected, sample2b.foo);
+
+        expected.clear();
+        expected.put("aa", "bb");
+        Sample sample3 = CommandLine.populateCommand(new Sample(), "--foo", "aa=bb"); // no arguments
+        assertEquals("optional option has value when specified", expected, sample3.foo);
+    }
 
     @Test
     public void testIntOptionArity1_nConsumes1Argument() { // ignores varargs
