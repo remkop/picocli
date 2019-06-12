@@ -795,7 +795,7 @@ public interface IDefaultValueProvider {
 [#fallbackValue-annotation]
 === `fallbackValue` Annotation
 
-For options with an optional parameter, the fallback value (introduced in picocli 4.0) is assigned to the annotated element
+For options with an optional parameter, the fallback value (introduced in picocli 4.0) is assigned
 if the option is specified on the command line without an option parameter.
 
 This is different from the `defaultValue`, which is assigned if the option is not specified at all on the command line.
@@ -977,7 +977,7 @@ java OptionalValueDemo
 x = -1
 ----
 
-Any String value is converted to the type of the annotated element before it is assigned to the element. Options and positional parameters may define a <<Custom Type Converters,custom type converter>> if necessary.
+Any String value is converted to the type of the option before it is assigned to the option. Options and positional parameters may define a <<Custom Type Converters,custom type converter>> if necessary.
 
 Note that the option description may contain the `${FALLBACK-VALUE}` <<Predefined Variables,variable>> which will be replaced with the actual fallback value when the usage help is shown.
 
