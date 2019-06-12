@@ -8,6 +8,9 @@ Bugfixes and improvements.
 
 This release introduces a new attribute on the `Option` annotation: `fallbackValue` for options with optional parameter: assign this value when the option was specified on the command line without parameter.
 
+This release introduces a new `synopsisSubcommandLabel` attribute on the `@Command` annotation to allow customization of the subcommands part of the synopsis.
+This is useful for applications that have required subcommands.
+
 _Please try this and provide feedback. We can still make changes._
 
 _What do you think of the `@ArgGroup` annotations API? What about the programmatic API? Does it work as expected? Are the input validation error messages correct and clear? Is the documentation clear and complete? Anything you want to change or improve? Any other feedback?_
@@ -39,6 +42,37 @@ Using a `fallbackValue` allows applications to distinguish between cases where
 This is useful to define options that can function as a boolean "switch" and optionally allow users to provide a (strongly typed) extra parameter value.
 
 The option description may contain the `${FALLBACK-VALUE}` variable which will be replaced with the actual fallback value when the usage help is shown.
+
+
+### Synopsis Subcommand Label
+For commands with subcommands, the string `[COMMAND]` is appended to the end of the synopsis (whether the synopsis is abbreviated or not). This looks something like this:
+
+```
+<cmd> [OPTIONS] FILES [COMMAND]
+```
+
+From picocli 4.0, this can be customized with the `synopsisSubcommandLabel` attribute.
+
+For example, to clarify that a subcommand is mandatory, an application may specify `COMMAND`, without the `[` and `]` brackets:
+
+```java
+@Command(name = "git", synopsisSubcommandLabel = "COMMAND")
+class Git implements Runnable {
+    @Spec CommandSpec spec;
+    public void run() {
+        throw new ParameterException(spec.commandLine(), "Missing required subcommand");
+    }
+}
+```
+
+An application with a limited number of subcommands may want to show them all in the synopsis, for example:
+
+```java
+@Command(name = "fs", synopsisSubcommandLabel = "(list | add | delete)",
+         subcommands = {List.class, Add.class, Delete.class})
+class Fs { ... }
+```
+
 
 ## <a name="4.0.0-rc-1-fixes"></a> Fixed issues
 - [#280] API: `@Option(fallbackValue = "...")` for options with optional parameter: assign this value when the option was specified on the command line without parameter. Thanks to [Paolo Di Tommaso](https://github.com/pditommaso) and [marinier](https://github.com/marinier) for the suggestion and in-depth discussion.

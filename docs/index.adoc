@@ -2178,6 +2178,33 @@ To produce a synopsis like the above, specify the literal text in the `customSyn
 class Ln { ... }
 ----
 
+
+=== Synopsis Subcommand Label
+For commands with <<Usage Help for Subcommands,subcommands>>, the string `[COMMAND]` is appended to the end of the synopsis (whether the synopsis is <<Abbreviated Synopsis,abbreviated>> or not). This looks something like this:
+
+----
+<cmd> [OPTIONS] FILES [COMMAND]
+----
+
+From picocli 4.0, this can be customized with the `synopsisSubcommandLabel` attribute.
+
+For example, to clarify that a <<Required Subcommands,subcommand is mandatory>>, an application may specify `COMMAND`, without the `[` and `]` brackets:
+
+[source,java]
+----
+@Command(name = "git", synopsisSubcommandLabel = "COMMAND")
+class Git { ... }
+----
+
+An application with a limited number of subcommands may want to show them all in the synopsis, for example:
+[source,java]
+----
+@Command(name = "fs", synopsisSubcommandLabel = "(list | add | delete)",
+         subcommands = {List.class, Add.class, Delete.class})
+class Fs { ... }
+----
+
+
 === Header and Footer
 The `header` will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <<Usage Help for Subcommands>>).
 
@@ -2947,6 +2974,8 @@ commandLine.addSubcommand("commit",   new GitCommit());
 commandLine.usage(System.out);
 ----
 The usage help message shows the commands in the order they were registered:
+
+[#subcommand-help]
 ----
 Usage: git [-hV] [--git-dir=<gitDir>] [COMMAND]
 Git is a fast, scalable, distributed revision control system with an unusually
@@ -3102,6 +3131,36 @@ class GrandChild3Command3 { }
 By default, the usage help message only shows the subcommands of the specified command,
 and not the nested sub-subcommands. This can be customized by specifying your own <<Reordering Sections,`IHelpSectionRenderer`>> for the command list section.
 The `picocli-examples` module has an https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/customhelp/ShowAll.java[example] that shows how to accomplish this.
+
+=== Required Subcommands
+
+For some command suites, it does not make sense to invoke the top-level command by itself, and the user is required to specify a subcommand.
+
+Picocli does not offer direct support for making a subcommand required, but it does provide the tools to:
+
+* display a synopsis that indicates that subcommands are mandatory
+* respond appropriately when the user input is invalid
+
+By default, the synopsis of a command with subcommands shows `[COMMAND]`, indicating that a subcommand can optionally be specified.
+To show that the subcommand is mandatory, set the `synopsisSubcommandLabel` attribute to `COMMAND`, without the `[` and `]` brackets.
+
+If the end user invokes the top-level command without specifying a subcommand, one way to respond is to show an error message followed by the usage help of the top-level command.
+This can be accomplished by letting the top-level command throw a `ParameterException`. For example:
+
+[source,java]
+----
+@Command(name = "git", synopsisSubcommandLabel = "COMMAND", subcommands = { ... })
+class Git implements Runnable {
+    @Spec CommandSpec spec;
+    public void run() {
+        throw new ParameterException(spec.commandLine(), "Missing required subcommand");
+    }
+    public static void main(String... args) {
+        System.exit(new CommandLine(new Git()).execute(args));
+    }
+}
+----
+
 
 == Reuse
 You may find yourself defining the same options, parameters or command attributes in many command line applications.
