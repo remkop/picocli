@@ -1,8 +1,8 @@
 # picocli Release Notes
 
 
-# <a name="4.0.0-rc-1"></a> Picocli 4.0.0-rc-1 (UNRELEASED)
-The picocli community is pleased to announce picocli 4.0.0-rc-1.
+# <a name="4.0.0-beta-2"></a> Picocli 4.0.0-beta-2 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.0.0-beta-2.
 
 Bugfixes and improvements.
 
@@ -28,13 +28,13 @@ Many thanks to the picocli community for the contributions!
 This is the fifty-sixth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
-## <a name="4.0.0-rc-1"></a> Table of Contents
-* [New and noteworthy](#4.0.0-rc-1-new)
-* [Fixed issues](#4.0.0-rc-1-fixes)
-* [Deprecations](#4.0.0-rc-1-deprecated)
-* [Potential breaking changes](#4.0.0-rc-1-breaking-changes)
+## <a name="4.0.0-beta-2"></a> Table of Contents
+* [New and noteworthy](#4.0.0-beta-2-new)
+* [Fixed issues](#4.0.0-beta-2-fixes)
+* [Deprecations](#4.0.0-beta-2-deprecated)
+* [Potential breaking changes](#4.0.0-beta-2-breaking-changes)
 
-## <a name="4.0.0-rc-1-new"></a> New and Noteworthy
+## <a name="4.0.0-beta-2-new"></a> New and Noteworthy
 
 ### `fallbackValue` API
 This release introduces a new attribute on the `Option` annotation: `fallbackValue` for options with optional parameter: assign this value when the option was specified on the command line without parameter.
@@ -81,7 +81,7 @@ class Fs { ... }
 ```
 
 
-## <a name="4.0.0-rc-1-fixes"></a> Fixed issues
+## <a name="4.0.0-beta-2-fixes"></a> Fixed issues
 - [#280] API: `@Option(fallbackValue = "...")` for options with optional parameter: assign this value when the option was specified on the command line without parameter. Thanks to [Paolo Di Tommaso](https://github.com/pditommaso) and [marinier](https://github.com/marinier) for the suggestion and in-depth discussion.
 - [#625] API: `@Command(synopsisSubcommandLabel = "...")` to allow customization of the subcommands part of the synopsis: by default this is `[COMMAND]`. Thanks to [Sebastian Thomschke](https://github.com/sebthom) and [AlcaYezz](https://github.com/AlcaYezz) for the feature request and subsequent discussion.
 - [#718] API: Add `IParameterHandler` and `@Option(parameterHandler = Xxx.class)` for passing arguments through to another command, like `find -exec`. Thanks to [Reinhard Pointner](https://github.com/rednoah) for the suggestion. 
@@ -92,10 +92,10 @@ class Fs { ... }
 - [#723] Bugfix: variables in `defaultValue` were not expanded in usage help option description line for `showDefaultValues = true`. Thanks to [Mikaël Barbero](https://github.com/mbarbero) for raising this.
 - [#722] Bugfix: synopsis of deeply nested `@ArgGroup` shows `@Options` duplicate on outer level of command. Thanks to [Shane Rowatt](https://github.com/srowatt) for raising this.
 
-## <a name="4.0.0-rc-1-deprecated"></a> Deprecations
+## <a name="4.0.0-beta-2-deprecated"></a> Deprecations
 
 
-## <a name="4.0.0-rc-1-breaking-changes"></a> Potential breaking changes
+## <a name="4.0.0-beta-2-breaking-changes"></a> Potential breaking changes
 
 
 
