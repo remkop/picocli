@@ -1922,7 +1922,7 @@ public class SubcommandTests {
 
     // https://github.com/remkop/picocli/issues/625
     static class MandatorySubcommand625 {
-        @Command(name = "top", subcommands = Sub.class, synopsisSubcommands = "COMMAND")
+        @Command(name = "top", subcommands = Sub.class, synopsisSubcommandLabel = "COMMAND")
         static class Top implements Runnable {
             @CommandLine.Spec
             CommandSpec spec;
