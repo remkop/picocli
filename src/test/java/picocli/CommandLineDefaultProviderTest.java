@@ -2,7 +2,9 @@ package picocli;
 
 import static org.junit.Assert.*;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IDefaultValueProvider;
 import picocli.CommandLine.Model.ArgSpec;
@@ -10,6 +12,8 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 public class CommandLineDefaultProviderTest {
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
     static class TestDefaultProvider implements IDefaultValueProvider {
         public String defaultValue(ArgSpec argSpec) {

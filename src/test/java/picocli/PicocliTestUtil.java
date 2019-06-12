@@ -32,7 +32,7 @@ public class PicocliTestUtil {
     }
 
     private static String stripAnsiTraceOnce(String original) {
-        String prefix = "(ANSI is disabled by default: isatty=";
+        String prefix = "(ANSI is disabled by default:";
         int pos = original.indexOf(prefix);
         if (pos > 0) {
             int to = original.indexOf(")", pos);

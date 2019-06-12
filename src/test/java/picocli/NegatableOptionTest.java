@@ -1,6 +1,8 @@
 package picocli;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Help.Ansi;
 import picocli.CommandLine.Model.CommandSpec;
@@ -9,6 +11,8 @@ import picocli.CommandLine.Option;
 import static org.junit.Assert.*;
 
 public class NegatableOptionTest {
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
     @Test
     public void testRegexTransformDefault() {

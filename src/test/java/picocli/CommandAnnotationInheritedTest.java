@@ -1,12 +1,17 @@
 package picocli;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import static org.junit.Assert.*;
 
 public class CommandAnnotationInheritedTest {
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
+
     static class Example {
 
         @Command(footer = "Top-level footer")
