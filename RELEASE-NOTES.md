@@ -6,7 +6,14 @@ The picocli community is pleased to announce picocli 4.0.0-rc-1.
 
 Bugfixes and improvements.
 
-This release introduces a new attribute on the `Option` annotation: `fallbackValue` for options with optional parameter: assign this value when the option was specified on the command line without parameter.
+This release introduces two new attributes on the `Option` annotation: 
+
+* `fallbackValue`
+* `parameterHandler`
+
+`fallbackValue` is for options with optional parameter: assign this value when the option was specified on the command line without parameter.
+
+`parameterHandler` and the associated `IParameterHandler` interface allows for options to bypass picocli's parsing logic and replace it with custom logic. One use case is collecting arguments to pass them through to another command.
 
 This release introduces a new `synopsisSubcommandLabel` attribute on the `@Command` annotation to allow customization of the subcommands part of the synopsis.
 This is useful for applications that have required subcommands.
@@ -77,6 +84,7 @@ class Fs { ... }
 ## <a name="4.0.0-rc-1-fixes"></a> Fixed issues
 - [#280] API: `@Option(fallbackValue = "...")` for options with optional parameter: assign this value when the option was specified on the command line without parameter. Thanks to [Paolo Di Tommaso](https://github.com/pditommaso) and [marinier](https://github.com/marinier) for the suggestion and in-depth discussion.
 - [#625] API: `@Command(synopsisSubcommandLabel = "...")` to allow customization of the subcommands part of the synopsis: by default this is `[COMMAND]`. Thanks to [Sebastian Thomschke](https://github.com/sebthom) and [AlcaYezz](https://github.com/AlcaYezz) for the feature request and subsequent discussion.
+- [#718] API: Add `IParameterHandler` and `@Option(parameterHandler = Xxx.class)` for passing arguments through to another command, like `find -exec`. Thanks to [Reinhard Pointner](https://github.com/rednoah) for the suggestion. 
 - [#721] API: Add public method Text.getCJKAdjustedLength().
 - [#717] Negatable options change: avoid unmappable character `±` for synopsis: it renders as scrambled characters in encoding ASCII and in some terminals.
 - [#719] Bugfix: options with variable arity should stop consuming arguments on custom end-of-options delimiter.
