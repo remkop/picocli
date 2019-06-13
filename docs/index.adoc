@@ -798,7 +798,7 @@ public interface IDefaultValueProvider {
 If an option is defined with `arity = "0..1"`, it may or not have a parameter value.
 If such an option is specified without a value on the command line, it is assigned the fallback value.
 
-The `fallbackValue` annotation was introduced in picocli 4.0; prior to this, (from picocli 2.3) an empty String was assigned.
+The `fallbackValue` annotation attribute was introduced in picocli 4.0; prior to this, (from picocli 2.3) an empty String was assigned.
 
 This is different from the `defaultValue`, which is assigned if the option is not specified at all on the command line.
 
@@ -809,7 +809,7 @@ For example:
 class FallbackValueDemo implements Runnable {
     @Option(names = "-x", arity = "0..1",
             defaultValue = "-1", fallbackValue = "-2",
-            description = "Optional parameter. Default: ${DEFAULT-VALUE}, " +
+            description = "Option with optional parameter. Default: ${DEFAULT-VALUE}, " +
                           "if specified without parameter: ${FALLBACK-VALUE}")
     int x;
 
