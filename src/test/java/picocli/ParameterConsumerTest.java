@@ -1,7 +1,7 @@
 package picocli;
 
 import org.junit.Test;
-import picocli.CommandLine.IParameterHandler;
+import picocli.CommandLine.IParameterConsumer;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
@@ -14,9 +14,9 @@ import java.util.Stack;
 
 import static org.junit.Assert.*;
 
-public class ParameterHandlerTest {
+public class ParameterConsumerTest {
 
-    static class FindExecParameterHandler implements IParameterHandler {
+    static class FindExecParameterConsumer implements IParameterConsumer {
         public void consumeParameters(Stack<String> args, ArgSpec argSpec, CommandSpec commandSpec) {
             List<String> list = argSpec.getValue();
             if (list == null) { // may not be needed if the option is always initialized with non-null value
@@ -36,9 +36,9 @@ public class ParameterHandlerTest {
     }
 
     @Test
-    public void testSimpleParameterHandler() {
+    public void testSimpleParameterConsumer() {
         class App {
-            @Option(names = "-x", parameterHandler = FindExecParameterHandler.class)
+            @Option(names = "-x", parameterConsumer = FindExecParameterConsumer.class)
             List<String> list = new ArrayList<String>();
 
             @Option(names = "-y") boolean y;
@@ -51,7 +51,7 @@ public class ParameterHandlerTest {
     @Test
     public void testFindExec() {
         class Find {
-            @Option(names = "-exec", parameterHandler = FindExecParameterHandler.class)
+            @Option(names = "-exec", parameterConsumer = FindExecParameterConsumer.class)
             List<String> list = new ArrayList<String>();
 
             @Option(names = "-r") boolean recursive;
@@ -71,9 +71,9 @@ public class ParameterHandlerTest {
     }
 
     @Test
-    public void testSimplePositionalParameterHandler() {
+    public void testSimplePositionalParameterConsumer() {
         class App {
-            @Parameters(index = "0..*", parameterHandler = FindExecParameterHandler.class)
+            @Parameters(index = "0..*", parameterConsumer = FindExecParameterConsumer.class)
             List<String> list = new ArrayList<String>();
 
             @Option(names = "-y") boolean y;
@@ -84,12 +84,12 @@ public class ParameterHandlerTest {
     }
 
     @Test
-    public void testIndexOfPositionalParameterHandler() {
+    public void testIndexOfPositionalParameterConsumer() {
         class App {
-            @Parameters(index = "0", parameterHandler = FindExecParameterHandler.class)
+            @Parameters(index = "0", parameterConsumer = FindExecParameterConsumer.class)
             List<String> list = new ArrayList<String>();
 
-            @Parameters(index = "1..*", parameterHandler = FindExecParameterHandler.class)
+            @Parameters(index = "1..*", parameterConsumer = FindExecParameterConsumer.class)
             List<String> remainder = new ArrayList<String>();
 
             @Option(names = "-y") boolean y;

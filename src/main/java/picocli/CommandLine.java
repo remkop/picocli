@@ -18,7 +18,6 @@ package picocli;
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -3521,11 +3520,11 @@ public class CommandLine {
         String fallbackValue() default "";
 
         /**
-         * Optionally specify a custom {@code IParameterHandler} to temporarily suspend picocli's parsing logic
+         * Optionally specify a custom {@code IParameterConsumer} to temporarily suspend picocli's parsing logic
          * and process one or more command line arguments in a custom manner.
-         * An example of when this may be useful is when passing arguments through to another program.
+         * This may be useful when passing arguments through to another program.
          * @since 4.0 */
-        Class<? extends IParameterHandler> parameterHandler() default NoParameterHandler.class;
+        Class<? extends IParameterConsumer> parameterConsumer() default NullParameterConsumer.class;
     }
     /**
      * <p>
@@ -3710,10 +3709,10 @@ public class CommandLine {
         String descriptionKey() default "";
 
         /**
-         * Optionally specify a custom {@code IParameterHandler} to temporarily suspend picocli's parsing logic
+         * Optionally specify a custom {@code IParameterConsumer} to temporarily suspend picocli's parsing logic
          * and process one or more command line arguments in a custom manner.
          * @since 4.0 */
-        Class<? extends IParameterHandler> parameterHandler() default NoParameterHandler.class;
+        Class<? extends IParameterConsumer> parameterConsumer() default NullParameterConsumer.class;
     }
 
     /**
@@ -4304,16 +4303,44 @@ public class CommandLine {
     }
 
     /**
-     * Options or positional parameters can specify a custom {@code IParameterHandler} to
-     * temporarily suspend picocli's parser and process one or more command line arguments in a custom manner.
+     * Options or positional parameters can be assigned a {@code IParameterConsumer} that implements
+     * custom logic to process the parameters for this option or this position.
+     * When an option or positional parameters with a custom {@code IParameterConsumer} is matched on the
+     * command line, picocli's internal parser is temporarily suspended, and this object becomes
+     * responsible for consuming and processing as many processing command line arguments as needed.
+     * <p>This may be useful when passing through parameters to another command.</p>
+     * <p>Example usage:</p>
+     * <pre>
+     * &#064;Command(name = "find")
+     * class Find {
+     *     &#064;Option(names = "-exec", parameterConsumer = Find.ExecParameterConsumer.class)
+     *     List&lt;String&gt; list = new ArrayList&lt;String&gt;();
+     *
+     *     static class ExecParameterConsumer implements IParameterConsumer {
+     *         public void consumeParameters(Stack&lt;String&gt; args, ArgSpec argSpec, CommandSpec commandSpec) {
+     *             List&lt;String&gt; list = argSpec.getValue();
+     *             while (!args.isEmpty()) {
+     *                 String arg = args.pop();
+     *                 list.add(arg);
+     *
+     *                 // `find -exec` semantics: stop processing after a ';' or '+' argument
+     *                 if (";".equals(arg) || "+".equals(arg)) {
+     *                     break;
+     *                 }
+     *             }
+     *         }
+     *     }
+     * }</pre>
+     * @see Option#parameterConsumer()
+     * @see Parameters#parameterConsumer()
      * @since 4.0 */
-    public interface IParameterHandler {
+    public interface IParameterConsumer {
         /**
-         * Consumes as many of the specified command line arguments as needed. Implementors are
-         * free to ignore the {@linkplain ArgSpec#arity() arity} of the option or positional parameter,
-         * they are free to consume arguments that would normally be matched as other options
-         * of the command, and they are free to consume arguments that wold normally be matched
-         * as an end-of-options delimiter.
+         * Consumes as many of the specified command line arguments as needed by popping them off
+         * the specified Stack. Implementors are free to ignore the {@linkplain ArgSpec#arity() arity}
+         * of the option or positional parameter, they are free to consume arguments that would
+         * normally be matched as other options of the command, and they are free to consume
+         * arguments that would normally be matched as an end-of-options delimiter.
          * <p>Implementors are responsible for saving the consumed values;
          * if the user object of the option or positional parameter is a Collection
          * or a Map, a common approach would be to obtain the current instance via the
@@ -4321,14 +4348,20 @@ public class CommandLine {
          * array, the implementation would need to create a new array that contains the
          * old values as well as the newly consumed values, and store this array in the
          * user object via the {@link ArgSpec#setValue(Object)}.
+         * </p><p>
+         * If the user input is invalid, implementations should throw a {@link ParameterException}
+         * with a message to display to the user.
+         * </p><p>
+         * When this method returns, the picocli parser will process the remaining arguments on the Stack.
          * </p>
          * @param args the command line arguments
          * @param argSpec the option or positional parameter for which to consume command line arguments
          * @param commandSpec the command that the option or positional parameter belongs to
+         * @throws ParameterException if the user input is invalid
          */
         void consumeParameters(Stack<String> args, ArgSpec argSpec, CommandSpec commandSpec);
     }
-    private static class NoParameterHandler implements IParameterHandler {
+    private static class NullParameterConsumer implements IParameterConsumer {
         public void consumeParameters(Stack<String> args, ArgSpec argSpec, CommandSpec commandSpec) { throw new UnsupportedOperationException(); }
     }
 
@@ -4605,7 +4638,7 @@ public class CommandLine {
         static Iterable<String> createCompletionCandidates(IFactory factory, Class<? extends Iterable<String>> cls) {
             return create(factory, cls);
         }
-        static IParameterHandler createParameterHandler(IFactory factory, Class<? extends IParameterHandler> cls) {
+        static IParameterConsumer createParameterConsumer(IFactory factory, Class<? extends IParameterConsumer> cls) {
             return create(factory, cls);
         }
         static <T> T create(IFactory factory, Class<T> cls) {
@@ -6704,7 +6737,7 @@ public class CommandLine {
             private final ITypeInfo typeInfo;
             private final ITypeConverter<?>[] converters;
             private final Iterable<String> completionCandidates;
-            private final IParameterHandler parameterHandler;
+            private final IParameterConsumer parameterConsumer;
             private final String defaultValue;
             private final Object initialValue;
             private final boolean hasInitialValue;
@@ -6727,7 +6760,7 @@ public class CommandLine {
                 paramLabel = empty(builder.paramLabel) ? "PARAM" : builder.paramLabel;
                 hideParamSyntax = builder.hideParamSyntax;
                 converters = builder.converters == null ? new ITypeConverter<?>[0] : builder.converters;
-                parameterHandler = builder.parameterHandler;
+                parameterConsumer = builder.parameterConsumer;
                 showDefaultValue = builder.showDefaultValue == null ? Help.Visibility.ON_DEMAND : builder.showDefaultValue;
                 hidden = builder.hidden;
                 interactive = builder.interactive;
@@ -6982,11 +7015,11 @@ public class CommandLine {
              * @since 3.2 */
             public Iterable<String> completionCandidates() { return completionCandidates; }
 
-            /** Returns a custom {@code IParameterHandler} to temporarily suspend picocli's parsing logic
+            /** Returns a custom {@code IParameterConsumer} to temporarily suspend picocli's parsing logic
              * and process one or more command line arguments in a custom manner, or {@code null}.
              * An example of when this may be useful is when passing arguments through to another program.
              * @since 4.0 */
-            public IParameterHandler parameterHandler() { return parameterHandler; }
+            public IParameterConsumer parameterConsumer() { return parameterConsumer; }
 
             /** Returns the {@link IGetter} that is responsible for supplying the value of this argument. */
             public IGetter getter()        { return getter; }
@@ -7161,7 +7194,7 @@ public class CommandLine {
                         && Assert.equals(this.splitRegex, other.splitRegex)
                         && Arrays.equals(this.description, other.description)
                         && Assert.equals(this.descriptionKey, other.descriptionKey)
-                        && Assert.equals(this.parameterHandler, other.parameterHandler)
+                        && Assert.equals(this.parameterConsumer, other.parameterConsumer)
                         && this.typeInfo.equals(other.typeInfo)
                         ;
                 return result;
@@ -7177,7 +7210,7 @@ public class CommandLine {
                         + 37 * Assert.hashCode(splitRegex)
                         + 37 * Arrays.hashCode(description)
                         + 37 * Assert.hashCode(descriptionKey)
-                        + 37 * Assert.hashCode(parameterHandler)
+                        + 37 * Assert.hashCode(parameterConsumer)
                         + 37 * typeInfo.hashCode()
                         ;
             }
@@ -7227,7 +7260,7 @@ public class CommandLine {
                 private boolean hasInitialValue = true;
                 private Help.Visibility showDefaultValue;
                 private Iterable<String> completionCandidates;
-                private IParameterHandler parameterHandler;
+                private IParameterConsumer parameterConsumer;
                 private String toString;
                 private IGetter getter = new ObjectBinding();
                 private ISetter setter = (ISetter) getter;
@@ -7252,7 +7285,7 @@ public class CommandLine {
                     splitRegex = original.splitRegex;
                     toString = original.toString;
                     descriptionKey = original.descriptionKey;
-                    parameterHandler = original.parameterHandler;
+                    parameterConsumer = original.parameterConsumer;
                     setTypeInfo(original.typeInfo);
                 }
                 Builder(IAnnotatedElement source) {
@@ -7285,8 +7318,8 @@ public class CommandLine {
                         if (!NoCompletionCandidates.class.equals(option.completionCandidates())) {
                             completionCandidates = DefaultFactory.createCompletionCandidates(factory, option.completionCandidates());
                         }
-                        if (!NoParameterHandler.class.equals(option.parameterHandler())) {
-                            parameterHandler = DefaultFactory.createParameterHandler(factory, option.parameterHandler());
+                        if (!NullParameterConsumer.class.equals(option.parameterConsumer())) {
+                            parameterConsumer = DefaultFactory.createParameterConsumer(factory, option.parameterConsumer());
                         }
                     }
                 }
@@ -7314,8 +7347,8 @@ public class CommandLine {
                             if (!NoCompletionCandidates.class.equals(parameters.completionCandidates())) {
                                 completionCandidates = DefaultFactory.createCompletionCandidates(factory, parameters.completionCandidates());
                             }
-                            if (!NoParameterHandler.class.equals(parameters.parameterHandler())) {
-                                parameterHandler = DefaultFactory.createParameterHandler(factory, parameters.parameterHandler());
+                            if (!NullParameterConsumer.class.equals(parameters.parameterConsumer())) {
+                                parameterConsumer = DefaultFactory.createParameterConsumer(factory, parameters.parameterConsumer());
                             }
                         }
                     }
@@ -7417,7 +7450,7 @@ public class CommandLine {
 
                 /** Returns the custom parameter handler for this option or positional parameter, or {@code null}.
                  * @since 4.0 */
-                public IParameterHandler parameterHandler() { return parameterHandler; }
+                public IParameterConsumer parameterConsumer() { return parameterConsumer; }
 
                 /** Returns the {@link IGetter} that is responsible for supplying the value of this argument. */
                 public IGetter getter()        { return getter; }
@@ -7477,9 +7510,9 @@ public class CommandLine {
                  * @since 3.2 */
                 public T completionCandidates(Iterable<String> completionCandidates) { this.completionCandidates = completionCandidates; return self(); }
 
-                /** Sets the parameterHandler for this option or positional parameter, and returns this builder.
+                /** Sets the parameterConsumer for this option or positional parameter, and returns this builder.
                  * @since 4.0 */
-                public T parameterHandler(IParameterHandler parameterHandler) { this.parameterHandler = parameterHandler; return self(); }
+                public T parameterConsumer(IParameterConsumer parameterConsumer) { this.parameterConsumer = parameterConsumer; return self(); }
 
                 /** Sets whether this option should be excluded from the usage message, and returns this builder. */
                 public T hidden(boolean hidden)              { this.hidden = hidden; return self(); }
@@ -10975,9 +11008,9 @@ public class CommandLine {
                                 Set<ArgSpec> initialized,
                                 String argDescription) throws Exception {
             updateHelpRequested(argSpec);
-            if (argSpec.parameterHandler() != null) {
+            if (argSpec.parameterConsumer() != null) {
                 int originalSize = args.size();
-                argSpec.parameterHandler().consumeParameters(args, argSpec, commandSpec);
+                argSpec.parameterConsumer().consumeParameters(args, argSpec, commandSpec);
                 return args.size() - originalSize;
             }
             boolean consumeOnlyOne = commandSpec.parser().aritySatisfiedByAttachedOptionParam() && lookBehind.isAttached();
