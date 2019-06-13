@@ -736,19 +736,7 @@ interface Spec {
     int count();
 }
 ----
-Or similarly for an annotated concrete class:
-[source,java]
-----
-class Impl {
-    int count;
-
-    @Option(names = "-c", defaultValue = "123", description = "... ${DEFAULT-VALUE} ...")
-    void setCount(int count) {
-        this.count = count;
-    }
-}
-----
-And finally  for a command method:
+Example of using the `defaultValue` attribute in the option of a command method:
 [source,java]
 ----
 class CommandMethod {
