@@ -2183,7 +2183,7 @@ class Ln { ... }
 For commands with <<Usage Help for Subcommands,subcommands>>, the string `[COMMAND]` is appended to the end of the synopsis (whether the synopsis is <<Abbreviated Synopsis,abbreviated>> or not). This looks something like this:
 
 ----
-<cmd> [OPTIONS] FILES [COMMAND]
+Usage: <cmd> [OPTIONS] FILES [COMMAND]
 ----
 
 From picocli 4.0, this can be customized with the `synopsisSubcommandLabel` attribute.
@@ -2200,10 +2200,15 @@ An application with a limited number of subcommands may want to show them all in
 [source,java]
 ----
 @Command(name = "fs", synopsisSubcommandLabel = "(list | add | delete)",
-         subcommands = {List.class, Add.class, Delete.class})
+         subcommands = {List.class, Add.class, Delete.class}, mixinStandardHelpOptions = true)
 class Fs { ... }
 ----
 
+This will show the following synopsis:
+
+----
+Usage: fs [-hV] (list | add | delete)
+----
 
 === Header and Footer
 The `header` will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <<Usage Help for Subcommands>>).
