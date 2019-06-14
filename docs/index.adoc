@@ -1059,7 +1059,11 @@ The group itself has a `multiplicity` attribute that defines how many times the 
 The default is `multiplicity = "0..1"`, meaning that by default a group may be omitted or specified once.
 In this example the group has `multiplicity = "1"`, so the group must occur once: one of the exclusive options must occur on the command line.
 
-The synopsis of this command is `exclusivedemo (-a=<a> | -b=<b> | -c=<c>)`.
+The synopsis of this command is:
+
+----
+Usage: exclusivedemo (-a=<a> | -b=<b> | -c=<c>)
+----
 
 Note that the options are defined as `required = true`; this means required _within the group_, not required within the command.
 
@@ -1105,7 +1109,11 @@ The above example defines a command with dependent options `-a`, `-b` and `-c` t
 The group itself has a `multiplicity` attribute that defines how many times the group may be specified within the command.
 In this example the group uses the default multiplicity, `multiplicity = "0..1"`, meaning that the group may be omitted or specified once.
 
-The synopsis of this command is `co-occur [-a=<a> -b=<b> -c=<c>]`.
+The synopsis of this command is:
+
+----
+Usage: co-occur [-a=<a> -b=<b> -c=<c>]
+----
 
 Note that the options are defined as `required = true`; this means required _within the group_, not required within the command.
 
@@ -1186,6 +1194,7 @@ The below example shows how groups can be composed of other groups, and how arra
 
 [source, java]
 ----
+@Command(name = "compositeGroupDemo")
 public class CompositeGroupDemo {
 
     @ArgGroup(exclusive = false, multiplicity = "1..*")
@@ -1214,6 +1223,13 @@ public class CompositeGroupDemo {
 ----
 
 In the above example, the annotated `composites` field defines a composite group that must be specified at least once, and may be specified many times, on the command line.
+
+The synopsis of this command is:
+
+----
+Usage: compositeGroupDemo ((-a=<a> -b=<b> -c=<c>) (-x | -y | -z))...
+----
+
 Each time the group is matched, picocli creates an instance of the `Composite` class and adds it to the `composites` list.
 
 The `Composite` class itself contains two groups: a group of dependent options that must co-occur, and another group of mutually exclusive options.
