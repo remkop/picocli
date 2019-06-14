@@ -1201,7 +1201,7 @@ public class CompositeGroupDemo {
     List<Composite> composites;
 
     static class Composite {
-        @ArgGroup(exclusive = false, multiplicity = "1")
+        @ArgGroup(exclusive = false, multiplicity = "0..1")
         Dependent dependent;
 
         @ArgGroup(exclusive = true, multiplicity = "1")
@@ -1222,18 +1222,19 @@ public class CompositeGroupDemo {
 }
 ----
 
-In the above example, the annotated `composites` field defines a composite group that must be specified at least once, and may be specified many times, on the command line.
+In the above example, the annotated `composites` field defines a composite group that must be specified at least once, and may be specified many times (`multiplicity = "1..*"`), on the command line.
 
 The synopsis of this command is:
 
 ----
-Usage: repeating-composite-demo ((-a=<a> -b=<b> -c=<c>) (-x | -y | -z))...
+Usage: repeating-composite-demo ([-a=<a> -b=<b> -c=<c>] (-x | -y | -z))...
 ----
 
 Each time the group is matched, picocli creates an instance of the `Composite` class and adds it to the `composites` list.
 
-The `Composite` class itself contains two groups: a group of dependent options that must co-occur, and another group of mutually exclusive options.
-Both of these subgroups have `multiplicity = "1"`, so they can occur exactly once for each multiple of the `Composite` group. The below example illustrates:
+The `Composite` class itself contains two groups: an optional (`multiplicity = "0..1"`) group of dependent options that must co-occur, and another group of mutually exclusive options, which is mandatory (`multiplicity = "1"`).
+
+The below example illustrates:
 
 [source, java]
 ----
