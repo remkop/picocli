@@ -1194,7 +1194,7 @@ The below example shows how groups can be composed of other groups, and how arra
 
 [source, java]
 ----
-@Command(name = "compositeGroupDemo")
+@Command(name = "repeating-composite-demo")
 public class CompositeGroupDemo {
 
     @ArgGroup(exclusive = false, multiplicity = "1..*")
@@ -1227,7 +1227,7 @@ In the above example, the annotated `composites` field defines a composite group
 The synopsis of this command is:
 
 ----
-Usage: compositeGroupDemo ((-a=<a> -b=<b> -c=<c>) (-x | -y | -z))...
+Usage: repeating-composite-demo ((-a=<a> -b=<b> -c=<c>) (-x | -y | -z))...
 ----
 
 Each time the group is matched, picocli creates an instance of the `Composite` class and adds it to the `composites` list.
