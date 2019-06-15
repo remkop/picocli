@@ -576,7 +576,8 @@ public class I18nTest {
         String pushUsage = String.format("" +
                 "Usage: git push [-f] [--tags] <repository>%n" +
                 "Update remote refs along with associated objects%n" +
-                "      <repository>   The \"remote\" repository that is destination of a push operation.%n" +
+                "      <repository>   The \"remote\" repository that is destination of a push%n" +
+                "                       operation.%n" +
                 "  -f, --force        Disable checks.%n" +
                 "      --tags         All refs under refs/tags are pushed.%n");
         assertEquals(pushUsage, git.getSubcommands().get("push").getUsageMessage());
@@ -594,7 +595,8 @@ public class I18nTest {
                 "Shared description 2%n" +
                 "      [COMMAND...]   Shared description of COMMAND parameter of built-in help%n" +
                 "                       subcommand%n" +
-                "  -h, --help         Shared description of --help option of built-in help subcommand%n" +
+                "  -h, --help         Shared description of --help option of built-in help%n" +
+                "                       subcommand%n" +
                 "Shared Exit Codes Heading%n" +
                 "These exit codes are blah blah etc.%n" +
                 "  00   (From shared bundle) Normal termination%n" +
@@ -626,8 +628,8 @@ public class I18nTest {
                 "Shared description 0%n" +
                 "Shared description 1%n" +
                 "Shared description 2%n" +
-                "      [COMMAND...]   Specialized description of COMMAND parameter of i18-top help%n" +
-                "                       subcommand%n" +
+                "      [COMMAND...]   Specialized description of COMMAND parameter of i18-top%n" +
+                "                       help subcommand%n" +
                 "  -h, --help         Specialized description of --help option of i18-top help%n" +
                 "                       subcommand%n" +
                 "Shared Exit Codes Heading%n" +

@@ -37,6 +37,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import picocli.CommandLine.Help.Ansi.IStyle;
@@ -13415,8 +13416,8 @@ public class CommandLine {
                         new Column(2,                                       0, TRUNCATE), // "*"
                         new Column(2,                                       0, SPAN), // "-c"
                         new Column(1,                                       0, TRUNCATE), // ","
-                        new Column(longOptionsColumnWidth,                         1, SPAN),  // " --create"
-                        new Column(usageHelpWidth - longOptionsColumnWidth, 1, WRAP)); // " Creates a ..."
+                        new Column(longOptionsColumnWidth,                  1, SPAN),  // " --create"
+                        new Column(usageHelpWidth - 5 - longOptionsColumnWidth, 1, WRAP)); // " Creates a ..."
             }
 
             /** Constructs a new TextTable with columns with the specified width, all SPANning  multiple columns on

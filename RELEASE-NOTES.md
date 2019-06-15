@@ -91,7 +91,9 @@ class Fs { ... }
 - [#720] Bugfix: `@Unmatched` list should be cleared prior to subsequent invocations.
 - [#723] Bugfix: variables in `defaultValue` were not expanded in usage help option description line for `showDefaultValues = true`. Thanks to [Mikaël Barbero](https://github.com/mbarbero) for raising this.
 - [#722] Bugfix: synopsis of deeply nested `@ArgGroup` shows `@Options` duplicate on outer level of command. Thanks to [Shane Rowatt](https://github.com/srowatt) for raising this.
+- [#724] Bugfix: Usage message exceeds width
 
+ 
 ## <a name="4.0.0-beta-2-deprecated"></a> Deprecations
 
 

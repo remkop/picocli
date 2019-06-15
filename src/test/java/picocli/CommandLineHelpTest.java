@@ -2049,8 +2049,8 @@ public class CommandLineHelpTest {
                 "--create, --create2, --create3, --create4, --create5, --create6, --create7, --create8",
                 "description");
         assertEquals(String.format("" +
-                        "* -c, --create, --create2, --create3, --create4, --create5, --create6, --create7,%n" +
-                        "        --create8%n" +
+                        "* -c, --create, --create2, --create3, --create4, --create5, --create6,%n" +
+                        "        --create7, --create8%n" +
                         "                              description%n"
                 ,""), table.toString(new StringBuilder()).toString());
 
@@ -2059,8 +2059,8 @@ public class CommandLineHelpTest {
                 "--create, --create2, --create3, --create4, --create5, --create6, --createAA7, --create8",
                 "description");
         assertEquals(String.format("" +
-                        "  -c, --create, --create2, --create3, --create4, --create5, --create6, --createAA7,%n" +
-                        "        --create8%n" +
+                        "  -c, --create, --create2, --create3, --create4, --create5, --create6,%n" +
+                        "        --createAA7, --create8%n" +
                         "                              description%n"
                 ,""), table.toString(new StringBuilder()).toString());
     }
@@ -2795,8 +2795,8 @@ public class CommandLineHelpTest {
                 "Usage: <main class> [-P=TIMEUNIT=VALUE[,TIMEUNIT=VALUE...]]... (FIXTAG=VALUE%n" +
                 "                    [\\|FIXTAG=VALUE...] FIXTAG=VALUE[\\|FIXTAG=VALUE...])...%n" +
                 "      (FIXTAG=VALUE[\\|FIXTAG=VALUE...] FIXTAG=VALUE[\\|FIXTAG=VALUE...])...%n" +
-                "         Repeating group of two lists of vertical bar '|'-separated FIXTAG=VALUE%n" +
-                "           pairs.%n" +
+                "         Repeating group of two lists of vertical bar '|'-separated%n" +
+                "           FIXTAG=VALUE pairs.%n" +
                 "  -P, -map=TIMEUNIT=VALUE[,TIMEUNIT=VALUE...]%n" +
                 "         Any number of TIMEUNIT=VALUE pairs. These may be specified separately%n" +
                 "           (-PTIMEUNIT=VALUE) or as a comma-separated list.%n");
@@ -2870,8 +2870,8 @@ public class CommandLineHelpTest {
                 "  -D=<key=ddd>...        use value for given property%n" +
                 "      --help             print this message%n" +
                 "      --lib=<path>[,<path>[,<path>]]%n" +
-                "                         comma-separated list of up to 3 paths to search for jars%n" +
-                "                           and classes%n" +
+                "                         comma-separated list of up to 3 paths to search for%n" +
+                "                           jars and classes%n" +
                 "      --logfile=<file>   use given file for log%n" +
                 "  -P=[<key=ppp>...]      use value for project key%n" +
                 "  -S=[<key=sss>[,<key=sss>]...]%n" +
@@ -3587,11 +3587,11 @@ public class CommandLineHelpTest {
                 "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped%n" +
                 "over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The%n" +
                 "quick brown fox jumped over the lazy dog.%n" +
-                "  -s=<shortOption>    The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick%n" +
-                "                        brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.%n" +
+                "  -s=<shortOption>    The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The%n" +
+                "                        quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.%n" +
                 "      --very-very-very-looooooooooooooooong-option-name=<lengthyOption>%n" +
-                        "                      The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick%n" +
-                        "                        brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.%n"
+                "                      The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The%n" +
+                "                        quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.%n"
         );
     }
 
@@ -3737,8 +3737,8 @@ public class CommandLineHelpTest {
                 "Usage: <main class> <c>...%n" +
                 "      <c>...   description%n" +
                 "                 Default:%n" +
-                "                 /long/value/length/equals/columnValue/maxlength/and/non/null/offset/%n" +
-                "                 xxx%n");
+                "                 /long/value/length/equals/columnValue/maxlength/and/non/null/of%n" +
+                "                 fset/xxx%n");
         assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
     }
 
@@ -3836,8 +3836,8 @@ public class CommandLineHelpTest {
         String expected = String.format("" +
                 "Usage: <main class> [--excludebase=<excludeBase>...]...%n" +
                 "      --excludebase=<excludeBase>...%n" +
-                "         exclude child files of cTree (only works with --ctree).%%nCurrently must be%n" +
-                "           explicit or with trailing %% for truncated glob.%n");
+                "         exclude child files of cTree (only works with --ctree).%%nCurrently%n" +
+                "           must be explicit or with trailing %% for truncated glob.%n");
         String actual = new CommandLine(new App()).getUsageMessage();
         assertEquals(expected, actual);
 
@@ -3920,13 +3920,13 @@ public class CommandLineHelpTest {
                 "\u30eb\u7aef\u672b\u5411\u3051OS\u306b\u306f\u6a19\u6e96\u3067\u7528\u610f\u3055\u308c\u3066\u304a\u3089\u305a\u3001GUI\u304c\u4e3b\u6d41\u3068\u306a\u3063\u3066\u3044\u308b\u3002%n" +
                 "  -h, --help       Show this help message and exit.%n" +
                 "  -V, --version    Print version information and exit.%n" +
-                "  -x, --long=<x>   \u3057\u304b\u3057\u3001GUI\u74b0\u5883\u3067\u3042\u308c\u3070\u30dd\u30a4\u30f3\u30c6\u30a3\u30f3\u30b0\u30c7\u30d0\u30a4\u30b9\u306b\u3088\u308b\u64cd\u4f5c\u3092\u7e70\u308a\u8fd4\u3057%n" +
-                "                     \u884c\u308f\u306a\u3051\u308c\u3070\u306a\u3089\u306a\u3044\u3088\u3046\u306a\u7169\u96d1\u306a\u4f5c\u696d\u3092\u3001CUI\u74b0\u5883\u3067\u3042\u308c\u3070\u7c21\u5358\u306a\u30b3%n" +
-                "                     \u30de\u30f3\u30c9\u306e\u7d44\u307f\u5408\u308f\u305b\u3067\u5b9f\u884c\u3067\u304d\u308b\u5834\u5408\u3082\u3042\u308b\u306a\u3069\u3001CUI\u306b\u3082\u4f9d\u7136\u3068\u3057\u3066%n" +
-                "                     \u5229\u70b9\u306f\u3042\u308b\u3002\u7279\u306b\u30a8\u30f3\u30c9\u30e6\u30fc\u30b6\u30fc\u3060\u3051\u3067\u306a\u304f\u30cd\u30c3\u30c8\u30ef\u30fc\u30af\u7ba1\u7406\u8005\u3084\u30bd\u30d5%n" +
-                "                     \u30c8\u30a6\u30a7\u30a2\u958b\u767a\u8005\u3082\u5229\u7528\u3059\u308bPC\u3084\u30b5\u30fc\u30d0\u30fc\u306b\u304a\u3044\u3066\u306f\u3001GUI\u3068CUI\u306f\u7528\u9014\u306b%n" +
-                "                     \u3088\u3063\u3066\u4f4f\u307f\u5206\u3051\u3066\u4f75\u5b58\u3057\u3066\u3044\u308b\u3082\u306e\u3067\u3042\u308a\u3001CUI\u306f\u5b8c\u5168\u306b\u5ec3\u308c\u305f\u308f\u3051\u3067%n" +
-                "                     \u306f\u306a\u3044\u3002%n");
+                "  -x, --long=<x>   \u3057\u304b\u3057\u3001GUI\u74b0\u5883\u3067\u3042\u308c\u3070\u30dd\u30a4\u30f3\u30c6\u30a3\u30f3\u30b0\u30c7\u30d0\u30a4\u30b9\u306b\u3088\u308b\u64cd\u4f5c\u3092\u7e70\u308a%n" +
+                "                     \u8fd4\u3057\u884c\u308f\u306a\u3051\u308c\u3070\u306a\u3089\u306a\u3044\u3088\u3046\u306a\u7169\u96d1\u306a\u4f5c\u696d\u3092\u3001CUI\u74b0\u5883\u3067\u3042\u308c\u3070%n" +
+                "                     \u7c21\u5358\u306a\u30b3\u30de\u30f3\u30c9\u306e\u7d44\u307f\u5408\u308f\u305b\u3067\u5b9f\u884c\u3067\u304d\u308b\u5834\u5408\u3082\u3042\u308b\u306a\u3069\u3001CUI\u306b%n" +
+                "                     \u3082\u4f9d\u7136\u3068\u3057\u3066\u5229\u70b9\u306f\u3042\u308b\u3002\u7279\u306b\u30a8\u30f3\u30c9\u30e6\u30fc\u30b6\u30fc\u3060\u3051\u3067\u306a\u304f\u30cd\u30c3\u30c8%n" +
+                "                     \u30ef\u30fc\u30af\u7ba1\u7406\u8005\u3084\u30bd\u30d5\u30c8\u30a6\u30a7\u30a2\u958b\u767a\u8005\u3082\u5229\u7528\u3059\u308bPC\u3084\u30b5\u30fc\u30d0\u30fc\u306b\u304a%n" +
+                "                     \u3044\u3066\u306f\u3001GUI\u3068CUI\u306f\u7528\u9014\u306b\u3088\u3063\u3066\u4f4f\u307f\u5206\u3051\u3066\u4f75\u5b58\u3057\u3066\u3044\u308b\u3082\u306e\u3067%n" +
+                "                     \u3042\u308a\u3001CUI\u306f\u5b8c\u5168\u306b\u5ec3\u308c\u305f\u308f\u3051\u3067\u306f\u306a\u3044\u3002%n");
         assertEquals(expected, usageMessage);
     }
 
@@ -3957,10 +3957,10 @@ public class CommandLineHelpTest {
                 "\u3066\u7528\u610f\u3055\u308c\u3066\u3044\u308b\u304c\u3001\u30b9\u30de\u30fc\u30c8\u30d5\u30a9\u30f3\u306a\u3069\u306e\u30e2\u30d0\u30a4\u30eb\u7aef\u672b\u5411\u3051OS\u306b\u306f\u6a19\u6e96\u3067\u7528\u610f\u3055\u308c\u3066\u304a\u3089\u305a\u3001GUI\u304c\u4e3b\u6d41\u3068\u306a\u3063\u3066\u3044\u308b\u3002%n" +
                 "  -h, --help       Show this help message and exit.%n" +
                 "  -V, --version    Print version information and exit.%n" +
-                "  -x, --long=<x>   \u3057\u304b\u3057\u3001GUI\u74b0\u5883\u3067\u3042\u308c\u3070\u30dd\u30a4\u30f3\u30c6\u30a3\u30f3\u30b0\u30c7\u30d0\u30a4\u30b9\u306b\u3088\u308b\u64cd\u4f5c\u3092\u7e70\u308a\u8fd4\u3057\u884c\u308f\u306a\u3051\u308c\u3070\u306a\u3089\u306a\u3044\u3088\u3046\u306a\u7169\u96d1\u306a\u4f5c\u696d\u3092\u3001CUI\u74b0\u5883\u3067\u3042\u308c\u3070\u7c21\u5358\u306a%n" +
-                "                     \u30b3\u30de\u30f3\u30c9\u306e\u7d44\u307f\u5408\u308f\u305b\u3067\u5b9f\u884c\u3067\u304d\u308b\u5834\u5408\u3082\u3042\u308b\u306a\u3069\u3001CUI\u306b\u3082\u4f9d\u7136\u3068\u3057\u3066\u5229\u70b9\u306f\u3042\u308b\u3002\u7279\u306b\u30a8\u30f3\u30c9\u30e6\u30fc\u30b6\u30fc\u3060\u3051\u3067\u306a\u304f\u30cd\u30c3\u30c8\u30ef\u30fc\u30af\u7ba1\u7406\u8005\u3084%n" +
-                "                     \u30bd\u30d5\u30c8\u30a6\u30a7\u30a2\u958b\u767a\u8005\u3082\u5229\u7528\u3059\u308bPC\u3084\u30b5\u30fc\u30d0\u30fc\u306b\u304a\u3044\u3066\u306f\u3001GUI\u3068CUI\u306f\u7528\u9014\u306b\u3088\u3063\u3066\u4f4f\u307f\u5206\u3051\u3066\u4f75\u5b58\u3057\u3066\u3044\u308b\u3082\u306e\u3067\u3042\u308a\u3001CUI\u306f\u5b8c\u5168%n" +
-                "                     \u306b\u5ec3\u308c\u305f\u308f\u3051\u3067\u306f\u306a\u3044\u3002%n");
+                "  -x, --long=<x>   \u3057\u304b\u3057\u3001GUI\u74b0\u5883\u3067\u3042\u308c\u3070\u30dd\u30a4\u30f3\u30c6\u30a3\u30f3\u30b0\u30c7\u30d0\u30a4\u30b9\u306b\u3088\u308b\u64cd\u4f5c\u3092\u7e70\u308a\u8fd4\u3057\u884c\u308f\u306a\u3051\u308c\u3070\u306a\u3089\u306a\u3044\u3088\u3046\u306a\u7169\u96d1\u306a\u4f5c\u696d\u3092\u3001CUI\u74b0\u5883\u3067\u3042%n" +
+                "                     \u308c\u3070\u7c21\u5358\u306a\u30b3\u30de\u30f3\u30c9\u306e\u7d44\u307f\u5408\u308f\u305b\u3067\u5b9f\u884c\u3067\u304d\u308b\u5834\u5408\u3082\u3042\u308b\u306a\u3069\u3001CUI\u306b\u3082\u4f9d\u7136\u3068\u3057\u3066\u5229\u70b9\u306f\u3042\u308b\u3002\u7279\u306b\u30a8\u30f3\u30c9\u30e6\u30fc\u30b6\u30fc\u3060\u3051\u3067\u306a\u304f%n" +
+                "                     \u30cd\u30c3\u30c8\u30ef\u30fc\u30af\u7ba1\u7406\u8005\u3084\u30bd\u30d5\u30c8\u30a6\u30a7\u30a2\u958b\u767a\u8005\u3082\u5229\u7528\u3059\u308bPC\u3084\u30b5\u30fc\u30d0\u30fc\u306b\u304a\u3044\u3066\u306f\u3001GUI\u3068CUI\u306f\u7528\u9014\u306b\u3088\u3063\u3066\u4f4f\u307f\u5206\u3051\u3066\u4f75\u5b58\u3057%n" +
+                "                     \u3066\u3044\u308b\u3082\u306e\u3067\u3042\u308a\u3001CUI\u306f\u5b8c\u5168\u306b\u5ec3\u308c\u305f\u308f\u3051\u3067\u306f\u306a\u3044\u3002%n");
         assertEquals(expected, usageMessage);
     }
 

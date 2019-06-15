@@ -191,21 +191,22 @@ public class CompletionCandidatesTest {
                 "      --boolT            Boolean variable 2. Default: true%n" +
                 "      --enum=<lang>      Enum. Values: java, kotlin, groovy, javascript, frege,%n" +
                 "                           clojure%n" +
-                "      --lib=<lib>        comma-separated list of up to 3 paths to search for jars%n" +
-                "                           and classes. Some example values: This, is, a, very,%n" +
-                "                           long, list, of, completion, candidates, that, is,%n" +
-                "                           intended, to, wrap, to, the, next, line., I, wonder, if,%n" +
-                "                           it, is, long, enough.%n" +
-                "      --logfile=<file>   Use given file for log. Default: %s%n" +
-                        "  -P=[<key=ppp>...]      Use value for project key.%n" +
-                        "                         Default={key1=veryveryverylonglonglongvaluevaluevalue,%n" +
-                        "                           key2=very2very2very2longlonglongvaluevaluevalue2,%n" +
-                        "                           key3=very3very3very3longlonglongvaluevaluevalue3}%n" +
+                "      --lib=<lib>        comma-separated list of up to 3 paths to search for%n" +
+                "                           jars and classes. Some example values: This, is, a,%n" +
+                "                           very, long, list, of, completion, candidates, that,%n" +
+                "                           is, intended, to, wrap, to, the, next, line., I,%n" +
+                "                           wonder, if, it, is, long, enough.%n" +
+                "      --logfile=<file>   Use given file for log. Default: \\a\\b\\c%n" +
+                "  -P=[<key=ppp>...]      Use value for project key.%n" +
+                "                         Default={key1=veryveryverylonglonglongvaluevaluevalue,%n" +
+                "                           key2=very2very2very2longlonglongvaluevaluevalue2,%n" +
+                "                           key3=very3very3very3longlonglongvaluevaluevalue3}%n" +
                 "      --strNull=<str>    String without default. Default: null%n" +
-                "      --x=<x>[,<x>...]   Comma-separated list of some xxx's. Valid values: A, B, C, D%n" +
-                "      --y=<y>            Test long default. Default: This is a very long default%n" +
-                "                           value that is intended to wrap to the next line. I wonder%n" +
-                "                           if it is long enough.%n", new File("/a/b/c"));
+                "      --x=<x>[,<x>...]   Comma-separated list of some xxx's. Valid values: A,%n" +
+                "                           B, C, D%n" +
+                "      --y=<y>            Test long default. Default: This is a very long%n" +
+                "                           default value that is intended to wrap to the next%n" +
+                "                           line. I wonder if it is long enough.%n");
         String actual = usageString(new CommandLine(new App(), new InnerClassFactory(this)), CommandLine.Help.Ansi.OFF);
         assertEquals(expected, actual);
     }
@@ -222,8 +223,8 @@ public class CompletionCandidatesTest {
         }
         String expected = String.format("" +
                 "Usage: <main class> [-single=<lang>] [-list=<langList>]...%n" +
-                "      -list=<langList>   Multiple languages. Valid values: java, kotlin, groovy,%n" +
-                "                           javascript, frege, clojure%n" +
+                "      -list=<langList>   Multiple languages. Valid values: java, kotlin,%n" +
+                "                           groovy, javascript, frege, clojure%n" +
                 "      -single=<lang>     Single language. Valid values: java, kotlin, groovy,%n" +
                 "                           javascript, frege, clojure%n");
         assertEquals(expected, new CommandLine(new EnumTest()).getUsageMessage());

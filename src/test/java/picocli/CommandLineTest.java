@@ -2105,8 +2105,8 @@ public class CommandLineTest {
         String expectedOutput =
                         "Usage: <main class> [--foo-bar-baz=<foo>]\n" +
                         "      --foo-bar-baz=<foo>     Default:\n" +
-                        "                              aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n" +
-                        "                              aaaaaaaaaaaaaaaaaaaaaaaaaa\n";
+                        "                              aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n" +
+                        "                              aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n";
 
         assertEquals(expectedOutput, content);
     }

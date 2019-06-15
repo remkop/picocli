@@ -190,25 +190,26 @@ public class AutoCompleteTest {
             "Usage: picocli.AutoComplete [-fhVw] [-c=<factoryClass>] [-n=<commandName>]%n" +
             "                            [-o=<autoCompleteScript>] <commandLineFQCN>%n" +
             "Generates a bash completion script for the specified command class.%n" +
-            "      <commandLineFQCN>      Fully qualified class name of the annotated @Command%n" +
-            "                               class to generate a completion script for.%n" +
+            "      <commandLineFQCN>      Fully qualified class name of the annotated%n" +
+            "                               @Command class to generate a completion script%n" +
+            "                               for.%n" +
             "  -c, --factory=<factoryClass>%n" +
-            "                             Optionally specify the fully qualified class name of%n" +
-            "                               the custom factory to use to instantiate the command%n" +
-            "                               class. When omitted, the default picocli factory is%n" +
-            "                               used.%n" +
-            "  -n, --name=<commandName>   Optionally specify the name of the command to create a%n" +
-            "                               completion script for. When omitted, the annotated%n" +
-            "                               class @Command 'name' attribute is used. If no%n" +
-            "                               @Command 'name' attribute exists,%n" +
+            "                             Optionally specify the fully qualified class name%n" +
+            "                               of the custom factory to use to instantiate the%n" +
+            "                               command class. When omitted, the default picocli%n" +
+            "                               factory is used.%n" +
+            "  -n, --name=<commandName>   Optionally specify the name of the command to%n" +
+            "                               create a completion script for. When omitted,%n" +
+            "                               the annotated class @Command 'name' attribute is%n" +
+            "                               used. If no @Command 'name' attribute exists,%n" +
             "                               '<CLASS-SIMPLE-NAME>' (in lower-case) is used.%n" +
             "  -o, --completionScript=<autoCompleteScript>%n" +
-            "                             Optionally specify the path of the completion script%n" +
-            "                               file to generate. When omitted, a file named%n" +
-            "                               '<commandName>_completion' is generated in the%n" +
-            "                               current directory.%n" +
-            "  -w, --writeCommandScript   Write a '<commandName>' sample command script to the%n" +
-            "                               same directory as the completion script.%n" +
+            "                             Optionally specify the path of the completion%n" +
+            "                               script file to generate. When omitted, a file%n" +
+            "                               named '<commandName>_completion' is generated in%n" +
+            "                               the current directory.%n" +
+            "  -w, --writeCommandScript   Write a '<commandName>' sample command script to%n" +
+            "                               the same directory as the completion script.%n" +
             "  -f, --force                Overwrite existing script files.%n" +
             "  -h, --help                 Show this help message and exit.%n" +
             "  -V, --version              Print version information and exit.%n" +
