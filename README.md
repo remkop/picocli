@@ -93,6 +93,11 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 
 [Reallinfo](https://github.com/reallinfo) designed the new picocli logo! Many thanks! 
 
+### Commitments
+
+| This project follows [semantic versioning](http://semver.org/) and adheres to the **[Zero Bugs Commitment](https://github.com/classgraph/classgraph/blob/master/Zero-Bugs-Commitment.md)**. |
+|------------------------|
+
 ## Adoption
 
 <img src="https://picocli.info/images/groovy-logo.png" height="50">  <img src="https://picocli.info/images/1x1.png" width="10"> <img src="http://micronaut.io/images/micronaut_mini_copy_tm.svg" height="50">  <img src="https://picocli.info/images/1x1.png" width="10"><img src="https://picocli.info/images/junit5logo-172x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://picocli.info/images/debian-logo-192x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://picocli.info/images/karate-logo.png" height="50" width="50"/>  <img src="https://picocli.info/images/checkstyle-logo-260x50.png" height="50"><img src="https://picocli.info/images/1x1.png" width="10">  <img src="https://picocli.info/images/ballerina-logo.png" height="40"><img src="https://picocli.info/images/1x1.png" width="10">  <img src="https://picocli.info/images/apache-hive-logo.png" height="40"><img src="https://picocli.info/images/1x1.png" width="10">  <img src="https://picocli.info/images/apache-ozone-logo.png" height="40"> 
