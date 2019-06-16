@@ -136,7 +136,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import java.io.File;
 
-@Command(name = "example", mixinStandardHelpOptions = true, version = "Picocli example 3.0")
+@Command(name = "example", mixinStandardHelpOptions = true, version = "Picocli example 4.0")
 public class Example implements Runnable {
     @Option(names = { "-v", "--verbose" }, description = "Verbose mode. Helpful for troubleshooting. " +
                                                          "Multiple -v options increase the verbosity.")
@@ -157,7 +157,11 @@ public class Example implements Runnable {
     }
     
     public static void main(String[] args) {
-        CommandLine.run(new Example(), args);
+        // By implementing Runnable or Callable, parsing, error handling and handling user
+        // requests for usage help or version help can be done with one line of code.
+
+        int exitCode = new CommandLine(new Example()).execute(args);
+        System.exit(exitCode);
     }
 }
 ```
