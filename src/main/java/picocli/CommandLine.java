@@ -6103,6 +6103,7 @@ public class CommandLine {
             private String[] exitCodeListStrings;
             private Map<String, String> exitCodeList;
             private int width = DEFAULT_USAGE_WIDTH;
+            private Integer cachedWidth;
 
             private final Interpolator interpolator;
             private Messages messages;
@@ -6149,6 +6150,8 @@ public class CommandLine {
                 return sysPropAutoWidth || defaultAutoWidth;
             }
             private static int getTerminalWidth() {
+                long start = System.nanoTime();
+                final Tracer tracer = new Tracer();
                 final AtomicInteger size = new AtomicInteger(-1);
                 if (!Help.Ansi.isTTY() && !Help.Ansi.isPseudoTTY()) { return size.intValue(); }
                 final String[] cmd = (Help.Ansi.isWindows() && !Help.Ansi.isPseudoTTY())
@@ -6162,11 +6165,12 @@ public class CommandLine {
                         BufferedReader reader = null;
                         try {
                             ProcessBuilder pb = new ProcessBuilder(cmd);
+                            tracer.debug("getTerminalWidth() executing command %s%n", pb.command());
                             //proc = Runtime.getRuntime().exec(new String[] { "sh", "-c", "tput cols 2> /dev/tty" });
-                            Class<?> redirectClass = Class.forName("java.lang.ProcessBuilder.Redirect");
+                            Class<?> redirectClass = Class.forName("java.lang.ProcessBuilder$Redirect");
                             Object INHERIT = redirectClass.getField("INHERIT").get(null);
                             Method redirectError = ProcessBuilder.class.getDeclaredMethod("redirectError", redirectClass);
-                            redirectError.invoke(INHERIT);
+                            redirectError.invoke(pb, INHERIT);
                             proc = pb.start();
                             reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
                             String line = null;
@@ -6174,12 +6178,14 @@ public class CommandLine {
                             while ((line = reader.readLine()) != null) {
                                 txt += " " + line;
                             }
+                            tracer.debug("getTerminalWidth() parsing output: %s%n", txt);
                             Pattern pattern = Pattern.compile(".*olumns(:)?\\s+(\\d+)\\D.*", Pattern.DOTALL);
                             Matcher matcher = pattern.matcher(txt);
                             if (matcher.matches()) {
                                 size.set(Integer.parseInt(matcher.group(2)));
                             }
                         } catch (Exception ignored) { // nothing to do...
+                            tracer.debug("getTerminalWidth() ERROR: %s%n", ignored);
                         } finally {
                             if (proc != null) { proc.destroy(); }
                             if (reader != null) { try { reader.close(); } catch (Exception ignored) {} }
@@ -6192,12 +6198,19 @@ public class CommandLine {
                     if (size.intValue() >= 0) { break; }
                     try { Thread.sleep(25); } catch (InterruptedException ignored) {}
                 } while (System.currentTimeMillis() < now + 2000);
+                double duration = (System.nanoTime() - start) / 1000000.0;
+                tracer.debug("getTerminalWidth() returning: %s in %,.1fms%n", size, duration);
                 return size.intValue();
             }
             /** Returns the maximum usage help message width. Derived from system property {@code "picocli.usage.width"}
              * if set, otherwise returns the value set via the {@link #width(int)} method, or if not set, the {@linkplain #DEFAULT_USAGE_WIDTH default width}.
              * @return the maximum usage help message width. Never returns less than 55. */
-            public int width() { return getSysPropertyWidthOrDefault(width, (autoWidth == null) ? DEFAULT_USAGE_AUTO_WIDTH : autoWidth); }
+            public int width() {
+                if (cachedWidth == null) {
+                    cachedWidth = getSysPropertyWidthOrDefault(width, (autoWidth == null) ? DEFAULT_USAGE_AUTO_WIDTH : autoWidth);
+                }
+                return cachedWidth;
+            }
 
             /** Returns whether picocli should attempt to detect the terminal size and adjust the usage help message width
              * to take the full terminal width. End users may enable this by setting system property {@code "picocli.usage.width"} to {@code AUTO},
