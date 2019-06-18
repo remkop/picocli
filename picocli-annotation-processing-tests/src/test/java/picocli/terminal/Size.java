@@ -15,8 +15,9 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
-@Command
+@Command(mixinStandardHelpOptions = true)
 public class Size implements Runnable {
     @Option(names = {"-c", "--tput-cols"}, description = "tput cols")
     boolean tputCols;
@@ -35,6 +36,9 @@ public class Size implements Runnable {
 
     @Option(names = {"-o", "--redirect-output"}, description = "Redirect stderr output to device in processbuilder")
     boolean redirectOutput;
+
+    @Option(names = {"-l", "--readLine"}, description = "Read input from process line by line")
+    boolean readLine;
 
     @Parameters(index = "0", arity = "0..1", description = "device, default: ${DEFAULT-VALUE}")
     String device = "/dev/tty";
@@ -67,6 +71,12 @@ public class Size implements Runnable {
                 size.set(Integer.valueOf(line.trim()));
             }
         });
+        t.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                e.printStackTrace();
+            }
+        });
         t.start();
         long timeout = System.currentTimeMillis() + 2000;
         do {
@@ -84,28 +94,41 @@ public class Size implements Runnable {
 
     private void stty_size(final String device) {
         final AtomicBoolean done = new AtomicBoolean();
-        final String[] line = new String[1];
+        AtomicReference<String> line = new AtomicReference<>();
         final Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
 //                line[0] = exec("/bin/stty", "-a", "-F", "/dev/tty");
 //                line[0] = exec("sh", "-c", "stty -a -F " + device + " 2> " + device);
                 //line[0] = exec("sh", "-c", "stty -a -F " + device + " 2> " + device);
-                line[0] = exec("stty", "-a", "-F", device);
+                String res = exec(System.getProperty("stty", "stty"), "-a", "-F", device);
+                line.set(res);
+                System.out.println(res);
                 done.set(true);
             }
         });
+        t.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                e.printStackTrace();
+            }
+        });
         t.start();
+        try {
+            t.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         long timeout = System.currentTimeMillis() + 2000;
         do {
-            if (!done.get()) { break; }
+            if (done.get()) { break; }
             try {Thread.sleep(25);} catch (InterruptedException ignored) {}
         } while (System.currentTimeMillis() < timeout);
 
-        if (line[0] == null) {
-            System.out.printf("`stty -a -F %s` timed out%n", device);
+        if (line.get() == null) {
+            System.out.printf("command timed out%n");
         } else {
-            System.out.printf("`stty -a -F %s` found: %s%n", device, line[0]);
+            System.out.printf("command found: %s%n", line.get());
         }
     }
 
@@ -119,7 +142,7 @@ public class Size implements Runnable {
     }
 
     private String tryExec(String[] cmd) throws IOException, InterruptedException {
-        ProcessBuilder pb = new ProcessBuilder(cmd);
+        ProcessBuilder pb;
         if (shell) {
             if (redirectInput) {
                 //Here's what we try to do, but that is Java 7+ only:
@@ -140,10 +163,12 @@ public class Size implements Runnable {
                 sb.append("2> ").append(device);
                 cmd = new String[] { "sh", "-c", sb.toString() };
             }
-            System.out.println("Running command: " + Arrays.toString(cmd));
+            pb = new ProcessBuilder(cmd);
+            System.out.println("Running command: " + pb.command());
             System.out.flush();
         } else {
-            System.out.println("Running command: " + Arrays.toString(cmd));
+            pb = new ProcessBuilder(cmd);
+            System.out.println("Running command: " + pb.command());
             System.out.flush();
             if (redirectInput) {
                 System.out.println("Redirecting input from " + device);
@@ -154,20 +179,30 @@ public class Size implements Runnable {
                 System.out.flush();
                 pb.redirectError(ProcessBuilder.Redirect.INHERIT);
                 pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-                pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
+//                pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
             }
         }
         Process process = pb.start();
-        ByteArrayOutputStream stdoutBuffer = new ByteArrayOutputStream();
         InputStream stdout = process.getInputStream();
-        process.waitFor();
-        int readByte = stdout.read();
-        while (readByte >= 0) {
-            stdoutBuffer.write(readByte);
-            readByte = stdout.read();
+        if (readLine) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stdout));
+            StringBuilder builder = new StringBuilder();
+            String line;
+            while((line = reader.readLine()) != null) {
+                builder.append(line);
+            }
+            reader.close();
+            return builder.toString();
+        } else {
+            ByteArrayOutputStream stdoutBuffer = new ByteArrayOutputStream();
+            int readByte = stdout.read();
+            while (readByte >= 0) {
+                stdoutBuffer.write(readByte);
+                readByte = stdout.read();
+            }
+            process.destroy();
+            return stdoutBuffer.toString();
         }
-        process.destroy();
-        return stdoutBuffer.toString();
 //        ByteArrayInputStream stdoutBufferInputStream = new ByteArrayInputStream(stdoutBuffer.toByteArray());
 //        BufferedReader reader = new BufferedReader(new InputStreamReader(stdoutBufferInputStream));
 //        StringBuilder builder = new StringBuilder();
@@ -226,7 +261,18 @@ public class Size implements Runnable {
                 }
             }
         });
+        t.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                e.printStackTrace();
+            }
+        });
         t.start();
+        try {
+            t.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         String size = sb.toString();
         if (sb.length() == 0) {
             System.err.println("ascii sequence gave no result");
