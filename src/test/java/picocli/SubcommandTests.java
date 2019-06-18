@@ -754,6 +754,56 @@ public class SubcommandTests {
     }
 
     @Test
+    public void testSetUsageHelpAutoWidth_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        boolean DEFAULT = false;
+        assertEquals(DEFAULT, commandLine.isUsageHelpAutoWidth());
+        commandLine.setUsageHelpAutoWidth(!DEFAULT);
+        assertEquals(!DEFAULT, commandLine.isUsageHelpAutoWidth());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", DEFAULT, sub.isUsageHelpAutoWidth());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", DEFAULT, subsub.isUsageHelpAutoWidth());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetUsageHelpAutoWidth_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        boolean DEFAULT = false;
+        assertEquals(DEFAULT, commandLine.isUsageHelpAutoWidth());
+        commandLine.setUsageHelpAutoWidth(!DEFAULT);
+        assertEquals(!DEFAULT, commandLine.isUsageHelpAutoWidth());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", !DEFAULT, sub.isUsageHelpAutoWidth());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", !DEFAULT, sub.isUsageHelpAutoWidth());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
     public void testSetAdjustLineBreaksForWideCJKCharacters_BeforeSubcommandsAdded() {
         @Command
         class TopLevel {}

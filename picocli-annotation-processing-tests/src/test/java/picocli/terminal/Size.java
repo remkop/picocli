@@ -40,11 +40,17 @@ public class Size implements Runnable {
     @Option(names = {"-l", "--readLine"}, description = "Read input from process line by line")
     boolean readLine;
 
+    @Option(names = {"-m", "--mode"}, description = "Use `cmd.exe mode con` to get terminal size")
+    boolean mode;
+
     @Parameters(index = "0", arity = "0..1", description = "device, default: ${DEFAULT-VALUE}")
     String device = "/dev/tty";
 
     @Override
     public void run() {
+        if (mode) {
+            modeCon();
+        }
         if (tputCols) {
             tput_cols(device);
         }
@@ -92,6 +98,38 @@ public class Size implements Runnable {
         }
     }
 
+    private void modeCon() {
+        final AtomicBoolean done = new AtomicBoolean();
+        AtomicReference<String> line = new AtomicReference<>();
+        final Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String res = exec("cmd.exe", "/c", "mode con");
+                line.set(res);
+                System.out.println(res);
+                done.set(true);
+            }
+        });
+        t.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread t, Throwable e) {
+                e.printStackTrace();
+            }
+        });
+        t.start();
+        long timeout = System.currentTimeMillis() + 2000;
+        do {
+            if (done.get()) { break; }
+            try {Thread.sleep(25);} catch (InterruptedException ignored) {}
+        } while (System.currentTimeMillis() < timeout);
+
+        if (line.get() == null) {
+            System.out.printf("command timed out%n");
+        } else {
+            System.out.printf("command found: %s%n", line.get());
+        }
+    }
+
     private void stty_size(final String device) {
         final AtomicBoolean done = new AtomicBoolean();
         AtomicReference<String> line = new AtomicReference<>();
@@ -114,11 +152,6 @@ public class Size implements Runnable {
             }
         });
         t.start();
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         long timeout = System.currentTimeMillis() + 2000;
         do {
             if (done.get()) { break; }
@@ -192,6 +225,7 @@ public class Size implements Runnable {
                 builder.append(line);
             }
             reader.close();
+            //process.destroy();
             return builder.toString();
         } else {
             ByteArrayOutputStream stdoutBuffer = new ByteArrayOutputStream();
@@ -200,7 +234,7 @@ public class Size implements Runnable {
                 stdoutBuffer.write(readByte);
                 readByte = stdout.read();
             }
-            process.destroy();
+            //process.destroy();
             return stdoutBuffer.toString();
         }
 //        ByteArrayInputStream stdoutBufferInputStream = new ByteArrayInputStream(stdoutBuffer.toByteArray());

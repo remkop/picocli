@@ -18,6 +18,8 @@ This release introduces two new attributes on the `Option` annotation:
 This release introduces a new `synopsisSubcommandLabel` attribute on the `@Command` annotation to allow customization of the subcommands part of the synopsis.
 This is useful for applications that have required subcommands.
 
+Also, this release adds the ability to dynamically detect terminal size.
+
 _Please try this and provide feedback. We can still make changes._
 
 _What do you think of the `@ArgGroup` annotations API? What about the programmatic API? Does it work as expected? Are the input validation error messages correct and clear? Is the documentation clear and complete? Anything you want to change or improve? Any other feedback?_
@@ -80,12 +82,21 @@ An application with a limited number of subcommands may want to show them all in
 class Fs { ... }
 ```
 
+### Dynamically Detect Terminal Size
+
+From this release, commands defined with `@Command(usageHelpAutoWidth = true)` will try to adjust the usage message help layout to the terminal width.
+
+End users may enable this by setting system property `picocli.usage.width` to `AUTO`,and may disable this by setting this system property to a numeric value.
+         
+This feature requires Java 7.
+
 
 ## <a name="4.0.0-beta-2-fixes"></a> Fixed issues
 - [#280] API: `@Option(fallbackValue = "...")` for options with optional parameter: assign this value when the option was specified on the command line without parameter. Thanks to [Paolo Di Tommaso](https://github.com/pditommaso) and [marinier](https://github.com/marinier) for the suggestion and in-depth discussion.
 - [#625] API: `@Command(synopsisSubcommandLabel = "...")` to allow customization of the subcommands part of the synopsis: by default this is `[COMMAND]`. Thanks to [Sebastian Thomschke](https://github.com/sebthom) and [AlcaYezz](https://github.com/AlcaYezz) for the feature request and subsequent discussion.
 - [#718] API: Add `IParameterConsumer` and `@Option(parameterConsumer = Xxx.class)` for passing arguments through to another command, like `find -exec`. Thanks to [Reinhard Pointner](https://github.com/rednoah) for the suggestion. 
 - [#721] API: Add public method Text.getCJKAdjustedLength().
+- [#634] API: Dynamically detect terminal size. Requires Java 7. Thanks to my colleague Takuya Ishibashi for the suggestion.
 - [#717] Negatable options change: avoid unmappable character `±` for synopsis: it renders as scrambled characters in encoding ASCII and in some terminals.
 - [#719] Bugfix: options with variable arity should stop consuming arguments on custom end-of-options delimiter.
 - [#720] Bugfix: `@Unmatched` list should be cleared prior to subsequent invocations.

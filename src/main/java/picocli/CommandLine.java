@@ -3007,6 +3007,32 @@ public class CommandLine {
         return this;
     }
 
+    /** Returns whether picocli should attempt to detect the terminal size and adjust the usage help message width
+     * to take the full terminal width. End users may enable this by setting system property {@code "picocli.usage.width"} to {@code AUTO},
+     * and may disable this by setting this system property to a {@linkplain UsageMessageSpec#width() numeric value}.
+     * This feature requires Java 7 or greater. The default is {@code false}.
+     * @see UsageMessageSpec#autoWidth()
+     * @since 4.0 */
+    public boolean isUsageHelpAutoWidth() { return getCommandSpec().usageMessage().autoWidth(); }
+
+    /** Sets whether picocli should attempt to detect the terminal size and adjust the usage help message width
+     * to take the full terminal width. The default is {@code false}.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param detectTerminalSize whether picocli should attempt to detect the terminal size
+     * @see UsageMessageSpec#autoWidth(boolean)
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 4.0 */
+    public CommandLine setUsageHelpAutoWidth(boolean detectTerminalSize) {
+        getCommandSpec().usageMessage().autoWidth(detectTerminalSize);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setUsageHelpAutoWidth(detectTerminalSize);
+        }
+        return this;
+    }
+
     /** Returns the command name (also called program name) displayed in the usage help synopsis.
      * @return the command name (also called program name) displayed in the usage
      * @see CommandSpec#name()
@@ -4097,9 +4123,18 @@ public class CommandLine {
         String resourceBundle() default "";
 
         /** Set the {@link UsageMessageSpec#width(int) usage help message width}. The default is 80.
+         * @see UsageMessageSpec#width()
          * @since 3.7
          */
         int usageHelpWidth() default 80;
+
+        /** If {@code true}, picocli will attempt to detect the terminal width and adjust the usage help message accordingly.
+         * End users may enable this by setting system property {@code "picocli.usage.width"} to {@code AUTO},
+         * and may disable this by setting this system property to a {@linkplain UsageMessageSpec#width() numeric value}.
+         * This feature requires Java 7 or greater. The default is {@code false}
+         * @see UsageMessageSpec#autoWidth()
+         * @since 4.0 */
+        boolean usageHelpAutoWidth() default false;
 
         /** Exit code for successful termination. {@value picocli.CommandLine.ExitCode#OK} by default.
          * @see #execute(String...)
@@ -5991,6 +6026,9 @@ public class CommandLine {
             public  final static int DEFAULT_USAGE_WIDTH = 80;
             private final static int MINIMUM_USAGE_WIDTH = 55;
 
+            /** Constant Boolean holding the default setting for whether to attempt to adjust the width to the terminal width: <code>{@value}</code>. */
+            static final Boolean DEFAULT_USAGE_AUTO_WIDTH = Boolean.FALSE;
+
             /** Constant String holding the default synopsis heading: <code>{@value}</code>. */
             static final String DEFAULT_SYNOPSIS_HEADING = "Usage: ";
 
@@ -6051,6 +6089,7 @@ public class CommandLine {
             private Boolean sortOptions;
             private Boolean showDefaultValues;
             private Boolean hidden;
+            private Boolean autoWidth;
             private Character requiredOptionMarker;
             private String headerHeading;
             private String synopsisHeading;
@@ -6085,7 +6124,11 @@ public class CommandLine {
                 width = newValue; return this;
             }
 
-            private static int getSysPropertyWidthOrDefault(int defaultWidth) {
+            private static int getSysPropertyWidthOrDefault(int defaultWidth, boolean defaultAutoWidth) {
+                if (getSysPropertyAutoWidthOrDefault(defaultAutoWidth)) {
+                    int result = getTerminalWidth();
+                    return result < 0 ? defaultWidth : result;
+                }
                 String userValue = System.getProperty("picocli.usage.width");
                 if (userValue == null) { return defaultWidth; }
                 try {
@@ -6100,12 +6143,76 @@ public class CommandLine {
                     return defaultWidth;
                 }
             }
-
+            private static boolean getSysPropertyAutoWidthOrDefault(boolean defaultAutoWidth) {
+                String userValue = System.getProperty("picocli.usage.width");
+                boolean sysPropAutoWidth = Arrays.asList("AUTO", "TERM", "TERMINAL").contains(String.valueOf(userValue).toUpperCase(Locale.ENGLISH));
+                return sysPropAutoWidth || defaultAutoWidth;
+            }
+            private static int getTerminalWidth() {
+                final AtomicInteger size = new AtomicInteger(-1);
+                if (!Help.Ansi.isTTY() && !Help.Ansi.isPseudoTTY()) { return size.intValue(); }
+                final String[] cmd = (Help.Ansi.isWindows() && !Help.Ansi.isPseudoTTY())
+                        ? new String[] {"cmd.exe", "/c", "mode con"}
+                        : (Help.Ansi.isMac())
+                            ? new String[] {"stty", "-a", "-f", "/dev/tty"}
+                            : new String[] {"stty", "-a", "-F", "/dev/tty"};
+                Thread t = new Thread(new Runnable() {
+                    public void run() {
+                        Process proc = null;
+                        BufferedReader reader = null;
+                        try {
+                            ProcessBuilder pb = new ProcessBuilder(cmd);
+                            //proc = Runtime.getRuntime().exec(new String[] { "sh", "-c", "tput cols 2> /dev/tty" });
+                            Class<?> redirectClass = Class.forName("java.lang.ProcessBuilder.Redirect");
+                            Object INHERIT = redirectClass.getField("INHERIT").get(null);
+                            Method redirectError = ProcessBuilder.class.getDeclaredMethod("redirectError", redirectClass);
+                            redirectError.invoke(INHERIT);
+                            proc = pb.start();
+                            reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+                            String line = null;
+                            String txt = "";
+                            while ((line = reader.readLine()) != null) {
+                                txt += " " + line;
+                            }
+                            Pattern pattern = Pattern.compile(".*olumns(:)?\\s+(\\d+)\\D.*", Pattern.DOTALL);
+                            Matcher matcher = pattern.matcher(txt);
+                            if (matcher.matches()) {
+                                size.set(Integer.parseInt(matcher.group(2)));
+                            }
+                        } catch (Exception ignored) { // nothing to do...
+                        } finally {
+                            if (proc != null) { proc.destroy(); }
+                            if (reader != null) { try { reader.close(); } catch (Exception ignored) {} }
+                        }
+                    }
+                });
+                t.start();
+                long now = System.currentTimeMillis();
+                do {
+                    if (size.intValue() >= 0) { break; }
+                    try { Thread.sleep(25); } catch (InterruptedException ignored) {}
+                } while (System.currentTimeMillis() < now + 2000);
+                return size.intValue();
+            }
             /** Returns the maximum usage help message width. Derived from system property {@code "picocli.usage.width"}
              * if set, otherwise returns the value set via the {@link #width(int)} method, or if not set, the {@linkplain #DEFAULT_USAGE_WIDTH default width}.
              * @return the maximum usage help message width. Never returns less than 55. */
-            public int width() { return getSysPropertyWidthOrDefault(width); }
+            public int width() { return getSysPropertyWidthOrDefault(width, (autoWidth == null) ? DEFAULT_USAGE_AUTO_WIDTH : autoWidth); }
 
+            /** Returns whether picocli should attempt to detect the terminal size and adjust the usage help message width
+             * to take the full terminal width. End users may enable this by setting system property {@code "picocli.usage.width"} to {@code AUTO},
+             * and may disable this by setting this system property to a {@linkplain #width() numeric value}.
+             * This feature requires Java 7 or greater. The default is {@code false}.
+             * @see Command#usageHelpAutoWidth()
+             * @since 4.0 */
+            public boolean autoWidth() { return getSysPropertyAutoWidthOrDefault((autoWidth == null) ? DEFAULT_USAGE_AUTO_WIDTH : autoWidth); }
+
+            /** Sets whether picocli should attempt to detect the terminal size and adjust the usage help message width
+             * to take the full terminal width. The default is {@code false}.
+             * @param detectTerminalSize whether picocli should attempt to detect the terminal size
+             * @see Command#usageHelpAutoWidth()
+             * @since 4.0 */
+            public UsageMessageSpec autoWidth(boolean detectTerminalSize) { autoWidth = detectTerminalSize; return this; }
             /**
              * Given a character, is this character considered to be a CJK character?
              * Shamelessly stolen from
@@ -6493,6 +6600,7 @@ public class CommandLine {
                 if (isNonDefault(cmd.footerHeading(), DEFAULT_SINGLE_VALUE))                  {footerHeading = cmd.footerHeading();}
                 if (isNonDefault(cmd.parameterListHeading(), DEFAULT_SINGLE_VALUE))           {parameterListHeading = cmd.parameterListHeading();}
                 if (isNonDefault(cmd.optionListHeading(), DEFAULT_SINGLE_VALUE))              {optionListHeading = cmd.optionListHeading();}
+                if (isNonDefault(cmd.usageHelpAutoWidth(), DEFAULT_USAGE_AUTO_WIDTH))         {autoWidth = cmd.usageHelpAutoWidth();}
                 if (isNonDefault(cmd.usageHelpWidth(), DEFAULT_USAGE_WIDTH))                  {width(cmd.usageHelpWidth());} // validate
             }
             void initFromMixin(UsageMessageSpec mixin, CommandSpec commandSpec) {
@@ -6517,6 +6625,8 @@ public class CommandLine {
                 if (initializable(optionListHeading, mixin.optionListHeading(), DEFAULT_SINGLE_VALUE))                 {optionListHeading = mixin.optionListHeading();}
                 if (Messages.empty(messages) && Messages.resourceBundleBaseName(messages) == null) { messages(Messages.copy(commandSpec, mixin.messages())); }
                 if (initializable(adjustLineBreaksForWideCJKCharacters, mixin.adjustLineBreaksForWideCJKCharacters(), DEFAULT_ADJUST_CJK)) {adjustLineBreaksForWideCJKCharacters = mixin.adjustLineBreaksForWideCJKCharacters();}
+                if (initializable(width, mixin.width(), DEFAULT_USAGE_WIDTH))                                          {width = mixin.width();}
+                if (initializable(autoWidth, mixin.autoWidth(), DEFAULT_USAGE_AUTO_WIDTH))                             {autoWidth = mixin.autoWidth();}
             }
             void initFrom(UsageMessageSpec settings, CommandSpec commandSpec) {
                 description = settings.description;
@@ -6537,6 +6647,7 @@ public class CommandLine {
                 commandListHeading = settings.commandListHeading;
                 footerHeading = settings.footerHeading;
                 width = settings.width;
+                autoWidth = settings.autoWidth;
                 messages = Messages.copy(commandSpec, settings.messages());
                 adjustLineBreaksForWideCJKCharacters = settings.adjustLineBreaksForWideCJKCharacters;
             }
@@ -13864,7 +13975,8 @@ public class CommandLine {
                 if (tty == null) { tty = calcTTY(); }
                 return tty;
             }
-            static final boolean isWindows()    { return System.getProperty("os.name").startsWith("Windows"); }
+            static final boolean isWindows()    { return System.getProperty("os.name").toLowerCase().contains("win"); }
+            static final boolean isMac()        { return System.getProperty("os.name").toLowerCase().contains("mac"); }
             static final boolean isXterm()      { return System.getenv("TERM") != null && System.getenv("TERM").startsWith("xterm"); }
             // null on Windows unless on Cygwin or MSYS
             static final boolean hasOsType()    { return System.getenv("OSTYPE") != null; }

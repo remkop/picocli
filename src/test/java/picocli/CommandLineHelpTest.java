@@ -65,6 +65,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
@@ -81,6 +83,8 @@ import static picocli.ModelTestUtil.options;
 public class CommandLineHelpTest {
     private static final String LINESEP = System.getProperty("line.separator");
 
+    @Rule
+    public final ProvideSystemProperty autoWidthOff = new ProvideSystemProperty("picocli.usage.width", null);
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
     @Rule
@@ -3577,7 +3581,7 @@ public class CommandLineHelpTest {
 
     @Command(description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
     static class WideDescriptionApp {
-        @Option(names = "-s", description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
+        @Option(names = "-s", description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The a quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
         String shortOption;
 
         @Option(names = "--very-very-very-looooooooooooooooong-option-name", description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
@@ -3587,7 +3591,7 @@ public class CommandLineHelpTest {
                 "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped%n" +
                 "over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The%n" +
                 "quick brown fox jumped over the lazy dog.%n" +
-                "  -s=<shortOption>    The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The%n" +
+                "  -s=<shortOption>    The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The a%n" +
                 "                        quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.%n" +
                 "      --very-very-very-looooooooooooooooong-option-name=<lengthyOption>%n" +
                 "                      The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The%n" +
@@ -3612,6 +3616,61 @@ public class CommandLineHelpTest {
         cmd.setUsageHelpWidth(120);
         String actual = usageString(cmd, Help.Ansi.OFF);
         assertEquals(WideDescriptionApp.expected, actual);
+    }
+
+    @Test
+    public void testUsageHelpAutoWidthViaSystemProperty() {
+        CommandLine cmd = new CommandLine(new WideDescriptionApp());
+        assertFalse(cmd.isUsageHelpAutoWidth());
+        assertFalse(cmd.getCommandSpec().usageMessage().autoWidth());
+
+        System.setProperty("picocli.usage.width", "AUTO");
+        assertTrue(cmd.isUsageHelpAutoWidth());
+        assertTrue(cmd.getCommandSpec().usageMessage().autoWidth());
+
+        System.setProperty("picocli.usage.width", "TERM");
+        assertTrue(cmd.isUsageHelpAutoWidth());
+        assertTrue(cmd.getCommandSpec().usageMessage().autoWidth());
+
+        System.setProperty("picocli.usage.width", "TERMINAL");
+        assertTrue(cmd.isUsageHelpAutoWidth());
+        assertTrue(cmd.getCommandSpec().usageMessage().autoWidth());
+
+        System.setProperty("picocli.usage.width", "X");
+        assertFalse(cmd.isUsageHelpAutoWidth());
+        assertFalse(cmd.getCommandSpec().usageMessage().autoWidth());
+    }
+
+    @Test
+    public void testGetTerminalWidthLinux() {
+        String sttyResult = "speed 38400 baud; rows 50; columns 123; line = 0;\n" +
+                "intr = ^C; quit = ^\\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>; eol2 = <undef>; swtch = ^Z; start = ^Q; stop = ^S;\n" +
+                "susp = ^Z; rprnt = ^R; werase = ^W; lnext = ^V; discard = ^O; min = 1; time = 0;\n" +
+                "-parenb -parodd cs8 -hupcl -cstopb cread -clocal -crtscts\n" +
+                "-ignbrk brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff -iuclc ixany imaxbel iutf8\n" +
+                "opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0\n" +
+                "isig icanon iexten echo echoe echok -echonl -noflsh -tostop echoctl echoke -flusho\n";
+        Pattern pattern = Pattern.compile(".*olumns(:)?\\s+(\\d+)\\D.*", Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(sttyResult);
+        assertTrue(matcher.matches());
+        assertEquals(123, Integer.parseInt(matcher.group(2)));
+    }
+
+    @Test
+    public void testGetTerminalWidthWindows() {
+        String sttyResult = "\n" +
+                "Status for device CON:\n" +
+                "----------------------\n" +
+                "    Lines:          9001\n" +
+                "    Columns:        113\n" +
+                "    Keyboard rate:  31\n" +
+                "    Keyboard delay: 1\n" +
+                "    Code page:      932\n" +
+                "\n";
+        Pattern pattern = Pattern.compile(".*olumns(:)?\\s+(\\d+)\\D.*", Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(sttyResult);
+        assertTrue(matcher.matches());
+        assertEquals(113, Integer.parseInt(matcher.group(2)));
     }
 
     @Test
