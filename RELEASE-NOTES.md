@@ -98,6 +98,7 @@ This feature requires Java 7.
 - [#721] API: Add public method Text.getCJKAdjustedLength().
 - [#634] API: Dynamically detect terminal size. Requires Java 7. Thanks to my colleague Takuya Ishibashi for the suggestion.
 - [#717] Negatable options change: avoid unmappable character `±` for synopsis: it renders as scrambled characters in encoding ASCII and in some terminals.
+- [#734][#735] Make the picocli jar OSGi friendly. Thanks to [Radu Cotescu](https://github.com/raducotescu) for the pull request.
 - [#719] Bugfix: options with variable arity should stop consuming arguments on custom end-of-options delimiter.
 - [#720] Bugfix: `@Unmatched` list should be cleared prior to subsequent invocations.
 - [#723] Bugfix: variables in `defaultValue` were not expanded in usage help option description line for `showDefaultValues = true`. Thanks to [Mikaël Barbero](https://github.com/mbarbero) for raising this.
