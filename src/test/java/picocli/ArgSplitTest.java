@@ -362,7 +362,7 @@ public class ArgSplitTest {
             Map<String, String> parameters;
         }
         App app = new App();
-        new CommandLine(app).setTrimQuotes(true).parse(args);
+        new CommandLine(app).setTrimQuotes(true).parseArgs(args);
         assertEquals(2, app.parameters.size());
         assertEquals("-Dspring.profiles.active=foo,bar -Dspring.mail.host=smtp.mailtrap.io", app.parameters.get("AppOptions"));
         assertEquals("", app.parameters.get("OtherOptions"));

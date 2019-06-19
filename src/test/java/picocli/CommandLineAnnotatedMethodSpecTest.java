@@ -76,7 +76,7 @@ public class CommandLineAnnotatedMethodSpecTest {
     @Test
     public void testPrimitiveWithoutDefaultValues() {
         CommandLine cmd = new CommandLine(Primitives.class);
-        cmd.parse();
+        cmd.parseArgs();
         Primitives primitives = cmd.getCommand();
         assertFalse(primitives.aBoolean());
         assertEquals(0, primitives.aByte());
@@ -90,7 +90,7 @@ public class CommandLineAnnotatedMethodSpecTest {
     @Test
     public void testPrimitivesWithDefaultValues() {
         CommandLine cmd = new CommandLine(PrimitivesWithDefault.class);
-        cmd.parse();
+        cmd.parseArgs();
         PrimitivesWithDefault primitives = cmd.getCommand();
         assertTrue(primitives.aBoolean());
         assertEquals(11, primitives.aByte());
@@ -104,7 +104,7 @@ public class CommandLineAnnotatedMethodSpecTest {
     @Test
     public void testPrimitives() {
         CommandLine cmd = new CommandLine(Primitives.class);
-        cmd.parse("-b -y1 -s2 -i3 -l4 -f5 -d6".split(" "));
+        cmd.parseArgs("-b -y1 -s2 -i3 -l4 -f5 -d6".split(" "));
         Primitives primitives = cmd.getCommand();
         assertTrue(primitives.aBoolean());
         assertEquals(1, primitives.aByte());
@@ -194,7 +194,7 @@ public class CommandLineAnnotatedMethodSpecTest {
     @Test
     public void testObjectsWithoutDefaultValues() {
         CommandLine cmd = new CommandLine(Objects.class);
-        cmd.parse();
+        cmd.parseArgs();
         Objects objects = cmd.getCommand();
         assertNull(objects.aBoolean());
         assertNull(objects.aByte());
@@ -213,7 +213,7 @@ public class CommandLineAnnotatedMethodSpecTest {
     @Test
     public void testObjectsWithDefaultValues() {
         CommandLine cmd = new CommandLine(ObjectsWithDefault.class);
-        cmd.parse();
+        cmd.parseArgs();
         ObjectsWithDefault objects = cmd.getCommand();
         assertTrue(objects.aBoolean());
         assertEquals(Byte.valueOf((byte) 123), objects.aByte());
@@ -236,7 +236,7 @@ public class CommandLineAnnotatedMethodSpecTest {
     @Test
     public void testObjects() {
         CommandLine cmd = new CommandLine(Objects.class);
-        cmd.parse("-b -y1 -s2 -i3 -l4 -f5 -d6 -bigint=7 -string abc -list a -list b -map 1=2.0 -set 33 -set 22".split(" "));
+        cmd.parseArgs("-b -y1 -s2 -i3 -l4 -f5 -d6 -bigint=7 -string abc -list a -list b -map 1=2.0 -set 33 -set 22".split(" "));
         Objects objects = cmd.getCommand();
         assertTrue(objects.aBoolean());
         assertEquals(Byte.valueOf((byte) 1), objects.aByte());
@@ -284,7 +284,7 @@ public class CommandLineAnnotatedMethodSpecTest {
     public void testAnnotatedMutableFieldsOnInterfaceAreValid() {
         try {
             CommandLine cmd = new CommandLine(InvalidAnnotatedMutableFields.class);
-            cmd.parse("-s a -s b -s c".split(" "));
+            cmd.parseArgs("-s a -s b -s c".split(" "));
             fail("Expected exception");
         } catch (InitializationException ok) {
             assertEquals("Invalid picocli annotation on interface field", ok.getMessage());

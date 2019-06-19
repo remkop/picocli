@@ -1132,10 +1132,13 @@ public class CommandLine {
      * </p><p>
      * This is equivalent to
      * </p><pre>
-     * CommandLine cli = new CommandLine(command);
-     * cli.parse(args);
+     * new CommandLine(command).parseArgs(args);
      * return command;
      * </pre>
+     * <p>All this method does is parse the arguments and populate the annotated fields and methods.
+     * The caller is responsible for catching any exceptions, handling requests for usage help
+     * or version information, and invoking the business logic.
+     * Applications may be interested in using the {@link #execute(String...)} method instead.</p>
      *
      * @param command the object to initialize. This object contains fields annotated with
      *          {@code @Option} or {@code @Parameters}.
@@ -1144,6 +1147,7 @@ public class CommandLine {
      * @return the specified annotated object
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ParameterException if the specified command line arguments are invalid
+     * @see #execute(String...)
      * @since 0.9.7
      */
     public static <T> T populateCommand(T command, String... args) {
@@ -1164,6 +1168,10 @@ public class CommandLine {
      * cli.parse(args);
      * return cli.getCommand();
      * </pre>
+     * <p>All this method does is parse the arguments and return an instance whose annotated methods return the specified values.
+     * The caller is responsible for catching any exceptions, handling requests for usage help
+     * or version information, and invoking the business logic.
+     * Applications may be interested in using the {@link #execute(String...)} method instead.</p>
      *
      * @param spec the interface that defines the command specification. This object contains getter methods annotated with
      *          {@code @Option} or {@code @Parameters}.
@@ -1172,6 +1180,7 @@ public class CommandLine {
      * @return an instance of the specified annotated interface
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @throws ParameterException if the specified command line arguments are invalid
+     * @see #execute(String...)
      * @since 3.1
      */
     public static <T> T populateSpec(Class<T> spec, String... args) {
@@ -1188,23 +1197,33 @@ public class CommandLine {
      * and these subcommands were initialized by matching command line arguments. If parsing fails, a
      * {@link ParameterException} is thrown.
      * </p>
+     * <p>All this method does is parse the arguments and populate the annotated fields and methods.
+     * The caller is responsible for catching any exceptions, handling requests for usage help
+     * or version information, and invoking the business logic.
+     * Applications may be interested in using the {@link #execute(String...)} method instead.</p>
      *
      * @param args the command line arguments to parse
      * @return a list with the top-level command and any subcommands initialized by this method
      * @throws ParameterException if the specified command line arguments are invalid; use
      *      {@link ParameterException#getCommandLine()} to get the command or subcommand whose user input was invalid
+     * @deprecated use {@link #parseArgs(String...)} instead
      */
-    public List<CommandLine> parse(String... args) {
+    @Deprecated public List<CommandLine> parse(String... args) {
         return interpreter.parse(args);
     }
     /** Parses the specified command line arguments and returns a list of {@code ParseResult} with the options, positional
      * parameters, and subcommands (if any) that were recognized and initialized during the parsing process.
      * <p>If parsing fails, a {@link ParameterException} is thrown.</p>
+     * <p>All this method does is parse the arguments and populate the annotated fields and methods.
+     * The caller is responsible for catching any exceptions, handling requests for usage help
+     * or version information, and invoking the business logic.
+     * Applications may be interested in using the {@link #execute(String...)} method instead.</p>
      *
      * @param args the command line arguments to parse
      * @return a list with the top-level command and any subcommands initialized by this method
      * @throws ParameterException if the specified command line arguments are invalid; use
      *      {@link ParameterException#getCommandLine()} to get the command or subcommand whose user input was invalid
+     * @see #execute(String...)
      */
     public ParseResult parseArgs(String... args) {
         interpreter.parse(args);
@@ -4343,9 +4362,9 @@ public class CommandLine {
     /**
      * Options or positional parameters can be assigned a {@code IParameterConsumer} that implements
      * custom logic to process the parameters for this option or this position.
-     * When an option or positional parameters with a custom {@code IParameterConsumer} is matched on the
+     * When an option or positional parameter with a custom {@code IParameterConsumer} is matched on the
      * command line, picocli's internal parser is temporarily suspended, and this object becomes
-     * responsible for consuming and processing as many processing command line arguments as needed.
+     * responsible for consuming and processing as many command line arguments as needed.
      * <p>This may be useful when passing through parameters to another command.</p>
      * <p>Example usage:</p>
      * <pre>

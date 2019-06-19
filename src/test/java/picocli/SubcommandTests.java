@@ -271,6 +271,7 @@ public class SubcommandTests {
         assertArrayEquals(new String[]{"t"}, subSpec.aliases());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testParseNestedSubCommands() {
         // valid
@@ -298,7 +299,7 @@ public class SubcommandTests {
 
         // sub12 is not nested under sub11 so is not recognized
         try {
-            createNestedCommand().parse("cmd1", "sub11", "sub12");
+            createNestedCommand().parseArgs("cmd1", "sub11", "sub12");
             fail("Expected exception for sub12");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument: sub12", ex.getMessage());
@@ -319,43 +320,44 @@ public class SubcommandTests {
 
         // invalid
         try {
-            createNestedCommand().parse("-a", "-b", "cmd1");
+            createNestedCommand().parseArgs("-a", "-b", "cmd1");
             fail("unmatched option should prevents remainder to be parsed as command");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unknown option: -b", ex.getMessage());
         }
         try {
-            createNestedCommand().parse("cmd1", "sub21");
+            createNestedCommand().parseArgs("cmd1", "sub21");
             fail("sub-commands for different parent command");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument: sub21", ex.getMessage());
         }
         try {
-            createNestedCommand().parse("cmd1", "sub22sub1");
+            createNestedCommand().parseArgs("cmd1", "sub22sub1");
             fail("sub-sub-commands for different parent command");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument: sub22sub1", ex.getMessage());
         }
         try {
-            createNestedCommand().parse("sub11");
+            createNestedCommand().parseArgs("sub11");
             fail("sub-commands without preceding parent command");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument: sub11", ex.getMessage());
         }
         try {
-            createNestedCommand().parse("sub21");
+            createNestedCommand().parseArgs("sub21");
             fail("sub-commands without preceding parent command");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument: sub21", ex.getMessage());
         }
         try {
-            createNestedCommand().parse("sub22sub1");
+            createNestedCommand().parseArgs("sub22sub1");
             fail("sub-sub-commands without preceding parent/grandparent command");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument: sub22sub1", ex.getMessage());
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testParseNestedSubCommandsWithAliases() {
         // valid
@@ -403,6 +405,7 @@ public class SubcommandTests {
         assertTrue(((GreatGrandChild2Command2_1) sub22sub1WithOptions.get(3).getCommand()).h);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testParseNestedSubCommandsAllowingUnmatchedArguments() {
         setTraceLevel("OFF");
@@ -578,7 +581,7 @@ public class SubcommandTests {
     @Test(expected = MissingTypeConverterException.class)
     public void testCustomTypeConverterNotRegisteredAtAll() {
         CommandLine commandLine = createNestedCommand();
-        commandLine.parse("cmd1", "sub12", "-e", "TXT");
+        commandLine.parseArgs("cmd1", "sub12", "-e", "TXT");
     }
 
     @Test(expected = MissingTypeConverterException.class)
@@ -589,9 +592,10 @@ public class SubcommandTests {
         commandLine.registerConverter(CustomType.class, new CustomType(null));
 
         commandLine.addSubcommand("main", createNestedCommand());
-        commandLine.parse("main", "cmd1", "sub12", "-e", "TXT");
+        commandLine.parseArgs("main", "cmd1", "sub12", "-e", "TXT");
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testCustomTypeConverterRegisteredAfterSubcommandsAdded() {
         @Command

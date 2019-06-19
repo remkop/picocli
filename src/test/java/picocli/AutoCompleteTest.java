@@ -88,6 +88,8 @@ public class AutoCompleteTest {
     public static class TopLevel {
         @Option(names = {"-V", "--version"}, help = true) boolean versionRequested;
         @Option(names = {"-h", "--help"}, help = true) boolean helpRequested;
+
+        @SuppressWarnings("deprecation")
         public static void main(String[] args) {
             CommandLine hierarchy = new CommandLine(new TopLevel())
                     .addSubcommand("sub1", new Sub1())

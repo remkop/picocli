@@ -126,7 +126,7 @@ public class CommandLineAnnotatedMethodImplTest {
     @Test
     public void testObjectsWithDefaultValues() {
         CommandLine cmd = new CommandLine(ObjectsWithDefaults.class);
-        cmd.parse();
+        cmd.parseArgs();
         ObjectsWithDefaults objects = cmd.getCommand();
         assertTrue(objects.aBoolean);
         assertEquals(Byte.valueOf((byte) 123), objects.aByte);
@@ -228,7 +228,7 @@ public class CommandLineAnnotatedMethodImplTest {
 
         CommandLine parser = new CommandLine(new App());
         try {
-            parser.parse("--jvm", "abc");
+            parser.parseArgs("--jvm", "abc");
             fail("Expected exception");
         } catch (ParameterException ex) {
             assertNotNull(ex.getCause());
@@ -247,7 +247,7 @@ public class CommandLineAnnotatedMethodImplTest {
 
         CommandLine parser = new CommandLine(new App());
         try {
-            parser.parse("--param", "abc");
+            parser.parseArgs("--param", "abc");
             fail("Expected exception");
         } catch (ParameterException ex) {
             assertNull(ex.getCause());
@@ -264,7 +264,7 @@ public class CommandLineAnnotatedMethodImplTest {
 
         CommandLine parser = new CommandLine(new App());
         try {
-            parser.parse("--pico", "abc");
+            parser.parseArgs("--pico", "abc");
             fail("Expected exception");
         } catch (ParameterException ex) {
             assertNotNull(ex.getCause());

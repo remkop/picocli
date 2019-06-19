@@ -32,13 +32,13 @@ public class InteractiveArgTest {
 
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("-x");
+            cmd.parseArgs("-x");
 
             assertEquals("Enter value for -x (Pwd): ", baos.toString());
             assertEquals(123, app.x);
             assertEquals(0, app.z);
 
-            cmd.parse("-z", "678");
+            cmd.parseArgs("-z", "678");
 
             assertEquals(0, app.x);
             assertEquals(678, app.z);
@@ -66,13 +66,13 @@ public class InteractiveArgTest {
             System.setIn(inputStream("123"));
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("-x", "-x");
+            cmd.parseArgs("-x", "-x");
 
             assertEquals("Enter value for -x (Pwd): Enter value for -x (Pwd): ", baos.toString());
             assertEquals(Arrays.asList(123, 123), app.x);
             assertEquals(0, app.z);
 
-            cmd.parse("-z", "678");
+            cmd.parseArgs("-z", "678");
 
             assertNull(app.x);
             assertEquals(678, app.z);
@@ -112,7 +112,7 @@ public class InteractiveArgTest {
             System.setIn(inputStream("123"));
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("-x", "-x");
+            cmd.parseArgs("-x", "-x");
 
             assertEquals("Enter value for -x (Pwd): Enter value for -x (Pwd): ", baos.toString());
             assertEquals(2, app.x.size());
@@ -120,7 +120,7 @@ public class InteractiveArgTest {
             assertArrayEquals("123".toCharArray(), app.x.get(1));
             assertEquals(0, app.z);
 
-            cmd.parse("-z", "678");
+            cmd.parseArgs("-z", "678");
 
             assertNull(app.x);
             assertEquals(678, app.z);
@@ -148,7 +148,7 @@ public class InteractiveArgTest {
             System.setIn(inputStream("123"));
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("-x");
+            cmd.parseArgs("-x");
 
             assertEquals("Enter value for -x (Pwd): ", baos.toString());
             assertArrayEquals("123".toCharArray(), app.x);
@@ -176,7 +176,7 @@ public class InteractiveArgTest {
             System.setIn(inputStream("123"));
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("-x", "456", "abc");
+            cmd.parseArgs("-x", "456", "abc");
 
             assertArrayEquals("456".toCharArray(), app.x);
             assertArrayEquals(new String[]{"abc"}, app.remainder);
@@ -203,7 +203,7 @@ public class InteractiveArgTest {
             System.setIn(inputStream("123"));
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("-x", "456", "-x", "789", "abc");
+            cmd.parseArgs("-x", "456", "-x", "789", "abc");
 
             assertEquals(2, app.x.size());
             assertArrayEquals("456".toCharArray(), app.x.get(0));
@@ -235,7 +235,7 @@ public class InteractiveArgTest {
             System.setIn(inputStream("123"));
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("-x", "-z", "456", "abc");
+            cmd.parseArgs("-x", "-z", "456", "abc");
 
             assertArrayEquals("123".toCharArray(), app.x);
             assertEquals(456, app.z);
@@ -266,7 +266,7 @@ public class InteractiveArgTest {
             System.setIn(inputStream("123"));
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("-x", "-z", "456", "abc");
+            cmd.parseArgs("-x", "-z", "456", "abc");
 
             assertEquals(1, app.x.size());
             assertArrayEquals("123".toCharArray(), app.x.get(0));
@@ -298,7 +298,7 @@ public class InteractiveArgTest {
             System.setIn(inputStream("123"));
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("-x", "-y", "456", "abc");
+            cmd.parseArgs("-x", "-y", "456", "abc");
 
             assertArrayEquals("-y".toCharArray(), app.x);
             assertEquals(0, app.z);
@@ -329,7 +329,7 @@ public class InteractiveArgTest {
             System.setIn(inputStream("123"));
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("-x", "-y", "-x", "-w", "456", "abc");
+            cmd.parseArgs("-x", "-y", "-x", "-w", "456", "abc");
 
             assertEquals(2, app.x.size());
             assertArrayEquals("-y".toCharArray(), app.x.get(0));
@@ -358,7 +358,7 @@ public class InteractiveArgTest {
 
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("-x", "-z", "987");
+            cmd.parseArgs("-x", "-z", "987");
 
             String expectedPrompt = format("Enter value for -x (Pwd%nline2): ");
             assertEquals(expectedPrompt, baos.toString());
@@ -386,7 +386,7 @@ public class InteractiveArgTest {
 
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("987");
+            cmd.parseArgs("987");
 
             String expectedPrompt = format("Enter value for position 0 (Pwd%nline2): ");
             assertEquals(expectedPrompt, baos.toString());
@@ -415,7 +415,7 @@ public class InteractiveArgTest {
 
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("333", "987");
+            cmd.parseArgs("333", "987");
 
             String expectedPrompt = format("Enter value for position 1 (Pwd%nline2): ");
             assertEquals(expectedPrompt, baos.toString());
@@ -502,7 +502,7 @@ public class InteractiveArgTest {
             System.setIn(inputStream("123"));
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("999");
+            cmd.parseArgs("999");
 
             assertEquals("Enter value for position 0 (Pwd): Enter value for position 1 (Pwd): ", baos.toString());
             assertEquals(2, app.x.size());
@@ -531,7 +531,7 @@ public class InteractiveArgTest {
             System.setIn(inputStream("123"));
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("9");
+            cmd.parseArgs("9");
 
             assertEquals("Enter value for position 0 (Pwd): ", baos.toString());
             assertArrayEquals("123".toCharArray(), app.x);
@@ -559,7 +559,7 @@ public class InteractiveArgTest {
             System.setIn(inputStream("123"));
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("456", "abc");
+            cmd.parseArgs("456", "abc");
 
             assertArrayEquals("456".toCharArray(), app.x);
             assertArrayEquals(new String[]{"abc"}, app.remainder);
@@ -586,7 +586,7 @@ public class InteractiveArgTest {
             System.setIn(inputStream("123"));
             App app = new App();
             CommandLine cmd = new CommandLine(app);
-            cmd.parse("456", "789", "abc");
+            cmd.parseArgs("456", "789", "abc");
 
             assertEquals(2, app.x.size());
             assertArrayEquals("456".toCharArray(), app.x.get(0));
@@ -619,7 +619,7 @@ public class InteractiveArgTest {
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             try {
-                cmd.parse("-y", "456", "abc");
+                cmd.parseArgs("-y", "456", "abc");
                 fail("Expect exception");
             } catch (UnmatchedArgumentException ex) {
                 assertEquals("Unknown option: -y", ex.getMessage());
@@ -651,7 +651,7 @@ public class InteractiveArgTest {
             App app = new App();
             CommandLine cmd = new CommandLine(app);
             try {
-                cmd.parse("-y", "-w", "456", "abc");
+                cmd.parseArgs("-y", "-w", "456", "abc");
                 fail("Expect exception");
             } catch (UnmatchedArgumentException ex) {
                 assertEquals("Unknown options: -y, -w", ex.getMessage());

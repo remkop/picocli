@@ -3079,6 +3079,7 @@ public class CommandLineHelpTest {
     }
     @Command(name = "sub", description = "This is a subcommand") static class Sub {}
 
+    @SuppressWarnings("deprecation")
     @Test
     public void test244SubcommandsNotParsed() {
         List<CommandLine> list = new CommandLine(new Top()).parse("-h", "sub");

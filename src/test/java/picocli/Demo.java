@@ -422,6 +422,7 @@ public class Demo implements Runnable {
     @Command(name = "git-tag", header = "Create, list, delete or verify a tag object signed with GPG.") static class GitTag{}
 
     /** @see CommandLineTest#testParseSubCommands() The JUnit test implementation of this test. */
+    @SuppressWarnings("deprecation")
     public static void testParseSubCommands() {
         CommandLine commandLine = mainCommand();
 

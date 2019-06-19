@@ -59,7 +59,7 @@ public class CommandLineModelTest {
         CommandSpec spec = CommandSpec.create();
         CommandLine commandLine = new CommandLine(spec);
         commandLine.setUnmatchedArgumentsAllowed(true);
-        commandLine.parse("-p", "123", "abc");
+        commandLine.parseArgs("-p", "123", "abc");
         assertEquals(Arrays.asList("-p", "123", "abc"), commandLine.getUnmatchedArguments());
     }
     
@@ -279,10 +279,10 @@ public class CommandLineModelTest {
         parent.addSubcommand("help", helpCommand);
 
         CommandLine commandLine = new CommandLine(parent);
-        commandLine.parse("help"); // no missing param exception
+        commandLine.parseArgs("help"); // no missing param exception
 
         try {
-            commandLine.parse();
+            commandLine.parseArgs();
         } catch (MissingParameterException ex) {
             assertEquals("Missing required option '-x=PARAM'", ex.getMessage());
             assertEquals(1, ex.getMissing().size());
@@ -297,7 +297,7 @@ public class CommandLineModelTest {
         spec.addOption(OptionSpec.builder("-V", "--version").versionHelp(true).description("show help and exit").build());
         spec.addOption(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("-c", "33");
+        commandLine.parseArgs("-c", "33");
         assertEquals(Integer.valueOf(33), spec.optionsMap().get("-c").getValue());
     } // TODO parse method should return an object offering only the options/positionals that were matched
 
@@ -310,7 +310,7 @@ public class CommandLineModelTest {
         spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
         try {
-            commandLine.parse("-c", "1", "2", "3");
+            commandLine.parseArgs("-c", "1", "2", "3");
             fail("Expected exception");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched arguments: 2, 3", ex.getMessage());
@@ -326,7 +326,7 @@ public class CommandLineModelTest {
         spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
         try {
-            commandLine.parse("1", "2", "3");
+            commandLine.parseArgs("1", "2", "3");
             fail("Expected exception");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched arguments: 2, 3", ex.getMessage());
@@ -341,7 +341,7 @@ public class CommandLineModelTest {
 
         spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("-c", "1", "2", "3");
+        commandLine.parseArgs("-c", "1", "2", "3");
         assertArrayEquals(new int[] {1, 2, 3}, (int[]) spec.optionsMap().get("-c").getValue());
     }
 
@@ -353,7 +353,7 @@ public class CommandLineModelTest {
 
         spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("1", "2", "3");
+        commandLine.parseArgs("1", "2", "3");
         assertArrayEquals(new int[] {1, 2, 3}, (int[]) spec.positionalParameters().get(0).getValue());
     }
 
@@ -365,7 +365,7 @@ public class CommandLineModelTest {
 
         spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("-c", "1", "2", "3");
+        commandLine.parseArgs("-c", "1", "2", "3");
         assertEquals(Arrays.asList(1, 2, 3), spec.optionsMap().get("-c").getValue());
     }
 
@@ -377,7 +377,7 @@ public class CommandLineModelTest {
 
         spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("1", "2", "3");
+        commandLine.parseArgs("1", "2", "3");
         assertEquals(Arrays.asList(1, 2, 3), spec.positionalParameters().get(0).getValue());
     }
 
@@ -389,7 +389,7 @@ public class CommandLineModelTest {
 
         spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("-c", "1", "2", "3");
+        commandLine.parseArgs("-c", "1", "2", "3");
         assertEquals(Arrays.asList("1", "2", "3"), spec.optionsMap().get("-c").getValue());
     }
 
@@ -401,7 +401,7 @@ public class CommandLineModelTest {
 
         spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("1", "2", "3");
+        commandLine.parseArgs("1", "2", "3");
         assertEquals(Arrays.asList("1", "2", "3"), spec.positionalParameters().get(0).getValue());
     }
 
@@ -413,7 +413,7 @@ public class CommandLineModelTest {
 
         spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("-c", "1=1.0", "2=2.0", "3=3.0");
+        commandLine.parseArgs("-c", "1=1.0", "2=2.0", "3=3.0");
         Map<Integer, Double> expected = new LinkedHashMap<Integer, Double>();
         expected.put(1, 1.0);
         expected.put(2, 2.0);
@@ -429,7 +429,7 @@ public class CommandLineModelTest {
 
         spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("1=1.0", "2=2.0", "3=3.0");
+        commandLine.parseArgs("1=1.0", "2=2.0", "3=3.0");
         Map<Integer, Double> expected = new LinkedHashMap<Integer, Double>();
         expected.put(1, 1.0);
         expected.put(2, 2.0);
@@ -445,7 +445,7 @@ public class CommandLineModelTest {
 
         spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("-c", "1=1.0", "2=2.0", "3=3.0");
+        commandLine.parseArgs("-c", "1=1.0", "2=2.0", "3=3.0");
         Map<String, String> expected = new LinkedHashMap<String, String>();
         expected.put("1", "1.0");
         expected.put("2", "2.0");
@@ -461,7 +461,7 @@ public class CommandLineModelTest {
 
         spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("1=1.0", "2=2.0", "3=3.0");
+        commandLine.parseArgs("1=1.0", "2=2.0", "3=3.0");
         Map<String, String> expected = new LinkedHashMap<String, String>();
         expected.put("1", "1.0");
         expected.put("2", "2.0");
@@ -476,7 +476,7 @@ public class CommandLineModelTest {
         spec.addOption(OptionSpec.builder("-s", "--sql").paramLabel("SQLTYPE").type(int.class).converters(
                 new CommandLineTypeConversionTest.SqlTypeConverter()).description("sql type converter").build());
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("-c", "33", "-s", "BLOB");
+        commandLine.parseArgs("-c", "33", "-s", "BLOB");
         assertEquals(Integer.valueOf(33), spec.optionsMap().get("-c").getValue());
         assertEquals(Integer.valueOf(Types.BLOB), spec.optionsMap().get("-s").getValue());
     }
@@ -487,7 +487,7 @@ public class CommandLineModelTest {
         spec.addPositional(PositionalParamSpec.builder().paramLabel("SQLTYPE").index("1").type(int.class).converters(
                 new CommandLineTypeConversionTest.SqlTypeConverter()).description("sql type converter").build());
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("33", "BLOB");
+        commandLine.parseArgs("33", "BLOB");
         assertEquals(Integer.valueOf(33), spec.positionalParameters().get(0).getValue());
         assertEquals(Integer.valueOf(Types.BLOB), spec.positionalParameters().get(1).getValue());
     }
@@ -520,6 +520,7 @@ public class CommandLineModelTest {
     }
 
     /** see <a href="https://github.com/remkop/picocli/issues/279">issue #279</a>  */
+    @SuppressWarnings("deprecation")
     @Test
     public void testSingleValueFieldWithOptionalParameter_279() {
         @Command(name="sample")
@@ -546,6 +547,7 @@ public class CommandLineModelTest {
     }
 
     /** see <a href="https://github.com/remkop/picocli/issues/280">issue #280</a>  */
+    @SuppressWarnings("deprecation")
     @Test
     public void testSingleValueFieldWithOptionalParameter_280() {
         @Command(name="sample")
@@ -572,6 +574,7 @@ public class CommandLineModelTest {
     }
 
     /** see <a href="https://github.com/remkop/picocli/issues/279">issue #279</a>  */
+    @SuppressWarnings("deprecation")
     @Test
     public void testSingleValueFieldWithOptionalParameterFollowedByOption_279() {
         @Command(name="sample")
@@ -591,6 +594,7 @@ public class CommandLineModelTest {
     }
 
     /** see <a href="https://github.com/remkop/picocli/issues/280">issue #280</a>  */
+    @SuppressWarnings("deprecation")
     @Test
     public void testSingleValueFieldWithOptionalParameterFollowedByOption_280() {
         @Command(name="sample")

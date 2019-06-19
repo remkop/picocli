@@ -53,7 +53,7 @@ public class LenientParsingTest {
         spec.addOption(option);
         spec.parser().collectErrors(true);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("-c", "1", "2", "3");
+        commandLine.parseArgs("-c", "1", "2", "3");
         assertEquals(1, commandLine.getParseResult().errors().size());
         assertEquals("Unmatched arguments: 2, 3", commandLine.getParseResult().errors().get(0).getMessage());
     }
@@ -67,7 +67,7 @@ public class LenientParsingTest {
         spec.addPositional(positional);
         spec.parser().collectErrors(true);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("1", "2", "3");
+        commandLine.parseArgs("1", "2", "3");
         assertEquals(1, commandLine.getParseResult().errors().size());
         assertEquals("Unmatched arguments: 2, 3", commandLine.getParseResult().errors().get(0).getMessage());
     }
@@ -80,7 +80,7 @@ public class LenientParsingTest {
 
         CommandLine cmd = new CommandLine(new Example());
         cmd.getCommandSpec().parser().collectErrors(true);
-        cmd.parse(new String[0]);
+        cmd.parseArgs(new String[0]);
 
         assertEquals(1, cmd.getParseResult().errors().size());
         assertEquals("Missing required parameter: <mandatory>", cmd.getParseResult().errors().get(0).getMessage());
@@ -95,12 +95,12 @@ public class LenientParsingTest {
         CommandLine cmd = new CommandLine(new Tricky1());
         cmd.getCommandSpec().parser().collectErrors(true);
 
-        cmd.parse(new String[0]);
+        cmd.parseArgs(new String[0]);
         assertEquals(2, cmd.getParseResult().errors().size());
         assertEquals("Missing required parameters: <mandatory>, <anotherMandatory>", cmd.getParseResult().errors().get(0).getMessage());
         assertEquals("Missing required parameter: <anotherMandatory>", cmd.getParseResult().errors().get(1).getMessage());
 
-        cmd.parse(new String[] {"firstonly"});
+        cmd.parseArgs(new String[] {"firstonly"});
         assertEquals(1, cmd.getParseResult().errors().size());
         assertEquals("Missing required parameter: <anotherMandatory>", cmd.getParseResult().errors().get(0).getMessage());
     }
@@ -114,7 +114,7 @@ public class LenientParsingTest {
         CommandLine cmd = new CommandLine(new Tricky2());
         cmd.getCommandSpec().parser().collectErrors(true);
 
-        cmd.parse(new String[0]);
+        cmd.parseArgs(new String[0]);
         assertEquals(1, cmd.getParseResult().errors().size());
         assertEquals("Missing required parameter: <mandatory>", cmd.getParseResult().errors().get(0).getMessage());
     }
@@ -129,11 +129,11 @@ public class LenientParsingTest {
         CommandLine cmd = new CommandLine(new Tricky3());
         cmd.getCommandSpec().parser().collectErrors(true);
 
-        cmd.parse(new String[] {"-t", "-v", "mandatory"});
+        cmd.parseArgs(new String[] {"-t", "-v", "mandatory"});
         assertEquals(1, cmd.getParseResult().errors().size());
         assertEquals("Missing required parameter: <alsoMandatory>", cmd.getParseResult().errors().get(0).getMessage());
 
-        cmd.parse(new String[] {"-t"});
+        cmd.parseArgs(new String[] {"-t"});
         assertEquals(3, cmd.getParseResult().errors().size());
         assertEquals("Missing required options [-v, params[0]=<mandatory>, params[1]=<alsoMandatory>]", cmd.getParseResult().errors().get(0).getMessage());
         assertEquals("Missing required parameters: <mandatory>, <alsoMandatory>", cmd.getParseResult().errors().get(1).getMessage());
@@ -148,7 +148,7 @@ public class LenientParsingTest {
         CommandLine cmd = new CommandLine(new Tricky3());
         cmd.getCommandSpec().parser().collectErrors(true);
 
-        cmd.parse(new String[] {"-t"});
+        cmd.parseArgs(new String[] {"-t"});
         assertEquals(1, cmd.getParseResult().errors().size());
         assertEquals("Missing required parameter: <mandatory>", cmd.getParseResult().errors().get(0).getMessage());
     }
@@ -161,11 +161,11 @@ public class LenientParsingTest {
         }
         CommandLine cmd = new CommandLine(new NonVarArgArrayParamsZeroArity());
         cmd.getCommandSpec().parser().collectErrors(true);
-        cmd.parse("a", "b", "c");
+        cmd.parseArgs("a", "b", "c");
         assertEquals(1, cmd.getParseResult().errors().size());
         assertEquals("Unmatched arguments: a, b, c", cmd.getParseResult().errors().get(0).getMessage());
 
-        cmd.parse("a");
+        cmd.parseArgs("a");
         assertEquals(1, cmd.getParseResult().errors().size());
         assertEquals("Unmatched argument: a", cmd.getParseResult().errors().get(0).getMessage());
     }
@@ -177,7 +177,7 @@ public class LenientParsingTest {
         }
         CommandLine cmd = new CommandLine(new App());
         cmd.getCommandSpec().parser().collectErrors(true);
-        cmd.parse("-Long", "-boolean");
+        cmd.parseArgs("-Long", "-boolean");
         assertEquals(1, cmd.getParseResult().errors().size());
         assertEquals("Invalid value for option '-Long': '-boolean' is not a long", cmd.getParseResult().errors().get(0).getMessage());
     }
@@ -185,7 +185,7 @@ public class LenientParsingTest {
     public void testBooleanOptionsArity0_nFailsIfAttachedParamNotABoolean() { // ignores varargs
         CommandLine cmd = new CommandLine(new CommandLineArityTest.BooleanOptionsArity0_nAndParameters());
         cmd.getCommandSpec().parser().collectErrors(true);
-        cmd.parse("-bool=123 -other".split(" "));
+        cmd.parseArgs("-bool=123 -other".split(" "));
         assertEquals(1, cmd.getParseResult().errors().size());
         assertEquals("Invalid value for option '-bool': '123' is not a boolean", cmd.getParseResult().errors().get(0).getMessage());
     }
@@ -193,7 +193,7 @@ public class LenientParsingTest {
     public void testBooleanOptionsArity0_nShortFormFailsIfAttachedParamNotABoolean() { // ignores varargs
         CommandLine cmd = new CommandLine(new CommandLineArityTest.BooleanOptionsArity0_nAndParameters());
         cmd.getCommandSpec().parser().collectErrors(true);
-        cmd.parse("-rv234 -bool".split(" "));
+        cmd.parseArgs("-rv234 -bool".split(" "));
         assertEquals(1, cmd.getParseResult().errors().size());
         assertEquals("Unknown option: -234 (while processing option: '-rv234')", cmd.getParseResult().errors().get(0).getMessage());
     }
@@ -263,7 +263,7 @@ public class LenientParsingTest {
     private void assertMissing(List<String> expected, Object command, String... args) {
         CommandLine cmd = new CommandLine(command);
         cmd.getCommandSpec().parser().collectErrors(true);
-        cmd.parse(args);
+        cmd.parseArgs(args);
         List<Exception> errors = cmd.getParseResult().errors();
         assertEquals(errors.toString(), expected.size(), errors.size());
         int i = 0;
@@ -275,7 +275,7 @@ public class LenientParsingTest {
     public void testEnumListTypeConversionFailsForInvalidInput() {
         CommandLine cmd = new CommandLine(new CommandLineTypeConversionTest.EnumParams());
         cmd.getCommandSpec().parser().collectErrors(true);
-        cmd.parse("-timeUnitList", "SECONDS", "b", "c");
+        cmd.parseArgs("-timeUnitList", "SECONDS", "b", "c");
         assertEquals(2, cmd.getParseResult().errors().size());
         Exception ex = cmd.getParseResult().errors().get(0);
         String prefix = "Invalid value for option '-timeUnitList' at index 1 (<timeUnitList>): expected one of ";
@@ -289,7 +289,7 @@ public class LenientParsingTest {
     public void testTimeFormatHHmmssSSSInvalidError() throws ParseException {
         CommandLine cmd = new CommandLine(new CommandLineTypeConversionTest.SupportedTypes());
         cmd.getCommandSpec().parser().collectErrors(true);
-        cmd.parse("-Time", "23:59:58;123");
+        cmd.parseArgs("-Time", "23:59:58;123");
         assertEquals(1, cmd.getParseResult().errors().size());
         assertEquals("Invalid value for option '-Time': '23:59:58;123' is not a HH:mm[:ss[.SSS]] time", cmd.getParseResult().errors().get(0).getMessage());
     }
@@ -297,7 +297,7 @@ public class LenientParsingTest {
     public void testByteFieldsAreDecimal() {
         CommandLine cmd = new CommandLine(new CommandLineTypeConversionTest.SupportedTypes());
         cmd.getCommandSpec().parser().collectErrors(true);
-        cmd.parse("-byte", "0x1F", "-Byte", "0x0F");
+        cmd.parseArgs("-byte", "0x1F", "-Byte", "0x0F");
         assertEquals(2, cmd.getParseResult().errors().size());
         assertEquals("Invalid value for option '-byte': '0x1F' is not a byte", cmd.getParseResult().errors().get(0).getMessage());
         assertEquals("Invalid value for option '-Byte': '0x0F' is not a byte", cmd.getParseResult().errors().get(1).getMessage());
@@ -312,7 +312,7 @@ public class LenientParsingTest {
 
         CommandLine cmd = new CommandLine(new App());
         cmd.getCommandSpec().parser().collectErrors(true);
-        cmd.parse("NOT_AN_INT", "-x=b", "-unknown", "1", "2", "3");
+        cmd.parseArgs("NOT_AN_INT", "-x=b", "-unknown", "1", "2", "3");
         ParseResult parseResult = cmd.getParseResult();
         assertEquals(Arrays.asList("NOT_AN_INT", "-unknown", "2", "3"), parseResult.unmatched());
         assertEquals(6, parseResult.errors().size());
@@ -331,7 +331,7 @@ public class LenientParsingTest {
         }
         CommandLine cmd = new CommandLine(new App());
         cmd.getCommandSpec().parser().collectErrors(true);
-        cmd.parse("-queue", "a,b,c");
+        cmd.parseArgs("-queue", "a,b,c");
 
         ParseResult parseResult = cmd.getParseResult();
         assertTrue(parseResult.unmatched().isEmpty());

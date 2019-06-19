@@ -657,7 +657,7 @@ public class CommandLineArityTest {
     public void testBooleanOptionsArity0_nShortFormFailsIfAttachedParamNotABooleanWithUnmatchedArgsAllowed() { // ignores varargs
         setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new BooleanOptionsArity0_nAndParameters()).setUnmatchedArgumentsAllowed(true);
-        cmd.parse("-rv234 -bool".split(" "));
+        cmd.parseArgs("-rv234 -bool".split(" "));
         assertEquals(Arrays.asList("-234"), cmd.getUnmatchedArguments());
     }
     @Test
@@ -1405,7 +1405,7 @@ public class CommandLineArityTest {
         }
         Cmd cmd = new Cmd();
         System.setProperty("picocli.trace", "DEBUG");
-        new CommandLine(cmd).setStopAtPositional(true).parse("foo", "xx", "--alpha", "--beta");
+        new CommandLine(cmd).setStopAtPositional(true).parseArgs("foo", "xx", "--alpha", "--beta");
         assertEquals("foo", cmd.foo);
         assertEquals(null, cmd.alpha);
         assertEquals(Arrays.asList("xx", "--alpha", "--beta"), cmd.params);
@@ -1420,7 +1420,7 @@ public class CommandLineArityTest {
             @Parameters(index = "1..*") List<String> params;
         }
         Cmd cmd = new Cmd();
-        new CommandLine(cmd).setStopAtPositional(true).parse("foo", "xx", "--alpha", "--beta");
+        new CommandLine(cmd).setStopAtPositional(true).parseArgs("foo", "xx", "--alpha", "--beta");
         assertEquals("foo", cmd.foo);
         assertEquals(null, cmd.alpha);
         assertEquals(Arrays.asList("xx", "--alpha", "--beta"), cmd.params);

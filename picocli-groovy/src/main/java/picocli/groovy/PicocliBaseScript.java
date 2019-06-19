@@ -192,6 +192,7 @@ abstract public class PicocliBaseScript extends Script {
      * @param args  The argument array.
      * @return the list of {@code CommandLine} objects that result from parsing the user input
      */
+    @SuppressWarnings("deprecation")
     public List<CommandLine> parseScriptArguments(CommandLine commandLine, String[] args) {
         return commandLine.parse(args);
     }

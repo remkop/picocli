@@ -80,7 +80,7 @@ public class CommandLineDefaultProviderTest {
     @Test
     public void testCommandDefaultProviderByAnnotationOverridesValues() {
         CommandLine cmd = new CommandLine(App.class);
-        cmd.parse();
+        cmd.parseArgs();
 
         App app = cmd.getCommand();
         // if no default defined on the option, command default provider should be used
@@ -103,7 +103,7 @@ public class CommandLineDefaultProviderTest {
 
         cmd.setDefaultValueProvider(new TestNullDefaultProvider());
 
-        cmd.parse();
+        cmd.parseArgs();
 
         App app = cmd.getCommand();
         // if no default defined on the option, command default provider should be used
@@ -162,7 +162,7 @@ public class CommandLineDefaultProviderTest {
 
         CommandLine cmd = new CommandLine(App.class);
         cmd.setDefaultValueProvider(new TestDefaultProvider());
-        cmd.parse();
+        cmd.parseArgs();
 
         App app = cmd.getCommand();
         // if no default defined on the option, command default provider should be used

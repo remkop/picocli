@@ -157,7 +157,7 @@ public class CommandLineTest {
         ArrayPositionalParams params = new ArrayPositionalParams();
         params.array = new int[3];
         int[] array = params.array;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseArgs("3", "2", "1");
         assertNotSame(array, params.array);
         assertArrayEquals(new int[]{3, 2, 1}, params.array);
     }
@@ -174,7 +174,7 @@ public class CommandLineTest {
             }
         }
         ArrayPositionalParams params = new ArrayPositionalParams();
-        new CommandLine(params).parse("foo", "bar", "baz");
+        new CommandLine(params).parseArgs("foo", "bar", "baz");
         assertEquals("foobarbaz", params.string);
     }
     @Test
@@ -190,7 +190,7 @@ public class CommandLineTest {
             }
         }
         ArrayPositionalParams params = new ArrayPositionalParams();
-        new CommandLine(params).parse("-s", "foo", "-s", "bar", "-s", "baz");
+        new CommandLine(params).parseArgs("-s", "foo", "-s", "bar", "-s", "baz");
         assertEquals("foobarbaz", params.string);
     }
     private class ListPositionalParams {
@@ -200,7 +200,7 @@ public class CommandLineTest {
     public void testListPositionalParametersAreInstantiatedIfNull() {
         ListPositionalParams params = new ListPositionalParams();
         assertNull(params.list);
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseArgs("3", "2", "1");
         assertNotNull(params.list);
         assertEquals(Arrays.asList(3, 2, 1), params.list);
     }
@@ -209,7 +209,7 @@ public class CommandLineTest {
         ListPositionalParams params = new ListPositionalParams();
         params.list = new ArrayList<Integer>();
         List<Integer> list = params.list;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseArgs("3", "2", "1");
         assertSame(list, params.list);
         assertEquals(Arrays.asList(3, 2, 1), params.list);
     }
@@ -219,7 +219,7 @@ public class CommandLineTest {
         params.list = new ArrayList<Integer>();
         params.list.add(234);
         List<Integer> list = params.list;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseArgs("3", "2", "1");
         assertNotSame(list, params.list);
         assertEquals(Arrays.asList(3, 2, 1), params.list);
     }
@@ -230,7 +230,7 @@ public class CommandLineTest {
     public void testSortedSetPositionalParametersAreInstantiatedIfNull() {
         SortedSetPositionalParams params = new SortedSetPositionalParams();
         assertNull(params.sortedSet);
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseArgs("3", "2", "1");
         assertNotNull(params.sortedSet);
         assertEquals(Arrays.asList(1, 2, 3), new ArrayList<Integer>(params.sortedSet));
     }
@@ -239,7 +239,7 @@ public class CommandLineTest {
         SortedSetPositionalParams params = new SortedSetPositionalParams();
         params.sortedSet = new TreeSet<Integer>();
         SortedSet<Integer> list = params.sortedSet;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseArgs("3", "2", "1");
         assertSame(list, params.sortedSet);
         assertEquals(Arrays.asList(1, 2, 3), new ArrayList<Integer>(params.sortedSet));
     }
@@ -249,7 +249,7 @@ public class CommandLineTest {
         params.sortedSet = new TreeSet<Integer>();
         params.sortedSet.add(234);
         SortedSet<Integer> list = params.sortedSet;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseArgs("3", "2", "1");
         assertNotSame(list, params.sortedSet);
         assertEquals(Arrays.asList(1, 2, 3), new ArrayList<Integer>(params.sortedSet));
     }
@@ -260,7 +260,7 @@ public class CommandLineTest {
     public void testSetPositionalParametersAreInstantiatedIfNull() {
         SetPositionalParams params = new SetPositionalParams();
         assertNull(params.set);
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseArgs("3", "2", "1");
         assertNotNull(params.set);
         assertEquals(new HashSet<Integer>(Arrays.asList(1, 2, 3)), params.set);
     }
@@ -269,7 +269,7 @@ public class CommandLineTest {
         SetPositionalParams params = new SetPositionalParams();
         params.set = new TreeSet<Integer>();
         Set<Integer> list = params.set;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseArgs("3", "2", "1");
         assertSame(list, params.set);
         assertEquals(new HashSet<Integer>(Arrays.asList(1, 2, 3)), params.set);
     }
@@ -279,7 +279,7 @@ public class CommandLineTest {
         params.set = new TreeSet<Integer>();
         params.set.add(234);
         Set<Integer> list = params.set;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseArgs("3", "2", "1");
         assertNotSame(list, params.set);
         assertEquals(new HashSet<Integer>(Arrays.asList(3, 2, 1)), params.set);
     }
@@ -290,7 +290,7 @@ public class CommandLineTest {
     public void testQueuePositionalParametersAreInstantiatedIfNull() {
         QueuePositionalParams params = new QueuePositionalParams();
         assertNull(params.queue);
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseArgs("3", "2", "1");
         assertNotNull(params.queue);
         assertEquals(new LinkedList<Integer>(Arrays.asList(3, 2, 1)), params.queue);
     }
@@ -299,7 +299,7 @@ public class CommandLineTest {
         QueuePositionalParams params = new QueuePositionalParams();
         params.queue = new LinkedList<Integer>();
         Queue<Integer> list = params.queue;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseArgs("3", "2", "1");
         assertSame(list, params.queue);
         assertEquals(new LinkedList<Integer>(Arrays.asList(3, 2, 1)), params.queue);
     }
@@ -309,7 +309,7 @@ public class CommandLineTest {
         params.queue = new LinkedList<Integer>();
         params.queue.add(234);
         Queue<Integer> list = params.queue;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseArgs("3", "2", "1");
         assertNotSame(list, params.queue);
         assertEquals(new LinkedList<Integer>(Arrays.asList(3, 2, 1)), params.queue);
     }
@@ -320,7 +320,7 @@ public class CommandLineTest {
     public void testCollectionPositionalParametersAreInstantiatedIfNull() {
         CollectionPositionalParams params = new CollectionPositionalParams();
         assertNull(params.collection);
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseArgs("3", "2", "1");
         assertNotNull(params.collection);
         assertEquals(Arrays.asList(3, 2, 1), params.collection);
     }
@@ -329,7 +329,7 @@ public class CommandLineTest {
         CollectionPositionalParams params = new CollectionPositionalParams();
         params.collection = new ArrayList<Integer>();
         Collection<Integer> list = params.collection;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseArgs("3", "2", "1");
         assertSame(list, params.collection);
         assertEquals(Arrays.asList(3, 2, 1), params.collection);
     }
@@ -339,7 +339,7 @@ public class CommandLineTest {
         params.collection = new ArrayList<Integer>();
         params.collection.add(234);
         Collection<Integer> list = params.collection;
-        new CommandLine(params).parse("3", "2", "1");
+        new CommandLine(params).parseArgs("3", "2", "1");
         assertNotSame(list, params.collection);
         assertEquals(Arrays.asList(3, 2, 1), params.collection);
     }
@@ -384,7 +384,7 @@ public class CommandLineTest {
         }
         setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new App()).setOverwrittenOptionsAllowed(true);
-        cmd.parse("-f", "111", "-f", "222");
+        cmd.parseArgs("-f", "111", "-f", "222");
         App ff = cmd.getCommand();
         assertEquals("222", ff.field);
     }
@@ -411,7 +411,7 @@ public class CommandLineTest {
     @Test
     public void testPrivateFinalNonPrimitiveNonStringFieldsAreAllowed() throws Exception {
         PrivateFinalAllowedFields fields = new PrivateFinalAllowedFields();
-        new CommandLine(fields).parse("-d=2017-11-02", "-u=MILLISECONDS", "123", "123456");
+        new CommandLine(fields).parseArgs("-d=2017-11-02", "-u=MILLISECONDS", "123", "123456");
         assertEquals(new SimpleDateFormat("yyyy-MM-dd").parse("2017-11-02"), fields.date);
         assertSame(TimeUnit.MILLISECONDS, fields.enumValue);
         assertEquals(Integer.valueOf(123), fields.integer);
@@ -428,7 +428,7 @@ public class CommandLineTest {
         assertFalse(cmd.isCaseInsensitiveEnumValuesAllowed());
 
         try {
-            cmd.parse("-u=milliseconds");
+            cmd.parseArgs("-u=milliseconds");
             fail("Expected exception");
         } catch (ParameterException ex) {
             assertTrue(ex.getMessage(), ex.getMessage().startsWith("Invalid value for option '-u': expected one of "));
@@ -437,7 +437,7 @@ public class CommandLineTest {
     @Test
     public void testParserCaseInsensitiveEnumValuesAllowed_enabled() throws Exception {
         PojoWithEnumOptions fields = new PojoWithEnumOptions();
-        new CommandLine(fields).setCaseInsensitiveEnumValuesAllowed(true).parse("-u=milliseconds");
+        new CommandLine(fields).setCaseInsensitiveEnumValuesAllowed(true).parseArgs("-u=milliseconds");
         assertSame(TimeUnit.MILLISECONDS, fields.enumValue);
     }
     @Test
@@ -446,7 +446,7 @@ public class CommandLineTest {
         CommandLine cmd = new CommandLine(fields).setCaseInsensitiveEnumValuesAllowed(true);
 
         try {
-            cmd.parse("-u=millisecondINVALID");
+            cmd.parseArgs("-u=millisecondINVALID");
             fail("Expected exception");
         } catch (ParameterException ex) {
             assertTrue(ex.getMessage(), ex.getMessage().startsWith("Invalid value for option '-u': expected one of "));
@@ -488,21 +488,25 @@ public class CommandLineTest {
         RequiredField requiredField = CommandLine.populateCommand(new RequiredField(), "--version");
         assertTrue("version info requested", requiredField.versionHelp);
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testCommandLine_isUsageHelpRequested_trueWhenSpecified() {
         List<CommandLine> parsedCommands = new CommandLine(new RequiredField()).parse("--help");
         assertTrue("usage help requested", parsedCommands.get(0).isUsageHelpRequested());
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testCommandLine_isVersionHelpRequested_trueWhenSpecified() {
         List<CommandLine> parsedCommands = new CommandLine(new RequiredField()).parse("--version");
         assertTrue("version info requested", parsedCommands.get(0).isVersionHelpRequested());
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testCommandLine_isUsageHelpRequested_falseWhenNotSpecified() {
         List<CommandLine> parsedCommands = new CommandLine(new RequiredField()).parse("--version");
         assertFalse("usage help requested", parsedCommands.get(0).isUsageHelpRequested());
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testCommandLine_isVersionHelpRequested_falseWhenNotSpecified() {
         List<CommandLine> parsedCommands = new CommandLine(new RequiredField()).parse("--help");
@@ -527,14 +531,14 @@ public class CommandLineTest {
     public void testHelpRequestedFlagResetWhenParsing_instanceMethod() {
         RequiredField requiredField = new RequiredField();
         CommandLine commandLine = new CommandLine(requiredField);
-        commandLine.parse("-?");
+        commandLine.parseArgs("-?");
         assertTrue("help requested", requiredField.isHelpRequested);
 
         requiredField.isHelpRequested = false;
 
         // should throw error again on second pass (no help was requested here...)
         try {
-            commandLine.parse("arg1", "arg2");
+            commandLine.parseArgs("arg1", "arg2");
             fail("Missing required field should have thrown exception");
         } catch (MissingParameterException ex) {
             assertEquals("Missing required option '--required=<required>'", ex.getMessage());
@@ -598,7 +602,7 @@ public class CommandLineTest {
     public void testCompactFieldsWithUnmatchedArguments() {
         setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new CompactFields()).setUnmatchedArgumentsAllowed(true);
-        cmd.parse("-oout -r -vp1 p2".split(" "));
+        cmd.parseArgs("-oout -r -vp1 p2".split(" "));
         assertEquals(Arrays.asList("-p1"), cmd.getUnmatchedArguments());
     }
 
@@ -619,7 +623,7 @@ public class CommandLineTest {
         CompactFields compact = new CompactFields();
         CommandLine cmd = new CommandLine(compact);
         cmd.setSeparator(":");
-        cmd.parse("-rvo:out p1 p2".split(" "));
+        cmd.parseArgs("-rvo:out p1 p2".split(" "));
         verifyCompact(compact, true, true, "out", fileArray("p1", "p2"));
     }
 
@@ -702,7 +706,7 @@ public class CommandLineTest {
         CompactFields compact = new CompactFields();
         CommandLine cmd = new CommandLine(compact);
         cmd.setSeparator(":");
-        cmd.parse("-ro: -v".split(" "));
+        cmd.parseArgs("-ro: -v".split(" "));
         verifyCompact(compact, false, true, "-v", null);
     }
     @Test
@@ -724,7 +728,7 @@ public class CommandLineTest {
         CompactFields compact = new CompactFields();
         CommandLine cmd = new CommandLine(compact);
         cmd.setSeparator(":");
-        cmd.parse("-ro:\"\" -v".split(" "));
+        cmd.parseArgs("-ro:\"\" -v".split(" "));
         verifyCompact(compact, true, true, "\"\"", null);
     }
     @Test
@@ -740,7 +744,7 @@ public class CommandLineTest {
         CommandLine cmd = new CommandLine(new CompactFields());
         cmd.getCommandSpec().parser().posixClusteredShortOptionsAllowed(false);
         try {
-            cmd.parse("-rvoFILE");
+            cmd.parseArgs("-rvoFILE");
             fail("Expected exception");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unknown option: -rvoFILE", ex.getMessage());
@@ -756,7 +760,7 @@ public class CommandLineTest {
         CommandLine cmd = new CommandLine(unclustered);
         cmd.getCommandSpec().parser().posixClusteredShortOptionsAllowed(false);
         try {
-            cmd.parse(args);
+            cmd.parseArgs(args);
             fail("Expected exception");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unknown option: -oFILE", ex.getMessage());
@@ -771,7 +775,7 @@ public class CommandLineTest {
         CompactFields unclustered = new CompactFields();
         CommandLine cmd = new CommandLine(unclustered);
         cmd.getCommandSpec().parser().posixClusteredShortOptionsAllowed(false);
-        cmd.parse(args);
+        cmd.parseArgs(args);
         verifyCompact(unclustered, true, true, "FILE", null);
     }
 
@@ -786,7 +790,7 @@ public class CommandLineTest {
         CompactFields compact = new CompactFields();
         CommandLine cmd = new CommandLine(compact);
         cmd.setEndOfOptionsDelimiter(";;");
-        cmd.parse("-oout ;; ;; -- -r -v p1 p2".split(" "));
+        cmd.parseArgs("-oout ;; ;; -- -r -v p1 p2".split(" "));
         verifyCompact(compact, false, false, "out", fileArray(";;", "--","-r", "-v", "p1", "p2"));
     }
 
@@ -1047,13 +1051,13 @@ public class CommandLineTest {
         params = new VariousPrefixCharacters();
         CommandLine cmd = new CommandLine(params);
         cmd.setSeparator(":");
-        cmd.parse("--dash:345");
+        cmd.parseArgs("--dash:345");
         assertEquals("--dash:val", 345, params.dash);
 
         params = new VariousPrefixCharacters();
         cmd = new CommandLine(params);
         cmd.setSeparator(":");
-        cmd.parse("--dash:345 --owner:y".split(" "));
+        cmd.parseArgs("--dash:345 --owner:y".split(" "));
         assertEquals("--dash:val", 345, params.dash);
         assertEquals("--owner:y", "y", params.owner);
     }
@@ -1092,7 +1096,7 @@ public class CommandLineTest {
         setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true);
         try {
-            cmd.parse("--opt=abc");
+            cmd.parseArgs("--opt=abc");
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ok) {
             assertEquals("Missing required option '--opt:<opt>'", ok.getMessage());
@@ -1142,7 +1146,7 @@ public class CommandLineTest {
         VariousPrefixCharacters params = new VariousPrefixCharacters();
         CommandLine cmd = new CommandLine(params);
         cmd.setSeparator(":");
-        cmd.parse("-d 123 /4 /S 765 /T:98 /Owner:xyz -SingleDash [CPM CP/M (CMS:cmsVal".split(" "));
+        cmd.parseArgs("-d 123 /4 /S 765 /T:98 /Owner:xyz -SingleDash [CPM CP/M (CMS:cmsVal".split(" "));
         assertEquals("-d", 123, params.dash);
         assertEquals("/S", 765, params.slashS);
         assertEquals("/T", 98, params.slashT);
@@ -1432,7 +1436,7 @@ public class CommandLineTest {
             @Parameters List<String> all;
         }
         App app1 = new App();
-        new CommandLine(app1).setOverwrittenOptionsAllowed(true).parse("000", "111", "222", "333");
+        new CommandLine(app1).setOverwrittenOptionsAllowed(true).parseArgs("000", "111", "222", "333");
         assertEquals("field initialized with arg[0]", new File("111"), app1.file0_1);
         assertEquals("arg[1] and arg[2]", Arrays.asList(
                 new File("111"),
@@ -1446,7 +1450,7 @@ public class CommandLineTest {
         assertEquals("args", Arrays.asList("000", "111", "222", "333"), app1.all);
 
         App app2 = new App();
-        new CommandLine(app2).setOverwrittenOptionsAllowed(true).parse("000", "111");
+        new CommandLine(app2).setOverwrittenOptionsAllowed(true).parseArgs("000", "111");
         assertEquals("field initialized with arg[0]", new File("111"), app2.file0_1);
         assertEquals("arg[1]", Arrays.asList(new File("111")), app2.fileList1_2);
         assertArrayEquals("arg[0-3]", new File[]{
@@ -1620,7 +1624,7 @@ public class CommandLineTest {
         }
         setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new SingleValue()).setUnmatchedArgumentsAllowed(true);
-        cmd.parse("val1", "val2");
+        cmd.parseArgs("val1", "val2");
         assertEquals("val1", ((SingleValue)cmd.getCommand()).str);
         assertEquals(Arrays.asList("val2"), cmd.getUnmatchedArguments());
     }
@@ -1632,7 +1636,7 @@ public class CommandLineTest {
         }
         setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new SingleValue()).setUnmatchedArgumentsAllowed(true);
-        cmd.parse("val0", "val1", "val2", "val3");
+        cmd.parseArgs("val0", "val1", "val2", "val3");
         assertArrayEquals(new String[]{"val0", "val1", "val2"}, ((SingleValue)cmd.getCommand()).str);
         assertEquals(Arrays.asList("val3"), cmd.getUnmatchedArguments());
     }
@@ -1663,10 +1667,11 @@ public class CommandLineTest {
         }
         setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new SingleValue()).setOverwrittenOptionsAllowed(true);
-        cmd.parse("val1", "val2");
+        cmd.parseArgs("val1", "val2");
         assertEquals("val2", ((SingleValue) cmd.getCommand()).str);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testParseSubCommands() {
         CommandLine commandLine = Demo.mainCommand();
@@ -1695,7 +1700,7 @@ public class CommandLineTest {
         String old = System.getProperty(PROPERTY);
         System.setProperty(PROPERTY, "");
         CommandLine commandLine = Demo.mainCommand();
-        commandLine.parse("--git-dir=/home/rpopma/picocli", "commit", "-m", "\"Fixed typos\"", "--", "src1.java", "src2.java", "src3.java");
+        commandLine.parseArgs("--git-dir=/home/rpopma/picocli", "commit", "-m", "\"Fixed typos\"", "--", "src1.java", "src2.java", "src3.java");
         System.setErr(originalErr);
         if (old == null) {
             System.clearProperty(PROPERTY);
@@ -1727,7 +1732,7 @@ public class CommandLineTest {
         String old = System.getProperty(PROPERTY);
         System.setProperty(PROPERTY, "DEBUG");
         CommandLine commandLine = Demo.mainCommand();
-        commandLine.parse("--git-dir=/home/rpopma/picocli", "commit", "-m", "\"Fixed typos\"", "--", "src1.java", "src2.java", "src3.java");
+        commandLine.parseArgs("--git-dir=/home/rpopma/picocli", "commit", "-m", "\"Fixed typos\"", "--", "src1.java", "src2.java", "src3.java");
         System.setErr(originalErr);
         if (old == null) {
             System.clearProperty(PROPERTY);
@@ -1857,7 +1862,7 @@ public class CommandLineTest {
             @Option(names = "-p") int primitive = 43;
         }
         CommandLine cmd = new CommandLine(new App()).setOverwrittenOptionsAllowed(true);
-        cmd.parse("-f", "111", "-f", "222", "-f", "333");
+        cmd.parseArgs("-f", "111", "-f", "222", "-f", "333");
         App ff = cmd.getCommand();
         assertEquals("333", ff.field);
         System.setErr(originalErr);
@@ -1874,6 +1879,7 @@ public class CommandLineTest {
         assertEquals(expected, actual);
         setTraceLevel("WARN");
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testTraceWarningIfUnmatchedArgsWhenUnmatchedArgumentsAllowed() throws Exception {
         PrintStream originalErr = System.err;
@@ -2016,11 +2022,11 @@ public class CommandLineTest {
         }
         setTraceLevel("OFF");
         CommandLine commandLine = new CommandLine(new App()).setOverwrittenOptionsAllowed(true);
-        commandLine.parse("-s", "1", "--str", "2");
+        commandLine.parseArgs("-s", "1", "--str", "2");
         assertEquals("2", ((App) commandLine.getCommand()).string);
 
         commandLine = new CommandLine(new App()).setOverwrittenOptionsAllowed(true);
-        commandLine.parse("-v", "--verbose", "-v"); // F -> T -> F -> T
+        commandLine.parseArgs("-v", "--verbose", "-v"); // F -> T -> F -> T
         assertEquals(true, ((App) commandLine.getCommand()).bool);
     }
 
@@ -2039,7 +2045,7 @@ public class CommandLineTest {
         CommandLine commandLine = new CommandLine(new App())
                 .addSubcommand("parent", new Parent())
                 .setOverwrittenOptionsAllowed(true);
-        commandLine.parse("-s", "1", "--str", "2", "parent", "--parent", "parentVal", "--parent", "2ndVal");
+        commandLine.parseArgs("-s", "1", "--str", "2", "parent", "--parent", "parentVal", "--parent", "2ndVal");
 
         App app = commandLine.getCommand();
         assertEquals("2", app.string);
@@ -2060,12 +2066,12 @@ public class CommandLineTest {
         A a = new A();
         CommandLine commandLine = new CommandLine(a);
         try {
-            commandLine.parse("-u", "foo");
+            commandLine.parseArgs("-u", "foo");
             fail("expected exception");
         } catch (MissingParameterException ex) {
             assertEquals("Missing required option '--password=<password>'", ex.getLocalizedMessage());
         }
-        commandLine.parse("-u", "foo", "-p", "abc");
+        commandLine.parseArgs("-u", "foo", "-p", "abc");
     }
 
     @Test
@@ -2219,7 +2225,7 @@ public class CommandLineTest {
         }
         setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true);
-        cmd.parse("1=a", "2=b", "3=c", "4=d");
+        cmd.parseArgs("1=a", "2=b", "3=c", "4=d");
         assertEquals(Arrays.asList("3=c", "4=d"), cmd.getUnmatchedArguments());
     }
     @Test
@@ -2236,7 +2242,7 @@ public class CommandLineTest {
         }
         setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true);
-        cmd.parse("1=a", "2=b", "3=c", "4=d");
+        cmd.parseArgs("1=a", "2=b", "3=c", "4=d");
         assertEquals(Arrays.asList("4=d"), cmd.getUnmatchedArguments());
     }
     @Test
@@ -2488,6 +2494,7 @@ public class CommandLineTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void test149OnlyUnmatchedOptionStoredOthersParsed() throws Exception {
         class App {
@@ -2567,20 +2574,20 @@ public class CommandLineTest {
         }
         App cmd1 = new App();
         CommandLine commandLine1 = new CommandLine(cmd1).setStopAtUnmatched(true);
-        commandLine1.parse("--y", "-a=abc", "positional");
+        commandLine1.parseArgs("--y", "-a=abc", "positional");
         assertEquals(Arrays.asList("--y", "-a=abc", "positional"), commandLine1.getUnmatchedArguments());
         assertNull(cmd1.first);
         assertNull(cmd1.positional);
 
         try {
             // StopAtUnmatched=false, UnmatchedArgumentsAllowed=false
-            new CommandLine(new App()).parse("--y", "-a=abc", "positional");
+            new CommandLine(new App()).parseArgs("--y", "-a=abc", "positional");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unknown option: --y", ex.getMessage());
         }
         App cmd2 = new App();
         CommandLine commandLine2 = new CommandLine(cmd2).setStopAtUnmatched(false).setUnmatchedArgumentsAllowed(true);
-        commandLine2.parse("--y", "-a=abc", "positional");
+        commandLine2.parseArgs("--y", "-a=abc", "positional");
         assertEquals(Arrays.asList("--y"), commandLine2.getUnmatchedArguments());
         assertEquals("abc", cmd2.first);
         assertArrayEquals(new String[]{"positional"}, cmd2.positional);
@@ -2611,7 +2618,7 @@ public class CommandLineTest {
         }
         App cmd1 = new App();
         CommandLine commandLine1 = new CommandLine(cmd1).setStopAtPositional(true);
-        commandLine1.parse("positional", "-a=abc", "positional");
+        commandLine1.parseArgs("positional", "-a=abc", "positional");
         assertArrayEquals(new String[]{"positional", "-a=abc", "positional"}, cmd1.positional);
         assertNull(cmd1.first);
     }
@@ -2687,7 +2694,7 @@ public class CommandLineTest {
             // RP: After removing `usageHelp = true`, the "-o /tmp" argument is parsed as '-o'
             // with attached option value ' /tmp' (note the leading space).
             // A MissingParameterException is thrown for the missing <inputFiles>, as expected.
-            new CommandLine(new Example()).parse("-o /tmp");
+            new CommandLine(new Example()).parseArgs("-o /tmp");
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ex) {
             assertEquals("Missing required parameter: <inputFiles>", ex.getMessage());
@@ -2697,14 +2704,14 @@ public class CommandLineTest {
             //
             // RP: After removing `usageHelp = true`, the ["-o", " /tmp"] arguments are parsed and
             // a MissingParameterException is thrown for the missing <inputFiles>, as expected.
-            new CommandLine(new Example()).parse("-o", " /tmp");
+            new CommandLine(new Example()).parseArgs("-o", " /tmp");
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ex) {
             assertEquals("Missing required parameter: <inputFiles>", ex.getMessage());
         }
         try {
             // a MissingParameterException is thrown for missing required option -o, as expected
-            new CommandLine(new Example()).parse("inputfile1", "inputfile2");
+            new CommandLine(new Example()).parseArgs("inputfile1", "inputfile2");
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ex) {
             assertEquals("Missing required option '--out-dir=<outputDir>'", ex.getMessage());
@@ -2712,7 +2719,7 @@ public class CommandLineTest {
 
         // a single empty string parameter was specified: this becomes an <inputFile> value
         try {
-            new CommandLine(new Example()).parse("");
+            new CommandLine(new Example()).parseArgs("");
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ex) {
             assertEquals("Missing required option '--out-dir=<outputDir>'", ex.getMessage());
@@ -2720,7 +2727,7 @@ public class CommandLineTest {
 
         // no parameters were specified
         try {
-            new CommandLine(new Example()).parse();
+            new CommandLine(new Example()).parseArgs();
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ex) {
             assertEquals("Missing required options [--out-dir=<outputDir>, params[0..*]=<inputFiles>]", ex.getMessage());
@@ -2728,12 +2735,13 @@ public class CommandLineTest {
 
         // finally, let's test the success scenario
         Example example = new Example();
-        new CommandLine(example).parse("-o", "/tmp","inputfile1", "inputfile2");
+        new CommandLine(example).parseArgs("-o", "/tmp","inputfile1", "inputfile2");
         assertEquals(new File("/tmp"), example.outputDir);
         assertEquals(2, example.inputFiles.length);
         assertEquals(new File("inputfile1"), example.inputFiles[0]);
         assertEquals(new File("inputfile2"), example.inputFiles[1]);
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testIssue207ParameterExceptionProvidesAccessToFailedCommand_Programmatic() {
         class Top {
@@ -2749,7 +2757,7 @@ public class CommandLineTest {
             new CommandLine(new Top()).
                     addSubcommand("sub1", new Sub1()).
                     addSubcommand("sub2", new Sub2()).
-                    parse("sub1 -x abc".split(" "));
+                    parseArgs("sub1 -x abc".split(" "));
         } catch (ParameterException ex) {
             assertTrue(ex.getCommandLine().getCommand() instanceof Top);
         }
@@ -2757,7 +2765,7 @@ public class CommandLineTest {
             new CommandLine(new Top()).
                     addSubcommand("sub1", new Sub1()).
                     addSubcommand("sub2", new Sub2()).
-                    parse("-o OPT sub1 -wrong ABC".split(" "));
+                    parseArgs("-o OPT sub1 -wrong ABC".split(" "));
         } catch (ParameterException ex) {
             assertTrue(ex.getCommandLine().getCommand() instanceof Sub1);
         }
@@ -2765,7 +2773,7 @@ public class CommandLineTest {
             new CommandLine(new Top()).
                     addSubcommand("sub1", new Sub1()).
                     addSubcommand("sub2", new Sub2()).
-                    parse("-o OPT sub2 -wrong ABC".split(" "));
+                    parseArgs("-o OPT sub2 -wrong ABC".split(" "));
         } catch (ParameterException ex) {
             assertTrue(ex.getCommandLine().getCommand() instanceof Sub2);
         }
@@ -2781,6 +2789,8 @@ public class CommandLineTest {
     private static class Sub207A { @Option(names = "-x", required = true) String x;  }
     @Command(name = "sub207B")
     private static class Sub207B { @Option(names = "-y", required = true) String y;  }
+
+    @SuppressWarnings("deprecation")
     @Test
     public void testIssue207ParameterExceptionProvidesAccessToFailedCommand_Declarative() {
         @Command(subcommands = {Sub207A.class, Sub207B.class})
@@ -2788,17 +2798,17 @@ public class CommandLineTest {
             @Option(names = "-o", required = true) String option;
         }
         try {
-            new CommandLine(new Top()).parse("sub207A -x abc".split(" "));
+            new CommandLine(new Top()).parseArgs("sub207A -x abc".split(" "));
         } catch (ParameterException ex) {
             assertTrue(ex.getCommandLine().getCommand() instanceof Top);
         }
         try {
-            new CommandLine(new Top()).parse("-o OPT sub207A -wrong ABC".split(" "));
+            new CommandLine(new Top()).parseArgs("-o OPT sub207A -wrong ABC".split(" "));
         } catch (ParameterException ex) {
             assertTrue(ex.getCommandLine().getCommand() instanceof Sub207A);
         }
         try {
-            new CommandLine(new Top()).parse("-o OPT sub207B -wrong ABC".split(" "));
+            new CommandLine(new Top()).parseArgs("-o OPT sub207B -wrong ABC".split(" "));
         } catch (ParameterException ex) {
             assertTrue(ex.getCommandLine().getCommand() instanceof Sub207B);
         }
@@ -3097,7 +3107,7 @@ public class CommandLineTest {
         File file = findFile("/argfile1.txt");
         assertTrue(file.getAbsoluteFile().exists());
         App app = new App();
-        new CommandLine(app).setExpandAtFiles(false).parse("@" + file.getAbsolutePath());
+        new CommandLine(app).setExpandAtFiles(false).parseArgs("@" + file.getAbsolutePath());
         assertFalse(app.verbose);
         assertEquals(Arrays.asList("@" + file.getAbsolutePath()), app.files);
     }
@@ -3172,7 +3182,7 @@ public class CommandLineTest {
         App app = new App();
         CommandLine cmd = new CommandLine(app);
         cmd.setAtFileCommentChar(null);
-        cmd.parse("-f", "fVal1", "@" + file.getAbsolutePath(), "-x", "-f", "fVal2");
+        cmd.parseArgs("-f", "fVal1", "@" + file.getAbsolutePath(), "-x", "-f", "fVal2");
         assertTrue(app.verbose);
         assertEquals(Arrays.asList("#", "first", "comment", "1111", "2222", "#another", "comment", ";3333"), app.files);
         assertTrue(app.xxx);
@@ -3198,7 +3208,7 @@ public class CommandLineTest {
         App app = new App();
         CommandLine cmd = new CommandLine(app);
         cmd.setAtFileCommentChar(';');
-        cmd.parse("-f", "fVal1", "@" + file.getAbsolutePath(), "-x", "-f", "fVal2");
+        cmd.parseArgs("-f", "fVal1", "@" + file.getAbsolutePath(), "-x", "-f", "fVal2");
         assertTrue(app.verbose);
         assertEquals(Arrays.asList("#", "first", "comment", "1111", "2222", "#another", "comment"), app.files);
         assertTrue(app.xxx);
@@ -3299,7 +3309,7 @@ public class CommandLineTest {
         App app = new App();
         CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
         commandLine.setToggleBooleanFlags(true);
-        commandLine.parse("-f", "fVal1", "@" + file.getAbsolutePath(), "-x", "@" + file2.getAbsolutePath(),  "-f", "fVal2");
+        commandLine.parseArgs("-f", "fVal1", "@" + file.getAbsolutePath(), "-x", "@" + file2.getAbsolutePath(),  "-f", "fVal2");
         assertFalse("invoked twice", app.verbose);
         assertEquals(Arrays.asList("1111", "2222", ";3333", "1111", "2222", "3333"), app.files);
         assertFalse("invoked twice", app.xxx);
@@ -3331,7 +3341,7 @@ public class CommandLineTest {
         setTraceLevel("OFF");
         App app = new App();
         CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
-        commandLine.parse("-f", "fVal1", "@" + file.getAbsolutePath(),  "-f", "fVal2");
+        commandLine.parseArgs("-f", "fVal1", "@" + file.getAbsolutePath(),  "-f", "fVal2");
         assertTrue("invoked in argFile2", app.verbose);
         assertEquals(Arrays.asList("abcdefg", "1111", "2222", "3333"), app.files);
         assertTrue("invoked in argFile2", app.xxx);
@@ -3363,7 +3373,7 @@ public class CommandLineTest {
         setTraceLevel("INFO");
         App app = new App();
         CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
-        commandLine.parse("-f", "fVal1", "@" + localCopy.getAbsolutePath(),  "-f", "fVal2");
+        commandLine.parseArgs("-f", "fVal1", "@" + localCopy.getAbsolutePath(),  "-f", "fVal2");
         assertEquals(Arrays.asList("abc defg", "xyz"), app.files);
         assertArrayEquals(new String[]{"fVal1", "fVal2"}, app.fff);
         assertFalse("not invoked", app.verbose);
@@ -3400,7 +3410,7 @@ public class CommandLineTest {
         setTraceLevel("INFO");
         App app = new App();
         CommandLine commandLine = new CommandLine(app).setOverwrittenOptionsAllowed(true);
-        commandLine.parse("-f", "fVal1", "@" + file.getAbsolutePath(),  "-f", "fVal2");
+        commandLine.parseArgs("-f", "fVal1", "@" + file.getAbsolutePath(),  "-f", "fVal2");
         assertEquals(Arrays.asList("abcdefg", "@" + nested.getName()), app.files);
         assertArrayEquals(new String[]{"fVal1", "fVal2"}, app.fff);
         assertFalse("never invoked", app.verbose);
@@ -3469,7 +3479,7 @@ public class CommandLineTest {
         }
         App app = new App();
         CommandLine commandLine = new CommandLine(app);
-        commandLine.parse("-t", "-x", "abc");
+        commandLine.parseArgs("-t", "-x", "abc");
         assertEquals(Arrays.asList("-t", "-x", "abc"), commandLine.getUnmatchedArguments());
         assertEquals(Arrays.asList("-t", "-x", "abc"), app.unmatched);
     }
@@ -3483,7 +3493,7 @@ public class CommandLineTest {
         }
         App app = new App();
         CommandLine commandLine = new CommandLine(app);
-        commandLine.parse("-t", "-x", "abc");
+        commandLine.parseArgs("-t", "-x", "abc");
         assertEquals(Arrays.asList("-t", "-x", "abc"), commandLine.getUnmatchedArguments());
         assertEquals(Arrays.asList("-t", "-x", "abc"), app.unmatched);
     }
@@ -3497,7 +3507,7 @@ public class CommandLineTest {
         }
         App app = new App();
         CommandLine commandLine = new CommandLine(app);
-        commandLine.parse("-t", "-x", "abc");
+        commandLine.parseArgs("-t", "-x", "abc");
         assertEquals(Arrays.asList("-t", "-x", "abc"), commandLine.getUnmatchedArguments());
         assertArrayEquals(new String[]{"-t", "-x", "abc"}, app.unmatched);
     }
@@ -3514,7 +3524,7 @@ public class CommandLineTest {
         }
         App app = new App();
         CommandLine commandLine = new CommandLine(app);
-        commandLine.parse("-t", "-x", "abc");
+        commandLine.parseArgs("-t", "-x", "abc");
         assertEquals(Arrays.asList("-t", "-x", "abc"), commandLine.getUnmatchedArguments());
         assertArrayEquals(new String[]{"-t", "-x", "abc"}, app.unmatched1);
         assertArrayEquals(new String[]{"-t", "-x", "abc"}, app.unmatched2);
@@ -3529,7 +3539,7 @@ public class CommandLineTest {
             @Unmatched String[] unmatched;
         }
         CommandLine cmd = new CommandLine(new App());
-        cmd.parse("a", "b");
+        cmd.parseArgs("a", "b");
         assertEquals(Arrays.asList("a", "b"), cmd.getUnmatchedArguments());
     }
 
@@ -3651,7 +3661,7 @@ public class CommandLineTest {
             String mandatory;
         }
         CommandLine commandLine = new CommandLine(new Parent(), new InnerClassFactory(this));
-        commandLine.parse("help");
+        commandLine.parseArgs("help");
     }
 
     @Test
@@ -3662,7 +3672,7 @@ public class CommandLineTest {
             String mandatory;
         }
         CommandLine commandLine = new CommandLine(new Parent(), new InnerClassFactory(this));
-        commandLine.parse("help");
+        commandLine.parseArgs("help");
     }
 
     @Test
@@ -3673,7 +3683,7 @@ public class CommandLineTest {
             String mandatory;
         }
         CommandLine commandLine = new CommandLine(new Parent(), new InnerClassFactory(this));
-        commandLine.parse("--help");
+        commandLine.parseArgs("--help");
         assertTrue("No exceptions", true);
     }
 
@@ -3694,18 +3704,18 @@ public class CommandLineTest {
         assertFalse(flags.p0);
         assertTrue (flags.b);
         assertTrue (flags.p1);
-        commandLine.parse("-a", "-b", "true", "false");
+        commandLine.parseArgs("-a", "-b", "true", "false");
         assertFalse(!flags.a);
         assertTrue (!flags.b);
         assertFalse(!flags.p0);
         assertTrue (!flags.p1);
-        commandLine.parse("-a", "-b", "true", "false");
+        commandLine.parseArgs("-a", "-b", "true", "false");
         assertFalse(!flags.a);
         assertTrue (!flags.b);
         assertFalse(!flags.p0);
         assertTrue (!flags.p1);
 
-        commandLine.parse("-a", "-a", "-b", "-b", "true", "false");
+        commandLine.parseArgs("-a", "-a", "-b", "-b", "true", "false");
         // multiple occurrences DO cancel each other out
         assertFalse(flags.a);
         assertTrue (flags.b);
@@ -3729,20 +3739,20 @@ public class CommandLineTest {
         assertTrue (flags.b);
         assertFalse(flags.p0);
         assertTrue (flags.p1);
-        commandLine.parse("-a", "-b", "true", "false");
+        commandLine.parseArgs("-a", "-b", "true", "false");
         // specified flags now opposite of default
         assertTrue (flags.a);
         assertFalse(flags.b);
         assertTrue (flags.p0);
         assertFalse(flags.p1);
-        commandLine.parse("-a", "-b", "true", "false");
+        commandLine.parseArgs("-a", "-b", "true", "false");
         // specified flags again opposite of default
         assertTrue (flags.a);
         assertFalse(flags.b);
         assertTrue (flags.p0);
         assertFalse(flags.p1);
 
-        commandLine.parse("-a", "-a", "-b", "-b", "true", "false");
+        commandLine.parseArgs("-a", "-a", "-b", "-b", "true", "false");
         // multiple occurrences do NOT cancel each other out
         assertTrue (flags.a);
         assertFalse(flags.b);

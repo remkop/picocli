@@ -130,6 +130,7 @@ class ExecParameterConsumer implements IParameterConsumer {
 - [#718] API: Add `IParameterConsumer` and `@Option(parameterConsumer = Xxx.class)` for passing arguments through to another command, like `find -exec`. Thanks to [Reinhard Pointner](https://github.com/rednoah) for the suggestion. 
 - [#721] API: Add public method Text.getCJKAdjustedLength().
 - [#634] API: Dynamically detect terminal size. Requires Java 7. Thanks to my colleague Takuya Ishibashi for the suggestion.
+- [#737] Deprecate the `parse` method in favor of `parseArgs`.
 - [#717] Negatable options change: avoid unmappable character `±` for synopsis: it renders as scrambled characters in encoding ASCII and in some terminals.
 - [#734][#735] Make the picocli jar OSGi friendly. Thanks to [Radu Cotescu](https://github.com/raducotescu) for the pull request.
 - [#719] Bugfix: options with variable arity should stop consuming arguments on custom end-of-options delimiter.
@@ -141,7 +142,7 @@ class ExecParameterConsumer implements IParameterConsumer {
 
  
 ## <a name="4.0.0-beta-2-deprecated"></a> Deprecations
-
+From this release, the `parse` method is deprecated in favor of `parseArgs`.
 
 ## <a name="4.0.0-beta-2-breaking-changes"></a> Potential breaking changes
 

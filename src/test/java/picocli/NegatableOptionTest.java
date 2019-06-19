@@ -156,7 +156,7 @@ public class NegatableOptionTest {
         App app = new App();
         assertFalse(app.a);
 
-        new CommandLine(app).parse(args);
+        new CommandLine(app).parseArgs(args);
         assertTrue(app.a);
         assertFalse(app.longWithoutNo);
         assertFalse(app.longB);
@@ -216,7 +216,7 @@ public class NegatableOptionTest {
         cmd.setNegatableOptionTransformer(createNegatableShortOptionsTransformer());
 
         String[] args = { "-a", "+b", "-c", "+n" };
-        cmd.parse(args);
+        cmd.parseArgs(args);
         assertTrue(app.a);
         assertFalse(app.b);
         assertFalse(app.c);
@@ -252,7 +252,7 @@ public class NegatableOptionTest {
         cmd.setNegatableOptionTransformer(transformer);
 
         String[] args = { "-a", "+b", "-c", "+n" };
-        cmd.parse(args);
+        cmd.parseArgs(args);
         String expected = String.format("" +
                 "Usage: <main class> [(+|-)a] [(+|-)b] [(+|-)c] [(+|-)n]%n" +
                 "  (+|-)a%n" +

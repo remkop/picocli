@@ -49,6 +49,7 @@ public class ParentCommandTest {
             parent.result = result;
         }
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testParentInjectedOnParseWhenConfiguredAsSubcommand() {
         List<CommandLine> result = new CommandLine(new Top()).parse("-d/tmp/blah", "sub", "3");
@@ -65,6 +66,7 @@ public class ParentCommandTest {
         assertEquals(new File("/tmp/blah"), top.baseDirectory);
         assertEquals(3 * "/tmp/blah".length(), top.result);
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testParentNotInjectedWhenConfiguredAsTopLevelCommand() {
         List<CommandLine> result = new CommandLine(new Sub()).parse("3");
@@ -73,6 +75,7 @@ public class ParentCommandTest {
         assertEquals(3, sub.count);
         assertEquals(0, sub.result);
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testParentInjectedWhenAddedAsSubcommand() {
         class Top1 {
