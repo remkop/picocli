@@ -96,7 +96,7 @@ Options or positional parameters can be assigned a `IParameterConsumer` that imp
 
 This can be useful when passing options through to another command.
 
-For example, the unix https://en.wikipedia.org/wiki/Find_(Unix)[`find`] command has a https://en.wikipedia.org/wiki/Find_(Unix)#Execute_an_action[`-exec`] option to execute some action for each file found. Any arguments following the `-exec` option until a `;` or `+` argument are not options for the `find` command itself, but are interpreted as a separate command and its options.
+For example, the unix [`find`](https://en.wikipedia.org/wiki/Find_(Unix)) command has a [`-exec`](https://en.wikipedia.org/wiki/Find_(Unix)#Execute_an_action) option to execute some action for each file found. Any arguments following the `-exec` option until a `;` or `+` argument are not options for the `find` command itself, but are interpreted as a separate command and its options.
 
 The example below demonstrates how to implement `find -exec` using this API:
 
