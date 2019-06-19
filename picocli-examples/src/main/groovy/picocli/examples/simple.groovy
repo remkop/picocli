@@ -1,6 +1,6 @@
 package picocli.examples
 
-@Grab('info.picocli:picocli-groovy:4.0.0-beta-1b')
+@Grab('info.picocli:picocli-groovy:4.0.0-beta-2')
 @GrabExclude('org.codehaus.groovy:groovy-all')
 @picocli.groovy.PicocliScript
 @picocli.CommandLine.Command

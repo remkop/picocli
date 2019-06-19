@@ -1,7 +1,7 @@
 # picocli Release Notes
 
 
-# <a name="4.0.0-beta-2"></a> Picocli 4.0.0-beta-2 (UNRELEASED)
+# <a name="4.0.0-beta-2"></a> Picocli 4.0.0-beta-2
 The picocli community is pleased to announce picocli 4.0.0-beta-2.
 
 Bugfixes and improvements.
