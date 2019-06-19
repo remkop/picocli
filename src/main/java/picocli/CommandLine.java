@@ -56,6 +56,39 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * CommandLine interpreter that uses reflection to initialize an annotated user object with values obtained from the
  * command line arguments.
  * </p><h2>Example</h2>
+ * <p id="checksum_example">
+ * An example that implements {@code Callable} and uses the {@link #execute(String...) CommandLine.execute} convenience API to run in a single line of code:
+ * </p>
+ * <pre>
+ *  &#064;Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
+ *           name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0")
+ * class CheckSum implements Callable&lt;Integer&gt; {
+ *
+ *     &#064;Parameters(index = "0", description = "The file whose checksum to calculate.")
+ *     private File file;
+ *
+ *     &#064;Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
+ *     private String algorithm = "MD5";
+ *
+ *     public static void main(String[] args) throws Exception {
+ *         // CheckSum implements Callable, so parsing, error handling and handling user
+ *         // requests for usage help or version help can be done with one line of code.
+ *
+ *         int exitCode = new CommandLine(new CheckSum()).execute(args);
+ *         System.exit(exitCode);
+ *     }
+ *
+ *     &#064;Override
+ *     public Integer call() throws Exception { // your business logic goes here...
+ *         byte[] fileContents = Files.readAllBytes(file.toPath());
+ *         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
+ *         System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1,digest));
+ *         return 0;
+ *     }
+ * }
+ * </pre>
+ * <p>Another example where the application calls {@code parseArgs} and takes responsibility
+ * for error handling and checking whether the user requested help:</p>
  * <pre>import static picocli.CommandLine.*;
  *
  * &#064;Command(mixinStandardHelpOptions = true, version = "v3.0.0",
@@ -100,37 +133,6 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * -vo=outfile in1 in2
  * -v -ooutfile in1 in2
  * -vooutfile in1 in2
- * </pre>
- * <p id="checksum_example">
- * Another example that implements {@code Callable} and uses the {@link #execute(String...) CommandLine.execute} convenience API to run in a single line of code:
- * </p>
- * <pre>
- *  &#064;Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
- *           name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0")
- * class CheckSum implements Callable&lt;Integer&gt; {
- *
- *     &#064;Parameters(index = "0", description = "The file whose checksum to calculate.")
- *     private File file;
- *
- *     &#064;Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
- *     private String algorithm = "MD5";
- *
- *     public static void main(String[] args) throws Exception {
- *         // CheckSum implements Callable, so parsing, error handling and handling user
- *         // requests for usage help or version help can be done with one line of code.
- *
- *         int exitCode = new CommandLine(new CheckSum()).execute(args);
- *         System.exit(exitCode);
- *     }
- *
- *     &#064;Override
- *     public Integer call() throws Exception { // your business logic goes here...
- *         byte[] fileContents = Files.readAllBytes(file.toPath());
- *         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
- *         System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1,digest));
- *         return 0;
- *     }
- * }
  * </pre>
  * <h2>Classes and Interfaces for Defining a CommandSpec Model</h2>
  * <p>
