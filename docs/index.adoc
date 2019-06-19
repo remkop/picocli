@@ -198,7 +198,7 @@ class Login implements Callable<Integer> {
 When this command is invoked like this:
 [source,java]
 ----
-CommandLine.call(new Login(), "-u", "user123", "-p");
+new CommandLine(new Login()).execute("-u", "user123", "-p");
 ----
 Then the user will be prompted to enter a value:
 
@@ -804,7 +804,7 @@ class FallbackValueDemo implements Runnable {
     public void run() { System.out.printf("x = %s%n", x); }
 
     public static void main(String... args) {
-       CommandLine.run(new FallbackValueDemo(), args);
+       new CommandLine(new FallbackValueDemo()).execute(args);
     }
 }
 ----
@@ -2674,7 +2674,9 @@ import org.fusesource.jansi.AnsiConsole;
 ...
 public static void main(String[] args) {
     AnsiConsole.systemInstall(); // Jansi magic
-    CommandLine.run(new WindowsJansiDemo(), System.err, Ansi.ON, args);
+    new CommandLine(new WindowsJansiDemo())
+            .setColorScheme(CommandLine.Help.defaultColorScheme(Ansi.ON))
+            .execute(args);
     AnsiConsole.systemUninstall();
 }
 ----
@@ -4046,7 +4048,7 @@ public class InjectionDemo implements Runnable {
     @Option(names = "-x") int x;
 
     public static void main(String[] args) {
-        CommandLine.run(Runnable.class, new GuiceFactory(), args);
+        new CommandLine(Runnable.class, new GuiceFactory()).execute(args);
     }
 
     @Override
@@ -4082,7 +4084,7 @@ public class MySpringBootApp implements CommandLineRunner {
     @Override
     public void run(String... args) {
         // let picocli parse command line args and run the business logic
-        CommandLine.call(myCommand, args);
+        new CommandLine(myCommand).execute(args);
     }
 }
 ----
@@ -4115,7 +4117,7 @@ import java.util.concurrent.Callable;
 
 @Component
 @Command(name = "myCommand")
-public class MyCommand implements Callable<Void> {
+public class MyCommand implements Callable<Integer> {
 
     @Autowired
     private SomeService someService;
@@ -4129,9 +4131,9 @@ public class MyCommand implements Callable<Void> {
     @Option(names = { "-x", "--option" }, description = "example option")
     private boolean flag;
 
-    public Void call() throws Exception {
+    public Integer call() throws Exception {
         // business logic here
-        return null;
+        return 0;
     }
 }
 ----
@@ -4305,7 +4307,7 @@ class MyApp implements Runnable {
         }
     }
     static void main(String[] args) {
-        CommandLine.run(new MayApp(), args)
+        new CommandLine(new MayApp()).execute(args)
     }
 }
 ----
@@ -4377,7 +4379,7 @@ class MyApp : Runnable {
         }
     }
 }
-fun main(args: Array<String>) = CommandLine.run(MyApp(), *args)
+fun main(args: Array<String>) = CommandLine(MyApp()).execute(*args)
 ----
 
 When specify a class as an argument of an annotation, use a Kotlin class (https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.reflect/-k-class/index.html[KClass]).
@@ -4417,7 +4419,7 @@ class MyApp : Runnable {
         }
     }
 }
-fun main(args: Array<String>) = CommandLine.run(MyApp(), *args)
+fun main(args: Array<String>) = CommandLine(MyApp()).execute(*args)
 ----
 
 === Scala
