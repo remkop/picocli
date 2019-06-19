@@ -14765,8 +14765,7 @@ public class CommandLine {
         public UnmatchedArgumentException(CommandLine commandLine, String msg) { super(commandLine, msg); }
         public UnmatchedArgumentException(CommandLine commandLine, Stack<String> args) { this(commandLine, new ArrayList<String>(reverse(args))); }
         public UnmatchedArgumentException(CommandLine commandLine, List<String> args) {
-            this(commandLine, describe(Assert.notNull(args, "unmatched list"), commandLine) +
-                    (args.size() == 1 ? ": " : "s: ") + str(args));
+            this(commandLine, describe(Assert.notNull(args, "unmatched list"), commandLine) + ": " + quoteElements(args));
             unmatched = new ArrayList<String>(args);
         }
         /** Returns {@code true} and prints suggested solutions to the specified stream if such solutions exist, otherwise returns {@code false}.
@@ -14808,6 +14807,10 @@ public class CommandLine {
             }
             return !suggestions.isEmpty();
         }
+        private static String str(List<String> list) {
+            String s = list.toString();
+            return s.substring(0, s.length() - 1).substring(1);
+        }
         /** Returns suggested solutions if such solutions exist, otherwise returns an empty list.
          * @since 3.3.0 */
         public List<String> getSuggestions() {
@@ -14827,11 +14830,23 @@ public class CommandLine {
             return unmatch != null && !unmatch.isEmpty() && cmd.getCommandSpec().resemblesOption(unmatch.get(0), null);
         }
         private static String describe(List<String> unmatch, CommandLine cmd) {
-            return isUnknownOption(unmatch, cmd) ? "Unknown option" : "Unmatched argument";
+            String plural = unmatch.size() == 1 ? "" : "s";
+            String at = unmatch.size() == 1 ? " at" : " from";
+            return isUnknownOption(unmatch, cmd) ? "Unknown option" + plural : "Unmatched argument" + plural + at + " index " + (cmd.interpreter.parseResultBuilder == null ? "0" : cmd.interpreter.parseResultBuilder.originalArgList.indexOf(unmatch.get(0)));
         }
-        static String str(List<String> list) {
-            String s = list.toString();
-            return s.substring(0, s.length() - 1).substring(1);
+        static String quoteElements(List<String> list) {
+            String result = "", suffix = "";
+            int pos = 0;
+            for (String element : list) {
+                if (result.length() > 0) {result += ", ";}
+                if (element != null && (pos = element.indexOf(" (while processing option:")) >= 0) {
+                    suffix = element.substring(pos);
+                    element = element.substring(0, pos);
+                }
+                result += "'" + element + "'" + suffix;
+                suffix = "";
+            }
+            return result;
         }
     }
     /** Exception indicating that more values were specified for an option or parameter than its {@link Option#arity() arity} allows. */

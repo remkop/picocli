@@ -622,7 +622,7 @@ public class InteractiveArgTest {
                 cmd.parseArgs("-y", "456", "abc");
                 fail("Expect exception");
             } catch (UnmatchedArgumentException ex) {
-                assertEquals("Unknown option: -y", ex.getMessage());
+                assertEquals("Unknown option: '-y'", ex.getMessage());
             }
         } finally {
             System.setOut(out);
@@ -654,7 +654,7 @@ public class InteractiveArgTest {
                 cmd.parseArgs("-y", "-w", "456", "abc");
                 fail("Expect exception");
             } catch (UnmatchedArgumentException ex) {
-                assertEquals("Unknown options: -y, -w", ex.getMessage());
+                assertEquals("Unknown options: '-y', '-w'", ex.getMessage());
             }
         } finally {
             System.setOut(out);

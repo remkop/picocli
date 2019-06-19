@@ -40,7 +40,7 @@ public class UnmatchedArgumentExceptionTest {
         CommandLine cmd = new CommandLine(new Demo.GitCommit());
         cmd.parseWithHandler(((CommandLine.IParseResultHandler)null), new PrintStream(baos), new String[]{"-fi"});
         String expected = format("" +
-                "Unknown option: -fi%n" +
+                "Unknown option: '-fi'%n" +
                 "Possible solutions: --fixup, --file%n");
         assertEquals(expected, baos.toString());
     }
@@ -51,7 +51,7 @@ public class UnmatchedArgumentExceptionTest {
         CommandLine cmd = new CommandLine(new Demo.GitCommit());
         cmd.parseWithHandler(((CommandLine.IParseResultHandler)null), new PrintStream(baos), new String[]{"-x"});
         String actual = baos.toString();
-        assertTrue(actual, actual.startsWith("Unknown option: -x"));
+        assertTrue(actual, actual.startsWith("Unknown option: '-x'"));
         assertTrue(actual, actual.contains("Usage:"));
         assertFalse(actual, actual.contains("Possible solutions:"));
     }
@@ -61,7 +61,7 @@ public class UnmatchedArgumentExceptionTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Demo.mainCommand().parseWithHandler(((CommandLine.IParseResultHandler)null), new PrintStream(baos), new String[]{"chekcout"});
         String expected = format("" +
-                "Unmatched argument: chekcout%n" +
+                "Unmatched argument at index 0: 'chekcout'%n" +
                 "Did you mean: checkout or help or branch?%n");
         assertEquals(expected, baos.toString());
     }
@@ -71,7 +71,7 @@ public class UnmatchedArgumentExceptionTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Demo.mainCommand().parseWithHandler(((CommandLine.IParseResultHandler)null), new PrintStream(baos), new String[]{"me"});
         String expected = format("" +
-                "Unmatched argument: me%n" +
+                "Unmatched argument at index 0: 'me'%n" +
                 "Did you mean: merge?%n");
         assertEquals(expected, baos.toString());
     }

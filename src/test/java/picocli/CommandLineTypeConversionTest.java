@@ -1038,7 +1038,7 @@ public class CommandLineTypeConversionTest {
         try {
             CommandLine.populateCommand(new App(), "a:c", "1:3");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments: a:c, 1:3", ex.getMessage());
+            assertEquals("Unmatched arguments from index 0: 'a:c', '1:3'", ex.getMessage());
         }
     }
 
@@ -1050,7 +1050,7 @@ public class CommandLineTypeConversionTest {
         try {
             CommandLine.populateCommand(new App(), "a:c", "1:3");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments: a:c, 1:3", ex.getMessage());
+            assertEquals("Unmatched arguments from index 0: 'a:c', '1:3'", ex.getMessage());
         }
     }
     enum ResultTypes {

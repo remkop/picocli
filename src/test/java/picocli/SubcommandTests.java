@@ -302,7 +302,7 @@ public class SubcommandTests {
             createNestedCommand().parseArgs("cmd1", "sub11", "sub12");
             fail("Expected exception for sub12");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched argument: sub12", ex.getMessage());
+            assertEquals("Unmatched argument at index 2: 'sub12'", ex.getMessage());
         }
         List<CommandLine> sub22sub1 = createNestedCommand().parse("cmd2", "sub22", "sub22sub1");
         assertEquals(4, sub22sub1.size());
@@ -323,37 +323,37 @@ public class SubcommandTests {
             createNestedCommand().parseArgs("-a", "-b", "cmd1");
             fail("unmatched option should prevents remainder to be parsed as command");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unknown option: -b", ex.getMessage());
+            assertEquals("Unknown option: '-b'", ex.getMessage());
         }
         try {
             createNestedCommand().parseArgs("cmd1", "sub21");
             fail("sub-commands for different parent command");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched argument: sub21", ex.getMessage());
+            assertEquals("Unmatched argument at index 1: 'sub21'", ex.getMessage());
         }
         try {
             createNestedCommand().parseArgs("cmd1", "sub22sub1");
             fail("sub-sub-commands for different parent command");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched argument: sub22sub1", ex.getMessage());
+            assertEquals("Unmatched argument at index 1: 'sub22sub1'", ex.getMessage());
         }
         try {
             createNestedCommand().parseArgs("sub11");
             fail("sub-commands without preceding parent command");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched argument: sub11", ex.getMessage());
+            assertEquals("Unmatched argument at index 0: 'sub11'", ex.getMessage());
         }
         try {
             createNestedCommand().parseArgs("sub21");
             fail("sub-commands without preceding parent command");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched argument: sub21", ex.getMessage());
+            assertEquals("Unmatched argument at index 0: 'sub21'", ex.getMessage());
         }
         try {
             createNestedCommand().parseArgs("sub22sub1");
             fail("sub-sub-commands without preceding parent/grandparent command");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched argument: sub22sub1", ex.getMessage());
+            assertEquals("Unmatched argument at index 0: 'sub22sub1'", ex.getMessage());
         }
     }
 
@@ -388,7 +388,7 @@ public class SubcommandTests {
             createNestedCommandWithAliases().parse("cmd1alias1", "sub11alias1", "sub12alias1");
             fail("Expected exception for sub12alias1");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched argument: sub12alias1", ex.getMessage());
+            assertEquals("Unmatched argument at index 2: 'sub12alias1'", ex.getMessage());
         }
         List<CommandLine> sub22sub1 = createNestedCommandWithAliases().parse("cmd2alias1", "sub22alias2", "sub22sub1alias1");
         assertEquals(4, sub22sub1.size());

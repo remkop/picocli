@@ -313,7 +313,7 @@ public class CommandLineModelTest {
             commandLine.parseArgs("-c", "1", "2", "3");
             fail("Expected exception");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments: 2, 3", ex.getMessage());
+            assertEquals("Unmatched arguments from index 2: '2', '3'", ex.getMessage());
         }
     }
 
@@ -329,7 +329,7 @@ public class CommandLineModelTest {
             commandLine.parseArgs("1", "2", "3");
             fail("Expected exception");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments: 2, 3", ex.getMessage());
+            assertEquals("Unmatched arguments from index 1: '2', '3'", ex.getMessage());
         }
     }
 

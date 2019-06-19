@@ -55,7 +55,7 @@ public class LenientParsingTest {
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parseArgs("-c", "1", "2", "3");
         assertEquals(1, commandLine.getParseResult().errors().size());
-        assertEquals("Unmatched arguments: 2, 3", commandLine.getParseResult().errors().get(0).getMessage());
+        assertEquals("Unmatched arguments from index 2: '2', '3'", commandLine.getParseResult().errors().get(0).getMessage());
     }
 
     @Test
@@ -69,7 +69,7 @@ public class LenientParsingTest {
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parseArgs("1", "2", "3");
         assertEquals(1, commandLine.getParseResult().errors().size());
-        assertEquals("Unmatched arguments: 2, 3", commandLine.getParseResult().errors().get(0).getMessage());
+        assertEquals("Unmatched arguments from index 1: '2', '3'", commandLine.getParseResult().errors().get(0).getMessage());
     }
     @Test
     public void testMissingRequiredParams() {
@@ -163,11 +163,11 @@ public class LenientParsingTest {
         cmd.getCommandSpec().parser().collectErrors(true);
         cmd.parseArgs("a", "b", "c");
         assertEquals(1, cmd.getParseResult().errors().size());
-        assertEquals("Unmatched arguments: a, b, c", cmd.getParseResult().errors().get(0).getMessage());
+        assertEquals("Unmatched arguments from index 0: 'a', 'b', 'c'", cmd.getParseResult().errors().get(0).getMessage());
 
         cmd.parseArgs("a");
         assertEquals(1, cmd.getParseResult().errors().size());
-        assertEquals("Unmatched argument: a", cmd.getParseResult().errors().get(0).getMessage());
+        assertEquals("Unmatched argument at index 0: 'a'", cmd.getParseResult().errors().get(0).getMessage());
     }
     @Test
     public void testSingleValueFieldDefaultMinArityIsOne() {
@@ -195,7 +195,7 @@ public class LenientParsingTest {
         cmd.getCommandSpec().parser().collectErrors(true);
         cmd.parseArgs("-rv234 -bool".split(" "));
         assertEquals(1, cmd.getParseResult().errors().size());
-        assertEquals("Unknown option: -234 (while processing option: '-rv234')", cmd.getParseResult().errors().get(0).getMessage());
+        assertEquals("Unknown option: '-234' (while processing option: '-rv234')", cmd.getParseResult().errors().get(0).getMessage());
     }
 
     @Test
@@ -208,7 +208,7 @@ public class LenientParsingTest {
         }
         assertMissing(Arrays.asList("Expected parameter 2 (of 2 mandatory parameters) for option '-a' but found '-a'",
                 "option '-a' at index 0 (<a>) requires at least 2 values, but only 1 were specified: [2]",
-                "Unmatched argument: 2"),
+                "Unmatched argument at index 3: '2'"),
                 new Cmd(), "-a", "1", "-a", "2");
 
         assertMissing(Arrays.asList("Expected parameter 2 (of 2 mandatory parameters) for option '-a' but found '-v'"),
@@ -240,7 +240,7 @@ public class LenientParsingTest {
         }
         assertMissing(Arrays.asList("Expected parameter 2 (of 2 mandatory parameters) for option '-a' but found '-a'",
                 "option '-a' at index 0 (<String=String>) requires at least 2 values, but only 1 were specified: [C=D]",
-                "Unmatched argument: C=D"),
+                "Unmatched argument at index 3: 'C=D'"),
                 new Cmd(), "-a", "A=B", "-a", "C=D");
 
         assertMissing(Arrays.asList("Expected parameter 2 (of 2 mandatory parameters) for option '-a' but found '-v'"),
@@ -283,7 +283,7 @@ public class LenientParsingTest {
         assertEquals(prefix, ex.getMessage().substring(0, prefix.length()));
         assertEquals(suffix, ex.getMessage().substring(ex.getMessage().length() - suffix.length(), ex.getMessage().length()));
 
-        assertEquals("Unmatched argument: c", cmd.getParseResult().errors().get(1).getMessage());
+        assertEquals("Unmatched argument at index 3: 'c'", cmd.getParseResult().errors().get(1).getMessage());
     }
     @Test
     public void testTimeFormatHHmmssSSSInvalidError() throws ParseException {
@@ -321,7 +321,7 @@ public class LenientParsingTest {
         assertEquals("positional parameter at index 0..* (<all>) should be specified only once", parseResult.errors().get(2).getMessage());
         assertEquals("positional parameter at index 0..* (<all>) should be specified only once", parseResult.errors().get(3).getMessage());
         assertEquals("positional parameter at index 0..* (<all>) should be specified only once", parseResult.errors().get(4).getMessage());
-        assertEquals("Unmatched arguments: NOT_AN_INT, -unknown, 2, 3", parseResult.errors().get(5).getMessage());
+        assertEquals("Unmatched arguments from index 0: 'NOT_AN_INT', '-unknown', '2', '3'", parseResult.errors().get(5).getMessage());
     }
     @Test
     public void testAnyExceptionWrappedInParameterException() {

@@ -133,6 +133,7 @@ class ExecParameterConsumer implements IParameterConsumer {
 - [#737] Deprecate the `parse` method in favor of `parseArgs`.
 - [#717] Negatable options change: avoid unmappable character `±` for synopsis: it renders as scrambled characters in encoding ASCII and in some terminals.
 - [#734][#735] Make the picocli jar OSGi friendly. Thanks to [Radu Cotescu](https://github.com/raducotescu) for the pull request.
+- [#733] Improve error message for unmatched arguments. Thanks to my colleague Takuya Ishibashi for raising this.
 - [#719] Bugfix: options with variable arity should stop consuming arguments on custom end-of-options delimiter.
 - [#720] Bugfix: `@Unmatched` list should be cleared prior to subsequent invocations.
 - [#723] Bugfix: variables in `defaultValue` were not expanded in usage help option description line for `showDefaultValues = true`. Thanks to [Mikaël Barbero](https://github.com/mbarbero) for raising this.
@@ -145,6 +146,18 @@ class ExecParameterConsumer implements IParameterConsumer {
 From this release, the `parse` method is deprecated in favor of `parseArgs`.
 
 ## <a name="4.0.0-beta-2-breaking-changes"></a> Potential breaking changes
+
+The error message for unmatched arguments now shows the index in the command line arguments where the unmatched argument was found,
+and shows the unmatched value in single quotes. This is useful when the unmatched value is whitespace or an empty String.
+
+For example:
+
+```
+Previously:  Unmatched arguments: B, C
+New       :  Unmatched arguments from index 1: 'B', 'C'
+```
+
+This may break tests that rely on the exact error message.
 
 
 

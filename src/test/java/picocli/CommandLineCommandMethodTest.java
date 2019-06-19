@@ -504,7 +504,7 @@ public class CommandLineCommandMethodTest {
             CommandLine.populateCommand(m, "-oout -r -vp1 p2".split(" "));
             fail("should fail: -v does not take an argument");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unknown option: -p1 (while processing option: '-vp1')", ex.getMessage());
+            assertEquals("Unknown option: '-p1' (while processing option: '-vp1')", ex.getMessage());
         }
     }
 
@@ -819,7 +819,7 @@ public class CommandLineCommandMethodTest {
     @Test
     public void testSubcommandMethodInvalidInputHandling() {
         String expected = String.format("" +
-                "Unknown option: -y%n" +
+                "Unknown option: '-y'%n" +
                 "Usage: maincommand subcommand [-x=<arg0>]%n" +
                 "  -x=<arg0>%n");
 

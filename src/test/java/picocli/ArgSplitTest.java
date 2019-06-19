@@ -39,13 +39,13 @@ public class ArgSplitTest {
             CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "C");
             fail("Expected UnmatchedArgEx");
         } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unmatched arguments: B, C", ok.getMessage());
+            assertEquals("Unmatched arguments from index 1: 'B', 'C'", ok.getMessage());
         }
         try {
             CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "-a=C");
             fail("Expected UnmatchedArgEx");
         } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unmatched argument: B", ok.getMessage());
+            assertEquals("Unmatched argument at index 1: 'B'", ok.getMessage());
         }
     }
 
@@ -70,13 +70,13 @@ public class ArgSplitTest {
             CommandLine.populateCommand(new Args(), "-a=a b c", "B", "C");
             fail("Expected UnmatchedArgEx");
         } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unmatched arguments: B, C", ok.getMessage());
+            assertEquals("Unmatched arguments from index 1: 'B', 'C'", ok.getMessage());
         }
         try {
             CommandLine.populateCommand(new Args(), "-a=a b c", "B", "-a=C");
             fail("Expected UnmatchedArgEx");
         } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unmatched argument: B", ok.getMessage());
+            assertEquals("Unmatched argument at index 1: 'B'", ok.getMessage());
         }
     }
 
@@ -132,7 +132,7 @@ public class ArgSplitTest {
             CommandLine.populateCommand(new Args(), "-a=a,b,c", "B", "C");
             fail("Expected UnmatchedArgumentException");
         } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unmatched arguments: B, C", ok.getMessage());
+            assertEquals("Unmatched arguments from index 1: 'B', 'C'", ok.getMessage());
         }
     }
 
@@ -274,7 +274,7 @@ public class ArgSplitTest {
             CommandLine.populateCommand(new App(), "-fix", "1=a", "2=b", "3=c|4=d"); // 3 args
             fail("UnmatchedArgumentException expected");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched argument: 3=c|4=d", ex.getMessage());
+            assertEquals("Unmatched argument at index 3: '3=c|4=d'", ex.getMessage());
         }
     }
 

@@ -650,7 +650,7 @@ public class CommandLineArityTest {
             CommandLine.populateCommand(new BooleanOptionsArity0_nAndParameters(), "-rv234 -bool".split(" "));
             fail("Expected exception");
         } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unknown option: -234 (while processing option: '-rv234')", ok.getMessage());
+            assertEquals("Unknown option: '-234' (while processing option: '-rv234')", ok.getMessage());
         }
     }
     @Test
@@ -1151,13 +1151,13 @@ public class CommandLineArityTest {
             CommandLine.populateCommand(new NonVarArgArrayParamsZeroArity(), "a", "b", "c");
             fail("Expected UnmatchedArgumentException");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments: a, b, c", ex.getMessage());
+            assertEquals("Unmatched arguments from index 0: 'a', 'b', 'c'", ex.getMessage());
         }
         try {
             CommandLine.populateCommand(new NonVarArgArrayParamsZeroArity(), "a");
             fail("Expected UnmatchedArgumentException");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched argument: a", ex.getMessage());
+            assertEquals("Unmatched argument at index 0: 'a'", ex.getMessage());
         }
         NonVarArgArrayParamsZeroArity params = CommandLine.populateCommand(new NonVarArgArrayParamsZeroArity());
         assertEquals(null, params.params);

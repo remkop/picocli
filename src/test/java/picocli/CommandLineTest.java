@@ -594,7 +594,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new CompactFields(), "-oout -r -vp1 p2".split(" "));
             fail("should fail: -v does not take an argument");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unknown option: -p1 (while processing option: '-vp1')", ex.getMessage());
+            assertEquals("Unknown option: '-p1' (while processing option: '-vp1')", ex.getMessage());
         }
     }
 
@@ -668,7 +668,7 @@ public class CommandLineTest {
             app.parseArgs("-x", "-a", "AAA");
             fail("Expected exception");
         } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unknown option: -x", ok.getMessage());
+            assertEquals("Unknown option: '-x'", ok.getMessage());
         }
     }
 
@@ -689,6 +689,20 @@ public class CommandLineTest {
 
         assertArrayEquals(new String[]{"-x"}, app.remainder);
         assertEquals("AAA", app.alpha);
+    }
+
+    @Test
+    public void testUnmatchedWithEmptyPositional() {
+        @Command class App {
+            @Option(names = "-x") List<Object> unmatched;
+        }
+        CommandLine cmd = new CommandLine(new App());
+        try {
+            cmd.parseArgs("");
+            fail("Expected exception");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument at index 0: ''", ex.getMessage());
+        }
     }
 
     @Test
@@ -747,7 +761,7 @@ public class CommandLineTest {
             cmd.parseArgs("-rvoFILE");
             fail("Expected exception");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unknown option: -rvoFILE", ex.getMessage());
+            assertEquals("Unknown option: '-rvoFILE'", ex.getMessage());
         }
     }
     @Test
@@ -763,7 +777,7 @@ public class CommandLineTest {
             cmd.parseArgs(args);
             fail("Expected exception");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unknown option: -oFILE", ex.getMessage());
+            assertEquals("Unknown option: '-oFILE'", ex.getMessage());
         }
     }
     @Test
@@ -1186,7 +1200,7 @@ public class CommandLineTest {
             opt = CommandLine.populateCommand(new Arity2(), "-p a b".split(" "));
             fail("expected exception");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched argument: b", ex.getMessage());
+            assertEquals("Unmatched argument at index 2: 'b'", ex.getMessage());
         }
     }
 
@@ -1282,7 +1296,7 @@ public class CommandLineTest {
             opt = CommandLine.populateCommand(new TextOption(), "-t=\"a text\"", "-t=\"another text\"", "\"x z\"");
             fail("Expected UnmatchedArgumentException");
         } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unmatched argument: \"x z\"", ok.getMessage());
+            assertEquals("Unmatched argument at index 2: '\"x z\"'", ok.getMessage());
         }
     }
 
@@ -2155,25 +2169,25 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "-P", "AAA=BBB", "CCC=DDD", "EEE=FFF").validateMapField3Values();
             fail("Expected UnmatchedArgEx");
         } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unmatched arguments: CCC=DDD, EEE=FFF", ok.getMessage());
+            assertEquals("Unmatched arguments from index 2: 'CCC=DDD', 'EEE=FFF'", ok.getMessage());
         }
         try {
             CommandLine.populateCommand(new App(), "-map=AAA=BBB", "CCC=DDD", "EEE=FFF").validateMapField3Values();
             fail("Expected UnmatchedArgEx");
         } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unmatched arguments: CCC=DDD, EEE=FFF", ok.getMessage());
+            assertEquals("Unmatched arguments from index 1: 'CCC=DDD', 'EEE=FFF'", ok.getMessage());
         }
         try {
             CommandLine.populateCommand(new App(), "-PAAA=BBB", "-PCCC=DDD", "EEE=FFF").validateMapField3Values();
             fail("Expected UnmatchedArgEx");
         } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unmatched argument: EEE=FFF", ok.getMessage());
+            assertEquals("Unmatched argument at index 2: 'EEE=FFF'", ok.getMessage());
         }
         try {
             CommandLine.populateCommand(new App(), "-P", "AAA=BBB", "-P", "CCC=DDD", "EEE=FFF").validateMapField3Values();
             fail("Expected UnmatchedArgEx");
         } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unmatched argument: EEE=FFF", ok.getMessage());
+            assertEquals("Unmatched argument at index 4: 'EEE=FFF'", ok.getMessage());
         }
     }
 
@@ -2221,7 +2235,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "1=a", "2=b", "3=c", "4=d");
             fail("UnmatchedArgumentsException expected");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments: 3=c, 4=d", ex.getMessage());
+            assertEquals("Unmatched arguments from index 2: '3=c', '4=d'", ex.getMessage());
         }
         setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true);
@@ -2238,7 +2252,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "1=a", "2=b", "3=c", "4=d");
             fail("UnmatchedArgumentsException expected");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched argument: 4=d", ex.getMessage());
+            assertEquals("Unmatched argument at index 3: '4=d'", ex.getMessage());
         }
         setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new App()).setUnmatchedArgumentsAllowed(true);
@@ -2441,21 +2455,21 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "-xx", "-a", "aValue");
             fail("UnmatchedArgumentException expected for -xx");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unknown option: -xx", ex.getMessage());
+            assertEquals("Unknown option: '-xx'", ex.getMessage());
             assertEquals(Arrays.asList("-xx"), ex.getUnmatched());
         }
         try {
             CommandLine.populateCommand(new App(), "-x", "-a", "aValue");
             fail("UnmatchedArgumentException expected for -x");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unknown option: -x", ex.getMessage());
+            assertEquals("Unknown option: '-x'", ex.getMessage());
             assertEquals(Arrays.asList("-x"), ex.getUnmatched());
         }
         try {
             CommandLine.populateCommand(new App(), "--x", "-a", "aValue");
             fail("UnmatchedArgumentException expected for --x");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unknown option: --x", ex.getMessage());
+            assertEquals("Unknown option: '--x'", ex.getMessage());
             assertEquals(Arrays.asList("--x"), ex.getUnmatched());
         }
     }
@@ -2490,7 +2504,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "--ccd", "-a");
             fail("UnmatchedArgumentException expected for --x");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unknown option: --ccd", ex.getMessage());
+            assertEquals("Unknown option: '--ccd'", ex.getMessage());
         }
     }
 
@@ -2583,7 +2597,7 @@ public class CommandLineTest {
             // StopAtUnmatched=false, UnmatchedArgumentsAllowed=false
             new CommandLine(new App()).parseArgs("--y", "-a=abc", "positional");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unknown option: --y", ex.getMessage());
+            assertEquals("Unknown option: '--y'", ex.getMessage());
         }
         App cmd2 = new App();
         CommandLine commandLine2 = new CommandLine(cmd2).setStopAtUnmatched(false).setUnmatchedArgumentsAllowed(true);

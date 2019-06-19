@@ -480,7 +480,7 @@ public class CommandLineParseWithHandlersTest {
             "  -x=<option>     this is an option%n");
 
     private static final String INVALID_INPUT = format("" +
-            "Unmatched argument: invalid input%n");
+            "Unmatched argument at index 0: 'invalid input'%n");
 
     private static final String MYCALLABLE_INVALID_INPUT = INVALID_INPUT + MYCALLABLE_USAGE;
 
