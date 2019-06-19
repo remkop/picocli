@@ -33,14 +33,14 @@ public class Example implements Runnable {
 
     @Command public static class ExampleMixin {
 
-        @Option(names = "-l")
+        @Option(names = "-l", description = "This option is the length option. It is not actually used anywhere. This option is mixed in to other commands.")
         int length;
     }
 
-    @Option(names = "-t")
+    @Option(names = "-t", description = "This is a timeUnit option. Its default value is ${DEFAULT-VALUE}, valid values are ${COMPLETION-CANDIDATES}.")
     final TimeUnit timeUnit = TimeUnit.SECONDS;
 
-    @Parameters(index = "0")
+    @Parameters(index = "0", description = "This is a positional parameter at index 0. The value will be converted to a java.io.File.")
     File file;
 
     @Spec
@@ -62,7 +62,7 @@ public class Example implements Runnable {
         return count * multiplier;
     }
 
-    @Option(names = "--minimum")
+    @Option(names = "--minimum", description = "This option demonstrates an @Option-annotated method. It can be used to validate the option value.")
     public void setMinimum(int min) {
         if (min < 0) {
             throw new ParameterException(spec.commandLine(), "Minimum must be a positive integer");
@@ -70,7 +70,7 @@ public class Example implements Runnable {
         minimum = min;
     }
 
-    @Parameters(index = "1..*")
+    @Parameters(index = "1..*", description = "Positional parameters from index 1..* are captured in this annotated @Parameters method. It can be used to validate the values. Any specified value must be an existing file.")
     public void setOtherFiles(List<File> otherFiles) {
         for (File f : otherFiles) {
             if (!f.exists()) {
