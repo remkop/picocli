@@ -85,9 +85,10 @@ class Fs { ... }
 ### Dynamically Detect Terminal Size
 
 From this release, commands defined with `@Command(usageHelpAutoWidth = true)` will try to adjust the usage message help layout to the terminal width.
+There is also programmatic API to control this via the `CommandLine::setUsageHelpAutoWidth` and `UsageMessageSpec::autoWidth` methods.
 
-End users may enable this by setting system property `picocli.usage.width` to `AUTO`,and may disable this by setting this system property to a numeric value.
-         
+End users may enable this by setting system property `picocli.usage.width` to `AUTO`, and may disable this by setting this system property to a numeric value.
+
 This feature requires Java 7.
 
 

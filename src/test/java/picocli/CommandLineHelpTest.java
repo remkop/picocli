@@ -3674,6 +3674,31 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testAutoWidthDisabledBySystemProperty() {
+        @Command(usageHelpAutoWidth = true)
+        class App {}
+
+        System.setProperty("picocli.usage.width", "123");
+        CommandLine cmd = new CommandLine(new App());
+        assertFalse(cmd.isUsageHelpAutoWidth());
+        assertFalse(cmd.getCommandSpec().usageMessage().autoWidth());
+        assertEquals(123, cmd.getCommandSpec().usageMessage().width());
+    }
+
+    @Test
+    public void testAutoWidthEnabledProgrammatically() {
+        @Command(usageHelpAutoWidth = true)
+        class App {}
+
+        CommandLine cmd = new CommandLine(new App());
+        assertTrue(cmd.isUsageHelpAutoWidth());
+        assertTrue(cmd.getCommandSpec().usageMessage().autoWidth());
+
+        // the below may fail when this test is running on Cygwin or MINGW
+        assertEquals(80, cmd.getCommandSpec().usageMessage().width());
+    }
+
+    @Test
     public void testCliBuilderLsExample() {
         @Command(name="ls")
         class App {

@@ -4324,14 +4324,14 @@ public class CommandLine {
     public interface IDefaultValueProvider {
 
         /** Returns the default value for an option or positional parameter or {@code null}.
-        * The returned value is converted to the type of the option/positional parameter
-        * via the same type converter used when populating this option/positional
-        * parameter from a command line argument.
-        * @param argSpec the option or positional parameter, never {@code null}
-        * @return the default value for the option or positional parameter, or {@code null} if
-        *       this provider has no default value for the specified option or positional parameter
-        * @throws Exception when there was a problem obtaining the default value
-        */
+         * The returned value is converted to the type of the option/positional parameter
+         * via the same type converter used when populating this option/positional
+         * parameter from a command line argument.
+         * @param argSpec the option or positional parameter, never {@code null}
+         * @return the default value for the option or positional parameter, or {@code null} if
+         *       this provider has no default value for the specified option or positional parameter
+         * @throws Exception when there was a problem obtaining the default value
+         */
         String defaultValue(ArgSpec argSpec) throws Exception;
     }
     private static class NoDefaultProvider implements IDefaultValueProvider {
@@ -5025,10 +5025,10 @@ public class CommandLine {
             private Integer exitCodeOnExecutionException;
 
             private CommandSpec(Object userObject) { this.userObject = userObject; }
-    
+
             /** Creates and returns a new {@code CommandSpec} without any associated user object. */
             public static CommandSpec create() { return wrapWithoutInspection(null); }
-    
+
             /** Creates and returns a new {@code CommandSpec} with the specified associated user object.
              * The specified user object is <em>not</em> inspected for annotations.
              * @param userObject the associated user object. May be any object, may be {@code null}.
@@ -5094,14 +5094,14 @@ public class CommandLine {
                 if (usageHelpAttr.size() > 1)   { new Tracer().warn(multiple, usageHelpAttr, "usageHelp", "--help", "usage help message"); }
                 if (versionHelpAttr.size() > 1) { new Tracer().warn(multiple, versionHelpAttr, "versionHelp", "--version", "version information"); }
             }
-    
+
             /** Returns the user object associated with this command.
              * @see CommandLine#getCommand() */
             public Object userObject() { return userObject; }
-    
+
             /** Returns the CommandLine constructed with this {@code CommandSpec} model. */
             public CommandLine commandLine() { return commandLine;}
-    
+
             /** Sets the CommandLine constructed with this {@code CommandSpec} model. */
             protected CommandSpec commandLine(CommandLine commandLine) {
                 this.commandLine = commandLine;
@@ -5170,7 +5170,7 @@ public class CommandLine {
 
             /** Returns a read-only view of the subcommand map. */
             public Map<String, CommandLine> subcommands() { return Collections.unmodifiableMap(commands); }
-    
+
             /** Adds the specified subcommand with the specified name.
              * If the specified subcommand does not have a ResourceBundle set, it is initialized to the ResourceBundle of this command spec.
              * @param name subcommand name - the preferred subcommand name to register the subcommand under.
@@ -5186,7 +5186,7 @@ public class CommandLine {
             public CommandSpec addSubcommand(String name, CommandSpec subcommand) {
                 return addSubcommand(name, new CommandLine(subcommand));
             }
-    
+
             /** Adds the specified subcommand with the specified name.
              * If the specified subcommand does not have a ResourceBundle set, it is initialized to the ResourceBundle of this command spec.
              * @param name subcommand name - the preferred subcommand name to register the subcommand under.
@@ -5272,7 +5272,7 @@ public class CommandLine {
              */
             public CommandSpec addMethodSubcommands(IFactory factory) {
                 if (userObject() instanceof Method) {
-                     throw new InitializationException("Cannot discover subcommand methods of this Command Method: " + userObject());
+                    throw new InitializationException("Cannot discover subcommand methods of this Command Method: " + userObject());
                 }
                 for (CommandLine sub : createMethodSubcommands(userObject().getClass(), factory)) {
                     addSubcommand(sub.getCommandName(), sub);
@@ -5290,16 +5290,16 @@ public class CommandLine {
 
             /** Returns the parent command of this subcommand, or {@code null} if this is a top-level command. */
             public CommandSpec parent() { return parent; }
-    
+
             /** Sets the parent command of this subcommand.
              * @return this CommandSpec for method chaining */
             public CommandSpec parent(CommandSpec parent) { this.parent = parent; return this; }
-    
+
             /** Adds the specified option spec or positional parameter spec to the list of configured arguments to expect.
              * @param arg the option spec or positional parameter spec to add
              * @return this CommandSpec for method chaining */
             public CommandSpec add(ArgSpec arg) { return arg.isOption() ? addOption((OptionSpec) arg) : addPositional((PositionalParamSpec) arg); }
-    
+
             /** Adds the specified option spec to the list of configured arguments to expect.
              * The option's {@linkplain OptionSpec#description()} may now return Strings from this
              * CommandSpec's {@linkplain UsageMessageSpec#messages() messages}.
@@ -5480,11 +5480,11 @@ public class CommandLine {
             /** Returns a map of the mixin names to mixin {@code CommandSpec} objects configured for this command.
              * @return an immutable map of mixins added to this command. */
             public Map<String, CommandSpec> mixins() { return Collections.unmodifiableMap(mixins); }
-    
+
             /** Returns the list of options configured for this command.
              * @return an immutable list of options that this command recognizes. */
             public List<OptionSpec> options() { return Collections.unmodifiableList(options); }
-    
+
             /** Returns the list of positional parameters configured for this command.
              * @return an immutable list of positional parameters that this command recognizes. */
             public List<PositionalParamSpec> positionalParameters() { return Collections.unmodifiableList(positionalParameters); }
@@ -5612,7 +5612,7 @@ public class CommandLine {
                 }
                 return interpolator.interpolate(version == null ? UsageMessageSpec.DEFAULT_MULTI_LINE : version);
             }
-    
+
             /** Returns the version provider for this command, to generate the {@link #version()} strings.
              * @return the version provider or {@code null} if the version strings should be returned from the {@linkplain #version(String...) version literals}.*/
             public IVersionProvider versionProvider() { return versionProvider; }
@@ -5683,7 +5683,7 @@ public class CommandLine {
              * {@linkplain OptionSpec#versionHelp() option} to request version help. Only used if no {@link #versionProvider() versionProvider} is set.
              * @return this CommandSpec for method chaining */
             public CommandSpec version(String... version) { this.version = version; return this; }
-    
+
             /** Sets version provider for this command, to generate the {@link #version()} strings.
              * @param versionProvider the version provider to use to generate the version strings, or {@code null} if the {@linkplain #version(String...) version literals} should be used.
              * @return this CommandSpec for method chaining */
@@ -5715,7 +5715,7 @@ public class CommandLine {
              * @see #execute(String...)
              * @since 4.0 */
             public CommandSpec exitCodeOnExecutionException(int newValue) { exitCodeOnExecutionException = newValue; return this; }
-             /** Sets the {@code INegatableOptionTransformer} used to create the negative form of {@linkplain Option#negatable() negatable} options.
+            /** Sets the {@code INegatableOptionTransformer} used to create the negative form of {@linkplain Option#negatable() negatable} options.
              * @see Option#negatable()
              * @since 4.0 */
             public CommandSpec negatableOptionTransformer(INegatableOptionTransformer newValue) {
@@ -6103,7 +6103,7 @@ public class CommandLine {
             private String[] exitCodeListStrings;
             private Map<String, String> exitCodeList;
             private int width = DEFAULT_USAGE_WIDTH;
-            private Integer cachedWidth;
+            private Integer cachedTerminalWidth;
 
             private final Interpolator interpolator;
             private Messages messages;
@@ -6125,10 +6125,12 @@ public class CommandLine {
                 width = newValue; return this;
             }
 
-            private static int getSysPropertyWidthOrDefault(int defaultWidth, boolean defaultAutoWidth) {
-                if (getSysPropertyAutoWidthOrDefault(defaultAutoWidth)) {
-                    int result = getTerminalWidth();
-                    return result < 0 ? defaultWidth : result;
+            private int getSysPropertyWidthOrDefault(int defaultWidth, boolean detectTerminalSize) {
+                if (detectTerminalSize) {
+                    if (cachedTerminalWidth == null) {
+                        cachedTerminalWidth = getTerminalWidth();
+                    }
+                    return cachedTerminalWidth < 0 ? defaultWidth : Math.max(cachedTerminalWidth, MINIMUM_USAGE_WIDTH);
                 }
                 String userValue = System.getProperty("picocli.usage.width");
                 if (userValue == null) { return defaultWidth; }
@@ -6144,11 +6146,16 @@ public class CommandLine {
                     return defaultWidth;
                 }
             }
-            private static boolean getSysPropertyAutoWidthOrDefault(boolean defaultAutoWidth) {
+            private static boolean shouldDetectTerminalSize(boolean autoWidthEnabledInApplication) {
                 String userValue = System.getProperty("picocli.usage.width");
                 boolean sysPropAutoWidth = Arrays.asList("AUTO", "TERM", "TERMINAL").contains(String.valueOf(userValue).toUpperCase(Locale.ENGLISH));
-                return sysPropAutoWidth || defaultAutoWidth;
+                return sysPropAutoWidth || (autoWidthEnabledInApplication && !isNumeric(userValue));
             }
+            private static boolean isNumeric(String userValue) {
+                try { Integer.parseInt(userValue); return true; }
+                catch (Exception any) { return false; }
+            }
+
             private static int getTerminalWidth() {
                 long start = System.nanoTime();
                 final Tracer tracer = new Tracer();
@@ -6156,9 +6163,9 @@ public class CommandLine {
                 if (!Help.Ansi.isTTY() && !Help.Ansi.isPseudoTTY()) { return size.intValue(); }
                 final String[] cmd = (Help.Ansi.isWindows() && !Help.Ansi.isPseudoTTY())
                         ? new String[] {"cmd.exe", "/c", "mode con"}
-                        : (Help.Ansi.isMac())
-                            ? new String[] {"stty", "-a", "-f", "/dev/tty"}
-                            : new String[] {"stty", "-a", "-F", "/dev/tty"};
+                        : (Help.Ansi.isMac()
+                                ? new String[] {"stty", "-a", "-f", "/dev/tty"}
+                                : new String[] {"stty", "-a", "-F", "/dev/tty"});
                 Thread t = new Thread(new Runnable() {
                     public void run() {
                         Process proc = null;
@@ -6205,12 +6212,7 @@ public class CommandLine {
             /** Returns the maximum usage help message width. Derived from system property {@code "picocli.usage.width"}
              * if set, otherwise returns the value set via the {@link #width(int)} method, or if not set, the {@linkplain #DEFAULT_USAGE_WIDTH default width}.
              * @return the maximum usage help message width. Never returns less than 55. */
-            public int width() {
-                if (cachedWidth == null) {
-                    cachedWidth = getSysPropertyWidthOrDefault(width, (autoWidth == null) ? DEFAULT_USAGE_AUTO_WIDTH : autoWidth);
-                }
-                return cachedWidth;
-            }
+            public int width() { return getSysPropertyWidthOrDefault(width, autoWidth()); }
 
             /** Returns whether picocli should attempt to detect the terminal size and adjust the usage help message width
              * to take the full terminal width. End users may enable this by setting system property {@code "picocli.usage.width"} to {@code AUTO},
@@ -6218,7 +6220,7 @@ public class CommandLine {
              * This feature requires Java 7 or greater. The default is {@code false}.
              * @see Command#usageHelpAutoWidth()
              * @since 4.0 */
-            public boolean autoWidth() { return getSysPropertyAutoWidthOrDefault((autoWidth == null) ? DEFAULT_USAGE_AUTO_WIDTH : autoWidth); }
+            public boolean autoWidth() { return shouldDetectTerminalSize((autoWidth == null) ? DEFAULT_USAGE_AUTO_WIDTH : autoWidth); }
 
             /** Sets whether picocli should attempt to detect the terminal size and adjust the usage help message width
              * to take the full terminal width. The default is {@code false}.
@@ -7024,35 +7026,35 @@ public class CommandLine {
             /** Returns how many arguments this option or positional parameter requires.
              * @see Option#arity() */
             public Range arity()           { return arity; }
-    
+
             /** Returns the name of the option or positional parameter used in the usage help message.
              * @see Option#paramLabel() {@link Parameters#paramLabel()} */
             public String paramLabel()     { return interpolate(paramLabel); }
-    
+
             /** Returns whether usage syntax decorations around the {@linkplain #paramLabel() paramLabel} should be suppressed.
              * The default is {@code false}: by default, the paramLabel is surrounded with {@code '['} and {@code ']'} characters
              * if the value is optional and followed by ellipses ("...") when multiple values can be specified.
              * @since 3.6.0 */
             public boolean hideParamSyntax()     { return hideParamSyntax; }
-    
+
             /** Returns auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class.
              * @see Option#type() */
             public Class<?>[] auxiliaryTypes() { return typeInfo.getAuxiliaryTypes(); }
-    
+
             /** Returns one or more {@link CommandLine.ITypeConverter type converters} to use to convert the command line
              * argument into a strongly typed value (or key-value pair for map fields). This is useful when a particular
              * option or positional parameter should use a custom conversion that is different from the normal conversion for the arg spec's type.
              * @see Option#converter() */
             public ITypeConverter<?>[] converters() { return converters.clone(); }
-    
+
             /** Returns a regular expression to split option parameter values or {@code ""} if the value should not be split.
              * @see Option#split() */
             public String splitRegex()     { return interpolate(splitRegex); }
-    
+
             /** Returns whether this option should be excluded from the usage message.
              * @see Option#hidden() */
             public boolean hidden()        { return hidden; }
-    
+
             /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value. */
             public Class<?> type()         { return typeInfo.getType(); }
 
@@ -7064,7 +7066,7 @@ public class CommandLine {
              * @return may return the annotated program element, or some other useful object
              * @since 4.0 */
             public Object userObject()     { return userObject; }
-    
+
             /** Returns the default value to assign if this option or positional parameter was not specified on the command line, before splitting and type conversion.
              * This method returns the programmatically set value; this may differ from the default value that is actually used:
              * if this ArgSpec is part of a CommandSpec with a {@link IDefaultValueProvider}, picocli will first try to obtain
@@ -7083,7 +7085,7 @@ public class CommandLine {
             /** Determines whether the option or positional parameter will be reset to the {@link #initialValue()}
              * before parsing new input.*/
             public boolean hasInitialValue() { return hasInitialValue; }
-    
+
             /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
             public Help.Visibility showDefaultValue() { return showDefaultValue; }
 
@@ -7229,7 +7231,7 @@ public class CommandLine {
 
             /** Returns a string respresentation of this option or positional parameter. */
             public String toString() { return toString; }
-    
+
             String[] splitValue(String value, ParserSpec parser, Range arity, int consumed) {
                 if (splitRegex().length() == 0) { return new String[] {value}; }
                 int limit = parser.limitSplit() ? Math.max(arity.max - consumed, 0) : 0;
@@ -7512,7 +7514,7 @@ public class CommandLine {
                 /** Returns how many arguments this option or positional parameter requires.
                  * @see Option#arity() */
                 public Range arity()           { return arity; }
-    
+
                 /** Returns the name of the option or positional parameter used in the usage help message.
                  * @see Option#paramLabel() {@link Parameters#paramLabel()} */
                 public String paramLabel()     { return paramLabel; }
@@ -7604,10 +7606,10 @@ public class CommandLine {
 
                 /** Sets how many arguments this option or positional parameter requires, and returns this builder. */
                 public T arity(String range)                 { return arity(Range.valueOf(range)); }
-    
+
                 /** Sets how many arguments this option or positional parameter requires, and returns this builder. */
                 public T arity(Range arity)                  { this.arity = Assert.notNull(arity, "arity"); return self(); }
-    
+
                 /** Sets the name of the option or positional parameter used in the usage help message, and returns this builder. */
                 public T paramLabel(String paramLabel)       { this.paramLabel = Assert.notNull(paramLabel, "paramLabel"); return self(); }
 
@@ -7616,18 +7618,18 @@ public class CommandLine {
                  * if the value is optional and followed by ellipses ("...") when multiple values can be specified.
                  * @since 3.6.0 */
                 public T hideParamSyntax(boolean hideParamSyntax) { this.hideParamSyntax = hideParamSyntax; return self(); }
-    
+
                 /** Sets auxiliary type information, and returns this builder.
                  * @param types  the element type(s) when the {@link #type()} is a generic {@code Collection} or a {@code Map};
                  * or the concrete type when the {@link #type()} is an abstract class. */
                 public T auxiliaryTypes(Class<?>... types)   { this.auxiliaryTypes = Assert.notNull(types, "types").clone(); return self(); }
-    
+
                 /** Sets option/positional param-specific converter (or converters for Maps), and returns this builder. */
                 public T converters(ITypeConverter<?>... cs) { this.converters = Assert.notNull(cs, "type converters").clone(); return self(); }
-    
+
                 /** Sets a regular expression to split option parameter values or {@code ""} if the value should not be split, and returns this builder. */
                 public T splitRegex(String splitRegex)       { this.splitRegex = Assert.notNull(splitRegex, "splitRegex"); return self(); }
-    
+
                 /** Sets whether this option or positional parameter's default value should be shown in the usage help, and returns this builder. */
                 public T showDefaultValue(Help.Visibility visibility) { showDefaultValue = Assert.notNull(visibility, "visibility"); return self(); }
 
@@ -7641,7 +7643,7 @@ public class CommandLine {
 
                 /** Sets whether this option should be excluded from the usage message, and returns this builder. */
                 public T hidden(boolean hidden)              { this.hidden = hidden; return self(); }
-    
+
                 /** Sets the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value, and returns this builder.
                  * @param propertyType the type of this option or parameter. For multi-value options and positional parameters this can be an array, or a (sub-type of) Collection or Map. */
                 public T type(Class<?> propertyType)         { this.type = Assert.notNull(propertyType, "type"); return self(); }
@@ -7775,7 +7777,7 @@ public class CommandLine {
 //                    throw new InitializationException("Option " + longestName() + " is not a boolean so should not be defined with arity=" + arity());
 //                }
             }
-    
+
             /** Returns a new Builder initialized with the attributes from this {@code OptionSpec}. Calling {@code build} immediately will return a copy of this {@code OptionSpec}.
              * @return a builder that can create a copy of this spec
              */
@@ -7818,11 +7820,11 @@ public class CommandLine {
              * @see Option#help()
              * @deprecated Use {@link #usageHelp()} and {@link #versionHelp()} instead. */
             @Deprecated public boolean help() { return help; }
-    
+
             /** Returns whether this option allows the user to request usage help.
              * @see Option#usageHelp()  */
             public boolean usageHelp()    { return usageHelp; }
-    
+
             /** Returns whether this option allows the user to request version information.
              * @see Option#versionHelp()  */
             public boolean versionHelp()  { return versionHelp; }
@@ -7863,7 +7865,7 @@ public class CommandLine {
                         + 37 * Assert.hashCode(fallbackValue)
                         + 37 * order;
             }
-    
+
             /** Builder responsible for creating valid {@code OptionSpec} objects.
              * @since 3.0
              */
@@ -7943,13 +7945,13 @@ public class CommandLine {
                 /** Replaces the option names with the specified values. At least one option name is required, and returns this builder.
                  * @return this builder instance to provide a fluent interface */
                 public Builder names(String... names)           { this.names = Assert.notNull(names, "names").clone(); return self(); }
-    
+
                 /** Sets whether this option disables validation of the other arguments, and returns this builder. */
                 public Builder help(boolean help)               { this.help = help; return self(); }
-    
+
                 /** Sets whether this option allows the user to request usage help, and returns this builder. */
                 public Builder usageHelp(boolean usageHelp)     { this.usageHelp = usageHelp; return self(); }
-    
+
                 /** Sets whether this option allows the user to request version information, and returns this builder.*/
                 public Builder versionHelp(boolean versionHelp) { this.versionHelp = versionHelp; return self(); }
                 /** Sets whether a negative version for this boolean option is automatically added, and returns this builder.
@@ -8062,7 +8064,7 @@ public class CommandLine {
                         && Assert.equals(this.capacity, other.capacity)
                         && Assert.equals(this.index, other.index);
             }
-    
+
             /** Builder responsible for creating valid {@code PositionalParamSpec} objects.
              * @since 3.0
              */
@@ -8091,7 +8093,7 @@ public class CommandLine {
 
                 /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter, and returns this builder. */
                 public Builder index(String range)  { return index(Range.valueOf(range)); }
-    
+
                 /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter, and returns this builder. */
                 public Builder index(Range index)   { this.index = index; return self(); }
 
@@ -10331,12 +10333,12 @@ public class CommandLine {
                 for (ArgGroupSpec missing : unmatchedSubgroups) {
                     if (missing.validate() && missing.multiplicity().min > 0) {
 //                        if (missing.subgroups().isEmpty()) {
-                            int presentCount = 0;
-                            boolean haveMissing = true;
-                            boolean someButNotAllSpecified = false;
-                            String exclusiveElements = missing.synopsis();
-                            String missingElements = missing.synopsis(); //ArgSpec.describe(missing.requiredArgs());
-                            validationResult = missing.validate(commandLine, presentCount, haveMissing, someButNotAllSpecified, exclusiveElements, missingElements, missingElements);
+                        int presentCount = 0;
+                        boolean haveMissing = true;
+                        boolean someButNotAllSpecified = false;
+                        String exclusiveElements = missing.synopsis();
+                        String missingElements = missing.synopsis(); //ArgSpec.describe(missing.requiredArgs());
+                        validationResult = missing.validate(commandLine, presentCount, haveMissing, someButNotAllSpecified, exclusiveElements, missingElements, missingElements);
 //                        } else {
 //                            validationResult = new ParseResult.GroupValidationResult(
 //                                    ParseResult.GroupValidationResult.Type.FAILURE_ABSENT,
@@ -11397,7 +11399,7 @@ public class CommandLine {
         private String[] splitKeyValue(ArgSpec argSpec, String value) {
             String[] keyValue = ArgSpec.splitRespectingQuotedStrings(value, 2, config(), argSpec, "=");
 
-                if (keyValue.length < 2) {
+            if (keyValue.length < 2) {
                 String splitRegex = argSpec.splitRegex();
                 if (splitRegex.length() == 0) {
                     throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("",
@@ -11735,7 +11737,7 @@ public class CommandLine {
                             String[] names = new String[constants.length];
                             for (int i = 0; i < names.length; i++) { names[i] = constants[i].name(); }
                             throw new TypeConversionException(
-                                String.format("expected one of %s (%s) but was '%s'", Arrays.asList(names), sensitivity, value)); }
+                                    String.format("expected one of %s (%s) but was '%s'", Arrays.asList(names), sensitivity, value)); }
                     }
                 };
             }
@@ -11793,8 +11795,8 @@ public class CommandLine {
             return value == null
                     ? null
                     : (value.length() > 1 && value.startsWith("\"") && value.endsWith("\""))
-                        ? value.substring(1, value.length() - 1)
-                        : value;
+                    ? value.substring(1, value.length() - 1)
+                    : value;
         }
 
         char[] readPassword(ArgSpec argSpec) {
@@ -12082,7 +12084,7 @@ public class CommandLine {
         private boolean helpRequested;
 
         @Parameters(paramLabel = "COMMAND", descriptionKey = "helpCommand.command",
-                    description = "The COMMAND to display the usage help message for.")
+                description = "The COMMAND to display the usage help message for.")
         private String[] commands = new String[0];
 
         private CommandLine self;
@@ -12922,7 +12924,7 @@ public class CommandLine {
             return result.toString();
         }
         private static String stringOf(char chr, int length) {
-                             char[] buff = new char[length];
+            char[] buff = new char[length];
             Arrays.fill(buff, chr);
             return new String(buff);
         }
@@ -13144,7 +13146,7 @@ public class CommandLine {
                 Text paramLabelText = parameterLabelRenderer.renderParameterLabel(option, scheme.ansi(), scheme.optionParamStyles);
                 optionText = optionText.concat(paramLabelText);
                 return new Text[][] {{ optionText,
-                                        scheme.ansi().new Text(option.description().length == 0 ? "" : option.description()[0]) }};
+                        scheme.ansi().new Text(option.description().length == 0 ? "" : option.description()[0]) }};
             }
         }
         /** The MinimalParameterRenderer converts {@linkplain PositionalParamSpec positional parameters} to a single row with two columns of
@@ -13265,7 +13267,7 @@ public class CommandLine {
                 Range capacity = argSpec.isOption() ? argSpec.arity() : ((PositionalParamSpec)argSpec).capacity();
                 if (capacity.max == 0) { return ansi.new Text(""); }
                 if (argSpec.hideParamSyntax()) { return ansi.apply((argSpec.isOption() ? separator() : "") + argSpec.paramLabel(), styles); }
-                
+
                 Text paramName = ansi.apply(argSpec.paramLabel(), styles);
                 String split = argSpec.splitRegex();
                 String mandatorySep = empty(split) ? " "  : split;
@@ -13997,20 +13999,20 @@ public class CommandLine {
             // see Jan Niklas Hasse's https://bixense.com/clicolors/ proposal
             // https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable
             static final boolean hintDisabled() { return "0".equals(System.getenv("CLICOLOR"))
-                                               || "OFF".equals(System.getenv("ConEmuANSI")); }
+                    || "OFF".equals(System.getenv("ConEmuANSI")); }
 
             /** https://github.com/adoxa/ansicon/blob/master/readme.txt,
              * Jan Niklas Hasse's https://bixense.com/clicolors/ proposal,
              * https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable */
             static final boolean hintEnabled() { return System.getenv("ANSICON") != null
-                                               || "1".equals(System.getenv("CLICOLOR"))
-                                               || "ON".equals(System.getenv("ConEmuANSI")); }
+                    || "1".equals(System.getenv("CLICOLOR"))
+                    || "ON".equals(System.getenv("ConEmuANSI")); }
             /** https://no-color.org/ */
             static final boolean forceDisabled() { return System.getenv("NO_COLOR") != null; }
 
             /** Jan Niklas Hasse's https://bixense.com/clicolors/ proposal */
             static final boolean forceEnabled() { return System.getenv("CLICOLOR_FORCE") != null
-                                               && !"0".equals(System.getenv("CLICOLOR_FORCE"));}
+                    && !"0".equals(System.getenv("CLICOLOR_FORCE"));}
             /** http://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term */
             static boolean calcTTY() {
                 try { return System.class.getDeclaredMethod("console").invoke(null) != null; }
@@ -14045,7 +14047,7 @@ public class CommandLine {
                     return false;
                 }
             }
-            
+
             /** Returns {@code true} if ANSI escape codes should be emitted, {@code false} otherwise.
              * @return ON: {@code true}, OFF: {@code false}, AUTO: if system property {@code "picocli.ansi"} is
              *      defined then return its boolean value, otherwise return whether the platform supports ANSI escape codes */

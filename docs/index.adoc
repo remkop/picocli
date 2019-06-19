@@ -2467,10 +2467,23 @@ Usage: <main class> [OPTIONS]
 
 === Usage Width
 The default width of the usage help message is 80 characters.
-System property `picocli.usage.width` can be used to specify a custom width.
-The minimum width that can be configured is 55 characters.
+Commands defined with `@Command(usageHelpWidth = NUMBER)` in the annotations will use the specified width.
 
 Picocli 3.0 also introduced programmatic API for this via the `CommandLine::setUsageHelpWidth` and `UsageMessageSpec::width` methods.
+
+End users can use system property `picocli.usage.width` to specify a custom width that overrides the programmatically set value.
+
+The minimum width that can be configured is 55 characters.
+
+=== Auto (Terminal) Width
+
+From 4.0, commands defined with `@Command(usageHelpAutoWidth = true)` will try to adjust the usage message help layout to the terminal width.
+There is also programmatic API to control this via the `CommandLine::setUsageHelpAutoWidth` and `UsageMessageSpec::autoWidth` methods.
+
+End users may enable this by setting system property `picocli.usage.width` to `AUTO`, and may disable this by setting this system property to a numeric value.
+
+This feature requires Java 7.
+
 
 == ANSI Colors and Styles
 === Colorized Example
