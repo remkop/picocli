@@ -1,7 +1,7 @@
 = picocli - a mighty tiny command line interface
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.0.0-beta-2
+:revnumber: 4.0.0-rc-1-SNAPSHOT
 :revdate: 2019-06-20
 :toc: left
 :numbered:
@@ -4345,7 +4345,7 @@ assert this.commandLine.commandName == "myScript"
 ----
 
 WARNING: When upgrading scripts to picocli 4.0, just changing the version number is not enough!
-Scripts should use `@Grab('info.picocli:picocli-groovy:4.0.0-beta-1b')`. The old artifact id `@Grab('info.picocli:picocli:4.0.0-beta-2')` will not work,
+Scripts should use `@Grab('info.picocli:picocli-groovy:4.0.0-beta-1b')`. The old artifact id `@Grab('info.picocli:picocli:4.0.0-rc-1-SNAPSHOT')` will not work,
 because the `@picocli.groovy.PicocliScript` annotation class and supporting classes have been moved into a separate module, `picocli-groovy`.
 
 
@@ -4486,7 +4486,7 @@ See the <<Source,source code>> below. Copy and paste it into a file called `Comm
 
 === Gradle
 ----
-compile 'info.picocli:picocli:4.0.0-beta-2'
+compile 'info.picocli:picocli:4.0.0-rc-1-SNAPSHOT'
 ----
 
 === Maven
@@ -4494,19 +4494,19 @@ compile 'info.picocli:picocli:4.0.0-beta-2'
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.0.0-beta-2</version>
+  <version>4.0.0-rc-1-SNAPSHOT</version>
 </dependency>
 ----
 
 === Scala SBT
 ----
-libraryDependencies += "info.picocli" % "picocli" % "4.0.0-beta-2"
+libraryDependencies += "info.picocli" % "picocli" % "4.0.0-rc-1-SNAPSHOT"
 ----
 
 === Ivy
 
 ----
-<dependency org="info.picocli" name="picocli" rev="4.0.0-beta-2" />
+<dependency org="info.picocli" name="picocli" rev="4.0.0-rc-1-SNAPSHOT" />
 ----
 
 === Source
