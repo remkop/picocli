@@ -90,6 +90,39 @@ End users may enable this by setting system property `picocli.usage.width` to `A
 
 This feature requires Java 7.
 
+### Custom Parameter Processing
+    
+Options or positional parameters can be assigned a `IParameterConsumer` that implements custom logic to process the parameters for this option or this position. When an option or positional parameter with a custom `IParameterConsumer` is matched on the command line, picocli's internal parser is temporarily suspended, and the custom parameter consumer becomes responsible for consuming and processing as many command line arguments as needed.
+
+This can be useful when passing options through to another command.
+
+For example, the unix https://en.wikipedia.org/wiki/Find_(Unix)[`find`] command has a https://en.wikipedia.org/wiki/Find_(Unix)#Execute_an_action[`-exec`] option to execute some action for each file found. Any arguments following the `-exec` option until a `;` or `+` argument are not options for the `find` command itself, but are interpreted as a separate command and its options.
+
+The example below demonstrates how to implement `find -exec` using this API:
+
+```java
+@Command(name = "find")
+class Find {
+    @Option(names = "-exec", parameterConsumer = ExecParameterConsumer.class)
+    List<String> list = new ArrayList<String>();
+}
+
+class ExecParameterConsumer implements IParameterConsumer {
+    public void consumeParameters(Stack<String> args, ArgSpec argSpec, CommandSpec commandSpec) {
+        List<String> list = argSpec.getValue();
+        while (!args.isEmpty()) {
+            String arg = args.pop();
+            list.add(arg);
+
+            // `find -exec` semantics: stop processing after a ';' or '+' argument
+            if (";".equals(arg) || "+".equals(arg)) {
+                break;
+            }
+        }
+    }
+}
+```
+
 
 ## <a name="4.0.0-beta-2-fixes"></a> Fixed issues
 - [#280] API: `@Option(fallbackValue = "...")` for options with optional parameter: assign this value when the option was specified on the command line without parameter. Thanks to [Paolo Di Tommaso](https://github.com/pditommaso) and [marinier](https://github.com/marinier) for the suggestion and in-depth discussion.
