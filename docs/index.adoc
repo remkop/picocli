@@ -4210,6 +4210,10 @@ open module com.yourorg.yourapp {
 }
 ```
 
+== OSGi Bundle
+
+From 4.0, the picocli JAR is an OSGi bundle with `Bundle-Name: picocli` and other appropriate metadata in the manifest.
+
 
 == GraalVM Native Images
 

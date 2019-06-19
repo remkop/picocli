@@ -11,14 +11,13 @@ This release introduces two new attributes on the `Option` annotation:
 * `fallbackValue`
 * `parameterConsumer`
 
-`fallbackValue` is for options with optional parameter: assign this value when the option was specified on the command line without parameter.
+`fallbackValue` is for options with optional parameter: assign this value when the option was specified on the command line without parameter. `parameterConsumer` and the associated `IParameterConsumer` interface allows for options to bypass picocli's parsing logic and replace it with custom logic. One use case is collecting arguments to pass them through to another command.
 
-`parameterConsumer` and the associated `IParameterConsumer` interface allows for options to bypass picocli's parsing logic and replace it with custom logic. One use case is collecting arguments to pass them through to another command.
+This release introduces a new `synopsisSubcommandLabel` attribute on the `@Command` annotation to allow customization of the subcommands part of the synopsis. This is useful for applications that have required subcommands.
 
-This release introduces a new `synopsisSubcommandLabel` attribute on the `@Command` annotation to allow customization of the subcommands part of the synopsis.
-This is useful for applications that have required subcommands.
+Also, this release adds the ability to dynamically detect the terminal width.
 
-Also, this release adds the ability to dynamically detect terminal size.
+From this release, the picocli JAR is an OSGi bundle with `Bundle-Name: picocli` and other appropriate metadata in the manifest.
 
 _Please try this and provide feedback. We can still make changes._
 
@@ -38,7 +37,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.0-beta-2-new"></a> New and Noteworthy
 
-### `fallbackValue` API
+### Fallback Value API
 This release introduces a new attribute on the `Option` annotation: `fallbackValue` for options with optional parameter: assign this value when the option was specified on the command line without parameter.
 
 This is different from the `defaultValue`, which is assigned if the option is not specified at all on the command line.
