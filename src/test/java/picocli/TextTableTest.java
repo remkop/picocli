@@ -52,6 +52,15 @@ public class TextTableTest
                  normalizeNewlines(textTable));
   }
 
+  @Test
+  public void addRowValuesWithNewlines_nulls()
+  {
+    CommandLine.Help.TextTable textTable = emptyTable();
+    textTable.addRowValuesWithNewlines(key, null);
+    assertEquals(" <query>\n",
+                 normalizeNewlines(textTable));
+  }
+
   private CommandLine.Help.TextTable emptyTable()
   {
     return forColumns(CommandLine.Help.Ansi.OFF,
