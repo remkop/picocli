@@ -44,7 +44,7 @@ public class TextTableTest
   {
     CommandLine.Help.TextTable textTable = emptyTable();
 
-    // what we actually need to do to deal with the embedded newlines
+    // What we actually need to do to deal with the embedded newlines
     CommandLine.Help.Ansi.Text name = CommandLine.Help.Ansi.AUTO.text(key);
     CommandLine.Help.Ansi.Text description = CommandLine.Help.Ansi.AUTO
       .text(value);
