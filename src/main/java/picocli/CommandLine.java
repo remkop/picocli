@@ -13483,11 +13483,45 @@ public class CommandLine {
             /** Delegates to {@link #addRowValues(CommandLine.Help.Ansi.Text...)}.
              * @param values the text values to display in each column of the current row */
             public void addRowValues(String... values) {
-                Text[] array = new Text[values.length];
-                for (int i = 0; i < array.length; i++) {
-                    array[i] = values[i] == null ? Ansi.EMPTY_TEXT : ansi.new Text(values[i]);
+                Text[] rowValues = new Text[values.length];
+                for (int i = 0; i < rowValues.length; i++) {
+                    rowValues[i] = values[i] == null ? Ansi.EMPTY_TEXT : ansi.new Text(values[i]);
                 }
-                addRowValues(array);
+                addRowValues(rowValues);
+            }
+            /** Delegates to {@link #addRowValues(CommandLine.Help.Ansi.Text...)}.
+             * @param values the text values to display in each column of the current row, splitting for newlines*/
+            public void addRowValuesWithNewlines(String... values) {
+                Text[][] splitRowValues = new Text[values.length][];
+                for (int i = 0; i < values.length; i++) {
+                    if (values[i] == null) {
+                        splitRowValues[i] = new Text[] { Ansi.EMPTY_TEXT };
+                    }
+                    else
+                    {
+                        splitRowValues[i] = ansi.new Text(values[i]).splitLines();
+                    }
+                }
+                int maxRows = 0;
+                for (int i = 0; i < values.length; i++) {
+                    if (splitRowValues[i].length > maxRows) {
+                        maxRows = splitRowValues[i].length;
+                    }
+                }
+                for (int j = 0; j < maxRows; j++) {
+                    Text rowValues[] = new Text[values.length];
+                    for (int i = 0; i < values.length; i++) {
+                        Text cellValue;
+                        if (j >= splitRowValues[i].length) {
+                            cellValue = Ansi.EMPTY_TEXT;
+                        }
+                        else {
+                            cellValue = splitRowValues[i][j];
+                        }
+                        rowValues[i] = cellValue;
+                    }
+                    addRowValues(rowValues);
+                }
             }
             /**
              * Adds a new {@linkplain TextTable#addEmptyRow() empty row}, then calls {@link

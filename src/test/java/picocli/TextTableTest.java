@@ -21,11 +21,9 @@ public class TextTableTest
                                + "with the variables substituted";
 
   @Test
-  public void autoSplit()
+  public void addRowValues()
   {
     CommandLine.Help.TextTable textTable = emptyTable();
-
-    // What we want to do:
     textTable.addRowValues(key, value);
     assertEquals(" <query>        Shows results of SQL <query>\n"
                  + "The query itself can contain the\n"
@@ -40,28 +38,10 @@ public class TextTableTest
   }
 
   @Test
-  public void manualSplit()
+  public void addRowValuesWithNewlines()
   {
     CommandLine.Help.TextTable textTable = emptyTable();
-
-    // What we actually need to do to deal with the embedded newlines
-    CommandLine.Help.Ansi.Text name = CommandLine.Help.Ansi.AUTO.text(key);
-    CommandLine.Help.Ansi.Text description = CommandLine.Help.Ansi.AUTO
-      .text(value);
-
-    // split the description
-    CommandLine.Help.Ansi.Text[] lines = description.splitLines();
-
-    // first line
-    textTable.addRowValues(name, lines[0]);
-
-    // remaining lines
-    CommandLine.Help.Ansi.Text EMPTY = CommandLine.Help.Ansi.OFF.text("");
-    for (int i = 1; i < lines.length; i++)
-    {
-      textTable.addRowValues(EMPTY, lines[i]);
-    }
-
+    textTable.addRowValuesWithNewlines(key, value);
     assertEquals(" <query>        Shows results of SQL <query>\n"
                  + "                The query itself can contain the variables ${table}, ${columns}\n"
                  + "                  and ${tabletype}, or system properties referenced as\n"
