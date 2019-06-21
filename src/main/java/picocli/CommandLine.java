@@ -12768,8 +12768,7 @@ public class CommandLine {
                 table.setAdjustLineBreaksForWideCJKCharacters(adjustCJK);
                 table.indentWrappedLines = 0;
                 for (String summaryLine : values) {
-                    Text[] lines = ansi.new Text(format(summaryLine, params)).splitLines();
-                    for (Text line : lines) {  table.addRowValues(line); }
+                    table.addRowValues(format(summaryLine, params));
                 }
                 table.toString(sb);
             }
@@ -12887,13 +12886,7 @@ public class CommandLine {
             textTable.setAdjustLineBreaksForWideCJKCharacters(adjustCJK());
 
             for (Map.Entry<String, String> entry : map.entrySet()) {
-                Text[] keys = ansi().text(format(entry.getKey())).splitLines();
-                Text[] values = ansi().text(format(entry.getValue())).splitLines();
-                for (int i = 0; i < Math.max(keys.length, values.length); i++) {
-                    Text key = i < keys.length ? keys[i] : Ansi.EMPTY_TEXT;
-                    Text value = i < values.length ? values[i] : Ansi.EMPTY_TEXT;
-                    textTable.addRowValues(key, value);
-                }
+                textTable.addRowValues(format(entry.getKey()), format(entry.getValue()));
             }
             return textTable.toString();
         }
@@ -13627,34 +13620,26 @@ public class CommandLine {
                 }
             }
 
-            /** Delegates to {@link #addRowValues(CommandLine.Help.Ansi.Text...)}.
+            /** Delegates to {@link #addRowValues(CommandLine.Help.Ansi.Text...)}, after ensuring
+             * that multi-line values are layed out in the correct row and column.
              * @param values the text values to display in each column of the current row */
             public void addRowValues(String... values) {
                 final int numColumns = values.length;
-                Text[][] splitRowValues = new Text[numColumns][];
-                for (int i = 0; i < numColumns; i++) {
-                    if (values[i] == null) {
-                        splitRowValues[i] = new Text[] { Ansi.EMPTY_TEXT };
-                    } else {
-                        splitRowValues[i] = ansi.new Text(values[i]).splitLines();
-                    }
-                }
+                Text[][] cells = new Text[numColumns][]; // an array of columns
                 int maxRows = 0;
-                for (int i = 0; i < numColumns; i++) {
-                    if (splitRowValues[i].length > maxRows) {
-                        maxRows = splitRowValues[i].length;
-                    }
+                for (int col = 0; col < numColumns; col++) {
+                    cells[col] = values[col] == null
+                            ? new Text[] {Ansi.EMPTY_TEXT}
+                            : ansi.new Text(values[col]).splitLines();
+                    maxRows = Math.max(maxRows, cells[col].length);
                 }
                 Text rowValues[] = new Text[numColumns];
-                for (int j = 0; j < maxRows; j++) {
-                    for (int i = 0; i < numColumns; i++) {
-                        Text cellValue;
-                        if (j >= splitRowValues[i].length) {
-                            cellValue = Ansi.EMPTY_TEXT;
-                        } else {
-                            cellValue = splitRowValues[i][j];
+                for (int row = 0; row < maxRows; row++) {
+                    Arrays.fill(rowValues, Ansi.EMPTY_TEXT);
+                    for (int col = 0; col < numColumns; col++) {
+                        if (row < cells[col].length) {
+                            rowValues[col] = cells[col][row];
                         }
-                        rowValues[i] = cellValue;
                     }
                     addRowValues(rowValues);
                 }
