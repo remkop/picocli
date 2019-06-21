@@ -13630,39 +13630,28 @@ public class CommandLine {
             /** Delegates to {@link #addRowValues(CommandLine.Help.Ansi.Text...)}.
              * @param values the text values to display in each column of the current row */
             public void addRowValues(String... values) {
-                Text[] rowValues = new Text[values.length];
-                for (int i = 0; i < rowValues.length; i++) {
-                    rowValues[i] = values[i] == null ? Ansi.EMPTY_TEXT : ansi.new Text(values[i]);
-                }
-                addRowValues(rowValues);
-            }
-            /** Delegates to {@link #addRowValues(CommandLine.Help.Ansi.Text...)}.
-             * @param values the text values to display in each column of the current row, splitting for newlines*/
-            public void addRowValuesWithNewlines(String... values) {
-                Text[][] splitRowValues = new Text[values.length][];
-                for (int i = 0; i < values.length; i++) {
+                final int numColumns = values.length;
+                Text[][] splitRowValues = new Text[numColumns][];
+                for (int i = 0; i < numColumns; i++) {
                     if (values[i] == null) {
                         splitRowValues[i] = new Text[] { Ansi.EMPTY_TEXT };
-                    }
-                    else
-                    {
+                    } else {
                         splitRowValues[i] = ansi.new Text(values[i]).splitLines();
                     }
                 }
                 int maxRows = 0;
-                for (int i = 0; i < values.length; i++) {
+                for (int i = 0; i < numColumns; i++) {
                     if (splitRowValues[i].length > maxRows) {
                         maxRows = splitRowValues[i].length;
                     }
                 }
+                Text rowValues[] = new Text[numColumns];
                 for (int j = 0; j < maxRows; j++) {
-                    Text rowValues[] = new Text[values.length];
-                    for (int i = 0; i < values.length; i++) {
+                    for (int i = 0; i < numColumns; i++) {
                         Text cellValue;
                         if (j >= splitRowValues[i].length) {
                             cellValue = Ansi.EMPTY_TEXT;
-                        }
-                        else {
+                        } else {
                             cellValue = splitRowValues[i][j];
                         }
                         rowValues[i] = cellValue;

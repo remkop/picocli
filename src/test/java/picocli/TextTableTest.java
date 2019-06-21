@@ -11,37 +11,20 @@ import org.junit.Test;
 public class TextTableTest
 {
 
-  private final String key = "<query>";
-  private final String newline = String.format("%n");
-  private final String value = "Shows results of SQL <query>\n"
-                               + "The query itself can contain the variables ${table}, ${columns} "
-                               + "and ${tabletype}, or system properties referenced as ${<system-property-name>}\n"
-                               + "Queries without any variables are executed exactly once\n"
-                               + "Queries with variables are executed once for each table, "
-                               + "with the variables substituted";
+  private static final String newline = String.format("%n");
 
   @Test
   public void addRowValues()
   {
     CommandLine.Help.TextTable textTable = emptyTable();
-    textTable.addRowValues(key, value);
-    assertEquals(" <query>        Shows results of SQL <query>\n"
-                 + "The query itself can contain the\n"
-                 + "                  variables ${table}, ${columns} and ${tabletype}, or system\n"
-                 + "                  properties referenced as ${<system-property-name>}\n"
-                 + "Queries\n"
-                 + "                  without any variables are executed exactly once\n"
-                 + "Queries with\n"
-                 + "                  variables are executed once for each table, with the\n"
-                 + "                  variables substituted\n",
-                 normalizeNewlines(textTable));
-  }
+    textTable.addRowValues("<query>",
+                           "Shows results of SQL <query>\n"
+                           + "The query itself can contain the variables ${table}, ${columns} "
+                           + "and ${tabletype}, or system properties referenced as ${<system-property-name>}\n"
+                           + "Queries without any variables are executed exactly once\n"
+                           + "Queries with variables are executed once for each table, "
+                           + "with the variables substituted");
 
-  @Test
-  public void addRowValuesWithNewlines()
-  {
-    CommandLine.Help.TextTable textTable = emptyTable();
-    textTable.addRowValuesWithNewlines(key, value);
     assertEquals(" <query>        Shows results of SQL <query>\n"
                  + "                The query itself can contain the variables ${table}, ${columns}\n"
                  + "                  and ${tabletype}, or system properties referenced as\n"
@@ -53,12 +36,13 @@ public class TextTableTest
   }
 
   @Test
-  public void addRowValuesWithNewlines_nulls()
+  public void addRowValues_nulls()
   {
     CommandLine.Help.TextTable textTable = emptyTable();
-    textTable.addRowValuesWithNewlines(key, null);
-    assertEquals(" <query>\n",
-                 normalizeNewlines(textTable));
+    textTable.addRowValues("key", null);
+    textTable.addRowValues(null, "value");
+
+    assertEquals(" key\n                value\n", normalizeNewlines(textTable));
   }
 
   private CommandLine.Help.TextTable emptyTable()
