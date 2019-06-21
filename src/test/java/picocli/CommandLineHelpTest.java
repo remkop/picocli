@@ -16,6 +16,7 @@
 package picocli;
 
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -4063,5 +4064,40 @@ public class CommandLineHelpTest {
         assertTrue(textTable.isAdjustLineBreaksForWideCJKCharacters());
         textTable.setAdjustLineBreaksForWideCJKCharacters(false);
         assertFalse(textTable.isAdjustLineBreaksForWideCJKCharacters());
+    }
+
+    @Command(name = "top", subcommands = {
+            SubcommandWithStandardHelpOptions.class,
+            CommandLine.HelpCommand.class
+    })
+    static class ParentCommandWithRequiredOption implements Runnable {
+        @Option(names = "--required", required = true)
+        String required;
+        public void run() { }
+    }
+    @Command(name = "sub", mixinStandardHelpOptions = true)
+    static class SubcommandWithStandardHelpOptions implements Runnable {
+        public void run() { }
+    }
+
+    @Ignore
+    @Test
+    // https://github.com/remkop/picocli/issues/743
+    public void testSubcommandHelpWhenParentCommandHasRequiredOption_743() {
+        CommandLine cmd = new CommandLine(new ParentCommandWithRequiredOption());
+
+        cmd.execute("help", "sub");
+        String expected = String.format("" +
+                "Usage: top sub [-hV]%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n");
+        assertEquals(expected, this.systemOutRule.getLog());
+        assertEquals("", this.systemErrRule.getLog());
+
+        systemErrRule.clearLog();
+        systemOutRule.clearLog();
+        cmd.execute("sub", "--help");
+        assertEquals("", this.systemErrRule.getLog());
+        assertEquals(expected, this.systemOutRule.getLog());
     }
 }
