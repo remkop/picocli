@@ -1,6 +1,40 @@
 # picocli Release Notes
 
 
+# <a name="4.0.0-rc-1"></a> Picocli 4.0.0-rc-1 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.0.0-rc-1.
+
+Bugfixes and improvements.
+
+
+_Please try this and provide feedback. We can still make changes._
+
+_What do you think of the `@ArgGroup` annotations API? What about the programmatic API? Does it work as expected? Are the input validation error messages correct and clear? Is the documentation clear and complete? Anything you want to change or improve? Any other feedback?_
+
+
+Many thanks to the picocli community for the contributions!
+
+This is the fifty-seventh public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.0.0-rc-1"></a> Table of Contents
+* [New and noteworthy](#4.0.0-rc-1-new)
+* [Fixed issues](#4.0.0-rc-1-fixes)
+* [Deprecations](#4.0.0-rc-1-deprecated)
+* [Potential breaking changes](#4.0.0-rc-1-breaking-changes)
+
+## <a name="4.0.0-rc-1-new"></a> New and Noteworthy
+
+
+## <a name="4.0.0-rc-1-fixes"></a> Fixed issues
+- [#696][#741] Automatically split lines in TextTable. Thanks to [Sualeh Fatehi](https://github.com/sualeh) for the pull request.
+
+ 
+## <a name="4.0.0-rc-1-deprecated"></a> Deprecations
+
+## <a name="4.0.0-rc-1-breaking-changes"></a> Potential breaking changes
+
+
 # <a name="4.0.0-beta-2"></a> Picocli 4.0.0-beta-2
 The picocli community is pleased to announce picocli 4.0.0-beta-2.
 
