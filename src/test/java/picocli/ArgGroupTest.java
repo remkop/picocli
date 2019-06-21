@@ -2200,4 +2200,47 @@ public class ArgGroupTest {
 
         assertEquals(expected, actual);
     }
+
+    @Command(name = "ArgGroupsTest")
+    static class CommandWithSplitGroup {
+
+        @ArgGroup(exclusive = false)
+        DataSource datasource;
+
+        static class DataSource {
+            @Option(names = "-single", split = ",")
+            int single;
+
+            @Option(names = "-array", split = ",")
+            int[] array;
+        }
+    }
+
+    @Test
+    // https://github.com/remkop/picocli/issues/745
+    public void testIssue745SplitErrorMessage() {
+        CommandWithSplitGroup bean = new CommandWithSplitGroup();
+        CommandLine cmd = new CommandLine(bean);
+
+        // split attribute is honoured if option type is multi-value (array, Collection, Map)
+        cmd.parseArgs("-array=1,2");
+        assertArrayEquals(new int[] {1, 2}, bean.datasource.array);
+
+        // split attribute is ignored if option type is single value
+        // error because value cannot be assigned to type `int`
+        try {
+            cmd.parseArgs("-single=1,2");
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertEquals("Invalid value for option '-single': '1,2' is not an int", ex.getMessage());
+        }
+
+        // split attribute ignored for simple commands without argument groups
+        try {
+            new CommandLine(new CommandWithSplitGroup.DataSource()).parseArgs("-single=1,2");
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertEquals("Invalid value for option '-single': '1,2' is not an int", ex.getMessage());
+        }
+    }
 }
