@@ -4990,10 +4990,10 @@ public class CommandLine {
             private Integer exitCodeOnExecutionException;
 
             private CommandSpec(Object userObject) { this.userObject = userObject; }
-    
+
             /** Creates and returns a new {@code CommandSpec} without any associated user object. */
             public static CommandSpec create() { return wrapWithoutInspection(null); }
-    
+
             /** Creates and returns a new {@code CommandSpec} with the specified associated user object.
              * The specified user object is <em>not</em> inspected for annotations.
              * @param userObject the associated user object. May be any object, may be {@code null}.
@@ -5059,14 +5059,14 @@ public class CommandLine {
                 if (usageHelpAttr.size() > 1)   { new Tracer().warn(multiple, usageHelpAttr, "usageHelp", "--help", "usage help message"); }
                 if (versionHelpAttr.size() > 1) { new Tracer().warn(multiple, versionHelpAttr, "versionHelp", "--version", "version information"); }
             }
-    
+
             /** Returns the user object associated with this command.
              * @see CommandLine#getCommand() */
             public Object userObject() { return userObject; }
-    
+
             /** Returns the CommandLine constructed with this {@code CommandSpec} model. */
             public CommandLine commandLine() { return commandLine;}
-    
+
             /** Sets the CommandLine constructed with this {@code CommandSpec} model. */
             protected CommandSpec commandLine(CommandLine commandLine) {
                 this.commandLine = commandLine;
@@ -5135,7 +5135,7 @@ public class CommandLine {
 
             /** Returns a read-only view of the subcommand map. */
             public Map<String, CommandLine> subcommands() { return Collections.unmodifiableMap(commands); }
-    
+
             /** Adds the specified subcommand with the specified name.
              * If the specified subcommand does not have a ResourceBundle set, it is initialized to the ResourceBundle of this command spec.
              * @param name subcommand name - the preferred subcommand name to register the subcommand under.
@@ -5151,7 +5151,7 @@ public class CommandLine {
             public CommandSpec addSubcommand(String name, CommandSpec subcommand) {
                 return addSubcommand(name, new CommandLine(subcommand));
             }
-    
+
             /** Adds the specified subcommand with the specified name.
              * If the specified subcommand does not have a ResourceBundle set, it is initialized to the ResourceBundle of this command spec.
              * @param name subcommand name - the preferred subcommand name to register the subcommand under.
@@ -5255,16 +5255,16 @@ public class CommandLine {
 
             /** Returns the parent command of this subcommand, or {@code null} if this is a top-level command. */
             public CommandSpec parent() { return parent; }
-    
+
             /** Sets the parent command of this subcommand.
              * @return this CommandSpec for method chaining */
             public CommandSpec parent(CommandSpec parent) { this.parent = parent; return this; }
-    
+
             /** Adds the specified option spec or positional parameter spec to the list of configured arguments to expect.
              * @param arg the option spec or positional parameter spec to add
              * @return this CommandSpec for method chaining */
             public CommandSpec add(ArgSpec arg) { return arg.isOption() ? addOption((OptionSpec) arg) : addPositional((PositionalParamSpec) arg); }
-    
+
             /** Adds the specified option spec to the list of configured arguments to expect.
              * The option's {@linkplain OptionSpec#description()} may now return Strings from this
              * CommandSpec's {@linkplain UsageMessageSpec#messages() messages}.
@@ -5445,11 +5445,11 @@ public class CommandLine {
             /** Returns a map of the mixin names to mixin {@code CommandSpec} objects configured for this command.
              * @return an immutable map of mixins added to this command. */
             public Map<String, CommandSpec> mixins() { return Collections.unmodifiableMap(mixins); }
-    
+
             /** Returns the list of options configured for this command.
              * @return an immutable list of options that this command recognizes. */
             public List<OptionSpec> options() { return Collections.unmodifiableList(options); }
-    
+
             /** Returns the list of positional parameters configured for this command.
              * @return an immutable list of positional parameters that this command recognizes. */
             public List<PositionalParamSpec> positionalParameters() { return Collections.unmodifiableList(positionalParameters); }
@@ -5577,7 +5577,7 @@ public class CommandLine {
                 }
                 return interpolator.interpolate(version == null ? UsageMessageSpec.DEFAULT_MULTI_LINE : version);
             }
-    
+
             /** Returns the version provider for this command, to generate the {@link #version()} strings.
              * @return the version provider or {@code null} if the version strings should be returned from the {@linkplain #version(String...) version literals}.*/
             public IVersionProvider versionProvider() { return versionProvider; }
@@ -5648,7 +5648,7 @@ public class CommandLine {
              * {@linkplain OptionSpec#versionHelp() option} to request version help. Only used if no {@link #versionProvider() versionProvider} is set.
              * @return this CommandSpec for method chaining */
             public CommandSpec version(String... version) { this.version = version; return this; }
-    
+
             /** Sets version provider for this command, to generate the {@link #version()} strings.
              * @param versionProvider the version provider to use to generate the version strings, or {@code null} if the {@linkplain #version(String...) version literals} should be used.
              * @return this CommandSpec for method chaining */
@@ -6900,35 +6900,35 @@ public class CommandLine {
             /** Returns how many arguments this option or positional parameter requires.
              * @see Option#arity() */
             public Range arity()           { return arity; }
-    
+
             /** Returns the name of the option or positional parameter used in the usage help message.
              * @see Option#paramLabel() {@link Parameters#paramLabel()} */
             public String paramLabel()     { return interpolate(paramLabel); }
-    
+
             /** Returns whether usage syntax decorations around the {@linkplain #paramLabel() paramLabel} should be suppressed.
              * The default is {@code false}: by default, the paramLabel is surrounded with {@code '['} and {@code ']'} characters
              * if the value is optional and followed by ellipses ("...") when multiple values can be specified.
              * @since 3.6.0 */
             public boolean hideParamSyntax()     { return hideParamSyntax; }
-    
+
             /** Returns auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class.
              * @see Option#type() */
             public Class<?>[] auxiliaryTypes() { return typeInfo.getAuxiliaryTypes(); }
-    
+
             /** Returns one or more {@link CommandLine.ITypeConverter type converters} to use to convert the command line
              * argument into a strongly typed value (or key-value pair for map fields). This is useful when a particular
              * option or positional parameter should use a custom conversion that is different from the normal conversion for the arg spec's type.
              * @see Option#converter() */
             public ITypeConverter<?>[] converters() { return converters.clone(); }
-    
+
             /** Returns a regular expression to split option parameter values or {@code ""} if the value should not be split.
              * @see Option#split() */
             public String splitRegex()     { return interpolate(splitRegex); }
-    
+
             /** Returns whether this option should be excluded from the usage message.
              * @see Option#hidden() */
             public boolean hidden()        { return hidden; }
-    
+
             /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value. */
             public Class<?> type()         { return typeInfo.getType(); }
 
@@ -6940,7 +6940,7 @@ public class CommandLine {
              * @return may return the annotated program element, or some other useful object
              * @since 4.0 */
             public Object userObject()     { return userObject; }
-    
+
             /** Returns the default value to assign if this option or positional parameter was not specified on the command line, before splitting and type conversion.
              * This method returns the programmatically set value; this may differ from the default value that is actually used:
              * if this ArgSpec is part of a CommandSpec with a {@link IDefaultValueProvider}, picocli will first try to obtain
@@ -6959,7 +6959,7 @@ public class CommandLine {
             /** Determines whether the option or positional parameter will be reset to the {@link #initialValue()}
              * before parsing new input.*/
             public boolean hasInitialValue() { return hasInitialValue; }
-    
+
             /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
             public Help.Visibility showDefaultValue() { return showDefaultValue; }
 
@@ -7105,7 +7105,7 @@ public class CommandLine {
 
             /** Returns a string respresentation of this option or positional parameter. */
             public String toString() { return toString; }
-    
+
             String[] splitValue(String value, ParserSpec parser, Range arity, int consumed) {
                 if (splitRegex().length() == 0) { return new String[] {value}; }
                 int limit = parser.limitSplit() ? Math.max(arity.max - consumed, 0) : 0;
@@ -7388,7 +7388,7 @@ public class CommandLine {
                 /** Returns how many arguments this option or positional parameter requires.
                  * @see Option#arity() */
                 public Range arity()           { return arity; }
-    
+
                 /** Returns the name of the option or positional parameter used in the usage help message.
                  * @see Option#paramLabel() {@link Parameters#paramLabel()} */
                 public String paramLabel()     { return paramLabel; }
@@ -7480,10 +7480,10 @@ public class CommandLine {
 
                 /** Sets how many arguments this option or positional parameter requires, and returns this builder. */
                 public T arity(String range)                 { return arity(Range.valueOf(range)); }
-    
+
                 /** Sets how many arguments this option or positional parameter requires, and returns this builder. */
                 public T arity(Range arity)                  { this.arity = Assert.notNull(arity, "arity"); return self(); }
-    
+
                 /** Sets the name of the option or positional parameter used in the usage help message, and returns this builder. */
                 public T paramLabel(String paramLabel)       { this.paramLabel = Assert.notNull(paramLabel, "paramLabel"); return self(); }
 
@@ -7492,18 +7492,18 @@ public class CommandLine {
                  * if the value is optional and followed by ellipses ("...") when multiple values can be specified.
                  * @since 3.6.0 */
                 public T hideParamSyntax(boolean hideParamSyntax) { this.hideParamSyntax = hideParamSyntax; return self(); }
-    
+
                 /** Sets auxiliary type information, and returns this builder.
                  * @param types  the element type(s) when the {@link #type()} is a generic {@code Collection} or a {@code Map};
                  * or the concrete type when the {@link #type()} is an abstract class. */
                 public T auxiliaryTypes(Class<?>... types)   { this.auxiliaryTypes = Assert.notNull(types, "types").clone(); return self(); }
-    
+
                 /** Sets option/positional param-specific converter (or converters for Maps), and returns this builder. */
                 public T converters(ITypeConverter<?>... cs) { this.converters = Assert.notNull(cs, "type converters").clone(); return self(); }
-    
+
                 /** Sets a regular expression to split option parameter values or {@code ""} if the value should not be split, and returns this builder. */
                 public T splitRegex(String splitRegex)       { this.splitRegex = Assert.notNull(splitRegex, "splitRegex"); return self(); }
-    
+
                 /** Sets whether this option or positional parameter's default value should be shown in the usage help, and returns this builder. */
                 public T showDefaultValue(Help.Visibility visibility) { showDefaultValue = Assert.notNull(visibility, "visibility"); return self(); }
 
@@ -7517,7 +7517,7 @@ public class CommandLine {
 
                 /** Sets whether this option should be excluded from the usage message, and returns this builder. */
                 public T hidden(boolean hidden)              { this.hidden = hidden; return self(); }
-    
+
                 /** Sets the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value, and returns this builder.
                  * @param propertyType the type of this option or parameter. For multi-value options and positional parameters this can be an array, or a (sub-type of) Collection or Map. */
                 public T type(Class<?> propertyType)         { this.type = Assert.notNull(propertyType, "type"); return self(); }
@@ -7651,7 +7651,7 @@ public class CommandLine {
 //                    throw new InitializationException("Option " + longestName() + " is not a boolean so should not be defined with arity=" + arity());
 //                }
             }
-    
+
             /** Returns a new Builder initialized with the attributes from this {@code OptionSpec}. Calling {@code build} immediately will return a copy of this {@code OptionSpec}.
              * @return a builder that can create a copy of this spec
              */
@@ -7694,11 +7694,11 @@ public class CommandLine {
              * @see Option#help()
              * @deprecated Use {@link #usageHelp()} and {@link #versionHelp()} instead. */
             @Deprecated public boolean help() { return help; }
-    
+
             /** Returns whether this option allows the user to request usage help.
              * @see Option#usageHelp()  */
             public boolean usageHelp()    { return usageHelp; }
-    
+
             /** Returns whether this option allows the user to request version information.
              * @see Option#versionHelp()  */
             public boolean versionHelp()  { return versionHelp; }
@@ -7739,7 +7739,7 @@ public class CommandLine {
                         + 37 * Assert.hashCode(fallbackValue)
                         + 37 * order;
             }
-    
+
             /** Builder responsible for creating valid {@code OptionSpec} objects.
              * @since 3.0
              */
@@ -7819,13 +7819,13 @@ public class CommandLine {
                 /** Replaces the option names with the specified values. At least one option name is required, and returns this builder.
                  * @return this builder instance to provide a fluent interface */
                 public Builder names(String... names)           { this.names = Assert.notNull(names, "names").clone(); return self(); }
-    
+
                 /** Sets whether this option disables validation of the other arguments, and returns this builder. */
                 public Builder help(boolean help)               { this.help = help; return self(); }
-    
+
                 /** Sets whether this option allows the user to request usage help, and returns this builder. */
                 public Builder usageHelp(boolean usageHelp)     { this.usageHelp = usageHelp; return self(); }
-    
+
                 /** Sets whether this option allows the user to request version information, and returns this builder.*/
                 public Builder versionHelp(boolean versionHelp) { this.versionHelp = versionHelp; return self(); }
                 /** Sets whether a negative version for this boolean option is automatically added, and returns this builder.
@@ -7938,7 +7938,7 @@ public class CommandLine {
                         && Assert.equals(this.capacity, other.capacity)
                         && Assert.equals(this.index, other.index);
             }
-    
+
             /** Builder responsible for creating valid {@code PositionalParamSpec} objects.
              * @since 3.0
              */
@@ -7967,7 +7967,7 @@ public class CommandLine {
 
                 /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter, and returns this builder. */
                 public Builder index(String range)  { return index(Range.valueOf(range)); }
-    
+
                 /** Sets the index or range specifying which of the command line arguments should be assigned to this positional parameter, and returns this builder. */
                 public Builder index(Range index)   { this.index = index; return self(); }
 
@@ -13141,7 +13141,7 @@ public class CommandLine {
                 Range capacity = argSpec.isOption() ? argSpec.arity() : ((PositionalParamSpec)argSpec).capacity();
                 if (capacity.max == 0) { return ansi.new Text(""); }
                 if (argSpec.hideParamSyntax()) { return ansi.apply((argSpec.isOption() ? separator() : "") + argSpec.paramLabel(), styles); }
-                
+
                 Text paramName = ansi.apply(argSpec.paramLabel(), styles);
                 String split = argSpec.splitRegex();
                 String mandatorySep = empty(split) ? " "  : split;
@@ -13483,39 +13483,28 @@ public class CommandLine {
             /** Delegates to {@link #addRowValues(CommandLine.Help.Ansi.Text...)}.
              * @param values the text values to display in each column of the current row */
             public void addRowValues(String... values) {
-                Text[] rowValues = new Text[values.length];
-                for (int i = 0; i < rowValues.length; i++) {
-                    rowValues[i] = values[i] == null ? Ansi.EMPTY_TEXT : ansi.new Text(values[i]);
-                }
-                addRowValues(rowValues);
-            }
-            /** Delegates to {@link #addRowValues(CommandLine.Help.Ansi.Text...)}.
-             * @param values the text values to display in each column of the current row, splitting for newlines*/
-            public void addRowValuesWithNewlines(String... values) {
-                Text[][] splitRowValues = new Text[values.length][];
-                for (int i = 0; i < values.length; i++) {
+                final int numColumns = values.length;
+                Text[][] splitRowValues = new Text[numColumns][];
+                for (int i = 0; i < numColumns; i++) {
                     if (values[i] == null) {
                         splitRowValues[i] = new Text[] { Ansi.EMPTY_TEXT };
-                    }
-                    else
-                    {
+                    } else {
                         splitRowValues[i] = ansi.new Text(values[i]).splitLines();
                     }
                 }
                 int maxRows = 0;
-                for (int i = 0; i < values.length; i++) {
+                for (int i = 0; i < numColumns; i++) {
                     if (splitRowValues[i].length > maxRows) {
                         maxRows = splitRowValues[i].length;
                     }
                 }
+                Text rowValues[] = new Text[numColumns];
                 for (int j = 0; j < maxRows; j++) {
-                    Text rowValues[] = new Text[values.length];
-                    for (int i = 0; i < values.length; i++) {
+                    for (int i = 0; i < numColumns; i++) {
                         Text cellValue;
                         if (j >= splitRowValues[i].length) {
                             cellValue = Ansi.EMPTY_TEXT;
-                        }
-                        else {
+                        } else {
                             cellValue = splitRowValues[i][j];
                         }
                         rowValues[i] = cellValue;
@@ -13954,7 +13943,7 @@ public class CommandLine {
                     return false;
                 }
             }
-            
+
             /** Returns {@code true} if ANSI escape codes should be emitted, {@code false} otherwise.
              * @return ON: {@code true}, OFF: {@code false}, AUTO: if system property {@code "picocli.ansi"} is
              *      defined then return its boolean value, otherwise return whether the platform supports ANSI escape codes */
