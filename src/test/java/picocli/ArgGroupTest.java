@@ -2243,4 +2243,31 @@ public class ArgGroupTest {
             assertEquals("Invalid value for option '-single': '1,2' is not an int", ex.getMessage());
         }
     }
+
+    @Command(name = "ArgGroupsTest")
+    static class CommandWithDefaultValue {
+
+        @ArgGroup( exclusive = false)
+        DataSource datasource = new DataSource();
+
+        static class DataSource {
+            @Option(names = "-staticX", arity = "0..1", defaultValue = "999", fallbackValue = "-88" )
+            static int staticX;
+
+            @Option(names = "-instanceX", arity = "0..1", defaultValue = "999", fallbackValue = "-88" )
+            int instanceX;
+        }
+    }
+
+    @Test
+    // https://github.com/remkop/picocli/issues/746
+    public void test746DefaultValue() {
+        CommandWithDefaultValue bean = new CommandWithDefaultValue();
+        CommandLine cmd = new CommandLine(bean);
+
+        cmd.parseArgs();
+        assertEquals(999, bean.datasource.instanceX);
+        assertEquals(999, CommandWithDefaultValue.DataSource.staticX);
+    }
+
 }
