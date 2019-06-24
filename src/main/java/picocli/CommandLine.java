@@ -10774,6 +10774,7 @@ public class CommandLine {
             parseResultBuilder = ParseResult.builder(getCommandSpec());
             for (OptionSpec option : getCommandSpec().options())                           { clear(option); }
             for (PositionalParamSpec positional : getCommandSpec().positionalParameters()) { clear(positional); }
+            for (ArgGroupSpec group : getCommandSpec().argGroups())                        { clear(group); }
         }
         private void clear(ArgSpec argSpec) {
             argSpec.resetStringValues();
@@ -10781,6 +10782,10 @@ public class CommandLine {
             argSpec.typedValues.clear();
             argSpec.typedValueAtPosition.clear();
             if (argSpec.group() == null) { argSpec.applyInitialValue(tracer); } // groups do their own initialization
+        }
+        private void clear(ArgGroupSpec group) {
+            for (ArgSpec arg : group.args()) { clear(arg); }
+            for (ArgGroupSpec sub : group.subgroups()) { clear(sub); }
         }
 
         void maybeThrow(PicocliException ex) throws PicocliException {
@@ -10856,12 +10861,22 @@ public class CommandLine {
                     if (applyDefault(commandSpec.defaultValueProvider(), arg)) { required.remove(arg); }
                 }
             }
+            for (ArgGroupSpec group : commandSpec.argGroups()) {
+                applyDefault(commandSpec.defaultValueProvider(), group, required);
+            }
             for (UnmatchedArgsBinding unmatched : commandSpec.unmatchedArgsBindings()) {
                 unmatched.clear();
             }
             parseResultBuilder.isInitializingDefaultValues = false;
         }
-
+        private void applyDefault(IDefaultValueProvider defaultValueProvider, ArgGroupSpec group, List<ArgSpec> required) throws Exception {
+            for (ArgSpec arg : group.args()) {
+                if (applyDefault(commandSpec.defaultValueProvider(), arg)) { required.remove(arg); }
+            }
+            for (ArgGroupSpec sub : group.subgroups()) {
+                applyDefault(defaultValueProvider, sub, required);
+            }
+        }
         private boolean applyDefault(IDefaultValueProvider defaultValueProvider, ArgSpec arg) throws Exception {
 
             // Default value provider return value is only used if provider exists and if value

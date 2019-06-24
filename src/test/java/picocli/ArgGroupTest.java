@@ -2262,7 +2262,7 @@ public class ArgGroupTest {
     @Test
     // https://github.com/remkop/picocli/issues/746
     public void test746DefaultValue() {
-        TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel("DEBUG");
         CommandWithDefaultValue bean = new CommandWithDefaultValue();
         CommandLine cmd = new CommandLine(bean);
 
