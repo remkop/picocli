@@ -25,14 +25,12 @@ import picocli.CommandLine.Help.Ansi;
 import picocli.CommandLine.Model.*;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.sql.Types;
 import java.util.*;
 
 import static org.junit.Assert.*;
-import static picocli.HelpTestUtil.*;
-import static picocli.HelpTestUtil.versionString;
+import static picocli.TestUtil.*;
+import static picocli.TestUtil.versionString;
 
 
 public class CommandLineModelTest {

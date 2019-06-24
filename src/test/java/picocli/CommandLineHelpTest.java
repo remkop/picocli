@@ -74,9 +74,9 @@ import static org.junit.Assert.*;
 import static picocli.CommandLine.Help.Visibility.ALWAYS;
 import static picocli.CommandLine.Help.Visibility.NEVER;
 import static picocli.CommandLine.Help.Visibility.ON_DEMAND;
-import static picocli.HelpTestUtil.textArray;
-import static picocli.HelpTestUtil.usageString;
-import static picocli.ModelTestUtil.options;
+import static picocli.TestUtil.textArray;
+import static picocli.TestUtil.usageString;
+import static picocli.TestUtil.options;
 
 /**
  * Tests for picocli's "Usage" help functionality.

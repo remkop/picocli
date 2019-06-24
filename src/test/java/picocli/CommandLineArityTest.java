@@ -27,7 +27,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
-import static picocli.HelpTestUtil.setTraceLevel;
+import static picocli.TestUtil.setTraceLevel;
 
 public class CommandLineArityTest {
     @Before public void setUp() { System.clearProperty("picocli.trace"); }

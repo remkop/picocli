@@ -177,7 +177,7 @@ public class NegatableOptionTest {
         }
         App app = new App();
         try {
-            //HelpTestUtil.setTraceLevel("DEBUG");
+            //TestUtil.setTraceLevel("DEBUG");
             new CommandLine(app);
             fail("Expected exception");
         } catch (CommandLine.InitializationException ex) {
@@ -211,7 +211,7 @@ public class NegatableOptionTest {
         assertFalse(app.c);
         assertFalse(app.noVerbose);
 
-        //HelpTestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel("DEBUG");
         CommandLine cmd = new CommandLine(app);
         cmd.setNegatableOptionTransformer(createNegatableShortOptionsTransformer());
 
@@ -242,7 +242,7 @@ public class NegatableOptionTest {
             @Option(names = {"+n", "--no-verbose"},   negatable = true, description = "...") boolean noVerbose;
         }
 
-        //HelpTestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel("DEBUG");
         App app = new App();
         CommandLine cmd = new CommandLine(app);
         CommandLine.RegexTransformer transformer = new CommandLine.RegexTransformer.Builder(CommandLine.RegexTransformer.createDefault())

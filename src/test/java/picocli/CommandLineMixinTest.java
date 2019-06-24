@@ -25,11 +25,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.util.concurrent.Callable;
 
 import static org.junit.Assert.*;
-import static picocli.HelpTestUtil.setTraceLevel;
-import static picocli.HelpTestUtil.usageString;
+import static picocli.TestUtil.usageString;
 
 public class CommandLineMixinTest {
     @Rule

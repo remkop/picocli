@@ -1397,7 +1397,7 @@ public class ArgGroupTest {
                 "      <f1>%n" +
                 "  -a=<a>%n");
 
-        //HelpTestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel("DEBUG");
         CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
         String actual = cmd.getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
@@ -1431,7 +1431,7 @@ public class ArgGroupTest {
                 "      <f1>%n" +
                 "  -a=<a>%n");
 
-        HelpTestUtil.setTraceLevel("DEBUG");
+        TestUtil.setTraceLevel("DEBUG");
         CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
         String actual = cmd.getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
@@ -1464,7 +1464,7 @@ public class ArgGroupTest {
                 "      <f1>%n" +
                 "  -a=<a>%n");
 
-        //HelpTestUtil.setTraceLevel("INFO");
+        //TestUtil.setTraceLevel("INFO");
         CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
         String actual = cmd.getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
@@ -1514,7 +1514,7 @@ public class ArgGroupTest {
             @ArgGroup(exclusive = true, multiplicity = "0..3")
             Composite[] composite;
         }
-        //HelpTestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel("DEBUG");
         App app = new App();
         CommandLine cmd = new CommandLine(app, new InnerClassFactory(this));
         String synopsis = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF)).synopsis(0);
@@ -1714,7 +1714,7 @@ public class ArgGroupTest {
 
     @Test
     public void testRepeatingGroupsValidation() {
-        //HelpTestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel("DEBUG");
 
         RepeatingApp app = new RepeatingApp();
         CommandLine cmd = new CommandLine(app);
@@ -2262,6 +2262,7 @@ public class ArgGroupTest {
     @Test
     // https://github.com/remkop/picocli/issues/746
     public void test746DefaultValue() {
+        TestUtil.setTraceLevel("DEBUG");
         CommandWithDefaultValue bean = new CommandWithDefaultValue();
         CommandLine cmd = new CommandLine(bean);
 

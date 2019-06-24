@@ -28,9 +28,9 @@ import java.io.StringWriter;
 import java.util.*;
 
 import static org.junit.Assert.*;
-import static picocli.HelpTestUtil.setTraceLevel;
-import static picocli.HelpTestUtil.textArray;
-import static picocli.PicocliTestUtil.setOf;
+import static picocli.TestUtil.setTraceLevel;
+import static picocli.TestUtil.textArray;
+import static picocli.TestUtil.setOf;
 
 public class SubcommandTests {
     @Rule

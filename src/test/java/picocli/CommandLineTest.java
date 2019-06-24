@@ -17,7 +17,6 @@ package picocli;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,11 +35,9 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
-import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
@@ -62,7 +59,6 @@ import static picocli.CommandLine.Command;
 import static picocli.CommandLine.DuplicateOptionAnnotationsException;
 import static picocli.CommandLine.Help;
 import static picocli.CommandLine.HelpCommand;
-import static picocli.CommandLine.IParseResultHandler;
 import static picocli.CommandLine.ITypeConverter;
 import static picocli.CommandLine.IVersionProvider;
 import static picocli.CommandLine.InitializationException;
@@ -77,8 +73,8 @@ import static picocli.CommandLine.Parameters;
 import static picocli.CommandLine.ParseResult;
 import static picocli.CommandLine.Unmatched;
 import static picocli.CommandLine.UnmatchedArgumentException;
-import static picocli.HelpTestUtil.setTraceLevel;
-import static picocli.PicocliTestUtil.stripAnsiTrace;
+import static picocli.TestUtil.setTraceLevel;
+import static picocli.TestUtil.stripAnsiTrace;
 
 /**
  * Tests for the CommandLine argument parsing interpreter functionality.
@@ -3876,7 +3872,7 @@ public class CommandLineTest {
         CommandSpec spec = CommandSpec.create();
         spec.parser().trimQuotes(true);
         CommandLine cmd = new CommandLine(spec);
-        Object interpreter = PicocliTestUtil.interpreter(cmd);
+        Object interpreter = TestUtil.interpreter(cmd);
 
         assertNull(unquote.invoke(interpreter, new Object[]{null}));
         assertEquals("abc", unquote.invoke(interpreter, "\"abc\""));
@@ -3903,7 +3899,7 @@ public class CommandLineTest {
         CommandSpec spec = CommandSpec.create();
         spec.parser().trimQuotes(true);
         CommandLine cmd = new CommandLine(spec);
-        Object interpreter = PicocliTestUtil.interpreter(cmd);
+        Object interpreter = TestUtil.interpreter(cmd);
         Method clear = c.getDeclaredMethod("clear");
         clear.setAccessible(true);
         clear.invoke(interpreter); // initializes the interpreter instance
@@ -3929,7 +3925,7 @@ public class CommandLineTest {
         spec.addOption(OptionSpec.builder("-x").arity("0").build());
         spec.parser().trimQuotes(true);
         CommandLine cmd = new CommandLine(spec);
-        Object interpreter = PicocliTestUtil.interpreter(cmd);
+        Object interpreter = TestUtil.interpreter(cmd);
 
         Stack<String> stack = new Stack<String>();
         String arg = "-xa";

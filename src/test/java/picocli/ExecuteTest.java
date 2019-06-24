@@ -1304,7 +1304,7 @@ public class ExecuteTest {
 
     @Test
     public void testKeyValuesMapIgnoresInvalidEntries() {
-        HelpTestUtil.setTraceLevel("INFO");
+        TestUtil.setTraceLevel("INFO");
         Map<String, String> map = keyValuesMap(" 0:Normal Execution",
                 "INVALID ENTRY",
                 "70:Internal error");

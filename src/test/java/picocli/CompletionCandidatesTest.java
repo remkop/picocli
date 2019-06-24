@@ -35,7 +35,7 @@ import java.util.Map;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
-import static picocli.HelpTestUtil.usageString;
+import static picocli.TestUtil.usageString;
 
 /**
  * Tests valid values-related functionality.

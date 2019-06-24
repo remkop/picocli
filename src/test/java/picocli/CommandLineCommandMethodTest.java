@@ -34,13 +34,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 import static picocli.CommandLine.Command;
@@ -51,7 +49,7 @@ import static picocli.CommandLine.Option;
 import static picocli.CommandLine.Parameters;
 import static picocli.CommandLine.UnmatchedArgumentException;
 import static picocli.CommandLineTest.verifyCompact;
-import static picocli.HelpTestUtil.setTraceLevel;
+import static picocli.TestUtil.setTraceLevel;
 
 /**
  * Tests for {@code @Command} methods.

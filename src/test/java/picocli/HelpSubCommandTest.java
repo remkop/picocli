@@ -13,8 +13,8 @@ import java.io.PrintWriter;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
 import static picocli.CommandLine.Model.*;
-import static picocli.HelpTestUtil.usageString;
-import static picocli.PicocliTestUtil.setOf;
+import static picocli.TestUtil.usageString;
+import static picocli.TestUtil.setOf;
 
 public class HelpSubCommandTest {
     @Rule
