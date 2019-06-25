@@ -40,7 +40,7 @@ Picocli-based applications can be ahead-of-time compiled to image:https://www.gr
 image:checksum-usage-help.png[Screenshot of usage help with Ansi codes enabled]
 
 
-A distinguishing feature of picocli is how it aims
+Another distinguishing feature of picocli is how it aims
 to let users run picocli-based applications without requiring picocli as an external dependency:
 all the source code lives in a single file, to encourage application authors to include it _in source form_.
 
