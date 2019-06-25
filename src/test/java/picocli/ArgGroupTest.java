@@ -2181,7 +2181,7 @@ public class ArgGroupTest {
             private String l0;
             
             @ArgGroup(exclusive = false, multiplicity = "1")
-            private Level1Argument level1;
+            private Level1Argument level1 = new Level1Argument();
 
             public void run() {
             }
@@ -2247,15 +2247,26 @@ public class ArgGroupTest {
     @Command(name = "ArgGroupsTest")
     static class CommandWithDefaultValue {
 
-        @ArgGroup( exclusive = false)
-        DataSource datasource = new DataSource();
+        @ArgGroup(exclusive = false)
+        Group1 initializedGroup = new Group1();
 
-        static class DataSource {
+        @ArgGroup(exclusive = false)
+        Group2 declaredGroup;
+
+        static class Group1 {
             @Option(names = "-staticX", arity = "0..1", defaultValue = "999", fallbackValue = "-88" )
             static int staticX;
 
             @Option(names = "-instanceX", arity = "0..1", defaultValue = "999", fallbackValue = "-88" )
             int instanceX;
+        }
+
+        static class Group2 {
+            @Option(names = "-staticY", arity = "0..1", defaultValue = "999", fallbackValue = "-88" )
+            static Integer staticY;
+
+            @Option(names = "-instanceY", arity = "0..1", defaultValue = "999", fallbackValue = "-88" )
+            Integer instanceY;
         }
     }
 
@@ -2267,8 +2278,102 @@ public class ArgGroupTest {
         CommandLine cmd = new CommandLine(bean);
 
         cmd.parseArgs();
-        assertEquals(999, bean.datasource.instanceX);
-        assertEquals(999, CommandWithDefaultValue.DataSource.staticX);
+        assertEquals(999, bean.initializedGroup.instanceX);
+        assertEquals(999, CommandWithDefaultValue.Group1.staticX);
+
+        assertNull(bean.declaredGroup);
+        assertNull(CommandWithDefaultValue.Group2.staticY);
     }
 
+    static class Issue746 {
+        static class Level1Argument {
+            @Option(names = "--l1a", required = true, defaultValue = "l1a")
+            private String l1a;
+
+            @Option(names = "--l1b", required = true)
+            private String l1b;
+
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            private Level2Argument level2;
+        }
+
+        static class Level2Argument {
+            @Option(names = "--l2a", required = true, defaultValue = "l2a")
+            private String l2a;
+            @Option(names = "--l2b", required = true)
+            private String l2b;
+
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            private Level3Argument level3;
+        }
+
+        static class Level3Argument {
+            @Option(names = "--l3a", required = true)
+            private String l3a;
+
+            @Option(names = { "--l3b"}, required = true, defaultValue = "l3b")
+            private String l3b;
+        }
+
+        @Command(name = "arg-group-test", subcommands = {CreateCommand.class, CommandLine.HelpCommand.class})
+        public static class ArgGroupCommand implements Runnable {
+            public void run() { }
+        }
+
+        @Command(name = "create", helpCommand = true)
+        public static class CreateCommand implements Runnable {
+            @Option(names = "--l0", required = true, defaultValue = "l0")
+            private String l0;
+
+            @ArgGroup(exclusive = false, multiplicity = "0..1")
+            private Level1Argument level1 = new Level1Argument();
+
+            public void run() { }
+        }
+    }
+
+    @Test
+    // https://github.com/remkop/picocli/issues/746
+    public void testIssue746DefaultValueWithNestedArgGroups() {
+        Issue746.CreateCommand bean = new Issue746.CreateCommand();
+        CommandLine cmd = new CommandLine(bean);
+        cmd.parseArgs();
+        assertEquals("l0", bean.l0);
+        assertEquals("l1a", bean.level1.l1a);
+        assertNull(bean.level1.l1b);
+        assertNull(bean.level1.level2);
+    }
+
+    @Test
+    // https://github.com/remkop/picocli/issues/746
+    public void testIssue746ArgGroupWithDefaultValuesSynopsis() {
+        String expected = String.format("" +
+                "create [[--l1a=<l1a>] --l1b=<l1b> ([--l2a=<l2a>] --l2b=<l2b> (--l3a=<l3a>%n" +
+                "       [--l3b=<l3b>]))] [--l0=<l0>]%n");
+
+        CommandLine cmd = new CommandLine(new Issue746.CreateCommand());
+        Help help = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF));
+        String actual = help.synopsis(0);
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    // https://github.com/remkop/picocli/issues/746
+    public void testIssue746ArgGroupWithDefaultValuesParsing() {
+        Issue746.CreateCommand bean = new Issue746.CreateCommand();
+        CommandLine cmd = new CommandLine(bean);
+
+        cmd.parseArgs("--l1b=L1B --l2b=L2B --l3a=L3A".split(" "));
+        assertEquals("default value", "l0", bean.l0);
+        assertNotNull(bean.level1);
+        assertEquals("default value", "l1a", bean.level1.l1a);
+        assertEquals("specified value", "L1B", bean.level1.l1b);
+        assertNotNull(bean.level1.level2);
+        assertEquals("default value", "l2a", bean.level1.level2.l2a);
+        assertEquals("specified value", "L2B", bean.level1.level2.l2b);
+        assertNotNull(bean.level1.level2.level3);
+        assertEquals("default value", "l3b", bean.level1.level2.level3.l3b);
+        assertEquals("specified value", "L3A", bean.level1.level2.level3.l3a);
+    }
 }

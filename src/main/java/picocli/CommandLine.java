@@ -8314,17 +8314,17 @@ public class CommandLine {
                     if (synopsis.length > 0) { synopsis = synopsis.concat(infix); }
                     synopsis = synopsis.concat(subgroup.synopsisText(colorScheme, outparam_groupArgs));
                 }
-                String prefix = multiplicity().min > 0 ? "(" : "[";
-                String postfix = multiplicity().min > 0 ? ")" : "]";
+                String prefix = multiplicity().min() > 0 ? "(" : "[";
+                String postfix = multiplicity().min() > 0 ? ")" : "]";
                 Text result = colorScheme.ansi().text(prefix).concat(synopsis).concat(postfix);
                 int i = 1;
-                for (; i < multiplicity.min; i++) {
+                for (; i < multiplicity.min(); i++) {
                     result = result.concat(" (").concat(synopsis).concat(")");
                 }
-                if (multiplicity().isVariable) {
+                if (multiplicity().isVariable()) {
                     result = result.concat("...");
                 } else {
-                    for (; i < multiplicity.max; i++) {
+                    for (; i < multiplicity.max(); i++) {
                         result = result.concat(" [").concat(synopsis).concat("]");
                     }
                 }
@@ -10862,19 +10862,21 @@ public class CommandLine {
                 }
             }
             for (ArgGroupSpec group : commandSpec.argGroups()) {
-                applyDefault(commandSpec.defaultValueProvider(), group, required);
+                applyGroupDefaults(commandSpec.defaultValueProvider(), group, required);
             }
             for (UnmatchedArgsBinding unmatched : commandSpec.unmatchedArgsBindings()) {
                 unmatched.clear();
             }
             parseResultBuilder.isInitializingDefaultValues = false;
         }
-        private void applyDefault(IDefaultValueProvider defaultValueProvider, ArgGroupSpec group, List<ArgSpec> required) throws Exception {
+        private void applyGroupDefaults(IDefaultValueProvider defaultValueProvider, ArgGroupSpec group, List<ArgSpec> required) throws Exception {
             for (ArgSpec arg : group.args()) {
-                if (applyDefault(commandSpec.defaultValueProvider(), arg)) { required.remove(arg); }
+                if (arg.scope().get() != null) {
+                    if (applyDefault(defaultValueProvider, arg)) { required.remove(arg); }
+                }
             }
             for (ArgGroupSpec sub : group.subgroups()) {
-                applyDefault(defaultValueProvider, sub, required);
+                applyGroupDefaults(defaultValueProvider, sub, required);
             }
         }
         private boolean applyDefault(IDefaultValueProvider defaultValueProvider, ArgSpec arg) throws Exception {
