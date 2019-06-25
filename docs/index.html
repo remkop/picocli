@@ -831,7 +831,7 @@ converting the input to strongly typed values in the fields of your class.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>A command can be <a href="#execute">executed</a> in one line of code.
+<p>Implement <code>Runnable</code> or <code>Callable</code>, and your command can be <a href="#execute">executed</a> in one line of code.
 The example above uses the <code>CommandLine.execute</code> method
 to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic.
 Applications can call <code>System.exit</code> with the returned exit code to signal success or failure to their caller.</p>
