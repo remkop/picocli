@@ -790,7 +790,7 @@ Picocli-based applications can be ahead-of-time compiled to <span class="image">
 <a href="#_graalvm_native_images">native images</a>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.</p>
 </div>
 <div class="paragraph">
-<p><span class="image"><img src="images/ExampleUsageANSI.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
+<p><span class="image"><img src="images/checksum-usage-help.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
 </div>
 <div class="paragraph">
 <p>A distinguishing feature of picocli is how it aims
@@ -801,46 +801,10 @@ all the source code lives in a single file, to encourage application authors to 
 <p>How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed values in the fields of your class.</p>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">picocli.CommandLine.Option</span>;
-<span class="keyword">import</span> <span class="include">picocli.CommandLine.Parameters</span>;
-<span class="keyword">import</span> <span class="include">java.io.File</span>;
-
-<span class="directive">public</span> <span class="type">class</span> <span class="class">Example</span> {
-    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span> }, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Be verbose.</span><span class="delimiter">&quot;</span></span>)
-    <span class="directive">private</span> <span class="type">boolean</span> verbose = <span class="predefined-constant">false</span>;
-
-    <span class="annotation">@Parameters</span>(arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">1..*</span><span class="delimiter">&quot;</span></span>, paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">FILE</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">File(s) to process.</span><span class="delimiter">&quot;</span></span>)
-    <span class="directive">private</span> <span class="predefined-type">File</span><span class="type">[]</span> inputFiles;
-    ...
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Then invoke <code>CommandLine.parseArgs</code> or <code>CommandLine.populateCommand</code> with the command line parameters and an object you want to initialize.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">String</span><span class="type">[]</span> args = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">inputFile1</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">inputFile2</span><span class="delimiter">&quot;</span></span> };
-Example app = CommandLine.populateCommand(<span class="keyword">new</span> Example(), args);
-<span class="keyword">assert</span>  app.verbose;
-<span class="keyword">assert</span>  app.inputFiles != <span class="predefined-constant">null</span> &amp;&amp; app.inputFiles.length == <span class="integer">2</span>;</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>A command can be <a href="#execute">executed</a> in one line of code. The example below uses the <code>CommandLine.execute</code> method
-to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic.
-Applications can call <code>System.exit</code> with the returned exit code to signal success or failure to their caller.</p>
-</div>
-<div class="paragraph">
-<p>The <a href="#_mixin_standard_help_options">mixinStandardHelpOptions</a> attribute is all
-that is needed to give your application usage help and version help.</p>
-</div>
 <div id="CheckSum-application" class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Prints the checksum (MD5 by default) of a file to STDOUT.</span><span class="delimiter">&quot;</span></span>,
-         name = <span class="string"><span class="delimiter">&quot;</span><span class="content">checksum</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">checksum 3.0</span><span class="delimiter">&quot;</span></span>)
+         name = <span class="string"><span class="delimiter">&quot;</span><span class="content">checksum</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">checksum 4.0</span><span class="delimiter">&quot;</span></span>)
 <span class="type">class</span> <span class="class">CheckSum</span> <span class="directive">implements</span> <span class="predefined-type">Callable</span>&lt;<span class="predefined-type">Integer</span>&gt; {
 
     <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">The file whose checksum to calculate.</span><span class="delimiter">&quot;</span></span>)
@@ -850,7 +814,7 @@ that is needed to give your application usage help and version help.</p>
     <span class="directive">private</span> <span class="predefined-type">String</span> algorithm = <span class="string"><span class="delimiter">&quot;</span><span class="content">MD5</span><span class="delimiter">&quot;</span></span>;
 
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) <span class="directive">throws</span> <span class="exception">Exception</span> {
-        <span class="comment">// CheckSum implements Callable, so parsing, error handling and handling user</span>
+        <span class="comment">// this example implements Callable, so parsing, error handling and handling user</span>
         <span class="comment">// requests for usage help or version help can be done with one line of code.</span>
 
         <span class="type">int</span> exitCode = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> CheckSum()).execute(args);
@@ -861,11 +825,20 @@ that is needed to give your application usage help and version help.</p>
     <span class="directive">public</span> <span class="predefined-type">Integer</span> call() <span class="directive">throws</span> <span class="exception">Exception</span> { <span class="comment">// your business logic goes here...</span>
         <span class="type">byte</span><span class="type">[]</span> fileContents = Files.readAllBytes(file.toPath());
         <span class="type">byte</span><span class="type">[]</span> digest = <span class="predefined-type">MessageDigest</span>.getInstance(algorithm).digest(fileContents);
-        <span class="predefined-type">System</span>.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(digest));
+        <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">%0</span><span class="delimiter">&quot;</span></span> + (digest.length*<span class="integer">2</span>) + <span class="string"><span class="delimiter">&quot;</span><span class="content">x%n</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> <span class="predefined-type">BigInteger</span>(<span class="integer">1</span>, digest));
         <span class="keyword">return</span> <span class="integer">0</span>;
     }
 }</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>A command can be <a href="#execute">executed</a> in one line of code.
+The example above uses the <code>CommandLine.execute</code> method
+to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic.
+Applications can call <code>System.exit</code> with the returned exit code to signal success or failure to their caller.</p>
+</div>
+<div class="paragraph">
+<p>The <a href="#_mixin_standard_help_options">mixinStandardHelpOptions</a> attribute adds <code>--help</code> and <code>--version</code> options to your application.</p>
 </div>
 </div>
 </div>

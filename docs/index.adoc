@@ -37,7 +37,7 @@ Picocli-based applications can be ahead-of-time compiled to image:https://www.gr
 <<GraalVM Native Images,native images>>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.
 
 
-image:ExampleUsageANSI.png[Screenshot of usage help with Ansi codes enabled]
+image:checksum-usage-help.png[Screenshot of usage help with Ansi codes enabled]
 
 
 A distinguishing feature of picocli is how it aims
@@ -47,44 +47,11 @@ all the source code lives in a single file, to encourage application authors to 
 How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed values in the fields of your class.
 
-[source,java]
-----
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
-import java.io.File;
-
-public class Example {
-    @Option(names = { "-v", "--verbose" }, description = "Be verbose.")
-    private boolean verbose = false;
-
-    @Parameters(arity = "1..*", paramLabel = "FILE", description = "File(s) to process.")
-    private File[] inputFiles;
-    ...
-}
-----
-
-Then invoke `CommandLine.parseArgs` or `CommandLine.populateCommand` with the command line parameters and an object you want to initialize.
-
-[source,java]
-----
-String[] args = { "-v", "inputFile1", "inputFile2" };
-Example app = CommandLine.populateCommand(new Example(), args);
-assert  app.verbose;
-assert  app.inputFiles != null && app.inputFiles.length == 2;
-----
-
-A command can be <<Executing Commands,executed>> in one line of code. The example below uses the `CommandLine.execute` method
-to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic.
-Applications can call `System.exit` with the returned exit code to signal success or failure to their caller.
-
-The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute is all
-that is needed to give your application usage help and version help.
-
 [[CheckSum-application]]
 [source,java]
 ----
 @Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
-         name = "checksum", mixinStandardHelpOptions = true, version = "checksum 3.0")
+         name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0")
 class CheckSum implements Callable<Integer> {
 
     @Parameters(index = "0", description = "The file whose checksum to calculate.")
@@ -94,7 +61,7 @@ class CheckSum implements Callable<Integer> {
     private String algorithm = "MD5";
 
     public static void main(String[] args) throws Exception {
-        // CheckSum implements Callable, so parsing, error handling and handling user
+        // this example implements Callable, so parsing, error handling and handling user
         // requests for usage help or version help can be done with one line of code.
 
         int exitCode = new CommandLine(new CheckSum()).execute(args);
@@ -105,11 +72,18 @@ class CheckSum implements Callable<Integer> {
     public Integer call() throws Exception { // your business logic goes here...
         byte[] fileContents = Files.readAllBytes(file.toPath());
         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
-        System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(digest));
+        System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1, digest));
         return 0;
     }
 }
 ----
+
+A command can be <<Executing Commands,executed>> in one line of code.
+The example above uses the `CommandLine.execute` method
+to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic.
+Applications can call `System.exit` with the returned exit code to signal success or failure to their caller.
+
+The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute adds `--help` and `--version` options to your application.
 
 
 == Options and Parameters
