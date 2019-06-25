@@ -2248,12 +2248,12 @@ public class ArgGroupTest {
     static class CommandWithDefaultValue {
 
         @ArgGroup(exclusive = false)
-        Group1 initializedGroup = new Group1();
+        InitializedGroup initializedGroup = new InitializedGroup();
 
         @ArgGroup(exclusive = false)
-        Group2 declaredGroup;
+        DeclaredGroup declaredGroup;
 
-        static class Group1 {
+        static class InitializedGroup {
             @Option(names = "-staticX", arity = "0..1", defaultValue = "999", fallbackValue = "-88" )
             static int staticX;
 
@@ -2261,7 +2261,7 @@ public class ArgGroupTest {
             int instanceX;
         }
 
-        static class Group2 {
+        static class DeclaredGroup {
             @Option(names = "-staticY", arity = "0..1", defaultValue = "999", fallbackValue = "-88" )
             static Integer staticY;
 
@@ -2279,10 +2279,10 @@ public class ArgGroupTest {
 
         cmd.parseArgs();
         assertEquals(999, bean.initializedGroup.instanceX);
-        assertEquals(999, CommandWithDefaultValue.Group1.staticX);
+        assertEquals(999, CommandWithDefaultValue.InitializedGroup.staticX);
 
         assertNull(bean.declaredGroup);
-        assertNull(CommandWithDefaultValue.Group2.staticY);
+        assertNull(CommandWithDefaultValue.DeclaredGroup.staticY);
     }
 
     static class Issue746 {
