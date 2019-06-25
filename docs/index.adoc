@@ -60,10 +60,9 @@ class CheckSum implements Callable<Integer> {
     @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
     private String algorithm = "MD5";
 
-    public static void main(String[] args) throws Exception {
-        // this example implements Callable, so parsing, error handling and handling user
-        // requests for usage help or version help can be done with one line of code.
-
+    // this example implements Callable, so parsing, error handling and handling user
+    // requests for usage help or version help can be done with one line of code.
+    public static void main(String... args) {
         int exitCode = new CommandLine(new CheckSum()).execute(args);
         System.exit(exitCode);
     }

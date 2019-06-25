@@ -813,10 +813,9 @@ converting the input to strongly typed values in the fields of your class.</p>
     <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-a</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--algorithm</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">MD5, SHA-1, SHA-256, ...</span><span class="delimiter">&quot;</span></span>)
     <span class="directive">private</span> <span class="predefined-type">String</span> algorithm = <span class="string"><span class="delimiter">&quot;</span><span class="content">MD5</span><span class="delimiter">&quot;</span></span>;
 
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) <span class="directive">throws</span> <span class="exception">Exception</span> {
-        <span class="comment">// this example implements Callable, so parsing, error handling and handling user</span>
-        <span class="comment">// requests for usage help or version help can be done with one line of code.</span>
-
+    <span class="comment">// this example implements Callable, so parsing, error handling and handling user</span>
+    <span class="comment">// requests for usage help or version help can be done with one line of code.</span>
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
         <span class="type">int</span> exitCode = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> CheckSum()).execute(args);
         <span class="predefined-type">System</span>.exit(exitCode);
     }
