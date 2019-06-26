@@ -793,7 +793,7 @@ Picocli-based applications can be ahead-of-time compiled to <span class="image">
 <p><span class="image"><img src="images/checksum-usage-help.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
 </div>
 <div class="paragraph">
-<p>A distinguishing feature of picocli is how it aims
+<p>Another distinguishing feature of picocli is how it aims
 to let users run picocli-based applications without requiring picocli as an external dependency:
 all the source code lives in a single file, to encourage application authors to include it <em>in source form</em>.</p>
 </div>
@@ -803,8 +803,8 @@ converting the input to strongly typed values in the fields of your class.</p>
 </div>
 <div id="CheckSum-application" class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Prints the checksum (MD5 by default) of a file to STDOUT.</span><span class="delimiter">&quot;</span></span>,
-         name = <span class="string"><span class="delimiter">&quot;</span><span class="content">checksum</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">checksum 4.0</span><span class="delimiter">&quot;</span></span>)
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">checksum</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">checksum 4.0</span><span class="delimiter">&quot;</span></span>,
+         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Prints the checksum (MD5 by default) of a file to STDOUT.</span><span class="delimiter">&quot;</span></span>)
 <span class="type">class</span> <span class="class">CheckSum</span> <span class="directive">implements</span> <span class="predefined-type">Callable</span>&lt;<span class="predefined-type">Integer</span>&gt; {
 
     <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">The file whose checksum to calculate.</span><span class="delimiter">&quot;</span></span>)

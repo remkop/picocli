@@ -24,7 +24,7 @@
 </p>
 <pre>
 &#064;Command(name = "checksum", mixinStandardHelpOptions = true, version = "Checksum 4.0",
-    description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
+         description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
 class CheckSum implements Callable&lt;Integer&gt; {
 
     &#064;Parameters(index = "0", description = "The file whose checksum to calculate.")
@@ -33,10 +33,9 @@ class CheckSum implements Callable&lt;Integer&gt; {
     &#064;Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
     private String algorithm = "MD5";
 
+    // CheckSum implements Callable, so parsing, error handling and handling user
+    // requests for usage help or version help can be done with one line of code.
     public static void main(String[] args) throws Exception {
-        // CheckSum implements Callable, so parsing, error handling and handling user
-        // requests for usage help or version help can be done with one line of code.
-
         int exitCode = new CommandLine(new CheckSum()).execute(args);
         System.exit(exitCode);
     }

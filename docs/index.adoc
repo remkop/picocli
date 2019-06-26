@@ -50,8 +50,8 @@ converting the input to strongly typed values in the fields of your class.
 [[CheckSum-application]]
 [source,java]
 ----
-@Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
-         name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0")
+@Command(name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0",
+         description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
 class CheckSum implements Callable<Integer> {
 
     @Parameters(index = "0", description = "The file whose checksum to calculate.")

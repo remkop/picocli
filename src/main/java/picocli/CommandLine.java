@@ -60,8 +60,8 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  * An example that implements {@code Callable} and uses the {@link #execute(String...) CommandLine.execute} convenience API to run in a single line of code:
  * </p>
  * <pre>
- *  &#064;Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
- *           name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0")
+ * &#064;Command(name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0",
+ *          description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
  * class CheckSum implements Callable&lt;Integer&gt; {
  *
  *     &#064;Parameters(index = "0", description = "The file whose checksum to calculate.")
@@ -70,10 +70,9 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  *     &#064;Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
  *     private String algorithm = "MD5";
  *
+ *     // CheckSum implements Callable, so parsing, error handling and handling user
+ *     // requests for usage help or version help can be done with one line of code.
  *     public static void main(String[] args) throws Exception {
- *         // CheckSum implements Callable, so parsing, error handling and handling user
- *         // requests for usage help or version help can be done with one line of code.
- *
  *         int exitCode = new CommandLine(new CheckSum()).execute(args);
  *         System.exit(exitCode);
  *     }
