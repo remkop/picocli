@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+
+group 'info.picocli'
+version '4.0.0-rc-1-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile (group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.1.6.RELEASE' )
+    compileOnly("org.springframework.boot:spring-boot-configuration-processor:2.1.6.RELEASE")
+}
