@@ -31,8 +31,36 @@ apply plugin: 'distribution'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: "org.beryx.jar"
-apply plugin: 'biz.aQute.bnd.builder'
 
+if (System.getenv('BINTRAY_USER')) { // on home system
+    apply plugin: 'biz.aQute.bnd.builder'
+} else {
+    try { // otherwise, only apply if available
+        Class.forName('aQute.bnd.gradle.BndPlugin')
+        Class.forName('aQute.bnd.build.Project')
+        apply plugin: 'biz.aQute.bnd.builder'
+    } catch (Throwable ignored) {}
+}
+pluginManager.withPlugin('biz.aQute.bnd.builder') { // if plugin applied, execute this action
+    configurations {
+        bundleCompile
+        baseline
+    }
+    dependencies {
+        baseline('group': group, 'name': jar.baseName, 'version': "(,${jar.version}[") {
+            force = true
+            transitive = false
+        }
+    }
+    sourceSets {
+        bundle
+    }
+    task bundle(type: Bundle) {
+        from sourceSets.bundle.output
+        bndfile = 'bnd.bnd'
+        sourceSet = sourceSets.bundle
+    }
+}
 
 allprojects {
     apply plugin: 'java'
@@ -362,27 +390,6 @@ publishing {
             }
         }
     }
-}
-apply plugin: 'java'
-
-configurations {
-    bundleCompile
-    baseline
-}
-dependencies {
-    baseline('group': group, 'name': jar.baseName, 'version': "(,${jar.version}[") {
-    force = true
-    transitive = false
-  }
-}
-
-sourceSets {
-    bundle
-}
-task bundle(type: Bundle) {
-    from sourceSets.bundle.output
-    bndfile = 'bnd.bnd'
-    sourceSet = sourceSets.bundle
 }
 
 /*

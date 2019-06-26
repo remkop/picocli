@@ -29,7 +29,8 @@ Picocli follows [semantic versioning](http://semver.org/).
 ## <a name="4.0.0-rc-1-fixes"></a> Fixed issues
 - [#696][#741] Automatically split lines in TextTable. Thanks to [Sualeh Fatehi](https://github.com/sualeh) for the pull request.
 - [#746] Bugfix: Apply default values to options and positional parameters in argument groups. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
- 
+- [#751] Build: Make build more portable.
+
 ## <a name="4.0.0-rc-1-deprecated"></a> Deprecations
 
 ## <a name="4.0.0-rc-1-breaking-changes"></a> Potential breaking changes
