@@ -2376,4 +2376,24 @@ public class ArgGroupTest {
         assertEquals("default value", "l3b", bean.level1.level2.level3.l3b);
         assertEquals("specified value", "L3A", bean.level1.level2.level3.l3a);
     }
+
+    @Command(name = "Issue742")
+    static class Issue742 {
+
+        @ArgGroup(exclusive = false, multiplicity = "2")
+        List<DataSource> datasource;
+
+        static class DataSource {
+            @Option(names = "-g", required = true, defaultValue = "e")
+            String aString;
+        }
+    }
+
+    @Ignore("NOTE: this test passes if `defaultValue = 'e'` is removed from the -g option definition")
+    @Test
+    // https://github.com/remkop/picocli/issues/742
+    public void testIssue742FalseErrorMessage() {
+        CommandLine cmd = new CommandLine(new Issue742());
+        cmd.parseArgs("-g=2", "-g=3");
+    }
 }
