@@ -1604,6 +1604,10 @@ If a collection is returned from a type converter, the <em>contents</em> of the 
 If the <code>Collection</code> type is not a concrete class, picocli will make a best effort to instantiate it based on the field type:
 <code>List &#8594; ArrayList</code>, <code>OrderedSet &#8594; TreeSet</code>, <code>Set &#8594; LinkedHashSet</code>, <code>Queue &#8594; LinkedList</code>, otherwise, <code>ArrayList</code>.</p>
 </div>
+<div class="paragraph">
+<p>Multi-value options and positional parameters can be defined with a <code>split</code> regular expression to allow end users to specify multiple values in a single parameter.
+See the <a href="#_split_regex">Split Regex</a> section for details.</p>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_maps">3.4.2. Maps</h4>
@@ -1655,6 +1659,10 @@ On the command line, the key and the value must be separated by a <code>=</code>
 </td>
 </tr>
 </table>
+</div>
+<div class="paragraph">
+<p>Map options and positional parameters can be defined with a <code>split</code> regular expression to allow end users to specify multiple values in a single parameter.
+See the <a href="#_split_regex">Split Regex</a> section for details.</p>
 </div>
 </div>
 </div>
@@ -1968,6 +1976,14 @@ Each of these substrings is converted to the type of the collection or array. Se
 <div class="listingblock">
 <div class="content">
 <pre>-fix 8=FIX.4.4|9=69|35=A|49=MBT|56=TargetCompID|34=9|52=20130625-04:05:32.682|98=0|108=30|10=052</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The above input results in the <code>message</code> field being assigned a <code>LinkedHashMap</code> with the following key-value pairs:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>{8=FIX.4.4, 9=69, 35=A, 49=MBT, 56=TargetCompID, 34=9, 52=20130625-04:05:32.682, 98=0, 108=30, 10=052}</pre>
 </div>
 </div>
 <div class="paragraph">
