@@ -508,7 +508,7 @@ cl.registerConverter(Locale.class, s -> new Locale.Builder().setLanguageTag(s).b
 cl.registerConverter(Cipher.class, s -> Cipher.getInstance(s));
 ----
 
-After registering custom converters, call the `parseArgs(String...)` method on the `CommandLine` instance where the converters are registered. (The static `populateCommand` method cannot be used.) For example:
+After registering custom converters, call the `execute(String...)` or parseArgs(String...)` method on the `CommandLine` instance where the converters are registered. (The static `populateCommand` method cannot be used.) For example:
 
 [source,java]
 ----
@@ -1956,6 +1956,7 @@ The same holds for the `mixinStandardHelpOptions` attribute, the built-in `HelpC
 
 The following <<Executing Commands,convenience methods>> automatically print help:
 
+* `CommandLine::execute`
 * `CommandLine::call`
 * `CommandLine::run`
 * `CommandLine::invoke`
@@ -3294,7 +3295,7 @@ Programmatically added mixins can be accessed via the map returned by `CommandLi
 
 [source,java]
 ----
-commandLine.parse("-vvv");
+commandLine.parseArgs("-vvv");
 
 // the options defined in ReusableOptions have been added to the zip command
 assert mixin == commandLine.getMixins().get("myMixin");
@@ -3323,7 +3324,7 @@ the mixed-in object is also injected into the field annotated with `@Mixin`, mak
 ----
 MyCommand zip = new MyCommand();
 CommandLine commandLine = new CommandLine(zip);
-commandLine.parse("-vvv");
+commandLine.parseArgs("-vvv");
 
 // the options defined in ReusableOptions have been added to the zip command
 assert zip.myMixin.verbosity.length == 3;
@@ -3640,7 +3641,7 @@ You use it by specifying the class of the interface:
 ----
 CommandLine cmd = new CommandLine(Counter.class); // specify a class
 String[] args = new String[] {"--count", "3"};
-cmd.parse(args);
+cmd.parseArgs(args);
 Counter counter = cmd.getCommand(); // picocli created an instance
 assert counter.getCount() == 3; // method returns command line value
 ----
@@ -3665,7 +3666,7 @@ You use it by passing an instance of the class:
 Counter counter = new Counter(); // the instance to populate
 CommandLine cmd = new CommandLine(counter);
 String[] args = new String[] {"--count", "3"};
-cmd.parse(args);
+cmd.parseArgs(args);
 assert counter.count == 3; // method was invoked with command line value
 ----
 
@@ -3997,7 +3998,7 @@ OptionArg optionArg     = new OptionArg();
 CommandLine commandLine = new CommandLine(optionArg);
 
 commandLine.setSeparator(":"); // programmatically set a separator
-commandLine.parse("-f:output.txt");
+commandLine.parseArgs("-f:output.txt");
 assert optionArg.file.equals("output.txt");
 ----
 

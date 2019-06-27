@@ -1458,7 +1458,7 @@ cl.registerConverter(<span class="predefined-type">Cipher</span>.class, s -&gt; 
 </div>
 </div>
 <div class="paragraph">
-<p>After registering custom converters, call the <code>parseArgs(String&#8230;&#8203;)</code> method on the <code>CommandLine</code> instance where the converters are registered. (The static <code>populateCommand</code> method cannot be used.) For example:</p>
+<p>After registering custom converters, call the <code>execute(String&#8230;&#8203;)</code> or parseArgs(String&#8230;&#8203;)` method on the <code>CommandLine</code> instance where the converters are registered. (The static <code>populateCommand</code> method cannot be used.) For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -3512,6 +3512,9 @@ when a help option was specified on the command line (options annotated with the
 <div class="ulist">
 <ul>
 <li>
+<p><code>CommandLine::execute</code></p>
+</li>
+<li>
 <p><code>CommandLine::call</code></p>
 </li>
 <li>
@@ -5374,7 +5377,7 @@ commandline.addMixin(<span class="string"><span class="delimiter">&quot;</span><
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><span class="content">-vvv</span><span class="delimiter">&quot;</span></span>);
+<pre class="CodeRay highlight"><code data-lang="java">commandLine.parseArgs(<span class="string"><span class="delimiter">&quot;</span><span class="content">-vvv</span><span class="delimiter">&quot;</span></span>);
 
 <span class="comment">// the options defined in ReusableOptions have been added to the zip command</span>
 <span class="keyword">assert</span> mixin == commandLine.getMixins().get(<span class="string"><span class="delimiter">&quot;</span><span class="content">myMixin</span><span class="delimiter">&quot;</span></span>);
@@ -5408,7 +5411,7 @@ the mixed-in object is also injected into the field annotated with <code>@Mixin<
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java">MyCommand zip = <span class="keyword">new</span> MyCommand();
 CommandLine commandLine = <span class="keyword">new</span> CommandLine(zip);
-commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><span class="content">-vvv</span><span class="delimiter">&quot;</span></span>);
+commandLine.parseArgs(<span class="string"><span class="delimiter">&quot;</span><span class="content">-vvv</span><span class="delimiter">&quot;</span></span>);
 
 <span class="comment">// the options defined in ReusableOptions have been added to the zip command</span>
 <span class="keyword">assert</span> zip.myMixin.verbosity.length == <span class="integer">3</span>;</code></pre>
@@ -5900,7 +5903,7 @@ A <code>$</code> character can be escaped with another <code>$</code> character.
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java">CommandLine cmd = <span class="keyword">new</span> CommandLine(Counter.class); <span class="comment">// specify a class</span>
 <span class="predefined-type">String</span><span class="type">[]</span> args = <span class="keyword">new</span> <span class="predefined-type">String</span><span class="type">[]</span> {<span class="string"><span class="delimiter">&quot;</span><span class="content">--count</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">3</span><span class="delimiter">&quot;</span></span>};
-cmd.parse(args);
+cmd.parseArgs(args);
 Counter counter = cmd.getCommand(); <span class="comment">// picocli created an instance</span>
 <span class="keyword">assert</span> counter.getCount() == <span class="integer">3</span>; <span class="comment">// method returns command line value</span></code></pre>
 </div>
@@ -5931,7 +5934,7 @@ Counter counter = cmd.getCommand(); <span class="comment">// picocli created an 
 <pre class="CodeRay highlight"><code data-lang="java">Counter counter = <span class="keyword">new</span> Counter(); <span class="comment">// the instance to populate</span>
 CommandLine cmd = <span class="keyword">new</span> CommandLine(counter);
 <span class="predefined-type">String</span><span class="type">[]</span> args = <span class="keyword">new</span> <span class="predefined-type">String</span><span class="type">[]</span> {<span class="string"><span class="delimiter">&quot;</span><span class="content">--count</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">3</span><span class="delimiter">&quot;</span></span>};
-cmd.parse(args);
+cmd.parseArgs(args);
 <span class="keyword">assert</span> counter.count == <span class="integer">3</span>; <span class="comment">// method was invoked with command line value</span></code></pre>
 </div>
 </div>
@@ -6346,7 +6349,7 @@ For example:</p>
 CommandLine commandLine = <span class="keyword">new</span> CommandLine(optionArg);
 
 commandLine.setSeparator(<span class="string"><span class="delimiter">&quot;</span><span class="content">:</span><span class="delimiter">&quot;</span></span>); <span class="comment">// programmatically set a separator</span>
-commandLine.parse(<span class="string"><span class="delimiter">&quot;</span><span class="content">-f:output.txt</span><span class="delimiter">&quot;</span></span>);
+commandLine.parseArgs(<span class="string"><span class="delimiter">&quot;</span><span class="content">-f:output.txt</span><span class="delimiter">&quot;</span></span>);
 <span class="keyword">assert</span> optionArg.file.equals(<span class="string"><span class="delimiter">&quot;</span><span class="content">output.txt</span><span class="delimiter">&quot;</span></span>);</code></pre>
 </div>
 </div>

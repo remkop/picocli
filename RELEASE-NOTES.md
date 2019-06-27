@@ -33,6 +33,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#746] Bugfix: Apply default values to options and positional parameters in argument groups. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 - [#751] Build: Make build more portable.
 - [#753] Doc: Improve documentation for multi-value fields: mention the `split` attribute. Thanks to [feinstein](https://github.com/feinstein).
+- [#740] Doc: Update user manual to replace `parse` examples with `parseArgs`.
 
 ## <a name="4.0.0-rc-1-deprecated"></a> Deprecations
 
