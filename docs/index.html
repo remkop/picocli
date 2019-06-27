@@ -1095,8 +1095,8 @@ one or more single-character options without option-arguments, followed by at mo
 <p>When an option is negatable, picocli will recognize negative aliases of the option on the command line.</p>
 </div>
 <div class="paragraph">
-<p>For *nix-style long options, aliases have the prefix <code>no-</code> to the given names.
-For Java JVM-style options, the <code>:+</code> is turned into <code>:-</code> and vice versa.
+<p>For *nix-style long options, aliases have the prefix <code>no-</code> to the given names, for example <code>--no-verbose</code>.
+For Java JVM-style options like <code>-XX:+PrintGCDetails</code>, the <code>:+</code> is turned into <code>:-</code> and vice versa.
 Short option names are not given a negative alias by default. (This is <a href="#_customizing_negatable_options">customizable</a>.)</p>
 </div>
 <div class="paragraph">
