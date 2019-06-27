@@ -4198,7 +4198,7 @@ public class CommandLineHelpTest {
                 "  -h, --help                Show this help message and exit.%n" +
                 "  -V, --version             Print version information and exit.%n");
         CommandLine cmd = new CommandLine(new App());
-        cmd.getCommandSpec().usageMessage().synopsisAutoIndentThreshold(40);
+        cmd.getCommandSpec().usageMessage().synopsisAutoIndentThreshold(47.0 / 80);
         cmd.getCommandSpec().usageMessage().synopsisIndent(40);
         String actual = cmd.getUsageMessage();
         assertEquals(expected, actual);
@@ -4225,6 +4225,46 @@ public class CommandLineHelpTest {
                 "%n" +
                 "  -h, --help                Show this help message and exit.%n" +
                 "  -V, --version             Print version information and exit.%n"), cmd.getUsageMessage());
+    }
+
+    @Test
+    public void testSynopsisAutoIndentThresholdDefault() {
+        assertEquals(0.5, new UsageMessageSpec().synopsisAutoIndentThreshold(), 0.00001);
+    }
+
+    @Test
+    public void testSynopsisAutoIndentThresholdDisallowsNegativeValue() {
+        try {
+            new UsageMessageSpec().synopsisAutoIndentThreshold(-0.1);
+            fail("Expected exception");
+        } catch (IllegalArgumentException ex) {
+            assertEquals("synopsisAutoIndentThreshold must be between 0.0 and 0.9 (inclusive), but was -0.1", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testSynopsisAutoIndentThresholdDisallowsValueLargerThan0_9() {
+        try {
+            new UsageMessageSpec().synopsisAutoIndentThreshold(0.90001);
+            fail("Expected exception");
+        } catch (IllegalArgumentException ex) {
+            assertEquals("synopsisAutoIndentThreshold must be between 0.0 and 0.9 (inclusive), but was 0.90001", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testSynopsisAutoIndentThresholdAcceptsValueZero() {
+        assertEquals(0.0, new UsageMessageSpec().synopsisAutoIndentThreshold(0.0).synopsisAutoIndentThreshold(), 0.0001);
+    }
+
+    @Test
+    public void testSynopsisAutoIndentThresholdAcceptsValue0_9() {
+        assertEquals(0.9, new UsageMessageSpec().synopsisAutoIndentThreshold(0.9).synopsisAutoIndentThreshold(), 0.0001);
+    }
+
+    @Test
+    public void testSynopsisIndentDefault() {
+        assertEquals(-1, new UsageMessageSpec().synopsisIndent());
     }
 
     @Test

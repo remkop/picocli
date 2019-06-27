@@ -6043,10 +6043,11 @@ public class CommandLine {
             public static final String SECTION_KEY_FOOTER = "footer";
 
             /** Constant holding the default usage message width: <code>{@value}</code>. */
-            public  final static int DEFAULT_USAGE_WIDTH = 80;
-            private final static int MINIMUM_USAGE_WIDTH = 55;
-            private final static int DEFAULT_SYNOPSIS_MAX_INDENT = DEFAULT_USAGE_WIDTH / 2;
-            private final static int DEFAULT_SYNOPSIS_INDENT = -1; // by default, fall back to aligning to the synopsis heading
+            public  final static int    DEFAULT_USAGE_WIDTH         = 80;
+            private final static int    MINIMUM_USAGE_WIDTH         = 55;
+            private final static int    DEFAULT_SYNOPSIS_INDENT     = -1; // by default, fall back to aligning to the synopsis heading
+            private final static double DEFAULT_SYNOPSIS_AUTO_INDENT_THRESHOLD = 0.5;
+            private final static double MAX_SYNOPSIS_AUTO_INDENT_THRESHOLD     = 0.9;
 
             /** Constant Boolean holding the default setting for whether to attempt to adjust the width to the terminal width: <code>{@value}</code>. */
             static final Boolean DEFAULT_USAGE_AUTO_WIDTH = Boolean.FALSE;
@@ -6116,7 +6117,7 @@ public class CommandLine {
             private String headerHeading;
             private String synopsisHeading;
             private String synopsisSubcommandLabel;
-            private Integer synopsisAutoIndentThreshold;
+            private Double synopsisAutoIndentThreshold;
             private Integer synopsisIndent;
             private String descriptionHeading;
             private String parameterListHeading;
@@ -6413,16 +6414,16 @@ public class CommandLine {
              * @since 4.0*/
             public String synopsisSubcommandLabel() { return str(resourceStr("usage.synopsisSubcommandLabel"), synopsisSubcommandLabel, DEFAULT_SYNOPSIS_SUBCOMMANDS); }
 
-            /** Returns the maximum length of the synopsis heading plus the fully qualified command name up to which
+            /** Returns the fraction of the usage help {@link #width()} that is the threshold up to which
              * the 2nd line and subsequent lines of a multi-line synopsis should be aligned to the end of the command name.
-             * The default value of this attribute is {@code 40}.
-             * If the length of the synopsis heading and the fully qualified command name exceed this value,
+             * The default value of this attribute is {@code 0.5}.
+             * If the length of the synopsis heading plus the length of the fully qualified command name exceeds this fraction of the width,
              * the 2nd and subsequent rows of a multi-line synopsis will be aligned to the {@link #synopsisIndent()} instead of the end of the command name.
              * @since 4.0 */
-            public int synopsisAutoIndentThreshold() {return synopsisAutoIndentThreshold == null ? DEFAULT_SYNOPSIS_MAX_INDENT : synopsisAutoIndentThreshold;}
+            public double synopsisAutoIndentThreshold() {return synopsisAutoIndentThreshold == null ? DEFAULT_SYNOPSIS_AUTO_INDENT_THRESHOLD : synopsisAutoIndentThreshold;}
 
             /** Returns the indentation to use on the 2nd line and subsequent lines of a multi-line synopsis
-             * when the length of the synopsis heading and the fully qualified command name exceed the {@link #synopsisAutoIndentThreshold()}, {@code -1} by default.
+             * when the length of the synopsis heading and the fully qualified command name exceed the {@link #width()} times the {@link #synopsisAutoIndentThreshold()}, {@code -1} by default.
              * A negative value for this option means that the 2nd line and subsequent lines are aligned to the synopsis heading length.
              * A positive value means the exact number of spaces to indent for the 2nd line and subsequent lines of the synopsis.
              * @since 4.0 */
@@ -6537,17 +6538,25 @@ public class CommandLine {
              * @since 4.0 */
             public UsageMessageSpec synopsisSubcommandLabel(String newValue) {synopsisSubcommandLabel = newValue; return this;}
 
-            /** Sets the maximum length of the synopsis heading plus the fully qualified command name up to which
+            /** Sets the fraction of the usage help {@link #width()} that is the threshold up to which
              * the 2nd line and subsequent lines of a multi-line synopsis should be aligned to the end of the command name.
-             * The default value of this attribute is {@code 40}.
-             * If the length of the synopsis heading and the fully qualified command name exceed this value,
+             * The default value of this attribute is {@code 0.5}.
+             * If the length of the synopsis heading plus the length of the fully qualified command name exceeds this fraction of the width,
              * the 2nd and subsequent rows of a multi-line synopsis will be aligned to the {@link #synopsisIndent()} instead of the end of the command name.
+             * @param newValue the new threshold value. Must be a value between 0.0 and 0.9, inclusive
              * @return this UsageMessageSpec for method chaining
+             * @throws IllegalArgumentException if the specified value is less than 0.0 or greater than 0.9
              * @since 4.0 */
-            public UsageMessageSpec synopsisAutoIndentThreshold(int newValue) { synopsisAutoIndentThreshold = newValue; return this; }
+            public UsageMessageSpec synopsisAutoIndentThreshold(double newValue) {
+                if (newValue < 0 || newValue > MAX_SYNOPSIS_AUTO_INDENT_THRESHOLD) {
+                    throw new IllegalArgumentException("synopsisAutoIndentThreshold must be between 0.0 and 0.9 (inclusive), but was " + newValue);
+                }
+                synopsisAutoIndentThreshold = newValue;
+                return this;
+            }
 
             /** Sets the indentation to use on the 2nd line and subsequent lines of a multi-line synopsis
-             * when the length of the synopsis heading and the fully qualified command name exceed the {@link #synopsisAutoIndentThreshold()}, {@code -1} by default.
+             * when the length of the synopsis heading and the fully qualified command name exceed the {@link #synopsisAutoIndentThreshold()} fraction of the {@link #width()}, {@code -1} by default.
              * A negative value for this option means that the 2nd line and subsequent lines are aligned to the synopsis heading length.
              * A positive value means the exact number of spaces to indent for the 2nd line and subsequent lines of the synopsis.
              * @return this UsageMessageSpec for method chaining
@@ -12659,8 +12668,9 @@ public class CommandLine {
 
             // Fix for #739: infinite loop if firstColumnLength >= width (so 2nd column width becomes zero or negative)
             int indent = synopsisHeadingLength + commandName.length() + 1; // +1 for space after command name
-            if (indent > commandSpec.usageMessage().synopsisAutoIndentThreshold()) {
+            if (indent > commandSpec.usageMessage().synopsisAutoIndentThreshold() * width()) {
                 indent = commandSpec.usageMessage().synopsisIndent() < 0 ? synopsisHeadingLength : commandSpec.usageMessage().synopsisIndent();
+                indent = Math.min(indent, (int) (UsageMessageSpec.MAX_SYNOPSIS_AUTO_INDENT_THRESHOLD * width()));
             }
             TextTable textTable = TextTable.forColumnWidths(ansi(), width());
             textTable.setAdjustLineBreaksForWideCJKCharacters(commandSpec.usageMessage().adjustLineBreaksForWideCJKCharacters());
