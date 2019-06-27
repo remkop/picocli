@@ -6045,6 +6045,7 @@ public class CommandLine {
             /** Constant holding the default usage message width: <code>{@value}</code>. */
             public  final static int DEFAULT_USAGE_WIDTH = 80;
             private final static int MINIMUM_USAGE_WIDTH = 55;
+            private final static int DEFAULT_SYNOPSIS_MAX_INDENT = 20;
 
             /** Constant Boolean holding the default setting for whether to attempt to adjust the width to the terminal width: <code>{@value}</code>. */
             static final Boolean DEFAULT_USAGE_AUTO_WIDTH = Boolean.FALSE;
@@ -6114,6 +6115,7 @@ public class CommandLine {
             private String headerHeading;
             private String synopsisHeading;
             private String synopsisSubcommandLabel;
+            private Integer synopsisMaxIndent;
             private String descriptionHeading;
             private String parameterListHeading;
             private String optionListHeading;
@@ -6405,8 +6407,16 @@ public class CommandLine {
             /** Returns the optional heading preceding the synopsis. Initialized from {@link Command#synopsisHeading()}, {@code "Usage: "} by default. */
             public String synopsisHeading() { return str(resourceStr("usage.synopsisHeading"), synopsisHeading, DEFAULT_SYNOPSIS_HEADING); }
 
-            /** Returns the String representing the subcommands in the synopsis. Initialized from {@link Command#synopsisSubcommandLabel()}, {@code "[COMMANDS]"} by default. */
+            /** Returns the String representing the subcommands in the synopsis. Initialized from {@link Command#synopsisSubcommandLabel()}, {@code "[COMMANDS]"} by default.
+             * @since 4.0*/
             public String synopsisSubcommandLabel() { return str(resourceStr("usage.synopsisSubcommandLabel"), synopsisSubcommandLabel, DEFAULT_SYNOPSIS_SUBCOMMANDS); }
+
+            /** Returns the maximum indentation of the 2nd line and subsequent lines of a multi-line synopsis, {@code 20} by default.
+             * If the length of the synopsis heading and the fully qualified command name is less than this value,
+             * the 2nd and subsequent rows of a multi-line synopsis will be aligned to the command name, but if the command
+             * name is too long, this value is used to determine the indentation.
+             * @since 4.0 */
+            public int synopsisMaxIndent() {return synopsisMaxIndent == null ? DEFAULT_SYNOPSIS_MAX_INDENT : synopsisMaxIndent;}
 
             /** Returns whether the synopsis line(s) should show an abbreviated synopsis without detailed option names. */
             public boolean abbreviateSynopsis() { return (abbreviateSynopsis == null) ? DEFAULT_ABBREVIATE_SYNOPSIS : abbreviateSynopsis; }
@@ -6513,8 +6523,17 @@ public class CommandLine {
             public UsageMessageSpec synopsisHeading(String newValue) {synopsisHeading = newValue; return this;}
 
             /** Sets the String representing the subcommands in the synopsis.
-             * @return this UsageMessageSpec for method chaining */
+             * @return this UsageMessageSpec for method chaining
+             * @since 4.0 */
             public UsageMessageSpec synopsisSubcommandLabel(String newValue) {synopsisSubcommandLabel = newValue; return this;}
+
+            /** Set the maximum indentation of the 2nd line and subsequent lines of a multi-line synopsis, {@code 20} by default.
+             * If the length of the synopsis heading and the fully qualified command name is less than this value,
+             * the 2nd and subsequent rows of a multi-line synopsis will be aligned to the command name, but if the command
+             * name is too long, this value is used to determine the indentation.
+             * @return this UsageMessageSpec for method chaining
+             * @since 4.0 */
+            public UsageMessageSpec synopsisMaxIndent(int newValue) { synopsisMaxIndent = newValue; return this; }
 
             /** Sets whether the synopsis line(s) should show an abbreviated synopsis without detailed option names.
              * @return this UsageMessageSpec for method chaining */
@@ -12612,18 +12631,19 @@ public class CommandLine {
          * @return the detailed synopsis text, in multiple lines if the length exceeds the usage width
          */
         protected String insertSynopsisCommandName(int synopsisHeadingLength, Text optionsAndPositionalsAndCommandsDetails) {
-            // Fix for #142: first line of synopsis overshoots max. characters
+            // Fix for #142: first line of synopsis overshoots width
             String commandName = commandSpec.qualifiedName();
-            int firstColumnLength = commandName.length() + synopsisHeadingLength;
 
-            // synopsis heading ("Usage: ") may be on the same line, so adjust column width
-            TextTable textTable = TextTable.forColumnWidths(ansi(), firstColumnLength, width() - firstColumnLength);
+            // Fix for #739: infinite loop if firstColumnLength >= width (so 2nd column width becomes zero or negative)
+            int indent = synopsisHeadingLength + commandName.length();
+            int actualIndent = Math.min(commandSpec.usageMessage().synopsisMaxIndent() - 1, indent);
+            TextTable textTable = TextTable.forColumnWidths(ansi(), width());
             textTable.setAdjustLineBreaksForWideCJKCharacters(commandSpec.usageMessage().adjustLineBreaksForWideCJKCharacters());
-            textTable.indentWrappedLines = 1; // don't worry about first line: options (2nd column) always start with a space
+            textTable.indentWrappedLines = actualIndent + 1;
 
             // right-adjust the command name by length of synopsis heading
             Text PADDING = Ansi.OFF.new Text(stringOf('X', synopsisHeadingLength));
-            textTable.addRowValues(PADDING.concat(colorScheme.commandText(commandName)), optionsAndPositionalsAndCommandsDetails);
+            textTable.addRowValues(PADDING.concat(colorScheme.commandText(commandName)).concat(optionsAndPositionalsAndCommandsDetails));
             return textTable.toString().substring(synopsisHeadingLength); // cut off leading synopsis heading spaces
         }
 

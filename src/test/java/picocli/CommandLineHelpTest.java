@@ -4100,4 +4100,130 @@ public class CommandLineHelpTest {
         assertEquals("", this.systemErrRule.getLog());
         assertEquals(expected, this.systemOutRule.getLog());
     }
+
+    @Test
+    //https://github.com/remkop/picocli/issues/739
+    public void testIssue739CommandName72Chars() {
+        @Command(name = "123456789012345678901234567890123456789012345678901234567890123456789012",
+                mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = "-a") String aaaaaa;
+            @Option(names = "-b", arity = "2") String[] bbbbbbb;
+            @Option(names = "-c", split = ",") String[] cccccccc;
+        }
+
+        String expected = String.format("" +
+                "Usage: 123456789012345678901234567890123456789012345678901234567890123456789012%n" +
+                "                    [-hV] [-a=<aaaaaa>] [-c=<cccccccc>[,<cccccccc>...]]...%n" +
+                "                    [-b=<bbbbbbb> <bbbbbbb>]...%n" +
+                "  -a=<aaaaaa>%n" +
+                "  -b=<bbbbbbb> <bbbbbbb>%n" +
+                "  -c=<cccccccc>[,<cccccccc>...]%n" +
+                "%n" +
+                "  -h, --help                Show this help message and exit.%n" +
+                "  -V, --version             Print version information and exit.%n");
+        String actual = new CommandLine(new App()).getUsageMessage();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    //https://github.com/remkop/picocli/issues/739
+    public void testIssue739CommandName73Chars() {
+        @Command(name = "1234567890123456789012345678901234567890123456789012345678901234567890123",
+                mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = "-a") String aaaaaa;
+            @Option(names = "-b", arity = "2") String[] bbbbbbb;
+            @Option(names = "-c", split = ",") String[] cccccccc;
+        }
+
+        String expected = String.format("" +
+                "Usage: 1234567890123456789012345678901234567890123456789012345678901234567890123%n" +
+                "                     [-hV] [-a=<aaaaaa>] [-c=<cccccccc>[,<cccccccc>...]]...%n" +
+                "                    [-b=<bbbbbbb> <bbbbbbb>]...%n" +
+                "  -a=<aaaaaa>%n" +
+                "  -b=<bbbbbbb> <bbbbbbb>%n" +
+                "  -c=<cccccccc>[,<cccccccc>...]%n" +
+                "%n" +
+                "  -h, --help                Show this help message and exit.%n" +
+                "  -V, --version             Print version information and exit.%n");
+        String actual = new CommandLine(new App()).getUsageMessage();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    //https://github.com/remkop/picocli/issues/739
+    public void testIssue739CommandName80Chars() {
+        @Command(name = "12345678901234567890123456789012345678901234567890123456789012345678901234567890",
+                mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = "-a") String aaaaaa;
+            @Option(names = "-b", arity = "2") String[] bbbbbbb;
+            @Option(names = "-c", split = ",") String[] cccccccc;
+        }
+
+        String expected = String.format("" +
+                "Usage: 1234567890123456789012345678901234567890123456789012345678901234567890123%n" +
+                "                    4567890 [-hV] [-a=<aaaaaa>] [-c=<cccccccc>[,%n" +
+                "                    <cccccccc>...]]... [-b=<bbbbbbb> <bbbbbbb>]...%n" +
+                "  -a=<aaaaaa>%n" +
+                "  -b=<bbbbbbb> <bbbbbbb>%n" +
+                "  -c=<cccccccc>[,<cccccccc>...]%n" +
+                "%n" +
+                "  -h, --help                Show this help message and exit.%n" +
+                "  -V, --version             Print version information and exit.%n");
+        String actual = new CommandLine(new App()).getUsageMessage();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    //https://github.com/remkop/picocli/issues/739
+    public void testIssue739CommandName40Chars_customSynopsisMaxIndent() {
+        @Command(name = "1234567890123456789012345678901234567890",
+                mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = "-a") String aaaaaa;
+            @Option(names = "-b", arity = "2") String[] bbbbbbb;
+            @Option(names = "-c", split = ",") String[] cccccccc;
+        }
+
+        String expected = String.format("" +
+                "Usage: 1234567890123456789012345678901234567890 [-hV] [-a=<aaaaaa>]%n" +
+                "                                        [-c=<cccccccc>[,<cccccccc>...]]...%n" +
+                "                                        [-b=<bbbbbbb> <bbbbbbb>]...%n" +
+                "  -a=<aaaaaa>%n" +
+                "  -b=<bbbbbbb> <bbbbbbb>%n" +
+                "  -c=<cccccccc>[,<cccccccc>...]%n" +
+                "%n" +
+                "  -h, --help                Show this help message and exit.%n" +
+                "  -V, --version             Print version information and exit.%n");
+        CommandLine cmd = new CommandLine(new App());
+        cmd.getCommandSpec().usageMessage().synopsisMaxIndent(40);
+        String actual = cmd.getUsageMessage();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    //https://github.com/remkop/picocli/issues/739
+    public void testIssue739CommandName32Chars() {
+        @Command(name = "12345678901234567890123456789012",
+                mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = "-a") String aaaaaa;
+            @Option(names = "-b", arity = "2") String[] bbbbbbb;
+            @Option(names = "-c", split = ",") String[] cccccccc;
+        }
+
+        String expected = String.format("" +
+                "Usage: 12345678901234567890123456789012 [-hV] [-a=<aaaaaa>] [-c=<cccccccc>[,%n" +
+                "                    <cccccccc>...]]... [-b=<bbbbbbb> <bbbbbbb>]...%n" +
+                "  -a=<aaaaaa>%n" +
+                "  -b=<bbbbbbb> <bbbbbbb>%n" +
+                "  -c=<cccccccc>[,<cccccccc>...]%n" +
+                "%n" +
+                "  -h, --help                Show this help message and exit.%n" +
+                "  -V, --version             Print version information and exit.%n");
+        String actual = new CommandLine(new App()).getUsageMessage();
+        assertEquals(expected, actual);
+    }
 }

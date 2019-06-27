@@ -28,6 +28,8 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.0-rc-1-fixes"></a> Fixed issues
 - [#696][#741] Automatically split lines in TextTable. Thanks to [Sualeh Fatehi](https://github.com/sualeh) for the pull request.
+- [#756] API: Make synopsis indent for multi-line synopsis configurable (related to #739).
+- [#739] Bugfix: infinite loop or exception when command name plus synopsis heading length equals or exceeds usage help message width. Thanks to [Arturo Alonso](https://github.com/thefang12) for raising this.
 - [#746] Bugfix: Apply default values to options and positional parameters in argument groups. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 - [#751] Build: Make build more portable.
 - [#753] Doc: Improve documentation for multi-value fields: mention the `split` attribute. Thanks to [feinstein](https://github.com/feinstein).
