@@ -3205,6 +3205,33 @@ f
 <p>When the <code>splitQuotedStrings</code> parser attribute is set to <code>true</code> the <code>split</code> regex is applied to the parameter value regardless of quotes.
 This can be useful when using a regular expression that is designed to handle quotes.</p>
 </div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><code>splitQuotedStrings</code> is mostly for backwards compatibility. Most applications should leave this setting to the default (<code>false</code>).
+When this setting is <code>true</code>, the above input is parsed as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>a
+b
+"c
+d
+e"
+f
+"xxx
+yyy"</code></pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_customizing_negatable_options">9.11. Customizing Negatable Options</h3>

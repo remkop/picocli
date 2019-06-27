@@ -1723,6 +1723,22 @@ f
 When the `splitQuotedStrings` parser attribute is set to `true` the `split` regex is applied to the parameter value regardless of quotes.
 This can be useful when using a regular expression that is designed to handle quotes.
 
+[WARNING]
+====
+`splitQuotedStrings` is mostly for backwards compatibility. Most applications should leave this setting to the default (`false`).
+When this setting is `true`, the above input is parsed as:
+```
+a
+b
+"c
+d
+e"
+f
+"xxx
+yyy"
+```
+====
+
 === Customizing Negatable Options
 
 <<Negatable Options,Negatable options>> can be customized via the `INegatableOptionTransformer` interface:
