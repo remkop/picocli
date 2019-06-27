@@ -4114,8 +4114,8 @@ public class CommandLineHelpTest {
 
         String expected = String.format("" +
                 "Usage: 123456789012345678901234567890123456789012345678901234567890123456789012%n" +
-                "                    [-hV] [-a=<aaaaaa>] [-c=<cccccccc>[,<cccccccc>...]]...%n" +
-                "                    [-b=<bbbbbbb> <bbbbbbb>]...%n" +
+                "       [-hV] [-a=<aaaaaa>] [-c=<cccccccc>[,<cccccccc>...]]... [-b=<bbbbbbb>%n" +
+                "       <bbbbbbb>]...%n" +
                 "  -a=<aaaaaa>%n" +
                 "  -b=<bbbbbbb> <bbbbbbb>%n" +
                 "  -c=<cccccccc>[,<cccccccc>...]%n" +
@@ -4139,8 +4139,8 @@ public class CommandLineHelpTest {
 
         String expected = String.format("" +
                 "Usage: 1234567890123456789012345678901234567890123456789012345678901234567890123%n" +
-                "                     [-hV] [-a=<aaaaaa>] [-c=<cccccccc>[,<cccccccc>...]]...%n" +
-                "                    [-b=<bbbbbbb> <bbbbbbb>]...%n" +
+                "        [-hV] [-a=<aaaaaa>] [-c=<cccccccc>[,<cccccccc>...]]... [-b=<bbbbbbb>%n" +
+                "       <bbbbbbb>]...%n" +
                 "  -a=<aaaaaa>%n" +
                 "  -b=<bbbbbbb> <bbbbbbb>%n" +
                 "  -c=<cccccccc>[,<cccccccc>...]%n" +
@@ -4164,8 +4164,8 @@ public class CommandLineHelpTest {
 
         String expected = String.format("" +
                 "Usage: 1234567890123456789012345678901234567890123456789012345678901234567890123%n" +
-                "                    4567890 [-hV] [-a=<aaaaaa>] [-c=<cccccccc>[,%n" +
-                "                    <cccccccc>...]]... [-b=<bbbbbbb> <bbbbbbb>]...%n" +
+                "       4567890 [-hV] [-a=<aaaaaa>] [-c=<cccccccc>[,<cccccccc>...]]...%n" +
+                "       [-b=<bbbbbbb> <bbbbbbb>]...%n" +
                 "  -a=<aaaaaa>%n" +
                 "  -b=<bbbbbbb> <bbbbbbb>%n" +
                 "  -c=<cccccccc>[,<cccccccc>...]%n" +
@@ -4198,9 +4198,33 @@ public class CommandLineHelpTest {
                 "  -h, --help                Show this help message and exit.%n" +
                 "  -V, --version             Print version information and exit.%n");
         CommandLine cmd = new CommandLine(new App());
-        cmd.getCommandSpec().usageMessage().synopsisMaxIndent(40);
+        cmd.getCommandSpec().usageMessage().synopsisAutoIndentThreshold(40);
+        cmd.getCommandSpec().usageMessage().synopsisIndent(40);
         String actual = cmd.getUsageMessage();
         assertEquals(expected, actual);
+
+        cmd.getCommandSpec().usageMessage().synopsisIndent(20);
+        assertEquals(String.format("" +
+                "Usage: 1234567890123456789012345678901234567890 [-hV] [-a=<aaaaaa>]%n" +
+                "                    [-c=<cccccccc>[,<cccccccc>...]]... [-b=<bbbbbbb>%n" +
+                "                    <bbbbbbb>]...%n" +
+                "  -a=<aaaaaa>%n" +
+                "  -b=<bbbbbbb> <bbbbbbb>%n" +
+                "  -c=<cccccccc>[,<cccccccc>...]%n" +
+                "%n" +
+                "  -h, --help                Show this help message and exit.%n" +
+                "  -V, --version             Print version information and exit.%n"), cmd.getUsageMessage());
+
+        cmd.getCommandSpec().usageMessage().synopsisIndent(-1);
+        assertEquals(String.format("" +
+                "Usage: 1234567890123456789012345678901234567890 [-hV] [-a=<aaaaaa>]%n" +
+                "       [-c=<cccccccc>[,<cccccccc>...]]... [-b=<bbbbbbb> <bbbbbbb>]...%n" +
+                "  -a=<aaaaaa>%n" +
+                "  -b=<bbbbbbb> <bbbbbbb>%n" +
+                "  -c=<cccccccc>[,<cccccccc>...]%n" +
+                "%n" +
+                "  -h, --help                Show this help message and exit.%n" +
+                "  -V, --version             Print version information and exit.%n"), cmd.getUsageMessage());
     }
 
     @Test
@@ -4216,7 +4240,8 @@ public class CommandLineHelpTest {
 
         String expected = String.format("" +
                 "Usage: 12345678901234567890123456789012 [-hV] [-a=<aaaaaa>] [-c=<cccccccc>[,%n" +
-                "                    <cccccccc>...]]... [-b=<bbbbbbb> <bbbbbbb>]...%n" +
+                "                                        <cccccccc>...]]... [-b=<bbbbbbb>%n" +
+                "                                        <bbbbbbb>]...%n" +
                 "  -a=<aaaaaa>%n" +
                 "  -b=<bbbbbbb> <bbbbbbb>%n" +
                 "  -c=<cccccccc>[,<cccccccc>...]%n" +

@@ -419,9 +419,9 @@ public class CommandLineHelpAnsiTest {
         CommandLine.Help help = new CommandLine.Help(new App(), Ansi.ON);
         assertEquals(Ansi.ON.new Text(String.format(
                 "@|bold <best-app-ever>|@ [@|yellow --another-long-option-name|@=@|italic ^[<another-long-option-value>]|@]%n" +
-                        "                [@|yellow --fourth-long-option-name|@=@|italic <fourth-long-option-value>|@]%n" +
-                        "                [@|yellow --long-option@-name|@=@|italic <long-option-valu@@e>|@]%n" +
-                        "                [@|yellow --third-long-option-name|@=@|italic <third-long-option-value>|@]%n")),
+                        "@|italic               |@  [@|yellow --fourth-long-option-name|@=@|italic <fourth-long-option-value>|@]%n" +
+                        "@|italic               |@  [@|yellow --long-option@-name|@=@|italic <long-option-valu@@e>|@]%n" +
+                        "@|italic               |@  [@|yellow --third-long-option-name|@=@|italic <third-long-option-value>|@]%n")),
                 help.synopsis(0));
     }
 
