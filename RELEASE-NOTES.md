@@ -30,7 +30,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#696][#741] Automatically split lines in TextTable. Thanks to [Sualeh Fatehi](https://github.com/sualeh) for the pull request.
 - [#746] Bugfix: Apply default values to options and positional parameters in argument groups. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 - [#751] Build: Make build more portable.
-- [#753] Doc: Improve documentation for multi-value fields: mention the `split` attribute. Thanks for [feinstein](https://github.com/feinstein).
+- [#753] Doc: Improve documentation for multi-value fields: mention the `split` attribute. Thanks to [feinstein](https://github.com/feinstein).
 
 ## <a name="4.0.0-rc-1-deprecated"></a> Deprecations
 
