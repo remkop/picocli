@@ -32,6 +32,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#739] Bugfix: infinite loop or exception when command name plus synopsis heading length equals or exceeds usage help message width. Thanks to [Arturo Alonso](https://github.com/thefang12) for raising this.
 - [#746] Bugfix: Apply default values to options and positional parameters in argument groups. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 - [#742] Bugfix: Default values prevent correct parsing in argument groups. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+- [#759] Bugfix: Correct tracing when custom end-of-option delimiter is matched on the command line. 
 - [#751] Build: Make build more portable.
 - [#753] Doc: Improve documentation for multi-value fields: mention the `split` attribute. Thanks to [feinstein](https://github.com/feinstein).
 - [#740] Doc: Update user manual to replace `parse` examples with `parseArgs`.

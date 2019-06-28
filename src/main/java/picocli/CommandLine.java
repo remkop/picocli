@@ -10990,7 +10990,7 @@ public class CommandLine {
                 // Double-dash separates options from positional arguments.
                 // If found, then interpret the remaining args as positional parameters.
                 if (commandSpec.parser.endOfOptionsDelimiter().equals(arg)) {
-                    tracer.info("Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n");
+                    tracer.info("Found end-of-options delimiter '%s'. Treating remainder as positional parameters.%n", commandSpec.parser.endOfOptionsDelimiter());
                     endOfOptions = true;
                     processRemainderAsPositionalParameters(required, initialized, args);
                     return; // we are done

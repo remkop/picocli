@@ -1710,7 +1710,8 @@ public class CommandLineTest {
         String old = System.getProperty(PROPERTY);
         System.setProperty(PROPERTY, "");
         CommandLine commandLine = Demo.mainCommand();
-        commandLine.parseArgs("--git-dir=/home/rpopma/picocli", "commit", "-m", "\"Fixed typos\"", "--", "src1.java", "src2.java", "src3.java");
+        commandLine.setEndOfOptionsDelimiter("$$$");
+        commandLine.parseArgs("--git-dir=/home/rpopma/picocli", "commit", "-m", "\"Fixed typos\"", "$$$", "src1.java", "src2.java", "src3.java");
         System.setErr(originalErr);
         if (old == null) {
             System.clearProperty(PROPERTY);
@@ -1719,10 +1720,10 @@ public class CommandLineTest {
         }
         String expected = format("" +
                         "[picocli INFO] Picocli version: %s%n" +
-                        "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
+                        "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", $$$, src1.java, src2.java, src3.java]%n" +
                         "[picocli INFO] Setting field java.io.File picocli.Demo$Git.gitDir to '%s' (was 'null') for option --git-dir%n" +
                         "[picocli INFO] Adding [\"Fixed typos\"] to field java.util.List<String> picocli.Demo$GitCommit.message for option -m%n" +
-                        "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
+                        "[picocli INFO] Found end-of-options delimiter '$$$'. Treating remainder as positional parameters.%n" +
                         "[picocli INFO] Adding [src1.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 0%n" +
                         "[picocli INFO] Adding [src2.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 1%n" +
                         "[picocli INFO] Adding [src3.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 2%n",
