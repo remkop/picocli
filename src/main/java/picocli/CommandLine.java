@@ -11278,7 +11278,7 @@ public class CommandLine {
                                                   Set<ArgSpec> initialized,
                                                   String argDescription) throws Exception {
             boolean noMoreValues = args.isEmpty();
-            String value = args.isEmpty() ? null : trim(args.pop()); // unquote the value
+            String value = args.isEmpty() ? null : unquote(args.pop()); // unquote the value
             Range arity = argSpec.arity().isUnspecified ? derivedArity : argSpec.arity(); // #509
             if (arity.max == 0 && !arity.isUnspecified && lookBehind == LookBehind.ATTACHED_WITH_SEPARATOR) { // #509
                 throw new MaxValuesExceededException(CommandLine.this, optionDescription("", argSpec, 0) +
@@ -11466,7 +11466,7 @@ public class CommandLine {
                                            int index,
                                            String argDescription) throws Exception {
             if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, arg); }
-            String raw = trim(arg);
+            String raw = unquote(arg);
             String[] values = argSpec.splitValue(raw, commandSpec.parser(), arity, consumed);
             for (String value : values) {
                 String[] keyValue = splitKeyValue(argSpec, value);
@@ -11690,7 +11690,7 @@ public class CommandLine {
                                        int index,
                                        String argDescription) {
             if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, arg); }
-            String raw = trim(arg);
+            String raw = unquote(arg);
             String[] values = argSpec.splitValue(raw, commandSpec.parser(), arity, consumed);
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
             for (int j = 0; j < values.length; j++) {
@@ -11708,7 +11708,7 @@ public class CommandLine {
             if (char[].class.equals(argSpec.auxiliaryTypes()[0]) || char[].class.equals(argSpec.type())) { return true; }
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
             try {
-                String[] values = argSpec.splitValue(trim(arg), commandSpec.parser(), arity, consumed);
+                String[] values = argSpec.splitValue(unquote(arg), commandSpec.parser(), arity, consumed);
 //                if (!argSpec.acceptsValues(values.length, commandSpec.parser())) {
 //                    tracer.debug("$s would split into %s values but %s cannot accept that many values.%n", arg, values.length, argDescription);
 //                    return false;
@@ -11889,15 +11889,9 @@ public class CommandLine {
             }
             return true;
         }
-        private String trim(String value) {
-            return unquote(value);
-        }
-
         private String unquote(String value) {
-            if (!commandSpec.parser().trimQuotes()) { return value; }
-            return value == null
-                    ? null
-                    : (value.length() > 1 && value.startsWith("\"") && value.endsWith("\""))
+            if (value == null || !commandSpec.parser().trimQuotes()) { return value; }
+            return (value.length() > 1 && value.startsWith("\"") && value.endsWith("\""))
                     ? value.substring(1, value.length() - 1)
                     : value;
         }
