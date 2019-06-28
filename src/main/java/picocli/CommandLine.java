@@ -655,13 +655,28 @@ public class CommandLine {
     }
 
     /** Returns whether the parser is allowed to split quoted Strings or not. The default is {@code false},
-     * so quoted strings are treated as a single value that cannot be split.
+     * so quotes are respected: quoted strings are treated as a single value that should not be broken up.
+     * <p>
+     * For example, take a single command line parameter {@code "a,b","x,y"}. With a comma split regex, the default of {@code splitQuotedStrings = false}
+     * means that this value will be split into two strings: {@code "a,b"} and {@code "x,y"}. This is usually what you want.
+     * </p><p>
+     * If {@code splitQuotedStrings} is set to {@code true}, quotes are not respected, and the value is split up into four parts:
+     * the first is {@code "a}, the second is {@code b"}, the third is {@code "x}, and the last part is {@code y"}. This is generally not what you want.
+     * </p>
      * @return {@code true} if the parser is allowed to split quoted Strings, {@code false} otherwise;
      * @see ArgSpec#splitRegex()
      * @since 3.7 */
     public boolean isSplitQuotedStrings() { return getCommandSpec().parser().splitQuotedStrings(); }
 
-    /** Sets whether the parser is allowed to split quoted Strings. The default is {@code false}.
+    /** Sets whether the parser is allowed to split quoted Strings. The default is {@code false},
+     * so quotes are respected: quoted strings are treated as a single value that should not be broken up.
+     * <p>
+     * For example, take a single command line parameter {@code "a,b","x,y"}. With a comma split regex, the default of {@code splitQuotedStrings = false}
+     * means that this value will be split into two strings: {@code "a,b"} and {@code "x,y"}. This is usually what you want.
+     * </p><p>
+     * However, if {@code splitQuotedStrings} is set to {@code true}, quotes are not respected, and the value is split up into four parts:
+     * the first is {@code "a}, the second is {@code b"}, the third is {@code "x}, and the last part is {@code y"}. This is generally not what you want.
+     * </p>
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
