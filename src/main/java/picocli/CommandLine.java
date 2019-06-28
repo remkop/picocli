@@ -10179,11 +10179,13 @@ public class CommandLine {
                 ArgGroupSpec group = argSpec.group();
                 if (group == null || isInitializingDefaultValues) { return; }
                 GroupMatchContainer foundGroupMatchContainer = this.groupMatchContainer.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
-                if (foundGroupMatchContainer.lastMatch().matchedMinElements() && argSpec.required()) {
+                if (foundGroupMatchContainer.lastMatch().matchedMinElements() &&
+                        (argSpec.required() || foundGroupMatchContainer.lastMatch().matchCount(argSpec) > 0)) {
                     // we need to create a new match; if maxMultiplicity has been reached, we need to add a new GroupMatchContainer.
+                    String previousMatch = argSpec.required() ? "is required" : "has already been matched";
                     String elementDescription = ArgSpec.describe(argSpec, "=");
                     Tracer tracer = commandSpec.commandLine.tracer;
-                    tracer.info("GroupMatch %s is complete: its mandatory elements are all matched. (User object: %s.) %s is required in the group, so it starts a new GroupMatch.%n", foundGroupMatchContainer.lastMatch(), foundGroupMatchContainer.group.userObject(), elementDescription);
+                    tracer.info("GroupMatch %s is complete: its mandatory elements are all matched. (User object: %s.) %s %s in the group, so it starts a new GroupMatch.%n", foundGroupMatchContainer.lastMatch(), foundGroupMatchContainer.group.userObject(), elementDescription, previousMatch);
                     foundGroupMatchContainer.addMatch(commandSpec.commandLine);
                     this.groupMatchContainer.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
                 }

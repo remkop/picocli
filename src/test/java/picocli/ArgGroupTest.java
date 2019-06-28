@@ -2389,11 +2389,37 @@ public class ArgGroupTest {
         }
     }
 
-    @Ignore("NOTE: this test passes if `defaultValue = 'e'` is removed from the -g option definition")
     @Test
     // https://github.com/remkop/picocli/issues/742
     public void testIssue742FalseErrorMessage() {
+        //TestUtil.setTraceLevel("DEBUG");
         CommandLine cmd = new CommandLine(new Issue742());
-        cmd.parseArgs("-g=2", "-g=3");
+        ParseResult parseResult = cmd.parseArgs("-g=2", "-g=3");
+        List<ParseResult.GroupMatch> multiples = parseResult.getGroupMatches();
+        assertEquals(1, multiples.size());
+        GroupMatch groupMatch = multiples.get(0);
+
+        assertEquals(1, groupMatch.matchedSubgroups().size());
+        ArgGroupSpec dsGroup = cmd.getCommandSpec().argGroups().get(0);
+        //@SuppressWarnings("")
+        List<Issue742.DataSource> datasources = (List<Issue742.DataSource>) dsGroup.userObject();
+        assertEquals(2, datasources.size());
+
+        Issue742.DataSource ds1 = datasources.get(0);
+        assertEquals("2", ds1.aString);
+
+        Issue742.DataSource ds2 = datasources.get(1);
+        assertEquals("3", ds2.aString);
+
+        GroupMatchContainer modeGroupMatchContainer = groupMatch.matchedSubgroups().get(dsGroup);
+        assertEquals(2, modeGroupMatchContainer.matches().size());
+
+        GroupMatch dsGroupMatch1 = modeGroupMatchContainer.matches().get(0);
+        assertEquals(0, dsGroupMatch1.matchedSubgroups().size());
+        assertEquals(Arrays.asList("2"), dsGroupMatch1.matchedValues(dsGroup.args().iterator().next()));
+
+        GroupMatch dsGroupMatch2 = modeGroupMatchContainer.matches().get(1);
+        assertEquals(0, dsGroupMatch2.matchedSubgroups().size());
+        assertEquals(Arrays.asList("3"), dsGroupMatch2.matchedValues(dsGroup.args().iterator().next()));
     }
 }
