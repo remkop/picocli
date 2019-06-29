@@ -1685,9 +1685,16 @@ languages like Clojure where idiomatic error handling does not involve throwing 
 When using this feature, applications are responsible for actively verifying that no errors occurred before executing the business logic. Use with care!
 
 === Quoted Values
+==== Trimming Quotes
 From picocli 3.7, quotes around command line parameters are preserved by default (previously they were removed). This can be configured with `CommandLine::setTrimQuotes`.
 
-Also, when <<Split Regex,splitting>> parameters, quoted strings are no longer split. This can be configured with `CommandLine::setSplitQuotedStrings`.
+If `CommandLine::setTrimQuotes` is set to `true`, picocli will remove quotes from the command line arguments, as follows:
+
+* if the command line argument contains just the leading and trailing quote, these quotes are removed
+* if the command line argument contains more quotes than just the leading and trailing quote, the parser first tries to process the parameter with the quotes intact. For example, the `split` regular expression inside a quoted region should be ignored, so arguments like `"a,b","x,y"` are handled correctly. For arguments with nested quotes, quotes are removed later in the processing pipeline, after `split` operations are applied.
+
+==== Splitting Quoted Parameters
+Also, the logic for <<Split Regex,splitting>> parameters is smart enough to avoid matching the `split` regular expression inside a quoted region.
 
 Example:
 ```
@@ -1720,12 +1727,13 @@ f
 "xxx,yyy"
 ```
 
-When the `splitQuotedStrings` parser attribute is set to `true` the `split` regex is applied to the parameter value regardless of quotes.
-This can be useful when using a regular expression that is designed to handle quotes.
+This can be configured with `CommandLine::setSplitQuotedStrings`:
+when the `splitQuotedStrings` parser attribute is set to `true` the `split` regex is applied to the parameter value regardless of quotes.
 
 [WARNING]
 ====
-`splitQuotedStrings` is mostly for backwards compatibility. Most applications should leave this setting to the default (`false`).
+`splitQuotedStrings` is mostly for backwards compatibility, for applications that want the pre-3.7 behaviour of simply splitting regardless of quotes.
+Most applications should leave this setting to the default (`false`).
 When this setting is `true`, the above input is parsed as:
 ```
 a

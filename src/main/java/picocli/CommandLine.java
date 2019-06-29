@@ -627,16 +627,37 @@ public class CommandLine {
         return this;
     }
 
-    /** Returns whether the parser should trim quotes from command line arguments before processing them. The default is
+    /** Returns whether the parser should trim quotes from command line arguments. The default is
      * read from the system property "picocli.trimQuotes" and will be {@code true} if the property is present and empty,
      * or if its value is "true".
+     * <p>
+     * If this property is set to {@code true}, the parser will remove quotes from the command line arguments, as follows:
+     * <ul>
+     *   <li>if the command line argument contains just the leading and trailing quote, these quotes are removed</li>
+     *   <li>if the command line argument contains more quotes than just the leading and trailing quote, the parser first
+     *   tries to process the parameter with the quotes intact. For example, the {@code split} regular expression inside
+     *   a quoted region should be ignored, so arguments like {@code "a,b","x,y"} are handled correctly.
+     *   For arguments with nested quotes, quotes are removed later in the processing pipeline, after {@code split} operations are applied.</li>
+     * </ul>
+     * </p>
      * @return {@code true} if the parser should trim quotes from command line arguments before processing them, {@code false} otherwise;
+     * @see ParserSpec#trimQuotes()
      * @since 3.7 */
     public boolean isTrimQuotes() { return getCommandSpec().parser().trimQuotes(); }
 
     /** Sets whether the parser should trim quotes from command line arguments before processing them. The default is
      * read from the system property "picocli.trimQuotes" and will be {@code true} if the property is set and empty, or
      * if its value is "true".
+     * <p>
+     * If this property is set to {@code true}, the parser will remove quotes from the command line arguments, as follows:
+     * <ul>
+     *   <li>if the command line argument contains just the leading and trailing quote, these quotes are removed</li>
+     *   <li>if the command line argument contains more quotes than just the leading and trailing quote, the parser first
+     *   tries to process the parameter with the quotes intact. For example, the {@code split} regular expression inside
+     *   a quoted region should be ignored, so arguments like {@code "a,b","x,y"} are handled correctly.
+     *   For arguments with nested quotes, quotes are removed later in the processing pipeline, after {@code split} operations are applied.</li>
+     * </ul>
+     * </p>
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
@@ -644,6 +665,7 @@ public class CommandLine {
      * <p>Calling this method will cause the "picocli.trimQuotes" property to have no effect.</p>
      * @param newValue the new setting
      * @return this {@code CommandLine} object, to allow method chaining
+     * @see ParserSpec#trimQuotes(boolean)
      * @since 3.7
      */
     public CommandLine setTrimQuotes(boolean newValue) {
@@ -665,6 +687,7 @@ public class CommandLine {
      * </p>
      * @return {@code true} if the parser is allowed to split quoted Strings, {@code false} otherwise;
      * @see ArgSpec#splitRegex()
+     * @see ParserSpec#splitQuotedStrings()
      * @since 3.7 */
     public boolean isSplitQuotedStrings() { return getCommandSpec().parser().splitQuotedStrings(); }
 
@@ -684,6 +707,7 @@ public class CommandLine {
      * @param newValue the new setting
      * @return this {@code CommandLine} object, to allow method chaining
      * @see ArgSpec#splitRegex()
+     * @see ParserSpec#splitQuotedStrings(boolean)
      * @since 3.7
      */
     public CommandLine setSplitQuotedStrings(boolean newValue) {
@@ -10984,7 +11008,8 @@ public class CommandLine {
                     processRemainderAsPositionalParameters(required, initialized, args);
                     return;
                 }
-                String arg = args.pop();
+                String originalArg = args.pop();
+                String arg = smartUnquote(originalArg);
                 if (tracer.isDebug()) {tracer.debug("Processing argument '%s'. Remainder=%s%n", arg, reverse(copy(args)));}
 
                 // Double-dash separates options from positional arguments.
@@ -11466,8 +11491,7 @@ public class CommandLine {
                                            int index,
                                            String argDescription) throws Exception {
             if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, arg); }
-            String raw = unquote(arg);
-            String[] values = argSpec.splitValue(raw, commandSpec.parser(), arity, consumed);
+            String[] values = unquoteAndSplit(argSpec, arity, consumed, arg);
             for (String value : values) {
                 String[] keyValue = splitKeyValue(argSpec, value);
                 Object mapKey =   tryConvert(argSpec, index, keyConverter,   keyValue[0], classes[0]);
@@ -11478,14 +11502,25 @@ public class CommandLine {
                 parseResultBuilder.addStringValue(argSpec, keyValue[0]);
                 parseResultBuilder.addStringValue(argSpec, keyValue[1]);
             }
-            parseResultBuilder.addOriginalStringValue(argSpec, raw);
+            parseResultBuilder.addOriginalStringValue(argSpec, arg);
+        }
+
+        private String[] unquoteAndSplit(ArgSpec argSpec, Range arity, int consumed, String arg) {
+            String raw = smartUnquote(arg);
+            String[] values = argSpec.splitValue(raw, commandSpec.parser(), arity, consumed);
+            if (raw.equals(arg)) { // not unquoted yet
+                for (int i = 0; i < values.length; i++) {
+                    values[i] = unquote(values[i]);
+                }
+            }
+            return values;
         }
 
         private boolean canConsumeOneMapArgument(ArgSpec argSpec, Range arity, int consumed,
-                                                 String raw, Class<?>[] classes,
+                                                 String arg, Class<?>[] classes,
                                                  ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter,
                                                  String argDescription) {
-            String[] values = argSpec.splitValue(raw, commandSpec.parser(), arity, consumed);
+            String[] values = unquoteAndSplit(argSpec, arity, consumed, arg);
             try {
                 for (String value : values) {
                     String[] keyValue = splitKeyValue(argSpec, value);
@@ -11494,7 +11529,7 @@ public class CommandLine {
                 }
                 return true;
             } catch (PicocliException ex) {
-                tracer.debug("$s cannot be assigned to %s: type conversion fails: %s.%n", raw, argDescription, ex.getMessage());
+                tracer.debug("$s cannot be assigned to %s: type conversion fails: %s.%n", arg, argDescription, ex.getMessage());
                 return false;
             }
         }
@@ -11690,8 +11725,7 @@ public class CommandLine {
                                        int index,
                                        String argDescription) {
             if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, arg); }
-            String raw = unquote(arg);
-            String[] values = argSpec.splitValue(raw, commandSpec.parser(), arity, consumed);
+            String[] values = unquoteAndSplit(argSpec, arity, consumed, arg);
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
             for (int j = 0; j < values.length; j++) {
                 Object stronglyTypedValue = tryConvert(argSpec, index, converter, values[j], type);
@@ -11701,14 +11735,14 @@ public class CommandLine {
                 }
                 parseResultBuilder.addStringValue(argSpec, values[j]);
             }
-            parseResultBuilder.addOriginalStringValue(argSpec, raw);
+            parseResultBuilder.addOriginalStringValue(argSpec, arg);
             return ++index;
         }
         private boolean canConsumeOneArgument(ArgSpec argSpec, Range arity, int consumed, String arg, Class<?> type, String argDescription) {
             if (char[].class.equals(argSpec.auxiliaryTypes()[0]) || char[].class.equals(argSpec.type())) { return true; }
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
             try {
-                String[] values = argSpec.splitValue(unquote(arg), commandSpec.parser(), arity, consumed);
+                String[] values = unquoteAndSplit(argSpec, arity, consumed, arg);
 //                if (!argSpec.acceptsValues(values.length, commandSpec.parser())) {
 //                    tracer.debug("$s would split into %s values but %s cannot accept that many values.%n", arg, values.length, argDescription);
 //                    return false;
@@ -11888,6 +11922,13 @@ public class CommandLine {
                 return false;
             }
             return true;
+        }
+
+        /** Return the unquoted value if the value contains no nested quotes, otherwise, return the value as is. */
+        private String smartUnquote(String value) {
+            String unquoted = unquote(value);
+            if (unquoted == null || unquoted.contains("\"")) { return value; }
+            return unquoted;
         }
         private String unquote(String value) {
             if (value == null || !commandSpec.parser().trimQuotes()) { return value; }

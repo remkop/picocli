@@ -314,24 +314,88 @@ public class ArgSplitTest {
     public void testParseQuotedArgumentWithNestedQuotes() {
         class Example {
             @Option(names = "-x", split = ",")
-            String[] parts;
+            List<String> parts;
         }
         String[] args = {"-x", "a,b,\"c,d,e\",f,\"xxx,yyy\""};
         Example example = new Example();
         new CommandLine(example).parseArgs(args);
-        assertArrayEquals(new String[]{"a", "b", "\"c,d,e\"", "f", "\"xxx,yyy\"", }, example.parts);
+        assertEquals(Arrays.asList("a", "b", "\"c,d,e\"", "f", "\"xxx,yyy\""), example.parts);
+    }
+
+    @Test
+    public void testParseQuotedArgumentWithNestedQuotesTrimQuotes() {
+        class Example {
+            @Option(names = "-x", split = ",")
+            List<String> parts;
+        }
+        String[] args = {"-x", "a,b,\"c,d,e\",f,\"xxx,yyy\""};
+        Example example = new Example();
+        new CommandLine(example).setTrimQuotes(true).parseArgs(args);
+        assertEquals(Arrays.asList("a", "b", "c,d,e", "f", "xxx,yyy"), example.parts);
     }
 
     @Test
     public void testParseQuotedArgumentWithNestedQuotes2() {
         class Example {
             @Option(names = "-x", split = ",")
-            String[] parts;
+            List<String> parts;
         }
         String[] args = {"-x", "\"-Dvalues=a,b,c\",\"-Dother=1,2\""};
         Example example = new Example();
         new CommandLine(example).parseArgs(args);
-        assertArrayEquals(new String[]{"\"-Dvalues=a,b,c\"", "\"-Dother=1,2\""}, example.parts);
+        assertEquals(Arrays.asList("\"-Dvalues=a,b,c\"", "\"-Dother=1,2\""), example.parts);
+    }
+
+    @Test
+    public void testParseQuotedArgumentWithNestedQuotes2TrimQuotes() {
+        class Example {
+            @Option(names = "-x", split = ",")
+            List<String> parts;
+        }
+        String[] args = {"-x", "\"-Dvalues=a,b,c\",\"-Dother=1,2\""};
+        Example example = new Example();
+        new CommandLine(example).setTrimQuotes(true).parseArgs(args);
+        assertEquals(Arrays.asList("-Dvalues=a,b,c", "-Dother=1,2"), example.parts);
+    }
+
+    @Test
+    public void testParseQuotedOptionsWithNestedQuotes2TrimQuotes() {
+        class Example {
+            @Option(names = "-x", split = ",")
+            List<String> parts;
+        }
+        String[] args = {"\"-x\"", "\"-Dvalues=a,b,c\",\"-Dother=1,2\""};
+        Example example = new Example();
+        new CommandLine(example).setTrimQuotes(true).parseArgs(args);
+        assertEquals(Arrays.asList("-Dvalues=a,b,c", "-Dother=1,2"), example.parts);
+    }
+
+    @Test
+    public void testParseQuotedOptionsWithNestedQuotes2AttachedParamTrimQuotes() {
+        class Example {
+            @Option(names = "-x", split = ",")
+            List<String> parts;
+        }
+        String[] args = {"-x=\"-Dvalues=a,b,c\",\"-Dother=1,2\""};
+        Example example = new Example();
+        new CommandLine(example).setTrimQuotes(true).parseArgs(args);
+        assertEquals(Arrays.asList("-Dvalues=a,b,c", "-Dother=1,2"), example.parts);
+    }
+
+    @Test
+    public void testParseQuotedOptionsWithNestedQuotedValuesGivesError() {
+        class Example {
+            @Option(names = "-x", split = ",")
+            List<String> parts;
+        }
+        String[] args = {"\"-x=\"-Dvalues=a,b,c\",\"-Dother=1,2\"\""};
+        Example example = new Example();
+        try {
+            new CommandLine(example).setTrimQuotes(true).parseArgs(args);
+            fail("Expected exception");
+        } catch (Exception ex) {
+            assertEquals("Unmatched argument at index 0: '\"-x=\"-Dvalues=a,b,c\",\"-Dother=1,2\"\"'", ex.getMessage());
+        }
     }
 
 
@@ -346,7 +410,8 @@ public class ArgSplitTest {
             @Option(names = {"-p", "--parameter"}, split = ",")
             Map<String, String> parameters;
         }
-        App app = CommandLine.populateCommand(new App(), args);
+        App app = new App();
+        new CommandLine(app).parseArgs(args);
         assertEquals(2, app.parameters.size());
         assertEquals("\"-Dspring.profiles.active=foo,bar -Dspring.mail.host=smtp.mailtrap.io\"", app.parameters.get("AppOptions"));
         assertEquals("\"\"", app.parameters.get("OtherOptions"));
