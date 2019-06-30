@@ -398,6 +398,22 @@ public class ArgSplitTest {
         }
     }
 
+    @Test
+    public void testParseQuotedOptionsWithNestedQuotedValuesGivesError2() {
+        class Example {
+            @Option(names = "-x", split = ",")
+            List<String> parts;
+        }
+        String[] args = {"\"-x=a,b,\"c,d,e\",f\""};
+        Example example = new Example();
+        try {
+            new CommandLine(example).setTrimQuotes(true).parseArgs(args);
+            fail("Expected exception");
+        } catch (Exception ex) {
+            assertEquals("Unmatched argument at index 0: '\"-x=a,b,\"c,d,e\",f\"'", ex.getMessage());
+        }
+    }
+
 
     // test https://github.com/remkop/picocli/issues/379
     @Test
