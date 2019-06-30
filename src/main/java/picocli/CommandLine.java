@@ -7386,6 +7386,7 @@ public class CommandLine {
                     quotedValues.add(temp.toString());
                     temp.setLength(0);
                 }
+                // if value was 'a,b,"c,d",e' -> splittable now contains 'a,b,"",e', and quotedValues contains ['c,d']
                 String[] result = splittable.toString().split(splitRegex, limit);
                 for (int i = 0; i < result.length; i++) {
                     result[i] = restoreQuotedValues(result[i], quotedValues, parser);
