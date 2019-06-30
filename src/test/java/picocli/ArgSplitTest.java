@@ -2,6 +2,7 @@ package picocli;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import picocli.CommandLine.Command;
 import picocli.CommandLine.MissingParameterException;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.ParserSpec;
@@ -414,6 +415,42 @@ public class ArgSplitTest {
         }
     }
 
+    @Test
+    public void testParseQuotedOptionsWithEscapedNestedQuotedValues() {
+        class Example {
+            @Option(names = "-x", split = ",")
+            List<String> parts;
+        }
+        String[] args = {"\"-x=a,b,\\\"c,d,e\\\",f\""};
+        Example example = new Example();
+        new CommandLine(example).setTrimQuotes(true).parseArgs(args);
+        assertEquals(Arrays.asList("a", "b", "c,d,e", "f"), example.parts);
+    }
+
+    @Test
+    public void testParseQuotedOptionsWithEscapedDoublyNestedQuotedValues() {
+        class Example {
+            @Option(names = "-x", split = ",")
+            List<String> parts;
+        }
+        String[] args = {"\"-x=\\\"a,b,\\\\\"c,d,e\\\\\",f\\\"\""};
+        Example example = new Example();
+        new CommandLine(example).setTrimQuotes(true).parseArgs(args);
+        assertEquals(Arrays.asList("a","b","c,d,e","f"), example.parts);
+    }
+
+    @Test
+    public void testParseQuotedOptionsWithEscapedNestedQuotedValues2() {
+        class Example {
+            @Option(names = "-x", split = ",")
+            List<String> parts;
+        }
+        String[] args = {"\"-x\"", "\"a,b,\\\"c,d,e\\\",f\""};
+        Example example = new Example();
+        new CommandLine(example).setTrimQuotes(true).parseArgs(args);
+        assertEquals(Arrays.asList("a", "b", "c,d,e", "f"), example.parts);
+    }
+
 
     // test https://github.com/remkop/picocli/issues/379
     @Test
@@ -447,6 +484,18 @@ public class ArgSplitTest {
         assertEquals(2, app.parameters.size());
         assertEquals("-Dspring.profiles.active=foo,bar -Dspring.mail.host=smtp.mailtrap.io", app.parameters.get("AppOptions"));
         assertEquals("", app.parameters.get("OtherOptions"));
+    }
+
+    @Test
+    public void testSmartUnquote() {
+//        assertEquals("\"-Dvalues=a,b,c\",\"-Dother=1,2\"", smartUnquote("\"-Dvalues=a,b,c\",\"-Dother=1,2\""));
+//        assertEquals("-x=a,b,\"c,d,e\",f", smartUnquote("\"-x=a,b,\\\"c,d,e\\\",f\""));
+        assertEquals("-x=\"a,b,\\\"c,d,e\\\",f\"", smartUnquote("\"-x=\\\"a,b,\\\\\"c,d,e\\\\\",f\\\"\""));
+    }
+
+    private String smartUnquote(String value) {
+        @Command class App {}
+        return new CommandLine(new App()).setTrimQuotes(true).smartUnquote(value);
     }
 
     @Test

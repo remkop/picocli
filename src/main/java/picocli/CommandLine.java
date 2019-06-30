@@ -7355,10 +7355,10 @@ public class CommandLine {
             }
             // @since 3.7
             private static String[] splitRespectingQuotedStrings(String value, int limit, ParserSpec parser, ArgSpec argSpec, String splitRegex) {
+                Queue<String> quotedValues = new LinkedList<String>();
                 StringBuilder splittable = new StringBuilder();
                 StringBuilder temp = new StringBuilder();
                 StringBuilder current = splittable;
-                Queue<String> quotedValues = new LinkedList<String>();
                 boolean escaping = false, inQuote = false;
                 for (int ch = 0, i = 0; i < value.length(); i += Character.charCount(ch)) {
                     ch = value.codePointAt(i);
@@ -11925,19 +11925,6 @@ public class CommandLine {
             return true;
         }
 
-        /** Return the unquoted value if the value contains no nested quotes, otherwise, return the value as is. */
-        private String smartUnquote(String value) {
-            String unquoted = unquote(value);
-            if (unquoted == null || unquoted.contains("\"")) { return value; }
-            return unquoted;
-        }
-        private String unquote(String value) {
-            if (value == null || !commandSpec.parser().trimQuotes()) { return value; }
-            return (value.length() > 1 && value.startsWith("\"") && value.endsWith("\""))
-                    ? value.substring(1, value.length() - 1)
-                    : value;
-        }
-
         char[] readPassword(ArgSpec argSpec) {
             String name = argSpec.isOption() ? ((OptionSpec) argSpec).longestName() : "position " + position;
             String prompt = String.format("Enter value for %s (%s): ", name, str(argSpec.description(), 0));
@@ -11973,6 +11960,40 @@ public class CommandLine {
             int pos = getPosition(arg);
             return (arg.group() == null) ? pos + " (command-local)" : pos + " (in group " + arg.group().synopsis() + ")";
         }
+    }
+
+    /** Return the unquoted value if the value contains no nested quotes, otherwise, return the value as is. */
+    String smartUnquote(String value) {
+        if (value == null || !commandSpec.parser().trimQuotes()) { return value; }
+        String unquoted = unquote(value);
+        if (unquoted == value) { return value; }
+        StringBuilder result = new StringBuilder();
+        boolean requote = false;
+        int slashCount = 0;
+        for (int ch = 0, i = 0; i < unquoted.length(); i += Character.charCount(ch)) {
+            ch = unquoted.codePointAt(i);
+            switch (ch) {
+                case '\\':
+                    slashCount++;
+                    break;
+                case '\"':
+                    if (slashCount == 0) { requote = true; }
+                    slashCount = 0;
+                    break;
+                default: slashCount = 0; break;
+            }
+            if ((slashCount & 1) == 0) { result.appendCodePoint(ch); }
+        }
+        if (requote) {
+            result.append('"').insert(0, '"');
+        }
+        return result.toString();
+    }
+    private String unquote(String value) {
+        if (value == null || !commandSpec.parser().trimQuotes()) { return value; }
+        return (value.length() > 1 && value.startsWith("\"") && value.endsWith("\""))
+                ? value.substring(1, value.length() - 1)
+                : value;
     }
     private static class PositionalParametersSorter implements Comparator<ArgSpec> {
         private static final Range OPTION_INDEX = new Range(0, 0, false, true, "0");

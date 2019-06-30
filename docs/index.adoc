@@ -1691,7 +1691,19 @@ From picocli 3.7, quotes around command line parameters are preserved by default
 If `CommandLine::setTrimQuotes` is set to `true`, picocli will remove quotes from the command line arguments, as follows:
 
 * if the command line argument contains just the leading and trailing quote, these quotes are removed
-* if the command line argument contains more quotes than just the leading and trailing quote, the parser first tries to process the parameter with the quotes intact. For example, the `split` regular expression inside a quoted region should be ignored, so arguments like `"a,b","x,y"` are handled correctly. For arguments with nested quotes, quotes are removed later in the processing pipeline, after `split` operations are applied.
+* if the command line argument contains unescaped quotes, other than the leading and trailing quote, the argument is unchanged (the leading and trailing quotes remain)
+* if a quoted command line argument contains backslash-escaped quotes, the leading and trailing quotes are removed, and the backslash-escaped quotes are converted to unescaped quotes.
+
+For example:
+
+[cols=3*,options="header"]
+|===
+|Command Line Argument|After Trimming Quotes|Note
+|`"-x=abc"`|`-x=abc`| quotes removed
+|`"a,b","x,y"` |`"a,b","x,y"`|left unchanged
+|`"-x=a,b,\"c,d,e\",f"`|`-x=a,b,"c,d,e",f`|Splitting will find 4 values
+|`"-x=\"a,b,\\"c,d,e\\",f\""`|`-x="a,b,\"c,d,e\",f"`|Splitting will find 4 values
+|===
 
 ==== Splitting Quoted Parameters
 Also, the logic for <<Split Regex,splitting>> parameters is smart enough to avoid matching the `split` regular expression inside a quoted region.
@@ -1727,8 +1739,9 @@ f
 "xxx,yyy"
 ```
 
-This can be configured with `CommandLine::setSplitQuotedStrings`:
-when the `splitQuotedStrings` parser attribute is set to `true` the `split` regex is applied to the parameter value regardless of quotes.
+This "smart splitting" can be switched off with `CommandLine::setSplitQuotedStrings`:
+setting the `splitQuotedStrings` parser attribute to `true` switches off smart splitting,
+and the `split` regex is applied to the parameter value regardless of quotes.
 
 [WARNING]
 ====
