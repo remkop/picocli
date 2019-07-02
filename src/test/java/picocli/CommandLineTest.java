@@ -1264,12 +1264,17 @@ public class CommandLineTest {
         assertTrue(opt.verbose);
 
         opt = new TextOption();
-        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t\"123\"", "-v\"true\"");
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("\"-t123\"", "\"-vtrue\"");
         assertEquals(123, opt.number[0]);
         assertTrue(opt.verbose);
 
+//        opt = new TextOption();
+//        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t\"123\"", "-v\"true\"");
+//        assertEquals(123, opt.number[0]);
+//        assertTrue(opt.verbose);
+
         opt = new TextOption();
-        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t=\"345\"", "-v=\"true\"");
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("\"-t=345\"", "\"-v=true\"");
         assertEquals(345, opt.number[0]);
         assertTrue(opt.verbose);
     }
@@ -1306,11 +1311,15 @@ public class CommandLineTest {
         assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
 
         opt = new TextOption();
-        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t\"a text\"", "-t\"another text\"", "-t\"x z\"");
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("\"-ta text\"", "\"-tanother text\"", "\"-tx z\"");
         assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
 
+//        opt = new TextOption();
+//        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t\"a text\"", "-t\"another text\"", "-t\"x z\"");
+//        assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
+
         opt = new TextOption();
-        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t=\"a text\"", "-t=\"another text\"", "-t=\"x z\"");
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("\"-t=a text\"", "\"-t=another text\"", "\"-t=x z\"");
         assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
     }
 
@@ -3870,13 +3879,13 @@ public class CommandLineTest {
         spec.parser().trimQuotes(true);
         CommandLine cmd = new CommandLine(spec);
 
-        assertNull(cmd.smartUnquote(null));
-        assertEquals("abc", cmd.smartUnquote("\"abc\""));
-        assertEquals("", cmd.smartUnquote("\"\""));
-        assertEquals("only balanced quotes 1", "\"abc", cmd.smartUnquote("\"abc"));
-        assertEquals("only balanced quotes 2", "abc\"", cmd.smartUnquote("abc\""));
-        assertEquals("only balanced quotes 3", "\"", cmd.smartUnquote("\""));
-        assertEquals("no quotes", "X", cmd.smartUnquote("X"));
+        assertNull(cmd.smartUnquoteIfEnabled(null));
+        assertEquals("abc", cmd.smartUnquoteIfEnabled("\"abc\""));
+        assertEquals("", cmd.smartUnquoteIfEnabled("\"\""));
+        assertEquals("only balanced quotes 1", "\"abc", cmd.smartUnquoteIfEnabled("\"abc"));
+        assertEquals("only balanced quotes 2", "abc\"", cmd.smartUnquoteIfEnabled("abc\""));
+        assertEquals("only balanced quotes 3", "\"", cmd.smartUnquoteIfEnabled("\""));
+        assertEquals("no quotes", "X", cmd.smartUnquoteIfEnabled("X"));
     }
 
     @SuppressWarnings("unchecked")

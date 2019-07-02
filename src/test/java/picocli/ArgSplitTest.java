@@ -1,8 +1,6 @@
 package picocli;
 
-import org.junit.Ignore;
 import org.junit.Test;
-import picocli.CommandLine.Command;
 import picocli.CommandLine.MissingParameterException;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.ParserSpec;
@@ -12,7 +10,11 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Range;
 import picocli.CommandLine.UnmatchedArgumentException;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -372,7 +374,7 @@ public class ArgSplitTest {
     }
 
     @Test
-    public void testParseQuotedOptionsWithNestedQuotes2AttachedParamTrimQuotes() {
+    public void testParseUnquotedOptionsWithAttachedUnescapedQuotedValuesTrimQuotes() {
         class Example {
             @Option(names = "-x", split = ",")
             List<String> parts;
@@ -384,12 +386,12 @@ public class ArgSplitTest {
     }
 
     @Test
-    public void testParseQuotedOptionsWithNestedQuotedValuesGivesError() {
+    public void testParseQuotedOptionsWithAttachedUnescapedNestedQuotedValuesGivesError() {
         class Example {
             @Option(names = "-x", split = ",")
             List<String> parts;
         }
-        String[] args = {"\"-x=\"-Dvalues=a,b,c\",\"-Dother=1,2\"\""};
+        String[] args = {"\"-x=\"-Dvalues=a,b,c\",\"-Dother=1,2\"\""}; // "-x="-Dvalues=a,b,c","-Dother=1,2""
         Example example = new Example();
         try {
             new CommandLine(example).setTrimQuotes(true).parseArgs(args);
@@ -400,12 +402,12 @@ public class ArgSplitTest {
     }
 
     @Test
-    public void testParseQuotedOptionsWithNestedQuotedValuesGivesError2() {
+    public void testParseQuotedOptionsWithAttachedUnescapedNestedQuotedValuesGivesError2() {
         class Example {
             @Option(names = "-x", split = ",")
             List<String> parts;
         }
-        String[] args = {"\"-x=a,b,\"c,d,e\",f\""};
+        String[] args = {"\"-x=a,b,\"c,d,e\",f\""}; // "-x=a,b,"c,d,e",f"
         Example example = new Example();
         try {
             new CommandLine(example).setTrimQuotes(true).parseArgs(args);
@@ -416,39 +418,71 @@ public class ArgSplitTest {
     }
 
     @Test
-    public void testParseQuotedOptionsWithEscapedNestedQuotedValues() {
+    public void testParseQuotedOptionsWithAttachedEscapedNestedQuotedValues() {
         class Example {
             @Option(names = "-x", split = ",")
             List<String> parts;
         }
-        String[] args = {"\"-x=a,b,\\\"c,d,e\\\",f\""};
+        String[] args = {"\"-x=a,b,\\\"c,d,e\\\",f\""}; // "-x=a,b,\"c,d,e\",f"
         Example example = new Example();
         new CommandLine(example).setTrimQuotes(true).parseArgs(args);
         assertEquals(Arrays.asList("a", "b", "c,d,e", "f"), example.parts);
     }
 
     @Test
-    public void testParseQuotedOptionsWithEscapedDoublyNestedQuotedValues() {
+    public void testParseQuotedOptionsWithAttachedEscapedDoublyNestedQuotedValues_givesSingleValue() {
         class Example {
             @Option(names = "-x", split = ",")
             List<String> parts;
         }
-        String[] args = {"\"-x=\\\"a,b,\\\\\"c,d,e\\\\\",f\\\"\""};
+        String[] args = {"\"-x=\\\"a,b,\\\\\"c,d,e\\\\\",f\\\"\""}; // "-x=\"a,b,\\"c,d,e\\",f\""
         Example example = new Example();
         new CommandLine(example).setTrimQuotes(true).parseArgs(args);
-        assertEquals(Arrays.asList("a","b","c,d,e","f"), example.parts);
+        assertEquals("One value", Arrays.asList("a,b,\"c,d,e\",f"), example.parts);
     }
 
     @Test
-    public void testParseQuotedOptionsWithEscapedNestedQuotedValues2() {
+    public void testParseQuotedOptionsWithEscapedDoublyNestedQuotedValuesMultiArity() {
+        class Example {
+            @Option(names = "-x", split = ",", arity = "*")
+            List<String> parts;
+        }
+        // "-x=\"a,b,\\"c,d,e\\",f\"" "x,y,z" "\"1,2,3\"" "\\"1,2,3\\""
+        // "-x=a,b,\"c,d,e\",f"       -> gives 4 values: 'a'; 'b'; 'c,d,e'; and 'f'
+        // "-x=\"a,b,\\"c,d,e\\",f\"" -> gives 1 value : 'a,b,"c,d,e",f'
+        // "\"\\"1,2,3\\"\""
+        String[] args = {"\"-x=\\\"a,b,\\\\\"c,d,e\\\\\",f\\\"\"", "\"x,y,z\"", "\"\\\"1,2,3\\\"\"", "\"\\\"\\\\\"1,2,3\\\\\"\\\"\""};
+        Example example = new Example();
+        new CommandLine(example).setTrimQuotes(true).parseArgs(args);
+        assertEquals("One value", Arrays.asList("a,b,\"c,d,e\",f", "x", "y", "z", "1,2,3", "\"1,2,3\""), example.parts);
+    }
+
+    @Test
+    public void testParseQuotedOptionsWithSeparateEscapedNestedQuotedValues2() {
         class Example {
             @Option(names = "-x", split = ",")
             List<String> parts;
         }
-        String[] args = {"\"-x\"", "\"a,b,\\\"c,d,e\\\",f\""};
+        String[] args = {"\"-x\"", "\"a,b,\\\"c,d,e\\\",f\""}; // "-x" "a,b,\"c,d,e\",f"
+        Example example = new Example();
+//        new CommandLine(example).setTrimQuotes(true).parseArgs(args);
+//        assertEquals(Arrays.asList("a", "b", "c,d,e", "f"), example.parts);
+
+        args = new String[]{"\"-x\"", "\"\\\"\\\\\"1,2,3\\\\\"\\\"\""}; // "\"\\"1,2,3\\"\""
+        new CommandLine(example).setTrimQuotes(true).parseArgs(args);
+        assertEquals(Arrays.asList("\"1,2,3\""), example.parts);
+    }
+
+    @Test
+    public void testParseQuotedOptionsWithSeparateQuotedValueWithEscapedNestedQuotedValues2() {
+        class Example {
+            @Option(names = "-x", split = ",")
+            List<String> parts;
+        }
+        String[] args = {"\"-x\"", "\"\\\"a,b,\\\\\"c,d,e\\\\\",f\\\"\""}; // "-x" "\"a,b,\\"c,d,e\\",f\""
         Example example = new Example();
         new CommandLine(example).setTrimQuotes(true).parseArgs(args);
-        assertEquals(Arrays.asList("a", "b", "c,d,e", "f"), example.parts);
+        assertEquals("One value", Arrays.asList("a,b,\"c,d,e\",f"), example.parts);
     }
 
 
@@ -488,14 +522,7 @@ public class ArgSplitTest {
 
     @Test
     public void testSmartUnquote() {
-//        assertEquals("\"-Dvalues=a,b,c\",\"-Dother=1,2\"", smartUnquote("\"-Dvalues=a,b,c\",\"-Dother=1,2\""));
-//        assertEquals("-x=a,b,\"c,d,e\",f", smartUnquote("\"-x=a,b,\\\"c,d,e\\\",f\""));
-        assertEquals("-x=\"a,b,\\\"c,d,e\\\",f\"", smartUnquote("\"-x=\\\"a,b,\\\\\"c,d,e\\\\\",f\\\"\""));
-    }
-
-    private String smartUnquote(String value) {
-        @Command class App {}
-        return new CommandLine(new App()).setTrimQuotes(true).smartUnquote(value);
+        assertEquals("-x=\"a,b,\\\"c,d,e\\\",f\"", CommandLine.smartUnquote("\"-x=\\\"a,b,\\\\\"c,d,e\\\\\",f\\\"\""));
     }
 
     @Test
@@ -601,14 +628,14 @@ public class ArgSplitTest {
 
         App app = new App();
         new CommandLine(app).setTrimQuotes(true).parseArgs("-e", "\"a=b=c\"=foo");
-        assertTrue(app.map.containsKey("a=b=c"));
+        assertTrue(app.map.toString(), app.map.containsKey("a=b=c"));
         assertEquals("foo", app.map.get("a=b=c"));
 
         new CommandLine(app).setTrimQuotes(true).parseArgs("-e", "\"a=b=c\"=x=y=z");
         assertTrue(app.map.keySet().toString(), app.map.containsKey("a=b=c"));
         assertEquals("x=y=z", app.map.get("a=b=c"));
     }
-    @Ignore("Needs support for nested quoting #595")
+    //@Ignore("Needs support for nested quoting #595")
     @Test
     public void testQuotedMapKeysTrimQuotesWithSplit() {
         class App {
@@ -617,13 +644,13 @@ public class ArgSplitTest {
         }
 
         App app = new App();
-        new CommandLine(app).setTrimQuotes(true).parseArgs("-e", "\"\"'a=b=c'=foo\",\"'d=e=f'=bar\"\"");
+        new CommandLine(app).setTrimQuotes(true).parseArgs("-e", "\"\\\"a=b=c\\\"=foo\",\"\\\"d=e=f\\\"=bar\"");
         assertTrue(app.map.containsKey("a=b=c"));
         assertTrue(app.map.containsKey("d=e=f"));
         assertEquals("foo", app.map.get("a=b=c"));
         assertEquals("bar", app.map.get("d=e=f"));
 
-        new CommandLine(app).setTrimQuotes(true).parseArgs("-e", "\"\"'a=b=c'=x=y=z\",\"'d=e=f'=x2=y2\"\"");
+        new CommandLine(app).setTrimQuotes(true).parseArgs("-e", "\"\\\"a=b=c\\\"=x=y=z\",\"\\\"d=e=f\\\"=x2=y2\"");
         assertTrue(app.map.keySet().toString(), app.map.containsKey("a=b=c"));
         assertTrue(app.map.keySet().toString(), app.map.containsKey("d=e=f"));
         assertEquals("x=y=z", app.map.get("a=b=c"));
@@ -637,11 +664,11 @@ public class ArgSplitTest {
         }
 
         App app = new App();
-        new CommandLine(app).setTrimQuotes(true).parseArgs("-e", "\"\"a=b=c\"=\"x y z\"\"");
+        new CommandLine(app).setTrimQuotes(true).parseArgs("-e", "\"\\\"a=b=c\\\"=\\\"x y z\\\"\"");
         assertTrue(app.map.keySet().toString(), app.map.containsKey("a=b=c"));
         assertEquals("x y z", app.map.get("a=b=c"));
     }
-    @Ignore("Needs support for nested quoting #595")
+    //@Ignore("Needs support for nested quoting #595")
     @Test
     public void testQuotedMapKeysAndQuotedMapValuesNeedExtraQuotesWithSplit() {
         class App {
@@ -650,10 +677,11 @@ public class ArgSplitTest {
         }
 
         App app = new App();
-        new CommandLine(app).setTrimQuotes(true).parseArgs("-e", "\"\"'a=b=c'='x y z'\",\"'d=e=f'='x2 y2'\"\"");
+        // -e "\"a=b=c\"=\"x=y,z=0\"","\"d=e=f\"=\"x2 y2\""
+        new CommandLine(app).setTrimQuotes(true).parseArgs("-e", "\"\\\"a=b=c\\\"=\\\"x=y,z=0\\\"\",\"\\\"d=e=f\\\"=\\\"x2 y2\\\"\"");
         assertTrue(app.map.keySet().toString(), app.map.containsKey("a=b=c"));
         assertTrue(app.map.keySet().toString(), app.map.containsKey("d=e=f"));
-        assertEquals("x y z", app.map.get("a=b=c"));
+        assertEquals("x=y,z=0", app.map.get("a=b=c"));
         assertEquals("x2 y2", app.map.get("d=e=f"));
     }
 }

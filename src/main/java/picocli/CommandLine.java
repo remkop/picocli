@@ -7376,6 +7376,7 @@ public class CommandLine {
                                     temp.setLength(0);
                                 }
                             }
+                            escaping = false;
                             break;
                         default: escaping = false; break;
                     }
@@ -7409,7 +7410,7 @@ public class CommandLine {
                             if (!escaping) {
                                 inQuote = !inQuote;
                                 if (!inQuote) { result.append(quotedValues.remove()); }
-                                skip = parser.trimQuotes();
+//                                skip = parser.trimQuotes();
                             }
                             break;
                         default: escaping = false; break;
@@ -7417,7 +7418,7 @@ public class CommandLine {
                     if (!skip) { result.appendCodePoint(ch); }
                     skip = false;
                 }
-                return result.toString();
+                return parser.trimQuotes() ? smartUnquote(result.toString()) : result.toString();
             }
 
             protected boolean equalsImpl(ArgSpec other) {
@@ -11010,8 +11011,11 @@ public class CommandLine {
                     return;
                 }
                 String originalArg = args.pop();
-                String arg = smartUnquote(originalArg);
-                if (tracer.isDebug()) {tracer.debug("Processing argument '%s'. Remainder=%s%n", arg, reverse(copy(args)));}
+                String arg = smartUnquoteIfEnabled(originalArg);
+                if (tracer.isDebug()) {
+                    if (arg == originalArg) { tracer.debug("Processing argument '%s'. Remainder=%s%n", arg, reverse(copy(args))); }
+                    else { tracer.debug("Processing argument '%s' (trimmed from '%s'). Remainder=%s%n", arg, originalArg, reverse(copy(args))); }
+                }
 
                 // Double-dash separates options from positional arguments.
                 // If found, then interpret the remaining args as positional parameters.
@@ -11304,7 +11308,8 @@ public class CommandLine {
                                                   Set<ArgSpec> initialized,
                                                   String argDescription) throws Exception {
             boolean noMoreValues = args.isEmpty();
-            String value = args.isEmpty() ? null : unquote(args.pop()); // unquote the value
+            String value = args.isEmpty() ? null : args.pop();
+            if (commandSpec.parser().trimQuotes()) {value = unquote(value);}
             Range arity = argSpec.arity().isUnspecified ? derivedArity : argSpec.arity(); // #509
             if (arity.max == 0 && !arity.isUnspecified && lookBehind == LookBehind.ATTACHED_WITH_SEPARATOR) { // #509
                 throw new MaxValuesExceededException(CommandLine.this, optionDescription("", argSpec, 0) +
@@ -11472,7 +11477,7 @@ public class CommandLine {
 
                 Map<Object, Object> typedValuesAtPosition = new LinkedHashMap<Object, Object>();
                 parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
-                if (!canConsumeOneMapArgument(argSpec, arity, consumed, args.peek(), classes, keyConverter, valueConverter, argDescription)) {
+                if (!canConsumeOneMapArgument(argSpec, lookBehind, arity, consumed, args.peek(), classes, keyConverter, valueConverter, argDescription)) {
                     break; // leave empty map at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again
                 }
                 consumeOneMapArgument(argSpec, lookBehind, arity, consumed, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
@@ -11492,7 +11497,7 @@ public class CommandLine {
                                            int index,
                                            String argDescription) throws Exception {
             if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, arg); }
-            String[] values = unquoteAndSplit(argSpec, arity, consumed, arg);
+            String[] values = unquoteAndSplit(argSpec, lookBehind, arity, consumed, arg);
             for (String value : values) {
                 String[] keyValue = splitKeyValue(argSpec, value);
                 Object mapKey =   tryConvert(argSpec, index, keyConverter,   keyValue[0], classes[0]);
@@ -11506,22 +11511,18 @@ public class CommandLine {
             parseResultBuilder.addOriginalStringValue(argSpec, arg);
         }
 
-        private String[] unquoteAndSplit(ArgSpec argSpec, Range arity, int consumed, String arg) {
-            String raw = smartUnquote(arg);
+        private String[] unquoteAndSplit(ArgSpec argSpec, LookBehind lookBehind, Range arity, int consumed, String arg) {
+            String raw = lookBehind.isAttached() ? arg : smartUnquoteIfEnabled(arg); // if attached, we already trimmed quotes once
+//            String raw = smartUnquoteIfEnabled(arg);
             String[] values = argSpec.splitValue(raw, commandSpec.parser(), arity, consumed);
-            if (raw.equals(arg)) { // not unquoted yet
-                for (int i = 0; i < values.length; i++) {
-                    values[i] = unquote(values[i]);
-                }
-            }
             return values;
         }
 
-        private boolean canConsumeOneMapArgument(ArgSpec argSpec, Range arity, int consumed,
+        private boolean canConsumeOneMapArgument(ArgSpec argSpec, LookBehind lookBehind, Range arity, int consumed,
                                                  String arg, Class<?>[] classes,
                                                  ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter,
                                                  String argDescription) {
-            String[] values = unquoteAndSplit(argSpec, arity, consumed, arg);
+            String[] values = unquoteAndSplit(argSpec, lookBehind, arity, consumed, arg);
             try {
                 for (String value : values) {
                     String[] keyValue = splitKeyValue(argSpec, value);
@@ -11664,7 +11665,7 @@ public class CommandLine {
                     if (!varargCanConsumeNextValue(argSpec, args.peek())) { break; }
                     List<Object> typedValuesAtPosition = new ArrayList<Object>();
                     parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
-                    if (!canConsumeOneArgument(argSpec, arity, consumed, args.peek(), type, argDescription)) {
+                    if (!canConsumeOneArgument(argSpec, lookBehind, arity, consumed, args.peek(), type, argDescription)) {
                         break; // leave empty list at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again
                     }
                     consumeOneArgument(argSpec, lookBehind, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
@@ -11726,7 +11727,7 @@ public class CommandLine {
                                        int index,
                                        String argDescription) {
             if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, arg); }
-            String[] values = unquoteAndSplit(argSpec, arity, consumed, arg);
+            String[] values = unquoteAndSplit(argSpec, lookBehind, arity, consumed, arg);
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
             for (int j = 0; j < values.length; j++) {
                 Object stronglyTypedValue = tryConvert(argSpec, index, converter, values[j], type);
@@ -11739,11 +11740,11 @@ public class CommandLine {
             parseResultBuilder.addOriginalStringValue(argSpec, arg);
             return ++index;
         }
-        private boolean canConsumeOneArgument(ArgSpec argSpec, Range arity, int consumed, String arg, Class<?> type, String argDescription) {
+        private boolean canConsumeOneArgument(ArgSpec argSpec, LookBehind lookBehind, Range arity, int consumed, String arg, Class<?> type, String argDescription) {
             if (char[].class.equals(argSpec.auxiliaryTypes()[0]) || char[].class.equals(argSpec.type())) { return true; }
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
             try {
-                String[] values = unquoteAndSplit(argSpec, arity, consumed, arg);
+                String[] values = unquoteAndSplit(argSpec, lookBehind, arity, consumed, arg);
 //                if (!argSpec.acceptsValues(values.length, commandSpec.parser())) {
 //                    tracer.debug("$s would split into %s values but %s cannot accept that many values.%n", arg, values.length, argDescription);
 //                    return false;
@@ -11963,8 +11964,11 @@ public class CommandLine {
     }
 
     /** Return the unquoted value if the value contains no nested quotes, otherwise, return the value as is. */
-    String smartUnquote(String value) {
+    String smartUnquoteIfEnabled(String value) {
         if (value == null || !commandSpec.parser().trimQuotes()) { return value; }
+        return smartUnquote(value);
+    }
+    static String smartUnquote(String value) {
         String unquoted = unquote(value);
         if (unquoted == value) { return value; }
         StringBuilder result = new StringBuilder();
@@ -11977,20 +11981,18 @@ public class CommandLine {
                     slashCount++;
                     break;
                 case '\"':
-                    if (slashCount == 0) { requote = true; }
+                    // if the unquoted value contains an unescaped quote, we should not convert escaped quotes into quotes
+                    if (slashCount == 0) { return value; }
                     slashCount = 0;
                     break;
                 default: slashCount = 0; break;
             }
             if ((slashCount & 1) == 0) { result.appendCodePoint(ch); }
         }
-        if (requote) {
-            result.append('"').insert(0, '"');
-        }
         return result.toString();
     }
-    private String unquote(String value) {
-        if (value == null || !commandSpec.parser().trimQuotes()) { return value; }
+    private static String unquote(String value) {
+        if (value == null) { return value; }
         return (value.length() > 1 && value.startsWith("\"") && value.endsWith("\""))
                 ? value.substring(1, value.length() - 1)
                 : value;
