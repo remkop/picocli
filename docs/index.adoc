@@ -1686,7 +1686,7 @@ When using this feature, applications are responsible for actively verifying tha
 
 === Quoted Values
 ==== Trimming Quotes
-From picocli 3.7, quotes around command line parameters are preserved by default (previously they were removed). This can be configured with `CommandLine::setTrimQuotes`.
+From picocli 3.7, quotes around command line parameters are preserved by default (previously they were removed). This can be configured with `CommandLine::setTrimQuotes`. From picocli 4.0, quoted arguments can contain nested quoted substrings, to give end users fine-grained control over how values are split.
 
 If `CommandLine::setTrimQuotes` is set to `true`, picocli will remove quotes from the command line arguments, as follows:
 
@@ -1701,8 +1701,8 @@ For example:
 |Command Line Argument|After Trimming Quotes|Note
 |`"-x=abc"`|`-x=abc`| quotes removed
 |`"a,b","x,y"` |`"a,b","x,y"`|left unchanged
-|`"-x=a,b,\"c,d,e\",f"`|`-x=a,b,"c,d,e",f`|Splitting will find 4 values
-|`"-x=\"a,b,\\"c,d,e\\",f\""`|`-x="a,b,\"c,d,e\",f"`|Splitting will find 4 values
+|`"-x=a,b,\"c,d,e\",f"`|`-x=a,b,"c,d,e",f`|Splitting will find 4 values: `a`; `b`; `c,d,e`; and `f`
+|`"-x=\"a,b,\\"c,d,e\\",f\""`|`-x="a,b,\"c,d,e\",f"`|Splitting will find 1 value: `a,b,"c,d,e",f`
 |===
 
 ==== Splitting Quoted Parameters
