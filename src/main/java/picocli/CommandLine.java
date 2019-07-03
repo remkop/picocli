@@ -11353,18 +11353,17 @@ public class CommandLine {
                     // boolean option with arity = 0..1 or 0..*: value MAY be a param
                     boolean optionalWithBooleanValue = arity.max > 0 && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value));
                     if (!optionalWithBooleanValue && lookBehind != LookBehind.ATTACHED_WITH_SEPARATOR) { // if attached, try converting the value to boolean (and fail if invalid value)
+                        Boolean defaultValue = booleanValue(argSpec, String.valueOf(argSpec.calcDefaultValue(true))); // #712 flip the default value
+                        if (argSpec.isOption() && !empty(((OptionSpec) argSpec).fallbackValue())) {
+                            defaultValue = !booleanValue(argSpec, ((OptionSpec) argSpec).fallbackValue()); // #754 Allow boolean options to get value from fallback instead of defaultProvider
+                        }
                         if (argSpec.isOption() && ((OptionSpec) argSpec).negatable()) {
-                            Boolean defaultValue = Boolean.valueOf(String.valueOf(argSpec.calcDefaultValue(true)));
-                            if (negated) {
-                                actualValue = defaultValue.toString();
-                            } else {
-                                actualValue = (defaultValue ? Boolean.FALSE : Boolean.TRUE).toString();
-                            }
+                            actualValue = String.valueOf(negated ? defaultValue : !defaultValue);
                         } else {
                             // don't process cmdline arg: it's okay to ignore value if not attached to option
                             Boolean oppositeValue = commandSpec.parser().toggleBooleanFlags()
                                     ? (Boolean) argSpec.getValue() // #147 toggle existing boolean value
-                                    : Boolean.valueOf(String.valueOf(argSpec.calcDefaultValue(true))); // #712 flip the default value
+                                    : defaultValue; // #712 flip the default value
                             actualValue = String.valueOf(oppositeValue == null || !oppositeValue);
                         }
                         optionalValueExists = false;
@@ -11913,6 +11912,18 @@ public class CommandLine {
                 };
             }
             throw new MissingTypeConverterException(CommandLine.this, "No TypeConverter registered for " + type.getName() + " of " + argSpec);
+        }
+
+        private boolean booleanValue(ArgSpec argSpec, String value) {
+            if (empty(value) || "null".equals(value)) { return false; }
+            ITypeConverter<?> converter = getTypeConverter(Boolean.class, argSpec, 0);
+            try {
+                return (Boolean) converter.convert(value);
+            } catch (TypeConversionException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new TypeConversionException("Could not convert '" + value + "' to a boolean: " + e.getMessage());
+            }
         }
 
         private boolean assertNoMissingParameters(ArgSpec argSpec, Range arity, Stack<String> args) {

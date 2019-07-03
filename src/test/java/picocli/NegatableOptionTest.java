@@ -5,7 +5,10 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Help.Ansi;
+import picocli.CommandLine.IDefaultValueProvider;
+import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Option;
 
 import static org.junit.Assert.*;
@@ -268,4 +271,34 @@ public class NegatableOptionTest {
         assertEquals(expected, actual);
     }
 
+    static class Issue754DefaultProvider implements IDefaultValueProvider {
+        public String defaultValue(ArgSpec argSpec) throws Exception {
+            return ((OptionSpec) argSpec).longestName().equals("-z") ? "true" : null;
+        }
+    }
+    @Test
+    public void testAllowBooleanOptionsToGetValueFromFallback() {
+        @Command(defaultValueProvider = Issue754DefaultProvider.class)
+        class App {
+            @Option(names = "-x", fallbackValue = "false", defaultValue = "true")
+            boolean x;
+
+            @Option(names = "-y", fallbackValue = "true", defaultValue = "false")
+            boolean y;
+
+            @Option(names = "-z", fallbackValue = "false")
+            boolean z;
+        }
+
+        App app = new App();
+        assertFalse(app.x);
+        assertFalse(app.y);
+        assertFalse(app.z);
+        app.x = true;
+        app.z = true;
+        new CommandLine(app).parseArgs("-x", "-y", "-z");
+        assertFalse(app.x);
+        assertTrue(app.y);
+        assertFalse(app.z);
+    }
 }
