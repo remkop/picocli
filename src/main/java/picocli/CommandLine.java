@@ -11470,6 +11470,7 @@ public class CommandLine {
                 result.putAll(typedValuesAtPosition);
                 consumed = consumedCountMap(i + 1, initialSize, argSpec);
                 lookBehind = LookBehind.SEPARATE;
+                alreadyUnquoted = false;
             }
             // now process the varargs if any
             String fallback = consumed == 0 && argSpec.isOption() && !OptionSpec.DEFAULT_FALLBACK_VALUE.equals(((OptionSpec) argSpec).fallbackValue())
@@ -11490,6 +11491,7 @@ public class CommandLine {
                 result.putAll(typedValuesAtPosition);
                 consumed = consumedCountMap(i + 1, initialSize, argSpec);
                 lookBehind = LookBehind.SEPARATE;
+                alreadyUnquoted = false;
             }
         }
 
@@ -11655,6 +11657,7 @@ public class CommandLine {
                 result.addAll(typedValuesAtPosition);
                 consumed = consumedCount(i + 1, initialSize, argSpec);
                 lookBehind = LookBehind.SEPARATE;
+                alreadyUnquoted = false;
             }
             if (argSpec.interactive() && argSpec.arity().max == 0) {
                 consumed = addPasswordToList(argSpec, type, result, consumed, argDescription);
@@ -11681,6 +11684,7 @@ public class CommandLine {
                     result.addAll(typedValuesAtPosition);
                     consumed = consumedCount(i + 1, initialSize, argSpec);
                     lookBehind = LookBehind.SEPARATE;
+                    alreadyUnquoted = false;
                 }
             }
             if (result.isEmpty() && arity.min == 0 && arity.max <= 1 && isBoolean(type)) {
