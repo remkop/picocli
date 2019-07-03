@@ -685,11 +685,13 @@ public class CommandLine {
      * If {@code splitQuotedStrings} is set to {@code true}, quotes are not respected, and the value is split up into four parts:
      * the first is {@code "a}, the second is {@code b"}, the third is {@code "x}, and the last part is {@code y"}. This is generally not what you want.
      * </p>
+     * @deprecated Most applications should not change the default. The rare application that <em>does</em> need to split parameter values
+     * without respecting quotes should use {@link ParserSpec#splitQuotedStrings(boolean)}.
      * @return {@code true} if the parser is allowed to split quoted Strings, {@code false} otherwise;
      * @see ArgSpec#splitRegex()
      * @see ParserSpec#splitQuotedStrings()
      * @since 3.7 */
-    public boolean isSplitQuotedStrings() { return getCommandSpec().parser().splitQuotedStrings(); }
+    @Deprecated public boolean isSplitQuotedStrings() { return getCommandSpec().parser().splitQuotedStrings(); }
 
     /** Sets whether the parser is allowed to split quoted Strings. The default is {@code false},
      * so quotes are respected: quoted strings are treated as a single value that should not be broken up.
@@ -704,13 +706,15 @@ public class CommandLine {
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
      * subcommands, call the setter last, after adding subcommands.</p>
+     * @deprecated Most applications should not change the default. The rare application that <em>does</em> need to split parameter values
+     * without respecting quotes should use {@link ParserSpec#splitQuotedStrings(boolean)}.
      * @param newValue the new setting
      * @return this {@code CommandLine} object, to allow method chaining
      * @see ArgSpec#splitRegex()
      * @see ParserSpec#splitQuotedStrings(boolean)
      * @since 3.7
      */
-    public CommandLine setSplitQuotedStrings(boolean newValue) {
+    @Deprecated public CommandLine setSplitQuotedStrings(boolean newValue) {
         getCommandSpec().parser().splitQuotedStrings(newValue);
         for (CommandLine command : getCommandSpec().subcommands().values()) {
             command.setSplitQuotedStrings(newValue);
