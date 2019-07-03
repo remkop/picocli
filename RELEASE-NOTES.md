@@ -6,6 +6,8 @@ The picocli community is pleased to announce picocli 4.0.0-rc-1.
 
 Bugfixes and improvements.
 
+Quoted parameter values can now contain nested quoted substrings to give end users fine-grained control over how values are split. See the [user manual](https://picocli.info/#_quoted_values) for details.
+
 
 _Please try this and provide feedback. We can still make changes._
 

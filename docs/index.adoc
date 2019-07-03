@@ -1686,13 +1686,19 @@ When using this feature, applications are responsible for actively verifying tha
 
 === Quoted Values
 ==== Trimming Quotes
-From picocli 3.7, quotes around command line parameters are preserved by default (previously they were removed). This can be configured with `CommandLine::setTrimQuotes`. From picocli 4.0, quoted arguments can contain nested quoted substrings, to give end users fine-grained control over how values are split.
+From picocli 3.7, quotes around command line parameters are preserved by default (previously they were removed). This can be configured with `CommandLine::setTrimQuotes`, or the parser configuration `trimQuotes`. From picocli 4.0, quoted arguments can contain nested quoted substrings, to give end users fine-grained control over how values are split.
 
-If `CommandLine::setTrimQuotes` is set to `true`, picocli will remove quotes from the command line arguments, as follows:
+If `CommandLine::setTrimQuotes`, or the parser configuration `trimQuotes` is set to `true`, picocli will remove quotes from the command line arguments, as follows:
 
-* if the command line argument contains just the leading and trailing quote, these quotes are removed
-* if the command line argument contains unescaped quotes, other than the leading and trailing quote, the argument is unchanged (the leading and trailing quotes remain)
-* if a quoted command line argument contains backslash-escaped quotes, the leading and trailing quotes are removed, and the backslash-escaped quotes are converted to unescaped quotes.
+* As each command line argument is processed, the below <<Smart Unquote,smart unquote>> procedure is used to trim the outermost quotes.
+* Next, if the option or positional parameter has a `split` regex defined, the parameter value is split while respecting quotes: the `split` regex is not matched if it occurs in a quoted substring of the parameter value. Each of the parts found by the splitting process will have its quotes removed using the below "smart unquote" procedure.
+
+See the <<Splitting Quoted Parameters>> section below for examples.
+
+===== Smart Unquote
+* If the command line argument contains just the leading and trailing quote, these quotes are removed.
+* If the command line argument contains unescaped quotes, other than the leading and trailing quote, the argument is unchanged (the leading and trailing quotes remain).
+* If a quoted command line argument contains backslash-escaped quotes, the leading and trailing quotes are removed, backslash-escaped quotes are converted to unescaped quotes, and backslash-escaped backslashes are converted to unescaped backslashes.
 
 For example:
 
@@ -1706,7 +1712,7 @@ For example:
 |===
 
 ==== Splitting Quoted Parameters
-Also, the logic for <<Split Regex,splitting>> parameters is smart enough to avoid matching the `split` regular expression inside a quoted region.
+By default, if the option or positional parameter has a <<Split Regex,`split`>> regex defined, parameter values are split into parts while respecting quotes: the `split` regular expression is not matched inside a quoted region.
 
 Example:
 ```
@@ -1719,10 +1725,16 @@ Given input like below:
 ```
 <command> -x "-Dvalues=a,b,c","-Dother=1,2"
 ```
-This results in the `parts` array having the following values:
+This results in the `parts` array having the following values, assuming the parser configuration `trimQuotes` is `false` (the default):
 ```
 "-Dvalues=a,b,c"
 "-Dother=1,2"
+```
+
+If the parser configuration `trimQuotes` is `true`, the above example would be split into the following values (with quotes trimmed from the resulting parts):
+```
+-Dvalues=a,b,c
+-Dother=1,2
 ```
 
 Given input like below:
@@ -1739,7 +1751,34 @@ f
 "xxx,yyy"
 ```
 
-This "smart splitting" can be switched off with `CommandLine::setSplitQuotedStrings`:
+Or, if the parser configuration `trimQuotes` is `true`:
+
+```
+a
+b
+c,d,e
+f
+xxx,yyy
+```
+
+To preserve quotes when `trimQuotes` is `true`, specify additional nested quotes on the command line. For example:
+
+```
+<command> "-x=\"a,b,\\"c,d,e\\",f\"" "x,y,z" "\"1,2,3\"" "\\"1,2,3\\""
+```
+With parser configuration `trimQuotes` set to `true`, the above input gives the following values:
+```
+a,b,"c,d,e",f
+x
+y
+z
+1,2,3
+"1,2,3"
+```
+
+
+
+This "smart splitting" (respecting quotes) can be switched off with `CommandLine::setSplitQuotedStrings`:
 setting the `splitQuotedStrings` parser attribute to `true` switches off smart splitting,
 and the `split` regex is applied to the parameter value regardless of quotes.
 
