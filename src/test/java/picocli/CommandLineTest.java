@@ -1268,10 +1268,10 @@ public class CommandLineTest {
         assertEquals(123, opt.number[0]);
         assertTrue(opt.verbose);
 
-//        opt = new TextOption();
-//        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t\"123\"", "-v\"true\"");
-//        assertEquals(123, opt.number[0]);
-//        assertTrue(opt.verbose);
+        opt = new TextOption();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t\"123\"", "-v\"true\"");
+        assertEquals(123, opt.number[0]);
+        assertTrue(opt.verbose);
 
         opt = new TextOption();
         new CommandLine(opt).setTrimQuotes(true).parseArgs("\"-t=345\"", "\"-v=true\"");
@@ -1302,6 +1302,28 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testOptionSingleParameterQuotesTrimmedIfRequested() {
+        class TextOption {
+            @Option(names = "-t") String text;
+        }
+        TextOption opt = new TextOption();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t", "\"a text\"");
+        assertEquals("a text", opt.text);
+
+        opt = new TextOption();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("\"-ta text\"");
+        assertEquals("a text", opt.text);
+
+        opt = new TextOption();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t\"a text\"");
+        assertEquals("a text", opt.text);
+
+        opt = new TextOption();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("\"-t=a text\"");
+        assertEquals("a text", opt.text);
+    }
+
+    @Test
     public void testOptionMultiParameterQuotesTrimmedIfRequested() {
         class TextOption {
             @Option(names = "-t") String[] text;
@@ -1314,9 +1336,9 @@ public class CommandLineTest {
         new CommandLine(opt).setTrimQuotes(true).parseArgs("\"-ta text\"", "\"-tanother text\"", "\"-tx z\"");
         assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
 
-//        opt = new TextOption();
-//        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t\"a text\"", "-t\"another text\"", "-t\"x z\"");
-//        assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
+        opt = new TextOption();
+        new CommandLine(opt).setTrimQuotes(true).parseArgs("-t\"a text\"", "-t\"another text\"", "-t\"x z\"");
+        assertArrayEquals(new String[]{"a text", "another text", "x z"}, opt.text);
 
         opt = new TextOption();
         new CommandLine(opt).setTrimQuotes(true).parseArgs("\"-t=a text\"", "\"-t=another text\"", "\"-t=x z\"");
@@ -3897,6 +3919,7 @@ public class CommandLineTest {
                 ArgSpec.class,
                 boolean.class,
                 lookBehindClass,
+                boolean.class,
                 Range.class,
                 Stack.class, Set.class, String.class);
         applyValueToSingleValuedField.setAccessible(true);
@@ -3913,7 +3936,7 @@ public class CommandLineTest {
         Object SEPARATE = lookBehindClass.getDeclaredField("SEPARATE").get(null);
 
         int value = (Integer) applyValueToSingleValuedField.invoke(interpreter,
-                arg, false, SEPARATE, Range.valueOf("1"), new Stack<String>(), new HashSet<String>(), "");
+                arg, false, SEPARATE, false, Range.valueOf("1"), new Stack<String>(), new HashSet<String>(), "");
         assertEquals(0, value);
     }
 

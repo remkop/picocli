@@ -10980,7 +10980,7 @@ public class CommandLine {
             if (defaultValue != null) {
                 if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s) to %s%n", defaultValue, arg);}
                 Range arity = arg.arity().min(Math.max(1, arg.arity().min));
-                applyOption(arg, false, LookBehind.SEPARATE, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
+                applyOption(arg, false, LookBehind.SEPARATE, false, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
             }
             return defaultValue != null;
         }
@@ -11012,9 +11012,10 @@ public class CommandLine {
                 }
                 String originalArg = args.pop();
                 String arg = smartUnquoteIfEnabled(originalArg);
+                boolean actuallyUnquoted = !originalArg.equals(arg);
                 if (tracer.isDebug()) {
-                    if (arg == originalArg) { tracer.debug("Processing argument '%s'. Remainder=%s%n", arg, reverse(copy(args))); }
-                    else { tracer.debug("Processing argument '%s' (trimmed from '%s'). Remainder=%s%n", arg, originalArg, reverse(copy(args))); }
+                    if (actuallyUnquoted) { tracer.debug("Processing argument '%s' (trimmed from '%s'). Remainder=%s%n", arg, originalArg, reverse(copy(args))); }
+                    else { tracer.debug("Processing argument '%s'. Remainder=%s%n", arg, reverse(copy(args))); }
                 }
 
                 // Double-dash separates options from positional arguments.
@@ -11044,7 +11045,7 @@ public class CommandLine {
                 // A single option may be without option parameters, like "-v" or "--verbose" (a boolean value),
                 // or an option may have one or more option parameters.
                 // A parameter may be attached to the option.
-                boolean paramAttachedToOption = false;
+                LookBehind lookBehind = LookBehind.SEPARATE;
                 int separatorIndex = arg.indexOf(separator);
                 if (separatorIndex > 0) {
                     String key = arg.substring(0, separatorIndex);
@@ -11052,7 +11053,7 @@ public class CommandLine {
                     if (isStandaloneOption(key) && isStandaloneOption(arg)) {
                         tracer.warn("Both '%s' and '%s' are valid option names in %s. Using '%s'...%n", arg, key, getCommandName(), arg);
                     } else if (isStandaloneOption(key)) {
-                        paramAttachedToOption = true;
+                        lookBehind = LookBehind.ATTACHED_WITH_SEPARATOR;
                         String optionParam = arg.substring(separatorIndex + separator.length());
                         args.push(optionParam);
                         arg = key;
@@ -11064,13 +11065,13 @@ public class CommandLine {
                     if (tracer.isDebug()) {tracer.debug("'%s' cannot be separated into <option>%s<option-parameter>%n", arg, separator);}
                 }
                 if (isStandaloneOption(arg)) {
-                    processStandaloneOption(required, initialized, arg, args, paramAttachedToOption);
+                    processStandaloneOption(required, initialized, arg, actuallyUnquoted, args, lookBehind);
                 }
                 // Compact (single-letter) options can be grouped with other options or with an argument.
                 // only single-letter options can be combined with other options or with an argument
                 else if (config().posixClusteredShortOptionsAllowed() && arg.length() > 2 && arg.startsWith("-")) {
                     if (tracer.isDebug()) {tracer.debug("Trying to process '%s' as clustered short options%n", arg, args);}
-                    processClusteredShortOptions(required, initialized, arg, args);
+                    processClusteredShortOptions(required, initialized, arg, actuallyUnquoted, args);
                 }
                 // The argument could not be interpreted as an option: process it as a positional argument
                 else {
@@ -11078,7 +11079,7 @@ public class CommandLine {
                     if (tracer.isDebug()) {tracer.debug("Could not find option '%s', deciding whether to treat as unmatched option or positional parameter...%n", arg);}
                     if (commandSpec.resemblesOption(arg, tracer)) { handleUnmatchedArgument(args); continue; } // #149
                     if (tracer.isDebug()) {tracer.debug("No option named '%s' found. Processing as positional parameter%n", arg);}
-                    processPositionalParameter(required, initialized, args);
+                    processPositionalParameter(required, initialized, actuallyUnquoted, args);
                 }
             }
         }
@@ -11099,10 +11100,10 @@ public class CommandLine {
 
         private void processRemainderAsPositionalParameters(Collection<ArgSpec> required, Set<ArgSpec> initialized, Stack<String> args) throws Exception {
             while (!args.empty()) {
-                processPositionalParameter(required, initialized, args);
+                processPositionalParameter(required, initialized, false, args);
             }
         }
-        private void processPositionalParameter(Collection<ArgSpec> required, Set<ArgSpec> initialized, Stack<String> args) throws Exception {
+        private void processPositionalParameter(Collection<ArgSpec> required, Set<ArgSpec> initialized, boolean alreadyUnquoted, Stack<String> args) throws Exception {
             if (tracer.isDebug()) {tracer.debug("Processing next arg as a positional parameter. Command-local position=%d. Remainder=%s%n", position, reverse(copy(args)));}
             if (config().stopAtPositional()) {
                 if (!endOfOptions && tracer.isDebug()) {tracer.debug("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters.%n");}
@@ -11132,7 +11133,7 @@ public class CommandLine {
                 if (tracer.isDebug()) {tracer.debug("Position %s is in index range %s. Trying to assign args to %s, arity=%s%n", positionDesc(positionalParam), indexRange, positionalParam, arity);}
                 if (!assertNoMissingParameters(positionalParam, arity, argsCopy)) { break; } // #389 collectErrors parsing
                 int originalSize = argsCopy.size();
-                int actuallyConsumed = applyOption(positionalParam, false, LookBehind.SEPARATE, arity, argsCopy, initialized, "args[" + indexRange + "] at position " + localPosition);
+                int actuallyConsumed = applyOption(positionalParam, false, LookBehind.SEPARATE, alreadyUnquoted, arity, argsCopy, initialized, "args[" + indexRange + "] at position " + localPosition);
                 int count = originalSize - argsCopy.size();
                 if (count > 0 || actuallyConsumed > 0) {
                     required.remove(positionalParam);
@@ -11168,25 +11169,26 @@ public class CommandLine {
         private void processStandaloneOption(Collection<ArgSpec> required,
                                              Set<ArgSpec> initialized,
                                              String arg,
+                                             boolean alreadyUnquoted,
                                              Stack<String> args,
-                                             boolean paramAttachedToKey) throws Exception {
+                                             LookBehind lookBehind) throws Exception {
             ArgSpec argSpec = commandSpec.optionsMap().get(arg);
             boolean negated = argSpec == null;
             if (negated) { argSpec = commandSpec.negatedOptionsMap().get(arg); }
             required.remove(argSpec);
             Range arity = argSpec.arity();
-            if (paramAttachedToKey) {
+            if (lookBehind.isAttached()) {
                 arity = arity.min(Math.max(1, arity.min)); // if key=value, minimum arity is at least 1
             }
-            LookBehind lookBehind = paramAttachedToKey ? LookBehind.ATTACHED_WITH_SEPARATOR : LookBehind.SEPARATE;
             if (tracer.isDebug()) {tracer.debug("Found option named '%s': %s, arity=%s%n", arg, argSpec, arity);}
             parseResultBuilder.nowProcessing.add(argSpec);
-            applyOption(argSpec, negated, lookBehind, arity, args, initialized, "option " + arg);
+            applyOption(argSpec, negated, lookBehind, alreadyUnquoted, arity, args, initialized, "option " + arg);
         }
 
         private void processClusteredShortOptions(Collection<ArgSpec> required,
                                                   Set<ArgSpec> initialized,
                                                   String arg,
+                                                  boolean alreadyUnquoted,
                                                   Stack<String> args) throws Exception {
             String prefix = arg.substring(0, 1);
             String cluster = arg.substring(1);
@@ -11224,7 +11226,7 @@ public class CommandLine {
                         parseResultBuilder.nowProcessing.set(parseResultBuilder.nowProcessing.size() - 1, argSpec); // replace
                     }
                     int argCount = args.size();
-                    int consumed = applyOption(argSpec, false, lookBehind, arity, args, initialized, argDescription);
+                    int consumed = applyOption(argSpec, false, lookBehind, alreadyUnquoted, arity, args, initialized, argDescription);
                     // if cluster was consumed as a parameter or if this field was the last in the cluster we're done; otherwise continue do-while loop
                     if (empty(cluster) || args.isEmpty() || args.size() < argCount) {
                         return;
@@ -11241,7 +11243,7 @@ public class CommandLine {
                         if (args.peek().equals(arg)) { // #149 be consistent between unmatched short and long options
                             if (tracer.isDebug()) {tracer.debug("Could not match any short options in %s, deciding whether to treat as unmatched option or positional parameter...%n", arg);}
                             if (commandSpec.resemblesOption(arg, tracer)) { handleUnmatchedArgument(args); return; } // #149
-                            processPositionalParameter(required, initialized, args);
+                            processPositionalParameter(required, initialized, alreadyUnquoted, args);
                             return;
                         }
                         // remainder was part of a clustered group that could not be completely parsed
@@ -11253,7 +11255,7 @@ public class CommandLine {
                     } else {
                         args.push(cluster);
                         if (tracer.isDebug()) {tracer.debug("%s is not an option parameter for %s%n", cluster, arg);}
-                        processPositionalParameter(required, initialized, args);
+                        processPositionalParameter(required, initialized, alreadyUnquoted, args);
                     }
                     return;
                 }
@@ -11263,6 +11265,7 @@ public class CommandLine {
         private int applyOption(ArgSpec argSpec,
                                 boolean negated,
                                 LookBehind lookBehind,
+                                boolean alreadyUnquoted,
                                 Range arity,
                                 Stack<String> args,
                                 Set<ArgSpec> initialized,
@@ -11285,13 +11288,13 @@ public class CommandLine {
 
             int result;
             if (argSpec.type().isArray() && !(argSpec.interactive() && argSpec.type() == char[].class)) {
-                result = applyValuesToArrayField(argSpec, negated, lookBehind, arity, workingStack, initialized, argDescription);
+                result = applyValuesToArrayField(argSpec, negated, lookBehind, alreadyUnquoted, arity, workingStack, initialized, argDescription);
             } else if (Collection.class.isAssignableFrom(argSpec.type())) {
-                result = applyValuesToCollectionField(argSpec, negated, lookBehind, arity, workingStack, initialized, argDescription);
+                result = applyValuesToCollectionField(argSpec, negated, lookBehind, alreadyUnquoted, arity, workingStack, initialized, argDescription);
             } else if (Map.class.isAssignableFrom(argSpec.type())) {
-                result = applyValuesToMapField(argSpec, lookBehind, arity, workingStack, initialized, argDescription);
+                result = applyValuesToMapField(argSpec, lookBehind, alreadyUnquoted, arity, workingStack, initialized, argDescription);
             } else {
-                result = applyValueToSingleValuedField(argSpec, negated, lookBehind, arity, workingStack, initialized, argDescription);
+                result = applyValueToSingleValuedField(argSpec, negated, lookBehind, alreadyUnquoted, arity, workingStack, initialized, argDescription);
             }
             if (workingStack != args && !workingStack.isEmpty()) {
                 args.push(workingStack.pop());
@@ -11303,13 +11306,14 @@ public class CommandLine {
         private int applyValueToSingleValuedField(ArgSpec argSpec,
                                                   boolean negated,
                                                   LookBehind lookBehind,
+                                                  boolean alreadyUnquoted,
                                                   Range derivedArity,
                                                   Stack<String> args,
                                                   Set<ArgSpec> initialized,
                                                   String argDescription) throws Exception {
             boolean noMoreValues = args.isEmpty();
             String value = args.isEmpty() ? null : args.pop();
-            if (commandSpec.parser().trimQuotes()) {value = unquote(value);}
+            if (commandSpec.parser().trimQuotes() && !alreadyUnquoted) {value = unquote(value);}
             Range arity = argSpec.arity().isUnspecified ? derivedArity : argSpec.arity(); // #509
             if (arity.max == 0 && !arity.isUnspecified && lookBehind == LookBehind.ATTACHED_WITH_SEPARATOR) { // #509
                 throw new MaxValuesExceededException(CommandLine.this, optionDescription("", argSpec, 0) +
@@ -11417,6 +11421,7 @@ public class CommandLine {
         }
         private int applyValuesToMapField(ArgSpec argSpec,
                                           LookBehind lookBehind,
+                                          boolean alreadyUnquoted,
                                           Range arity,
                                           Stack<String> args,
                                           Set<ArgSpec> initialized,
@@ -11434,7 +11439,7 @@ public class CommandLine {
             initialized.add(argSpec);
             int originalSize = map.size();
             int pos = getPosition(argSpec);
-            consumeMapArguments(argSpec, lookBehind, arity, args, classes, keyConverter, valueConverter, map, argDescription);
+            consumeMapArguments(argSpec, lookBehind, alreadyUnquoted, arity, args, classes, keyConverter, valueConverter, map, argDescription);
             parseResultBuilder.add(argSpec, pos);
             argSpec.setValue(map);
             return map.size() - originalSize;
@@ -11442,6 +11447,7 @@ public class CommandLine {
 
         private void consumeMapArguments(ArgSpec argSpec,
                                          LookBehind lookBehind,
+                                         boolean alreadyUnquoted,
                                          Range arity,
                                          Stack<String> args,
                                          Class<?>[] classes,
@@ -11460,7 +11466,7 @@ public class CommandLine {
                 Map<Object, Object> typedValuesAtPosition = new LinkedHashMap<Object, Object>();
                 parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
                 assertNoMissingMandatoryParameter(argSpec, args, i, arity);
-                consumeOneMapArgument(argSpec, lookBehind, arity, consumed, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
+                consumeOneMapArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
                 result.putAll(typedValuesAtPosition);
                 consumed = consumedCountMap(i + 1, initialSize, argSpec);
                 lookBehind = LookBehind.SEPARATE;
@@ -11477,10 +11483,10 @@ public class CommandLine {
 
                 Map<Object, Object> typedValuesAtPosition = new LinkedHashMap<Object, Object>();
                 parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
-                if (!canConsumeOneMapArgument(argSpec, lookBehind, arity, consumed, args.peek(), classes, keyConverter, valueConverter, argDescription)) {
+                if (!canConsumeOneMapArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.peek(), classes, keyConverter, valueConverter, argDescription)) {
                     break; // leave empty map at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again
                 }
-                consumeOneMapArgument(argSpec, lookBehind, arity, consumed, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
+                consumeOneMapArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
                 result.putAll(typedValuesAtPosition);
                 consumed = consumedCountMap(i + 1, initialSize, argSpec);
                 lookBehind = LookBehind.SEPARATE;
@@ -11489,7 +11495,7 @@ public class CommandLine {
 
         private void consumeOneMapArgument(ArgSpec argSpec,
                                            LookBehind lookBehind,
-                                           Range arity, int consumed,
+                                           boolean alreadyUnquoted, Range arity, int consumed,
                                            String arg,
                                            Class<?>[] classes,
                                            ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter,
@@ -11497,7 +11503,7 @@ public class CommandLine {
                                            int index,
                                            String argDescription) throws Exception {
             if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, arg); }
-            String[] values = unquoteAndSplit(argSpec, lookBehind, arity, consumed, arg);
+            String[] values = unquoteAndSplit(argSpec, lookBehind, alreadyUnquoted, arity, consumed, arg);
             for (String value : values) {
                 String[] keyValue = splitKeyValue(argSpec, value);
                 Object mapKey =   tryConvert(argSpec, index, keyConverter,   keyValue[0], classes[0]);
@@ -11511,18 +11517,18 @@ public class CommandLine {
             parseResultBuilder.addOriginalStringValue(argSpec, arg);
         }
 
-        private String[] unquoteAndSplit(ArgSpec argSpec, LookBehind lookBehind, Range arity, int consumed, String arg) {
-            String raw = lookBehind.isAttached() ? arg : smartUnquoteIfEnabled(arg); // if attached, we already trimmed quotes once
+        private String[] unquoteAndSplit(ArgSpec argSpec, LookBehind lookBehind, boolean alreadyUnquoted, Range arity, int consumed, String arg) {
+            String raw = lookBehind.isAttached() && alreadyUnquoted ? arg : smartUnquoteIfEnabled(arg); // if attached, we already trimmed quotes once
 //            String raw = smartUnquoteIfEnabled(arg);
             String[] values = argSpec.splitValue(raw, commandSpec.parser(), arity, consumed);
             return values;
         }
 
-        private boolean canConsumeOneMapArgument(ArgSpec argSpec, LookBehind lookBehind, Range arity, int consumed,
+        private boolean canConsumeOneMapArgument(ArgSpec argSpec, LookBehind lookBehind, boolean alreadyUnquoted, Range arity, int consumed,
                                                  String arg, Class<?>[] classes,
                                                  ITypeConverter<?> keyConverter, ITypeConverter<?> valueConverter,
                                                  String argDescription) {
-            String[] values = unquoteAndSplit(argSpec, lookBehind, arity, consumed, arg);
+            String[] values = unquoteAndSplit(argSpec, lookBehind, alreadyUnquoted, arity, consumed, arg);
             try {
                 for (String value : values) {
                     String[] keyValue = splitKeyValue(argSpec, value);
@@ -11561,6 +11567,7 @@ public class CommandLine {
         private int applyValuesToArrayField(ArgSpec argSpec,
                                             boolean negated,
                                             LookBehind lookBehind,
+                                            boolean alreadyUnquoted,
                                             Range arity,
                                             Stack<String> args,
                                             Set<ArgSpec> initialized,
@@ -11569,7 +11576,7 @@ public class CommandLine {
             int length = existing == null ? 0 : Array.getLength(existing);
             Class<?> type = argSpec.auxiliaryTypes()[0];
             int pos = getPosition(argSpec);
-            List<Object> converted = consumeArguments(argSpec, negated, lookBehind, arity, args, type, argDescription);
+            List<Object> converted = consumeArguments(argSpec, negated, lookBehind, alreadyUnquoted, alreadyUnquoted, arity, args, type, argDescription);
             List<Object> newValues = new ArrayList<Object>();
             if (initialized.contains(argSpec)) { // existing values are default values if initialized does NOT contain argsSpec
                 for (int i = 0; i < length; i++) {
@@ -11597,6 +11604,7 @@ public class CommandLine {
         private int applyValuesToCollectionField(ArgSpec argSpec,
                                                  boolean negated,
                                                  LookBehind lookBehind,
+                                                 boolean alreadyUnquoted,
                                                  Range arity,
                                                  Stack<String> args,
                                                  Set<ArgSpec> initialized,
@@ -11604,7 +11612,7 @@ public class CommandLine {
             Collection<Object> collection = (Collection<Object>) argSpec.getValue();
             Class<?> type = argSpec.auxiliaryTypes()[0];
             int pos = getPosition(argSpec);
-            List<Object> converted = consumeArguments(argSpec, negated, lookBehind, arity, args, type, argDescription);
+            List<Object> converted = consumeArguments(argSpec, negated, lookBehind, alreadyUnquoted, alreadyUnquoted, arity, args, type, argDescription);
             if (collection == null || (!collection.isEmpty() && !initialized.contains(argSpec))) {
                 tracer.debug("Initializing binding for %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.type().getSimpleName());
                 collection = createCollection(argSpec.type(), type); // collection type, element type
@@ -11626,7 +11634,8 @@ public class CommandLine {
         private List<Object> consumeArguments(ArgSpec argSpec,
                                               boolean negated,
                                               LookBehind lookBehind,
-                                              Range arity,
+                                              boolean alreadyUnquoted,
+                                              boolean unquoted, Range arity,
                                               Stack<String> args,
                                               Class<?> type,
                                               String argDescription) throws Exception {
@@ -11642,7 +11651,7 @@ public class CommandLine {
                 List<Object> typedValuesAtPosition = new ArrayList<Object>();
                 parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
                 assertNoMissingMandatoryParameter(argSpec, args, i, arity);
-                consumeOneArgument(argSpec, lookBehind, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
+                consumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
                 result.addAll(typedValuesAtPosition);
                 consumed = consumedCount(i + 1, initialSize, argSpec);
                 lookBehind = LookBehind.SEPARATE;
@@ -11665,10 +11674,10 @@ public class CommandLine {
                     if (!varargCanConsumeNextValue(argSpec, args.peek())) { break; }
                     List<Object> typedValuesAtPosition = new ArrayList<Object>();
                     parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
-                    if (!canConsumeOneArgument(argSpec, lookBehind, arity, consumed, args.peek(), type, argDescription)) {
+                    if (!canConsumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.peek(), type, argDescription)) {
                         break; // leave empty list at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again
                     }
-                    consumeOneArgument(argSpec, lookBehind, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
+                    consumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
                     result.addAll(typedValuesAtPosition);
                     consumed = consumedCount(i + 1, initialSize, argSpec);
                     lookBehind = LookBehind.SEPARATE;
@@ -11719,7 +11728,7 @@ public class CommandLine {
         }
         private int consumeOneArgument(ArgSpec argSpec,
                                        LookBehind lookBehind,
-                                       Range arity,
+                                       boolean alreadyUnquoted, Range arity,
                                        int consumed,
                                        String arg,
                                        Class<?> type,
@@ -11727,7 +11736,7 @@ public class CommandLine {
                                        int index,
                                        String argDescription) {
             if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, arg); }
-            String[] values = unquoteAndSplit(argSpec, lookBehind, arity, consumed, arg);
+            String[] values = unquoteAndSplit(argSpec, lookBehind, alreadyUnquoted, arity, consumed, arg);
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
             for (int j = 0; j < values.length; j++) {
                 Object stronglyTypedValue = tryConvert(argSpec, index, converter, values[j], type);
@@ -11740,11 +11749,11 @@ public class CommandLine {
             parseResultBuilder.addOriginalStringValue(argSpec, arg);
             return ++index;
         }
-        private boolean canConsumeOneArgument(ArgSpec argSpec, LookBehind lookBehind, Range arity, int consumed, String arg, Class<?> type, String argDescription) {
+        private boolean canConsumeOneArgument(ArgSpec argSpec, LookBehind lookBehind, boolean alreadyUnquoted, Range arity, int consumed, String arg, Class<?> type, String argDescription) {
             if (char[].class.equals(argSpec.auxiliaryTypes()[0]) || char[].class.equals(argSpec.type())) { return true; }
             ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
             try {
-                String[] values = unquoteAndSplit(argSpec, lookBehind, arity, consumed, arg);
+                String[] values = unquoteAndSplit(argSpec, lookBehind, alreadyUnquoted, arity, consumed, arg);
 //                if (!argSpec.acceptsValues(values.length, commandSpec.parser())) {
 //                    tracer.debug("$s would split into %s values but %s cannot accept that many values.%n", arg, values.length, argDescription);
 //                    return false;
