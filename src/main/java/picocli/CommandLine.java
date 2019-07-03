@@ -9956,8 +9956,11 @@ public class CommandLine {
      * @since 3.0 */
     public static class ParseResult {
         private final CommandSpec commandSpec;
+        private final Set<OptionSpec> matchedUniqueOptions;
+        private final Set<PositionalParamSpec> matchedUniquePositionals;
+        private final List<ArgSpec> matchedArgs;
         private final List<OptionSpec> matchedOptions;
-        private final List<PositionalParamSpec> matchedUniquePositionals;
+        private final List<PositionalParamSpec> matchedPositionals;
         private final List<String> originalArgs;
         private final List<String> unmatched;
         private final List<List<PositionalParamSpec>> matchedPositionalParams;
@@ -9972,10 +9975,13 @@ public class CommandLine {
         private ParseResult(ParseResult.Builder builder) {
             commandSpec = builder.commandSpec;
             subcommand = builder.subcommand;
-            matchedOptions = new ArrayList<OptionSpec>(builder.options);
+            matchedOptions = new ArrayList<OptionSpec>(builder.matchedOptionsList);
+            matchedUniqueOptions = new LinkedHashSet<OptionSpec>(builder.options);
             unmatched = new ArrayList<String>(builder.unmatched);
             originalArgs = new ArrayList<String>(builder.originalArgList);
-            matchedUniquePositionals = new ArrayList<PositionalParamSpec>(builder.positionals);
+            matchedArgs = new ArrayList<ArgSpec>(builder.matchedArgsList);
+            matchedUniquePositionals = new LinkedHashSet<PositionalParamSpec>(builder.positionals);
+            matchedPositionals = new ArrayList<PositionalParamSpec>(builder.matchedPositionalsList);
             matchedPositionalParams = new ArrayList<List<PositionalParamSpec>>(builder.positionalParams);
             errors = new ArrayList<Exception>(builder.errors);
             usageHelpRequested = builder.usageHelpRequested;
@@ -10066,11 +10072,28 @@ public class CommandLine {
         /** Returns whether the specified positional parameter was matched on the command line. */
         public boolean hasMatchedPositional(PositionalParamSpec positional) { return matchedUniquePositionals.contains(positional); }
 
-        /** Returns a list of matched options, in the order they were found on the command line. */
-        public List<OptionSpec> matchedOptions()            { return Collections.unmodifiableList(matchedOptions); }
+        /** Returns a set of matched options.
+         * @since 4.0 */
+        public Set<OptionSpec> matchedOptionsSet() { return Collections.unmodifiableSet(matchedUniqueOptions); }
 
-        /** Returns a list of matched positional parameters. */
-        public List<PositionalParamSpec> matchedPositionals() { return Collections.unmodifiableList(matchedUniquePositionals); }
+        /** Returns a list of matched options, in order they were matched on the command line.
+         * The returned list may contain the same {@code OptionSpec} multiple times, if the option was matched multiple times on the command line.
+         */
+        public List<OptionSpec> matchedOptions() { return Collections.unmodifiableList(matchedOptions); }
+
+        /** Returns a set of matched positional parameters.
+         * @since 4.0 */
+        public Set<PositionalParamSpec> matchedPositionalsSet() { return Collections.unmodifiableSet(matchedUniquePositionals); }
+
+        /** Returns a list of matched positional parameters, in order they were matched on the command line.
+         * The returned list may contain the same {@code PositionalParamSpec} multiple times, if the parameter was matched multiple times on the command line.
+         */
+        public List<PositionalParamSpec> matchedPositionals() { return Collections.unmodifiableList(matchedPositionals); }
+
+        /** Returns a list of matched options and positional parameters, in order they were matched on the command line.
+         * The returned list may contain an {@code OptionSpec} or {@code PositionalParamSpec} multiple times, if the option or parameter was matched multiple times on the command line.
+         * @since 4.0 */
+        public List<ArgSpec> matchedArgs() { return Collections.unmodifiableList(matchedArgs); }
 
         /** Returns a list of command line arguments that did not match any options or positional parameters. */
         public List<String> unmatched()                     { return Collections.unmodifiableList(unmatched); }
@@ -10127,6 +10150,9 @@ public class CommandLine {
         /** Builds immutable {@code ParseResult} instances. */
         public static class Builder {
             private final CommandSpec commandSpec;
+            private final List<ArgSpec> matchedArgsList = new ArrayList<ArgSpec>();
+            private final List<OptionSpec> matchedOptionsList = new ArrayList<OptionSpec>();
+            private final List<PositionalParamSpec> matchedPositionalsList = new ArrayList<PositionalParamSpec>();
             private final Set<OptionSpec> options = new LinkedHashSet<OptionSpec>();
             private final Set<PositionalParamSpec> positionals = new LinkedHashSet<PositionalParamSpec>();
             private final List<String> unmatched = new ArrayList<String>();
@@ -10163,12 +10189,18 @@ public class CommandLine {
                 } else {
                     addPositionalParam((PositionalParamSpec) arg, position);
                 }
-                afterMatchingGroupElement(arg, position);
                 return this;
             }
 
             /** Adds the specified {@code OptionSpec} to the list of options that were matched on the command line. */
-            public Builder addOption(OptionSpec option) { if (!isInitializingDefaultValues) {options.add(option);} return this; }
+            public Builder addOption(OptionSpec option) {
+                if (!isInitializingDefaultValues) {
+                    options.add(option);
+                    matchedOptionsList.add(option);
+                    matchedArgsList.add(option);
+                }
+                return this;
+            }
             /** Adds the specified {@code PositionalParamSpec} to the list of parameters that were matched on the command line.
              * @param positionalParam the matched {@code PositionalParamSpec}
              * @param position the command line position at which the  {@code PositionalParamSpec} was matched.
@@ -10176,6 +10208,8 @@ public class CommandLine {
             public Builder addPositionalParam(PositionalParamSpec positionalParam, int position) {
                 if (isInitializingDefaultValues) { return this; }
                 positionals.add(positionalParam);
+                matchedPositionalsList.add(positionalParam);
+                matchedArgsList.add(positionalParam);
                 while (positionalParams.size() <= position) { positionalParams.add(new ArrayList<PositionalParamSpec>()); }
                 positionalParams.get(position).add(positionalParam);
                 return this;
@@ -10229,25 +10263,6 @@ public class CommandLine {
                     tracer.info("GroupMatch %s is complete: its mandatory elements are all matched. (User object: %s.) %s %s in the group, so it starts a new GroupMatch.%n", foundGroupMatchContainer.lastMatch(), foundGroupMatchContainer.group.userObject(), elementDescription, previousMatch);
                     foundGroupMatchContainer.addMatch(commandSpec.commandLine);
                     this.groupMatchContainer.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
-                }
-            }
-
-            private void afterMatchingGroupElement(ArgSpec argSpec, int position) {
-//                ArgGroupSpec group = argSpec.group();
-//                if (group == null || isInitializingDefaultValues) { return; }
-//                GroupMatchContainer groupMatchContainer = this.groupMatchContainer.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
-//                promotePartiallyMatchedGroupToMatched(group, groupMatchContainer, true);
-            }
-
-            private void promotePartiallyMatchedGroupToMatched(ArgGroupSpec group, GroupMatchContainer groupMatchContainer, boolean allRequired) {
-                if (!groupMatchContainer.matchedFully(allRequired)) { return; }
-
-                // FIXME: before promoting the child group, check to see if the parent is matched, given the child group
-
-                Tracer tracer = commandSpec.commandLine.tracer;
-                if (groupMatchContainer.matchedMaxElements()) {
-                    tracer.info("Marking matched group %s as complete: max elements reached. User object: %s%n", groupMatchContainer, groupMatchContainer.group.userObject());
-                    groupMatchContainer.complete(commandSpec.commandLine());
                 }
             }
         }

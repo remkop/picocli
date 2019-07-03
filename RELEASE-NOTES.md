@@ -31,6 +31,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 ## <a name="4.0.0-rc-1-fixes"></a> Fixed issues
 - [#696][#741] Automatically split lines in TextTable. Thanks to [Sualeh Fatehi](https://github.com/sualeh) for the pull request.
 - [#756] API: Make synopsis indent for multi-line synopsis configurable (related to #739).
+- [#761] API: Add `ParseResult.matchedArgs()` method to return all matched arguments in order; change `ParseResult.matchedOptions()` and `ParseResult.matchedPositionals()` to return the full list of matched options and positional parameters, including duplicates if the option or positional parameter was matched multiple times. Thanks to [Michael D. Adams](https://github.com/adamsmd) for the feature request.
 - [#739] Bugfix: infinite loop or exception when command name plus synopsis heading length equals or exceeds usage help message width. Thanks to [Arturo Alonso](https://github.com/thefang12) for raising this.
 - [#746] Bugfix: Apply default values to options and positional parameters in argument groups. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 - [#742] Bugfix: Default values prevent correct parsing in argument groups. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
@@ -44,7 +45,9 @@ Picocli follows [semantic versioning](http://semver.org/).
 ## <a name="4.0.0-rc-1-deprecated"></a> Deprecations
 
 ## <a name="4.0.0-rc-1-breaking-changes"></a> Potential breaking changes
-
+`ParseResult.matchedOptions()` and `ParseResult.matchedPositionals()` now return the full list of matched options and positional parameters, including duplicates if the option or positional parameter was matched multiple times.
+Prior to this release, these methods would return a list that did not contain duplicates. 
+Applications interested in the old behavior should use the new `matchedOptionSet()` and `matchedPositionalSet()` methods that return a `Set`.
 
 # <a name="4.0.0-beta-2"></a> Picocli 4.0.0-beta-2
 The picocli community is pleased to announce picocli 4.0.0-beta-2.
