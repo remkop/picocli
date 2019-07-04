@@ -301,4 +301,40 @@ public class NegatableOptionTest {
         assertTrue(app.y);
         assertFalse(app.z);
     }
+
+    static class ConfigDefaultProvider implements IDefaultValueProvider {
+        static boolean status = false;
+        public String defaultValue(ArgSpec argSpec) {
+            return String.valueOf(status);
+        }
+    }
+    @Test
+    public void test754DefaultProvider2() {
+        @Command(name = "commit", defaultValueProvider = ConfigDefaultProvider.class)
+        class GitCommit {
+
+            // this option has fallbackValue = "true", so when specified on the command line
+            // it is assigned `true`, regardless of the default value
+            @Option(names = "--status", fallbackValue = "true", negatable = true)
+            boolean status;
+        }
+
+        GitCommit app = new GitCommit();
+        assertFalse(app.status);
+
+        new CommandLine(app).parseArgs();
+        assertFalse(app.status);
+        assertEquals(ConfigDefaultProvider.status, app.status);
+
+        new CommandLine(app).parseArgs("--status");
+        assertTrue(app.status);
+
+        ConfigDefaultProvider.status = true;
+        new CommandLine(app).parseArgs();
+        assertTrue(app.status);
+        assertEquals(ConfigDefaultProvider.status, app.status);
+
+        new CommandLine(app).parseArgs("--status");
+        assertTrue(app.status);
+    }
 }
