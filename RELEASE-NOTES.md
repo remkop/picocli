@@ -33,6 +33,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#756] API: Make synopsis indent for multi-line synopsis configurable (related to #739).
 - [#761] API: Add `ParseResult.matchedArgs()` method to return all matched arguments in order; change `ParseResult.matchedOptions()` and `ParseResult.matchedPositionals()` to return the full list of matched options and positional parameters, including duplicates if the option or positional parameter was matched multiple times. Thanks to [Michael D. Adams](https://github.com/adamsmd) for the feature request.
 - [#760] API: Deprecate `CommandLine.setSplitQuotedStrings`: the vast majority of applications want to `split` while respecting quotes.
+- [#754] Allow boolean options to get value from fallback instead of defaultProvider. Thanks to [Michael D. Adams](https://github.com/adamsmd) for the feature request.
 - [#739] Bugfix: infinite loop or exception when command name plus synopsis heading length equals or exceeds usage help message width. Thanks to [Arturo Alonso](https://github.com/thefang12) for raising this.
 - [#746] Bugfix: Apply default values to options and positional parameters in argument groups. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 - [#742] Bugfix: Default values prevent correct parsing in argument groups. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.

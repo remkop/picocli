@@ -227,7 +227,7 @@ A command that combines either of these with an interactive `--password` option 
 The `picocli-examples` module has https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/interactive/PasswordDemo.java[an example].
 ====
 
-=== Short Options
+=== Short (POSIX) Options
 Picocli supports http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX clustered short options]:
 one or more single-character options without option-arguments, followed by at most one option with an option-argument, can be grouped behind one '-' delimiter.
 
@@ -255,6 +255,26 @@ The following command line arguments are all equivalent and parsing them will gi
 <command> -a -b -c -f=InputFile.txt
 ...
 ----
+
+=== Boolean Options
+Boolean options usually don't need a parameter: it is enough to specify the option name on the command line.
+
+[source,java]
+----
+class BooleanOptions {
+    @Option(names = "-x") boolean x;
+}
+----
+
+The value of `x` is false by default, and is set to `true` (the opposite of the default) if the `-x` option is specified on the command line.
+
+This is enough in most cases, but picocli offers alternatives for applications that need to get the value from something other than the default value. When the option is specified on the command line, the annotated field (or <<option-parameters-methods,method>>) is assigned a value, as follows:
+
+* If the parser is configured to <<Toggle Boolean Flags,toggle boolean options>>, the opposite of the _current value_ is assigned.
+* If a <<fallbackValue-annotation, fallback value>> is defined, the fallback value is assigned.
+* If the option is defined with a non-zero <<Arity,arity>>, and an option parameter was specified on the command line, this option <<Boolean Options with Parameters,parameter value is assigned>>.
+* Otherwise, the value assigned is the logical opposite of the _default value_.
+
 
 === Negatable Options
 
@@ -805,6 +825,8 @@ x = -1
 Any String value is converted to the type of the option before it is assigned to the option. Options and positional parameters may define a <<Custom Type Converters,custom type converter>> if necessary.
 
 Note that the option description may contain the `${FALLBACK-VALUE}` <<Predefined Variables,variable>> which will be replaced with the actual fallback value when the usage help is shown.
+
+<<Boolean Options,Boolean options>> can also define a `fallbackValue` to specify the value that should be set when the option is matched on the command line, regardless of the default value. This can be useful when the default is configurable by the end user, for example.
 
 
 == Multiple Values
@@ -3946,7 +3968,7 @@ public interface IFactory {
 If no factory is specified, a default factory is used. The default factory requires that the classes to instantiate have a public no-argument constructor: it instantiates the class by calling first calling `clazz.newInstance()`, and if that fails, `clazz.getDeclaredConstructor().newInstance()`.
 
 === Boolean Options with Parameters
-By default the value of a boolean field is toggled to its logical negative when the field's option is specified on the command line.
+By default the value of a boolean field is set to the logical negative of its default value when the option is specified on the command line.
 
 It is possible to let end users explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <<Arity>> attribute. A boolean option with `arity = "0..1"` accepts zero to one parameters, `arity = "1"` means the option _must_ have one parameter. For example:
 
