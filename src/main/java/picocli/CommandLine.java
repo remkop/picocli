@@ -5459,15 +5459,21 @@ public class CommandLine {
                 return this;
             }
             private void addGroupArgsToCommand(ArgGroupSpec group, Map<String, ArgGroupSpec> added) {
+                Map<String, OptionSpec> options = new HashMap<String, OptionSpec>();
                 for (ArgSpec arg : group.args()) {
                     if (arg.isOption()) {
                         String[] names = interpolator.interpolate(((OptionSpec) arg).names());
                         for (String name : names) {
-                            if (added.containsKey(name)) {
+                            ArgGroupSpec other = added.get(name);
+                            if (other != null && other == group) {
+                                throw DuplicateOptionAnnotationsException.create(name, arg, options.get(name));
+                            }
+                            if (other != null && other != group) {
                                 throw new DuplicateNameException("An option cannot be in multiple groups but " + name + " is in " + group.synopsis() + " and " + added.get(name).synopsis() + ". Refactor to avoid this. For example, (-a | (-a -b)) can be rewritten as (-a [-b]), and (-a -b | -a -c) can be rewritten as (-a (-b | -c)).");
                             }
                         }
                         for (String name : names) { added.put(name, group); }
+                        for (String name : names) { options.put(name, (OptionSpec) arg); }
                     }
                     add(arg);
                 }

@@ -2422,4 +2422,30 @@ public class ArgGroupTest {
         assertEquals(0, dsGroupMatch2.matchedSubgroups().size());
         assertEquals(Arrays.asList("3"), dsGroupMatch2.matchedValues(dsGroup.args().iterator().next()));
     }
+    @Command(name = "ExecuteTest")
+    static class Issue758 {
+
+        @ArgGroup(exclusive = false)
+        static D d;
+
+        static class D {
+
+            @Option(names = "p")
+            static int p1;
+
+            @Option(names = "p")
+            static int p2;
+        }
+    }
+    @Test
+    public void testIssue758() {
+        Issue758 app = new Issue758();
+        try {
+            new CommandLine(app);
+        } catch (DuplicateOptionAnnotationsException ex) {
+            String name = Issue758.D.class.getName();
+            String msg = "Option name 'p' is used by both field static int " + name + ".p2 and field static int " + name + ".p1";
+            assertEquals(msg, ex.getMessage());
+        }
+    }
 }

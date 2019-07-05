@@ -39,6 +39,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#742] Bugfix: Default values prevent correct parsing in argument groups. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 - [#759] Bugfix: Correct tracing when custom end-of-option delimiter is matched on the command line.
 - [#738] Bugfix: `setTrimQuotes` does not trim quotes from option names. Thanks to [Judd Gaddie](https://github.com/juddgaddie) for raising this.
+- [#758] Bugfix: Duplicate name exception in argument group: better / more concise error message. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 - [#595] Support for quoted arguments containing nested quoted substrings, allowing end-users to control how values are split in parts when a `split` regex is defined.
 - [#751] Build: Make build more portable.
 - [#753] Doc: Improve documentation for multi-value fields: mention the `split` attribute. Thanks to [feinstein](https://github.com/feinstein).
