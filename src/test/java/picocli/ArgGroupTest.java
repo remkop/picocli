@@ -230,7 +230,7 @@ public class ArgGroupTest {
             spec.addArgGroup(group);
             fail("Expected exception");
         } catch (CommandLine.DuplicateNameException ex) {
-            assertEquals("An option cannot be in multiple groups but -x is in (-x)... and [-x]. " +
+            assertEquals("An option cannot be in multiple groups but -x is in (-x) and [-x]. " +
                     "Refactor to avoid this. For example, (-a | (-a -b)) can be rewritten " +
                     "as (-a [-b]), and (-a -b | -a -c) can be rewritten as (-a (-b | -c)).", ex.getMessage());
         }
@@ -1529,7 +1529,7 @@ public class ArgGroupTest {
             cmd.parseArgs("-x=1", "-a=1", "file0", "file1", "-y=2", "-x=3");
             fail("Expected exception");
         } catch (MutuallyExclusiveArgsException ex) {
-            assertEquals("Error: [-a=<a> <f0> <f1>] [-a=<a> <f0> <f1>] and (-x=<x> | -y=<y>) are mutually exclusive (specify only one)", ex.getMessage());
+            assertEquals("Error: [-a=<a> <f0> <f1>] and (-x=<x> | -y=<y>) are mutually exclusive (specify only one)", ex.getMessage());
         }
         try {
             cmd.parseArgs("-x=1", "-a=1", "file0", "file1", "-x=2", "-x=3");
@@ -1537,13 +1537,13 @@ public class ArgGroupTest {
         //} catch (CommandLine.MaxValuesExceededException ex) {
             //assertEquals("Error: Group: (-x=<x> | -y=<y>) can only be specified 1 times but was matched 3 times.", ex.getMessage());
         } catch (MutuallyExclusiveArgsException ex) {
-            assertEquals("Error: [-a=<a> <f0> <f1>] [-a=<a> <f0> <f1>] and (-x=<x> | -y=<y>) are mutually exclusive (specify only one)", ex.getMessage());
+            assertEquals("Error: [-a=<a> <f0> <f1>] and (-x=<x> | -y=<y>) are mutually exclusive (specify only one)", ex.getMessage());
         }
         try {
             cmd.parseArgs("-x=1", "-a=1", "file0", "file1");
             fail("Expected exception");
         } catch (CommandLine.MutuallyExclusiveArgsException ex) {
-            assertEquals("Error: [-a=<a> <f0> <f1>] [-a=<a> <f0> <f1>] and (-x=<x> | -y=<y>) are mutually exclusive (specify only one)", ex.getMessage());
+            assertEquals("Error: [-a=<a> <f0> <f1>] and (-x=<x> | -y=<y>) are mutually exclusive (specify only one)", ex.getMessage());
         }
 
         ArgGroupSpec topLevelGroup = cmd.getCommandSpec().argGroups().get(0);
@@ -1722,7 +1722,7 @@ public class ArgGroupTest {
             cmd.parseArgs("-a", "1");
             fail("Expected exception");
         } catch (CommandLine.ParameterException ex) {
-            assertEquals("Error: Group: (-a=<a>) (-a=<a>) must be specified 2 times but was matched 1 times", ex.getMessage());
+            assertEquals("Error: Group: (-a=<a>) must be specified 2 times but was matched 1 times", ex.getMessage());
         }
     }
 

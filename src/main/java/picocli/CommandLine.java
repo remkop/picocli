@@ -5469,7 +5469,7 @@ public class CommandLine {
                                 throw DuplicateOptionAnnotationsException.create(name, arg, options.get(name));
                             }
                             if (other != null && other != group) {
-                                throw new DuplicateNameException("An option cannot be in multiple groups but " + name + " is in " + group.synopsis() + " and " + added.get(name).synopsis() + ". Refactor to avoid this. For example, (-a | (-a -b)) can be rewritten as (-a [-b]), and (-a -b | -a -c) can be rewritten as (-a (-b | -c)).");
+                                throw new DuplicateNameException("An option cannot be in multiple groups but " + name + " is in " + group.synopsisUnit() + " and " + added.get(name).synopsisUnit() + ". Refactor to avoid this. For example, (-a | (-a -b)) can be rewritten as (-a [-b]), and (-a -b | -a -c) can be rewritten as (-a (-b | -c)).");
                             }
                         }
                         for (String name : names) { added.put(name, group); }
@@ -5489,7 +5489,7 @@ public class CommandLine {
             }
             private void check(ArgGroupSpec group, Set<ArgGroupSpec> existing) {
                 if (existing.contains(group)) {
-                    throw new InitializationException("The specified group " + group.synopsis() + " has already been added to the " + qualifiedName() + " command.");
+                    throw new InitializationException("The specified group " + group.synopsisUnit() + " has already been added to the " + qualifiedName() + " command.");
                 }
                 for (ArgGroupSpec sub : group.subgroups()) { check(sub, existing); }
             }
@@ -8389,6 +8389,10 @@ public class CommandLine {
             public String synopsis() {
                 return synopsisText(new Help.ColorScheme.Builder(Help.Ansi.OFF).build(), new HashSet<ArgSpec>()).toString();
             }
+            String synopsisUnit() {
+                Help.ColorScheme colorScheme = new Help.ColorScheme.Builder(Help.Ansi.OFF).build();
+                return synopsisUnitText(colorScheme, rawSynopsisUnitText(colorScheme, new HashSet<ArgSpec>())).toString();
+            }
 
             /**
              * Returns the synopsis of this group.
@@ -8398,6 +8402,29 @@ public class CommandLine {
              * @return the synopsis Text
              */
             public Text synopsisText(Help.ColorScheme colorScheme, Set<ArgSpec> outparam_groupArgs) {
+                Text synopsis = rawSynopsisUnitText(colorScheme, outparam_groupArgs);
+                Text result = synopsisUnitText(colorScheme, synopsis);
+                int i = 1;
+                for (; i < multiplicity.min(); i++) {
+                    result = result.concat(" (").concat(synopsis).concat(")");
+                }
+                if (multiplicity().isVariable()) {
+                    result = result.concat("...");
+                } else {
+                    for (; i < multiplicity.max(); i++) {
+                        result = result.concat(" [").concat(synopsis).concat("]");
+                    }
+                }
+                return result;
+            }
+
+            private Text synopsisUnitText(Help.ColorScheme colorScheme, Text synopsis) {
+                String prefix = multiplicity().min() > 0 ? "(" : "[";
+                String postfix = multiplicity().min() > 0 ? ")" : "]";
+                return colorScheme.ansi().text(prefix).concat(synopsis).concat(postfix);
+            }
+
+            private Text rawSynopsisUnitText(Help.ColorScheme colorScheme, Set<ArgSpec> outparam_groupArgs) {
                 String infix = exclusive() ? " | " : " ";
                 Text synopsis = colorScheme.ansi().new Text(0);
                 for (ArgSpec arg : args()) {
@@ -8413,21 +8440,7 @@ public class CommandLine {
                     if (synopsis.length > 0) { synopsis = synopsis.concat(infix); }
                     synopsis = synopsis.concat(subgroup.synopsisText(colorScheme, outparam_groupArgs));
                 }
-                String prefix = multiplicity().min() > 0 ? "(" : "[";
-                String postfix = multiplicity().min() > 0 ? ")" : "]";
-                Text result = colorScheme.ansi().text(prefix).concat(synopsis).concat(postfix);
-                int i = 1;
-                for (; i < multiplicity.min(); i++) {
-                    result = result.concat(" (").concat(synopsis).concat(")");
-                }
-                if (multiplicity().isVariable()) {
-                    result = result.concat("...");
-                } else {
-                    for (; i < multiplicity.max(); i++) {
-                        result = result.concat(" [").concat(synopsis).concat("]");
-                    }
-                }
-                return result;
+                return synopsis;
             }
 
             private Text concatOptionText(Text text, Help.ColorScheme colorScheme, OptionSpec option) {
@@ -10338,7 +10351,7 @@ public class CommandLine {
                     complete(commandLine);
                 } else {
                     if (group != null) {
-                        tracer.info("Adding match to GroupMatchContainer %s (group=%s %s).%n", this, group == null ? "?" : group.id(), group == null ? "ROOT" : group.synopsis());
+                        tracer.info("Adding match to GroupMatchContainer %s (group=%s %s).%n", this, group == null ? "?" : group.id(), group == null ? "ROOT" : group.synopsisUnit());
                     }
                     matches.add(new GroupMatch(this));
                     if (group == null) { return; }
@@ -10473,8 +10486,8 @@ public class CommandLine {
                         int presentCount = 0;
                         boolean haveMissing = true;
                         boolean someButNotAllSpecified = false;
-                        String exclusiveElements = missing.synopsis();
-                        String missingElements = missing.synopsis(); //ArgSpec.describe(missing.requiredArgs());
+                        String exclusiveElements = missing.synopsisUnit();
+                        String missingElements = missing.synopsisUnit(); //ArgSpec.describe(missing.requiredArgs());
                         validationResult = missing.validate(commandLine, presentCount, haveMissing, someButNotAllSpecified, exclusiveElements, missingElements, missingElements);
 //                        } else {
 //                            validationResult = new ParseResult.GroupValidationResult(
@@ -10549,7 +10562,7 @@ public class CommandLine {
                         validationResult = new ParseResult.GroupValidationResult(
                                 matchCount == 0 ? ParseResult.GroupValidationResult.Type.FAILURE_ABSENT : ParseResult.GroupValidationResult.Type.FAILURE_PARTIAL,
                                 new MissingParameterException(commandLine, group.args(),
-                                        "Error: Group: " + group.synopsis() + " must be specified " + group.multiplicity().min + " times but was matched " + matchCount + " times")
+                                        "Error: Group: " + group.synopsisUnit() + " must be specified " + group.multiplicity().min + " times but was matched " + matchCount + " times")
                         );
                     }
                 } else if (matchCount > group.multiplicity().max) {
@@ -10557,7 +10570,7 @@ public class CommandLine {
                         validationResult = new ParseResult.GroupValidationResult(
                                 ParseResult.GroupValidationResult.Type.FAILURE_PRESENT,
                                 new MaxValuesExceededException(commandLine,
-                                        "Error: Group: " + group.synopsis() + " can only be specified " + group.multiplicity().max + " times but was matched " + matchCount + " times.")
+                                        "Error: Group: " + group.synopsisUnit() + " can only be specified " + group.multiplicity().max + " times but was matched " + matchCount + " times.")
                         );
                     }
                 }
@@ -10683,17 +10696,17 @@ public class CommandLine {
                     missingSubgroups.removeAll(matchedSubgroups.keySet());
                     for (ArgGroupSpec missingSubgroup : missingSubgroups) {
                         if (missingElements.length() > 0) { missingElements += " and "; }
-                        missingElements += missingSubgroup.synopsis();
+                        missingElements += missingSubgroup.synopsisUnit();
                     }
 
                     int requiredSubgroupCount = 0;
                     for (ArgGroupSpec subgroup : group().subgroups()) {
                         if (exclusiveElements.length() > 0) { exclusiveElements += " and "; }
-                        exclusiveElements += subgroup.synopsis();
+                        exclusiveElements += subgroup.synopsisUnit();
                         if (subgroup.multiplicity().min > 0) {
                             requiredSubgroupCount++;
                             if (requiredElements.length() > 0) { requiredElements += " and "; }
-                            requiredElements += subgroup.synopsis();
+                            requiredElements += subgroup.synopsisUnit();
                         }
                     }
                     int requiredCount = group().requiredArgs().size() + requiredSubgroupCount;
