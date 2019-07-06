@@ -3,9 +3,10 @@ plugins {
 }
 
 group 'info.picocli'
-version '4.0.0-rc-1-SNAPSHOT'
-
+description 'Picocli Spring Boot AutoConfigure - Enables Spring Dependency Injection in Picocli Commands.'
+version "$projectVersion"
 sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
@@ -13,7 +14,7 @@ repositories {
 
 dependencies {
     compile rootProject
-    compile (group: 'org.springframework.boot', name: 'spring-boot-starter', version: "$springBootVersion" )
-    compileOnly("org.springframework.boot:spring-boot-configuration-processor:$springBootVersion")
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile     "org.springframework.boot:spring-boot-starter:$springBootVersion"
+    compileOnly "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
+    testCompile "junit:junit:$junitVersion"
 }

@@ -29,6 +29,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.0.0-rc-1-fixes"></a> Fixed issues
+- [#752][#658][#658] Add Spring Boot AutoConfiguration module and Spring Boot Starter module. Thanks to [Thibaud Lepretre](https://github.com/kakawait) for the pull request.
 - [#696][#741] Automatically split lines in TextTable. Thanks to [Sualeh Fatehi](https://github.com/sualeh) for the pull request.
 - [#756] API: Make synopsis indent for multi-line synopsis configurable (related to #739).
 - [#761] API: Add `ParseResult.matchedArgs()` method to return all matched arguments in order; change `ParseResult.matchedOptions()` and `ParseResult.matchedPositionals()` to return the full list of matched options and positional parameters, including duplicates if the option or positional parameter was matched multiple times. Thanks to [Michael D. Adams](https://github.com/adamsmd) for the feature request.

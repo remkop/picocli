@@ -3,7 +3,8 @@ plugins {
 }
 
 group 'info.picocli'
-version '4.0.0-rc-1-SNAPSHOT'
+description 'Picocli Spring Boot Starter - Dependency Descriptor to Easily get Started with Picocli and Spring.'
+version "$projectVersion"
 
 sourceCompatibility = 1.8
 
@@ -12,6 +13,7 @@ repositories {
 }
 
 dependencies {
-    compile (group: 'org.springframework.boot', name: 'spring-boot-starter', version: '2.1.6.RELEASE' )
-    compileOnly("org.springframework.boot:spring-boot-configuration-processor:2.1.6.RELEASE")
+    compile     "info.picocli:picocli:$projectVersion"
+    compile     "org.springframework.boot:spring-boot-starter:$springBootVersion"
+    compileOnly "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
 }
