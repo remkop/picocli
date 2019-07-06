@@ -1442,6 +1442,7 @@ public class SubcommandTests {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testParserSplitQuotedStrings_BeforeSubcommandsAdded() {
         @Command
         class TopLevel {}
@@ -1466,6 +1467,7 @@ public class SubcommandTests {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testParserSplitQuotedStrings_AfterSubcommandsAdded() {
         @Command
         class TopLevel {}

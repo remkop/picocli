@@ -2401,7 +2401,7 @@ public class ArgGroupTest {
 
         assertEquals(1, groupMatch.matchedSubgroups().size());
         ArgGroupSpec dsGroup = cmd.getCommandSpec().argGroups().get(0);
-        //@SuppressWarnings("")
+        @SuppressWarnings("unchecked")
         List<Issue742.DataSource> datasources = (List<Issue742.DataSource>) dsGroup.userObject();
         assertEquals(2, datasources.size());
 
