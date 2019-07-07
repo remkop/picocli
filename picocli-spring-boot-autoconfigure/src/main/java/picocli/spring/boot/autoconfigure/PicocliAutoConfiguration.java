@@ -6,6 +6,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import picocli.CommandLine;
+import picocli.CommandLine.IFactory;
+import picocli.spring.PicocliSpringFactory;
 
 /**
  * @author Thibaud Leprêtre
@@ -15,10 +17,8 @@ import picocli.CommandLine;
 public class PicocliAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean(CommandLine.IFactory.class)
-    CommandLine.IFactory springPicocliFactory(ApplicationContext applicationContext) {
-        return new SpringPicocliFactory(applicationContext);
+    @ConditionalOnMissingBean(IFactory.class)
+    public IFactory picocliSpringFactory(ApplicationContext applicationContext) {
+        return new PicocliSpringFactory(applicationContext);
     }
-
-
 }

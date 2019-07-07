@@ -4,30 +4,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.IFactory;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
-import picocli.spring.boot.autoconfigure.SpringPicocliFactory;
+import picocli.spring.PicocliSpringFactory;
 
 import java.util.List;
 import java.util.concurrent.Callable;
 
 @Configuration
-//@Import(SpringPicocliFactory.class)
+@Import(PicocliSpringFactory.class)
 @Command(name = "myapp", mixinStandardHelpOptions = true, subcommands = MyApp.Sub.class)
 public class MyApp implements Callable<Integer>, CommandLineRunner, ExitCodeGenerator {
     private int exitCode;
 
     @Autowired
-    CommandLine.IFactory factory;
+    IFactory factory;
 
     @Option(names = "-x", description = "optional option")
     String x;
@@ -35,14 +33,24 @@ public class MyApp implements Callable<Integer>, CommandLineRunner, ExitCodeGene
     @Parameters(description = "positional params")
     List<String> positionals;
 
+    @Bean
+    ServiceDependency dependency() {
+        return new ServiceDependency();
+    }
+
+    @Bean
+    SomeService someService(ServiceDependency dependency) {
+        return new SomeService(dependency);
+    }
+
     @Override
-    public Integer call() throws Exception {
+    public Integer call() {
         System.out.printf("myapp was called with -x=%s and positionals: %s%n", x, positionals);
         return 23;
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         exitCode = new CommandLine(this, factory).execute(args);
     }
 
@@ -66,7 +74,7 @@ public class MyApp implements Callable<Integer>, CommandLineRunner, ExitCodeGene
         List<String> positionals;
 
         @Override
-        public Integer call() throws Exception {
+        public Integer call() {
             System.out.printf("myapp sub was called with -y=%s and positionals: %s%n", y, positionals);
             throw new RuntimeException("myapp sub failing on purpose");
             //return 33;
@@ -84,7 +92,7 @@ public class MyApp implements Callable<Integer>, CommandLineRunner, ExitCodeGene
         SomeService service;
 
         @Override
-        public Integer call() throws Exception {
+        public Integer call() {
             System.out.printf("myapp sub subsub was called with -z=%s. Service says: '%s'%n", z, service.service());
             throw new RuntimeException("myapp sub subsub failing on purpose");
             //return 43;

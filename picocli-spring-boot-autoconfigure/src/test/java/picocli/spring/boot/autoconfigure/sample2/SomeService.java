@@ -1,4 +1,4 @@
-package picocli.spring.boot.autoconfigure.sample;
+package picocli.spring.boot.autoconfigure.sample2;
 
 public class SomeService {
     private final ServiceDependency dependency;
