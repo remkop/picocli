@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    compile     "info.picocli:picocli:$projectVersion"
+    compile     "info.picocli:picocli-spring-boot-autoconfigure:$projectVersion"
     compile     "org.springframework.boot:spring-boot-starter:$springBootVersion"
     compileOnly "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
 }
