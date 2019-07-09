@@ -3968,6 +3968,7 @@ public class CommandLineTest {
             @Parameters List<String> remainder;
         }
         App app = new App();
+        System.setProperty("picocli.ignore.invalid.split", "");
         CommandLine cmd = new CommandLine(app);
         cmd.getCommandSpec().parser().aritySatisfiedByAttachedOptionParam(true);
         cmd.parseArgs("-xa,b,c", "d", "e");

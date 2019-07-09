@@ -1,7 +1,10 @@
 package picocli;
 
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.rules.TestRule;
 import picocli.CommandLine.MissingParameterException;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.ParserSpec;
@@ -21,6 +24,9 @@ import static org.junit.Assert.*;
 
 
 public class ArgSplitTest {
+    // allows tests to set any kind of properties they like, without having to individually roll them back
+    @Rule
+    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
 
     @Test
     public void testSplitInOptionArray() {
@@ -212,22 +218,53 @@ public class ArgSplitTest {
     }
 
     @Test
-    public void testSplitIgnoredInOptionSingleValueField() {
+    public void testSplitIgnoredInOptionSingleValueFieldIfSystemPropertySet() {
         class Args {
             @Option(names = "-a", split = ",") String value;
         }
+        System.setProperty("picocli.ignore.invalid.split", "");
         Args args = CommandLine.populateCommand(new Args(), "-a=a,b,c");
         assertEquals("a,b,c", args.value);
     }
 
     @Test
-    public void testSplitIgnoredInParameterSingleValueField() {
+    public void testSplitDisallowedInOptionSingleValueField() {
+        class Args {
+            @Option(names = "-a", split = ",") String value;
+        }
+        System.clearProperty("picocli.ignore.invalid.split");
+        try {
+            new CommandLine(new Args());
+            fail("Expected exception");
+        } catch (CommandLine.InitializationException ex) {
+            assertEquals("Only multi-value options and positional parameters should have a split regex (this check can be disabled by setting system property 'picocli.ignore.invalid.split')", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testSplitIgnoredInParameterSingleValueFieldIfSystemPropertySet() {
         class Args {
             @Parameters(split = ",") String value;
         }
+        System.setProperty("picocli.ignore.invalid.split", "");
         Args args = CommandLine.populateCommand(new Args(), "a,b,c");
         assertEquals("a,b,c", args.value);
     }
+
+    @Test
+    public void testSplitDisallowedInParameterSingleValueField() {
+        class Args {
+            @Parameters(split = ",") String value;
+        }
+        System.clearProperty("picocli.ignore.invalid.split");
+        try {
+            new CommandLine(new Args());
+            fail("Expected exception");
+        } catch (CommandLine.InitializationException ex) {
+            assertEquals("Only multi-value options and positional parameters should have a split regex (this check can be disabled by setting system property 'picocli.ignore.invalid.split')", ex.getMessage());
+        }
+    }
+
     @Test
     public void testMapFieldWithSplitRegex() {
         class App {

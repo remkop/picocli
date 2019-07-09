@@ -7048,6 +7048,10 @@ public class CommandLine {
                 if (interactive && !arity.isValidForInteractiveArgs()) {
                     throw new InitializationException("Interactive options and positional parameters are only supported for arity=0 and arity=0..1; not for arity=" + arity);
                 }
+                // https://github.com/remkop/picocli/issues/745
+                if (!empty(splitRegex) && !typeInfo.isMultiValue() && System.getProperty("picocli.ignore.invalid.split") == null) {
+                    throw new InitializationException("Only multi-value options and positional parameters should have a split regex (this check can be disabled by setting system property 'picocli.ignore.invalid.split')");
+                }
             }
             void applyInitialValue(Tracer tracer) {
                 if (hasInitialValue()) {

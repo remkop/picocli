@@ -2,6 +2,7 @@ package picocli.codegen.annotation.processing;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 import picocli.codegen.util.Assert;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -33,7 +34,7 @@ public class AnnotationValidator {
             Arrays.asList(
                     CommandLine.Command.class,
                     Option.class,
-                    CommandLine.Parameters.class,
+                    Parameters.class,
                     CommandLine.Mixin.class,
                     CommandLine.ParentCommand.class,
                     CommandLine.Spec.class,
@@ -52,6 +53,7 @@ public class AnnotationValidator {
 
         Set<? extends Element> optionElements = roundEnv.getElementsAnnotatedWith(Option.class);
         validateOptions(optionElements);
+        validatePositionalParameters(roundEnv.getElementsAnnotatedWith(Parameters.class));
 
         // TODO
         //validateSpecFieldTypeIsCommandSpec(roundEnv);
@@ -99,6 +101,9 @@ public class AnnotationValidator {
                     if (option.usageHelp() && option.versionHelp()) {
                         error(e, null, "An option can be usageHelp or versionHelp, but %s is both.", e.getSimpleName());
                     }
+                    if (option.split().length() > 0 && !new CompileTimeTypeInfo(type).isMultiValue()) {
+                        error(e, null, "%s has a split regex but is a single-value type", e.getSimpleName());
+                    }
                 }
             }, element.getAnnotation(Option.class));
         }
@@ -112,6 +117,38 @@ public class AnnotationValidator {
             if (entry.getValue() > 1) {
                 error(entry.getKey(), null, msg, entry.getKey().getSimpleName(), entry.getValue());
             }
+        }
+    }
+
+    private void validatePositionalParameters(Set<? extends Element> positionalElements) {
+        for (Element element : positionalElements) {
+            element.accept(new SimpleElementVisitor6<Void, Parameters>() {
+                @Override
+                public Void visitVariable(VariableElement e, Parameters option) {
+                    checkOption(e, e.asType(), option);
+                    return null;
+                }
+
+                @Override
+                public Void visitExecutable(ExecutableElement e, Parameters positinal) {
+                    List<? extends TypeMirror> parameterTypes = ((ExecutableType) e.asType()).getParameterTypes();
+                    if (parameterTypes.isEmpty() && e.getReturnType().getKind() == TypeKind.VOID) {
+                        error(e, null, "Only getter or setter methods can be annotated with @Parameters, but %s is neither.",
+                                e.getSimpleName());
+                        return null;
+                    }
+                    boolean isGetter = parameterTypes.isEmpty() && e.getReturnType().getKind() != TypeKind.VOID;
+                    TypeMirror type = isGetter ? e.getReturnType() : parameterTypes.get(0);
+                    checkOption(e, type, positinal);
+                    return null;
+                }
+
+                private void checkOption(Element e, TypeMirror type, Parameters positional) {
+                    if (positional.split().length() > 0 && !new CompileTimeTypeInfo(type).isMultiValue()) {
+                        error(e, null, "%s has a split regex but is a single-value type", e.getSimpleName());
+                    }
+                }
+            }, element.getAnnotation(Parameters.class));
         }
     }
 

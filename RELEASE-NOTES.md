@@ -42,6 +42,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 - [#738] Bugfix: `setTrimQuotes` does not trim quotes from option names. Thanks to [Judd Gaddie](https://github.com/juddgaddie) for raising this.
 - [#758] Bugfix: Duplicate name exception in argument group: better / more concise error message. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 - [#744] Enhancement: Composite Argument Groups: more informative error messages.  Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+- [#745] Enhancement: Picocli should disallow `split` regex for single-value type options. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 - [#748] Enhancement: Provide API to use a custom Layout in usage help message: ensure `Help.createDefaultLayout()` is used internally so that subclasses overriding this method can control the Layout that is used.
 - [#595] Support for quoted arguments containing nested quoted substrings, allowing end-users to control how values are split in parts when a `split` regex is defined.
 - [#751] Build: Make build more portable.
@@ -56,6 +57,10 @@ Most applications should not change the default. The rare application that _does
 `ParseResult.matchedOptions()` and `ParseResult.matchedPositionals()` now return the full list of matched options and positional parameters, including duplicates if the option or positional parameter was matched multiple times.
 Prior to this release, these methods would return a list that did not contain duplicates. 
 Applications interested in the old behavior should use the new `matchedOptionSet()` and `matchedPositionalSet()` methods that return a `Set`.
+
+Picocli now throws an `InitializationException` when a single-value type option or positional parameter has a `split` regex.
+Only multi-value options or positional parameters should have a `split` regex. The runtime check can be disabled by setting system property `picocli.ignore.invalid.split` to any value.
+(The annotation processor also checks this at compile time; this check cannot be disabled.)
 
 # <a name="4.0.0-beta-2"></a> Picocli 4.0.0-beta-2
 The picocli community is pleased to announce picocli 4.0.0-beta-2.

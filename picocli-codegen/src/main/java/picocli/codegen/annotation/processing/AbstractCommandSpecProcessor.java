@@ -151,6 +151,9 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     }
 
     private boolean tryProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+
+        new AnnotationValidator(processingEnv).validateAnnotations(roundEnv);
+
         Context context = new Context();
         buildCommands(roundEnv, context);
         buildMixins(roundEnv, context);
@@ -162,10 +165,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         buildUnmatched(roundEnv, context);
 
         context.connectModel(this);
-
         debugFoundAnnotations(annotations, roundEnv);
-
-        new AnnotationValidator(processingEnv).validateAnnotations(roundEnv);
 
         return handleCommands(context.commands, annotations, roundEnv);
     }

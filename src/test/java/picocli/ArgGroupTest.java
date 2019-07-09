@@ -2218,8 +2218,9 @@ public class ArgGroupTest {
 
     @Test
     // https://github.com/remkop/picocli/issues/745
-    public void testIssue745SplitErrorMessage() {
+    public void testIssue745SplitErrorMessageIfValidationDisabled() {
         CommandWithSplitGroup bean = new CommandWithSplitGroup();
+        System.setProperty("picocli.ignore.invalid.split", "");
         CommandLine cmd = new CommandLine(bean);
 
         // split attribute is honoured if option type is multi-value (array, Collection, Map)
@@ -2241,6 +2242,24 @@ public class ArgGroupTest {
             fail("Expected exception");
         } catch (ParameterException ex) {
             assertEquals("Invalid value for option '-single': '1,2' is not an int", ex.getMessage());
+        }
+    }
+
+    @Test
+    // https://github.com/remkop/picocli/issues/745
+    public void testIssue745SplitDisallowedForSingleValuedOption() {
+        CommandWithSplitGroup bean = new CommandWithSplitGroup();
+        try {
+            new CommandLine(bean);
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("Only multi-value options and positional parameters should have a split regex (this check can be disabled by setting system property 'picocli.ignore.invalid.split')", ex.getMessage());
+        }
+        try {
+            new CommandLine(new CommandWithSplitGroup.DataSource());
+            fail("Expected initialization exception");
+        } catch (InitializationException ex) {
+            assertEquals("Only multi-value options and positional parameters should have a split regex (this check can be disabled by setting system property 'picocli.ignore.invalid.split')", ex.getMessage());
         }
     }
 

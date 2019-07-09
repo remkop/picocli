@@ -160,6 +160,7 @@ public class AbstractCommandSpecProcessorTest {
         assertThat(compilation).failed();
 
         List<String> expected = new ArrayList<String>(Arrays.asList(
+                "invalidNegatableShouldBeBoolean must be a boolean: only boolean options can be negatable.",
                 "FATAL ERROR: picocli.CommandLine$InitializationException: Only boolean options can be negatable, but field int picocli.examples.validation.Invalid2.invalidNegatableShouldBeBoolean is of type int"
         ));
         validateErrorMessages(compilation, expected);
@@ -203,6 +204,26 @@ public class AbstractCommandSpecProcessorTest {
         ));
         List<String> optional = new ArrayList<>(Arrays.asList(
                 "An command can only have one versionHelp option, but Invalid4 has 3."
+        ));
+        validateErrorMessages(compilation, expected, optional);
+    }
+
+    @Test
+    public void testInvalidSplitOnSinglValueOptionOrPositional() {
+        Compilation compilation =
+                javac()
+                        .withProcessors(new CommandSpec2YamlProcessor())
+                        .compile(JavaFileObjects.forResource(
+                                "picocli/examples/validation/InvalidSplit.java"));
+
+        assertThat(compilation).failed();
+
+        List<String> expected = new ArrayList<String>(Arrays.asList(
+                "singleOption has a split regex but is a single-value type",
+                "singlePositional has a split regex but is a single-value type",
+                "FATAL ERROR: picocli.CommandLine$InitializationException: Only multi-value options and positional parameters should have a split regex (this check can be disabled by setting system property 'picocli.ignore.invalid.split')"
+        ));
+        List<String> optional = new ArrayList<>(Arrays.asList(
         ));
         validateErrorMessages(compilation, expected, optional);
     }
