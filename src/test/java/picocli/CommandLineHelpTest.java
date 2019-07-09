@@ -2473,11 +2473,12 @@ public class CommandLineHelpTest {
         Help help = new Help(CommandSpec.create(), new ColorScheme.Builder(Help.Ansi.OFF).build());
         Help.Layout layout = help.createDefaultLayout();
 
+        int[] widthsForNoOptions = {2, 2, 1, 3, 72};
         TextTable expected = TextTable.forDefaultColumns(Help.Ansi.OFF, 80);
         assertEquals(expected.columns().length, layout.table.columns().length);
         for (int i = 0; i < expected.columns().length; i++) {
             assertEquals(expected.columns()[i].indent, layout.table.columns()[i].indent);
-            assertEquals(expected.columns()[i].width, layout.table.columns()[i].width);
+            assertEquals(widthsForNoOptions[i], layout.table.columns()[i].width);
             assertEquals(expected.columns()[i].overflow, layout.table.columns()[i].overflow);
         }
     }

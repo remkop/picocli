@@ -12841,7 +12841,7 @@ public class CommandLine {
                     ? createShortOptionNameComparator()
                     : createOrderComparatorIfNecessary(commandSpec.options());
 
-            return optionList(createLayout(calcLongOptionColumnWidth()), sortOrder, parameterLabelRenderer());
+            return optionList(createDefaultLayout(), sortOrder, parameterLabelRenderer());
         }
 
         private static Comparator<OptionSpec> createOrderComparatorIfNecessary(List<OptionSpec> options) {
@@ -12886,12 +12886,11 @@ public class CommandLine {
             layout.addOptions(options, valueLabelRenderer);
             sb.append(layout.toString());
 
-            int longOptionColumnWidth = calcLongOptionColumnWidth();
             Collections.sort(groups, new SortByOrder<ArgGroupSpec>());
             for (ArgGroupSpec group : groups) {
                 sb.append(heading(ansi(), width(), adjustCJK(), group.heading()));
 
-                Layout groupLayout = createLayout(longOptionColumnWidth);
+                Layout groupLayout = createDefaultLayout();
                 groupLayout.addPositionalParameters(group.positionalParameters(), valueLabelRenderer);
                 List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.options());
                 if (optionSort != null) {
@@ -12921,7 +12920,7 @@ public class CommandLine {
          * @return the section of the usage help message that lists the parameters
          */
         public String parameterList() {
-            return parameterList(createLayout(calcLongOptionColumnWidth()), parameterLabelRenderer());
+            return parameterList(createDefaultLayout(), parameterLabelRenderer());
         }
         /**
          * Returns the section of the usage help message that lists the parameters with their descriptions.
@@ -13155,7 +13154,7 @@ public class CommandLine {
         /** Returns a {@code Layout} instance configured with the user preferences captured in this Help instance.
          * @return a Layout */
         public Layout createDefaultLayout() {
-            return createLayout(Help.defaultOptionsColumnWidth);
+            return createLayout(calcLongOptionColumnWidth());
         }
 
         private Layout createLayout(int longOptionsColumnWidth) {
