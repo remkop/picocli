@@ -9,6 +9,9 @@ import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Range;
 
+import java.util.List;
+import java.util.Map;
+
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertFalse;
 
@@ -241,6 +244,7 @@ public class ModelPositionalParamSpecTest {
                 .splitRegex(";")
                 .description("desc")
                 .descriptionKey("key")
+                .type(Map.class)
                 .auxiliaryTypes(Integer.class, Double.class)
                 .index("1..3");
 
@@ -253,7 +257,8 @@ public class ModelPositionalParamSpecTest {
         assertNotEquals(p1, positional.required(true).splitRegex(",").build());
         assertNotEquals(p1, positional.splitRegex(";").description("xyz").build());
         assertNotEquals(p1, positional.description("desc").descriptionKey("XX").build());
-        assertNotEquals(p1, positional.descriptionKey("key").auxiliaryTypes(Short.class).build());
+        assertNotEquals(p1, positional.descriptionKey("key").type(List.class).build());
+        assertNotEquals(p1, positional.type(Map.class).auxiliaryTypes(Short.class).build());
         assertEquals(p1, positional.auxiliaryTypes(Integer.class, Double.class).build());
 
         assertNotEquals(p1, positional.index("0..*").build());

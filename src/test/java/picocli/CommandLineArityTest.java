@@ -1433,7 +1433,7 @@ public class CommandLineArityTest {
             @Option(names = "-b", arity="2", split=",") String[] b;
             @Option(names = "-c", arity="*", split=",") String[] c;
             @Option(names = "-d") boolean d;
-            @Option(names = "-e", arity="1", split=",") boolean e;
+            @Option(names = "-e", arity="1", split=",") boolean[] e;
             @Unmatched String[] remaining;
         }
         ValSepC val1 = parseCommonsCliCompatible(new ValSepC(), "-a 1 2 3 4".split(" "));
@@ -1458,11 +1458,11 @@ public class CommandLineArityTest {
 
         ValSepC val7 = parseCommonsCliCompatible(new ValSepC(), "-d".split(" "));
         assertTrue(val7.d);
-        assertFalse(val7.e);
+        assertNull(val7.e);
 
         ValSepC val8 = parseCommonsCliCompatible(new ValSepC(), "-e true".split(" "));
         assertFalse(val8.d);
-        assertTrue(val8.e);
+        assertTrue(val8.e[0]);
     }
 
     @Test

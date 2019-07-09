@@ -160,7 +160,7 @@ public class InterpolatedModelTest {
                     split = "${sys:xsplit}",
                     descriptionKey = "${sys:xdescriptionKey}",
                     paramLabel = "${sys:paramLabel}"
-            ) int x;
+            ) int[] x;
         }
 
         System.setProperty("xname1", "-NAME1");
@@ -177,7 +177,7 @@ public class InterpolatedModelTest {
         String expected = String.format("" +
                 "Usage: cmd [-NAME1=PARAMLABEL[;;;PARAMLABEL...] PARAMLABEL[;;;PARAMLABEL...]%n" +
                 "           PARAMLABEL[;;;PARAMLABEL...] PARAMLABEL[;;;PARAMLABEL...]%n" +
-                "           [PARAMLABEL [PARAMLABEL]]]%n" +
+                "           [PARAMLABEL [PARAMLABEL]]]...%n" +
                 "      -NAME1, --NAME2=PARAMLABEL[;;;PARAMLABEL...] PARAMLABEL[;;;PARAMLABEL...]%n" +
                 "        PARAMLABEL[;;;PARAMLABEL...] PARAMLABEL[;;;PARAMLABEL...] [PARAMLABEL%n" +
                 "        [PARAMLABEL]]%n" +

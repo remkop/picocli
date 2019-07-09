@@ -315,7 +315,7 @@ public class ArgSplitTest {
     @Test
     public void testArgSpecSplitValue_SplitsQuotedValuesIfConfigured() {
         ParserSpec parser = new ParserSpec().splitQuotedStrings(true);
-        ArgSpec spec = PositionalParamSpec.builder().splitRegex(",").build();
+        ArgSpec spec = PositionalParamSpec.builder().type(String[].class).splitRegex(",").build();
         String[] actual = spec.splitValue("a,b,\"c,d,e\",f", parser, Range.valueOf("0"), 0);
         assertArrayEquals(new String[]{"a", "b", "\"c", "d" , "e\"", "f"}, actual);
     }
@@ -323,7 +323,7 @@ public class ArgSplitTest {
     @Test
     public void testArgSpecSplitValue_RespectsQuotedValuesByDefault() {
         ParserSpec parser = new ParserSpec();
-        ArgSpec spec = PositionalParamSpec.builder().splitRegex(",").build();
+        ArgSpec spec = PositionalParamSpec.builder().type(String[].class).splitRegex(",").build();
         String[] actual = spec.splitValue("a,b,\"c,d,e\",f", parser, Range.valueOf("0"), 0);
         assertArrayEquals(new String[]{"a", "b", "\"c,d,e\"", "f"}, actual);
     }
@@ -331,7 +331,7 @@ public class ArgSplitTest {
     @Test
     public void testArgSpecSplitValue_MultipleQuotedValues() {
         ParserSpec parser = new ParserSpec();
-        ArgSpec spec = PositionalParamSpec.builder().splitRegex(",").build();
+        ArgSpec spec = PositionalParamSpec.builder().type(String[].class).splitRegex(",").build();
         String[] actual = spec.splitValue("a,b,\"c,d,e\",f,\"xxx,yyy\"", parser, Range.valueOf("0"), 0);
         assertArrayEquals(new String[]{"a", "b", "\"c,d,e\"", "f", "\"xxx,yyy\""}, actual);
     }
@@ -339,7 +339,7 @@ public class ArgSplitTest {
     @Test
     public void testArgSpecSplitValue_MultipleQuotedValues_QuotesTrimmedIfRequested() {
         ParserSpec parser = new ParserSpec().trimQuotes(true);
-        ArgSpec spec = PositionalParamSpec.builder().splitRegex(",").build();
+        ArgSpec spec = PositionalParamSpec.builder().type(String[].class).splitRegex(",").build();
         String[] actual = spec.splitValue("a,b,\"c,d,e\",f,\"xxx,yyy\"", parser, Range.valueOf("0"), 0);
         assertArrayEquals(new String[]{"a", "b", "c,d,e", "f", "xxx,yyy"}, actual);
     }
@@ -558,7 +558,7 @@ public class ArgSplitTest {
 
     @Test
     public void testArgSpecSplitValueDebug() {
-        PositionalParamSpec positional = PositionalParamSpec.builder().splitRegex("b").build();
+        PositionalParamSpec positional = PositionalParamSpec.builder().type(String[].class).splitRegex("b").build();
 
         System.setProperty("picocli.trace", "DEBUG");
         String[] values = positional.splitValue("abc", new CommandLine.Model.ParserSpec().splitQuotedStrings(true), CommandLine.Range.valueOf("1"), 1);
@@ -569,7 +569,7 @@ public class ArgSplitTest {
 
     @Test
     public void testArgSpecSplitWithEscapedBackslashInsideQuote() {
-        PositionalParamSpec positional = PositionalParamSpec.builder().splitRegex(";").build();
+        PositionalParamSpec positional = PositionalParamSpec.builder().type(String[].class).splitRegex(";").build();
 
         System.setProperty("picocli.trace", "DEBUG");
         String value = "\"abc\\\\\\\";def\"";
@@ -581,7 +581,7 @@ public class ArgSplitTest {
 
     @Test
     public void testArgSpecSplitWithEscapedBackslashOutsideQuote() {
-        PositionalParamSpec positional = PositionalParamSpec.builder().splitRegex(";").build();
+        PositionalParamSpec positional = PositionalParamSpec.builder().type(String[].class).splitRegex(";").build();
 
         System.setProperty("picocli.trace", "DEBUG");
         String value = "\\\\\"abc\\\";def\";\\\"a\\";
@@ -593,7 +593,7 @@ public class ArgSplitTest {
 
     @Test
     public void testArgSpecSplitBalancedQuotedValueDebug() {
-        PositionalParamSpec positional = PositionalParamSpec.builder().splitRegex(";").build();
+        PositionalParamSpec positional = PositionalParamSpec.builder().type(String[].class).splitRegex(";").build();
 
         System.setProperty("picocli.trace", "DEBUG");
         String value = "\"abc\\\";def\"";
@@ -605,7 +605,7 @@ public class ArgSplitTest {
 
     @Test
     public void testArgSpecSplitUnbalancedQuotedValueDebug() {
-        PositionalParamSpec positional = PositionalParamSpec.builder().splitRegex(";").build();
+        PositionalParamSpec positional = PositionalParamSpec.builder().type(String[].class).splitRegex(";").build();
 
         System.setProperty("picocli.trace", "DEBUG");
         String value = "\"abc\\\";def";

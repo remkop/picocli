@@ -11,6 +11,8 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Range;
 
 import java.io.StringWriter;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertFalse;
@@ -324,6 +326,7 @@ public class ModelOptionSpecTest {
                 .splitRegex(";")
                 .description("desc")
                 .descriptionKey("key")
+                .type(Map.class)
                 .auxiliaryTypes(Integer.class, Double.class)
                 .help(true)
                 .usageHelp(true)
@@ -339,7 +342,8 @@ public class ModelOptionSpecTest {
         assertNotEquals(p1, option.required(true).splitRegex(",").build());
         assertNotEquals(p1, option.splitRegex(";").description("xyz").build());
         assertNotEquals(p1, option.description("desc").descriptionKey("XX").build());
-        assertNotEquals(p1, option.descriptionKey("key").auxiliaryTypes(Short.class).build());
+        assertNotEquals(p1, option.descriptionKey("key").type(List.class).build());
+        assertNotEquals(p1, option.type(Map.class).auxiliaryTypes(Short.class).build());
         assertEquals(p1, option.auxiliaryTypes(Integer.class, Double.class).build());
 
         assertNotEquals(p1, option.help(false).build());
