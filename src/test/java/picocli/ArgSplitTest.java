@@ -1,5 +1,6 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.MissingParameterException;
 import picocli.CommandLine.Model.ArgSpec;
@@ -279,6 +280,36 @@ public class ArgSplitTest {
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched argument at index 3: '3=c|4=d'", ex.getMessage());
         }
+    }
+
+    @Ignore("https://github.com/remkop/picocli/issues/765")
+    @Test
+    public void testSplitRegexWithEscapedCharacter() {
+        class App {
+            @Option(names = "x", split = "\\|")
+            String[] parts = {};
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [x=<parts>[|<parts>...]]...%n" +
+                "      x=<parts>[|<parts>...]%n" +
+                "%n");
+        String actual = new CommandLine(new App()).getUsageMessage(CommandLine.Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+
+    @Ignore("https://github.com/remkop/picocli/issues/765")
+    @Test
+    public void testSplitRegexWithEscapedBackslash() {
+        class App {
+            @Option(names = "x", split = "\\\\")
+            String[] parts = {};
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [x=<parts>[\\<parts>...]]...%n" +
+                "      x=<parts>[\\<parts>...]%n" +
+                "%n");
+        String actual = new CommandLine(new App()).getUsageMessage(CommandLine.Help.Ansi.OFF);
+        assertEquals(expected, actual);
     }
 
     @Test
