@@ -4097,6 +4097,8 @@ However, picocli lets you make options required if you want to, see <<Required A
 == Dependency Injection
 
 === Guice Example
+image:https://picocli.info/images/225px-Guice.jpg[Guice logo]
+
 The below example shows how to create a <<Custom Factory,custom `IFactory`>> implementation with a Guice `Injector`:
 
 [source,java]
@@ -4146,32 +4148,46 @@ public class InjectionDemo implements Runnable {
 ----
 
 === Spring Boot Example
-A custom factory is not always necessary.
+image:https://picocli.info/images/spring-boot.png[Spring Boot Logo,width=350,height=167]
+
+From 4.0, picocli provides a custom factory in the `picocli-spring-boot-starter` module.
 The below example shows how to use picocli with Spring Boot:
 
 [source,java]
 ----
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
+import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.annotation.Bean;
 import picocli.CommandLine;
+import picocli.CommandLine.IFactory;
 
 @SpringBootApplication
-public class MySpringBootApp implements CommandLineRunner {
+public class MySpringApp implements CommandLineRunner, ExitCodeGenerator {
+    private int exitCode;
 
     @Autowired
-    private MyCommand myCommand;
+    IFactory factory; // auto-configured to inject PicocliSpringFactory
 
-    public static void main(String[] args) {
-        // let Spring instantiate and inject dependencies
-        SpringApplication.run(MySpringBootApp.class, args);
-    }
+    @Autowired
+    MyCommand myCommand; // your @picocli.CommandLine.Command-annotated class
 
     @Override
     public void run(String... args) {
         // let picocli parse command line args and run the business logic
-        new CommandLine(myCommand).execute(args);
+        exitCode = new CommandLine(myCommand, factory).execute(args);
+    }
+
+    @Override
+    public int getExitCode() {
+        return exitCode;
+    }
+
+    public static void main(String[] args) {
+        // let Spring instantiate and inject dependencies
+        System.exit(SpringApplication.exit(SpringApplication.run(MySpringApp.class, args)));
     }
 }
 ----
@@ -4226,6 +4242,8 @@ public class MyCommand implements Callable<Integer> {
 ----
 
 === Micronaut Example
+image:https://micronaut.io/images/micronaut_mini_copy_tm.svg[Micronaut Logo,width=350]
+
 The Micronaut microservices framework provides https://docs.micronaut.io/latest/guide/index.html#picocli[built-in support] for picocli with its `PicocliRunner` class.
 
 [source,java]
@@ -4342,6 +4360,8 @@ open module com.yourorg.yourapp {
 ```
 
 == OSGi Bundle
+
+image:https://www.osgi.org/wp-content/uploads/OSGi-website-header-logo.png[OSGi logo]
 
 From 4.0, the picocli JAR is an OSGi bundle with `Bundle-Name: picocli` and other appropriate metadata in the manifest.
 
