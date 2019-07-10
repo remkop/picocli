@@ -17,7 +17,6 @@ repositories {
 
 dependencies {
     compile     rootProject
-    compileOnly project(':picocli-codegen')
     compile     "org.springframework.boot:spring-boot-starter:$springBootVersion"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
 }

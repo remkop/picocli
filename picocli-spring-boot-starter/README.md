@@ -1,4 +1,4 @@
-<p align="center"><img src="https://picocli.info/images/logo/horizontal-400x150.png" alt="picocli" height="150px"><img src="https://picocli.info/images/spring-and-spring-boot.png" alt="spring and spring boot logos" height="150px"></p>
+<p align="center"><img src="https://picocli.info/images/logo/horizontal-400x150.png" alt="picocli" height="150px"><img src="https://picocli.info/images/spring-boot.png" alt="spring and spring boot logos" height="150px"></p>
 
 
 # Picocli Spring Boot Starter - Enables Spring Dependency Injection in Picocli Commands
@@ -7,10 +7,29 @@ Picocli Spring Boot Starter contains components and documentation for building
 command line applications with Spring and picocli.
 
 
+## Dependency Management
 
+Add the following dependency:
 
+Maven:
+```xml
+<dependency>
+  <groupId>info.picocli</groupId>
+  <artifactId>picocli-spring-boot-starter</artifactId>
+  <version>4.0.0-rc-1-SNAPSHOT</version>
+</dependency>
+```
 
-## Example
+Gradle:
+```
+dependencies {
+    compile "info.picocli:picocli-spring-boot-starter:4.0.0-rc-1-SNAPSHOT"
+}
+```
+
+This will bring in the `info.picocli:picocli` and `org.springframework.boot:spring-boot-starter` dependencies.
+
+## Example Application
 
 ```java
 import org.springframework.beans.factory.annotation.Autowired;
