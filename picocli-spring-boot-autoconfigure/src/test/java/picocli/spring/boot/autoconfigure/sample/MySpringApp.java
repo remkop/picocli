@@ -1,24 +1,24 @@
-package picocli.spring.boot.autoconfigure.sample2;
+package picocli.spring.boot.autoconfigure.sample;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import picocli.CommandLine;
-import picocli.spring.PicocliSpringFactory;
+import picocli.CommandLine.IFactory;
 
 @Configuration
 @ComponentScan
-@Import(PicocliSpringFactory.class)
+@EnableAutoConfiguration
 public class MySpringApp implements CommandLineRunner, ExitCodeGenerator {
     private int exitCode;
 
     @Autowired
-    PicocliSpringFactory factory;
+    IFactory factory;
 
     @Autowired
     MyCommand myCommand;
