@@ -3501,7 +3501,8 @@ public class CommandLine {
 
         /**
          * Specify a regular expression to use to split option parameter values before applying them to the field.
-         * All elements resulting from the split are added to the array or Collection. Ignored for single-value fields.
+         * All elements resulting from the split are added to the array or Collection. Previously ignored for single-value fields,
+         * from picocli 4.0 a {@code split} regex can only be specified on multi-value options and positional parameters.
          * @return a regular expression to split option parameter values or {@code ""} if the value should not be split
          * @see String#split(String)
          */
@@ -3743,7 +3744,8 @@ public class CommandLine {
 
         /**
          * Specify a regular expression to use to split positional parameter values before applying them to the field.
-         * All elements resulting from the split are added to the array or Collection. Ignored for single-value fields.
+         * All elements resulting from the split are added to the array or Collection. Previously ignored for single-value fields,
+         * from picocli 4.0 a {@code split} regex can only be specified on multi-value options and positional parameters.
          * @return a regular expression to split operand values or {@code ""} if the value should not be split
          * @see String#split(String)
          */
