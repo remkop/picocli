@@ -1,4 +1,8 @@
-<p align="center"><img src="https://picocli.info/images/logo/horizontal-400x150.png" alt="picocli" height="150px"> <img src="https://picocli.info/images/1x1.png" width="20"> <img src="https://picocli.info/images/spring-boot.png" alt="spring and spring boot logos" height="150px"></p>
+<p align="center">
+<img src="https://picocli.info/images/spring-boot.png" alt="spring and spring boot logos" height="150px">
+<img src="https://picocli.info/images/1x1.png" width="20">
+<img src="https://picocli.info/images/logo/horizontal-400x150.png" alt="picocli" height="150px">
+</p>
 
 
 # Picocli Spring Boot Starter - Enables Spring Dependency Injection in Picocli Commands
