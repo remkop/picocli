@@ -4,14 +4,12 @@
 # <a name="4.0.0-rc-1"></a> Picocli 4.0.0-rc-1 (UNRELEASED)
 The picocli community is pleased to announce picocli 4.0.0-rc-1.
 
-Bugfixes and improvements.
+This release contains bugfixes and improvements.
 
-Quoted parameter values can now contain nested quoted substrings to give end users fine-grained control over how values are split. See the [user manual](https://picocli.info/#_quoted_values) for details.
+[Thibaud Lepretre](https://github.com/kakawait), the author of [kakawait/picocli-spring-boot-starter](https://github.com/kakawait/picocli-spring-boot-starter) has graciously contributed a pull request with a new `picocli-spring-boot-starter` module. This includes a `PicocliSpringFactory` and auto-configuration and makes it extremely easy to use Spring dependency injection in your picocli command line application.
 
+Also, from this release, support for quoted parameter values has been improved. Quoted parameter values can now contain nested quoted substrings to give end users fine-grained control over how values are split. See the [user manual](https://picocli.info/#_quoted_values) for details.
 
-_Please try this and provide feedback. We can still make changes._
-
-_What do you think of the `@ArgGroup` annotations API? What about the programmatic API? Does it work as expected? Are the input validation error messages correct and clear? Is the documentation clear and complete? Anything you want to change or improve? Any other feedback?_
 
 
 Many thanks to the picocli community for the contributions!
@@ -27,9 +25,111 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.0-rc-1-new"></a> New and Noteworthy
 
+### Spring Support
+
+<img src="https://picocli.info/images/spring-boot.png" alt="spring and spring boot logos" width="350" height="167">
+
+[Thibaud Lepretre](https://github.com/kakawait), the author of [kakawait/picocli-spring-boot-starter](https://github.com/kakawait/picocli-spring-boot-starter) has graciously contributed a pull request to the picocli project with a new `picocli-spring-boot-starter` module. This includes a `PicocliSpringFactory` and auto-configuration and makes it extremely easy to use Spring dependency injection in your picocli command line application.
+
+#### Dependency Management
+
+Add the following dependency:
+
+Maven:
+```xml
+<dependency>
+  <groupId>info.picocli</groupId>
+  <artifactId>picocli-spring-boot-starter</artifactId>
+  <version>4.0.0-rc-1-SNAPSHOT</version>
+</dependency>
+```
+
+Gradle:
+```
+dependencies {
+    compile "info.picocli:picocli-spring-boot-starter:4.0.0-rc-1-SNAPSHOT"
+}
+```
+
+This will bring in the `info.picocli:picocli` and `org.springframework.boot:spring-boot-starter` dependencies.
+
+
+#### Example Application
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.ExitCodeGenerator;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.annotation.Bean;
+import picocli.CommandLine;
+import picocli.CommandLine.IFactory;
+
+@SpringBootApplication
+public class MySpringApp implements CommandLineRunner, ExitCodeGenerator {
+    private int exitCode;
+
+    @Autowired
+    IFactory factory; // auto-configured to inject PicocliSpringFactory
+
+    @Autowired
+    MyCommand myCommand; // your @picocli.CommandLine.Command-annotated class
+
+    @Override
+    public void run(String... args) {
+        // let picocli parse command line args and run the business logic
+        exitCode = new CommandLine(myCommand, factory).execute(args);
+    }
+
+    @Override
+    public int getExitCode() {
+        return exitCode;
+    }
+
+    public static void main(String[] args) {
+        // let Spring instantiate and inject dependencies
+        System.exit(SpringApplication.exit(SpringApplication.run(MySpringApp.class, args)));
+    }
+}
+```
+
+When your command is annotated with `@org.springframework.stereotype.Component` Spring can autodetect it for dependency injection.
+The business logic of your command looks like any other picocli command with options and parameters.
+
+```java
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import java.util.concurrent.Callable;
+
+@Component
+@Command(name = "myCommand")
+public class MyCommand implements Callable<Integer> {
+
+    @Autowired
+    private SomeService someService;
+
+    // Prevent "Unknown option" error when users use
+    // the Spring Boot parameter 'spring.config.location' to specify
+    // an alternative location for the application.properties file.
+    @Option(names = "--spring.config.location", hidden = true)
+    private String springConfigLocation;
+
+    @Option(names = { "-x", "--option" }, description = "example option")
+    private boolean flag;
+
+    public Integer call() throws Exception {
+        // business logic here
+        return 0;
+    }
+}
+```
+
 
 ## <a name="4.0.0-rc-1-fixes"></a> Fixed issues
-- [#752][#658][#658] Add Spring Boot AutoConfiguration module and Spring Boot Starter module. Thanks to [Thibaud Lepretre](https://github.com/kakawait) for the pull request.
+- [#752][#658][#496] Add `picocli-spring-boot-starter` module including a `PicocliSpringFactory` and auto-configuration. Thanks to [Thibaud Lepretre](https://github.com/kakawait) for the pull request.
 - [#696][#741] Automatically split lines in TextTable. Thanks to [Sualeh Fatehi](https://github.com/sualeh) for the pull request.
 - [#756] API: Make synopsis indent for multi-line synopsis configurable (related to #739).
 - [#761] API: Add `ParseResult.matchedArgs()` method to return all matched arguments in order; change `ParseResult.matchedOptions()` and `ParseResult.matchedPositionals()` to return the full list of matched options and positional parameters, including duplicates if the option or positional parameter was matched multiple times. Thanks to [Michael D. Adams](https://github.com/adamsmd) for the feature request.
