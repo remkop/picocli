@@ -6,19 +6,20 @@ plugins {
 }
 
 group 'info.picocli'
-description 'Picocli Spring Boot Starter - Dependency Descriptor to Easily get Started with Picocli and Spring.'
+description 'Picocli Spring Boot Starter - Enables Spring Dependency Injection and Spring Boot AutoConfiguration in Picocli Commands.'
 version "$projectVersion"
-
 sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile     "info.picocli:picocli-spring-boot-autoconfigure:$projectVersion"
+    compile     rootProject
+    compileOnly project(':picocli-codegen')
     compile     "org.springframework.boot:spring-boot-starter:$springBootVersion"
-    compileOnly "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
 }
 
 jar {
@@ -29,7 +30,7 @@ jar {
                     'Implementation-Title'  : 'Picocli Spring Boot Starter',
                     'Implementation-Vendor' : 'Remko Popma',
                     'Implementation-Version': version,
-                    'Automatic-Module-Name' : 'info.picocli.spring.boot.starter'
+                    'Automatic-Module-Name' : 'info.picocli.spring'
     }
 }
 
@@ -88,7 +89,7 @@ publishing {
                 root.appendNode('name',          bintrayPackage)
                 root.appendNode('description',   description)
                 root.appendNode('url',           'http://picocli.info')
-                root.appendNode('inceptionYear', '2018')
+                root.appendNode('inceptionYear', '2019')
                 root.children().last() + pomConfig
             }
         }

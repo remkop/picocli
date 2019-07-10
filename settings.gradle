@@ -7,9 +7,8 @@ include 'picocli-codegen'
 
 if (org.gradle.api.JavaVersion.current().isJava8Compatible()) {
     include 'picocli-annotation-processing-tests'
+    include 'picocli-spring-boot-starter'
 } else {
     println("Excluding module picocli-annotation-processing-tests from the build: they require Java 8 but we have Java version ${org.gradle.api.JavaVersion.current()}")
 }
-include 'picocli-spring-boot-starter'
-include 'picocli-spring-boot-autoconfigure'
 
