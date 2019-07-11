@@ -7,7 +7,7 @@
       <x>30</x>
       <y>70</y>
       <w>170</w>
-      <h>320</h>
+      <h>350</h>
     </coordinates>
     <panel_attributes>lt=.
 bg=#99FF99
@@ -66,7 +66,7 @@ group=1</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>50</x>
-      <y>220</y>
+      <y>260</y>
       <w>130</w>
       <h>30</h>
     </coordinates>
@@ -81,7 +81,7 @@ group=1</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>50</x>
-      <y>260</y>
+      <y>300</y>
       <w>130</w>
       <h>30</h>
     </coordinates>
@@ -96,7 +96,7 @@ group=1</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>50</x>
-      <y>300</y>
+      <y>340</y>
       <w>130</w>
       <h>30</h>
     </coordinates>
@@ -111,7 +111,7 @@ group=1</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>50</x>
-      <y>340</y>
+      <y>380</y>
       <w>130</w>
       <h>30</h>
     </coordinates>
@@ -127,7 +127,7 @@ group=1</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>570</x>
-      <y>510</y>
+      <y>670</y>
       <w>190</w>
       <h>30</h>
     </coordinates>
@@ -141,7 +141,7 @@ lt=.
     <id>UMLClass</id>
     <coordinates>
       <x>360</x>
-      <y>500</y>
+      <y>600</y>
       <w>130</w>
       <h>40</h>
     </coordinates>
@@ -154,12 +154,12 @@ DefaultFactory</panel_attributes>
     <id>Relation</id>
     <coordinates>
       <x>480</x>
-      <y>510</y>
+      <y>620</y>
       <w>110</w>
-      <h>30</h>
+      <h>80</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;.</panel_attributes>
-    <additional_attributes>90.0;10.0;10.0;10.0</additional_attributes>
+    <additional_attributes>90.0;60.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
@@ -167,7 +167,7 @@ DefaultFactory</panel_attributes>
       <x>550</x>
       <y>70</y>
       <w>230</w>
-      <h>520</h>
+      <h>680</h>
     </coordinates>
     <panel_attributes>&lt;&lt;api&gt;&gt;
 bg=#99FF99
@@ -178,7 +178,7 @@ lt=.</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>570</x>
-      <y>550</y>
+      <y>710</y>
       <w>190</w>
       <h>30</h>
     </coordinates>
@@ -193,7 +193,7 @@ Range</panel_attributes>
       <x>0</x>
       <y>0</y>
       <w>810</w>
-      <h>620</h>
+      <h>760</h>
     </coordinates>
     <panel_attributes>&lt;&lt;facade&gt;&gt;
 CommandLine</panel_attributes>
@@ -205,12 +205,11 @@ CommandLine</panel_attributes>
       <x>570</x>
       <y>100</y>
       <w>190</w>
-      <h>400</h>
+      <h>560</h>
     </coordinates>
     <panel_attributes>bg=white
 layer=3
-Model
-group=3</panel_attributes>
+Model</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -223,8 +222,7 @@ group=3</panel_attributes>
     </coordinates>
     <panel_attributes>bg=white
 layer=4
-CommandSpec
-group=3</panel_attributes>
+CommandSpec</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -237,8 +235,7 @@ group=3</panel_attributes>
     </coordinates>
     <panel_attributes>bg=white
 layer=4
-ArgSpec
-group=3</panel_attributes>
+ArgSpec</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -252,8 +249,7 @@ group=3</panel_attributes>
     <panel_attributes>bg=white
 layer=4
 Option
-Spec
-group=3</panel_attributes>
+Spec</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -279,8 +275,7 @@ group=3</panel_attributes>
 layer=4
 Positional
 Param
-Spec
-group=3</panel_attributes>
+Spec</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -298,28 +293,13 @@ group=3</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>580</x>
-      <y>300</y>
-      <w>160</w>
-      <h>30</h>
-    </coordinates>
-    <panel_attributes>bg=white
-layer=4
-UsageMessageSpec
-group=3</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>580</x>
       <y>340</y>
       <w>160</w>
       <h>30</h>
     </coordinates>
     <panel_attributes>bg=white
 layer=4
-ParserSpec
-group=3</panel_attributes>
+UsageMessageSpec</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -332,8 +312,7 @@ group=3</panel_attributes>
     </coordinates>
     <panel_attributes>bg=white
 layer=4
-UnmatchedArgsBinding
-group=3</panel_attributes>
+ParserSpec</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -347,8 +326,7 @@ group=3</panel_attributes>
     <panel_attributes>bg=white
 layer=4
 lt=.
-/IGetter/
-group=3</panel_attributes>
+/IGetter/</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -362,8 +340,7 @@ group=3</panel_attributes>
     <panel_attributes>bg=white
 layer=4
 lt=.
-/ISetter/
-group=3</panel_attributes>
+/ISetter/</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -376,8 +353,7 @@ group=3</panel_attributes>
     </coordinates>
     <panel_attributes>&lt;&lt;internal&gt;&gt;
 Model
-bg=light_gray
-group=2</panel_attributes>
+bg=light_gray</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -390,8 +366,7 @@ group=2</panel_attributes>
     </coordinates>
     <panel_attributes>bg=white
 layer=3
-FieldBinding
-group=2</panel_attributes>
+FieldBinding</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -404,8 +379,7 @@ group=2</panel_attributes>
     </coordinates>
     <panel_attributes>bg=white
 layer=3
-MethodBinding
-group=2</panel_attributes>
+MethodBinding</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -418,8 +392,7 @@ group=2</panel_attributes>
     </coordinates>
     <panel_attributes>bg=white
 layer=3
-ObjectBinding
-group=2</panel_attributes>
+ObjectBinding</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -432,22 +405,7 @@ group=2</panel_attributes>
     </coordinates>
     <panel_attributes>bg=white
 layer=3
-CommandReflection
-group=2</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>290</x>
-      <y>160</y>
-      <w>160</w>
-      <h>30</h>
-    </coordinates>
-    <panel_attributes>bg=white
-layer=3
-ArgsReflection
-group=2</panel_attributes>
+CommandReflection</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -458,8 +416,8 @@ group=2</panel_attributes>
       <w>110</w>
       <h>40</h>
     </coordinates>
-    <panel_attributes>picocli 3.6.0
-2018-09-12
+    <panel_attributes>picocli 4.0
+2019-07-12
 bg=#FFFF66</panel_attributes>
     <additional_attributes/>
   </element>
@@ -544,32 +502,8 @@ bg=#FFFF66</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>190</x>
-      <y>150</y>
-      <w>120</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-
-&lt;&lt;read&gt;&gt;</panel_attributes>
-    <additional_attributes>10.0;20.0;100.0;20.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
       <x>440</x>
       <y>120</y>
-      <w>160</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-
-&lt;&lt;build&gt;&gt;</panel_attributes>
-    <additional_attributes>140.0;20.0;10.0;20.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>440</x>
-      <y>160</y>
       <w>160</w>
       <h>40</h>
     </coordinates>
@@ -581,7 +515,7 @@ bg=#FFFF66</panel_attributes>
     <id>UMLNote</id>
     <coordinates>
       <x>20</x>
-      <y>430</y>
+      <y>490</y>
       <w>220</w>
       <h>80</h>
     </coordinates>
@@ -636,18 +570,18 @@ bg=#FFFF66</panel_attributes>
     <id>Relation</id>
     <coordinates>
       <x>120</x>
-      <y>380</y>
+      <y>410</y>
       <w>60</w>
-      <h>70</h>
+      <h>100</h>
     </coordinates>
     <panel_attributes>lt=.</panel_attributes>
-    <additional_attributes>10.0;50.0;40.0;10.0</additional_attributes>
+    <additional_attributes>10.0;80.0;40.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLNote</id>
     <coordinates>
       <x>270</x>
-      <y>550</y>
+      <y>700</y>
       <w>220</w>
       <h>50</h>
     </coordinates>
@@ -660,11 +594,117 @@ bg=#FFFF66</panel_attributes>
     <id>Relation</id>
     <coordinates>
       <x>480</x>
-      <y>520</y>
+      <y>690</y>
       <w>110</w>
-      <h>70</h>
+      <h>50</h>
     </coordinates>
     <panel_attributes>lt=.</panel_attributes>
-    <additional_attributes>10.0;50.0;90.0;10.0</additional_attributes>
+    <additional_attributes>10.0;30.0;90.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>580</x>
+      <y>300</y>
+      <w>160</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>bg=white
+layer=4
+ArgGroupSpec</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>50</x>
+      <y>220</y>
+      <w>130</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>bg=white
+layer=3
+/@ArgGroup/
+
+group=1</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>580</x>
+      <y>580</y>
+      <w>160</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>bg=white
+layer=4
+lt=.
+/IAnnotatedElement/</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>580</x>
+      <y>620</y>
+      <w>160</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>bg=white
+layer=4
+lt=.
+/ITypeInfo/</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>580</x>
+      <y>540</y>
+      <w>160</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>bg=white
+layer=4
+Messages</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>580</x>
+      <y>500</y>
+      <w>160</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>bg=white
+layer=4
+lt=.
+/IScope/</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>350</x>
+      <y>650</y>
+      <w>140</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>bg=#EEEEEE
+PicocliSpringFactory</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>480</x>
+      <y>660</y>
+      <w>110</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>90.0;20.0;10.0;10.0</additional_attributes>
   </element>
 </diagram>
