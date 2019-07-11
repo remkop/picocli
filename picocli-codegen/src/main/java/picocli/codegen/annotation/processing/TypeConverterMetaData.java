@@ -1,7 +1,6 @@
-package picocli.codegen.annotation.processing.internal;
+package picocli.codegen.annotation.processing;
 
 import picocli.CommandLine.ITypeConverter;
-import picocli.codegen.annotation.processing.ITypeMetaData;
 import picocli.codegen.util.Assert;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -21,7 +20,7 @@ import java.util.Map;
  *
  * @since 4.0
  */
-public class TypeConverterMetaData implements ITypeConverter, ITypeMetaData {
+class TypeConverterMetaData implements ITypeConverter, ITypeMetaData {
 
     private final TypeMirror typeMirror;
 

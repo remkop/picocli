@@ -1,10 +1,8 @@
-package picocli.codegen;
+package picocli.annotation.processing.tests;
 
 import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.Model.CommandSpec;
-import picocli.codegen.aot.graalvm.Example;
-import picocli.codegen.util.Resources;
 
 import static org.junit.Assert.*;
 

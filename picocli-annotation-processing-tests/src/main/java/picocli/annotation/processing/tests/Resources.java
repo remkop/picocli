@@ -1,4 +1,4 @@
-package picocli.codegen.util;
+package picocli.annotation.processing.tests;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

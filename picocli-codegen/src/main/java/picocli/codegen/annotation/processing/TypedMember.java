@@ -1,7 +1,6 @@
 package picocli.codegen.annotation.processing;
 
 import picocli.CommandLine;
-import picocli.codegen.annotation.processing.internal.GetterSetterMetaData;
 import picocli.codegen.util.Assert;
 
 import javax.lang.model.element.Element;
@@ -38,8 +37,8 @@ class TypedMember implements CommandLine.Model.IAnnotatedElement {
         hasInitialValue = variable.getConstantValue() != null;
         typeInfo = new CompileTimeTypeInfo(variable.asType());
         this.position = position;
-        getter = new GetterSetterMetaData(element);
-        setter = (GetterSetterMetaData) getter;
+        getter = new AnnotatedElementHolder(element);
+        setter = (AnnotatedElementHolder) getter;
     }
 
     TypedMember(ExecutableElement method, AbstractCommandSpecProcessor processor) {
@@ -74,8 +73,8 @@ class TypedMember implements CommandLine.Model.IAnnotatedElement {
             //CommandLine.Model.MethodBinding binding = new CommandLine.Model.MethodBinding(scope, method);
             //getter = binding; setter = binding;
         }
-        getter = new GetterSetterMetaData(element);
-        setter = (GetterSetterMetaData) getter;
+        getter = new AnnotatedElementHolder(element);
+        setter = (AnnotatedElementHolder) getter;
     }
 
     public Object userObject()      { return element; }

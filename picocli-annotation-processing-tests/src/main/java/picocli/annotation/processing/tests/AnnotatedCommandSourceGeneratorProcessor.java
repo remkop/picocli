@@ -1,7 +1,7 @@
-package picocli.codegen.annotation.processing;
+package picocli.annotation.processing.tests;
 
 import picocli.CommandLine.Model.CommandSpec;
-import picocli.codegen.AnnotatedCommandSourceGenerator;
+import picocli.codegen.annotation.processing.AbstractCommandSpecProcessor;
 
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
@@ -20,9 +20,9 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import static javax.tools.StandardLocation.SOURCE_OUTPUT;
-import static picocli.codegen.AnnotatedCommandSourceGenerator.isBuiltInMixin;
-import static picocli.codegen.AnnotatedCommandSourceGenerator.isBuiltInSubcommand;
-import static picocli.codegen.AnnotatedCommandSourceGenerator.isNestedCommand;
+import static picocli.annotation.processing.tests.AnnotatedCommandSourceGenerator.isBuiltInMixin;
+import static picocli.annotation.processing.tests.AnnotatedCommandSourceGenerator.isBuiltInSubcommand;
+import static picocli.annotation.processing.tests.AnnotatedCommandSourceGenerator.isNestedCommand;
 
 public class AnnotatedCommandSourceGeneratorProcessor extends AbstractCommandSpecProcessor {
     private static Logger logger = Logger.getLogger(AnnotatedCommandSourceGeneratorProcessor.class.getName());

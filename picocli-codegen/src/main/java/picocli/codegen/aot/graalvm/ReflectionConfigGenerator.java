@@ -14,7 +14,7 @@ import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Model.UnmatchedArgsBinding;
 import picocli.CommandLine.Parameters;
 import picocli.codegen.annotation.processing.ITypeMetaData;
-import picocli.codegen.annotation.processing.internal.GetterSetterMetaData;
+import picocli.codegen.annotation.processing.AnnotatedElementHolder;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -378,8 +378,8 @@ public class ReflectionConfigGenerator {
             if (getter == null) {
                 return;
             }
-            if (getter instanceof GetterSetterMetaData) {
-                GetterSetterMetaData metaData = (GetterSetterMetaData) getter;
+            if (getter instanceof AnnotatedElementHolder) {
+                AnnotatedElementHolder metaData = (AnnotatedElementHolder) getter;
                 visitElement(metaData.getElement());
             } else if (REFLECTED_FIELD_BINDING_CLASS.equals(getter.getClass().getName())) {
                 visitFieldBinding(getter);
@@ -394,8 +394,8 @@ public class ReflectionConfigGenerator {
             if (setter == null) {
                 return;
             }
-            if (setter instanceof GetterSetterMetaData) {
-                GetterSetterMetaData metaData = (GetterSetterMetaData) setter;
+            if (setter instanceof AnnotatedElementHolder) {
+                AnnotatedElementHolder metaData = (AnnotatedElementHolder) setter;
                 visitElement(metaData.getElement());
             } else if (REFLECTED_FIELD_BINDING_CLASS.equals(setter.getClass().getName())) {
                 visitFieldBinding(setter);

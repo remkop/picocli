@@ -1,4 +1,4 @@
-package picocli.codegen;
+package picocli.annotation.processing.tests;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -17,7 +17,6 @@ import picocli.CommandLine.Spec;
 import picocli.CommandLine.Unmatched;
 import picocli.codegen.annotation.processing.ITypeMetaData;
 import picocli.codegen.util.Assert;
-import picocli.codegen.util.TypeImporter;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;

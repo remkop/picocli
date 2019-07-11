@@ -1,11 +1,10 @@
-package picocli.codegen.annotation.processing.internal;
+package picocli.codegen.annotation.processing;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IDefaultValueProvider;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
-import picocli.codegen.annotation.processing.ITypeMetaData;
 import picocli.codegen.util.Assert;
 
 import javax.lang.model.element.TypeElement;
@@ -19,7 +18,7 @@ import javax.lang.model.type.TypeMirror;
  *
  * @since 4.0
  */
-public class DefaultValueProviderMetaData implements IDefaultValueProvider, ITypeMetaData {
+class DefaultValueProviderMetaData implements IDefaultValueProvider, ITypeMetaData {
 
     private final TypeMirror typeMirror;
 

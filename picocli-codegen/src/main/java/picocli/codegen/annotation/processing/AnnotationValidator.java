@@ -27,7 +27,7 @@ import java.util.Set;
 
 import static java.lang.String.format;
 
-public class AnnotationValidator {
+class AnnotationValidator {
 
     @SuppressWarnings("unchecked")
     private static final List<Class<? extends Annotation>> ALL = Collections.unmodifiableList(

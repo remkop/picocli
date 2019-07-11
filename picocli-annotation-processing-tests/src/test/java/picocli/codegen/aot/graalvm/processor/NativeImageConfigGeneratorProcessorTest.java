@@ -14,7 +14,7 @@ import static picocli.codegen.aot.graalvm.processor.NativeImageConfigGeneratorPr
 import static picocli.codegen.aot.graalvm.processor.ProxyConfigGen.OPTION_INTERFACE_CLASSES;
 import static picocli.codegen.aot.graalvm.processor.ResourceConfigGen.OPTION_BUNDLES;
 import static picocli.codegen.aot.graalvm.processor.ResourceConfigGen.OPTION_RESOURCE_REGEX;
-import static picocli.codegen.util.Resources.slurp;
+import static picocli.annotation.processing.tests.Resources.slurp;
 
 public class NativeImageConfigGeneratorProcessorTest {
 

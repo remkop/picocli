@@ -16,11 +16,6 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.Spec;
 import picocli.CommandLine.Unmatched;
-import picocli.codegen.annotation.processing.internal.CompletionCandidatesMetaData;
-import picocli.codegen.annotation.processing.internal.DefaultValueProviderMetaData;
-import picocli.codegen.annotation.processing.internal.GetterSetterMetaData;
-import picocli.codegen.annotation.processing.internal.TypeConverterMetaData;
-import picocli.codegen.annotation.processing.internal.VersionProviderMetaData;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -75,7 +70,7 @@ import static javax.lang.model.element.ElementKind.ENUM;
  * Similarly, {@code ArgSpec} objects constructed by the annotation processor will have a
  * {@link picocli.CommandLine.Model.IGetter} and {@link picocli.CommandLine.Model.ISetter}
  * implementation that is different from the one used at runtime and cannot be invoked directly:
- * the annotation processor will assign an {@link GetterSetterMetaData}
+ * the annotation processor will assign an {@link AnnotatedElementHolder}
  * implementation that gives subclass annotation processors access to the annotated element.
  * </p><p>
  * {@code CommandSpec} objects constructed by the annotation processor will have an

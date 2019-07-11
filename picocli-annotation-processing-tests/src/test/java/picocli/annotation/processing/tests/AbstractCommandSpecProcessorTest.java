@@ -17,8 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,8 +25,8 @@ import static com.google.testing.compile.Compiler.javac;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.*;
-import static picocli.codegen.util.Resources.slurp;
-import static picocli.codegen.util.Resources.slurpAll;
+import static picocli.annotation.processing.tests.Resources.slurp;
+import static picocli.annotation.processing.tests.Resources.slurpAll;
 
 public class AbstractCommandSpecProcessorTest {
     static Locale old;
@@ -367,16 +365,16 @@ public class AbstractCommandSpecProcessorTest {
         String actual = actualLine.trim().substring(1);
         if (expect.startsWith("etter: picocli.CommandLine.Model.FieldBinding")) {
             Assert.assertThat(actual, startsWith(
-                    "etter: picocli.codegen.annotation.processing.internal.GetterSetterMetaData(FIELD"));
+                    "etter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD"));
         } else if (expect.startsWith("etter: picocli.CommandLine.Model.MethodBinding")) {
             Assert.assertThat(actual, startsWith(
-                    "etter: picocli.codegen.annotation.processing.internal.GetterSetterMetaData(METHOD"));
+                    "etter: picocli.codegen.annotation.processing.AnnotatedElementHolder(METHOD"));
         } else if (expect.startsWith("etter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding")) {
             Assert.assertThat(actual, startsWith(
-                    "etter: picocli.codegen.annotation.processing.internal.GetterSetterMetaData(METHOD"));
+                    "etter: picocli.codegen.annotation.processing.AnnotatedElementHolder(METHOD"));
         } else if (expect.startsWith("etter: picocli.CommandLine.Model.ObjectBinding")) {
             Assert.assertThat(actual, startsWith(
-                    "etter: picocli.codegen.annotation.processing.internal.GetterSetterMetaData(PARAMETER"));
+                    "etter: picocli.codegen.annotation.processing.AnnotatedElementHolder(PARAMETER"));
         } else {
             assertEquals("Not implemented yet", expect, actual);
         }

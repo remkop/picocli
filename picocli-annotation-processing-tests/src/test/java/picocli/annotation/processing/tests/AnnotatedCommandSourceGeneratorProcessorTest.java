@@ -4,7 +4,6 @@ import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
 import org.junit.Ignore;
 import org.junit.Test;
-import picocli.codegen.annotation.processing.AnnotatedCommandSourceGeneratorProcessor;
 
 import javax.tools.StandardLocation;
 

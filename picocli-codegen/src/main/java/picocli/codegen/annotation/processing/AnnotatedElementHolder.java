@@ -1,4 +1,4 @@
-package picocli.codegen.annotation.processing.internal;
+package picocli.codegen.annotation.processing;
 
 import picocli.CommandLine.Model.IGetter;
 import picocli.CommandLine.Model.ISetter;
@@ -12,15 +12,15 @@ import javax.lang.model.element.Element;
  *
  * @since 4.0
  */
-public class GetterSetterMetaData implements IGetter, ISetter {
+public class AnnotatedElementHolder implements IGetter, ISetter {
 
     private final Element element;
 
     /**
-     * Constructs a new {@code GetterSetterMetaData} with the specified element
+     * Constructs a new {@code AnnotatedElementHolder} with the specified element
      * @param element the program element annotated with {@code @Option} or {@code @Parameters}
      */
-    public GetterSetterMetaData(Element element) {
+    public AnnotatedElementHolder(Element element) {
         this.element = element;
     }
 

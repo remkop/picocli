@@ -1,10 +1,10 @@
-package picocli.codegen.annotation.processing.internal;
+package picocli.codegen.annotation.processing;
 
 import picocli.CommandLine;
 
 import javax.lang.model.type.DeclaredType;
 
-public final class TypeUtil {
+final class TypeUtil {
     private TypeUtil() {}
 
     static boolean isOption(DeclaredType annotationType) {
