@@ -160,7 +160,7 @@ public class ModelOptionSpecTest {
     @Test()
     public void testOptionSpecRequiresNonNullNameArray() {
         try {
-            OptionSpec.builder(null).build();
+            OptionSpec.builder((String[]) null).build();
             fail("Expected exception");
         } catch (InitializationException ex) {
             assertEquals("OptionSpec names cannot be null. Specify at least one option name.", ex.getMessage());

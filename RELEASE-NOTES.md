@@ -130,21 +130,22 @@ public class MyCommand implements Callable<Integer> {
 
 ## <a name="4.0.0-rc-1-fixes"></a> Fixed issues
 - [#752][#658][#496] Add `picocli-spring-boot-starter` module including a `PicocliSpringFactory` and auto-configuration. Thanks to [Thibaud Lepretre](https://github.com/kakawait) for the pull request.
-- [#696][#741] Automatically split lines in TextTable. Thanks to [Sualeh Fatehi](https://github.com/sualeh) for the pull request.
+- [#736] API: Allow removal of `ArgSpec` from `CommandSpec`. Thanks to [AkosCz](https://github.com/akoscz) for the feature request.
 - [#756] API: Make synopsis indent for multi-line synopsis configurable (related to #739).
 - [#761] API: Add `ParseResult.matchedArgs()` method to return all matched arguments in order; change `ParseResult.matchedOptions()` and `ParseResult.matchedPositionals()` to return the full list of matched options and positional parameters, including duplicates if the option or positional parameter was matched multiple times. Thanks to [Michael D. Adams](https://github.com/adamsmd) for the feature request.
 - [#760] API: Deprecate `CommandLine.setSplitQuotedStrings`: the vast majority of applications want to `split` while respecting quotes.
-- [#754] Allow boolean options to get value from fallback instead of defaultProvider. Thanks to [Michael D. Adams](https://github.com/adamsmd) for the feature request.
+- [#754] API/Enhancement: Allow boolean options to get value from fallback instead of defaultProvider. Thanks to [Michael D. Adams](https://github.com/adamsmd) for the feature request.
+- [#696][#741] Enhancement: Automatically split lines in TextTable. Thanks to [Sualeh Fatehi](https://github.com/sualeh) for the pull request.
+- [#744] Enhancement: Composite Argument Groups: more informative error messages.  Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+- [#745] Enhancement: Picocli should disallow `split` regex for single-value type options. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+- [#748] Enhancement: Provide API to use a custom Layout in usage help message: ensure `Help.createDefaultLayout()` is used internally so that subclasses overriding this method can control the Layout that is used.
+- [#595] Enhancement: Support for quoted arguments containing nested quoted substrings, allowing end-users to control how values are split in parts when a `split` regex is defined.
 - [#739] Bugfix: infinite loop or exception when command name plus synopsis heading length equals or exceeds usage help message width. Thanks to [Arturo Alonso](https://github.com/thefang12) for raising this.
 - [#746] Bugfix: Apply default values to options and positional parameters in argument groups. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 - [#742] Bugfix: Default values prevent correct parsing in argument groups. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 - [#759] Bugfix: Correct tracing when custom end-of-option delimiter is matched on the command line.
 - [#738] Bugfix: `setTrimQuotes` does not trim quotes from option names. Thanks to [Judd Gaddie](https://github.com/juddgaddie) for raising this.
 - [#758] Bugfix: Duplicate name exception in argument group: better / more concise error message. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
-- [#744] Enhancement: Composite Argument Groups: more informative error messages.  Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
-- [#745] Enhancement: Picocli should disallow `split` regex for single-value type options. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
-- [#748] Enhancement: Provide API to use a custom Layout in usage help message: ensure `Help.createDefaultLayout()` is used internally so that subclasses overriding this method can control the Layout that is used.
-- [#595] Support for quoted arguments containing nested quoted substrings, allowing end-users to control how values are split in parts when a `split` regex is defined.
 - [#751] Build: Make build more portable.
 - [#753] Doc: Improve documentation for multi-value fields: mention the `split` attribute. Thanks to [feinstein](https://github.com/feinstein).
 - [#740] Doc: Update user manual to replace `parse` examples with `parseArgs`.

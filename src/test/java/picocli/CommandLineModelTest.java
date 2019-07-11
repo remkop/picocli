@@ -1576,4 +1576,35 @@ public class CommandLineModelTest {
         spec.setAddMethodSubcommands(null);
         assertTrue(spec.isAddMethodSubcommands());
     }
+
+    @Test
+    public void testRemoveArg() {
+        class MyApp {
+            // hide this option on all OS's other than Darwin (OSX)
+            @Option(names = {"-o", "--open"},
+                    description = "On OSX open the finder to the data dir that was downloaded.")
+            boolean open = false;
+        }
+        MyApp myApp = new MyApp();
+        CommandLine cmd = new CommandLine(myApp);
+
+        String expectBefore = String.format("" +
+                "Usage: <main class> [-o]%n" +
+                "  -o, --open   On OSX open the finder to the data dir that was downloaded.%n");
+        assertEquals(expectBefore, cmd.getUsageMessage(Ansi.OFF));
+
+        // replace the old "--open" option with a different one that is hidden
+        CommandSpec spec = cmd.getCommandSpec();
+        OptionSpec old = spec.findOption("--open");
+        OptionSpec newOpenOption = OptionSpec.builder(old).hidden(true).build();
+        spec.remove(old);
+        spec.add(newOpenOption);
+
+        String expectAfter = String.format("" +
+                "Usage: <main class>%n");
+        assertEquals(expectAfter, cmd.getUsageMessage(Ansi.OFF));
+        assertFalse(myApp.open);
+        cmd.parseArgs("--open");
+        assertTrue(myApp.open);
+    }
 }

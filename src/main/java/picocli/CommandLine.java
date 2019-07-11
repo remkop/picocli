@@ -5445,6 +5445,43 @@ public class CommandLine {
                 return this;
             }
 
+            /** (INCUBATING) Removes the specified option spec or positional parameter spec from the list of configured arguments to expect.
+             * @param arg the option spec or positional parameter spec to remove
+             * @return this CommandSpec for method chaining
+             * @throws UnsupportedOperationException if the specified ArgSpec is part of a {@link ArgGroupSpec}
+             * @throws NoSuchElementException if the specified ArgSpec is not part of this {@code CommandSpec}
+             * @since 4.0 */
+            public CommandSpec remove(ArgSpec arg) {
+                if (arg.group() != null) {
+                    throw new UnsupportedOperationException("Cannot remove ArgSpec that is part of an ArgGroup");
+                }
+                int removed = remove(arg, optionsByNameMap);
+                removed +=    remove(arg, posixOptionsByKeyMap);
+                removed +=    remove(arg, negatedOptionsByNameMap);
+                requiredArgs.remove(arg);
+                options.remove(arg);
+                if (positionalParameters.remove(arg)) {
+                    removed++;
+                }
+                if (removed == 0) {
+                    throw new NoSuchElementException(String.valueOf(arg));
+                }
+                arg.commandSpec = null;
+                arg.messages(null);
+                return this;
+            }
+            private static <T extends Object> int remove(ArgSpec arg, Map<T, OptionSpec> map) {
+                int result = 0;
+                for (Iterator<Map.Entry<T, OptionSpec>> iterator = map.entrySet().iterator(); iterator.hasNext(); ){
+                    Map.Entry<?, OptionSpec> entry = iterator.next();
+                    if (entry.getValue() == arg) {
+                        iterator.remove();
+                        result++;
+                    }
+                }
+                return result;
+            }
+
             /** Adds the specified {@linkplain ArgGroupSpec argument group} to the groups in this command.
              * @param group the group spec to add
              * @return this CommandSpec for method chaining
@@ -7523,23 +7560,26 @@ public class CommandLine {
                 Builder(ArgSpec original) {
                     userObject = original.userObject;
                     arity = original.arity;
-                    converters = original.converters;
-                    defaultValue = original.defaultValue;
                     description = original.description;
-                    getter = original.getter;
-                    setter = original.setter;
-                    hidden = original.hidden;
-                    paramLabel = original.paramLabel;
-                    hideParamSyntax = original.hideParamSyntax;
+                    descriptionKey = original.descriptionKey;
                     required = original.required;
                     interactive = original.interactive;
+                    paramLabel = original.paramLabel;
+                    hideParamSyntax = original.hideParamSyntax;
+                    splitRegex = original.splitRegex;
+                    hidden = original.hidden;
+                    setTypeInfo(original.typeInfo);
+                    converters = original.converters;
+                    defaultValue = original.defaultValue;
+                    initialValue = original.initialValue;
+                    hasInitialValue = original.hasInitialValue;
                     showDefaultValue = original.showDefaultValue;
                     completionCandidates = original.completionCandidates;
-                    splitRegex = original.splitRegex;
-                    toString = original.toString;
-                    descriptionKey = original.descriptionKey;
                     parameterConsumer = original.parameterConsumer;
-                    setTypeInfo(original.typeInfo);
+                    toString = original.toString;
+                    getter = original.getter;
+                    setter = original.setter;
+                    scope = original.scope;
                 }
                 Builder(IAnnotatedElement source) {
                     userObject = source.userObject();
@@ -7879,6 +7919,9 @@ public class CommandLine {
             }
             public static OptionSpec.Builder builder(String[] names) { return new Builder(names); }
             public static OptionSpec.Builder builder(IAnnotatedElement source, IFactory factory) { return new Builder(source, factory); }
+            /** Returns a Builder initialized from the specified {@code OptionSpec}.
+             * @since 4.0 */
+            public static OptionSpec.Builder builder(OptionSpec original) { return new Builder(original); }
 
             /** Ensures all attributes of this {@code OptionSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
             private OptionSpec(Builder builder) {
@@ -8153,6 +8196,9 @@ public class CommandLine {
                 capacity = builderCapacity == null ? Range.parameterCapacity(arity(), index) : builderCapacity;
             }
             public static Builder builder() { return new Builder(); }
+            /** Returns a Builder initialized from the specified {@code PositionalSpec}.
+             * @since 4.0 */
+            public static Builder builder(PositionalParamSpec original) { return new Builder(original); }
             public static Builder builder(IAnnotatedElement source, IFactory factory) { return new Builder(source, factory); }
             /** Returns a new Builder initialized with the attributes from this {@code PositionalParamSpec}. Calling {@code build} immediately will return a copy of this {@code PositionalParamSpec}.
              * @return a builder that can create a copy of this spec
