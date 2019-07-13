@@ -6740,7 +6740,7 @@ used to generate the native executable is able to get the configuration from the
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">MyApp</span><span class="delimiter">&quot;</span></span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">Groovy picocli v3.0 demo</span><span class="delimiter">&quot;</span></span>,
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">MyApp</span><span class="delimiter">&quot;</span></span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">Groovy picocli v4.0 demo</span><span class="delimiter">&quot;</span></span>,
          mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
          description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
 <span class="type">class</span> <span class="class">MyApp</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
@@ -6754,7 +6754,7 @@ used to generate the native executable is able to get the configuration from the
         }
     }
     <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
-        <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MayApp()).execute(args)
+        <span class="predefined-type">System</span>.exit(<span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MayApp()).execute(args))
     }
 }</code></pre>
 </div>
@@ -6903,24 +6903,25 @@ so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for t
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="scala">@Command(name = &quot;MyApp&quot;, version = Array(&quot;Scala picocli v3.0 demo&quot;),
-    mixinStandardHelpOptions = true, // add --help and --version options
-    description = Array(&quot;@|bold Scala|@ @|underline picocli|@ example&quot;))
-class MyApp extends Runnable {
+<pre class="CodeRay highlight"><code data-lang="scala">@Command(name = &quot;MyApp&quot;, version = Array(&quot;Scala picocli demo v4.0&quot;),
+         mixinStandardHelpOptions = true, // add --help and --version options
+         description = Array(&quot;@|bold Scala|@ @|underline picocli|@ example&quot;))
+class MyApp extends Callable[Int] {
 
-    @Option(names = Array(&quot;-c&quot;, &quot;--count&quot;),
-            description = Array(&quot;number of repetitions&quot;))
+    @Option(names = Array(&quot;-c&quot;, &quot;--count&quot;), paramLabel = &quot;COUNT&quot;,
+            description = Array(&quot;the count&quot;))
     private var count: Int = 1
 
-    def run() : Unit = {
+    def call() : Int = {
         for (i &lt;- 0 until count) {
             println(s&quot;hello world $i...&quot;)
         }
+        0
     }
 }
 object MyApp {
     def main(args: Array[String]) {
-        CommandLine.run(new MyApp(), args: _*)
+        System.exit(new CommandLine(new MyApp()).execute(args: _*))
     }
 }</code></pre>
 </div>

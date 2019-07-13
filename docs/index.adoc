@@ -4400,7 +4400,7 @@ In Groovy, use `[` and `]` to surround array values, instead of the `{` and `}` 
 
 [source,groovy]
 ----
-@Command(name = "MyApp", version = "Groovy picocli v3.0 demo",
+@Command(name = "MyApp", version = "Groovy picocli v4.0 demo",
          mixinStandardHelpOptions = true, // add --help and --version options
          description = "@|bold Groovy|@ @|underline picocli|@ example")
 class MyApp implements Runnable {
@@ -4414,7 +4414,7 @@ class MyApp implements Runnable {
         }
     }
     static void main(String[] args) {
-        new CommandLine(new MayApp()).execute(args)
+        System.exit(new CommandLine(new MayApp()).execute(args))
     }
 }
 ----
@@ -4538,24 +4538,25 @@ so be aware that you will have to write `Array(...)` for the `names`, `descripti
 
 [source,scala]
 ----
-@Command(name = "MyApp", version = Array("Scala picocli v4.0 demo"),
-    mixinStandardHelpOptions = true, // add --help and --version options
-    description = Array("@|bold Scala|@ @|underline picocli|@ example"))
-class MyApp extends Runnable {
+@Command(name = "MyApp", version = Array("Scala picocli demo v4.0"),
+         mixinStandardHelpOptions = true, // add --help and --version options
+         description = Array("@|bold Scala|@ @|underline picocli|@ example"))
+class MyApp extends Callable[Int] {
 
-    @Option(names = Array("-c", "--count"),
-            description = Array("number of repetitions"))
+    @Option(names = Array("-c", "--count"), paramLabel = "COUNT",
+            description = Array("the count"))
     private var count: Int = 1
 
-    def run() : Unit = {
+    def call() : Int = {
         for (i <- 0 until count) {
             println(s"hello world $i...")
         }
+        0
     }
 }
 object MyApp {
     def main(args: Array[String]) {
-        CommandLine.run(new MyApp(), args: _*)
+        System.exit(new CommandLine(new MyApp()).execute(args: _*))
     }
 }
 ----
