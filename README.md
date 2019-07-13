@@ -112,7 +112,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 * Picocli is included in the [OpenJDK Quality Outreach](https://wiki.openjdk.java.net/display/quality/Quality+Outreach) list of Free Open Source Software (FOSS) projects that actively test against OpenJDK builds.
 * Picocli is used in the Apache Hadoop Ozone/HDDS command line tools.
 * Picocli is used in the Apache Hive benchmark CLI.
-* Picocli is listed on [StackShare](https://stackshare.io/picocli)
+* Picocli is listed on [StackShare](https://stackshare.io/picocli). Please add it to your stack and add/upvote reasons why you like picocli!
 
 
 <img src="https://picocli.info/images/downloads-201905.png">
