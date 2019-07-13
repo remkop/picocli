@@ -2,26 +2,28 @@ package picocli.examples.kotlin
 
 import picocli.CommandLine
 import picocli.CommandLine.*
+import java.util.concurrent.Callable
 
-
-@Command(name = "MyApp", version = ["Kotlin picocli demo v1.0"],
+@Command(name = "MyApp", version = ["Kotlin picocli demo v4.0"],
         mixinStandardHelpOptions = true,
-        description = ["@|bold Kotlin|@ @|underline picocli|@ example"])
-class MyApp : Runnable {
+        description = ["@|bold Kotlin|@ @|underline picocli|@ example"],
+        subcommands = [picocli.CommandLine.HelpCommand::class])
+class MyApp : Callable<Int> {
 
     @Option(names = ["-c", "--count"], paramLabel = "COUNT",
             description = ["the count"])
     private var count: Int = 0
 
-    override fun run() {
+    override fun call(): Int {
         for (i in 0 until count) {
             println("hello world $i...")
         }
+        return 123
     }
 //    companion object {
 //        @JvmStatic fun main(args: Array<String>) {
-//            CommandLine(MyApp()).execute(*args)
+//            CommandLine.run(MyApp(), *args)
 //        }
 //    }
 }
-fun main(args: Array<String>) = CommandLine(MyApp()).execute(*args)
+fun main(args: Array<String>) = System.exit(CommandLine(MyApp()).execute(*args))

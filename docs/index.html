@@ -6839,18 +6839,19 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 <pre class="CodeRay highlight"><code data-lang="kotlin">@Command(name = &quot;MyApp&quot;, version = [&quot;Kotlin picocli v3.0 demo&quot;],
         mixinStandardHelpOptions = true, // add --help and --version options
         description = [&quot;@|bold Kotlin|@ @|underline picocli|@ example&quot;])
-class MyApp : Runnable {
+class MyApp : Callable&lt;Int&gt; {
 
     @Option(names = [&quot;-c&quot;, &quot;--count&quot;], description = [&quot;number of repetitions&quot;])
     private var count: Int = 1
 
-    override fun run() {
+    override fun call(): Int {
         for (i in 0 until count) {
             println(&quot;hello world $i...&quot;)
         }
+        return 0
     }
 }
-fun main(args: Array&lt;String&gt;) = CommandLine(MyApp()).execute(*args)</code></pre>
+fun main(args: Array&lt;String&gt;) = System.exit(CommandLine(MyApp()).execute(*args))</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -6877,19 +6878,20 @@ class SubCmd { // ...
 <pre class="CodeRay highlight"><code data-lang="kotlin">@Command(name = &quot;MyApp&quot;, version = arrayOf(&quot;picocli demo for Kotlin v1.0 and Kotlin v1.1&quot;),
         mixinStandardHelpOptions = true, // add --help and --version options
         description = arrayOf(&quot;@|bold Kotlin|@ @|underline picocli|@ example&quot;))
-class MyApp : Runnable {
+class MyApp : Callable&lt;Int&gt; {
 
     @Option(names = arrayOf(&quot;-c&quot;, &quot;--count&quot;),
             description = arrayOf(&quot;number of repetitions&quot;))
     private var count: Int = 1
 
-    override fun run() {
+    override fun call(): Int {
         for (i in 0 until count) {
             println(&quot;hello world $i...&quot;)
         }
+        return 0
     }
 }
-fun main(args: Array&lt;String&gt;) = CommandLine(MyApp()).execute(*args)</code></pre>
+fun main(args: Array&lt;String&gt;) = System.exit(CommandLine(MyApp()).execute(*args))</code></pre>
 </div>
 </div>
 </div>

@@ -4472,21 +4472,23 @@ Kotlin 1.2 (released Nov 28, 2017) officially supports http://kotlinlang.org/doc
 
 [source,kotlin]
 ----
-@Command(name = "MyApp", version = ["Kotlin picocli v3.0 demo"],
+@Command(name = "MyApp", version = ["Kotlin picocli v4.0 demo"],
         mixinStandardHelpOptions = true, // add --help and --version options
         description = ["@|bold Kotlin|@ @|underline picocli|@ example"])
-class MyApp : Runnable {
+class MyApp : Callable<Int> {
 
-    @Option(names = ["-c", "--count"], description = ["number of repetitions"])
+    @Option(names = ["-c", "--count"], paramLabel = "COUNT",
+            description = ["the count"])
     private var count: Int = 1
 
-    override fun run() {
+    override fun call(): Int {
         for (i in 0 until count) {
             println("hello world $i...")
         }
+        return 0
     }
 }
-fun main(args: Array<String>) = CommandLine(MyApp()).execute(*args)
+fun main(args: Array<String>) = System.exit(CommandLine(MyApp()).execute(*args))
 ----
 
 When specify a class as an argument of an annotation, use a Kotlin class (https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.reflect/-k-class/index.html[KClass]).
@@ -4514,19 +4516,20 @@ Kotlin versions prior to 1.2 did not allow the https://kotlinlang.org/docs/refer
 @Command(name = "MyApp", version = arrayOf("picocli demo for Kotlin v1.0 and Kotlin v1.1"),
         mixinStandardHelpOptions = true, // add --help and --version options
         description = arrayOf("@|bold Kotlin|@ @|underline picocli|@ example"))
-class MyApp : Runnable {
+class MyApp : Callable<Int> {
 
     @Option(names = arrayOf("-c", "--count"),
             description = arrayOf("number of repetitions"))
     private var count: Int = 1
 
-    override fun run() {
+    override fun call(): Int {
         for (i in 0 until count) {
             println("hello world $i...")
         }
+        return 0
     }
 }
-fun main(args: Array<String>) = CommandLine(MyApp()).execute(*args)
+fun main(args: Array<String>) = System.exit(CommandLine(MyApp()).execute(*args))
 ----
 
 === Scala
@@ -4535,7 +4538,7 @@ so be aware that you will have to write `Array(...)` for the `names`, `descripti
 
 [source,scala]
 ----
-@Command(name = "MyApp", version = Array("Scala picocli v3.0 demo"),
+@Command(name = "MyApp", version = Array("Scala picocli v4.0 demo"),
     mixinStandardHelpOptions = true, // add --help and --version options
     description = Array("@|bold Scala|@ @|underline picocli|@ example"))
 class MyApp extends Runnable {
