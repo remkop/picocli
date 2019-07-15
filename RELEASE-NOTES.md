@@ -1,10 +1,10 @@
 # picocli Release Notes
 
 
-# <a name="4.0.0-rc-1"></a> Picocli 4.0.0-rc-1 (UNRELEASED)
-The picocli community is pleased to announce picocli 4.0.0-rc-1.
+# <a name="4.0.0"></a> Picocli 4.0.0 GA (UNRELEASED)
+The picocli community is pleased to announce picocli 4.0.0.
 
-This release contains bugfixes and improvements.
+This release contains 96 bugfixes and improvements.
 
 [Thibaud Lepretre](https://github.com/kakawait), the author of [kakawait/picocli-spring-boot-starter](https://github.com/kakawait/picocli-spring-boot-starter) has graciously contributed a pull request with a new `picocli-spring-boot-starter` module. This includes a `PicocliSpringFactory` and auto-configuration and makes it extremely easy to use Spring dependency injection in your picocli command line application.
 
@@ -17,13 +17,13 @@ Many thanks to the picocli community for the contributions!
 This is the fifty-seventh public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
-## <a name="4.0.0-rc-1"></a> Table of Contents
-* [New and noteworthy](#4.0.0-rc-1-new)
-* [Fixed issues](#4.0.0-rc-1-fixes)
-* [Deprecations](#4.0.0-rc-1-deprecated)
-* [Potential breaking changes](#4.0.0-rc-1-breaking-changes)
+## <a name="4.0.0"></a> Table of Contents
+* [New and noteworthy](#4.0.0-new)
+* [Fixed issues](#4.0.0-fixes)
+* [Deprecations](#4.0.0-deprecated)
+* [Potential breaking changes](#4.0.0-breaking-changes)
 
-## <a name="4.0.0-rc-1-new"></a> New and Noteworthy
+## <a name="4.0.0-new"></a> New and Noteworthy
 
 ### Spring Support
 
@@ -40,14 +40,14 @@ Maven:
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli-spring-boot-starter</artifactId>
-  <version>4.0.0-rc-1-SNAPSHOT</version>
+  <version>4.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
 Gradle:
 ```
 dependencies {
-    compile "info.picocli:picocli-spring-boot-starter:4.0.0-rc-1-SNAPSHOT"
+    compile "info.picocli:picocli-spring-boot-starter:4.0.0-SNAPSHOT"
 }
 ```
 
@@ -128,7 +128,7 @@ public class MyCommand implements Callable<Integer> {
 ```
 
 
-## <a name="4.0.0-rc-1-fixes"></a> Fixed issues
+## <a name="4.0.0-fixes"></a> Fixed issues
 - [#752][#658][#496] Add `picocli-spring-boot-starter` module including a `PicocliSpringFactory` and auto-configuration. Thanks to [Thibaud Lepretre](https://github.com/kakawait) for the pull request.
 - [#736] API: Allow removal of `ArgSpec` from `CommandSpec`. Thanks to [AkosCz](https://github.com/akoscz) for the feature request.
 - [#756] API: Make synopsis indent for multi-line synopsis configurable (related to #739).
@@ -151,18 +151,166 @@ public class MyCommand implements Callable<Integer> {
 - [#740] Doc: Update user manual to replace `parse` examples with `parseArgs`.
 - [#713] Doc: Update UML class diagrams for picocli 4.0.
 
-## <a name="4.0.0-rc-1-deprecated"></a> Deprecations
+### 4.0.0-beta-2
+- [#280] API: `@Option(fallbackValue = "...")` for options with optional parameter: assign this value when the option was specified on the command line without parameter. Thanks to [Paolo Di Tommaso](https://github.com/pditommaso) and [marinier](https://github.com/marinier) for the suggestion and in-depth discussion.
+- [#625] API: `@Command(synopsisSubcommandLabel = "...")` to allow customization of the subcommands part of the synopsis: by default this is `[COMMAND]`. Thanks to [Sebastian Thomschke](https://github.com/sebthom) and [AlcaYezz](https://github.com/AlcaYezz) for the feature request and subsequent discussion.
+- [#718] API: Add `IParameterConsumer` and `@Option(parameterConsumer = Xxx.class)` for passing arguments through to another command, like `find -exec`. Thanks to [Reinhard Pointner](https://github.com/rednoah) for the suggestion. 
+- [#721] API: Add public method Text.getCJKAdjustedLength().
+- [#634] API: Dynamically detect terminal size. Requires Java 7. Thanks to my colleague Takuya Ishibashi for the suggestion.
+- [#737] Deprecate the `parse` method in favor of `parseArgs`.
+- [#717] Negatable options change: avoid unmappable character `±` for synopsis: it renders as scrambled characters in encoding ASCII and in some terminals.
+- [#734][#735] Make the picocli jar OSGi friendly. Thanks to [Radu Cotescu](https://github.com/raducotescu) for the pull request.
+- [#733] Improve error message for unmatched arguments. Thanks to my colleague Takuya Ishibashi for raising this.
+- [#719] Bugfix: options with variable arity should stop consuming arguments on custom end-of-options delimiter.
+- [#720] Bugfix: `@Unmatched` list should be cleared prior to subsequent invocations.
+- [#723] Bugfix: variables in `defaultValue` were not expanded in usage help option description line for `showDefaultValues = true`. Thanks to [Mikaël Barbero](https://github.com/mbarbero) for raising this.
+- [#722] Bugfix: synopsis of deeply nested `@ArgGroup` shows `@Options` duplicate on outer level of command. Thanks to [Shane Rowatt](https://github.com/srowatt) for raising this.
+- [#724] Bugfix: Usage message exceeds width.
+- [#731] Doc: Add Zero Bugs Commitment to README.
+
+### 4.0.0-beta-1b
+- [#500] Add a generic and extensible picocli annotation processor
+- [#699] Add annotation processor that generates `reflect-config.json` during build
+- [#703] Add annotation processor that generates `resource-config.json` during build
+- [#704] Add annotation processor that generates `proxy-config.json` during build
+- [#707] Add example maven/gradle projects that demonstrate using the annotation processor
+- [#711] API: Create separate `picocli-groovy` module, make `picocli` an explicit module (a modular multiversion jar)
+- [#694] API: `negatable` boolean options. Thanks to [Michael D. Adams](https://github.com/adamsmd) for the feature request.
+- [#712] Boolean options should not toggle by default, to be consistent with negatable options
+- [#709] Fix scrambled characters for the `±` character when running on system with non-UTF8 encoding
+- [#717] Fix unmappable character for encoding ASCII by setting compiler encoding to UTF8 explicitly. Thanks to [Liam Esteban Prince](https://github.com/leliamesteban) for raising this.
+- [#697] Option sort in usage help should ignore option name prefix; long options without short name should be inserted alphabetically, instead of always appear at the top.
+- [#695] Fix runtime warnings about illegal reflective access to field `java.io.FilterOutputStream.out`. Thanks to [gitfineon](https://github.com/gitfineon) for reporting this issue.
+- [#698] Reduce `reflect-config.json` used by GraalVM native-image generation
+- [#700] Change default exit codes to `1` for Exceptions in client code, `2` for invalid usage. Add links to `ExitCode` javadoc.
+- [#715] processor tests should not fail when running in different locale
+- [#710] Let annotation processor validate negatable options, usageHelp options
+- [#716] Revert `@Inherited` annotation for `@Command`. Thanks to [Mikusch](https://github.com/Mikusch) for raising this.
+
+### 4.0.0-alpha-3
+ - [#516] API: Add support for color schemes in the convenience methods and associated classes and interfaces. Thanks to [Bob Tiernay](https://github.com/bobtiernay-okta) for the suggestion.
+ - [#561] API: Parser configuration for convenience methods.
+ - [#650] API: Global parser configuration if using Runnable. Thanks to [gitfineon](https://github.com/gitfineon) for raising this.
+ - [#424] API: Exit on help, version or invalid arguments. Thanks to [Gerard Bosch](https://github.com/gerardbosch) for raising this.
+ - [#541] API: Improved exception handling for Runnable/Callable.
+ - [#680] API: Add annotation API for exitCodeList and exitCodeListHeading.
+ - [#611] API: Add `CommandLine.addSubcommand` overloaded method without name or alias. Thanks to [andrewbleonard](https://github.com/andrewbleonard) for the request.
+ - [#684] API: Make `CommandLine.defaultFactory` method public.
+ - [#675] API: Make `Help.ColorScheme` immutable. This is a breaking API change. 
+ - [#673] API: Deprecate `CommandLine.Range` public fields, add accessor methods to use instead.
+ - [#663] How to remove stacktraces on error. Thanks to [Nicolas Mingo](https://github.com/nicolasmingo) and [jrevault](https://github.com/jrevault) for raising this and subsequent discussion.
+ - [#672] Need way to send errors back from subcommand. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
+ - [#678] Exit Status section in usage help message.
+ - [#683] Ensure exitCodeList implementation is consistent with other usage message attributes.
+ - [#575] Codegen: Use mixinStandardHelpOptions in `AutoComplete$App` (add support for the `--version` option)
+ - [#645] Codegen: Exclude Jansi Console from generated GraalVM reflection configuration. Thanks to [shanetreacy](https://github.com/shanetreacy) for raising this.
+ - [#686] Codegen: Add support for `@Command` interfaces (dynamic proxies) in GraalVM native image.
+ - [#669] Codegen: Add support for resource bundles in GraalVM native image.
+ - [#691] Codegen bugfix: `ReflectionConfigGenerator` should not generate config for `picocli.CommandLine$Model$ObjectScope`.
+ - [#674] JPMS module: move module-info.class to root of jar.
+ - [#676] Bugfix: non-defined variables in `defaultValue` now correctly resolve to `null`, and options and positional parameters are now correctly considered `required` only if their default value is `null` after variable interpolation. Thanks to [ifedorenko](https://github.com/ifedorenko) for raising this.
+ - [#682] Bugfix: incorrect evaluation for multiple occurrences of a variable.
+ - [#689] NPE in codegen OutputFileMixin.
+ - [#679] Documentation: Update examples for new execute API. Add examples for exit code control and custom exception handlers.
+ - [#681] Documentation: Add exit code section to Internationalization example in user manual.
+
+### 4.0.0-alpha-2
+ - [#495] Publish picocli as a JPMS module in a new artifact `picocli-core-module`. Thanks to [Warkdev](https://github.com/Warkdev) for the pull request. 
+ - [#21] Count double-width Asian characters as two characters for line-breaking purposes.
+ - [#526] Add support for variable interpolation in message strings. Thanks to [Bob Tiernay](https://github.com/bobtiernay-okta) for the suggestion.
+ - [#660] Added `@java.lang.annotation.Inherited` to the `@picocli.CommandLine.Command` annotation. Thanks to [Devin Smith](https://github.com/devinrsmith) for the suggestion.
+ - [#661] Bugfix for stack overflow when option in an argument group had a default value. Thanks to [Andreas Deininger](https://github.com/deining) for reporting this.
+ - [#656] Bugfix for issue where synopsis for composite argument groups did not expand for n..* (n > 1). Thanks to Arno Tuomainen for finding this issue.
+ - [#654] Bugfix: argument group heading text was not retrieved from ResourceBundle. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+ - [#635] Bugfix in argument group validation: did not show an error if some but not all parts of a co-occurring group were specified. Thanks to [Philipp Hanslovsky](https://github.com/hanslovsky) for the pull request. 
+ - [#653] Bugfix: argument group validation should be skipped if help was requested. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+ - [#655] Bugfix: argument group validation silently accepts missing subgroup with multiplicity=1.
+ - [#652] Documentation: fixes in user manual. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+ - [#651] Documentation: fixes in user manual. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+
+### 4.0.0-alpha-1
+ - [#643] Change `%` to `%%` when using `${DEFAULT-VALUE}` in option description. Thanks to [Steffen Rehberg](https://github.com/StefRe) for the pull request. 
+ - [#638] Document fallback descriptionKey for options and parameters in user manual. Thanks to [Mikusch](https://github.com/Mikusch) for the suggestion.
+ - [#199] mutually exclusive options
+ - [#295] options that must co-occur (dependent options)
+ - [#450] option grouping in the usage help message
+ - [#358] (also [#635]) repeating composite arguments (this should also cover the use cases presented in #454 and #434 requests for repeatable subcommands)
+
+
+## <a name="4.0.0-deprecated"></a> Deprecations
 The `CommandLine.setSplitQuotedStrings` (and `isSplitQuotedStrings`) methods have been deprecated:
 Most applications should not change the default. The rare application that _does_ need to split parameter values without respecting quotes should use [`ParserSpec.splitQuotedStrings(boolean)`](https://picocli.info/apidocs/picocli/CommandLine.Model.ParserSpec.html#splitQuotedStrings-boolean-).
 
-## <a name="4.0.0-rc-1-breaking-changes"></a> Potential breaking changes
+From this release, the `parse` method is deprecated in favor of `parseArgs`.
+
+### Convenience Methods Replaced by `execute`
+All variants of the `run`, `call`, `invoke`, and `parseWithHandlers` methods are deprecated from this release, in favor of the new `execute` method.
+
+Similarly, the following classes and interfaces are deprecated:
+
+* `IParseResultHandler2` is deprecated in favor of the new `IExecutionStrategy` interface.
+* `IExceptionHandler2` is deprecated in favor of the new `IParameterExceptionHandler` `IExecutionExceptionHandler` interfaces.
+* The `AbstractHandler` and `AbstractParseResultHandler` classes are deprecated with no replacement.
+
+### Range
+The public fields of the `Range` class have been deprecated and public methods `min()`, `max()`, `isVariable()` have been added that should be used instead.
+
+
+## <a name="4.0.0-breaking-changes"></a> Potential breaking changes
+### ParseResult `matchedOptions` now Return Full List
 `ParseResult.matchedOptions()` and `ParseResult.matchedPositionals()` now return the full list of matched options and positional parameters, including duplicates if the option or positional parameter was matched multiple times.
 Prior to this release, these methods would return a list that did not contain duplicates. 
 Applications interested in the old behavior should use the new `matchedOptionSet()` and `matchedPositionalSet()` methods that return a `Set`.
 
+### Split Regex on Single-value Options Disallowed
 Picocli now throws an `InitializationException` when a single-value type option or positional parameter has a `split` regex.
 Only multi-value options or positional parameters should have a `split` regex. The runtime check can be disabled by setting system property `picocli.ignore.invalid.split` to any value.
 (The annotation processor also checks this at compile time; this check cannot be disabled.)
+
+### Error Message for Unmatched Arguments Changed
+The error message for unmatched arguments now shows the index in the command line arguments where the unmatched argument was found,
+and shows the unmatched value in single quotes. This is useful when the unmatched value is whitespace or an empty String.
+
+For example:
+
+```
+Previously:  Unmatched arguments: B, C
+New       :  Unmatched arguments from index 1: 'B', 'C'
+```
+
+This may break tests that rely on the exact error message.
+
+### `picocli.groovy` Classes Moved to Separate Artifact
+From this release the main `picocli-4.x` artifact no longer contains the `picocli.groovy` classes: these have been split off into a separate `picocli-groovy-4.x` artifact.
+
+Scripts upgrading to picocli 4.0 must change more than just the version number!
+Scripts should use `@Grab('info.picocli:picocli-groovy:4.x')` from version 4.0, `@Grab('info.picocli:picocli:4.x')` will not work.
+
+### Option Order Changed 
+Previously, options that only have a long name (and do not have a short name) were always shown before options with a short name.
+From this release, they are inserted in the option list by their first non-prefix letter.
+This may break tests that expect a specific help message.
+
+### Boolean Options Do Not Toggle By Default
+From this release, when a flag option is specified on the command line picocli will set its value to the opposite of its _default_ value.
+
+Prior to 4.0, the default was to "toggle" boolean flags to the opposite of their _current_ value:
+if the previous value was `true` it is set to `false`, and when the value was `false` it is set to `true`.
+
+Applications can call `CommandLine.setToggleBooleanFlags(true)` to enable toggling.
+Note that when toggling is enabled, specifying a flag option twice on the command line will have no effect because they cancel each other out.
+
+### Revert `@Inherited` annotation on `@Command`
+The `@Inherited` annotated that was added to `@Command` in picocli 4.0.0-alpha-2 turned out to cause 
+issues in scenarios with multiple levels of inheritance and is reverted in this release.
+
+### ColorScheme is now Immutable
+The `Help.ColorScheme` class has been made immutable. Its public fields are no longer public.
+A new `Help.ColorScheme.Builder` class has been introduced to create `ColorScheme` instances.
+
+This is a breaking API change: I could not think of a way to do this without breaking backwards compatibility.
+
+
 
 # <a name="4.0.0-beta-2"></a> Picocli 4.0.0-beta-2
 The picocli community is pleased to announce picocli 4.0.0-beta-2.
@@ -807,7 +955,7 @@ Similarly, the following classes and interfaces are deprecated:
 * `IExceptionHandler2` is deprecated in favor of the new `IParameterExceptionHandler` `IExecutionExceptionHandler` interfaces.
 * The `AbstractHandler` and `AbstractParseResultHandler` classes are deprecated with no replacement.
 
-## Range
+### Range
 The public fields of the `Range` class have been deprecated and public methods `min()`, `max()`, `isVariable()` have been added that should be used instead.
 
 ## <a name="4.0.0-alpha-3-breaking-changes"></a> Potential breaking changes
