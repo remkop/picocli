@@ -4,7 +4,7 @@
 # <a name="4.0.0"></a> Picocli 4.0.0 GA (UNRELEASED)
 The picocli community is pleased to announce picocli 4.0.0.
 
-This release contains 96 bugfixes and improvements.
+This release contains 96 bugfixes and improvements over picocli 3.9.6.
 
 [Thibaud Lepretre](https://github.com/kakawait), the author of [kakawait/picocli-spring-boot-starter](https://github.com/kakawait/picocli-spring-boot-starter) has graciously contributed a pull request with a new `picocli-spring-boot-starter` module. This includes a `PicocliSpringFactory` and auto-configuration and makes it extremely easy to use Spring dependency injection in your picocli command line application.
 
@@ -238,10 +238,6 @@ public class MyCommand implements Callable<Integer> {
 
 
 ## <a name="4.0.0-deprecated"></a> Deprecations
-The `CommandLine.setSplitQuotedStrings` (and `isSplitQuotedStrings`) methods have been deprecated:
-Most applications should not change the default. The rare application that _does_ need to split parameter values without respecting quotes should use [`ParserSpec.splitQuotedStrings(boolean)`](https://picocli.info/apidocs/picocli/CommandLine.Model.ParserSpec.html#splitQuotedStrings-boolean-).
-
-From this release, the `parse` method is deprecated in favor of `parseArgs`.
 
 ### Convenience Methods Replaced by `execute`
 All variants of the `run`, `call`, `invoke`, and `parseWithHandlers` methods are deprecated from this release, in favor of the new `execute` method.
@@ -252,20 +248,48 @@ Similarly, the following classes and interfaces are deprecated:
 * `IExceptionHandler2` is deprecated in favor of the new `IParameterExceptionHandler` `IExecutionExceptionHandler` interfaces.
 * The `AbstractHandler` and `AbstractParseResultHandler` classes are deprecated with no replacement.
 
-### Range
+### `CommandLine.setSplitQuotedStrings` Deprecated
+The `CommandLine.setSplitQuotedStrings` (and `isSplitQuotedStrings`) methods have been deprecated:
+Most applications should not change the default. The rare application that _does_ need to split parameter values without respecting quotes should use [`ParserSpec.splitQuotedStrings(boolean)`](https://picocli.info/apidocs/picocli/CommandLine.Model.ParserSpec.html#splitQuotedStrings-boolean-).
+
+From this release, the `parse` method is deprecated in favor of `parseArgs`.
+
+### Range Fields
 The public fields of the `Range` class have been deprecated and public methods `min()`, `max()`, `isVariable()` have been added that should be used instead.
 
 
 ## <a name="4.0.0-breaking-changes"></a> Potential breaking changes
+
+### `picocli.groovy` Classes Moved to Separate Artifact
+From this release the main `picocli-4.x` artifact no longer contains the `picocli.groovy` classes: these have been split off into a separate `picocli-groovy-4.x` artifact.
+
+Scripts upgrading to picocli 4.0 must change more than just the version number!
+Scripts should use `@Grab('info.picocli:picocli-groovy:4.x')` from version 4.0, `@Grab('info.picocli:picocli:4.x')` will not work.
+
+### Split Regex on Single-value Options is now Disallowed
+Picocli now throws an `InitializationException` when a single-value type option or positional parameter has a `split` regex.
+Only multi-value options or positional parameters should have a `split` regex. The runtime check can be disabled by setting system property `picocli.ignore.invalid.split` to any value.
+(The annotation processor also checks this at compile time; this check cannot be disabled.)
+
+### ColorScheme is now Immutable
+The `Help.ColorScheme` class has been made immutable. Its public fields are no longer public.
+A new `Help.ColorScheme.Builder` class has been introduced to create `ColorScheme` instances.
+
+This is a breaking API change: I could not think of a way to do this without breaking backwards compatibility.
+
+### Boolean Options Do Not Toggle By Default
+From this release, when a flag option is specified on the command line picocli will set its value to the opposite of its _default_ value.
+
+Prior to 4.0, the default was to "toggle" boolean flags to the opposite of their _current_ value:
+if the previous value was `true` it is set to `false`, and when the value was `false` it is set to `true`.
+
+Applications can call `CommandLine.setToggleBooleanFlags(true)` to enable toggling.
+Note that when toggling is enabled, specifying a flag option twice on the command line will have no effect because they cancel each other out.
+
 ### ParseResult `matchedOptions` now Return Full List
 `ParseResult.matchedOptions()` and `ParseResult.matchedPositionals()` now return the full list of matched options and positional parameters, including duplicates if the option or positional parameter was matched multiple times.
 Prior to this release, these methods would return a list that did not contain duplicates. 
 Applications interested in the old behavior should use the new `matchedOptionSet()` and `matchedPositionalSet()` methods that return a `Set`.
-
-### Split Regex on Single-value Options Disallowed
-Picocli now throws an `InitializationException` when a single-value type option or positional parameter has a `split` regex.
-Only multi-value options or positional parameters should have a `split` regex. The runtime check can be disabled by setting system property `picocli.ignore.invalid.split` to any value.
-(The annotation processor also checks this at compile time; this check cannot be disabled.)
 
 ### Error Message for Unmatched Arguments Changed
 The error message for unmatched arguments now shows the index in the command line arguments where the unmatched argument was found,
@@ -280,35 +304,14 @@ New       :  Unmatched arguments from index 1: 'B', 'C'
 
 This may break tests that rely on the exact error message.
 
-### `picocli.groovy` Classes Moved to Separate Artifact
-From this release the main `picocli-4.x` artifact no longer contains the `picocli.groovy` classes: these have been split off into a separate `picocli-groovy-4.x` artifact.
-
-Scripts upgrading to picocli 4.0 must change more than just the version number!
-Scripts should use `@Grab('info.picocli:picocli-groovy:4.x')` from version 4.0, `@Grab('info.picocli:picocli:4.x')` will not work.
-
 ### Option Order Changed 
 Previously, options that only have a long name (and do not have a short name) were always shown before options with a short name.
 From this release, they are inserted in the option list by their first non-prefix letter.
 This may break tests that expect a specific help message.
 
-### Boolean Options Do Not Toggle By Default
-From this release, when a flag option is specified on the command line picocli will set its value to the opposite of its _default_ value.
-
-Prior to 4.0, the default was to "toggle" boolean flags to the opposite of their _current_ value:
-if the previous value was `true` it is set to `false`, and when the value was `false` it is set to `true`.
-
-Applications can call `CommandLine.setToggleBooleanFlags(true)` to enable toggling.
-Note that when toggling is enabled, specifying a flag option twice on the command line will have no effect because they cancel each other out.
-
 ### Revert `@Inherited` annotation on `@Command`
 The `@Inherited` annotated that was added to `@Command` in picocli 4.0.0-alpha-2 turned out to cause 
 issues in scenarios with multiple levels of inheritance and is reverted in this release.
-
-### ColorScheme is now Immutable
-The `Help.ColorScheme` class has been made immutable. Its public fields are no longer public.
-A new `Help.ColorScheme.Builder` class has been introduced to create `ColorScheme` instances.
-
-This is a breaking API change: I could not think of a way to do this without breaking backwards compatibility.
 
 
 

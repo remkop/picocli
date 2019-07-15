@@ -85,6 +85,42 @@ Applications can call `System.exit` with the returned exit code to signal succes
 The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute adds `--help` and `--version` options to your application.
 
 
+
+== Download
+You can add picocli as an external dependency to your project, or you can include it as source.
+See the <<Source,source code>> below. Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
+
+=== Gradle
+----
+compile 'info.picocli:picocli:4.0.0-rc-1-SNAPSHOT'
+----
+
+=== Maven
+----
+<dependency>
+  <groupId>info.picocli</groupId>
+  <artifactId>picocli</artifactId>
+  <version>4.0.0-rc-1-SNAPSHOT</version>
+</dependency>
+----
+
+=== Scala SBT
+----
+libraryDependencies += "info.picocli" % "picocli" % "4.0.0-rc-1-SNAPSHOT"
+----
+
+=== Ivy
+
+----
+<dependency org="info.picocli" name="picocli" rev="4.0.0-rc-1-SNAPSHOT" />
+----
+
+=== Source
+
+Picocli has only one source file: link:https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java[CommandLine.java].
+This facilitates including it in your project in source form to avoid having an external dependency on picocli.
+
+
 == Options and Parameters
 Command line arguments can be separated into _options_  and _positional parameters_.
 Options have a name, positional parameters are usually the values that follow the options,
@@ -4590,38 +4626,3 @@ Picocli is licensed under the https://github.com/remkop/picocli/blob/master/LICE
 
 == Releases
 Previous versions are available from the GitHub project https://github.com/remkop/picocli/releases[Releases].
-
-== Download
-You can add picocli as an external dependency to your project, or you can include it as source.
-See the <<Source,source code>> below. Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
-
-=== Gradle
-----
-compile 'info.picocli:picocli:4.0.0-rc-1-SNAPSHOT'
-----
-
-=== Maven
-----
-<dependency>
-  <groupId>info.picocli</groupId>
-  <artifactId>picocli</artifactId>
-  <version>4.0.0-rc-1-SNAPSHOT</version>
-</dependency>
-----
-
-=== Scala SBT
-----
-libraryDependencies += "info.picocli" % "picocli" % "4.0.0-rc-1-SNAPSHOT"
-----
-
-=== Ivy
-
-----
-<dependency org="info.picocli" name="picocli" rev="4.0.0-rc-1-SNAPSHOT" />
-----
-
-=== Source
-
-Picocli has only one source file: link:https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java[CommandLine.java].
-This facilitates including it in your project in source form to avoid having an external dependency on picocli.
-
