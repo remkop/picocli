@@ -7,7 +7,7 @@
       <x>60</x>
       <y>50</y>
       <w>770</w>
-      <h>400</h>
+      <h>430</h>
     </coordinates>
     <panel_attributes>&lt;&lt;api&gt;&gt;
 CommandLine</panel_attributes>
@@ -29,27 +29,24 @@ bg=#99FF99</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>90</x>
+      <x>120</x>
       <y>270</y>
-      <w>130</w>
-      <h>60</h>
+      <w>250</w>
+      <h>30</h>
     </coordinates>
-    <panel_attributes>DuplicateOption
-Annotations
-Exception
+    <panel_attributes>DuplicateOptionAnnotationsException
 bg=#99FF99</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>230</x>
-      <y>270</y>
-      <w>130</w>
-      <h>50</h>
+      <x>120</x>
+      <y>350</y>
+      <w>250</w>
+      <h>30</h>
     </coordinates>
-    <panel_attributes>ParameterIndex
-GapException
+    <panel_attributes>ParameterIndexGapException
 bg=#99FF99</panel_attributes>
     <additional_attributes/>
   </element>
@@ -139,31 +136,31 @@ bg=#99FF99</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>200</x>
-      <y>230</y>
-      <w>30</w>
-      <h>60</h>
+      <x>90</x>
+      <y>200</y>
+      <w>120</w>
+      <h>100</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
+    <additional_attributes>100.0;10.0;10.0;10.0;10.0;80.0;30.0;80.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>260</x>
-      <y>230</y>
-      <w>30</w>
-      <h>60</h>
+      <x>90</x>
+      <y>200</y>
+      <w>120</w>
+      <h>180</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
+    <additional_attributes>100.0;10.0;10.0;10.0;10.0;160.0;30.0;160.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>450</x>
       <y>270</y>
-      <w>210</w>
+      <w>220</w>
       <h>30</h>
     </coordinates>
     <panel_attributes>MissingParameterException
@@ -175,7 +172,7 @@ bg=#99FF99</panel_attributes>
     <coordinates>
       <x>450</x>
       <y>310</y>
-      <w>210</w>
+      <w>220</w>
       <h>30</h>
     </coordinates>
     <panel_attributes>UnmatchedArgumentException
@@ -187,7 +184,7 @@ bg=#99FF99</panel_attributes>
     <coordinates>
       <x>450</x>
       <y>350</y>
-      <w>210</w>
+      <w>220</w>
       <h>30</h>
     </coordinates>
     <panel_attributes>OverwrittenOptionException
@@ -199,7 +196,7 @@ bg=#99FF99</panel_attributes>
     <coordinates>
       <x>450</x>
       <y>390</y>
-      <w>210</w>
+      <w>220</w>
       <h>30</h>
     </coordinates>
     <panel_attributes>MaxValuesExceededException
@@ -212,10 +209,10 @@ bg=#99FF99</panel_attributes>
       <x>400</x>
       <y>230</y>
       <w>70</w>
-      <h>200</h>
+      <h>190</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;180.0;50.0;180.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;170.0;50.0;170.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
@@ -270,9 +267,55 @@ bg=#99FF99</panel_attributes>
       <w>140</w>
       <h>50</h>
     </coordinates>
-    <panel_attributes>picocli 3.6.0
-2018-09-12
+    <panel_attributes>picocli 4.0
+2019-07-15
 bg=#FFFF66</panel_attributes>
     <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>120</x>
+      <y>310</y>
+      <w>250</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>DuplicateNameException
+bg=#99FF99</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>90</x>
+      <y>200</y>
+      <w>120</w>
+      <h>140</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>100.0;10.0;10.0;10.0;10.0;120.0;30.0;120.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>450</x>
+      <y>430</y>
+      <w>220</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>MutuallyExclusiveArgsException
+bg=#99FF99</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>400</x>
+      <y>230</y>
+      <w>70</w>
+      <h>230</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;210.0;50.0;210.0</additional_attributes>
   </element>
 </diagram>

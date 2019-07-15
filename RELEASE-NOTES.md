@@ -149,6 +149,7 @@ public class MyCommand implements Callable<Integer> {
 - [#751] Build: Make build more portable.
 - [#753] Doc: Improve documentation for multi-value fields: mention the `split` attribute. Thanks to [feinstein](https://github.com/feinstein).
 - [#740] Doc: Update user manual to replace `parse` examples with `parseArgs`.
+- [#713] Doc: Update UML class diagrams for picocli 4.0.
 
 ## <a name="4.0.0-rc-1-deprecated"></a> Deprecations
 The `CommandLine.setSplitQuotedStrings` (and `isSplitQuotedStrings`) methods have been deprecated:
