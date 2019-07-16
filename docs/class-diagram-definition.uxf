@@ -417,7 +417,7 @@ CommandReflection</panel_attributes>
       <h>40</h>
     </coordinates>
     <panel_attributes>picocli 4.0
-2019-07-15
+2019-07-17
 bg=#FFFF66</panel_attributes>
     <additional_attributes/>
   </element>
@@ -491,7 +491,7 @@ bg=#FFFF66</panel_attributes>
     <id>Relation</id>
     <coordinates>
       <x>180</x>
-      <y>110</y>
+      <y>120</y>
       <w>120</w>
       <h>40</h>
     </coordinates>
