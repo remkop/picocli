@@ -85,17 +85,18 @@ Applications can call `System.exit` with the returned exit code to signal succes
 The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute adds `--help` and `--version` options to your application.
 
 
-
-== Download
+== Getting Started
 You can add picocli as an external dependency to your project, or you can include it as source.
-See the <<Source,source code>> below. Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
 
-=== Gradle
+=== Add as External Dependency
+Below are examples of configuring Gradle or Maven to use picocli as an external dependency in your project.
+
+==== Gradle
 ----
 compile 'info.picocli:picocli:4.0.0-rc-1-SNAPSHOT'
 ----
 
-=== Maven
+==== Maven
 ----
 <dependency>
   <groupId>info.picocli</groupId>
@@ -104,21 +105,73 @@ compile 'info.picocli:picocli:4.0.0-rc-1-SNAPSHOT'
 </dependency>
 ----
 
-=== Scala SBT
-----
-libraryDependencies += "info.picocli" % "picocli" % "4.0.0-rc-1-SNAPSHOT"
-----
+=== Add as Source
+To include as source, get the source code from the link:https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java[GitHub file]. Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
 
-=== Ivy
+=== Annotation processor
 
-----
-<dependency org="info.picocli" name="picocli" rev="4.0.0-rc-1-SNAPSHOT" />
-----
+The `picocli-codegen` module includes an annotation processor that instantly enables your JAR for GraalVM native images.
 
-=== Source
+Use this if you’re interested in:
 
-Picocli has only one source file: link:https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java[CommandLine.java].
-This facilitates including it in your project in source form to avoid having an external dependency on picocli.
+* **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
+* **Graal native images**. The annotation processor generates and updates https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[Graal configuration] files under
+`META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
+This includes configuration files for https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md[resources] and https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md[dynamic proxies].
+By embedding these configuration files, your jar is instantly Graal-enabled.
+In most cases no further configuration is needed when generating a native image.
+
+==== Processor option: `project`
+
+The picocli annotation processor supports a number of options, most important of which is the `project` option to control the output subdirectory: the generated files are written to `META-INF/native-image/picocli-generated/${project}`.
+
+To configure this option, pass the `-Aproject=<some value>` to the javac compiler. The examples below show how to do this for Maven and Gradle.
+
+==== Enabling the Annotation Processor
+
+===== IDE
+https://immutables.github.io/apt.html[This page] shows the steps to configure Eclipse and IntelliJ IDEA to enable annotation processing.
+
+===== Maven
+```
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-compiler-plugin</artifactId>
+  <!-- annotationProcessorPaths requires maven-compiler-plugin version 3.5 or higher -->
+  <version>${maven-compiler-plugin-version}</version>
+  <configuration>
+    <annotationProcessorPaths>
+      <path>
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli-codegen</artifactId>
+        <version>4.0.0-rc-1-SNAPSHOT</version>
+      </path>
+    </annotationProcessorPaths>
+    <compilerArgs>
+      <arg>-Aproject=${groupId}/${artifactId}</arg>
+    </compilerArgs>
+  </configuration>
+</plugin>
+```
+
+See the https://github.com/remkop/picocli/tree/master/picocli-codegen[`picocli-codegen` README] for more details.
+
+
+===== Gradle
+```
+dependencies {
+    compile 'info.picocli:picocli:4.0.0-rc-1-SNAPSHOT'
+    annotationProcessor 'info.picocli:picocli-codegen:4.0.0-rc-1-SNAPSHOT'
+}
+```
+
+```
+compileJava {
+    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+}
+```
+
+See the https://github.com/remkop/picocli/tree/master/picocli-codegen[`picocli-codegen` README] for more details.
 
 
 == Options and Parameters
@@ -4626,3 +4679,38 @@ Picocli is licensed under the https://github.com/remkop/picocli/blob/master/LICE
 
 == Releases
 Previous versions are available from the GitHub project https://github.com/remkop/picocli/releases[Releases].
+
+== Download
+You can add picocli as an external dependency to your project, or you can include it as source.
+See the <<Source,source code>> below. Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
+
+=== Gradle
+----
+compile 'info.picocli:picocli:4.0.0-rc-1-SNAPSHOT'
+----
+
+=== Maven
+----
+<dependency>
+  <groupId>info.picocli</groupId>
+  <artifactId>picocli</artifactId>
+  <version>4.0.0-rc-1-SNAPSHOT</version>
+</dependency>
+----
+
+=== Scala SBT
+----
+libraryDependencies += "info.picocli" % "picocli" % "4.0.0-rc-1-SNAPSHOT"
+----
+
+=== Ivy
+
+----
+<dependency org="info.picocli" name="picocli" rev="4.0.0-rc-1-SNAPSHOT" />
+----
+
+=== Source
+
+Picocli has only one source file: link:https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java[CommandLine.java].
+This facilitates including it in your project in source form to avoid having an external dependency on picocli.
+
