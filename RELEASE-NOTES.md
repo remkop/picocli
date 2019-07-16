@@ -2,59 +2,255 @@
 
 
 # <a name="4.0.0"></a> Picocli 4.0.0 GA (UNRELEASED)
-The picocli community is pleased to announce picocli 4.0.0.
+The picocli community is pleased to announce picocli 4.0. This is a big release.
 
-This release contains 96 bugfixes and improvements over picocli 3.9.6.
+First, the `picocli-codegen` module now includes an [annotation processor](#4.0.0-annotation-processor) that instantly enables your JAR for GraalVM native images. It also gives compile-time errors for invalid annotations and attributes. We recommend that all projects using picocli enable this annotation processor.
 
-[Thibaud Lepretre](https://github.com/kakawait), the author of [kakawait/picocli-spring-boot-starter](https://github.com/kakawait/picocli-spring-boot-starter) has graciously contributed a pull request with a new `picocli-spring-boot-starter` module. This includes a `PicocliSpringFactory` and auto-configuration and makes it extremely easy to use Spring dependency injection in your picocli command line application.
+The [`execute` API](#4.0.0-execute) is an easy way to execute your command with almost no code. It allows for more flexible configuration than previous APIs, and introduces much improved exit code support. This replaces the static methods `call` and `run`, as well as the `parseWithHandlers` methods, which are now deprecated.
 
-Also, from this release, support for quoted parameter values has been improved. Quoted parameter values can now contain nested quoted substrings to give end users fine-grained control over how values are split. See the [user manual](https://picocli.info/#_quoted_values) for details.
+Improved Spring support: the new [`picocli-spring-boot-starter` module](#4.0.0-spring-boot) includes a `PicocliSpringFactory` and auto-configuration to use Spring dependency injection in your picocli command line application. This is especially useful if your application contains subcommands.
+
+The parser has been enhanced to handle [argument groups](#4.0.0-argument-groups): mutually exclusive options, mutually dependent options, and option sections in the usage help. What makes the picocli design unique and extremely powerful is that argument groups can be nested, so applications can define repeating composite groups of mutually exclusive or co-dependent options.
+
+Annotation attributes can now contain [variables](#4.0.0-variable-expansion) that can be resolved as system properties, environment variables and resource bundle keys.
+
+The picocli JAR is now an [explicit JPMS module](#4.0.0-jpms-module), as well as an OSGi bundle. As part of this change, the Groovy support classes and annotations have been moved to a separate [`picocli-groovy`](#4.0.0-groovy-module) artifact.
+
+Boolean options can now easily be made [negatable](#4.0.0-negatable-options), which adds a "no-" version of the option. This is a common feature in command line parser libraries for Perl, PHP, Ruby, Lisp, Dart and Go, but we are not aware of any other Java libraries that support this.
+
+All in all, this release contains 96 [bugfixes and improvements](#4.0.0-fixes) over picocli 3.9.6.
 
 
+Many thanks to the following community contributors to this release of picocli:
 
-Many thanks to the picocli community for the contributions!
+[AkosCz](https://github.com/akoscz), [AlcaYezz](https://github.com/AlcaYezz), [Andreas Deininger](https://github.com/deining), [andrewbleonard](https://github.com/andrewbleonard), [Arturo Alonso](https://github.com/thefang12), [Bob Tiernay](https://github.com/bobtiernay-okta), [Devin Smith](https://github.com/devinrsmith), [feinstein](https://github.com/feinstein), [Garret Wilson](https://github.com/garretwilson), [Gerard Bosch](https://github.com/gerardbosch), [gitfineon](https://github.com/gitfineon), [jrevault](https://github.com/jrevault), [Judd Gaddie](https://github.com/juddgaddie), [Liam Esteban Prince](https://github.com/leliamesteban), [marinier](https://github.com/marinier), [Michael D. Adams](https://github.com/adamsmd), [Mikaël Barbero](https://github.com/mbarbero), [Mikusch](https://github.com/Mikusch), [Nicolas Mingo](https://github.com/nicolasmingo), [Paolo Di Tommaso](https://github.com/pditommaso), [Philipp Hanslovsky](https://github.com/hanslovsky), [Radu Cotescu](https://github.com/raducotescu), [Reinhard Pointner](https://github.com/rednoah), [Sebastian Thomschke](https://github.com/sebthom), [Shane Rowatt](https://github.com/srowatt), [shanetreacy](https://github.com/shanetreacy), [Steffen Rehberg](https://github.com/StefRe), [Sualeh Fatehi](https://github.com/sualeh), Takuya Ishibashi, [Thibaud Lepretre](https://github.com/kakawait) and [Warkdev](https://github.com/Warkdev).
+
+
 
 This is the fifty-seventh public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.0"></a> Table of Contents
 * [New and noteworthy](#4.0.0-new)
+  * [Annotation processor](#4.0.0-annotation-processor)
+  * [Execution API](#4.0.0-execute)
+  * [Spring Boot support](#4.0.0-spring-boot)
+  * [Argument groups](#4.0.0-argument-groups)
+  * [Variable interpolation](#4.0.0-variable-expansion) in annotation attributes
+  * Explicit [JPMS module](#4.0.0-jpms-module) and OSGi bundle
+  * New [Groovy module](#4.0.0-groovy-module)
+  * [Negatable options](#4.0.0-negatable-options)
+  * [Fallback value](#4.0.0-fallback-values) for options
+  * [Custom parameter processing](#4.0.0-parameterConsumer)
+  * Improved parsing of [quoted parameters](#4.0.0-quoted-params)
+  * [Auto-detect terminal width](#4.0.0-auto-width) for usage help
+  * Improved support for [Chinese, Japanese and Korean](#4.0.0-cjk) usage help
 * [Fixed issues](#4.0.0-fixes)
 * [Deprecations](#4.0.0-deprecated)
+  * [`run`, `call`, `invoke`, and `parseWithHandlers` methods](#4.0.0-deprecated-run-call) replaced by `execute`
+  * [`CommandLine.setSplitQuotedStrings`](#4.0.0-deprecated-setSplitQuotedStrings) deprecated
+  * [`parse`](#4.0.0-deprecated-parse) deprecated in favor of `parseArgs`
+  * [Range public fields](#4.0.0-deprecated-range-public-fields) 
+
 * [Potential breaking changes](#4.0.0-breaking-changes)
+  * `picocli.groovy` classes [moved to separate artifact](4.0.0-breaking-groovy)
+  * [Split regex on single-value options is now disallowed](#4.0.0-breaking-split)
+  * [ColorScheme is now immutable](#4.0.0-breaking-colorscheme)
+  * [Boolean options no longer toggle](#4.0.0-breaking-toggle) by default
+  * [ParseResult `matchedOptions`](#4.0.0-breaking-matchedOptions) now returns full list
+  * [Error message for unmatched arguments](#4.0.0-breaking-unmatched-error) changed
+  * [Option order](#4.0.0-breaking-option-order) changed
 
 ## <a name="4.0.0-new"></a> New and Noteworthy
 
-### Spring Support
+### <a name="4.0.0-annotation-processor"></a> Annotation processor
+
+<img src="https://www.graalvm.org/resources/img/logo-colored.svg" alt="GraalVM">
+
+The `picocli-codegen` module now includes an annotation processor that instantly enables your JAR for GraalVM native images. The annotation processor can build a model from the picocli annotations at compile time rather than at runtime. 
+
+Use this if you’re interested in:
+* **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
+* **Graal native images**. The annotation processor generates and updates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md) files under
+`META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
+This includes configuration files for [reflection](https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md), [resources](https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md) and [dynamic proxies](https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md).
+By embedding these configuration files, your jar is instantly Graal-enabled.
+The `$project` location is configurable, see [processor options](#picocli-processor-options) below.
+In most cases no further configuration is needed when generating a native image. 
+
+
+#### Processor option: `project`
+
+The picocli annotation processor supports a number of options, most important of which is the `project` option to control the output subdirectory: the generated files are written to `META-INF/native-image/picocli-generated/${project}`. 
+
+To configure this option, pass the `-Aproject=<some value>` to the javac compiler. The examples below show how to do this for Maven and Gradle.
+
+#### Enabling the Annotation Processor
+
+Since Java 6, annotation processing is part of the standard `javac` compiler, but many IDEs and build tools require something extra to enable annotation processing. 
+
+##### IDE
+[This page](https://immutables.github.io/apt.html) shows the steps to configure Eclipse and IntelliJ IDEA to enable annotation processing.
+
+##### Maven
+In Maven, use `annotationProcessorPaths` in the `configuration` of the `maven-compiler-plugin`. This requires `maven-compiler-plugin` plugin version 3.5 or higher.
+
+```
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-compiler-plugin</artifactId>
+  <!-- annotationProcessorPaths requires maven-compiler-plugin version 3.5 or higher -->
+  <version>${maven-compiler-plugin-version}</version>
+  <configuration>
+    <annotationProcessorPaths>
+      <path>
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli-codegen</artifactId>
+        <version>4.0.0-beta-1b</version>
+      </path>
+    </annotationProcessorPaths>
+    <compilerArgs>
+      <arg>-Aproject=${groupId}/${artifactId}</arg>
+    </compilerArgs>
+  </configuration>
+</plugin>
+```
+
+See the [`picocli-codegen` README](https://github.com/remkop/picocli/tree/master/picocli-codegen) for more details.
+
+
+##### Gradle
+Use the `annotationProcessor` path in Gradle [4.6 and higher](https://docs.gradle.org/4.6/release-notes.html#convenient-declaration-of-annotation-processor-dependencies):
+```
+dependencies {
+    compile 'info.picocli:picocli:4.0.0-beta-1b'
+    annotationProcessor 'info.picocli:picocli-codegen:4.0.0-beta-1b'
+}
+```
+
+To set an annotation processor option in Gradle, add these options to the `options.compilerArgs` list in the `compileJava` block. 
+
+```
+compileJava {
+    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+}
+```
+
+See the [`picocli-codegen` README](https://github.com/remkop/picocli/tree/master/picocli-codegen) for more details.
+
+
+
+### <a name="4.0.0-execute"></a> Execution API
+
+<img src="https://picocli.info/images/executable.png" alt="executable commands">
+
+
+Picocli 4.0 introduces new API to execute commands. Let’s take a quick look at what changed. 
+
+#### Exit Code
+Many command line applications return an [exit code](https://en.wikipedia.org/wiki/Exit_status) to signify success or failure. Zero often means success, a non-zero exit code is often used for errors, but other than that, meanings differ per application. 
+
+The new `CommandLine.execute` method introduced in picocli 4.0 returns an `int`, and applications can use this return value to call `System.exit` if desired. For example:
+
+```java
+public static void main(String... args) {
+  CommandLine cmd = new CommandLine(new App());
+  int exitCode = cmd.execute(args);
+  System.exit(exitCode);
+}
+```
+
+Older versions of picocli had some limited exit code support where picocli would call `System.exit`, but this is now deprecated.
+
+#### Generating an Exit Code
+
+`@Command`-annotated classes that implement `Callable` and `@Command`-annotated methods can simply return an `int` or `Integer`, and this value will be returned from `CommandLine.execute`. For example:
+
+```java
+@Command(name = "greet")
+class Greet implements Callable<Integer> {
+  public Integer call() {
+    System.out.println("hi");
+    return 1;
+  }
+
+  @Command
+  int shout() {
+    System.out.println("HI!");
+    return 2;
+  }
+}
+
+assert 1 == new CommandLine(new Greet()).execute();
+assert 2 == new CommandLine(new Greet()).execute("shout");
+```
+
+Commands with a user object that implements `Runnable` can implement the `IExitCodeGenerator` interface to generate an exit code. For example:
+
+```java
+@Command(name = "wave")
+class Gesture implements Runnable, IExitCodeGenerator {
+  public void run() {
+    System.out.println("wave");
+  }
+  public int getExitCode() {
+    return 3;
+  }
+}
+
+assert 3 == new CommandLine(new Gesture()).execute();
+```
+
+#### Exception Exit Codes
+
+By default, the `execute` method returns `CommandLine.ExitCode.USAGE` (`64`) for invalid input, and `CommandLine.ExitCode.SOFTWARE` (`70`) when an exception occurred in the Runnable, Callable or command method. (For reference, these values are `EX_USAGE` and `EX_SOFTWARE`, respectively, from Unix and Linux [sysexits.h](https://www.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3)). This can be customized with the `@Command` annotation. For example:
+
+```java 
+@Command(exitCodeOnInvalidInput = 123,
+   exitCodeOnExecutionException = 456)
+```
+
+Additionally, applications can configure a `IExitCodeExceptionMapper` to map a specific exception to an exit code:
+
+```java
+class MyMapper implements IExitCodeExceptionMapper {
+  public int getExitCode(Throwable t) {
+    if (t instanceof FileNotFoundException) {
+      return 74;
+    }
+    return 1;
+  }
+}
+```
+
+When the end user specified invalid input, the `execute` method prints an error message followed by the usage help message of the command, and returns an exit code. This can be customized by configuring a `IParameterExceptionHandler`.
+
+If the business logic of the command throws an exception, the `execute` method prints the stack trace of the exception and returns an exit code. This can be customized by configuring a `IExecutionExceptionHandler`.
+
+
+#### Configuration
+The new `CommandLine.execute` method is an instance method. The older `run`, `call` and `invoke` methods are static methods. Static methods don’t allow configuration. The new API lets applications configure the parser or other aspects before execution. For example:
+
+```java
+public static void main(String... args) {
+  CommandLine cmd = new CommandLine(new App());
+  cmd.setCaseInsensitiveEnumValuesAllowed(true);
+  cmd.setUnmarchedArgumentsAllowed(true);
+  cmd.setStopAtPositional(true);
+  cmd.setExpandAtFiles(false);
+  cmd.execute(args);
+}
+```
+
+
+### <a name="4.0.0-spring-boot"></a> Spring support
 
 <img src="https://picocli.info/images/spring-boot.png" alt="spring and spring boot logos" width="350" height="167">
 
 [Thibaud Lepretre](https://github.com/kakawait), the author of [kakawait/picocli-spring-boot-starter](https://github.com/kakawait/picocli-spring-boot-starter) has graciously contributed a pull request to the picocli project with a new `picocli-spring-boot-starter` module. This includes a `PicocliSpringFactory` and auto-configuration and makes it extremely easy to use Spring dependency injection in your picocli command line application.
 
-#### Dependency Management
 
-Add the following dependency:
-
-Maven:
-```xml
-<dependency>
-  <groupId>info.picocli</groupId>
-  <artifactId>picocli-spring-boot-starter</artifactId>
-  <version>4.0.0-SNAPSHOT</version>
-</dependency>
-```
-
-Gradle:
-```
-dependencies {
-    compile "info.picocli:picocli-spring-boot-starter:4.0.0-SNAPSHOT"
-}
-```
-
-This will bring in the `info.picocli:picocli` and `org.springframework.boot:spring-boot-starter` dependencies.
-
-
-#### Example Application
+#### Spring Boot example
 
 ```java
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,7 +290,7 @@ public class MySpringApp implements CommandLineRunner, ExitCodeGenerator {
 }
 ```
 
-When your command is annotated with `@org.springframework.stereotype.Component` Spring can autodetect it for dependency injection.
+When your command is annotated with `@Component`, Spring can autodetect it for dependency injection.
 The business logic of your command looks like any other picocli command with options and parameters.
 
 ```java
@@ -127,8 +323,370 @@ public class MyCommand implements Callable<Integer> {
 }
 ```
 
+### <a name="4.0.0-argument-groups"></a> Argument groups
+<img src="https://picocli.info/images/groups.jpg" alt="argument groups">
+
+This release introduces a new `@ArgGroup` annotation and its `ArgGroupSpec` programmatic equivalent.
+
+Argument Groups can be used to define:
+
+* mutually exclusive options
+* options that must co-occur (dependent options)
+* option sections in the usage help message
+* repeating composite arguments
+
+To create a group using the annotations API, annotate a field or method with `@ArgGroup`.
+The field's type refers to the class containing the options and positional parameters in the group.
+(For annotated interface methods this would be the return type, for annotated setter methods in a concrete class this would be the setter's parameter type.)
+
+Picocli will instantiate this class as necessary to capture command line argument values in the `@Option` and `@Parameters`-annotated fields and methods of this class.
+
+#### Mutually Exclusive Options
+
+Annotate a field or method with `@ArgGroup(exclusive = true)` to create a group of mutually exclusive options and positional parameters. For example:
+
+```java
+@Command(name = "exclusivedemo")
+public class MutuallyExclusiveOptionsDemo {
+
+    @ArgGroup(exclusive = true, multiplicity = "1")
+    Exclusive exclusive;
+
+    static class Exclusive {
+        @Option(names = "-a", required = true) int a;
+        @Option(names = "-b", required = true) int b;
+        @Option(names = "-c", required = true) int c;
+    }
+}
+```
+
+The above example defines a command with mutually exclusive options `-a`, `-b` and `-c`.
+
+The group itself has a `multiplicity` attribute that defines how many times the group may be specified within the command.
+The default is `multiplicity = "0..1"`, meaning that by default a group may be omitted or specified once.
+In this example the group has `multiplicity = "1"`, so the group must occur once: one of the exclusive options must occur on the command line.
+
+The synopsis of this command is `exclusivedemo (-a=<a> | -b=<b> | -c=<c>)`.
+
+Note that the options are defined as `required = true`; this means required _within the group_, not required within the command.
+
+Picocli will validate the arguments and throw a `MutuallyExclusiveArgsException` if multiple mutually exclusive arguments were specified. For example:
+
+```java
+MutuallyExclusiveOptionsDemo example = new MutuallyExclusiveOptionsDemo();
+CommandLine cmd = new CommandLine(example);
+
+try {
+    cmd.parseArgs("-a=1", "-b=2");
+} catch (MutuallyExclusiveArgsException ex) {
+    assert "Error: -a=<a>, -b=<b> are mutually exclusive (specify only one)"
+            .equals(ex.getMessage());
+}
+```
+
+For the above group, only one of the options can be specified. Any other combination of options, or the absence of options, is invalid.
+
+#### Mutually Dependent Options
+
+Annotate a field or method with `@ArgGroup(exclusive = false)` to create a group of dependent options and positional parameters that must co-occur. For example:
+
+```java
+@Command(name = "co-occur")
+public class DependentOptionsDemo {
+
+    @ArgGroup(exclusive = false)
+    Dependent dependent;
+
+    static class Dependent {
+        @Option(names = "-a", required = true) int a;
+        @Option(names = "-b", required = true) int b;
+        @Option(names = "-c", required = true) int c;
+    }
+}
+```
+
+The above example defines a command with dependent options `-a`, `-b` and `-c` that must co-occur.
+
+The group itself has a `multiplicity` attribute that defines how many times the group may be specified within the command.
+In this example the group uses the default multiplicity, `multiplicity = "0..1"`, meaning that the group may be omitted or specified once.
+
+The synopsis of this command is `co-occur [-a=<a> -b=<b> -c=<c>]`.
+
+Note that the options are defined as `required = true`; this means required _within the group_, not required within the command.
+
+Picocli will validate the arguments and throw a `MissingParameterException` if not all dependent arguments were specified. For example:
+
+```java
+DependentOptionsDemo example = new DependentOptionsDemo();
+CommandLine cmd = new CommandLine(example);
+
+try {
+    cmd.parseArgs("-a=1", "-b=2");
+} catch (MissingParameterException ex) {
+    assert "Error: Missing required argument(s): -c=<c>".equals(ex.getMessage());
+}
+```
+
+#### Option Sections in Usage Help
+
+The example below uses groups to define options sections in the usage help.
+When a group has a non-null `heading` (or `headingKey`), the options in the group are given the specified heading in the usage help message.
+The `headingKey` attribute can be used to get the heading text from the command's resource bundle.
+
+This works for mutually exclusive or co-occurring groups, but it is also possible to define a group that does no validation but only creates an option section in the usage help.
+
+Annotate a field or method with `@ArgGroup(validate = false)` to create a group for display purposes only. For example:
+
+```java
+@Command(name = "sectiondemo", description = "Section demo")
+public class OptionSectionDemo {
+
+    @ArgGroup(validate = false, heading = "This is the first section%n")
+    Section1 section1;
+
+    static class Section1 {
+        @Option(names = "-a", description = "Option A") int a;
+        @Option(names = "-b", description = "Option B") int b;
+        @Option(names = "-c", description = "Option C") int c;
+    }
+
+    @ArgGroup(validate = false, heading = "This is the second section%n")
+    Section2 section2;
+
+    static class Section2 {
+        @Option(names = "-x", description = "Option X") int x;
+        @Option(names = "-y", description = "Option Y") int y;
+        @Option(names = "-z", description = "Option X") int z;
+    }
+
+    public static void main(String[] args) {
+        new CommandLine(new OptionSectionDemo()).usage(System.out);
+    }
+}
+```
+
+This prints the following usage help message:
+```
+Usage: sectiondemo [-a=<a>] [-b=<b>] [-c=<c>] [-x=<x>] [-y=<y>] [-z=<z>]
+Section demo
+This is the first section
+  -a=<a>    Option A
+  -b=<b>    Option B
+  -c=<c>    Option C
+This is the second section
+  -x=<x>    Option X
+  -y=<y>    Option Y
+  -z=<z>    Option X
+```
+
+Note that the heading text must end with `%n` to insert a newline between the heading text and the first option.
+This is for consistency with other headings in the usage help, like `@Command(headerHeading = "Usage:%n", optionListHeading = "%nOptions:%n")`.
+
+#### Repeating Composite Argument Groups
+
+The below example shows how groups can be composed of other groups, and how arrays and collections can be used to capture repeating groups (with a `multiplicity` greater than one):
+
+```java
+public class CompositeGroupDemo {
+
+    @ArgGroup(exclusive = false, multiplicity = "1..*")
+    List<Composite> composites;
+
+    static class Composite {
+        @ArgGroup(exclusive = false, multiplicity = "1")
+        Dependent dependent;
+
+        @ArgGroup(exclusive = true, multiplicity = "1")
+        Exclusive exclusive;
+    }
+
+    static class Dependent {
+        @Option(names = "-a", required = true) int a;
+        @Option(names = "-b", required = true) int b;
+        @Option(names = "-c", required = true) int c;
+    }
+
+    static class Exclusive {
+        @Option(names = "-x", required = true) boolean x;
+        @Option(names = "-y", required = true) boolean y;
+        @Option(names = "-z", required = true) boolean z;
+    }
+}
+```
+
+In the above example, the annotated `composites` field defines a composite group that must be specified at least once, and may be specified many times, on the command line.
+Each time the group is matched, picocli creates an instance of the `Composite` class and adds it to the `composites` list.
+
+The `Composite` class itself contains two groups: a group of dependent options that must co-occur, and another group of mutually exclusive options.
+Both of these subgroups have `multiplicity = "1"`, so they can occur exactly once for each multiple of the `Composite` group. The below example illustrates:
+
+```java
+CompositeGroupDemo example = new CompositeGroupDemo();
+CommandLine cmd = new CommandLine(example);
+
+cmd.parseArgs("-x", "-a=1", "-b=1", "-c=1", "-a=2", "-b=2", "-c=2", "-y");
+assert example.composites.size() == 2;
+
+Composite c1 = example.composites.get(0);
+assert c1.exclusive.x;
+assert c1.dependent.a == 1;
+assert c1.dependent.b == 1;
+assert c1.dependent.c == 1;
+
+Composite c2 = example.composites.get(1);
+assert c2.exclusive.y;
+assert c2.dependent.a == 2;
+assert c2.dependent.b == 2;
+assert c2.dependent.c == 2;
+```
+
+#### Positional Parameters
+
+When a `@Parameters` positional parameter is part of a group, its `index` is the index _within the group_, not within the command.
+
+
+### <a name="4.0.0-variable-expansion"></a> Variable expansion
+From this release, picocli supports variable interpolation (variable expansion) in annotation attributes as well as in text attributes of the programmatic API.
+
+#### Variable Interpolation Example
+
+```java
+@Command(name = "status", description = "This command logs the status for ${PARENT-COMMAND-NAME}.")
+class Status {
+    @Option(names = {"${dirOptionName1:--d}", "${dirOptionName2:---directories}"}, // -d or --directories
+            description = {"Specify one or more directories, separated by '${sys:path.separator}'.",
+                           "The default is the user home directory (${DEFAULT-VALUE})."},  
+            arity = "${sys:dirOptionArity:-1..*}",
+            defaultValue = "${sys:user.home}",
+            split = "${sys:path.separator}")
+    String[] directories;
+}
+```
+
+#### Predefined Variables
+
+See the [user manual](https://picocli.info/#_predefined_variables) for the list of predefined variables.
+
+#### Custom Variables
+
+In addition, you can define your own variables. Currently the following syntaxes are supported:
+
+* `${sys:key}`: system property lookup, replaced by the value of `System.getProperty("key")`
+* `${env:key}`: environment variable lookup, replaced by the value of `System.getEnv("key")`
+* `${bundle:key}`: look up the value of `key` in the resource bundle of the command
+* `${key}`: search all of the above, first system properties, then environment variables, and finally the resource bundle of the command
+
+#### Default Values for Custom Variables
+
+You can specify a default value to use when no value is found for a custom variable. The syntax for specifying a default is `${a:-b}`, where `a` is the variable name and `b` is the default value to use if `a` is not found.
+
+
+### <a name="4.0.0-jpms-module"></a> Explicit JPMS module
+<img src="https://picocli.info/images/modules.jpg" alt="modules">
+
+The main `picocli-4.0.0.jar` is a JPMS module named `info.picocli`.
+
+Starting from picocli 4.0, this jar will be an explicit module instead of an automatic module, so the [`jlink` tool](https://docs.oracle.com/en/java/javase/12/tools/jlink.html) can be used to provide a trimmed binary image that has only the required modules.
+
+Typically, a modular jar includes the `module-info.class` file in its root directory. This causes problems for some older tools, which incorrectly process the module descriptor as if it were a normal Java class. To provide the best backward compatibility, the main picocli artifact is a [modular multi-release jar](https://openjdk.java.net/jeps/238#Modular-multi-release-JAR-files) with the `module-info.class` file located in `META-INF/versions/9`.
+
+### <a name="4.0.0-groovy-module"></a> Separate `picocli-groovy` module
+
+<img src="https://picocli.info/images/groovy-logo.png" alt="Groovy logo">
+
+Also, from this release the main `picocli-4.x` artifact no longer contains the `picocli.groovy` classes: these have been split off into a separate `picocli-groovy-4.x` artifact. This was necessary to make the main `picocli-4.x.jar` an explicit JPMS module.
+
+
+### <a name="4.0.0-negatable-options"></a> Negatable options
+From picocli 4.0, options can be `negatable`.
+
+```java
+class App {
+    @Option(names = "--verbose",           negatable = true) boolean verbose;
+    @Option(names = "-XX:+PrintGCDetails", negatable = true) boolean printGCDetails;
+    @Option(names = "-XX:-UseG1GC",        negatable = true) boolean useG1GC = true;
+}
+```
+
+When an option is negatable, picocli will recognize negative aliases of the option on the command line.
+
+For *nix-style long options, aliases have the prefix 'no-' to the given names.
+For Java JVM-style options, the `:+` is turned into `:-` and vice versa. (This can be changed by customizing the `INegatableOptionTransformer`.)
+
+If the negated form of the option is found, for example `--no-verbose`, the value is set to the provided default. Otherwise, with a regular call, for example `--verbose`, it is set to the opposite of the default.
+
+### <a name="4.0.0-fallback-values"></a> Fallback value for options
+This release introduces a new attribute on the `Option` annotation: `fallbackValue` for options with optional parameter: assign this value when the option was specified on the command line without parameter.
+
+This is different from the `defaultValue`, which is assigned if the option is not specified at all on the command line.
+
+Using a `fallbackValue` allows applications to distinguish between cases where
+* the option was not specified on the command line (default value assigned)
+* the option was specified without parameter on the command line (fallback value assigned)
+* the option was specified with parameter on the command line (command line argument value assigned)
+
+This is useful to define options that can function as a boolean "switch" and optionally allow users to provide a (strongly typed) extra parameter value.
+
+The option description may contain the `${FALLBACK-VALUE}` variable which will be replaced with the actual fallback value when the usage help is shown.
+
+
+### <a name="4.0.0-parameterConsumer"></a> Custom parameter processing
+Options or positional parameters can be assigned a `IParameterConsumer` that implements custom logic to process the parameters for this option or this position. When an option or positional parameter with a custom `IParameterConsumer` is matched on the command line, picocli's internal parser is temporarily suspended, and the custom parameter consumer becomes responsible for consuming and processing as many command line arguments as needed.
+
+This can be useful when passing options through to another command.
+
+For example, the unix [`find`](https://en.wikipedia.org/wiki/Find_(Unix)) command has a [`-exec`](https://en.wikipedia.org/wiki/Find_(Unix)#Execute_an_action) option to execute some action for each file found. Any arguments following the `-exec` option until a `;` or `+` argument are not options for the `find` command itself, but are interpreted as a separate command and its options.
+
+The example below demonstrates how to implement `find -exec` using this API:
+
+```java
+@Command(name = "find")
+class Find {
+    @Option(names = "-exec", parameterConsumer = ExecParameterConsumer.class)
+    List<String> list = new ArrayList<String>();
+}
+
+class ExecParameterConsumer implements IParameterConsumer {
+    public void consumeParameters(Stack<String> args, ArgSpec argSpec, CommandSpec commandSpec) {
+        List<String> list = argSpec.getValue();
+        while (!args.isEmpty()) {
+            String arg = args.pop();
+            list.add(arg);
+
+            // `find -exec` semantics: stop processing after a ';' or '+' argument
+            if (";".equals(arg) || "+".equals(arg)) {
+                break;
+            }
+        }
+    }
+}
+```
+
+
+### <a name="4.0.0-quoted-params"></a> Improved parsing of quoted parameters
+Also, from this release, support for quoted parameter values has been improved. Quoted parameter values can now contain nested quoted substrings to give end users fine-grained control over how values are split. See the [user manual](https://picocli.info/#_quoted_values) for details.
+
+### <a name="4.0.0-auto-width"></a> Auto-detect terminal width for usage help
+From this release, commands defined with `@Command(usageHelpAutoWidth = true)` will try to adjust the usage message help layout to the terminal width.
+There is also programmatic API to control this via the `CommandLine::setUsageHelpAutoWidth` and `UsageMessageSpec::autoWidth` methods.
+
+End users may enable this by setting system property `picocli.usage.width` to `AUTO`, and may disable this by setting this system property to a numeric value.
+
+This feature requires Java 7.
+
+
+### <a name="4.0.0-cjk"></a> Improved support for Chinese, Japanese and Korean usage help
+Picocli will align the usage help message to fit within some user-defined width (80 columns by default).
+A number of characters in Chinese, Japanese and Korean (CJK) are wider than others.
+If those characters are treated to have the same width as other characters, the usage help message may extend past the right margin.
+
+From this release, picocli will use 2 columns for these wide characters when calculating where to put line breaks, resulting in better usage help message text.
+
+This can be switched off with `CommandLine.setAdjustLineBreaksForWideCJKCharacters(false)`.
+
 
 ## <a name="4.0.0-fixes"></a> Fixed issues
+### 4.0.0-GA
 - [#752][#658][#496] Add `picocli-spring-boot-starter` module including a `PicocliSpringFactory` and auto-configuration. Thanks to [Thibaud Lepretre](https://github.com/kakawait) for the pull request.
 - [#736] API: Allow removal of `ArgSpec` from `CommandSpec`. Thanks to [AkosCz](https://github.com/akoscz) for the feature request.
 - [#756] API: Make synopsis indent for multi-line synopsis configurable (related to #739).
@@ -239,7 +797,7 @@ public class MyCommand implements Callable<Integer> {
 
 ## <a name="4.0.0-deprecated"></a> Deprecations
 
-### Convenience Methods Replaced by `execute`
+### <a name="4.0.0-deprecated-run-call"></a> `run`, `call`, `invoke`, and `parseWithHandlers` methods replaced by `execute`
 All variants of the `run`, `call`, `invoke`, and `parseWithHandlers` methods are deprecated from this release, in favor of the new `execute` method.
 
 Similarly, the following classes and interfaces are deprecated:
@@ -248,36 +806,37 @@ Similarly, the following classes and interfaces are deprecated:
 * `IExceptionHandler2` is deprecated in favor of the new `IParameterExceptionHandler` `IExecutionExceptionHandler` interfaces.
 * The `AbstractHandler` and `AbstractParseResultHandler` classes are deprecated with no replacement.
 
-### `CommandLine.setSplitQuotedStrings` Deprecated
+### <a name="4.0.0-deprecated-setSplitQuotedStrings"></a> `CommandLine.setSplitQuotedStrings` deprecated
 The `CommandLine.setSplitQuotedStrings` (and `isSplitQuotedStrings`) methods have been deprecated:
 Most applications should not change the default. The rare application that _does_ need to split parameter values without respecting quotes should use [`ParserSpec.splitQuotedStrings(boolean)`](https://picocli.info/apidocs/picocli/CommandLine.Model.ParserSpec.html#splitQuotedStrings-boolean-).
 
+### <a name="4.0.0-deprecated-parse"></a> `parse` deprecated in favor of `parseArgs`
 From this release, the `parse` method is deprecated in favor of `parseArgs`.
 
-### Range Fields
+### <a name="4.0.0-deprecated-range-public-fields"></a> Range public fields
 The public fields of the `Range` class have been deprecated and public methods `min()`, `max()`, `isVariable()` have been added that should be used instead.
 
 
 ## <a name="4.0.0-breaking-changes"></a> Potential breaking changes
 
-### `picocli.groovy` Classes Moved to Separate Artifact
+### <a name="4.0.0-breaking-groovy"></a> `picocli.groovy` classes moved to separate artifact
 From this release the main `picocli-4.x` artifact no longer contains the `picocli.groovy` classes: these have been split off into a separate `picocli-groovy-4.x` artifact.
 
 Scripts upgrading to picocli 4.0 must change more than just the version number!
 Scripts should use `@Grab('info.picocli:picocli-groovy:4.x')` from version 4.0, `@Grab('info.picocli:picocli:4.x')` will not work.
 
-### Split Regex on Single-value Options is now Disallowed
+### <a name="4.0.0-breaking-split"></a> Split regex on single-value options is now disallowed
 Picocli now throws an `InitializationException` when a single-value type option or positional parameter has a `split` regex.
 Only multi-value options or positional parameters should have a `split` regex. The runtime check can be disabled by setting system property `picocli.ignore.invalid.split` to any value.
 (The annotation processor also checks this at compile time; this check cannot be disabled.)
 
-### ColorScheme is now Immutable
+### <a name="4.0.0-breaking-colorscheme"></a> ColorScheme is now immutable
 The `Help.ColorScheme` class has been made immutable. Its public fields are no longer public.
 A new `Help.ColorScheme.Builder` class has been introduced to create `ColorScheme` instances.
 
 This is a breaking API change: I could not think of a way to do this without breaking backwards compatibility.
 
-### Boolean Options Do Not Toggle By Default
+### <a name="4.0.0-breaking-toggle"></a> Boolean options do not toggle by default
 From this release, when a flag option is specified on the command line picocli will set its value to the opposite of its _default_ value.
 
 Prior to 4.0, the default was to "toggle" boolean flags to the opposite of their _current_ value:
@@ -286,12 +845,12 @@ if the previous value was `true` it is set to `false`, and when the value was `f
 Applications can call `CommandLine.setToggleBooleanFlags(true)` to enable toggling.
 Note that when toggling is enabled, specifying a flag option twice on the command line will have no effect because they cancel each other out.
 
-### ParseResult `matchedOptions` now Return Full List
+### <a name="4.0.0-breaking-matchedOptions"></a> ParseResult `matchedOptions` now returns full list
 `ParseResult.matchedOptions()` and `ParseResult.matchedPositionals()` now return the full list of matched options and positional parameters, including duplicates if the option or positional parameter was matched multiple times.
 Prior to this release, these methods would return a list that did not contain duplicates. 
 Applications interested in the old behavior should use the new `matchedOptionSet()` and `matchedPositionalSet()` methods that return a `Set`.
 
-### Error Message for Unmatched Arguments Changed
+### <a name="4.0.0-breaking-unmatched-error"></a> Error message for unmatched arguments changed
 The error message for unmatched arguments now shows the index in the command line arguments where the unmatched argument was found,
 and shows the unmatched value in single quotes. This is useful when the unmatched value is whitespace or an empty String.
 
@@ -304,14 +863,10 @@ New       :  Unmatched arguments from index 1: 'B', 'C'
 
 This may break tests that rely on the exact error message.
 
-### Option Order Changed 
+### <a name="4.0.0-breaking-option-order"></a> Option order changed 
 Previously, options that only have a long name (and do not have a short name) were always shown before options with a short name.
 From this release, they are inserted in the option list by their first non-prefix letter.
 This may break tests that expect a specific help message.
-
-### Revert `@Inherited` annotation on `@Command`
-The `@Inherited` annotated that was added to `@Command` in picocli 4.0.0-alpha-2 turned out to cause 
-issues in scenarios with multiple levels of inheritance and is reverted in this release.
 
 
 
