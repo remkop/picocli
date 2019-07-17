@@ -108,11 +108,11 @@ compile 'info.picocli:picocli:4.0.0-rc-1-SNAPSHOT'
 === Add as Source
 To include as source, get the source code from the link:https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java[GitHub file]. Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
 
-=== Annotation processor
+=== Annotation Processor
 
-The `picocli-codegen` module includes an annotation processor that instantly enables your JAR for GraalVM native images.
+The `picocli-codegen` module includes an annotation processor that can build a model from the picocli annotations at compile time rather than at runtime.
 
-Use this if you’re interested in:
+Enabling this annotation processor in your project is optional, but strongly recommended. Use this if you’re interested in:
 
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
 * **Graal native images**. The annotation processor generates and updates https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[Graal configuration] files under
@@ -123,7 +123,7 @@ In most cases no further configuration is needed when generating a native image.
 
 ==== Processor option: `project`
 
-The picocli annotation processor supports a number of options, most important of which is the `project` option to control the output subdirectory: the generated files are written to `META-INF/native-image/picocli-generated/${project}`.
+The picocli annotation processor supports a number of https://github.com/remkop/picocli/tree/master/picocli-codegen#picocli-processor-options[options], most important of which is the `project` option to control the output subdirectory: the generated files are written to `META-INF/native-image/picocli-generated/${project}`. A good convention is to use the Maven `${groupId}/${artifactId}` as the value; a unique subdirectory ensures your jar can be shaded with other jars that may also contain generated configuration files.
 
 To configure this option, pass the `-Aproject=<some value>` to the javac compiler. The examples below show how to do this for Maven and Gradle.
 
@@ -4461,16 +4461,16 @@ image:exe-picocli-on-graalvm.png[Turn your picocli-based application into a nati
 
 https://www.graalvm.org/docs/reference-manual/aot-compilation/[GraalVM Native Image] allows you to
 ahead-of-time compile Java code to a standalone executable, called a native image.
-This executable includes the application, the libraries, and the JDK and does not require a separate Java VM to be installed.
-The resulting program has faster startup time and lower runtime memory overhead compared to a Java VM.
+The resulting executable includes the application, the libraries, and the JDK and does not require a separate Java VM to be installed.
+The generated native image has faster startup time and lower runtime memory overhead compared to a Java VM.
 
-GraalVM native images have some limitations and require some extra configuration
-to be able to use features like reflection, resources (including resource bundles) and dynamic proxies.
+GraalVM native images have some limitations and require some extra https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[configuration]
+to be able to use features like https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md[resources] (including resource bundles) and https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md[dynamic proxies].
 
-The `picocli-codegen` module contains an annotation processor that generates these configuration files
+The `picocli-codegen` module contains an annotation processor that generates the necessary configuration files
 under `META-INF/native-image/picocli-generated/$project` during compilation,
-to be included in the application jar. The https://github.com/remkop/picocli/tree/master/picocli-codegen[picocli-codegen README]
-file has details on configuring the annotation processor.
+to be included in the application jar. The <<Annotation Processor>> section of the manual has details on configuring the annotation processor, and further information can be found in the https://github.com/remkop/picocli/tree/master/picocli-codegen[picocli-codegen README]
+file.
 
 By embedding these configuration files, your jar is instantly Graal-enabled: the
 https://www.graalvm.org/docs/reference-manual/aot-compilation/#install-native-image[`native-image` tool]
@@ -4520,7 +4520,7 @@ The script body is executed if the user input was valid and did not request usag
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli-groovy:4.0.0-beta-1b')
+@Grab('info.picocli:picocli-groovy:4.0.0-rc-1-SNAPSHOT')
 @Command(name = "myScript",
         mixinStandardHelpOptions = true, // add --help and --version options
         description = "@|bold Groovy script|@ @|underline picocli|@ example")
@@ -4541,7 +4541,7 @@ assert this.commandLine.commandName == "myScript"
 ----
 
 WARNING: When upgrading scripts to picocli 4.0, just changing the version number is not enough!
-Scripts should use `@Grab('info.picocli:picocli-groovy:4.0.0-beta-1b')`. The old artifact id `@Grab('info.picocli:picocli:4.0.0-rc-1-SNAPSHOT')` will not work,
+Scripts should use `@Grab('info.picocli:picocli-groovy:4.0.0-rc-1-SNAPSHOT')`. The old artifact id `@Grab('info.picocli:picocli:4.0.0-rc-1-SNAPSHOT')` will not work,
 because the `@picocli.groovy.PicocliScript` annotation class and supporting classes have been moved into a separate module, `picocli-groovy`.
 
 
@@ -4550,7 +4550,7 @@ NOTE: When using a Groovy version older than 2.4.7, use this workaround for the 
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli-groovy:4.0.0-beta-1b')
+@Grab('info.picocli:picocli-groovy:4.0.0-rc-1-SNAPSHOT')
 @GrabExclude('org.codehaus.groovy:groovy-all') // work around GROOVY-7613
 ...
 ----

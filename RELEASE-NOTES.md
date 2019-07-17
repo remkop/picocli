@@ -81,7 +81,7 @@ In most cases no further configuration is needed when generating a native image.
 
 #### Processor option: `project`
 
-The picocli annotation processor supports a number of options, most important of which is the `project` option to control the output subdirectory: the generated files are written to `META-INF/native-image/picocli-generated/${project}`. 
+The picocli annotation processor supports a number of [options](https://github.com/remkop/picocli/tree/master/picocli-codegen#picocli-processor-options), most important of which is the `project` option to control the output subdirectory: the generated files are written to `META-INF/native-image/picocli-generated/${project}`. A good convention is to use the Maven `${groupId}/${artifactId}` as the value; a unique subdirectory ensures your jar can be shaded with other jars that may also contain generated configuration files.
 
 To configure this option, pass the `-Aproject=<some value>` to the javac compiler. The examples below show how to do this for Maven and Gradle.
 
@@ -106,7 +106,7 @@ In Maven, use `annotationProcessorPaths` in the `configuration` of the `maven-co
       <path>
         <groupId>info.picocli</groupId>
         <artifactId>picocli-codegen</artifactId>
-        <version>4.0.0-beta-1b</version>
+        <version>4.0.0</version>
       </path>
     </annotationProcessorPaths>
     <compilerArgs>
@@ -123,8 +123,8 @@ See the [`picocli-codegen` README](https://github.com/remkop/picocli/tree/master
 Use the `annotationProcessor` path in Gradle [4.6 and higher](https://docs.gradle.org/4.6/release-notes.html#convenient-declaration-of-annotation-processor-dependencies):
 ```
 dependencies {
-    compile 'info.picocli:picocli:4.0.0-beta-1b'
-    annotationProcessor 'info.picocli:picocli-codegen:4.0.0-beta-1b'
+    compile 'info.picocli:picocli:4.0.0'
+    annotationProcessor 'info.picocli:picocli-codegen:4.0.0'
 }
 ```
 
@@ -235,7 +235,7 @@ The new `CommandLine.execute` method is an instance method. The older `run`, `ca
 public static void main(String... args) {
   CommandLine cmd = new CommandLine(new App());
   cmd.setCaseInsensitiveEnumValuesAllowed(true);
-  cmd.setUnmarchedArgumentsAllowed(true);
+  cmd.setUnmatchedArgumentsAllowed(true);
   cmd.setStopAtPositional(true);
   cmd.setExpandAtFiles(false);
   cmd.execute(args);
@@ -487,13 +487,14 @@ This is for consistency with other headings in the usage help, like `@Command(he
 The below example shows how groups can be composed of other groups, and how arrays and collections can be used to capture repeating groups (with a `multiplicity` greater than one):
 
 ```java
+@Command(name = "repeating-composite-demo")
 public class CompositeGroupDemo {
 
     @ArgGroup(exclusive = false, multiplicity = "1..*")
     List<Composite> composites;
 
     static class Composite {
-        @ArgGroup(exclusive = false, multiplicity = "1")
+        @ArgGroup(exclusive = false, multiplicity = "0..1")
         Dependent dependent;
 
         @ArgGroup(exclusive = true, multiplicity = "1")
@@ -514,11 +515,19 @@ public class CompositeGroupDemo {
 }
 ```
 
-In the above example, the annotated `composites` field defines a composite group that must be specified at least once, and may be specified many times, on the command line.
+In the above example, the annotated `composites` field defines a composite group that must be specified at least once, and may be specified many times (`multiplicity = "1..*"`), on the command line.
+
+The synopsis of this command is:
+
+```
+Usage: repeating-composite-demo ([-a=<a> -b=<b> -c=<c>] (-x | -y | -z))...
+```
+
 Each time the group is matched, picocli creates an instance of the `Composite` class and adds it to the `composites` list.
 
-The `Composite` class itself contains two groups: a group of dependent options that must co-occur, and another group of mutually exclusive options.
-Both of these subgroups have `multiplicity = "1"`, so they can occur exactly once for each multiple of the `Composite` group. The below example illustrates:
+The `Composite` class itself contains two groups: an optional (`multiplicity = "0..1"`) group of dependent options that must co-occur, and another group of mutually exclusive options, which is mandatory (`multiplicity = "1"`).
+
+The below example illustrates:
 
 ```java
 CompositeGroupDemo example = new CompositeGroupDemo();
