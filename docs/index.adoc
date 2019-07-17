@@ -1,8 +1,8 @@
 = picocli - a mighty tiny command line interface
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.0.0-rc-1-SNAPSHOT
-:revdate: 2019-06-20
+:revnumber: 4.0.0
+:revdate: 2019-07-17
 :toc: left
 :numbered:
 :toclevels: 2
@@ -25,7 +25,6 @@ Every main method deserves picocli!
 image:logo/horizontal.png[picocli the Mighty Tiny Command Line Interface,width=800]
 
 The user manual for the latest release is at http://picocli.info.
-The user manual for the https://picocli.info/man/3.x/[latest stable release (3.9.6) is here].
 For the busy and impatient: there is also a link:quick-guide.html[Quick Guide].
 
 == Introduction
@@ -93,7 +92,7 @@ Below are examples of configuring Gradle or Maven to use picocli as an external 
 
 ==== Gradle
 ----
-compile 'info.picocli:picocli:4.0.0-rc-1-SNAPSHOT'
+compile 'info.picocli:picocli:4.0.0'
 ----
 
 ==== Maven
@@ -101,7 +100,7 @@ compile 'info.picocli:picocli:4.0.0-rc-1-SNAPSHOT'
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.0.0-rc-1-SNAPSHOT</version>
+  <version>4.0.0</version>
 </dependency>
 ----
 
@@ -144,7 +143,7 @@ https://immutables.github.io/apt.html[This page] shows the steps to configure Ec
       <path>
         <groupId>info.picocli</groupId>
         <artifactId>picocli-codegen</artifactId>
-        <version>4.0.0-rc-1-SNAPSHOT</version>
+        <version>4.0.0</version>
       </path>
     </annotationProcessorPaths>
     <compilerArgs>
@@ -160,8 +159,8 @@ See the https://github.com/remkop/picocli/tree/master/picocli-codegen[`picocli-c
 ===== Gradle
 ```
 dependencies {
-    compile 'info.picocli:picocli:4.0.0-rc-1-SNAPSHOT'
-    annotationProcessor 'info.picocli:picocli-codegen:4.0.0-rc-1-SNAPSHOT'
+    compile 'info.picocli:picocli:4.0.0'
+    annotationProcessor 'info.picocli:picocli-codegen:4.0.0'
 }
 ```
 
@@ -2198,7 +2197,7 @@ Depending on your environment, that may print something like:
 
 ----
 Versioned Command 1.0
-Picocli 4.0.0-beta-1b
+Picocli 4.0.0
 JVM: 1.8.0_202 (Oracle Corporation Substrate VM GraalVM 1.0.0-rc15 CE)
 OS: Linux 4.4.0-17134-Microsoft amd64
 ----
@@ -4520,7 +4519,7 @@ The script body is executed if the user input was valid and did not request usag
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli-groovy:4.0.0-rc-1-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.0.0')
 @Command(name = "myScript",
         mixinStandardHelpOptions = true, // add --help and --version options
         description = "@|bold Groovy script|@ @|underline picocli|@ example")
@@ -4541,7 +4540,7 @@ assert this.commandLine.commandName == "myScript"
 ----
 
 WARNING: When upgrading scripts to picocli 4.0, just changing the version number is not enough!
-Scripts should use `@Grab('info.picocli:picocli-groovy:4.0.0-rc-1-SNAPSHOT')`. The old artifact id `@Grab('info.picocli:picocli:4.0.0-rc-1-SNAPSHOT')` will not work,
+Scripts should use `@Grab('info.picocli:picocli-groovy:4.0.0')`. The old artifact id `@Grab('info.picocli:picocli:4.0.0')` will not work,
 because the `@picocli.groovy.PicocliScript` annotation class and supporting classes have been moved into a separate module, `picocli-groovy`.
 
 
@@ -4550,7 +4549,7 @@ NOTE: When using a Groovy version older than 2.4.7, use this workaround for the 
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli-groovy:4.0.0-rc-1-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.0.0')
 @GrabExclude('org.codehaus.groovy:groovy-all') // work around GROOVY-7613
 ...
 ----
@@ -4686,7 +4685,7 @@ See the <<Source,source code>> below. Copy and paste it into a file called `Comm
 
 === Gradle
 ----
-compile 'info.picocli:picocli:4.0.0-rc-1-SNAPSHOT'
+compile 'info.picocli:picocli:4.0.0'
 ----
 
 === Maven
@@ -4694,19 +4693,19 @@ compile 'info.picocli:picocli:4.0.0-rc-1-SNAPSHOT'
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.0.0-rc-1-SNAPSHOT</version>
+  <version>4.0.0</version>
 </dependency>
 ----
 
 === Scala SBT
 ----
-libraryDependencies += "info.picocli" % "picocli" % "4.0.0-rc-1-SNAPSHOT"
+libraryDependencies += "info.picocli" % "picocli" % "4.0.0"
 ----
 
 === Ivy
 
 ----
-<dependency org="info.picocli" name="picocli" rev="4.0.0-rc-1-SNAPSHOT" />
+<dependency org="info.picocli" name="picocli" rev="4.0.0" />
 ----
 
 === Source

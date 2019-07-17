@@ -1,7 +1,7 @@
 # picocli Release Notes
 
 
-# <a name="4.0.0"></a> Picocli 4.0.0 GA (UNRELEASED)
+# <a name="4.0.0"></a> Picocli 4.0.0 GA
 The picocli community is pleased to announce picocli 4.0. This is a big release.
 
 First, the `picocli-codegen` module now includes an [annotation processor](#4.0.0-annotation-processor) that instantly enables your JAR for GraalVM native images. It also gives compile-time errors for invalid annotations and attributes. We recommend that all projects using picocli enable this annotation processor.
