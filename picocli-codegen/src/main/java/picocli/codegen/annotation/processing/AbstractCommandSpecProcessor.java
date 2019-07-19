@@ -38,6 +38,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -420,7 +421,12 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             }
             Element targetType = element.getEnclosingElement();
             CommandSpec mixee = buildCommand(targetType, context, roundEnv);
-            context.mixinInfoList.add(new MixinInfo(mixee, name, mixin));
+            Map<CommandSpec, String> mixinInfo = context.mixinInfoMap.get(mixee);
+            if (mixinInfo == null) {
+                mixinInfo = new IdentityHashMap<CommandSpec, String>(2);
+                context.mixinInfoMap.put(mixee, mixinInfo);
+            }
+            mixinInfo.put(mixin, name);
             logger.fine("Mixin name=" + name + ", target command=" + mixee.userObject());
         }
     }
@@ -758,7 +764,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         Map<Element, OptionSpec.Builder> options = new LinkedHashMap<Element, OptionSpec.Builder>();
         Map<Element, PositionalParamSpec.Builder> parameters = new LinkedHashMap<Element, PositionalParamSpec.Builder>();
         Map<Element, ArgGroupSpec.Builder> argGroups = new LinkedHashMap<Element, ArgGroupSpec.Builder>();
-        List<MixinInfo> mixinInfoList = new ArrayList<MixinInfo>();
+        Map<CommandSpec, Map<CommandSpec, String>> mixinInfoMap = new IdentityHashMap<CommandSpec, Map<CommandSpec, String>>();
         Map<Element, IAnnotatedElement> parentCommandElements = new LinkedHashMap<Element, IAnnotatedElement>();
         Map<Element, IAnnotatedElement> specElements = new LinkedHashMap<Element, IAnnotatedElement>();
         Map<Element, IAnnotatedElement> unmatchedElements = new LinkedHashMap<Element, IAnnotatedElement>();
@@ -771,8 +777,11 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 logger.fine(String.format("%s has CommandSpec[name=%s]", cmd.getKey(), cmd.getValue().name()));
             }
             logger.fine("Known mixins...");
-            for (MixinInfo mixinInfo : mixinInfoList) {
-                logger.fine(String.format("%s is mixin for %s", mixinInfo.mixin.userObject(), mixinInfo.mixee.userObject()));
+            for (Map.Entry<CommandSpec, Map<CommandSpec, String>> mixinEntry : mixinInfoMap.entrySet()) {
+                logger.fine(String.format("mixins for %s:", mixinEntry.getKey().userObject()));
+                for (Map.Entry<CommandSpec, String> mixinInfo : mixinEntry.getValue().entrySet()) {
+                    logger.fine(String.format("mixin name=%s userObj=%s:", mixinInfo.getValue(), mixinInfo.getKey().userObject()));
+                }
             }
 
             for (Map.Entry<Element, OptionSpec.Builder> option : options.entrySet()) {
@@ -847,8 +856,12 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                     proc.error(entry.getKey(), "@Unmatched must be enclosed in a @Command, but was %s: %s", entry.getKey().getEnclosingElement(), entry.getKey().getEnclosingElement().getSimpleName());
                 }
             }
-            for (MixinInfo mixinInfo : mixinInfoList) {
-                mixinInfo.addMixin();
+            for (Map.Entry<CommandSpec, Map<CommandSpec, String>> mixinEntry : mixinInfoMap.entrySet()) {
+                CommandSpec mixee = mixinEntry.getKey();
+                for (Map.Entry<CommandSpec, String> mixinInfo : mixinEntry.getValue().entrySet()) {
+                    logger.fine(String.format("Adding mixin name=%s to %s", mixinInfo.getValue(), mixee.name()));
+                    mixee.addMixin(mixinInfo.getValue(), mixinInfo.getKey());
+                }
             }
 
             //#377 Standard help options should be added last
@@ -877,23 +890,6 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 commandTypes.put(typeElement.asType(), forSubclass);
             }
             forSubclass.add(result);
-        }
-    }
-
-    private static class MixinInfo {
-        private final CommandSpec mixee;
-        private final String name;
-        private final CommandSpec mixin;
-
-        MixinInfo(CommandSpec mixee, String name, CommandSpec mixin) {
-            this.mixee = mixee;
-            this.name = name;
-            this.mixin = mixin;
-        }
-
-        void addMixin() {
-            logger.fine(String.format("Adding mixin %s to %s", mixin.name(), mixee.name()));
-            mixee.addMixin(name, mixin);
         }
     }
 

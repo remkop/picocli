@@ -1,6 +1,34 @@
 # picocli Release Notes
 
 
+# <a name="4.0.1"></a> Picocli 4.0.1
+The picocli community is pleased to announce picocli 4.0.1.
+
+This release contains a fix for a bug in the annotation processor that causes a compilation error when a subcommand contains a `@Mixin`-annotated field or method.
+
+This is the fifty-eighth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.0.1"></a> Table of Contents
+* [New and noteworthy](#4.0.1-new)
+* [Fixed issues](#4.0.1-fixes)
+* [Deprecations](#4.0.1-deprecated)
+* [Potential breaking changes](#4.0.1-breaking-changes)
+
+## <a name="4.0.1-new"></a> New and Noteworthy
+
+
+## <a name="4.0.1-fixes"></a> Fixed issues
+- [#769] Annotation processor fails on subcommands with mixins. Thanks to [MortronMeymo](https://github.com/MortronMeymo) for the bug report.
+
+## <a name="4.0.1-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.0.1-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 # <a name="4.0.0"></a> Picocli 4.0.0 GA
 The picocli community is pleased to announce picocli 4.0. This is a big release.
 
