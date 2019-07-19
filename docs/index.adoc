@@ -1182,7 +1182,7 @@ try {
 
 For the above group, only one of the options can be specified. Any other combination of options, or the absence of options, is invalid.
 
-=== Co-occurring (Dependent) Options
+=== Mutually Dependent Options
 
 Annotate a field or method with `@ArgGroup(exclusive = false)` to create a group of dependent options and positional parameters that must co-occur. For example:
 
