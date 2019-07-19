@@ -514,8 +514,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 4.0.0,</span>
-<span id="revdate">2019-07-17</span>
+<span id="revnumber">version 4.0.1,</span>
+<span id="revdate">2019-07-19</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -577,7 +577,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_argument_groups">8. Argument Groups</a>
 <ul class="sectlevel2">
 <li><a href="#_mutually_exclusive_options">8.1. Mutually Exclusive Options</a></li>
-<li><a href="#_co_occurring_dependent_options">8.2. Co-occurring (Dependent) Options</a></li>
+<li><a href="#_mutually_dependent_options">8.2. Mutually Dependent Options</a></li>
 <li><a href="#_option_sections_in_usage_help">8.3. Option Sections in Usage Help</a></li>
 <li><a href="#_repeating_composite_argument_groups">8.4. Repeating Composite Argument Groups</a></li>
 <li><a href="#_positional_parameters_2">8.5. Positional Parameters</a></li>
@@ -863,7 +863,7 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <h4 id="_gradle">2.1.1. Gradle</h4>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.0.0'</pre>
+<pre>compile 'info.picocli:picocli:4.0.1'</pre>
 </div>
 </div>
 </div>
@@ -874,7 +874,7 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.0.0&lt;/version&gt;
+  &lt;version&gt;4.0.1&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -939,7 +939,7 @@ In most cases no further configuration is needed when generating a native image.
       &lt;path&gt;
         &lt;groupId&gt;info.picocli&lt;/groupId&gt;
         &lt;artifactId&gt;picocli-codegen&lt;/artifactId&gt;
-        &lt;version&gt;4.0.0&lt;/version&gt;
+        &lt;version&gt;4.0.1&lt;/version&gt;
       &lt;/path&gt;
     &lt;/annotationProcessorPaths&gt;
     &lt;compilerArgs&gt;
@@ -958,8 +958,8 @@ In most cases no further configuration is needed when generating a native image.
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code>dependencies {
-    compile 'info.picocli:picocli:4.0.0'
-    annotationProcessor 'info.picocli:picocli-codegen:4.0.0'
+    compile 'info.picocli:picocli:4.0.1'
+    annotationProcessor 'info.picocli:picocli-codegen:4.0.1'
 }</code></pre>
 </div>
 </div>
@@ -2483,7 +2483,7 @@ CommandLine cmd = <span class="keyword">new</span> CommandLine(example);
 </div>
 </div>
 <div class="sect2">
-<h3 id="_co_occurring_dependent_options">8.2. Co-occurring (Dependent) Options</h3>
+<h3 id="_mutually_dependent_options">8.2. Mutually Dependent Options</h3>
 <div class="paragraph">
 <p>Annotate a field or method with <code>@ArgGroup(exclusive = false)</code> to create a group of dependent options and positional parameters that must co-occur. For example:</p>
 </div>
@@ -7094,7 +7094,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.0.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.0.1</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -7122,7 +7122,7 @@ count.times {
 </td>
 <td class="content">
 When upgrading scripts to picocli 4.0, just changing the version number is not enough!
-Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.0.0')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.0.0')</code> will not work,
+Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.0.1')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.0.1')</code> will not work,
 because the <code>@picocli.groovy.PicocliScript</code> annotation class and supporting classes have been moved into a separate module, <code>picocli-groovy</code>.
 </td>
 </tr>
@@ -7143,7 +7143,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.0.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.0.1</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -7318,7 +7318,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle_3">34.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.0.0'</pre>
+<pre>compile 'info.picocli:picocli:4.0.1'</pre>
 </div>
 </div>
 </div>
@@ -7329,7 +7329,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.0.0&lt;/version&gt;
+  &lt;version&gt;4.0.1&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -7338,7 +7338,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">34.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "4.0.0"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "4.0.1"</pre>
 </div>
 </div>
 </div>
@@ -7346,7 +7346,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">34.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.0.0" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.0.1" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -7362,8 +7362,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.0.0<br>
-Last updated 2019-07-17 12:48:19 JST
+Version 4.0.1<br>
+Last updated 2019-07-19 21:37:46 JST
 </div>
 </div>
 </body>
