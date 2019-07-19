@@ -269,7 +269,7 @@ task bumpReadmeVersion {
                 include(name: '**/pom.xml')
                 include(name: '**/build.gradle')
             }
-            fileset(dir: './picocli-examples/src/main/groovy/', includes: '**/*.groovy')
+            //fileset(dir: './picocli-examples/src/main/groovy/', includes: '**/*.groovy')
         }
     }
 }
