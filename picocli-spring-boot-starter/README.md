@@ -37,28 +37,12 @@ This will bring in the `info.picocli:picocli` and `org.springframework.boot:spri
 ## Example Application
 
 ```java
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import picocli.CommandLine;
-import picocli.CommandLine.IFactory;
 
-@Configuration
-@ComponentScan
-@EnableAutoConfiguration
-public class MySpringApp implements CommandLineRunner, ExitCodeGenerator {
-    private int exitCode;
-
-    @Autowired
-    IFactory factory; // auto-configured to inject PicocliSpringFactory
-
-    @Autowired
-    MyCommand myCommand;
+@SpringBootApplication
+public class MySpringApp {
 
     @Bean
     ServiceDependency dependency() {
@@ -70,19 +54,41 @@ public class MySpringApp implements CommandLineRunner, ExitCodeGenerator {
         return new SomeService(dependency);
     }
 
-    @Override
-    public void run(String... args) {
-        exitCode = new CommandLine(myCommand, factory).execute(args);
-    }
-
-    @Override
-    public int getExitCode() {
-        return exitCode;
-    }
-
     public static void main(String[] args) {
         System.exit(SpringApplication.exit(SpringApplication.run(MySpringApp.class, args)));
     }
+}
+```
+
+```java
+import picocli.CommandLine;
+import picocli.CommandLine.IFactory;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.ExitCodeGenerator;
+
+public class MyApplicationRunner implements CommandLineRunner, ExitCodeGenerator {
+
+	private final MyCommand myCommand;
+
+	private final IFactory factory; // auto-configured to inject PicocliSpringFactory
+
+	private int exitCode;
+
+	public MyApplicationRunner(MyCommand myCommand, IFactory factory) {
+		this.myCommand = myCommand;
+		this.factory = factory;
+	}
+
+	@Override
+	public void run(String... args) throws Exception {
+		exitCode = new CommandLine(myCommand, factory).execute(args);
+	}
+
+	@Override
+	public int getExitCode() {
+		return exitCode;
+	}
 }
 ```
 
