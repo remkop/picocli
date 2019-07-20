@@ -66,7 +66,9 @@ import picocli.CommandLine.IFactory;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
+import org.springframework.stereotype.Component;
 
+@Component
 public class MyApplicationRunner implements CommandLineRunner, ExitCodeGenerator {
 
 	private final MyCommand myCommand;
