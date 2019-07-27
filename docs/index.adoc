@@ -315,6 +315,12 @@ A command that combines either of these with an interactive `--password` option 
 The `picocli-examples` module has https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/interactive/PasswordDemo.java[an example].
 ====
 
+[CAUTION]
+.Interactive options and shell applications with JLine 2/3
+====
+TODO
+====
+
 === Short (POSIX) Options
 Picocli supports http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX clustered short options]:
 one or more single-character options without option-arguments, followed by at most one option with an option-argument, can be grouped behind one '-' delimiter.
