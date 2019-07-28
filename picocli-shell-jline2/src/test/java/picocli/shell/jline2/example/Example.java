@@ -88,6 +88,9 @@ public class Example {
         }
     }
     
+    /**
+     * Command that optionally reads and password interactively.
+     */
     @Command(name = "pwd", mixinStandardHelpOptions = true,
     		description = "Interactivly reads a password", version = "1.0")
     static class ReadInteractive implements Callable<Void> {
@@ -97,14 +100,14 @@ public class Example {
 
         @ParentCommand CliCommands parent;
 
-		public Void call() throws Exception {
-			if(password == null) {
-				parent.out.println("No password prompted");
-			} else {
-				parent.out.println("Password is '" + password + "'");
-			}
-			return null;
-		}
+        public Void call() throws Exception {
+            if(password == null) {
+                parent.out.println("No password prompted");
+            } else {
+                parent.out.println("Password is '" + password + "'");
+            }
+            return null;
+        }
     }
     
     public static void main(String[] args) {
@@ -120,10 +123,10 @@ public class Example {
             // start the shell and process input until the user quits with Ctl-D
             String line;
             while ((line = reader.readLine("prompt> ")) != null) {
-				ArgumentList list = new WhitespaceArgumentDelimiter()
-						.delimit(line, line.length());
-				new CommandLine(commands, factory)
-					.execute(list.getArguments());
+                ArgumentList list = new WhitespaceArgumentDelimiter()
+                    .delimit(line, line.length());
+                new CommandLine(commands, factory)
+                    .execute(list.getArguments());
             }
         } catch (Throwable t) {
             t.printStackTrace();

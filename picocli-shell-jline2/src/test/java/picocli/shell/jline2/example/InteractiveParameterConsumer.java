@@ -19,20 +19,20 @@ import picocli.CommandLine.Parameters;
  * @since 4.0.1
  */
 public class InteractiveParameterConsumer implements IParameterConsumer {
-	
-	private final ConsoleReader reader;
 
-	public InteractiveParameterConsumer(ConsoleReader reader) {
-		this.reader = reader;
-	}
+    private final ConsoleReader reader;
 
-	public void consumeParameters(Stack<String> args, ArgSpec argSpec, CommandSpec commandSpec) {
-		try {
-			argSpec.setValue(reader.readLine(String
-					.format("Enter %s: ", argSpec.paramLabel()), '\0'));
-		} catch (IOException e) {
-			throw new CommandLine.ParameterException(commandSpec.commandLine()
-						, "Error while reading interactivly", e, argSpec, "");
-		}
-	}
+    public InteractiveParameterConsumer(ConsoleReader reader) {
+        this.reader = reader;
+    }
+
+    public void consumeParameters(Stack<String> args, ArgSpec argSpec, CommandSpec commandSpec) {
+        try {
+            argSpec.setValue(reader.readLine(String
+                        .format("Enter %s: ", argSpec.paramLabel()), '\0'));
+        } catch (IOException e) {
+            throw new CommandLine.ParameterException(commandSpec.commandLine()
+                    , "Error while reading interactivly", e, argSpec, "");
+        }
+    }
 }
