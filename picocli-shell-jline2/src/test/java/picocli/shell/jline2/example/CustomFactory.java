@@ -16,20 +16,20 @@ import picocli.CommandLine.IFactory;
  * @see <a href="https://picocli.info/#_dependency_injection">https://picocli.info/#_dependency_injection</a>
  */
 public class CustomFactory implements IFactory {
-	
-	private final IFactory factory = CommandLine.defaultFactory();
-	private final List<Object> instances;
-	
-	public CustomFactory(Object... instances) {
-		this.instances = Arrays.asList(instances);
-	}
 
-	public <K> K create(Class<K> cls) throws Exception {
-		for(Object obj : instances) {
-			if(cls.isAssignableFrom(obj.getClass())) {
-				return cls.cast(obj);
-			}
-		}
-		return factory.create(cls);
-	}
+    private final IFactory factory = CommandLine.defaultFactory();
+    private final List<Object> instances;
+
+    public CustomFactory(Object... instances) {
+        this.instances = Arrays.asList(instances);
+    }
+
+    public <K> K create(Class<K> cls) throws Exception {
+        for(Object obj : instances) {
+            if(cls.isAssignableFrom(obj.getClass())) {
+                return cls.cast(obj);
+            }
+        }
+        return factory.create(cls);
+    }
 }
