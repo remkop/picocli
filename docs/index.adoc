@@ -316,9 +316,9 @@ The `picocli-examples` module has https://github.com/remkop/picocli/blob/master/
 ====
 
 [CAUTION]
-.Interactive options and shell applications with JLine 2/3
+.Interactive options and shell applications with JLine 2
 ====
-TODO
+Interactive options do not work in conjuction with JLine 2's `ConsoleReader`. Either implement a `IParameterConsumer` which uses `ConsoleReader` directly or use `picocli-shell-jline3`.
 ====
 
 === Short (POSIX) Options
