@@ -1177,6 +1177,21 @@ Another idea is to add a separate different option (that could be named <code>--
 </tr>
 </table>
 </div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+<div class="title">Interactive options and shell applications with JLine 2</div>
+<div class="paragraph">
+<p>Interactive options do not work in conjuction with JLine 2&#8217;s <code>ConsoleReader</code>. Either implement a <a href="#_custom_parameter_processing"><code>IParameterConsumer</code></a> which uses JLine2&#8217;s <code>ConsoleReader</code> directly or use <code>picocli-shell-jline3</code>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -6730,7 +6745,35 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 <div class="paragraph">
 <p>From 4.0, picocli provides a custom factory in the <code>picocli-spring-boot-starter</code> module.
-The below example shows how to use picocli with Spring Boot:</p>
+To use this custom factory, add the following dependency:</p>
+</div>
+<div class="paragraph">
+<p>Maven:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
+  <span class="tag">&lt;groupId&gt;</span>info.picocli<span class="tag">&lt;/groupId&gt;</span>
+  <span class="tag">&lt;artifactId&gt;</span>picocli-spring-boot-starter<span class="tag">&lt;/artifactId&gt;</span>
+  <span class="tag">&lt;version&gt;</span>4.0.1<span class="tag">&lt;/version&gt;</span>
+<span class="tag">&lt;/dependency&gt;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Gradle:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>dependencies {
+    compile "info.picocli:picocli-spring-boot-starter:4.0.1"
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will bring in the <code>info.picocli:picocli</code> and <code>org.springframework.boot:spring-boot-starter</code> dependencies.</p>
+</div>
+<div class="paragraph">
+<p>The below example shows how to use picocli with Spring Boot:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -6745,13 +6788,16 @@ The below example shows how to use picocli with Spring Boot:</p>
 
 <span class="annotation">@SpringBootApplication</span>
 <span class="directive">public</span> <span class="type">class</span> <span class="class">MySpringApp</span> <span class="directive">implements</span> CommandLineRunner, ExitCodeGenerator {
+
+    <span class="directive">private</span> IFactory factory;    <span class="comment">// auto-configured to inject PicocliSpringFactory</span>
+    <span class="directive">private</span> MyCommand myCommand; <span class="comment">// your @picocli.CommandLine.Command-annotated class</span>
     <span class="directive">private</span> <span class="type">int</span> exitCode;
 
-    <span class="annotation">@Autowired</span>
-    IFactory factory; <span class="comment">// auto-configured to inject PicocliSpringFactory</span>
-
-    <span class="annotation">@Autowired</span>
-    MyCommand myCommand; <span class="comment">// your @picocli.CommandLine.Command-annotated class</span>
+    <span class="comment">// constructor injection</span>
+    MySpringApp(IFactory factory, MyCommand myCommand) {
+        <span class="local-variable">this</span>.factory = factory;
+        <span class="local-variable">this</span>.myCommand = myCommand;
+    }
 
     <span class="annotation">@Override</span>
     <span class="directive">public</span> <span class="type">void</span> run(<span class="predefined-type">String</span>... args) {
@@ -6770,6 +6816,9 @@ The below example shows how to use picocli with Spring Boot:</p>
     }
 }</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>See the <a href="https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter">picocli-spring-boot-starter README</a> for another example.</p>
 </div>
 <div class="admonitionblock tip">
 <table>

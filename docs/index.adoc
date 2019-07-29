@@ -318,7 +318,7 @@ The `picocli-examples` module has https://github.com/remkop/picocli/blob/master/
 [CAUTION]
 .Interactive options and shell applications with JLine 2
 ====
-Interactive options do not work in conjuction with JLine 2's `ConsoleReader`. Either implement a `IParameterConsumer` which uses `ConsoleReader` directly or use `picocli-shell-jline3`.
+Interactive options do not work in conjuction with JLine 2's `ConsoleReader`. Either implement a <<Custom Parameter Processing,`IParameterConsumer`>> which uses JLine2's `ConsoleReader` directly or use `picocli-shell-jline3`.
 ====
 
 === Short (POSIX) Options
@@ -4245,6 +4245,26 @@ public class InjectionDemo implements Runnable {
 image:https://picocli.info/images/spring-boot.png[Spring Boot Logo,width=350,height=167]
 
 From 4.0, picocli provides a custom factory in the `picocli-spring-boot-starter` module.
+To use this custom factory, add the following dependency:
+
+Maven:
+```xml
+<dependency>
+  <groupId>info.picocli</groupId>
+  <artifactId>picocli-spring-boot-starter</artifactId>
+  <version>4.0.1</version>
+</dependency>
+```
+
+Gradle:
+```
+dependencies {
+    compile "info.picocli:picocli-spring-boot-starter:4.0.1"
+}
+```
+
+This will bring in the `info.picocli:picocli` and `org.springframework.boot:spring-boot-starter` dependencies.
+
 The below example shows how to use picocli with Spring Boot:
 
 [source,java]
@@ -4260,13 +4280,16 @@ import picocli.CommandLine.IFactory;
 
 @SpringBootApplication
 public class MySpringApp implements CommandLineRunner, ExitCodeGenerator {
+
+    private IFactory factory;    // auto-configured to inject PicocliSpringFactory
+    private MyCommand myCommand; // your @picocli.CommandLine.Command-annotated class
     private int exitCode;
 
-    @Autowired
-    IFactory factory; // auto-configured to inject PicocliSpringFactory
-
-    @Autowired
-    MyCommand myCommand; // your @picocli.CommandLine.Command-annotated class
+    // constructor injection
+    MySpringApp(IFactory factory, MyCommand myCommand) {
+        this.factory = factory;
+        this.myCommand = myCommand;
+    }
 
     @Override
     public void run(String... args) {
@@ -4285,6 +4308,8 @@ public class MySpringApp implements CommandLineRunner, ExitCodeGenerator {
     }
 }
 ----
+
+See the https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter[picocli-spring-boot-starter README] for another example.
 
 [TIP]
 ====
