@@ -19,6 +19,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.0.2-fixes"></a> Fixed issues
+- [#775] (DOC) Document jline2 incompatibility with picocli's `interactive` options for passwords, and update the example to show a workaround. Thanks to [querqueq](https://github.com/querqueq) for the pull request.
 - [#770][#771] (DOC) Improve example code in picocli-spring-boot-starter README. Thanks to [Stéphane Nicoll](https://github.com/snicoll) for the pull requests.
 
 ## <a name="4.0.2-deprecated"></a> Deprecations
