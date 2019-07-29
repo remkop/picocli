@@ -1,6 +1,34 @@
 # picocli Release Notes
 
 
+# <a name="4.0.2"></a> Picocli 4.0.2
+The picocli community is pleased to announce picocli 4.0.2.
+
+This release contains a bugfixes and enhancements.
+
+This is the fifty-nineth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.0.2"></a> Table of Contents
+* [New and noteworthy](#4.0.2-new)
+* [Fixed issues](#4.0.2-fixes)
+* [Deprecations](#4.0.2-deprecated)
+* [Potential breaking changes](#4.0.2-breaking-changes)
+
+## <a name="4.0.2-new"></a> New and Noteworthy
+
+
+## <a name="4.0.2-fixes"></a> Fixed issues
+- [#770][#771] (DOC) Improve example code in picocli-spring-boot-starter README. Thanks to [Stéphane Nicoll](https://github.com/snicoll) for the pull requests.
+
+## <a name="4.0.2-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.0.2-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 # <a name="4.0.1"></a> Picocli 4.0.1
 The picocli community is pleased to announce picocli 4.0.1.
 
