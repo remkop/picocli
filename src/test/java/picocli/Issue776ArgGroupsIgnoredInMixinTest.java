@@ -11,7 +11,7 @@ import picocli.CommandLine.Option;
 import static org.junit.Assert.*;
 
 
-public class Issue776OptionHeadingIgnoredInMixinTest {
+public class Issue776ArgGroupsIgnoredInMixinTest {
 
     @Command(name = "test",
             description = "Picocli test.",
@@ -46,7 +46,6 @@ public class Issue776OptionHeadingIgnoredInMixinTest {
         }
     }
 
-    @Ignore
     @Test
     public void testUsage() {
         String expected = String.format("" +

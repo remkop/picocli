@@ -5557,8 +5557,15 @@ public class CommandLine {
                 for (Map.Entry<String, CommandLine> entry : mixin.subcommands().entrySet()) {
                     addSubcommand(entry.getKey(), entry.getValue());
                 }
-                for (OptionSpec optionSpec         : mixin.options())              { addOption(optionSpec); }
-                for (PositionalParamSpec paramSpec : mixin.positionalParameters()) { addPositional(paramSpec); }
+                Set<OptionSpec> options = new HashSet<OptionSpec>(mixin.options());
+                Set<PositionalParamSpec> positionals = new HashSet<PositionalParamSpec>(mixin.positionalParameters());
+                for (ArgGroupSpec argGroupSpec : mixin.argGroups()) {
+                    addArgGroup(argGroupSpec);
+                    options.removeAll(argGroupSpec.options());
+                    positionals.removeAll(argGroupSpec.positionalParameters());
+                }
+                for (OptionSpec optionSpec         : options)     { addOption(optionSpec); }
+                for (PositionalParamSpec paramSpec : positionals) { addPositional(paramSpec); }
                 return this;
             }
 
