@@ -20,6 +20,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.2-fixes"></a> Fixed issues
 - [#776] Bugfix: Argument groups in mixins were ignored. Thanks to [Matteo Melli](https://github.com/teoincontatto) for the bug report. 
+- [#774] (DOC) Add example demonstrating how to left-align long options in the usage help.
 - [#766] (DOC) Update user manual: mention the dependency required for using `PicocliSpringFactory`. Thanks to [rome-legacy](https://github.com/rome-legacy) for the suggestion.
 - [#775] (DOC) Document jline2 incompatibility with picocli's `interactive` options for passwords, and update the example to show a workaround. Thanks to [querqueq](https://github.com/querqueq) for the pull request.
 - [#770][#771] (DOC) Improve example code in `picocli-spring-boot-starter` README. Thanks to [Stéphane Nicoll](https://github.com/snicoll) for the pull requests.
