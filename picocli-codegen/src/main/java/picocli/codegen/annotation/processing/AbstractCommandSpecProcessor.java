@@ -812,7 +812,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                     logger.fine("Building ArgGroupSpec for " + groups + " in arg group " + group);
                     group.addSubgroup(groups.getValue().build());
                 } else {
-                    CommandSpec commandSpec = commands.get(groups.getKey());
+                    CommandSpec commandSpec = commands.get(groups.getKey().getEnclosingElement());
                     if (commandSpec == null) {
                         proc.error(groups.getKey(), "@ArgGroups must be enclosed in a @Command or @ArgGroup-annotated element, but was %s: %s", groups.getKey().getEnclosingElement(), groups.getKey().getEnclosingElement().getSimpleName());
                     } else {
