@@ -32,6 +32,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.SimpleElementVisitor6;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -458,7 +459,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             error(element, "Only methods or variables can be annotated with @ArgGroup, not %s", element);
         } else {
             builder.updateArgGroupAttributes(element.getAnnotation(ArgGroup.class));
-            context.argGroups.put(element, builder);
+            context.argGroupElements.put(element, builder);
         }
     }
 
@@ -545,7 +546,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 TypedMember typedMember = new TypedMember(variable, -1);
                 ArgGroupSpec.Builder builder = ArgGroupSpec.builder(typedMember);
                 builder.updateArgGroupAttributes(variable.getAnnotation(ArgGroup.class));
-                context.argGroups.put(variable, builder);
+                context.argGroupElements.put(variable, builder);
 
             } else if (!isMixin) { // params without any annotation are also positional
                 position++;
@@ -763,7 +764,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         Map<TypeMirror, List<CommandSpec>> commandTypes = new LinkedHashMap<TypeMirror, List<CommandSpec>>();
         Map<Element, OptionSpec.Builder> options = new LinkedHashMap<Element, OptionSpec.Builder>();
         Map<Element, PositionalParamSpec.Builder> parameters = new LinkedHashMap<Element, PositionalParamSpec.Builder>();
-        Map<Element, ArgGroupSpec.Builder> argGroups = new LinkedHashMap<Element, ArgGroupSpec.Builder>();
+        Map<Element, ArgGroupSpec.Builder> argGroupElements = new LinkedHashMap<Element, ArgGroupSpec.Builder>();
         Map<CommandSpec, Map<CommandSpec, String>> mixinInfoMap = new IdentityHashMap<CommandSpec, Map<CommandSpec, String>>();
         Map<Element, IAnnotatedElement> parentCommandElements = new LinkedHashMap<Element, IAnnotatedElement>();
         Map<Element, IAnnotatedElement> specElements = new LinkedHashMap<Element, IAnnotatedElement>();
@@ -785,42 +786,78 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             }
 
             for (Map.Entry<Element, OptionSpec.Builder> option : options.entrySet()) {
-                ArgGroupSpec.Builder group = argGroups.get(option.getKey().getEnclosingElement());
+                ArgGroupSpec.Builder group = argGroupElements.get(option.getKey().getEnclosingElement());
                 if (group != null) {
                     logger.fine("Building OptionSpec for " + option + " in arg group " + group);
                     group.addArg(option.getValue().build());
                 } else {
-                    CommandSpec commandSpec = getOrCreateCommandSpecForArg(option, commands);
+                    CommandSpec commandSpec = getOrCreateCommandSpecForArg(option.getKey(), commands);
                     logger.fine("Building OptionSpec for " + option + " in spec " + commandSpec);
                     commandSpec.addOption(option.getValue().build());
                 }
             }
             for (Map.Entry<Element, PositionalParamSpec.Builder> parameter : parameters.entrySet()) {
-                ArgGroupSpec.Builder group = argGroups.get(parameter.getKey().getEnclosingElement());
+                ArgGroupSpec.Builder group = argGroupElements.get(parameter.getKey().getEnclosingElement());
                 if (group != null) {
                     logger.fine("Building PositionalParamSpec for " + parameter + " in arg group " + group);
                     group.addArg(parameter.getValue().build());
                 } else {
-                    CommandSpec commandSpec = getOrCreateCommandSpecForArg(parameter, commands);
+                    CommandSpec commandSpec = getOrCreateCommandSpecForArg(parameter.getKey(), commands);
                     logger.fine("Building PositionalParamSpec for " + parameter);
                     commandSpec.addPositional(parameter.getValue().build());
                 }
             }
-            for (Map.Entry<Element, ArgGroupSpec.Builder> groups : argGroups.entrySet()) {
-                ArgGroupSpec.Builder group = argGroups.get(groups.getKey().getEnclosingElement());
-                if (group != null) {
-                    logger.fine("Building ArgGroupSpec for " + groups + " in arg group " + group);
-                    group.addSubgroup(groups.getValue().build());
-                } else {
-                    CommandSpec commandSpec = commands.get(groups.getKey().getEnclosingElement());
-                    if (commandSpec == null) {
-                        proc.error(groups.getKey(), "@ArgGroups must be enclosed in a @Command or @ArgGroup-annotated element, but was %s: %s", groups.getKey().getEnclosingElement(), groups.getKey().getEnclosingElement().getSimpleName());
-                    } else {
-                        logger.fine("Building ArgGroupSpec for " + groups + " in command " + commandSpec);
-                        commandSpec.addArgGroup(groups.getValue().build());
+            // first, loop over all @ArgGroup-annotated elements and
+            // populate the associated builder with @Options and @Parameters
+            // (but no sub-groups yet)
+            Map<TypeElement, ArgGroupSpec.Builder> argGroups = new LinkedHashMap<TypeElement, ArgGroupSpec.Builder>();
+            for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElements.entrySet()) {
+                Element argGroupElement = entry.getKey(); // field, method or parameter
+                ArgGroupSpec.Builder builder = entry.getValue();
+
+                Types typeUtils = proc.processingEnv.getTypeUtils();
+
+                // get the type or return type of the @ArgGroup-annotated field, method or parameter
+                TypeMirror typeMirror = argGroupElement.asType();
+                if (typeMirror.getKind() != TypeKind.DECLARED && typeMirror.getKind() != TypeKind.ARRAY) {
+                    proc.error(entry.getKey(), "The type of an @ArgGroup-annotated element '%s' must be a declared class, a collection or an array, but was %s", argGroupElement.getSimpleName(), typeMirror);
+                    return;
+                }
+                CompileTimeTypeInfo typeInfo = new CompileTimeTypeInfo(typeMirror);
+                TypeElement typeElement = (TypeElement) typeUtils.asElement(typeInfo.auxTypeMirrors.get(0));
+
+                CommandSpec argsHolder = commands.get(typeElement);
+                if (argsHolder != null) {
+                    // The command class that holds this group has a @Command annotation
+                    // or @Option or @Parameters-annotated elements.
+                    // (TODO: it may have a @Mixin annotation: should mixins be done before groups?)
+                    for (OptionSpec option : argsHolder.options()) {
+                        builder.addArg(option);
+                    }
+                    for (PositionalParamSpec positional : argsHolder.positionalParameters()) {
+                        builder.addArg(positional);
                     }
                 }
+                argGroups.put(typeElement, builder);
             }
+
+            for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElements.entrySet()) {
+                Element argGroupElement = entry.getKey(); // field, method or parameter
+                ArgGroupSpec.Builder builder = entry.getValue();
+
+                Types typeUtils = proc.processingEnv.getTypeUtils();
+                TypeElement parentGroupElement = (TypeElement) typeUtils.asElement(argGroupElement.getEnclosingElement().asType());
+                ArgGroupSpec.Builder parentGroup = argGroups.get(parentGroupElement);
+                if (parentGroup != null) {
+                    parentGroup.addSubgroup(builder.build());
+                } else {
+                    CommandSpec commandSpec = getOrCreateCommandSpecForArg(argGroupElement, commands);
+                    logger.fine("Building ArgGroupSpec for " + entry + " in command " + commandSpec);
+                    commandSpec.addArgGroup(builder.build());
+                }
+            }
+
+            // @Spec
             for (Map.Entry<Element, IAnnotatedElement> entry : specElements.entrySet()) {
                 CommandSpec commandSpec1 = commands.get(entry.getKey().getEnclosingElement());
                 if (commandSpec1 != null) {
@@ -870,12 +907,12 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             }
         }
 
-        private static CommandSpec getOrCreateCommandSpecForArg(Map.Entry<Element, ?> argElement,
+        private static CommandSpec getOrCreateCommandSpecForArg(Element argElement,
                                                                 Map<Element, CommandSpec> commands) {
-            Element key = argElement.getKey().getEnclosingElement();
+            Element key = argElement.getEnclosingElement();
             CommandSpec commandSpec = commands.get(key);
             if (commandSpec == null) {
-                logger.fine("Element " + argElement.getKey() + " is enclosed by " + key + " which does not have a @Command annotation");
+                logger.fine("Element " + argElement + " is enclosed by " + key + " which does not have a @Command annotation");
                 commandSpec = CommandSpec.forAnnotatedObjectLenient(key);
                 commandSpec.interpolateVariables(false);
                 commands.put(key, commandSpec);

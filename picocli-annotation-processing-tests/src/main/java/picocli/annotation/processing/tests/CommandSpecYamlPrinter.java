@@ -2,6 +2,7 @@ package picocli.annotation.processing.tests;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.ArgGroupSpec;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
@@ -55,6 +56,7 @@ public class CommandSpecYamlPrinter {
         pw.printf("%sversionProvider: %s%n", indent, spec.versionProvider());
         pw.printf("%sversion: %s%n", indent, Arrays.toString(spec.version()));
 
+        printGroupList(spec.argGroups(), pw, indent);
         List<OptionSpec> options = new ArrayList<OptionSpec>(spec.options());
         Collections.sort(options, new Comparator<OptionSpec>() {
             public int compare(OptionSpec o1, OptionSpec o2) {
@@ -153,6 +155,25 @@ public class CommandSpecYamlPrinter {
             printCommandSpec(entry.getValue().getCommandSpec(),
                     indent + "# " + entry.getKey(), pw, indent + "- ", indent + "  ");
         }
+    }
+
+    private void printGroupList(List<ArgGroupSpec> argGroups, PrintWriter pw, String indent) {
+        pw.printf("%sArgGroups:", indent);
+        pw.println(argGroups.isEmpty() ? " []" : "");
+        for (ArgGroupSpec group : argGroups) {
+            printGroup(group, pw, indent);
+        }
+    }
+
+    private void printGroup(ArgGroupSpec group, PrintWriter pw, String indent) {
+        pw.printf("%ssynopsis: %s%n", indent + "- ", group.synopsis());
+        indent += "  ";
+        pw.printf("%smultiplicity: %s%n", indent, group.multiplicity());
+        pw.printf("%sexclusive: %s%n", indent, group.exclusive());
+        pw.printf("%sheading: %s%n", indent, group.heading());
+        pw.printf("%sheadingKey: %s%n", indent, group.headingKey());
+        pw.printf("%ssubgroupCount: %s%n", indent, group.subgroups().size());
+        pw.printf("%sargCount: %s%n", indent, group.args().size());
     }
 
     private void printOptionList(List<OptionSpec> options, PrintWriter pw, String indent) {
