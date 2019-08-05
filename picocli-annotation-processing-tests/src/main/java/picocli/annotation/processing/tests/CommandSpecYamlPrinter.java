@@ -166,7 +166,7 @@ public class CommandSpecYamlPrinter {
     }
 
     private void printGroup(ArgGroupSpec group, PrintWriter pw, String indent) {
-        pw.printf("%ssynopsis: %s%n", indent + "- ", group.synopsis());
+        pw.printf("%ssynopsis: '%s'%n", indent + "- ", group.synopsis());
         indent += "  ";
         pw.printf("%smultiplicity: %s%n", indent, group.multiplicity());
         pw.printf("%sexclusive: %s%n", indent, group.exclusive());

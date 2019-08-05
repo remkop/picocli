@@ -843,17 +843,17 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
 
             for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElements.entrySet()) {
                 Element argGroupElement = entry.getKey(); // field, method or parameter
-                ArgGroupSpec.Builder builder = entry.getValue();
+                ArgGroupSpec group = entry.getValue().build();
+
+                CommandSpec commandSpec = getOrCreateCommandSpecForArg(argGroupElement, commands);
+                logger.fine("Building ArgGroupSpec for " + entry + " in command " + commandSpec);
+                commandSpec.addArgGroup(group);
 
                 Types typeUtils = proc.processingEnv.getTypeUtils();
                 TypeElement parentGroupElement = (TypeElement) typeUtils.asElement(argGroupElement.getEnclosingElement().asType());
                 ArgGroupSpec.Builder parentGroup = argGroups.get(parentGroupElement);
                 if (parentGroup != null) {
-                    parentGroup.addSubgroup(builder.build());
-                } else {
-                    CommandSpec commandSpec = getOrCreateCommandSpecForArg(argGroupElement, commands);
-                    logger.fine("Building ArgGroupSpec for " + entry + " in command " + commandSpec);
-                    commandSpec.addArgGroup(builder.build());
+                    parentGroup.addSubgroup(group);
                 }
             }
 

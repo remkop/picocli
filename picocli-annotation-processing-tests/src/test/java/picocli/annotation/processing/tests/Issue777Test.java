@@ -5,37 +5,25 @@ import com.google.testing.compile.JavaFileObjects;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import javax.annotation.processing.Processor;
-import javax.tools.StandardLocation;
-
 import static com.google.testing.compile.CompilationSubject.assertThat;
-import static com.google.testing.compile.Compiler.javac;
+import static picocli.annotation.processing.tests.Resources.slurp;
+import static picocli.annotation.processing.tests.YamlAssert.compareCommandYamlDump;
 
 public class Issue777Test {
-//    @Ignore
+    @Ignore
     @Test
     public void testIssue777() {
-        CommandSpec2YamlProcessor processor = new CommandSpec2YamlProcessor();
-        Compilation compilation =
-                javac()
-                        .withProcessors(processor)
-                        .compile(JavaFileObjects.forResource(
-                                "picocli/issue777/MutuallyExclusiveOptionsDemo.java"));
+        Compilation compilation = compareCommandYamlDump(slurp("/picocli/issue777/MutuallyExclusiveOptionsDemo.yaml"),
+                JavaFileObjects.forResource("picocli/issue777/MutuallyExclusiveOptionsDemo.java"));
 
         assertThat(compilation).succeeded();
-
-        processor.strings.forEach(System.out::println);
     }
 
-//    @Ignore
+    @Ignore
     @Test
     public void testIssue777Composite() {
-        CommandSpec2YamlProcessor processor = new CommandSpec2YamlProcessor();
-        Compilation compilation =
-                javac()
-                        .withProcessors(processor)
-                        .compile(JavaFileObjects.forResource(
-                                "picocli/issue777/CompositeGroupDemo.java"));
+        Compilation compilation = compareCommandYamlDump(slurp("/picocli/issue777/CompositeGroupDemo.yaml"),
+                JavaFileObjects.forResource("picocli/issue777/CompositeGroupDemo.java"));
 
         assertThat(compilation).succeeded();
     }
