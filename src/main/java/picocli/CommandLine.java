@@ -5488,16 +5488,20 @@ public class CommandLine {
              * @throws InitializationException if the specified group or one of its {@linkplain ArgGroupSpec#parentGroup() ancestors} has already been added
              * @since 4.0 */
             public CommandSpec addArgGroup(ArgGroupSpec group) {
+                return addArgGroup(group, new HashSet<OptionSpec>(), new HashSet<PositionalParamSpec>());
+            }
+            private CommandSpec addArgGroup(ArgGroupSpec group, Set<OptionSpec> groupOptions, Set<PositionalParamSpec> groupPositionals) {
                 Assert.notNull(group, "group");
                 if (group.parentGroup() != null) {
                     throw new InitializationException("Groups that are part of another group should not be added to a command. Add only the top-level group.");
                 }
                 check(group, flatten(groups, new HashSet<ArgGroupSpec>()));
                 this.groups.add(group);
-                addGroupArgsToCommand(group, new HashMap<String, ArgGroupSpec>());
+                addGroupArgsToCommand(group, new HashMap<String, ArgGroupSpec>(), groupOptions, groupPositionals);
                 return this;
             }
-            private void addGroupArgsToCommand(ArgGroupSpec group, Map<String, ArgGroupSpec> added) {
+
+            private void addGroupArgsToCommand(ArgGroupSpec group, Map<String, ArgGroupSpec> added, Set<OptionSpec> groupOptions, Set<PositionalParamSpec> groupPositionals) {
                 Map<String, OptionSpec> options = new HashMap<String, OptionSpec>();
                 for (ArgSpec arg : group.args()) {
                     if (arg.isOption()) {
@@ -5513,10 +5517,13 @@ public class CommandLine {
                         }
                         for (String name : names) { added.put(name, group); }
                         for (String name : names) { options.put(name, (OptionSpec) arg); }
+                        groupOptions.add((OptionSpec) arg);
+                    } else {
+                        groupPositionals.add((PositionalParamSpec) arg);
                     }
                     add(arg);
                 }
-                for (ArgGroupSpec sub : group.subgroups()) { addGroupArgsToCommand(sub, added); }
+                for (ArgGroupSpec sub : group.subgroups()) { addGroupArgsToCommand(sub, added, groupOptions, groupPositionals); }
             }
             private Set<ArgGroupSpec> flatten(Collection<ArgGroupSpec> groups, Set<ArgGroupSpec> result) {
                 for (ArgGroupSpec group : groups) { flatten(group, result); } return result;
@@ -5560,9 +5567,11 @@ public class CommandLine {
                 Set<OptionSpec> options = new HashSet<OptionSpec>(mixin.options());
                 Set<PositionalParamSpec> positionals = new HashSet<PositionalParamSpec>(mixin.positionalParameters());
                 for (ArgGroupSpec argGroupSpec : mixin.argGroups()) {
-                    addArgGroup(argGroupSpec);
-                    options.removeAll(argGroupSpec.options());
-                    positionals.removeAll(argGroupSpec.positionalParameters());
+                    Set<OptionSpec> groupOptions = new HashSet<OptionSpec>();
+                    Set<PositionalParamSpec> groupPositionals = new HashSet<PositionalParamSpec>();
+                    addArgGroup(argGroupSpec, groupOptions, groupPositionals);
+                    options.removeAll(groupOptions);
+                    positionals.removeAll(groupPositionals);
                 }
                 for (OptionSpec optionSpec         : options)     { addOption(optionSpec); }
                 for (PositionalParamSpec paramSpec : positionals) { addPositional(paramSpec); }

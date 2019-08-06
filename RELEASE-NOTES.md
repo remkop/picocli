@@ -19,6 +19,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.0.2-fixes"></a> Fixed issues
+- [#779] Bugfix: `DuplicateOptionAnnotationsException` when a nested group is defined inside a mixin. Thanks to [Matteo Melli](https://github.com/teoincontatto) for the bug report. 
 - [#777] Bugfix: Codegen failed when command contains field with argGroup annotation. Thanks to [eomeara](https://github.com/eomeara) for the bug report.
 - [#776] Bugfix: Argument groups in mixins were ignored. Thanks to [Matteo Melli](https://github.com/teoincontatto) for the bug report. 
 - [#774] (DOC) Add example demonstrating how to left-align long options in the usage help.
