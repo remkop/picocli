@@ -38,6 +38,8 @@ public class NativeImageConfigGeneratorProcessor extends AbstractCompositeGenera
      */
     public static final String OPTION_PROJECT = "project";
 
+    public NativeImageConfigGeneratorProcessor() {}
+
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
