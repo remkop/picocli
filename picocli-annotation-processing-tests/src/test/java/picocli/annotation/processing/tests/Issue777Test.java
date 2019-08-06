@@ -7,10 +7,10 @@ import org.junit.Test;
 
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static picocli.annotation.processing.tests.Resources.slurp;
+import static picocli.annotation.processing.tests.Resources.slurpAll;
 import static picocli.annotation.processing.tests.YamlAssert.compareCommandYamlDump;
 
 public class Issue777Test {
-    @Ignore
     @Test
     public void testIssue777() {
         Compilation compilation = compareCommandYamlDump(slurp("/picocli/issue777/MutuallyExclusiveOptionsDemo.yaml"),
@@ -19,10 +19,16 @@ public class Issue777Test {
         assertThat(compilation).succeeded();
     }
 
-    @Ignore
     @Test
     public void testIssue777Composite() {
-        Compilation compilation = compareCommandYamlDump(slurp("/picocli/issue777/CompositeGroupDemo.yaml"),
+        Compilation compilation = compareCommandYamlDump(
+                slurpAll("/picocli/issue777/CompositeGroupDemo.yaml",
+                        "/picocli/issue777/Dependent.yaml",
+                        "/picocli/issue777/Exclusive.yaml",
+                        "/picocli/issue777/Exclusive2.yaml",
+                        "/picocli/issue777/Composite2.yaml",
+                        "/picocli/issue777/Composite.yaml",
+                        "/picocli/issue777/All.yaml"),
                 JavaFileObjects.forResource("picocli/issue777/CompositeGroupDemo.java"));
 
         assertThat(compilation).succeeded();

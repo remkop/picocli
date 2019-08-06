@@ -89,10 +89,12 @@ public final class YamlAssert {
     private static void assertSimilarTypeInfo(String expectedLine, String actualLine) {
         final String EXPECTED_PREFIX = "typeInfo: RuntimeTypeInfo(";
         final String ACTUAL_PREFIX = "typeInfo: CompileTimeTypeInfo(";
-        assertThat(expectedLine.trim(), startsWith(EXPECTED_PREFIX));
+        assertThat(expectedLine.trim(), anyOf(startsWith(EXPECTED_PREFIX), startsWith(ACTUAL_PREFIX)));
         assertThat(actualLine.trim(), startsWith(ACTUAL_PREFIX));
 
-        String expected = expectedLine.substring(expectedLine.indexOf(EXPECTED_PREFIX) + EXPECTED_PREFIX.length());
+        String expected = expectedLine.trim().startsWith(EXPECTED_PREFIX)
+                ? expectedLine.substring(expectedLine.indexOf(EXPECTED_PREFIX) + EXPECTED_PREFIX.length())
+                : expectedLine.substring(expectedLine.indexOf(ACTUAL_PREFIX) + ACTUAL_PREFIX.length());
         String actual = actualLine.substring(actualLine.indexOf(ACTUAL_PREFIX) + ACTUAL_PREFIX.length());
 
         String expected2 = expected.replace("class ", "");
