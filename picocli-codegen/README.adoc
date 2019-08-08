@@ -70,7 +70,7 @@ An alternative that works with older versions of the `maven-compiler-plugin` is 
   <groupId>info.picocli</groupId>
   <artifactId>picocli-codegen</artifactId>
   <version>4.0.1</version>
-  <provided>true</provided>
+  <scope>provided</scope>
 </dependency>
 ```
 
