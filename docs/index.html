@@ -2554,6 +2554,8 @@ CommandLine cmd = <span class="keyword">new</span> CommandLine(example);
 </div>
 <div class="sect2">
 <h3 id="_option_sections_in_usage_help">8.3. Option Sections in Usage Help</h3>
+<div class="sect3">
+<h4 id="_use_heading_to_enable_option_sections">8.3.1. Use Heading to Enable Option Sections</h4>
 <div class="paragraph">
 <p>The example below uses groups to define options sections in the usage help.
 When a group has a non-null <code>heading</code> (or <code>headingKey</code>), the options in the group are given the specified heading in the usage help message.
@@ -2614,6 +2616,23 @@ This is the second section
 <div class="paragraph">
 <p>Note that the heading text must end with <code>%n</code> to insert a newline between the heading text and the first option.
 This is for consistency with other headings in the usage help, like <code>@Command(headerHeading = "Usage:%n", optionListHeading = "%nOptions:%n")</code>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_option_section_order">8.3.2. Option Section Order</h4>
+<div class="paragraph">
+<p>Options that are not in any argument group are always displayed before the option sections.</p>
+</div>
+<div class="paragraph">
+<p>The ordering of option sections can be controlled with the <code>order</code> attribute. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@ArgGroup</span>(heading = <span class="string"><span class="delimiter">&quot;</span><span class="content">First%n</span><span class="delimiter">&quot;</span></span>, order = <span class="integer">1</span>) Section1 section1;
+<span class="annotation">@ArgGroup</span>(heading = <span class="string"><span class="delimiter">&quot;</span><span class="content">Next%n</span><span class="delimiter">&quot;</span></span>,  order = <span class="integer">2</span>) Section2 section2;
+<span class="annotation">@ArgGroup</span>(heading = <span class="string"><span class="delimiter">&quot;</span><span class="content">Last%n</span><span class="delimiter">&quot;</span></span>,  order = <span class="integer">3</span>) Section3 section3;</code></pre>
+</div>
+</div>
 </div>
 </div>
 <div class="sect2">

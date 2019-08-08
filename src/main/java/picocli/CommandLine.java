@@ -4314,8 +4314,8 @@ public class CommandLine {
          * @see #heading() */
         boolean validate() default true;
         /** Determines the position in the options list in the usage help message at which this group should be shown.
-         * Options with a lower number are shown before options with a higher number.
-         * This attribute is only honored if {@link UsageMessageSpec#sortOptions()} is {@code false} for this command.*/
+         * Groups with a lower number are shown before groups with a higher number.
+         * This attribute is only honored for groups that have a {@link #heading() heading} (or a {@link #headingKey() headingKey} with a non-{@code null} resource bundle value).*/
         int order() default -1;
     }
     /**
@@ -8295,7 +8295,9 @@ public class CommandLine {
         public interface IOrdered {
             /** Returns the position in the options list in the usage help message at which this element should be shown.
              * Elements with a lower number are shown before elements with a higher number.
-             * This attribute is only honored if {@link UsageMessageSpec#sortOptions()} is {@code false} for this command. */
+             * For options, this attribute is only honored if {@link UsageMessageSpec#sortOptions()} is {@code false} for this command.
+             * For argument groups, this attribute is only honored for groups that have a {@link ArgGroup#heading() heading} (or a {@link ArgGroup#headingKey() headingKey} with a non-{@code null} value).
+             */
             int order();
         }
 
@@ -8373,8 +8375,8 @@ public class CommandLine {
             public boolean validate() { return validate; }
 
             /** Returns the position in the options list in the usage help message at which this group should be shown.
-             * Options with a lower number are shown before options with a higher number.
-             * This attribute is only honored if {@link UsageMessageSpec#sortOptions()} is {@code false} for this command. */
+             * Groups with a lower number are shown before groups with a higher number.
+             * This attribute is only honored for groups that have a {@link #heading() heading} (or a {@link #headingKey() headingKey} with a non-{@code null} resource bundle value).*/
             public int order() { return this.order; }
 
             /** Returns the heading of this group (may be {@code null}), used when generating the usage documentation.
@@ -8791,8 +8793,8 @@ public class CommandLine {
                 public Builder validate(boolean newValue) { validate = newValue; return this; }
 
                 /** Returns the position in the options list in the usage help message at which this group should be shown.
-                 * Options with a lower number are shown before options with a higher number.
-                 * This attribute is only honored if {@link UsageMessageSpec#sortOptions()} is {@code false} for this command.*/
+                 * Groups with a lower number are shown before groups with a higher number.
+                 * This attribute is only honored for groups that have a {@link #heading() heading} (or a {@link #headingKey() headingKey} with a non-{@code null} resource bundle value).*/
                 public int order() { return order; }
 
                 /** Sets the position in the options list in the usage help message at which this group should be shown, and returns this builder. */

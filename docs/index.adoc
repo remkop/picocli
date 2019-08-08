@@ -1237,6 +1237,8 @@ try {
 
 === Option Sections in Usage Help
 
+==== Use Heading to Enable Option Sections
+
 The example below uses groups to define options sections in the usage help.
 When a group has a non-null `heading` (or `headingKey`), the options in the group are given the specified heading in the usage help message.
 The `headingKey` attribute can be used to get the heading text from the command's resource bundle.
@@ -1291,6 +1293,18 @@ This is the second section
 
 Note that the heading text must end with `%n` to insert a newline between the heading text and the first option.
 This is for consistency with other headings in the usage help, like `@Command(headerHeading = "Usage:%n", optionListHeading = "%nOptions:%n")`.
+
+==== Option Section Order
+Options that are not in any argument group are always displayed before the option sections.
+
+The ordering of option sections can be controlled with the `order` attribute. For example:
+
+[source, java]
+----
+@ArgGroup(heading = "First%n", order = 1) Section1 section1;
+@ArgGroup(heading = "Next%n",  order = 2) Section2 section2;
+@ArgGroup(heading = "Last%n",  order = 3) Section3 section3;
+----
 
 === Repeating Composite Argument Groups
 
