@@ -5564,8 +5564,8 @@ public class CommandLine {
                 for (Map.Entry<String, CommandLine> entry : mixin.subcommands().entrySet()) {
                     addSubcommand(entry.getKey(), entry.getValue());
                 }
-                Set<OptionSpec> options = new HashSet<OptionSpec>(mixin.options());
-                Set<PositionalParamSpec> positionals = new HashSet<PositionalParamSpec>(mixin.positionalParameters());
+                Set<OptionSpec> options = new LinkedHashSet<OptionSpec>(mixin.options());
+                Set<PositionalParamSpec> positionals = new LinkedHashSet<PositionalParamSpec>(mixin.positionalParameters());
                 for (ArgGroupSpec argGroupSpec : mixin.argGroups()) {
                     Set<OptionSpec> groupOptions = new HashSet<OptionSpec>();
                     Set<PositionalParamSpec> groupPositionals = new HashSet<PositionalParamSpec>();

@@ -19,6 +19,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.0.2-fixes"></a> Fixed issues
+- [#781] Bugfix: Standard help mixin options not added in source order when running on Java 12+.
 - [#773] Bugfix: Add public `NativeImageConfigGeneratorProcessor` constructor to fix build error in IntelliJ IDEA 2019.2. Thanks to [Lukáš Petrovický](https://github.com/triceo) for raising this issue.
 - [#779] Bugfix: `DuplicateOptionAnnotationsException` when a nested group is defined inside a mixin. Thanks to [Matteo Melli](https://github.com/teoincontatto) for the bug report. 
 - [#777] Bugfix: Codegen failed when command contains field with argGroup annotation. Thanks to [eomeara](https://github.com/eomeara) for the bug report.
