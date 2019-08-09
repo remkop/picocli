@@ -94,7 +94,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
 
     static ConsoleHandler handler = new ConsoleHandler();
 
-    {
+    public AbstractCommandSpecProcessor() {
         for (Handler h : Logger.getLogger("picocli.annotation.processing").getHandlers()) {
             Logger.getLogger("picocli.annotation.processing").removeHandler(h);
         }

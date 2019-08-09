@@ -24,6 +24,8 @@ abstract class AbstractCompositeGeneratorProcessor extends AbstractCommandSpecPr
 
     protected List<IGenerator> generators = new ArrayList<IGenerator>();
 
+    public AbstractCompositeGeneratorProcessor() {}
+
     @Override
     protected boolean handleCommands(Map<Element, CommandSpec> commands,
                                      Set<? extends TypeElement> annotations,
