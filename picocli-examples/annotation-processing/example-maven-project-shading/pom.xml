@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.1"
+<project xmlns="http://maven.apache.org/POM/4.0.2"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.1 http://maven.apache.org/xsd/maven-4.0.1.xsd">
-  <modelVersion>4.0.1</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.2 http://maven.apache.org/xsd/maven-4.0.2.xsd">
+  <modelVersion>4.0.2</modelVersion>
 
   <groupId>org.myorg.myproject</groupId>
   <artifactId>myapp</artifactId>
@@ -22,7 +22,7 @@
             <path>
               <groupId>info.picocli</groupId>
               <artifactId>picocli-codegen</artifactId>
-              <version>4.0.1</version>
+              <version>4.0.2</version>
             </path>
           </annotationProcessorPaths>
           <compilerArgs>
@@ -80,7 +80,7 @@
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
-      <version>4.0.1</version>
+      <version>4.0.2</version>
     </dependency>
   </dependencies>
 </project>

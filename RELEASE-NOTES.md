@@ -1,7 +1,7 @@
 # picocli Release Notes
 
 
-# <a name="4.0.2"></a> Picocli 4.0.2 (UNRELEASED)
+# <a name="4.0.2"></a> Picocli 4.0.2
 The picocli community is pleased to announce picocli 4.0.2.
 
 This release contains a bugfixes and enhancements.

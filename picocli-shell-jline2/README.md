@@ -187,7 +187,7 @@ import picocli.CommandLine.Parameters;
  * <p>Similar to {@link Option#interactive()} and {@link Parameters#interactive()}.
  * Picocli's interactive and JLine's {@link ConsoleReader} do not work well together.
  * Thus delegating reading input to {@link ConsoleReader} should be preferred.
- * @since 4.0.1
+ * @since 4.0
  */
 public class InteractiveParameterConsumer implements IParameterConsumer {
 
@@ -223,7 +223,7 @@ import picocli.CommandLine.IFactory;
  * available.
  * <p>Usually this would be done with 
  * <a href="https://picocli.info/#_dependency_injection">dependency injection</a>.
- * @since 4.0.1
+ * @since 4.0.2
  * @see <a href="https://picocli.info/#_dependency_injection">https://picocli.info/#_dependency_injection</a>
  */
 public class CustomFactory implements IFactory {
