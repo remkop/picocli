@@ -641,7 +641,7 @@ CommandLine commandLine = new CommandLine(app)
 
 commandLine.parseArgs("-a", "AES/CBC/NoPadding", "en-GB");
 assert app.locale.toLanguageTag().equals("en-GB");
-assert app.cipher.getAlgorithm().equals("AES/CBC/NoPadding"));
+assert app.cipher.getAlgorithm().equals("AES/CBC/NoPadding");
 ----
 
 CAUTION: _Note on subcommands:_ the specified converter will be registered with the `CommandLine` object
@@ -702,7 +702,7 @@ import java.util.regex.Pattern;
 import java.io.File;
 
 class Convert {
-    @Option(names = "-patterns", description = "the regex patterns to use");
+    @Option(names = "-patterns", description = "the regex patterns to use")
     Pattern[] patterns;
 
     @Parameters(/* type = File.class, */ description = "the files to convert")
@@ -1013,7 +1013,7 @@ The maximum can be an exact upper bound, or it can be `"*"` to denote _any numbe
 [source, java]
 ----
 class ArityDemo {
-    @Parameters(arity = "1..3", descriptions = "one to three Files")
+    @Parameters(arity = "1..3", description = "one to three Files")
     File[] files;
 
     @Option(names = "-f", arity = "2", description = "exactly two floating point numbers")
@@ -1102,7 +1102,7 @@ Use the `arity` attribute to make `@Parameters` mandatory:
 [source, java]
 ----
 class BothOptionAndParametersMandatory {
-    @Parameters(arity = "1..*", descriptions = "at least one File")
+    @Parameters(arity = "1..*", description = "at least one File")
     File[] files;
 
     @Option(names = "-n", required = true, description = "mandatory number")
@@ -1482,7 +1482,7 @@ Additionally, applications can configure a `IExitCodeExceptionMapper` to map a s
 class MyMapper implements IExitCodeExceptionMapper {
     @Override
     public int getExitCode(Throwable t) {
-        if (t instance of FileNotFoundException) {
+        if (t instanceof FileNotFoundException) {
             return 74;
         }
         return 1;
@@ -2664,7 +2664,7 @@ CommandLine.usage(new ValidValuesDemo(), System.out);
 ----
 This produces the following usage help:
 ----
-Usage: <main class> -l=<lang> -o=<option>
+Usage: <main class> [-l=<lang>] [-o=<option>]
   -l=<lang>     Enum values: java, groovy, kotlin, javascript, frege, clojure
   -o=<option>   Candidates: A, B, C
 ----
