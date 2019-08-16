@@ -1,6 +1,35 @@
 # picocli Release Notes
 
 
+# <a name="4.0.3"></a> Picocli 4.0.3 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.0.3.
+
+This release contains a bugfixes and enhancements.
+
+This is the sixtieth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.0.3"></a> Table of Contents
+* [New and noteworthy](#4.0.3-new)
+* [Fixed issues](#4.0.3-fixes)
+* [Deprecations](#4.0.3-deprecated)
+* [Potential breaking changes](#4.0.3-breaking-changes)
+
+## <a name="4.0.3-new"></a> New and Noteworthy
+
+
+## <a name="4.0.3-fixes"></a> Fixed issues
+* [#784] (DOC) Update documentation to show custom `IFactory` implementations should fall back to the default factory to enable the creation of collections for `@Option`-annotated methods and fields.
+
+## <a name="4.0.3-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.0.3-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
+
 # <a name="4.0.2"></a> Picocli 4.0.2
 The picocli community is pleased to announce picocli 4.0.2.
 
@@ -126,6 +155,7 @@ Picocli follows [semantic versioning](http://semver.org/).
   * [ParseResult `matchedOptions`](#4.0.0-breaking-matchedOptions) now returns full list
   * [Error message for unmatched arguments](#4.0.0-breaking-unmatched-error) changed
   * [Option order](#4.0.0-breaking-option-order) changed
+  * [Factory](#4.0.0-breaking-factory)
 
 ## <a name="4.0.0-new"></a> New and Noteworthy
 
@@ -942,6 +972,25 @@ This may break tests that rely on the exact error message.
 Previously, options that only have a long name (and do not have a short name) were always shown before options with a short name.
 From this release, they are inserted in the option list by their first non-prefix letter.
 This may break tests that expect a specific help message.
+
+
+### <a name="4.0.0-breaking-factory"></a> Factory 
+
+From version 4.0, picocli delegates all object creation to the [factory](https://picocli.info/#_custom_factory), including creating `Collection` instances to capture [multi-value](https://picocli.info/#_arrays_and_collections) `@Option` values. Previously, `Collection` objects were instantiated separately without involving the factory.
+
+It is recommended that custom factories should fall back to the default factory. Something like this:
+
+```java
+@Override
+public <K> K create(Class<K> clazz) throws Exception {
+    try {
+        return doCreate(clazz); // custom factory lookup or instantiation
+    } catch (Exception e) {
+        return CommandLine.defaultFactory().create(clazz); // fallback if missing
+    }
+}
+```
+
 
 
 

@@ -1664,7 +1664,7 @@ CommandLine commandLine = <span class="keyword">new</span> CommandLine(app)
 
 commandLine.parseArgs(<span class="string"><span class="delimiter">&quot;</span><span class="content">-a</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">AES/CBC/NoPadding</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">en-GB</span><span class="delimiter">&quot;</span></span>);
 <span class="keyword">assert</span> app.locale.toLanguageTag().equals(<span class="string"><span class="delimiter">&quot;</span><span class="content">en-GB</span><span class="delimiter">&quot;</span></span>);
-<span class="keyword">assert</span> app.cipher.getAlgorithm().equals(<span class="string"><span class="delimiter">&quot;</span><span class="content">AES/CBC/NoPadding</span><span class="delimiter">&quot;</span></span>));</code></pre>
+<span class="keyword">assert</span> app.cipher.getAlgorithm().equals(<span class="string"><span class="delimiter">&quot;</span><span class="content">AES/CBC/NoPadding</span><span class="delimiter">&quot;</span></span>);</code></pre>
 </div>
 </div>
 <div class="admonitionblock caution">
@@ -1757,7 +1757,7 @@ For example:</p>
 <span class="keyword">import</span> <span class="include">java.io.File</span>;
 
 <span class="type">class</span> <span class="class">Convert</span> {
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-patterns</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">the regex patterns to use</span><span class="delimiter">&quot;</span></span>);
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-patterns</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">the regex patterns to use</span><span class="delimiter">&quot;</span></span>)
     <span class="predefined-type">Pattern</span><span class="type">[]</span> patterns;
 
     <span class="annotation">@Parameters</span>(<span class="comment">/* type = File.class, */</span> description = <span class="string"><span class="delimiter">&quot;</span><span class="content">the files to convert</span><span class="delimiter">&quot;</span></span>)
@@ -2195,7 +2195,7 @@ The maximum can be an exact upper bound, or it can be <code>"*"</code> to denote
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">ArityDemo</span> {
-    <span class="annotation">@Parameters</span>(arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">1..3</span><span class="delimiter">&quot;</span></span>, descriptions = <span class="string"><span class="delimiter">&quot;</span><span class="content">one to three Files</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Parameters</span>(arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">1..3</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">one to three Files</span><span class="delimiter">&quot;</span></span>)
     <span class="predefined-type">File</span><span class="type">[]</span> files;
 
     <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">2</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">exactly two floating point numbers</span><span class="delimiter">&quot;</span></span>)
@@ -2375,7 +2375,7 @@ If such an option is specified without a value on the command line, it is assign
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">BothOptionAndParametersMandatory</span> {
-    <span class="annotation">@Parameters</span>(arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">1..*</span><span class="delimiter">&quot;</span></span>, descriptions = <span class="string"><span class="delimiter">&quot;</span><span class="content">at least one File</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Parameters</span>(arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">1..*</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">at least one File</span><span class="delimiter">&quot;</span></span>)
     <span class="predefined-type">File</span><span class="type">[]</span> files;
 
     <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-n</span><span class="delimiter">&quot;</span></span>, required = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">mandatory number</span><span class="delimiter">&quot;</span></span>)
@@ -2888,7 +2888,7 @@ Older versions of picocli had some limited exit code support where picocli would
 <pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">MyMapper</span> <span class="directive">implements</span> IExitCodeExceptionMapper {
     <span class="annotation">@Override</span>
     <span class="directive">public</span> <span class="type">int</span> getExitCode(<span class="predefined-type">Throwable</span> t) {
-        <span class="keyword">if</span> (t instance of <span class="exception">FileNotFoundException</span>) {
+        <span class="keyword">if</span> (t <span class="keyword">instanceof</span> <span class="exception">FileNotFoundException</span>) {
             <span class="keyword">return</span> <span class="integer">74</span>;
         }
         <span class="keyword">return</span> <span class="integer">1</span>;
@@ -4558,7 +4558,7 @@ CommandLine.usage(<span class="keyword">new</span> ValidValuesDemo(), <span clas
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>Usage: &lt;main class&gt; -l=&lt;lang&gt; -o=&lt;option&gt;
+<pre>Usage: &lt;main class&gt; [-l=&lt;lang&gt;] [-o=&lt;option&gt;]
   -l=&lt;lang&gt;     Enum values: java, groovy, kotlin, javascript, frege, clojure
   -o=&lt;option&gt;   Candidates: A, B, C</pre>
 </div>
@@ -6528,6 +6528,25 @@ CommandLine cmdLine = <span class="keyword">new</span> CommandLine(<span class="
 <div class="paragraph">
 <p>If no factory is specified, a default factory is used. The default factory requires that the classes to instantiate have a public no-argument constructor: it instantiates the class by calling first calling <code>clazz.newInstance()</code>, and if that fails, <code>clazz.getDeclaredConstructor().newInstance()</code>.</p>
 </div>
+<div class="paragraph">
+<p>From version 4.0, picocli delegates all object creation to the factory, including creating <code>Collection</code> instances to capture <a href="#_arrays_and_collections">multi-value</a> <code>@Option</code> values.
+Previously, <code>Collection</code> objects were instantiated separately without involving the factory.</p>
+</div>
+<div class="paragraph">
+<p>It is recommended that custom factories should fall back to the default factory. Something like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Override</span>
+<span class="directive">public</span> &lt;K&gt; K create(<span class="predefined-type">Class</span>&lt;K&gt; clazz) <span class="directive">throws</span> <span class="exception">Exception</span> {
+    <span class="keyword">try</span> {
+        <span class="keyword">return</span> doCreate(clazz); <span class="comment">// custom factory lookup or instantiation</span>
+    } <span class="keyword">catch</span> (<span class="exception">Exception</span> e) {
+        <span class="keyword">return</span> CommandLine.defaultFactory().create(clazz); <span class="comment">// fallback if missing</span>
+    }
+}</code></pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_boolean_options_with_parameters">20.6. Boolean Options with Parameters</h3>
@@ -6719,7 +6738,11 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 
     <span class="annotation">@Override</span>
     <span class="directive">public</span> &lt;K&gt; K create(<span class="predefined-type">Class</span>&lt;K&gt; aClass) <span class="directive">throws</span> <span class="exception">Exception</span> {
-        <span class="keyword">return</span> injector.getInstance(aClass);
+        <span class="keyword">try</span> {
+            <span class="keyword">return</span> injector.getInstance(aClass);
+        } <span class="keyword">catch</span> (<span class="exception">ConfigurationException</span> ex) { <span class="comment">// no implementation found in Guice configuration</span>
+            <span class="keyword">return</span> CommandLine.defaultFactory().create(clazz); <span class="comment">// fallback if missing</span>
+        }
     }
 
     <span class="directive">static</span> <span class="type">class</span> <span class="class">DemoModule</span> <span class="directive">extends</span> AbstractModule {

@@ -4075,6 +4075,22 @@ public interface IFactory {
 
 If no factory is specified, a default factory is used. The default factory requires that the classes to instantiate have a public no-argument constructor: it instantiates the class by calling first calling `clazz.newInstance()`, and if that fails, `clazz.getDeclaredConstructor().newInstance()`.
 
+From version 4.0, picocli delegates all object creation to the factory, including creating `Collection` instances to capture <<Arrays and Collections,multi-value>> `@Option` values.
+Previously, `Collection` objects were instantiated separately without involving the factory.
+
+It is recommended that custom factories should fall back to the default factory. Something like this:
+
+```java
+@Override
+public <K> K create(Class<K> clazz) throws Exception {
+    try {
+        return doCreate(clazz); // custom factory lookup or instantiation
+    } catch (Exception e) {
+        return CommandLine.defaultFactory().create(clazz); // fallback if missing
+    }
+}
+```
+
 === Boolean Options with Parameters
 By default the value of a boolean field is set to the logical negative of its default value when the option is specified on the command line.
 
@@ -4219,7 +4235,11 @@ public class GuiceFactory implements IFactory {
 
     @Override
     public <K> K create(Class<K> aClass) throws Exception {
-        return injector.getInstance(aClass);
+        try {
+            return injector.getInstance(aClass);
+        } catch (ConfigurationException ex) { // no implementation found in Guice configuration
+            return CommandLine.defaultFactory().create(clazz); // fallback if missing
+        }
     }
 
     static class DemoModule extends AbstractModule {
