@@ -9537,7 +9537,6 @@ public class CommandLine {
                     if (cmd != null) {
                         result.updateCommandAttributes(cmd, factory);
                         initSubcommands(cmd, cls, result, factory);
-                        // addGroups(cmd, groupBuilders); // TODO delete
                         hasCommandAnnotation = true;
                     }
                     hasCommandAnnotation |= initFromAnnotatedFields(scope, cls, result, null, factory);
@@ -10552,20 +10551,12 @@ public class CommandLine {
                 validationResult = matches.isEmpty() ? GroupValidationResult.SUCCESS_ABSENT : GroupValidationResult.SUCCESS_PRESENT;
                 for (ArgGroupSpec missing : unmatchedSubgroups) {
                     if (missing.validate() && missing.multiplicity().min > 0) {
-//                        if (missing.subgroups().isEmpty()) {
                         int presentCount = 0;
                         boolean haveMissing = true;
                         boolean someButNotAllSpecified = false;
                         String exclusiveElements = missing.synopsisUnit();
                         String missingElements = missing.synopsisUnit(); //ArgSpec.describe(missing.requiredArgs());
                         validationResult = missing.validate(commandLine, presentCount, haveMissing, someButNotAllSpecified, exclusiveElements, missingElements, missingElements);
-//                        } else {
-//                            validationResult = new ParseResult.GroupValidationResult(
-//                                    ParseResult.GroupValidationResult.Type.FAILURE_ABSENT,
-//                                    new MissingParameterException(commandLine, missing.args(),
-//                                            "Error: Group: " + missing.synopsis() + " must be specified " + missing.multiplicity().min + " times but was missing")
-//                            );
-//                        }
                     }
                 }
                 validateGroupMultiplicity(commandLine);
