@@ -9529,6 +9529,7 @@ public class CommandLine {
 
                 Stack<Class<?>> hierarchy = new Stack<Class<?>>();
                 while (cls != null) { hierarchy.add(cls); cls = cls.getSuperclass(); }
+                Stack<Class<?>> originalHierarchy = (Stack<Class<?>>) hierarchy.clone();
                 boolean hasCommandAnnotation = false;
                 boolean mixinStandardHelpOptions = false;
                 while (!hierarchy.isEmpty()) {
@@ -9536,7 +9537,7 @@ public class CommandLine {
                     Command cmd = cls.getAnnotation(Command.class);
                     if (cmd != null) {
                         result.updateCommandAttributes(cmd, factory);
-                        initSubcommands(cmd, cls, result, factory);
+                        initSubcommands(cmd, cls, result, factory, originalHierarchy);
                         hasCommandAnnotation = true;
                     }
                     hasCommandAnnotation |= initFromAnnotatedFields(scope, cls, result, null, factory);
@@ -9552,7 +9553,7 @@ public class CommandLine {
                     Command cmd = method.getAnnotation(Command.class);
                     result.updateCommandAttributes(cmd, factory);
                     result.setAddMethodSubcommands(false); // method commands don't have method subcommands
-                    initSubcommands(cmd, null, result, factory);
+                    initSubcommands(cmd, null, result, factory, originalHierarchy);
                     hasCommandAnnotation = true;
                     result.mixinStandardHelpOptions(method.getAnnotation(Command.class).mixinStandardHelpOptions());
                     initFromMethodParameters(scope, method, result, null, factory);
@@ -9595,8 +9596,14 @@ public class CommandLine {
                 }
                 return new Object[] { cls, instance, commandClassName };
             }
-            private static void initSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory) {
+            private static void initSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory, Stack<Class<?>> hierarchy) {
                 for (Class<?> sub : cmd.subcommands()) {
+                    if (sub.equals(cls)) {
+                        throw new InitializationException(cmd.name() + " (" + cls.getName() + ") cannot be a subcommand of itself");
+                    }
+                    if (hierarchy.contains(sub)) {
+                        throw new InitializationException(cmd.name() + " (" + cls.getName() + ") has a subcommand (" + sub.getName() + ") that is a subclass of itself");
+                    }
                     try {
                         if (Help.class == sub) { throw new InitializationException(Help.class.getName() + " is not a valid subcommand. Did you mean " + HelpCommand.class.getName() + "?"); }
                         CommandLine subcommandLine = toCommandLine(factory.create(sub), factory);

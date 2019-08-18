@@ -6,6 +6,8 @@ import picocli.CommandLine.Command;
 
 import java.util.concurrent.Callable;
 
+import static org.junit.Assert.*;
+
 public class Issue787SubclassSubcommandStackOverflow {
 
     @Command(mixinStandardHelpOptions = true)
@@ -32,17 +34,25 @@ public class Issue787SubclassSubcommandStackOverflow {
     }
 
     // overflows
-    @Ignore
     @Test
     public void testAMISearchSubCommands() {
-        new CommandLine(new ConcreteCommand()).execute("ami-words1");
+        try {
+            new CommandLine(new ConcreteCommand()).execute("ami-words1");
+            fail("Expected exception");
+        } catch (CommandLine.InitializationException ex) {
+            assertEquals("ami-search (picocli.Issue787SubclassSubcommandStackOverflow$ConcreteCommand) has a subcommand (picocli.Issue787SubclassSubcommandStackOverflow$Sub1ExtendConcreteCmd) that is a subclass of itself", ex.getMessage());
+        }
     }
 
     // overflows
-    @Ignore
     @Test
     public void testAMIWords1Commands() {
-        new CommandLine(new Sub1ExtendConcreteCmd()).execute();
+        try {
+            new CommandLine(new Sub1ExtendConcreteCmd()).execute();
+            fail("Expected exception");
+        } catch (CommandLine.InitializationException ex) {
+            assertEquals("ami-search (picocli.Issue787SubclassSubcommandStackOverflow$ConcreteCommand) has a subcommand (picocli.Issue787SubclassSubcommandStackOverflow$Sub1ExtendConcreteCmd) that is a subclass of itself", ex.getMessage());
+        }
     }
 
     // does not overflow
@@ -51,4 +61,32 @@ public class Issue787SubclassSubcommandStackOverflow {
         new CommandLine(new Sub2ExtendAbstractCmd()).execute();
     }
 
+    @Command(name = "parent", subcommands = Sub.class)
+    static class Parent { }
+
+    @Command(name = "sub")
+    static class Sub extends Parent {}
+
+    @Test
+    public void testSimple() {
+        try {
+            new CommandLine(new Parent());
+            fail("Expected exception");
+        } catch (CommandLine.InitializationException ok) {
+            assertEquals("parent (picocli.Issue787SubclassSubcommandStackOverflow$Parent) has a subcommand (picocli.Issue787SubclassSubcommandStackOverflow$Sub) that is a subclass of itself", ok.getMessage());
+        }
+    }
+
+    @Command(name = "self-ref", subcommands = Simplest.class)
+    static class Simplest {}
+
+    @Test
+    public void testSimplest() {
+        try {
+            new CommandLine(new Simplest());
+            fail("Expected exception");
+        } catch (CommandLine.InitializationException ok) {
+            assertEquals("self-ref (picocli.Issue787SubclassSubcommandStackOverflow$Simplest) cannot be a subcommand of itself", ok.getMessage());
+        }
+    }
 }
