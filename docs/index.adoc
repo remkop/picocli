@@ -3522,6 +3522,8 @@ assert zip.myMixin.verbosity.length == 3;
 
 Mixins added with the `@Mixin` annotation can also be accessed via the map returned by `CommandLine.getMixins`.
 
+The GitHub project has a https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/mixin[full working example].
+
 
 === Reuse Combinations
 

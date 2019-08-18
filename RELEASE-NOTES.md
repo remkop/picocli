@@ -19,8 +19,9 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.0.3-fixes"></a> Fixed issues
-* [#784] (DOC) Update documentation to show custom `IFactory` implementations should fall back to the default factory to enable the creation of collections for `@Option`-annotated methods and fields.
 * [#787] (Enhancement) Throw `InitializationException` instead of `StackOverflowError` when subcommand is subclass of itself. Thanks to [Peter Murray-Rust](https://github.com/petermr) for raising this.
+* [#784] (DOC) Update documentation to show custom `IFactory` implementations should fall back to the default factory to enable the creation of collections for `@Option`-annotated methods and fields.
+* [#788] Add link to GitHub examples in user manual Mixins section. Thanks to [Peter Murray-Rust](https://github.com/petermr) for the suggestion.
 
 ## <a name="4.0.3-deprecated"></a> Deprecations
 No features were deprecated in this release.
