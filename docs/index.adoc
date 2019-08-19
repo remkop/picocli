@@ -375,7 +375,8 @@ This is enough in most cases, but picocli offers alternatives for applications t
 From picocli 4.0, options can be `negatable`.
 
 ```java
-class App {
+@Command(name = "negatable-options-demo")
+class NegatableOptionsDemo {
     @Option(names = "--verbose",           negatable = true) boolean verbose;
     @Option(names = "-XX:+PrintGCDetails", negatable = true) boolean printGCDetails;
     @Option(names = "-XX:-UseG1GC",        negatable = true) boolean useG1GC = true;
@@ -383,6 +384,17 @@ class App {
 ```
 
 When an option is negatable, picocli will recognize negative aliases of the option on the command line.
+
+The usage help for the above example looks like this:
+
+----
+Usage: negatable-options-demo [--[no-]verbose] [-XX:(+|-)PrintGCDetails]
+                              [-XX:(+|-)UseG1GC]
+      --[no-]verbose     Show verbose output
+      -XX:(+|-)PrintGCDetails
+                         Prints GC details
+      -XX:(+|-)UseG1GC   Use G1 algorithm for GC
+----
 
 For *nix-style long options, aliases have the prefix `no-` to the given names, for example `--no-verbose`.
 For Java JVM-style options like `-XX:+PrintGCDetails`, the `:+` is turned into `:-` and vice versa.

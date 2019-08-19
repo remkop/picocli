@@ -1271,7 +1271,8 @@ one or more single-character options without option-arguments, followed by at mo
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">App</span> {
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">negatable-options-demo</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">NegatableOptionsDemo</span> {
     <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span>,           negatable = <span class="predefined-constant">true</span>) <span class="type">boolean</span> verbose;
     <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-XX:+PrintGCDetails</span><span class="delimiter">&quot;</span></span>, negatable = <span class="predefined-constant">true</span>) <span class="type">boolean</span> printGCDetails;
     <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-XX:-UseG1GC</span><span class="delimiter">&quot;</span></span>,        negatable = <span class="predefined-constant">true</span>) <span class="type">boolean</span> useG1GC = <span class="predefined-constant">true</span>;
@@ -1280,6 +1281,19 @@ one or more single-character options without option-arguments, followed by at mo
 </div>
 <div class="paragraph">
 <p>When an option is negatable, picocli will recognize negative aliases of the option on the command line.</p>
+</div>
+<div class="paragraph">
+<p>The usage help for the above example looks like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: negatable-options-demo [--[no-]verbose] [-XX:(+|-)PrintGCDetails]
+                              [-XX:(+|-)UseG1GC]
+      --[no-]verbose     Show verbose output
+      -XX:(+|-)PrintGCDetails
+                         Prints GC details
+      -XX:(+|-)UseG1GC   Use G1 algorithm for GC</pre>
+</div>
 </div>
 <div class="paragraph">
 <p>For *nix-style long options, aliases have the prefix <code>no-</code> to the given names, for example <code>--no-verbose</code>.
