@@ -59,6 +59,6 @@ public class AnnotatedElementHolder implements IGetter, ISetter {
      */
     @Override
     public String toString() {
-        return String.format("%s(%s %s)", getClass().getCanonicalName(), element.getKind(), element);
+        return String.format("%s(%s %s in %s)", getClass().getSimpleName(), element.getKind(), element, element.getEnclosingElement());
     }
 }

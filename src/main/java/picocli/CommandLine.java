@@ -8338,7 +8338,7 @@ public class CommandLine {
 
                 args      = Collections.unmodifiableSet(new LinkedHashSet<ArgSpec>(builder.args()));
                 subgroups = Collections.unmodifiableList(new ArrayList<ArgGroupSpec>(builder.subgroups()));
-                if (args.isEmpty() && subgroups.isEmpty()) { throw new InitializationException("ArgGroup has no options or positional parameters, and no subgroups"); }
+                if (args.isEmpty() && subgroups.isEmpty()) { throw new InitializationException("ArgGroup has no options or positional parameters, and no subgroups: " + scope + " " + (getter == null ? setter : getter)); }
 
                 int i = 1;
                 for (ArgGroupSpec sub : subgroups) { sub.parentGroup = this; sub.id = id + "." + i++; }
