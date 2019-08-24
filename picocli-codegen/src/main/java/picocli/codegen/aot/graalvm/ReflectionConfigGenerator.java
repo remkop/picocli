@@ -3,6 +3,7 @@ package picocli.codegen.aot.graalvm;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
+import picocli.CommandLine.Model.ArgGroupSpec;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.IAnnotatedElement;
@@ -224,6 +225,9 @@ public class ReflectionConfigGenerator {
             for (PositionalParamSpec positional : spec.positionalParameters()) {
                 visitArgSpec(positional);
             }
+            for (ArgGroupSpec group : spec.argGroups()) {
+                visitGroupSpec(group);
+            }
             for (CommandSpec mixin : spec.mixins().values()) {
                 visitCommandSpec(mixin);
             }
@@ -346,6 +350,24 @@ public class ReflectionConfigGenerator {
             visitObjectTypes(argSpec.converters());
         }
 
+        private void visitGroupSpec(ArgGroupSpec group) throws Exception {
+            IScope scope = group.scope();
+            if (scope != null) {
+                Object scopeValue = scope.get();
+                if (scopeValue != null) {
+                    getOrCreateClass(scopeValue.getClass());
+                }
+            }
+            visitGetter(group.getter());
+            visitSetter(group.setter());
+            for (ArgSpec argSpec : group.args()) {
+                visitArgSpec(argSpec);
+            }
+            for (ArgGroupSpec subGroup : group.subgroups()) {
+                visitGroupSpec(subGroup);
+            }
+        }
+
         private void visitTypeInfo(CommandLine.Model.ITypeInfo typeInfo) {
             getOrCreateClassByName(typeInfo.getClassName());
             for (CommandLine.Model.ITypeInfo aux : typeInfo.getAuxiliaryTypeInfos()) {
@@ -411,7 +433,9 @@ public class ReflectionConfigGenerator {
 
             IScope scope = (IScope) accessibleField(fieldBinding.getClass(), REFLECTED_BINDING_FIELD_SCOPE).get(fieldBinding);
             Object scopeValue = scope.get();
-            getOrCreateClass(scopeValue.getClass());
+            if (scopeValue != null) {
+                getOrCreateClass(scopeValue.getClass());
+            }
         }
 
         private void visitMethodBinding(Object methodBinding) throws Exception {
@@ -421,9 +445,11 @@ public class ReflectionConfigGenerator {
 
             IScope scope = (IScope) accessibleField(methodBinding.getClass(), REFLECTED_BINDING_FIELD_SCOPE).get(methodBinding);
             Object scopeValue = scope.get();
-            ReflectedClass scopeClass = getOrCreateClass(scopeValue.getClass());
-            if (!scope.getClass().equals(method.getDeclaringClass())) {
-                scopeClass.addMethod(method.getName(), method.getParameterTypes());
+            if (scopeValue != null) {
+                ReflectedClass scopeClass = getOrCreateClass(scopeValue.getClass());
+                if (!scope.getClass().equals(method.getDeclaringClass())) {
+                    scopeClass.addMethod(method.getName(), method.getParameterTypes());
+                }
             }
         }
 

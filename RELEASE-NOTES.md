@@ -6,6 +6,8 @@ The picocli community is pleased to announce picocli 4.0.3.
 
 This release contains a bugfixes and enhancements.
 
+GraalVM native images for picocli commands with argument groups now work correctly.
+
 This is the sixtieth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
@@ -19,6 +21,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.0.3-fixes"></a> Fixed issues
+* [#793] (Bugfix) Argument groups disappear in GraalVM native-image (the generated `reflect-config.json` was missing the `@ArgGroup`-annotated fields). Thanks to [Mike Hearn](https://github.com/mikehearn) for the bug report.
 * [#787] (Enhancement) Throw `InitializationException` instead of `StackOverflowError` when subcommand is subclass of itself. Thanks to [Peter Murray-Rust](https://github.com/petermr) for raising this.
 * [#784] (DOC) Update documentation to show custom `IFactory` implementations should fall back to the default factory to enable the creation of collections for `@Option`-annotated methods and fields.
 * [#788] (DOC) Add link to GitHub examples in user manual Mixins section. Thanks to [Peter Murray-Rust](https://github.com/petermr) for the suggestion.
