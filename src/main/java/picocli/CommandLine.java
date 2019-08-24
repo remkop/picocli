@@ -9529,6 +9529,7 @@ public class CommandLine {
 
                 Stack<Class<?>> hierarchy = new Stack<Class<?>>();
                 while (cls != null) { hierarchy.add(cls); cls = cls.getSuperclass(); }
+                @SuppressWarnings("unchecked")
                 Stack<Class<?>> originalHierarchy = (Stack<Class<?>>) hierarchy.clone();
                 boolean hasCommandAnnotation = false;
                 boolean mixinStandardHelpOptions = false;
