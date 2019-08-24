@@ -215,4 +215,20 @@ public class NativeImageConfigGeneratorProcessorTest {
                 .generatedFile(StandardLocation.CLASS_OUTPUT, "META-INF/native-image/picocli-generated/x/y/z/resource-config.json")
                 .contentsAsUtf8String().isEqualTo(slurp("/picocli/codegen/graalvm/example/example-resource.json"));
     }
+
+    @Test
+    public void testGenerateReflectConfigArgGroup() {
+        NativeImageConfigGeneratorProcessor processor = new NativeImageConfigGeneratorProcessor();
+        Compilation compilation =
+                javac()
+                        .withProcessors(processor)
+                        .withOptions("-A" + OPTION_PROJECT + "=issue793")
+                        .compile(JavaFileObjects.forSourceLines(
+                                "picocli.issue793.Issue793",
+                                slurp("/picocli/issue793/Issue793.java")));
+        assertThat(compilation).succeeded();
+        assertThat(compilation)
+                .generatedFile(StandardLocation.CLASS_OUTPUT, "META-INF/native-image/picocli-generated/issue793/reflect-config.json")
+                .contentsAsUtf8String().isEqualTo(slurp("/picocli/issue793/issue793-reflect-config.json"));
+    }
 }
