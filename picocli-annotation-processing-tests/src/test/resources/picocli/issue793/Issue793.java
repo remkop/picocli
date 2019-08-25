@@ -30,4 +30,9 @@ public class Issue793 {
         @CommandLine.Option(names = {"-f"}, required = true) boolean f;
         @CommandLine.Option(names = {"-g"}, required = true) boolean g;
     }
+
+    @CommandLine.Command(name = "nested")
+    int method(@CommandLine.ArgGroup Composite composite) {
+        return 0;
+    }
 }

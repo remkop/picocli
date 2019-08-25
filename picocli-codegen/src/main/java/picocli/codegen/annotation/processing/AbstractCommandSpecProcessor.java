@@ -40,8 +40,10 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -807,18 +809,94 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                     commandSpec.addPositional(parameter.getValue().build());
                 }
             }
+            class Graph {
+                private int vertexCount;   // No. of vertices
+                private List<Integer>[] adjacencyList; // Adjacency List
+
+                //Constructor
+                Graph(int vertexCount) {
+                    this.vertexCount = vertexCount;
+                    adjacencyList = new LinkedList[vertexCount];
+                    for (int i = 0; i < vertexCount; ++i) {
+                        adjacencyList[i] = new LinkedList();
+                    }
+                }
+                /**
+                 * subgroup is a dependency for group
+                 * @param subgroup
+                 * @param group
+                 */
+                void addEdge(int subgroup, int group) {
+                    adjacencyList[subgroup].add(group);
+                }
+
+                // Function to add an edge into the graph
+                //void addEdge(int v,int w) { adj[v].add(w); }
+
+                // A recursive function used by topologicalSort
+                void topologicalSortUtil(int v, boolean visited[], Stack<Integer> stack) {
+                    // Mark the current node as visited.
+                    visited[v] = true;
+                    Integer i;
+
+                    // Recur for all the vertices adjacent to this
+                    // vertex
+                    Iterator<Integer> it = adjacencyList[v].iterator();
+                    while (it.hasNext()) {
+                        i = it.next();
+                        if (!visited[i]) {
+                            topologicalSortUtil(i, visited, stack);
+                        }
+                    }
+
+                    // Push current vertex to stack which stores result
+                    stack.push(v);
+                }
+
+                // The function to do Topological Sort. It uses
+                // recursive topologicalSortUtil()
+                Stack<Integer> topologicalSort() {
+                    Stack<Integer> stack = new Stack<Integer>();
+
+                    // Mark all the vertices as not visited
+                    boolean visited[] = new boolean[vertexCount];
+
+                    // Call the recursive helper function to store
+                    // Topological Sort starting from all vertices
+                    // one by one
+                    for (int i = 0; i < vertexCount; i++) {
+                        if (!visited[i]) {
+                            topologicalSortUtil(i, visited, stack);
+                        }
+                    }
+                    // Print contents of stack
+                    Stack<Integer> clone = (Stack<Integer>) stack.clone();
+                    while (!clone.empty()) {
+                        System.out.print(clone.pop() + " ");
+                    }
+                    return stack;
+                }
+            }
             // first, loop over all @ArgGroup-annotated elements and
             // populate the associated builder with @Options and @Parameters
             // (but no sub-groups yet)
-            Map<TypeElement, ArgGroupSpec.Builder> argGroups = new LinkedHashMap<TypeElement, ArgGroupSpec.Builder>();
+            Map<Element, TypeElement> argGroupElementsToType = new LinkedHashMap<Element, TypeElement>();
+            Map<TypeElement, TypeElement> groupTypeToParentGroupType = new LinkedHashMap<TypeElement, TypeElement>();
+            Map<TypeElement, ArgGroupSpec.Builder> argGroupsByType = new LinkedHashMap<TypeElement, ArgGroupSpec.Builder>();
             for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElements.entrySet()) {
                 Element argGroupElement = entry.getKey(); // field, method or parameter
                 ArgGroupSpec.Builder builder = entry.getValue();
+                //logger.severe(argGroupElement.toString());
+                //proc.processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "ArgGroup", argGroupElement);
 
                 Types typeUtils = proc.processingEnv.getTypeUtils();
 
                 // get the type or return type of the @ArgGroup-annotated field, method or parameter
                 TypeMirror typeMirror = argGroupElement.asType();
+                if (typeMirror.getKind() == TypeKind.EXECUTABLE) {
+                    // for @ArgGroup-annotated methods, use the method return type
+                    typeMirror = ((ExecutableType) typeMirror).getReturnType();
+                }
                 if (typeMirror.getKind() != TypeKind.DECLARED && typeMirror.getKind() != TypeKind.ARRAY) {
                     proc.error(entry.getKey(), "The type of an @ArgGroup-annotated element '%s' must be a declared class, a collection or an array, but was %s", argGroupElement.getSimpleName(), typeMirror);
                     return;
@@ -838,8 +916,30 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                         builder.addArg(positional);
                     }
                 }
-                argGroups.put(typeElement, builder);
+                argGroupsByType.put(typeElement, builder);
+                argGroupElementsToType.put(argGroupElement, typeElement);
+                Element enclosingElement = argGroupElement.getEnclosingElement();
+                if (enclosingElement.getKind() == ElementKind.CLASS || enclosingElement.getKind() == ElementKind.INTERFACE) {
+                    TypeElement enclosingType = (TypeElement) typeUtils.asElement(enclosingElement.asType());
+                    groupTypeToParentGroupType.put(typeElement, enclosingType);
+                }
             }
+
+            Graph graph = new Graph(argGroupElements.size());
+            int i = 0;
+            Map<TypeElement, Integer> typeToIndex = new LinkedHashMap<TypeElement, Integer>();
+            for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElements.entrySet()) {
+                Element argGroupElement = entry.getKey(); // field, method or parameter
+                typeToIndex.put(argGroupElementsToType.get(argGroupElement), i++);
+            }
+            for (Map.Entry<TypeElement, Integer> entry : typeToIndex.entrySet()) {
+                TypeElement type = entry.getKey();
+                Integer parentIndex = typeToIndex.get(groupTypeToParentGroupType.get(type));
+                if (parentIndex != null) {
+                    graph.addEdge(typeToIndex.get(type), parentIndex);
+                }
+            }
+            Stack<Integer> integers = graph.topologicalSort();
 
             for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElements.entrySet()) {
                 Element argGroupElement = entry.getKey(); // field, method or parameter
@@ -851,7 +951,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
 
                 Types typeUtils = proc.processingEnv.getTypeUtils();
                 TypeElement parentGroupElement = (TypeElement) typeUtils.asElement(argGroupElement.getEnclosingElement().asType());
-                ArgGroupSpec.Builder parentGroup = argGroups.get(parentGroupElement);
+                ArgGroupSpec.Builder parentGroup = argGroupsByType.get(parentGroupElement);
                 if (parentGroup != null) {
                     parentGroup.addSubgroup(group);
                 }
