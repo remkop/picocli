@@ -1,5 +1,6 @@
 package picocli.codegen.annotation.processing;
 
+import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IFactory;
@@ -809,74 +810,61 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                     commandSpec.addPositional(parameter.getValue().build());
                 }
             }
-            class Graph {
-                private int vertexCount;   // No. of vertices
-                private List<Integer>[] adjacencyList; // Adjacency List
+            if (connectArgGroups(proc)) {
+                return;
+            }
 
-                //Constructor
-                Graph(int vertexCount) {
-                    this.vertexCount = vertexCount;
-                    adjacencyList = new LinkedList[vertexCount];
-                    for (int i = 0; i < vertexCount; ++i) {
-                        adjacencyList[i] = new LinkedList();
-                    }
-                }
-                /**
-                 * subgroup is a dependency for group
-                 * @param subgroup
-                 * @param group
-                 */
-                void addEdge(int subgroup, int group) {
-                    adjacencyList[subgroup].add(group);
-                }
-
-                // Function to add an edge into the graph
-                //void addEdge(int v,int w) { adj[v].add(w); }
-
-                // A recursive function used by topologicalSort
-                void topologicalSortUtil(int v, boolean visited[], Stack<Integer> stack) {
-                    // Mark the current node as visited.
-                    visited[v] = true;
-                    Integer i;
-
-                    // Recur for all the vertices adjacent to this
-                    // vertex
-                    Iterator<Integer> it = adjacencyList[v].iterator();
-                    while (it.hasNext()) {
-                        i = it.next();
-                        if (!visited[i]) {
-                            topologicalSortUtil(i, visited, stack);
-                        }
-                    }
-
-                    // Push current vertex to stack which stores result
-                    stack.push(v);
-                }
-
-                // The function to do Topological Sort. It uses
-                // recursive topologicalSortUtil()
-                Stack<Integer> topologicalSort() {
-                    Stack<Integer> stack = new Stack<Integer>();
-
-                    // Mark all the vertices as not visited
-                    boolean visited[] = new boolean[vertexCount];
-
-                    // Call the recursive helper function to store
-                    // Topological Sort starting from all vertices
-                    // one by one
-                    for (int i = 0; i < vertexCount; i++) {
-                        if (!visited[i]) {
-                            topologicalSortUtil(i, visited, stack);
-                        }
-                    }
-                    // Print contents of stack
-                    Stack<Integer> clone = (Stack<Integer>) stack.clone();
-                    while (!clone.empty()) {
-                        System.out.print(clone.pop() + " ");
-                    }
-                    return stack;
+            // @Spec
+            for (Map.Entry<Element, IAnnotatedElement> entry : specElements.entrySet()) {
+                CommandSpec commandSpec1 = commands.get(entry.getKey().getEnclosingElement());
+                if (commandSpec1 != null) {
+                    logger.fine("Adding " + entry + " to commandSpec " + commandSpec1);
+                    commandSpec1.addSpecElement(entry.getValue());
+                } else {
+                    proc.error(entry.getKey(), "@Spec must be enclosed in a @Command, but was %s: %s", entry.getKey().getEnclosingElement(), entry.getKey().getEnclosingElement().getSimpleName());
                 }
             }
+            for (Map.Entry<Element, IAnnotatedElement> entry : parentCommandElements.entrySet()) {
+                CommandSpec commandSpec1 = commands.get(entry.getKey().getEnclosingElement());
+                if (commandSpec1 != null) {
+                    logger.fine("Adding " + entry + " to commandSpec " + commandSpec1);
+                    commandSpec1.addParentCommandElement(entry.getValue());
+                } else {
+                    proc.error(entry.getKey(), "@ParentCommand must be enclosed in a @Command, but was %s: %s", entry.getKey().getEnclosingElement(), entry.getKey().getEnclosingElement().getSimpleName());
+                }
+            }
+            for (Map.Entry<Element, IAnnotatedElement> entry : unmatchedElements.entrySet()) {
+                CommandSpec commandSpec1 = commands.get(entry.getKey().getEnclosingElement());
+                if (commandSpec1 != null) {
+                    logger.fine("Adding " + entry + " to commandSpec " + commandSpec1);
+                    IAnnotatedElement annotatedElement = entry.getValue();
+                    if (annotatedElement.getTypeInfo().isArray() || annotatedElement.getTypeInfo().isCollection()) {
+                        UnmatchedArgsBinding unmatchedArgsBinding = annotatedElement.getTypeInfo().isArray()
+                                ? UnmatchedArgsBinding.forStringArrayConsumer(annotatedElement.setter())
+                                : UnmatchedArgsBinding.forStringCollectionSupplier(annotatedElement.getter());
+                        commandSpec1.addUnmatchedArgsBinding(unmatchedArgsBinding);
+                    } else {
+                        proc.error(entry.getKey(), "@Unmatched must be of type String[] or List<String> but was: %s", annotatedElement.getTypeInfo().getClassName());
+                    }
+                } else {
+                    proc.error(entry.getKey(), "@Unmatched must be enclosed in a @Command, but was %s: %s", entry.getKey().getEnclosingElement(), entry.getKey().getEnclosingElement().getSimpleName());
+                }
+            }
+            for (Map.Entry<CommandSpec, Map<CommandSpec, String>> mixinEntry : mixinInfoMap.entrySet()) {
+                CommandSpec mixee = mixinEntry.getKey();
+                for (Map.Entry<CommandSpec, String> mixinInfo : mixinEntry.getValue().entrySet()) {
+                    logger.fine(String.format("Adding mixin name=%s to %s", mixinInfo.getValue(), mixee.name()));
+                    mixee.addMixin(mixinInfo.getValue(), mixinInfo.getKey());
+                }
+            }
+
+            //#377 Standard help options should be added last
+            for (CommandSpec commandSpec : commandsRequestingStandardHelpOptions) {
+                commandSpec.mixinStandardHelpOptions(true);
+            }
+        }
+
+        private boolean connectArgGroups(AbstractCommandSpecProcessor proc) {
             // first, loop over all @ArgGroup-annotated elements and
             // populate the associated builder with @Options and @Parameters
             // (but no sub-groups yet)
@@ -899,7 +887,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 }
                 if (typeMirror.getKind() != TypeKind.DECLARED && typeMirror.getKind() != TypeKind.ARRAY) {
                     proc.error(entry.getKey(), "The type of an @ArgGroup-annotated element '%s' must be a declared class, a collection or an array, but was %s", argGroupElement.getSimpleName(), typeMirror);
-                    return;
+                    return true;
                 }
                 CompileTimeTypeInfo typeInfo = new CompileTimeTypeInfo(typeMirror);
                 TypeElement typeElement = (TypeElement) typeUtils.asElement(typeInfo.auxTypeMirrors.get(0));
@@ -954,64 +942,16 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 TypeElement parentGroupElement = (TypeElement) typeUtils.asElement(argGroupElement.getEnclosingElement().asType());
                 ArgGroupSpec.Builder parentGroup = argGroupsByType.get(parentGroupElement);
                 if (parentGroup != null) {
-                    parentGroup.addSubgroup(group);
+                    // there may be multiple commands/subcommands with this parent arg group
                     for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElements.entrySet()) {
                         TypeElement elementType = (TypeElement) typeUtils.asElement(entry.getKey().asType());
-                        if (elementType != null && elementType.equals(parentGroupElement) && entry.getValue() != parentGroup) {
+                        if (elementType != null && elementType.equals(parentGroupElement)) {
                             entry.getValue().addSubgroup(group);
                         }
                     }
                 }
             }
-
-            // @Spec
-            for (Map.Entry<Element, IAnnotatedElement> entry : specElements.entrySet()) {
-                CommandSpec commandSpec1 = commands.get(entry.getKey().getEnclosingElement());
-                if (commandSpec1 != null) {
-                    logger.fine("Adding " + entry + " to commandSpec " + commandSpec1);
-                    commandSpec1.addSpecElement(entry.getValue());
-                } else {
-                    proc.error(entry.getKey(), "@Spec must be enclosed in a @Command, but was %s: %s", entry.getKey().getEnclosingElement(), entry.getKey().getEnclosingElement().getSimpleName());
-                }
-            }
-            for (Map.Entry<Element, IAnnotatedElement> entry : parentCommandElements.entrySet()) {
-                CommandSpec commandSpec1 = commands.get(entry.getKey().getEnclosingElement());
-                if (commandSpec1 != null) {
-                    logger.fine("Adding " + entry + " to commandSpec " + commandSpec1);
-                    commandSpec1.addParentCommandElement(entry.getValue());
-                } else {
-                    proc.error(entry.getKey(), "@ParentCommand must be enclosed in a @Command, but was %s: %s", entry.getKey().getEnclosingElement(), entry.getKey().getEnclosingElement().getSimpleName());
-                }
-            }
-            for (Map.Entry<Element, IAnnotatedElement> entry : unmatchedElements.entrySet()) {
-                CommandSpec commandSpec1 = commands.get(entry.getKey().getEnclosingElement());
-                if (commandSpec1 != null) {
-                    logger.fine("Adding " + entry + " to commandSpec " + commandSpec1);
-                    IAnnotatedElement annotatedElement = entry.getValue();
-                    if (annotatedElement.getTypeInfo().isArray() || annotatedElement.getTypeInfo().isCollection()) {
-                        UnmatchedArgsBinding unmatchedArgsBinding = annotatedElement.getTypeInfo().isArray()
-                                ? UnmatchedArgsBinding.forStringArrayConsumer(annotatedElement.setter())
-                                : UnmatchedArgsBinding.forStringCollectionSupplier(annotatedElement.getter());
-                        commandSpec1.addUnmatchedArgsBinding(unmatchedArgsBinding);
-                    } else {
-                        proc.error(entry.getKey(), "@Unmatched must be of type String[] or List<String> but was: %s", annotatedElement.getTypeInfo().getClassName());
-                    }
-                } else {
-                    proc.error(entry.getKey(), "@Unmatched must be enclosed in a @Command, but was %s: %s", entry.getKey().getEnclosingElement(), entry.getKey().getEnclosingElement().getSimpleName());
-                }
-            }
-            for (Map.Entry<CommandSpec, Map<CommandSpec, String>> mixinEntry : mixinInfoMap.entrySet()) {
-                CommandSpec mixee = mixinEntry.getKey();
-                for (Map.Entry<CommandSpec, String> mixinInfo : mixinEntry.getValue().entrySet()) {
-                    logger.fine(String.format("Adding mixin name=%s to %s", mixinInfo.getValue(), mixee.name()));
-                    mixee.addMixin(mixinInfo.getValue(), mixinInfo.getKey());
-                }
-            }
-
-            //#377 Standard help options should be added last
-            for (CommandSpec commandSpec : commandsRequestingStandardHelpOptions) {
-                commandSpec.mixinStandardHelpOptions(true);
-            }
+            return false;
         }
 
         private static CommandSpec getOrCreateCommandSpecForArg(Element argElement,
@@ -1034,6 +974,73 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 commandTypes.put(typeElement.asType(), forSubclass);
             }
             forSubclass.add(result);
+        }
+    }
+
+    /**
+     * Helper class for <a href="https://en.wikipedia.org/wiki/Topological_sorting">topologically sorting</a> ArgGroups.
+     */
+    static class Graph {
+        private int vertexCount;   // No. of vertices
+        private List<Integer>[] adjacencyList; // Adjacency List
+
+        //Constructor
+        Graph(int vertexCount) {
+            this.vertexCount = vertexCount;
+            adjacencyList = new LinkedList[vertexCount];
+            for (int i = 0; i < vertexCount; ++i) {
+                adjacencyList[i] = new LinkedList();
+            }
+        }
+        /**
+         * subgroup is a dependency for group
+         * @param subgroup
+         * @param group
+         */
+        void addEdge(int subgroup, int group) {
+            adjacencyList[subgroup].add(group);
+        }
+
+        // Function to add an edge into the graph
+        //void addEdge(int v,int w) { adj[v].add(w); }
+
+        // A recursive function used by topologicalSort
+        void topologicalSortUtil(int v, boolean visited[], Stack<Integer> stack) {
+            // Mark the current node as visited.
+            visited[v] = true;
+            Integer i;
+
+            // Recur for all the vertices adjacent to this
+            // vertex
+            Iterator<Integer> it = adjacencyList[v].iterator();
+            while (it.hasNext()) {
+                i = it.next();
+                if (!visited[i]) {
+                    topologicalSortUtil(i, visited, stack);
+                }
+            }
+
+            // Push current vertex to stack which stores result
+            stack.push(v);
+        }
+
+        // The function to do Topological Sort. It uses
+        // recursive topologicalSortUtil()
+        Stack<Integer> topologicalSort() {
+            Stack<Integer> stack = new Stack<Integer>();
+
+            // Mark all the vertices as not visited
+            boolean visited[] = new boolean[vertexCount];
+
+            // Call the recursive helper function to store
+            // Topological Sort starting from all vertices
+            // one by one
+            for (int i = 0; i < vertexCount; i++) {
+                if (!visited[i]) {
+                    topologicalSortUtil(i, visited, stack);
+                }
+            }
+            return stack;
         }
     }
 
