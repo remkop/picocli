@@ -1,12 +1,12 @@
 # picocli Release Notes
 
 
-# <a name="4.0.3"></a> Picocli 4.0.3 (UNRELEASED)
+# <a name="4.0.3"></a> Picocli 4.0.3
 The picocli community is pleased to announce picocli 4.0.3.
 
 This release contains a bugfixes and enhancements.
 
-GraalVM native images for picocli commands with argument groups now work correctly.
+GraalVM native image-configuration generation for picocli commands with argument groups now work correctly.
 
 This is the sixtieth public release.
 Picocli follows [semantic versioning](http://semver.org/).

@@ -223,7 +223,7 @@ import picocli.CommandLine.IFactory;
  * available.
  * <p>Usually this would be done with 
  * <a href="https://picocli.info/#_dependency_injection">dependency injection</a>.
- * @since 4.0.2
+ * @since 4.0
  * @see <a href="https://picocli.info/#_dependency_injection">https://picocli.info/#_dependency_injection</a>
  */
 public class CustomFactory implements IFactory {
