@@ -21,6 +21,10 @@ public class Issue777Test {
 
     @Test
     public void testIssue777Composite() {
+        // TODO we want the synposis to be the same as when using reflection:
+        //     - synopsis: '(([-a=<a> -b=<b> -c=<c>] (-x | -y | -z))... | ([-f] (-t | -v | -w))...)'
+        //     but for now we get:
+        //     - synopsis: '(([-f] (-t | -v | -w))... | ((-x | -y | -z) [-a=<a> -b=<b> -c=<c>])...)'
         Compilation compilation = compareCommandYamlDump(
                 slurpAll("/picocli/issue777/CompositeGroupDemo.yaml",
                         "/picocli/issue777/Dependent.yaml",

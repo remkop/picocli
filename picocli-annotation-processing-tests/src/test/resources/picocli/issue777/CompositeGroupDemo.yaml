@@ -8,7 +8,7 @@ CommandSpec:
   versionProvider: null
   version: []
   ArgGroups:
-  - synopsis: '(([-a=<a> -b=<b> -c=<c>] (-x | -y | -z))... | ([-f] (-t | -v | -w))...)'
+  - synopsis: '(([-f] (-t | -v | -w))... | ((-x | -y | -z) [-a=<a> -b=<b> -c=<c>])...)'
     multiplicity: 1
     exclusive: true
     heading: null
