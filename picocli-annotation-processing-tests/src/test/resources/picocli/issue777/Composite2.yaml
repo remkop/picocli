@@ -35,8 +35,8 @@ CommandSpec:
     paramLabel: '<f>'
     converters: []
     completionCandidates: null
-    getter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD f)
-    setter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD f)
+    getter: AnnotatedElementHolder(FIELD f in picocli.issue777.CompositeGroupDemo.Composite2)
+    setter: AnnotatedElementHolder(FIELD f in picocli.issue777.CompositeGroupDemo.Composite2)
   - names: [-t]
     usageHelp: false
     versionHelp: false
@@ -56,8 +56,8 @@ CommandSpec:
     paramLabel: '<t>'
     converters: []
     completionCandidates: null
-    getter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD t)
-    setter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD t)
+    getter: AnnotatedElementHolder(FIELD t in picocli.issue777.CompositeGroupDemo.Exclusive2)
+    setter: AnnotatedElementHolder(FIELD t in picocli.issue777.CompositeGroupDemo.Exclusive2)
   - names: [-v]
     usageHelp: false
     versionHelp: false
@@ -77,8 +77,8 @@ CommandSpec:
     paramLabel: '<v>'
     converters: []
     completionCandidates: null
-    getter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD v)
-    setter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD v)
+    getter: AnnotatedElementHolder(FIELD v in picocli.issue777.CompositeGroupDemo.Exclusive2)
+    setter: AnnotatedElementHolder(FIELD v in picocli.issue777.CompositeGroupDemo.Exclusive2)
   - names: [-w]
     usageHelp: false
     versionHelp: false
@@ -98,8 +98,8 @@ CommandSpec:
     paramLabel: '<w>'
     converters: []
     completionCandidates: null
-    getter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD w)
-    setter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD w)
+    getter: AnnotatedElementHolder(FIELD w in picocli.issue777.CompositeGroupDemo.Exclusive2)
+    setter: AnnotatedElementHolder(FIELD w in picocli.issue777.CompositeGroupDemo.Exclusive2)
   PositionalParams: []
   UnmatchedArgsBindings: []
   Mixins: []

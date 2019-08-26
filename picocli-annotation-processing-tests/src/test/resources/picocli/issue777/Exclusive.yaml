@@ -28,8 +28,8 @@ CommandSpec:
     paramLabel: '<x>'
     converters: []
     completionCandidates: null
-    getter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD x)
-    setter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD x)
+    getter: AnnotatedElementHolder(FIELD x in picocli.issue777.CompositeGroupDemo.Exclusive)
+    setter: AnnotatedElementHolder(FIELD x in picocli.issue777.CompositeGroupDemo.Exclusive)
   - names: [-y]
     usageHelp: false
     versionHelp: false
@@ -49,8 +49,8 @@ CommandSpec:
     paramLabel: '<y>'
     converters: []
     completionCandidates: null
-    getter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD y)
-    setter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD y)
+    getter: AnnotatedElementHolder(FIELD y in picocli.issue777.CompositeGroupDemo.Exclusive)
+    setter: AnnotatedElementHolder(FIELD y in picocli.issue777.CompositeGroupDemo.Exclusive)
   - names: [-z]
     usageHelp: false
     versionHelp: false
@@ -70,8 +70,8 @@ CommandSpec:
     paramLabel: '<z>'
     converters: []
     completionCandidates: null
-    getter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD z)
-    setter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD z)
+    getter: AnnotatedElementHolder(FIELD z in picocli.issue777.CompositeGroupDemo.Exclusive)
+    setter: AnnotatedElementHolder(FIELD z in picocli.issue777.CompositeGroupDemo.Exclusive)
   PositionalParams: []
   UnmatchedArgsBindings: []
   Mixins: []

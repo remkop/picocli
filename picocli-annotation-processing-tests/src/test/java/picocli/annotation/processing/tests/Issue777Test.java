@@ -31,8 +31,9 @@ public class Issue777Test {
                         "/picocli/issue777/Exclusive.yaml",
                         "/picocli/issue777/Exclusive2.yaml",
                         "/picocli/issue777/Composite2.yaml",
-                        "/picocli/issue777/Composite.yaml",
-                        "/picocli/issue777/All.yaml"),
+                        "/picocli/issue777/All.yaml",
+                        "/picocli/issue777/Composite.yaml"
+                ),
                 JavaFileObjects.forResource("picocli/issue777/CompositeGroupDemo.java"));
 
         assertThat(compilation).succeeded();
