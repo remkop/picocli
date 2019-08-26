@@ -6050,13 +6050,13 @@ public class CommandLine {
          * sectionMap.put(SECTION_KEY_SYNOPSIS_HEADING,       help -> help.synopsisHeading());      //e.g. Usage:
          * sectionMap.put(SECTION_KEY_SYNOPSIS,               help -> help.synopsis(help.synopsisHeadingLength())); //e.g. <cmd> [OPTIONS] <subcmd> [COMMAND-OPTIONS] [ARGUMENTS]
          * sectionMap.put(SECTION_KEY_DESCRIPTION_HEADING,    help -> help.descriptionHeading());   //e.g. %nDescription:%n%n
-         * sectionMap.put(SECTION_KEY_DESCRIPTION,            help -> help.description());          //e.g. {"Convert foos to bars.", "Use options to control conversion mode."}
+         * sectionMap.put(SECTION_KEY_DESCRIPTION,            help -> help.description());          //e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
          * sectionMap.put(SECTION_KEY_PARAMETER_LIST_HEADING, help -> help.parameterListHeading()); //e.g. %nPositional parameters:%n%n
          * sectionMap.put(SECTION_KEY_PARAMETER_LIST,         help -> help.parameterList());        //e.g. [FILE...] the files to convert
          * sectionMap.put(SECTION_KEY_OPTION_LIST_HEADING,    help -> help.optionListHeading());    //e.g. %nOptions:%n%n
-         * sectionMap.put(SECTION_KEY_OPTION_LIST,            help -> help.optionList());           //e.g. -h, --help   display this help and exit
+         * sectionMap.put(SECTION_KEY_OPTION_LIST,            help -> help.optionList());           //e.g. -h, --help   displays this help and exits
          * sectionMap.put(SECTION_KEY_COMMAND_LIST_HEADING,   help -> help.commandListHeading());   //e.g. %nCommands:%n%n
-         * sectionMap.put(SECTION_KEY_COMMAND_LIST,           help -> help.commandList());          //e.g.    add       add the frup to the frooble
+         * sectionMap.put(SECTION_KEY_COMMAND_LIST,           help -> help.commandList());          //e.g.    add       adds the frup to the frooble
          * sectionMap.put(SECTION_KEY_EXIT_CODE_LIST_HEADING, help -> help.exitCodeListHeading());
          * sectionMap.put(SECTION_KEY_EXIT_CODE_LIST,         help -> help.exitCodeList());
          * sectionMap.put(SECTION_KEY_FOOTER_HEADING,         help -> help.footerHeading());
@@ -6398,7 +6398,7 @@ public class CommandLine {
                 result.put(SECTION_KEY_SYNOPSIS,               new IHelpSectionRenderer() { public String render(Help help) { return help.synopsis(help.synopsisHeadingLength()); } });
                 //e.g. %nDescription:%n%n
                 result.put(SECTION_KEY_DESCRIPTION_HEADING,    new IHelpSectionRenderer() { public String render(Help help) { return help.descriptionHeading(); } });
-                //e.g. {"Convert foos to bars.", "Use options to control conversion mode."}
+                //e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
                 result.put(SECTION_KEY_DESCRIPTION,            new IHelpSectionRenderer() { public String render(Help help) { return help.description(); } });
                 //e.g. %nPositional parameters:%n%n
                 result.put(SECTION_KEY_PARAMETER_LIST_HEADING, new IHelpSectionRenderer() { public String render(Help help) { return help.parameterListHeading(); } });
@@ -6406,11 +6406,11 @@ public class CommandLine {
                 result.put(SECTION_KEY_PARAMETER_LIST,         new IHelpSectionRenderer() { public String render(Help help) { return help.parameterList(); } });
                 //e.g. %nOptions:%n%n
                 result.put(SECTION_KEY_OPTION_LIST_HEADING,    new IHelpSectionRenderer() { public String render(Help help) { return help.optionListHeading(); } });
-                //e.g. -h, --help   display this help and exit
+                //e.g. -h, --help   displays this help and exits
                 result.put(SECTION_KEY_OPTION_LIST,            new IHelpSectionRenderer() { public String render(Help help) { return help.optionList(); } });
                 //e.g. %nCommands:%n%n
                 result.put(SECTION_KEY_COMMAND_LIST_HEADING,   new IHelpSectionRenderer() { public String render(Help help) { return help.commandListHeading(); } });
-                //e.g.    add       add the frup to the frooble
+                //e.g.    add       adds the frup to the frooble
                 result.put(SECTION_KEY_COMMAND_LIST,           new IHelpSectionRenderer() { public String render(Help help) { return help.commandList(); } });
                 result.put(SECTION_KEY_EXIT_CODE_LIST_HEADING, new IHelpSectionRenderer() { public String render(Help help) { return help.exitCodeListHeading(); } });
                 result.put(SECTION_KEY_EXIT_CODE_LIST,         new IHelpSectionRenderer() { public String render(Help help) { return help.exitCodeList(); } });
@@ -12366,7 +12366,7 @@ public class CommandLine {
      * and a {@code COMMAND} positional parameter with {@code descriptionKey = "helpCommand.command"}.
      * @since 3.0
      */
-    @Command(name = "help", header = "Show help information about the specified command",
+    @Command(name = "help", header = "Displays help information about the specified command",
             synopsisHeading = "%nUsage: ", helpCommand = true,
             description = {"%nWhen no COMMAND is given, the usage help for the main command is displayed.",
                     "If a COMMAND is specified, the help for that command is shown.%n"})
