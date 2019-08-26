@@ -944,9 +944,13 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 if (parentGroup != null) {
                     // there may be multiple commands/subcommands with this parent arg group
                     for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElements.entrySet()) {
-                        TypeElement elementType = (TypeElement) typeUtils.asElement(entry.getKey().asType());
-                        if (elementType != null && elementType.equals(parentGroupElement)) {
-                            entry.getValue().addSubgroup(group);
+                        TypeMirror entryTypeMirror = entry.getKey().asType();
+                        if (entryTypeMirror.getKind() == TypeKind.DECLARED || entryTypeMirror.getKind() == TypeKind.ARRAY) {
+                            CompileTimeTypeInfo typeInfo = new CompileTimeTypeInfo(entryTypeMirror);
+                            TypeElement elementType = (TypeElement) typeUtils.asElement(typeInfo.auxTypeMirrors.get(0));
+                            if (elementType != null && elementType.toString().equals(parentGroupElement.toString())) {
+                                entry.getValue().addSubgroup(group);
+                            }
                         }
                     }
                 }
