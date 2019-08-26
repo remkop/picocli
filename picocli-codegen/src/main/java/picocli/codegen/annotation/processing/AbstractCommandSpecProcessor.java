@@ -925,11 +925,13 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 }
             }
 
+            Element[] lookup = new Element[argGroupElements.size()];
             Graph graph = new Graph(argGroupElements.size());
             int i = 0;
             Map<TypeElement, Integer> typeToIndex = new LinkedHashMap<TypeElement, Integer>();
             for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElements.entrySet()) {
                 Element argGroupElement = entry.getKey(); // field, method or parameter
+                lookup[i] = argGroupElement;
                 typeToIndex.put(argGroupElementsToType.get(argGroupElement), i++);
             }
             for (Map.Entry<TypeElement, Integer> entry : typeToIndex.entrySet()) {
@@ -939,14 +941,13 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                     graph.addEdge(typeToIndex.get(type), parentIndex);
                 }
             }
-            Stack<Integer> integers = graph.topologicalSort();
-
-            for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElements.entrySet()) {
-                Element argGroupElement = entry.getKey(); // field, method or parameter
-                ArgGroupSpec group = entry.getValue().build();
+            Stack<Integer> sortedGroups = graph.topologicalSort();
+            while (!sortedGroups.isEmpty()) {
+                Element argGroupElement = lookup[sortedGroups.pop()];
+                ArgGroupSpec group = argGroupElements.get(argGroupElement).build();
 
                 CommandSpec commandSpec = getOrCreateCommandSpecForArg(argGroupElement, commands);
-                logger.fine("Building ArgGroupSpec for " + entry + " in command " + commandSpec);
+                logger.fine("Building ArgGroupSpec for " + argGroupElement + " in command " + commandSpec);
                 commandSpec.addArgGroup(group);
 
                 Types typeUtils = proc.processingEnv.getTypeUtils();
@@ -954,6 +955,12 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 ArgGroupSpec.Builder parentGroup = argGroupsByType.get(parentGroupElement);
                 if (parentGroup != null) {
                     parentGroup.addSubgroup(group);
+                    for (Map.Entry<Element, ArgGroupSpec.Builder> entry : argGroupElements.entrySet()) {
+                        TypeElement elementType = (TypeElement) typeUtils.asElement(entry.getKey().asType());
+                        if (elementType != null && elementType.equals(parentGroupElement) && entry.getValue() != parentGroup) {
+                            entry.getValue().addSubgroup(group);
+                        }
+                    }
                 }
             }
 

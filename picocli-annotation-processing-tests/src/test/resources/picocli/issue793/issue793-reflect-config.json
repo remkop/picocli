@@ -8,6 +8,9 @@
     "fields" : [
       { "name" : "composite" },
       { "name" : "mode" }
+    ],
+    "methods" : [
+      { "name" : "method", "parameterTypes" : ["picocli.issue793.Issue793$Composite"] }
     ]
   },
   {
