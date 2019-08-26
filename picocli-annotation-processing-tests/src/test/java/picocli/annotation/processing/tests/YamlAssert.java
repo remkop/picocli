@@ -131,16 +131,16 @@ public final class YamlAssert {
         String actual = actualLine.trim().substring(1);
         if (expect.startsWith("etter: picocli.CommandLine.Model.FieldBinding")) {
             assertThat(actual, startsWith(
-                    "etter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD"));
+                    "etter: AnnotatedElementHolder(FIELD"));
         } else if (expect.startsWith("etter: picocli.CommandLine.Model.MethodBinding")) {
             assertThat(actual, startsWith(
-                    "etter: picocli.codegen.annotation.processing.AnnotatedElementHolder(METHOD"));
+                    "etter: AnnotatedElementHolder(METHOD"));
         } else if (expect.startsWith("etter: picocli.CommandLine$Model$PicocliInvocationHandler$ProxyBinding")) {
             assertThat(actual, startsWith(
-                    "etter: picocli.codegen.annotation.processing.AnnotatedElementHolder(METHOD"));
+                    "etter: AnnotatedElementHolder(METHOD"));
         } else if (expect.startsWith("etter: picocli.CommandLine.Model.ObjectBinding")) {
             assertThat(actual, startsWith(
-                    "etter: picocli.codegen.annotation.processing.AnnotatedElementHolder(PARAMETER"));
+                    "etter: AnnotatedElementHolder(PARAMETER"));
         } else {
             assertEquals("Not implemented yet", expect, actual);
         }

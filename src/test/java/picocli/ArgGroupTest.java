@@ -213,7 +213,7 @@ public class ArgGroupTest {
         try {
             ArgGroupSpec.builder().build();
         } catch (InitializationException ok) {
-            assertEquals("ArgGroup has no options or positional parameters, and no subgroups", ok.getMessage());
+            assertEquals("ArgGroup has no options or positional parameters, and no subgroups: null null", ok.getMessage());
         }
     }
 
@@ -442,11 +442,14 @@ public class ArgGroupTest {
         class App {
             @ArgGroup Invalid invalid;
         }
+        App app = new App();
         try {
-            new CommandLine(new App(), new InnerClassFactory(this));
+            new CommandLine(app, new InnerClassFactory(this));
             fail("Expected exception");
         } catch (InitializationException ex) {
-            assertEquals("ArgGroup has no options or positional parameters, and no subgroups", ex.getMessage());
+            assertEquals("ArgGroup has no options or positional parameters, and no subgroups: " +
+                    "Scope(value=" + app.toString() +
+                    ") FieldBinding(" + Invalid.class.getName() + " " + app.getClass().getName() + ".invalid)", ex.getMessage());
         }
     }
 

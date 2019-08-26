@@ -35,8 +35,8 @@ CommandSpec:
     paramLabel: '<a>'
     converters: []
     completionCandidates: null
-    getter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD a)
-    setter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD a)
+    getter: AnnotatedElementHolder(FIELD a in picocli.issue777.MutuallyExclusiveOptionsDemo.Exclusive)
+    setter: AnnotatedElementHolder(FIELD a in picocli.issue777.MutuallyExclusiveOptionsDemo.Exclusive)
   - names: [-b]
     usageHelp: false
     versionHelp: false
@@ -56,8 +56,8 @@ CommandSpec:
     paramLabel: '<b>'
     converters: []
     completionCandidates: null
-    getter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD b)
-    setter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD b)
+    getter: AnnotatedElementHolder(FIELD b in picocli.issue777.MutuallyExclusiveOptionsDemo.Exclusive)
+    setter: AnnotatedElementHolder(FIELD b in picocli.issue777.MutuallyExclusiveOptionsDemo.Exclusive)
   - names: [-c]
     usageHelp: false
     versionHelp: false
@@ -77,8 +77,8 @@ CommandSpec:
     paramLabel: '<c>'
     converters: []
     completionCandidates: null
-    getter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD c)
-    setter: picocli.codegen.annotation.processing.AnnotatedElementHolder(FIELD c)
+    getter: AnnotatedElementHolder(FIELD c in picocli.issue777.MutuallyExclusiveOptionsDemo.Exclusive)
+    setter: AnnotatedElementHolder(FIELD c in picocli.issue777.MutuallyExclusiveOptionsDemo.Exclusive)
   PositionalParams: []
   UnmatchedArgsBindings: []
   Mixins: []
