@@ -24,7 +24,6 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#794] (Bugfix) Perform topological sort on ArgGroups in annotation processor before wiring up the model to prevent FATAL ERROR in annotation processor: picocli.CommandLine$InitializationException: ArgGroup has no options or positional parameters, and no subgroups.
 * [#793] (Bugfix) Argument groups disappear in GraalVM native-image (the generated `reflect-config.json` was missing the `@ArgGroup`-annotated fields). Thanks to [Mike Hearn](https://github.com/mikehearn) for the bug report.
 * [#787] (Enhancement) Throw `InitializationException` instead of `StackOverflowError` when subcommand is subclass of itself. Thanks to [Peter Murray-Rust](https://github.com/petermr) for raising this.
-* [#791][#796] (Enhancement) Use imperative mood in HelpCommand header. Thanks to [GitFiNeon](https://github.com/gitfineon) for the pull request.
 * [#784] (DOC) Update documentation to show custom `IFactory` implementations should fall back to the default factory to enable the creation of collections for `@Option`-annotated methods and fields.
 * [#788] (DOC) Add link to GitHub examples in user manual Mixins section. Thanks to [Peter Murray-Rust](https://github.com/petermr) for the suggestion.
 * [#789] (DOC) Add example usage help to the user manual Negatable Options section.
