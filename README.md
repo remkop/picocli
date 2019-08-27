@@ -50,7 +50,7 @@ Picocli can generate completion scripts for bash and zsh, and offers [`picocli-s
 Picocli-based applications can easily [integrate](https://picocli.info/#_dependency_injection) with Dependency Injection containers.
 The [Micronaut](https://micronaut.io/) microservices framework has [built-in support](https://docs.micronaut.io/latest/guide/index.html#commandLineApps) for picocli.
 Picocli ships with a [`picocli-spring-boot-starter` module](https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter) 
-that includes a `PicocliSpringFactory` and auto-configuration to use Spring dependency injection in your picocli command line application.
+that includes a `PicocliSpringFactory` and Spring Boot auto-configuration to use Spring dependency injection in your picocli command line application.
 The user manual has an [example](https://picocli.info/#_guice_example) of integrating with Guice.
 
 <a id="picocli_demo"></a>
