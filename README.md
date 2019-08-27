@@ -32,7 +32,7 @@ Supports [Map options](https://picocli.info/#_maps) like `-Dkey1=val1 -Dkey2=val
 Generates polished and easily tailored [usage help](https://picocli.info/#_usage_help)
 and  [version help](https://picocli.info/#_version_help),
 using [ANSI colors](https://picocli.info/#_ansi_colors_and_styles) where possible.
-Works with Java 5 or higher (but is designed to facilitate the use of Java 8 lambdas).
+Requires Java 5 or higher, but is designed to facilitate the use of Java 8 lambdas. Tested on all Java versions between 5 and 14 (inclusive).
 
 Picocli-based command line applications can have [TAB autocompletion](https://picocli.info/autocomplete.html),
 interactively showing users what options and subcommands are available.
