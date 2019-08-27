@@ -13,21 +13,29 @@ Java command line parser with both an annotations API and a programmatic API, fe
 In a single file, so you can include it _in source form_.
 This lets users run picocli-based applications without requiring picocli as an external dependency.
 
+Picocli-based applications can be ahead-of-time compiled to <img src="https://www.graalvm.org/resources/img/logo-colored.svg" alt="GraalVM">
+[native images](https://picocli.info/#_graalvm_native_images), with extremely fast startup time and lower memory requirements,
+which can be distributed as a single executable file.
+Picocli comes with an [annotation processor](https://github.com/remkop/picocli/releases#4.0.0-annotation-processor) that automatically Graal-enables your jar during compilation.
+
+Picocli applications have no boilerplate code: your command (or subcommand) can be executed with a single line of code.
+Simply implement `Runnable` or `Callable`, or put the business logic of your command in a `@Command`-annotated method.
+
 How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed data. Supports git-like [subcommands](https://picocli.info/#_subcommands)
 (and nested [sub-subcommands](https://picocli.info/#_nested_sub_subcommands)),
 any option prefix style, POSIX-style [grouped short options](https://picocli.info/#_short_options),
 custom [type converters](https://picocli.info/#_custom_type_converters),
 [password options](http://picocli.info/#_interactive_password_options) and more.
-Parser [tracing](https://picocli.info/#_tracing) facilitates troubleshooting.
-Command-line [argument files](https://picocli.info/#AtFiles) (@-files) allow applications to handle very long command lines.
 
-Distinguishes between [named options](https://picocli.info/#_options) and
+Picocli distinguishes between [named options](https://picocli.info/#_options) and
 [positional parameters](https://picocli.info/#_positional_parameters) and allows _both_ to be 
 [strongly typed](https://picocli.info/#_strongly_typed_everything).
 [Multi-valued fields](https://picocli.info/#_multiple_values) can specify 
 an exact number of parameters or a [range](https://picocli.info/#_arity) (e.g., `0..*`, `1..2`).
 Supports [Map options](https://picocli.info/#_maps) like `-Dkey1=val1 -Dkey2=val2`, where both key and value can be strongly typed.
+Parser [tracing](https://picocli.info/#_tracing) facilitates troubleshooting.
+Command-line [argument files](https://picocli.info/#AtFiles) (@-files) allow applications to handle very long command lines.
 
 Generates polished and easily tailored [usage help](https://picocli.info/#_usage_help)
 and  [version help](https://picocli.info/#_version_help),
@@ -40,6 +48,10 @@ When an option has [`completionCandidates`](https://picocli.info/#__code_complet
 Picocli can generate completion scripts for bash and zsh, and offers [`picocli-shell-jline2`](picocli-shell-jline2/README.md) and [`picocli-shell-jline3`](picocli-shell-jline3/README.md) modules with JLine `Completer` implementations for building interactive shell applications.
 
 Picocli-based applications can easily [integrate](https://picocli.info/#_dependency_injection) with Dependency Injection containers.
+The [Micronaut](https://micronaut.io/) microservices framework has [built-in support](https://docs.micronaut.io/latest/guide/index.html#commandLineApps) for picocli.
+Picocli ships with a [`picocli-spring-boot-starter` module](https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter) 
+that includes a `PicocliSpringFactory` and auto-configuration to use Spring dependency injection in your picocli command line application.
+The user manual has an [example](https://picocli.info/#_guice_example) of integrating with Guice.
 
 <a id="picocli_demo"></a>
 ![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
