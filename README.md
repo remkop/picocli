@@ -9,7 +9,7 @@
 
 # picocli - a mighty tiny command line interface
 
-Java command line parser with both an annotations API and a programmatic API, featuring usage help with ANSI colors, autocomplete and nested subcommands.
+Java command line parser with both an annotations API and a programmatic API, featuring usage help with [ANSI colors and styles](https://picocli.info/#_ansi_colors_and_styles), [TAB autocompletion](https://picocli.info/autocomplete.html) and nested subcommands.
 In a single file, so you can include it _in source form_.
 This lets users run picocli-based applications without requiring picocli as an external dependency.
 
@@ -18,8 +18,11 @@ Picocli-based applications can be ahead-of-time compiled to <img src="https://ww
 which can be distributed as a single executable file.
 Picocli comes with an [annotation processor](https://github.com/remkop/picocli/releases#4.0.0-annotation-processor) that automatically Graal-enables your jar during compilation.
 
-Picocli applications need no boilerplate code: your command (or subcommand) can be executed with a single line of code (see [example below](#example)).
+Picocli applications can be very compact with no boilerplate code: your command (or subcommand) can be executed with a single line of code (see [example below](#example)).
 Simply implement `Runnable` or `Callable`, or put the business logic of your command in a `@Command`-annotated method.
+
+<a id="picocli_demo"></a>
+![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed data. Supports git-like [subcommands](https://picocli.info/#_subcommands)
@@ -52,9 +55,6 @@ The [Micronaut](https://micronaut.io/) microservices framework has [built-in sup
 Picocli ships with a [`picocli-spring-boot-starter` module](https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter) 
 that includes a `PicocliSpringFactory` and Spring Boot auto-configuration to use Spring dependency injection in your picocli command line application.
 The user manual has an [example](https://picocli.info/#_guice_example) of integrating with Guice.
-
-<a id="picocli_demo"></a>
-![Picocli Demo help message with ANSI colors](docs/images/picocli.Demo.png?raw=true)
 
 ### Releases
 * [All Releases](https://github.com/remkop/picocli/releases)
@@ -196,7 +196,7 @@ public class Example implements Runnable {
 }
 ```
 
-If your command implements `Runnable`, or `Callable`, or has a `@Command`-annotated method with the business logic, executing your command is easy; construct a `CommandLine` instance with your command object and call the `CommandLine.execute` method with the command line parameters. This will convert the command line arguments to Java objects and assign them to the `@Option` and `@Parameters`-annotated fields. After the arguments are successfully parsed, the business logic is executed.
+Implement `Runnable` or `Callable`, and your command can be [executed](https://picocli.info/#execute) in one line of code. The example above uses the `CommandLine.execute` method to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic. Applications can call `System.exit` with the returned exit code to signal success or failure to their caller.
 
 ```bash
 $ java Example -v inputFile1 inputFile2
