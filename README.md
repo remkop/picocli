@@ -167,8 +167,8 @@ import java.io.File;
 
 @Command(name = "example", mixinStandardHelpOptions = true, version = "Picocli example 4.0")
 public class Example implements Runnable {
-    @Option(names = { "-v", "--verbose" }, description = "Verbose mode. Helpful for troubleshooting. " +
-                                                         "Multiple -v options increase the verbosity.")
+    @Option(names = { "-v", "--verbose" },
+      description = "Verbose mode. Helpful for troubleshooting. Multiple -v options increase the verbosity.")
     private boolean[] verbose = new boolean[0];
 
     @Parameters(arity = "1..*", paramLabel = "FILE", description = "File(s) to process.")
