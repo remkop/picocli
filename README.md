@@ -196,7 +196,7 @@ public class Example implements Runnable {
 }
 ```
 
-If your command implements `Runnable`, all that is necessary to parse the command line and execute the command is a call to `CommandLine.run` with the command line parameters and the `Runnable` command. When the program is run on the command line, the command line arguments are converted to Java objects and assigned to the annotated fields. After the arguments are successfully parsed, picocli calls the command's `run` method.
+If your command implements `Runnable`, or `Callable`, or has a `@Command`-annotated method with the business logic, executing your command is easy; construct a `CommandLine` instance with your command object and call the `CommandLine.execute` method with the command line parameters. This will convert the command line arguments to Java objects and assign them to the `@Option` and `@Parameters`-annotated fields. After the arguments are successfully parsed, the business logic is executed.
 
 ```bash
 $ java Example -v inputFile1 inputFile2
@@ -204,11 +204,11 @@ $ java Example -v inputFile1 inputFile2
 2 files to process...
 ```
 
-The `CommandLine.run` convenience method automatically prints the usage help message if the user requested help or when the input was invalid.
+The `CommandLine.execute` method automatically prints the usage help message if the user requested help or when the input was invalid.
 
 ![Usage help message with ANSI colors](docs/images/ExampleUsageANSI.png?raw=true)
 
-If you want more control, you may be interested in the `CommandLine.parse` or `CommandLine.parseWithHandlers` methods. See the user manual for details.
+This can be customized in many ways. See the user manual [section on Executing Commands](https://picocli.info/#execute) for details.
 
 ## Usage Help with ANSI Colors and Styles
 
