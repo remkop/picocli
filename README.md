@@ -18,7 +18,7 @@ Picocli-based applications can be ahead-of-time compiled to <img src="https://ww
 which can be distributed as a single executable file.
 Picocli comes with an [annotation processor](https://github.com/remkop/picocli/releases#4.0.0-annotation-processor) that automatically Graal-enables your jar during compilation.
 
-Picocli applications have no boilerplate code: your command (or subcommand) can be executed with a single line of code.
+Picocli applications have no boilerplate code: your command (or subcommand) can be executed with a single line of code (see example [below](#example)).
 Simply implement `Runnable` or `Callable`, or put the business logic of your command in a `@Command`-annotated method.
 
 How it works: annotate your class and picocli initializes it from the command line arguments,
