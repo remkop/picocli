@@ -113,9 +113,6 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 ### Mailing List
 Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if you are interested in discussing anything picocli-related and receiving announcements on new releases.
 
-### Related
-* Check out Thibaud Lepretre's [picocli Spring boot starter](https://github.com/kakawait/picocli-spring-boot-starter)!
-
 ### Credit
 <img src="https://picocli.info/images/logo/horizontal-400x150.png" height="100"> 
 
@@ -212,7 +209,7 @@ This can be customized in many ways. See the user manual [section on Executing C
 
 ## Usage Help with ANSI Colors and Styles
 
-Colors, styles, headers, footers and section headings are easily customized with annotations.
+Colors, styles, headers, footers and section headings are easily [customized with annotations](https://picocli.info/#_ansi_colors_and_styles).
 For example:
 
 ![Longer help message with ANSI colors](docs/images/UsageHelpWithStyle.png?raw=true)
