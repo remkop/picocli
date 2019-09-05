@@ -347,6 +347,7 @@ public class ReflectionConfigGenerator {
             visitSetter(argSpec.setter());
             visitTypeInfo(argSpec.typeInfo());
             visitObjectType(argSpec.completionCandidates());
+            visitObjectType(argSpec.parameterConsumer());
             visitObjectTypes(argSpec.converters());
         }
 
