@@ -1,0 +1,19 @@
+[
+  {
+    "name" : "picocli.issue803.Issue803",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "file" }
+    ]
+  },
+  {
+    "name" : "picocli.issue803$LocalPC",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  }
+]
