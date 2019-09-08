@@ -23,8 +23,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.4-fixes"></a> Fixed issues
 * [#803] (Bugfix) Custom `IParameterConsumer` caused native-image to fail. Thanks to [Patrick Plenefisch](https://github.com/byteit101) for raising this.
-* [#804] (Bugfix) Visit Parameter Consumers when doing GraalVM reflection generation. Thanks to [Patrick Plenefisch](https://github.com/byteit101) for the pull request.
-* [#806] (Bugfix) Added tests for #803. Thanks to [Patrick Plenefisch](https://github.com/byteit101) for the pull request.
+* [#804][#806] (Bugfix) Visit Parameter Consumers when doing GraalVM reflection generation; added test. Thanks to [Patrick Plenefisch](https://github.com/byteit101) for the pull requests.
 * [#808] (Bugfix) Option-specific `ITypeConverter` class is now correctly included in generated `reflect-config.json`.
 * [#807] (Bugfix) `ArgGroup` should not validate when marked as `validate = false`. Thanks to [cranphin](https://github.com/cranphin) for the bug report.
 * [#799] (DOC) Update adoption section in README.
