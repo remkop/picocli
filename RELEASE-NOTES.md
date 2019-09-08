@@ -1,5 +1,38 @@
 # picocli Release Notes
 
+# <a name="4.0.4"></a> Picocli 4.0.4
+The picocli community is pleased to announce picocli 4.0.4.
+
+This release contains a bugfixes and enhancements.
+
+GraalVM native image-configuration generation for options or positional parameters with custom type converters or custom parameter consumers now work correctly.
+
+This is the sixty-first public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.0.4"></a> Table of Contents
+* [New and noteworthy](#4.0.4-new)
+* [Fixed issues](#4.0.4-fixes)
+* [Deprecations](#4.0.4-deprecated)
+* [Potential breaking changes](#4.0.4-breaking-changes)
+
+## <a name="4.0.4-new"></a> New and Noteworthy
+
+
+## <a name="4.0.4-fixes"></a> Fixed issues
+* [#803] (Bugfix) Custom `IParameterConsumer` caused native-image to fail. Thanks to [Patrick Plenefisch](https://github.com/byteit101) for raising this.
+* [#804] (Bugfix) Visit Parameter Consumers when doing GraalVM reflection generation. Thanks to [Patrick Plenefisch](https://github.com/byteit101) for the pull request.
+* [#806] (Bugfix) Added tests for #803. Thanks to [Patrick Plenefisch](https://github.com/byteit101) for the pull request.
+* [#799] (DOC) Update adoption section in README.
+* [#805] (DOC) Add example for alphabetically sorting subcommands by subclassing `Help`. Thanks to []() for raising this issue.
+
+## <a name="4.0.4-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.0.4-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 
 # <a name="4.0.3"></a> Picocli 4.0.3
 The picocli community is pleased to announce picocli 4.0.3.

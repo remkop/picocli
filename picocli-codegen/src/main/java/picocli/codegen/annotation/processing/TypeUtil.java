@@ -8,10 +8,12 @@ final class TypeUtil {
     private TypeUtil() {}
 
     static boolean isOption(DeclaredType annotationType) {
-        return CommandLine.Option.class.getName().equals(annotationType.toString());
+        return CommandLine.Option.class.getName().equals(annotationType.toString())
+                || CommandLine.Option.class.getCanonicalName().equals(annotationType.toString());
     }
 
     static boolean isParameter(DeclaredType annotationType) {
-        return CommandLine.Parameters.class.getName().equals(annotationType.toString());
+        return CommandLine.Parameters.class.getName().equals(annotationType.toString())
+                || CommandLine.Parameters.class.getCanonicalName().equals(annotationType.toString());
     }
 }

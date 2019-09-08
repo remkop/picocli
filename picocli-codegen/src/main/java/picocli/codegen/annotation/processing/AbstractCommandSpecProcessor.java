@@ -483,6 +483,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             OptionSpec.Builder builder = OptionSpec.builder(typedMember, context.factory);
             builder.completionCandidates(CompletionCandidatesMetaData.extract(element));
             builder.converters(TypeConverterMetaData.extract(element));
+            builder.parameterConsumer(ParameterConsumerMetaData.extract(element));
             context.options.put(element, builder);
         }
     }
@@ -504,6 +505,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             PositionalParamSpec.Builder builder = PositionalParamSpec.builder(typedMember, context.factory);
             builder.completionCandidates(CompletionCandidatesMetaData.extract(element));
             builder.converters(TypeConverterMetaData.extract(element));
+            builder.parameterConsumer(ParameterConsumerMetaData.extract(element));
             context.parameters.put(element, builder);
         }
     }
@@ -543,6 +545,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 OptionSpec.Builder builder = OptionSpec.builder(typedMember, context.factory);
 
                 builder.completionCandidates(CompletionCandidatesMetaData.extract(variable));
+                builder.parameterConsumer(ParameterConsumerMetaData.extract(variable));
                 builder.converters(TypeConverterMetaData.extract(variable));
                 context.options.put(variable, builder);
             } else if (isArgGroup) {
@@ -556,6 +559,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 TypedMember typedMember = new TypedMember(variable, position);
                 PositionalParamSpec.Builder builder = PositionalParamSpec.builder(typedMember, context.factory);
                 builder.completionCandidates(CompletionCandidatesMetaData.extract(variable));
+                builder.parameterConsumer(ParameterConsumerMetaData.extract(variable));
                 builder.converters(TypeConverterMetaData.extract(variable));
                 context.parameters.put(variable, builder);
             }
