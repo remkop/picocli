@@ -23,6 +23,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#803] (Bugfix) Custom `IParameterConsumer` caused native-image to fail. Thanks to [Patrick Plenefisch](https://github.com/byteit101) for raising this.
 * [#804] (Bugfix) Visit Parameter Consumers when doing GraalVM reflection generation. Thanks to [Patrick Plenefisch](https://github.com/byteit101) for the pull request.
 * [#806] (Bugfix) Added tests for #803. Thanks to [Patrick Plenefisch](https://github.com/byteit101) for the pull request.
+* [#808] (Bugfix) Option-specific `ITypeConverter` class is now correctly included in generated `reflect-config.json`.
 * [#799] (DOC) Update adoption section in README.
 * [#805] (DOC) Add example for alphabetically sorting subcommands by subclassing `Help`. Thanks to []() for raising this issue.
 

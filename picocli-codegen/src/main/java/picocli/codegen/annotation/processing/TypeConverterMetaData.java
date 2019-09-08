@@ -46,7 +46,7 @@ class TypeConverterMetaData implements ITypeConverter, ITypeMetaData {
                         List<AnnotationValue> typeMirrors = (List<AnnotationValue>) list.getValue();
                         List<TypeConverterMetaData> result = new ArrayList<TypeConverterMetaData>();
                         for (AnnotationValue annotationValue : typeMirrors) {
-                            result.add(new TypeConverterMetaData((TypeMirror) annotationValue));
+                            result.add(new TypeConverterMetaData((TypeMirror) annotationValue.getValue()));
                         }
                         return result.toArray(new TypeConverterMetaData[0]);
                     }
