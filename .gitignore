@@ -5,3 +5,11 @@ local.properties
 target/
 tmp/
 picocli.iml
+/out/
+/picocli-annotation-processing-tests/out/
+/picocli-codegen/out/
+/picocli-examples/out/
+/picocli-groovy/out/
+/picocli-shell-jline2/out/
+/picocli-shell-jline3/out/
+/picocli-spring-boot-starter/out/
