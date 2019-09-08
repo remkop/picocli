@@ -2470,4 +2470,77 @@ public class ArgGroupTest {
             assertEquals(msg, ex.getMessage());
         }
     }
+
+    static class Issue807Command {
+        @ArgGroup(validate = false, heading = "%nGlobal options:%n")
+        protected GlobalOptions globalOptions = new GlobalOptions();
+
+        static class GlobalOptions {
+            @Option(names = "-s", description = "ssss")
+            boolean slowClock = false;
+
+            @Option(names = "-v", description = "vvvv")
+            boolean verbose = false;
+        }
+    }
+
+    @Test
+    public void testIssue807Validation() {
+        // should not throw MutuallyExclusiveArgsException
+        new CommandLine(new Issue807Command()).parseArgs("-s", "-v");
+    }
+
+    static class Issue807SiblingCommand {
+        @ArgGroup(validate = true, heading = "%nValidating subgroup options:%n")
+        protected ValidatingOptions validatingOptions = new ValidatingOptions();
+
+        @ArgGroup(validate = false, heading = "%nGlobal options:%n")
+        protected Issue807Command globalOptions = new Issue807Command();
+
+        static class ValidatingOptions {
+            @Option(names = "-x", description = "xxx")
+            boolean x = false;
+
+            @Option(names = "-y", description = "yyy")
+            boolean y = false;
+        }
+    }
+
+    @Test
+    public void testIssue807SiblingValidation() {
+        try {
+            new CommandLine(new Issue807SiblingCommand()).parseArgs("-s", "-v", "-x", "-y");
+            fail("Expected mutually exclusive args exception");
+        } catch (MutuallyExclusiveArgsException ex) {
+            assertEquals("Error: -x, -y are mutually exclusive (specify only one)", ex.getMessage());
+        }
+    }
+
+    static class Issue807NestedCommand {
+
+        @ArgGroup(validate = false, heading = "%nNon-validating over-arching group:%n")
+        protected Combo nonValidating = new Combo();
+
+        static class Combo {
+            @ArgGroup(validate = true, heading = "%nValidating subgroup options:%n")
+            protected ValidatingOptions validatingOptions = new ValidatingOptions();
+
+            @ArgGroup(validate = true, heading = "%nGlobal options:%n")
+            protected Issue807Command globalOptions = new Issue807Command();
+        }
+
+        static class ValidatingOptions {
+            @Option(names = "-x", description = "xxx")
+            boolean x = false;
+
+            @Option(names = "-y", description = "yyy")
+            boolean y = false;
+        }
+    }
+
+    @Test
+    public void testIssue807NestedValidation() {
+        // should not throw MutuallyExclusiveArgsException
+        new CommandLine(new Issue807NestedCommand()).parseArgs("-s", "-v", "-x", "-y");
+    }
 }

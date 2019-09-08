@@ -7,6 +7,8 @@ This release contains a bugfixes and enhancements.
 
 GraalVM native image-configuration generation for options or positional parameters with custom type converters or custom parameter consumers now work correctly.
 
+Also fixed a bug where validation was performed on `ArgGroup`s even when they were marked as `validate = false`.
+
 This is the sixty-first public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
@@ -24,6 +26,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#804] (Bugfix) Visit Parameter Consumers when doing GraalVM reflection generation. Thanks to [Patrick Plenefisch](https://github.com/byteit101) for the pull request.
 * [#806] (Bugfix) Added tests for #803. Thanks to [Patrick Plenefisch](https://github.com/byteit101) for the pull request.
 * [#808] (Bugfix) Option-specific `ITypeConverter` class is now correctly included in generated `reflect-config.json`.
+* [#807] (Bugfix) `ArgGroup` should not validate when marked as `validate = false`. Thanks to [cranphin](https://github.com/cranphin) for the bug report.
 * [#799] (DOC) Update adoption section in README.
 * [#805] (DOC) Add example for alphabetically sorting subcommands by subclassing `Help`. Thanks to []() for raising this issue.
 

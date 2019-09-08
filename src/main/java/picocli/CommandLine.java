@@ -10741,6 +10741,9 @@ public class CommandLine {
 
             void validate(CommandLine commandLine) {
                 validationResult = GroupValidationResult.SUCCESS_PRESENT; // we matched _something_ or this object would not exist...
+                if (group() != null && !group().validate()) {
+                    return;
+                }
                 for (GroupMatchContainer sub : matchedSubgroups.values()) {
                     sub.validate(commandLine);
                     if (sub.validationResult.blockingFailure()) {
