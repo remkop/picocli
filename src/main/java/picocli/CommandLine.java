@@ -3045,7 +3045,7 @@ public class CommandLine {
     public CommandLine setResourceBundle(ResourceBundle bundle) {
         getCommandSpec().resourceBundle(bundle);
         for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.getCommandSpec().resourceBundle(bundle);
+            command.setResourceBundle(bundle);
         }
         return this;
     }
