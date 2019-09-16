@@ -1303,6 +1303,34 @@ Short option names are not given a negative alias by default. (This is <a href="
 <div class="paragraph">
 <p>If the negated form of the option is found, for example <code>--no-verbose</code>, the value is set to the provided default. Otherwise, with a regular call, for example <code>--verbose</code>, it is set to the opposite of the default.</p>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">Negatable options that are <code>true</code> by default</div>
+<div class="paragraph">
+<p>When a negatable option is <code>true</code> by default, give it the negative name. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">--no-backup</span><span class="delimiter">&quot;</span></span>, negatable = <span class="predefined-constant">true</span>,
+  description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Make a backup. True by default.</span><span class="delimiter">&quot;</span></span>)
+<span class="type">boolean</span> backup = <span class="predefined-constant">true</span>;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When end users specify <code>--no-backup</code> on the command line, the value is set to <code>false</code>.</p>
+</div>
+<div class="paragraph">
+<p>The negated form of this option is <code>--backup</code>, and if that is specified, the default value is applied.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_positional_parameters">3.6. Positional Parameters</h3>

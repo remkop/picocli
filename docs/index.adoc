@@ -402,6 +402,22 @@ Short option names are not given a negative alias by default. (This is <<Customi
 
 If the negated form of the option is found, for example `--no-verbose`, the value is set to the provided default. Otherwise, with a regular call, for example `--verbose`, it is set to the opposite of the default.
 
+[TIP]
+.Negatable options that are `true` by default
+====
+When a negatable option is `true` by default, give it the negative name. For example:
+
+[source,java]
+----
+@Option(names = "--no-backup", negatable = true,
+  description = "Make a backup. True by default.")
+boolean backup = true;
+----
+
+When end users specify `--no-backup` on the command line, the value is set to `false`.
+
+The negated form of this option is `--backup`, and if that is specified, the default value is applied.
+====
 
 === Positional Parameters
 Any command line arguments that are not subcommands or options (or option parameters) are interpreted as positional parameters.

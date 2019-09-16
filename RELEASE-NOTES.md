@@ -1,5 +1,36 @@
 # picocli Release Notes
 
+
+# <a name="4.0.5"></a> Picocli 4.0.5 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.0.5.
+
+This release contains bugfixes and enhancements.
+
+
+This is the sixty-second public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.0.5"></a> Table of Contents
+* [New and noteworthy](#4.0.5-new)
+* [Fixed issues](#4.0.5-fixes)
+* [Deprecations](#4.0.5-deprecated)
+* [Potential breaking changes](#4.0.5-breaking-changes)
+
+## <a name="4.0.5-new"></a> New and Noteworthy
+
+
+## <a name="4.0.5-fixes"></a> Fixed issues
+* [#811] (Bugfix) `CommandLine.setResourceBundle` did not propagate resource bundle to subcommands recursively. Thanks to [thope](https://github.com/frontfact) for the pull request with the bug fix.
+* [#813] (Doc) Clarify usage of negatable boolean `@Option` with default value "true". Thanks to [Yann ROBERT](https://github.com/YannRobert) for raising this.
+
+
+## <a name="4.0.5-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.0.5-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 # <a name="4.0.4"></a> Picocli 4.0.4
 The picocli community is pleased to announce picocli 4.0.4.
 
