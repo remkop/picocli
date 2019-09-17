@@ -736,7 +736,15 @@ table.CodeRay td.code>pre{padding:0}
 </ul>
 </li>
 <li><a href="#_osgi_bundle">25. OSGi Bundle</a></li>
-<li><a href="#_graalvm_native_images">26. GraalVM Native Images</a></li>
+<li><a href="#_packaging_your_application">26. Packaging Your Application</a>
+<ul class="sectlevel2">
+<li><a href="#_graalvm_native_image">26.1. GraalVM Native Image</a></li>
+<li><a href="#_build_tool_plugins">26.2. Build Tool Plugins</a></li>
+<li><a href="#_launch4j_and_jdk_8_javapackage">26.3. Launch4j and JDK 8 JavaPackage</a></li>
+<li><a href="#_jlink">26.4. jlink</a></li>
+<li><a href="#_jpackage_early_access">26.5. jpackage (Early Access)</a></li>
+</ul>
+</li>
 <li><a href="#_picocli_in_other_languages">27. Picocli in Other Languages</a>
 <ul class="sectlevel2">
 <li><a href="#_groovy">27.1. Groovy</a></li>
@@ -794,7 +802,7 @@ Supports a variety of command line syntax styles including POSIX, GNU, MS-DOS an
 Generates highly customizable usage help messages with <a href="#_ansi_colors_and_styles">ANSI colors and styles</a>.
 Picocli-based applications can have <a href="autocomplete.html">command line TAB completion</a> showing available options, option parameters and subcommands, for any level of nested subcommands.
 Picocli-based applications can be ahead-of-time compiled to <span class="image"><img src="https://www.graalvm.org/resources/img/logo-colored.svg" alt="GraalVM"></span>
-<a href="#_graalvm_native_images">native images</a>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.</p>
+<a href="#GraalVM Native Images">native images</a>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.</p>
 </div>
 <div class="paragraph">
 <p><span class="image"><img src="images/checksum-usage-help.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
@@ -7149,8 +7157,13 @@ open module com.yourorg.yourapp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_graalvm_native_images">26. GraalVM Native Images</h2>
+<h2 id="_packaging_your_application">26. Packaging Your Application</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>You finished your application. Congratulations! Now, how do you package it and distribute it to your users? Here are some ideas.</p>
+</div>
+<div class="sect2">
+<h3 id="_graalvm_native_image">26.1. GraalVM Native Image</h3>
 <div class="paragraph">
 <p><span class="image"><img src="images/exe-picocli-on-graalvm.png" alt="Turn your picocli-based application into a native image" width="265" height="150"></span></p>
 </div>
@@ -7173,13 +7186,56 @@ file.</p>
 <div class="paragraph">
 <p>By embedding these configuration files, your jar is instantly Graal-enabled: the
 <a href="https://www.graalvm.org/docs/reference-manual/aot-compilation/#install-native-image"><code>native-image</code> tool</a>
-used to generate the native executable is able to get the configuration from the jar.</p>
+used to generate the native executable is able to get the configuration from the jar.
+In most cases no further configuration is needed when generating a native image.</p>
 </div>
 <div class="paragraph">
-<p>In most cases no further configuration is needed when generating a native image.</p>
+<p>GraalVM includes a <a href="https://medium.com/graalvm/simplifying-native-image-generation-with-maven-plugin-and-embeddable-configuration-d5b283b92f57">Maven plugin</a>
+to generate a native image during the build.
+Gradle users may be interested in the <a href="https://github.com/palantir/gradle-graal">gradle-graal</a> plugin by Palantir.
+(Documentation for both of these seems sparse at time of this writing.)</p>
 </div>
 <div class="paragraph">
 <p>This <a href="https://picocli.info/picocli-on-graalvm.html">older article</a>, "Picocli on GraalVM: Blazingly Fast Command Line Apps", may still be useful.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_build_tool_plugins">26.2. Build Tool Plugins</h3>
+<div class="paragraph">
+<p>Both <a href="https://www.mojohaus.org/appassembler/">Application Assembler Maven Plugin</a> and <a href="https://docs.gradle.org/current/userguide/application_plugin.html">Gradle Application plugin</a> create a distribution zip or tar file with launcher scripts. Both require a JRE to be installed on the target machine.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_launch4j_and_jdk_8_javapackage">26.3. Launch4j and JDK 8 JavaPackage</h3>
+<div class="paragraph">
+<p><a href="http://launch4j.sourceforge.net/docs.html">launch4j</a> and JDK 8 <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javapackager.html">javapackage</a> can create a native launcher executable. Both can bundle a JRE (~200MB) or use a pre-installed one.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_jlink">26.4. jlink</h3>
+<div class="paragraph">
+<p>With the JPMS module system introduced in Java 9 it became possible to use <a href="https://docs.oracle.com/javase/9/tools/jlink.htm#JSWOR-GUID-CECAC52B-CFEE-46CB-8166-F17A8E9280E9"><code>jlink</code></a> to create a custom light-weight JRE with only the necessary modules.
+This JRE may be as small as 30-40MB.
+Use <code>jlink</code> with the <code>--launcher</code> option to generate launcher scripts for your application.</p>
+</div>
+<div class="paragraph">
+<p>See <a href="https://medium.com/azulsystems/using-jlink-to-build-java-runtimes-for-non-modular-applications-9568c5e70ef4">this article</a> for using jlink for non-modular applications.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_jpackage_early_access">26.5. jpackage (Early Access)</h3>
+<div class="paragraph">
+<p><a href="https://jdk.java.net/jpackage/"><code>jpackage</code></a> is an early access build of <a href="https://openjdk.java.net/jeps/343">JEP 343: Packaging Tool</a>.
+JPackage can take the custom light-weight JRE produced by <code>jlink</code> and create an installer and a native application launcher.
+The result is a Java "application image" that is a single directory in the filesystem containing
+the native application launcher, resources and configuration files,
+and the custom light-weight JRE runtime image (including the application modules) produced by <code>jlink</code>.</p>
+</div>
+<div class="paragraph">
+<p>This <a href="https://www.infoq.com/news/2019/03/jep-343-jpackage/">InfoQ article</a> has more details.
+Gradle users may like these plugins: <a href="https://badass-runtime-plugin.beryx.org/releases/latest/">org.beryx Badass Runtime Plugin</a>
+and <a href="https://badass-jlink-plugin.beryx.org/releases/latest/">org.beryx Badass JLink Plugin</a>.</p>
+</div>
 </div>
 </div>
 </div>
@@ -7499,7 +7555,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.0.4<br>
-Last updated 2019-09-09 06:50:40 JST
+Last updated 2019-09-17 19:48:08 JST
 </div>
 </div>
 </body>

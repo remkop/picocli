@@ -4548,8 +4548,11 @@ image:https://www.osgi.org/wp-content/uploads/OSGi-website-header-logo.png[OSGi 
 
 From 4.0, the picocli JAR is an OSGi bundle with `Bundle-Name: picocli` and other appropriate metadata in the manifest.
 
+== Packaging Your Application
 
-== GraalVM Native Images
+You finished your application. Congratulations! Now, how do you package it and distribute it to your users? Here are some ideas.
+
+=== GraalVM Native Image
 
 image:exe-picocli-on-graalvm.png[Turn your picocli-based application into a native image,width=265,height=150]
 
@@ -4569,10 +4572,40 @@ file.
 By embedding these configuration files, your jar is instantly Graal-enabled: the
 https://www.graalvm.org/docs/reference-manual/aot-compilation/#install-native-image[`native-image` tool]
 used to generate the native executable is able to get the configuration from the jar.
-
 In most cases no further configuration is needed when generating a native image.
 
+GraalVM includes a https://medium.com/graalvm/simplifying-native-image-generation-with-maven-plugin-and-embeddable-configuration-d5b283b92f57[Maven plugin]
+to generate a native image during the build.
+Gradle users may be interested in the https://github.com/palantir/gradle-graal[gradle-graal] plugin by Palantir.
+(Documentation for both of these seems sparse at time of this writing.)
+
 This https://picocli.info/picocli-on-graalvm.html[older article], "Picocli on GraalVM: Blazingly Fast Command Line Apps", may still be useful.
+
+
+=== Build Tool Plugins
+
+Both https://www.mojohaus.org/appassembler/[Application Assembler Maven Plugin] and https://docs.gradle.org/current/userguide/application_plugin.html[Gradle Application plugin] create a distribution zip or tar file with launcher scripts. Both require a JRE to be installed on the target machine.
+
+=== Launch4j and JDK 8 JavaPackage
+http://launch4j.sourceforge.net/docs.html[launch4j] and JDK 8 https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javapackager.html[javapackage] can create a native launcher executable. Both can bundle a JRE (~200MB) or use a pre-installed one.
+
+=== jlink
+With the JPMS module system introduced in Java 9 it became possible to use https://docs.oracle.com/javase/9/tools/jlink.htm#JSWOR-GUID-CECAC52B-CFEE-46CB-8166-F17A8E9280E9[`jlink`] to create a custom light-weight JRE with only the necessary modules.
+This JRE may be as small as 30-40MB.
+Use `jlink` with the `--launcher` option to generate launcher scripts for your application.
+
+See https://medium.com/azulsystems/using-jlink-to-build-java-runtimes-for-non-modular-applications-9568c5e70ef4[this article] for using jlink for non-modular applications.
+
+=== jpackage (Early Access)
+https://jdk.java.net/jpackage/[`jpackage`] is an early access build of https://openjdk.java.net/jeps/343[JEP 343: Packaging Tool].
+JPackage can take the custom light-weight JRE produced by `jlink` and create an installer and a native application launcher.
+The result is a Java "application image" that is a single directory in the filesystem containing
+the native application launcher, resources and configuration files,
+and the custom light-weight JRE runtime image (including the application modules) produced by `jlink`.
+
+This https://www.infoq.com/news/2019/03/jep-343-jpackage/[InfoQ article] has more details.
+Gradle users may like these plugins: https://badass-runtime-plugin.beryx.org/releases/latest/[org.beryx Badass Runtime Plugin]
+and https://badass-jlink-plugin.beryx.org/releases/latest/[org.beryx Badass JLink Plugin].
 
 
 == Picocli in Other Languages

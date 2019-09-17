@@ -22,7 +22,8 @@ Picocli follows [semantic versioning](http://semver.org/).
 ## <a name="4.0.5-fixes"></a> Fixed issues
 * [#811] (Bugfix) `CommandLine.setResourceBundle` did not propagate resource bundle to subcommands recursively. Thanks to [thope](https://github.com/frontfact) for the pull request with the bug fix.
 * [#813] (Doc) Clarify usage of negatable boolean `@Option` with default value "true". Thanks to [Yann ROBERT](https://github.com/YannRobert) for raising this.
-
+* [#814] (Doc) Document how a CLI application can be packaged for distribution.
+  
 
 ## <a name="4.0.5-deprecated"></a> Deprecations
 No features were deprecated in this release.
