@@ -740,9 +740,10 @@ table.CodeRay td.code>pre{padding:0}
 <ul class="sectlevel2">
 <li><a href="#_graalvm_native_image">26.1. GraalVM Native Image</a></li>
 <li><a href="#_build_tool_plugins">26.2. Build Tool Plugins</a></li>
-<li><a href="#_launch4j_and_jdk_8_javapackage">26.3. Launch4j and JDK 8 JavaPackage</a></li>
-<li><a href="#_jlink">26.4. jlink</a></li>
-<li><a href="#_jpackage_early_access">26.5. jpackage (Early Access)</a></li>
+<li><a href="#_launch4j">26.3. launch4j</a></li>
+<li><a href="#_javapackager_java_8">26.4. javapackager (Java 8)</a></li>
+<li><a href="#_jlink_java_9">26.5. jlink (Java 9+)</a></li>
+<li><a href="#_jpackage_early_access">26.6. jpackage (Early Access)</a></li>
 </ul>
 </li>
 <li><a href="#_picocli_in_other_languages">27. Picocli in Other Languages</a>
@@ -7206,15 +7207,21 @@ Gradle users may be interested in the <a href="https://github.com/palantir/gradl
 </div>
 </div>
 <div class="sect2">
-<h3 id="_launch4j_and_jdk_8_javapackage">26.3. Launch4j and JDK 8 JavaPackage</h3>
+<h3 id="_launch4j">26.3. launch4j</h3>
 <div class="paragraph">
-<p><a href="http://launch4j.sourceforge.net/docs.html">launch4j</a> and JDK 8 <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javapackager.html">javapackage</a> can create a native launcher executable. Both can bundle a JRE (~200MB) or use a pre-installed one.</p>
+<p><a href="http://launch4j.sourceforge.net/docs.html">launch4j</a> can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jlink">26.4. jlink</h3>
+<h3 id="_javapackager_java_8">26.4. javapackager (Java 8)</h3>
 <div class="paragraph">
-<p>With the JPMS module system introduced in Java 9 it became possible to use <a href="https://docs.oracle.com/javase/9/tools/jlink.htm#JSWOR-GUID-CECAC52B-CFEE-46CB-8166-F17A8E9280E9"><code>jlink</code></a> to create a custom light-weight JRE with only the necessary modules.
+<p>JDK 8 <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javapackager.html">javapackager</a> can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_jlink_java_9">26.5. jlink (Java 9+)</h3>
+<div class="paragraph">
+<p>With the JPMS module system introduced in Java 9 it became possible to use <a href="https://docs.oracle.com/javase/9/tools/jlink.htm#JSWOR-GUID-CECAC52B-CFEE-46CB-8166-F17A8E9280E9">jlink</a> to create a custom light-weight JRE with only the necessary modules.
 This JRE may be as small as 30-40MB.
 Use <code>jlink</code> with the <code>--launcher</code> option to generate launcher scripts for your application.</p>
 </div>
@@ -7223,9 +7230,9 @@ Use <code>jlink</code> with the <code>--launcher</code> option to generate launc
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jpackage_early_access">26.5. jpackage (Early Access)</h3>
+<h3 id="_jpackage_early_access">26.6. jpackage (Early Access)</h3>
 <div class="paragraph">
-<p><a href="https://jdk.java.net/jpackage/"><code>jpackage</code></a> is an early access build of <a href="https://openjdk.java.net/jeps/343">JEP 343: Packaging Tool</a>.
+<p><a href="https://jdk.java.net/jpackage/">jpackage</a> is an early access build of <a href="https://openjdk.java.net/jeps/343">JEP 343: Packaging Tool</a>.
 JPackage can take the custom light-weight JRE produced by <code>jlink</code> and create an installer and a native application launcher.
 The result is a Java "application image" that is a single directory in the filesystem containing
 the native application launcher, resources and configuration files,

@@ -4586,18 +4586,21 @@ This https://picocli.info/picocli-on-graalvm.html[older article], "Picocli on Gr
 
 Both https://www.mojohaus.org/appassembler/[Application Assembler Maven Plugin] and https://docs.gradle.org/current/userguide/application_plugin.html[Gradle Application plugin] create a distribution zip or tar file with launcher scripts. Both require a JRE to be installed on the target machine.
 
-=== Launch4j and JDK 8 JavaPackage
-http://launch4j.sourceforge.net/docs.html[launch4j] and JDK 8 https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javapackager.html[javapackage] can create a native launcher executable. Both can bundle a JRE (~200MB) or use a pre-installed one.
+=== launch4j
+http://launch4j.sourceforge.net/docs.html[launch4j] can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.
 
-=== jlink
-With the JPMS module system introduced in Java 9 it became possible to use https://docs.oracle.com/javase/9/tools/jlink.htm#JSWOR-GUID-CECAC52B-CFEE-46CB-8166-F17A8E9280E9[`jlink`] to create a custom light-weight JRE with only the necessary modules.
+=== javapackager (Java 8)
+JDK 8 https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javapackager.html[javapackager] can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.
+
+=== jlink (Java 9+)
+With the JPMS module system introduced in Java 9 it became possible to use https://docs.oracle.com/javase/9/tools/jlink.htm#JSWOR-GUID-CECAC52B-CFEE-46CB-8166-F17A8E9280E9[jlink] to create a custom light-weight JRE with only the necessary modules.
 This JRE may be as small as 30-40MB.
 Use `jlink` with the `--launcher` option to generate launcher scripts for your application.
 
 See https://medium.com/azulsystems/using-jlink-to-build-java-runtimes-for-non-modular-applications-9568c5e70ef4[this article] for using jlink for non-modular applications.
 
 === jpackage (Early Access)
-https://jdk.java.net/jpackage/[`jpackage`] is an early access build of https://openjdk.java.net/jeps/343[JEP 343: Packaging Tool].
+https://jdk.java.net/jpackage/[jpackage] is an early access build of https://openjdk.java.net/jeps/343[JEP 343: Packaging Tool].
 JPackage can take the custom light-weight JRE produced by `jlink` and create an installer and a native application launcher.
 The result is a Java "application image" that is a single directory in the filesystem containing
 the native application launcher, resources and configuration files,
