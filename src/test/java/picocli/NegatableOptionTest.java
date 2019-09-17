@@ -337,4 +337,24 @@ public class NegatableOptionTest {
         new CommandLine(app).parseArgs("--status");
         assertTrue(app.status);
     }
+
+    @Test
+    public void testIssue813() {
+        class App {
+            @Option(names = "--no-xxx", defaultValue = "true", negatable = true)
+            boolean xxx;
+
+            @Option(names = "--yyy", defaultValue = "false", negatable = true)
+            boolean yyy;
+        }
+
+        App app = new App();
+        new CommandLine(app).parseArgs("--xxx", "--yyy");
+        assertTrue(app.xxx);
+        assertTrue(app.yyy);
+
+        new CommandLine(app).parseArgs("--no-xxx", "--no-yyy");
+        assertFalse(app.xxx);
+        assertFalse(app.yyy);
+    }
 }
