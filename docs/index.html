@@ -668,17 +668,18 @@ table.CodeRay td.code>pre{padding:0}
 </li>
 <li><a href="#_subcommands">16. Subcommands</a>
 <ul class="sectlevel2">
-<li><a href="#_registering_subcommands_programmatically">16.1. Registering Subcommands Programmatically</a></li>
-<li><a href="#_registering_subcommands_declaratively">16.2. Registering Subcommands Declaratively</a></li>
+<li><a href="#_registering_subcommands_declaratively">16.1. Registering Subcommands Declaratively</a></li>
+<li><a href="#_registering_subcommands_programmatically">16.2. Registering Subcommands Programmatically</a></li>
 <li><a href="#_subcommand_aliases">16.3. Subcommand Aliases</a></li>
 <li><a href="#_subcommands_as_methods">16.4. Subcommands as Methods</a></li>
-<li><a href="#_parsing_subcommands">16.5. Parsing Subcommands</a></li>
-<li><a href="#__code_parentcommand_code_annotation">16.6. <code>@ParentCommand</code> Annotation</a></li>
-<li><a href="#_usage_help_for_subcommands">16.7. Usage Help for Subcommands</a></li>
-<li><a href="#_hidden_subcommands">16.8. Hidden Subcommands</a></li>
-<li><a href="#_help_subcommands">16.9. Help Subcommands</a></li>
-<li><a href="#_nested_sub_subcommands">16.10. Nested sub-Subcommands</a></li>
-<li><a href="#_required_subcommands">16.11. Required Subcommands</a></li>
+<li><a href="#_executing_subcommands">16.5. Executing Subcommands</a></li>
+<li><a href="#_manually_parsing_subcommands">16.6. Manually Parsing Subcommands</a></li>
+<li><a href="#__code_parentcommand_code_annotation">16.7. <code>@ParentCommand</code> Annotation</a></li>
+<li><a href="#_usage_help_for_subcommands">16.8. Usage Help for Subcommands</a></li>
+<li><a href="#_hidden_subcommands">16.9. Hidden Subcommands</a></li>
+<li><a href="#_help_subcommands">16.10. Help Subcommands</a></li>
+<li><a href="#_nested_sub_subcommands">16.11. Nested sub-Subcommands</a></li>
+<li><a href="#_required_subcommands">16.12. Required Subcommands</a></li>
 </ul>
 </li>
 <li><a href="#_reuse">17. Reuse</a>
@@ -3858,22 +3859,32 @@ on any application command. It prints usage help for the parent command or sibli
 </div>
 </div>
 <div class="paragraph">
-<p>Picocli 3.0 introduced a new interface <code>picocli.CommandLine.IHelpCommandInitializable</code> that provides custom help
+<p>Picocli 4.0 introduced a new interface <code>picocli.CommandLine.IHelpCommandInitializable2</code> that provides custom help
 commands with access to the parent command and sibling commands, whether to use Ansi colors or not, and the streams to print the usage help message to.</p>
+</div>
+<div class="paragraph">
+<p>The <code>IHelpCommandInitializable2</code> interface replaces the <code>IHelpCommandInitializable</code> interface which was introduced in picocli 3.0.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="type">interface</span> <span class="class">IHelpCommandInitializable</span> {
+<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="type">interface</span> <span class="class">IHelpCommandInitializable2</span> {
     <span class="comment">/**
      * Initializes this object with the information needed to implement a help command that
      * provides usage help for other commands.
      *
-     * @param helpCommandLine provides access to this command's parent and sibling commands
-     * @param ansi whether to use Ansi colors or not
-     * @param out the stream to print the usage help message to
-     * @param err the error stream to print any error messages to
+     * @param helpCommandLine the {@code CommandLine} object associated with this help command.
+      *                       Implementors can use this to walk the command hierarchy and
+      *                       get access to the help command's parent and sibling commands.
+     * @param colorScheme the color scheme to use when printing help, including whether
+     *                    to use Ansi colors or not
+     * @param outWriter the output writer to print the usage help message to
+     * @param errWriter the error writer to print any diagnostic messages to,
+     *                  in addition to the output from the exception handler
      */</span>
-    <span class="type">void</span> init(CommandLine helpCommandLine, Help.Ansi ansi, <span class="predefined-type">PrintStream</span> out, <span class="predefined-type">PrintStream</span> err);
+    <span class="type">void</span> init(CommandLine helpCommandLine,
+              Help.ColorScheme colorScheme,
+              <span class="predefined-type">PrintWriter</span> outWriter,
+              <span class="predefined-type">PrintWriter</span> errWriter);
 }</code></pre>
 </div>
 </div>
@@ -4547,11 +4558,11 @@ by default each of these fields would be shown in the usage message, which would
 <h4 id="__code_default_value_code_variable">13.16.1. <code>${DEFAULT-VALUE}</code> Variable</h4>
 <div class="paragraph">
 <p>From picocli 3.2, it is possible to embed the <a href="#_default_values">default values</a> in the description for an option or positional parameter by
-specifying the variable <code>${DEFAULT-VALUE}</code> in the description text.
+specifying the <a href="#_variable_interpolation">variable</a> <code>${DEFAULT-VALUE}</code> in the description text.
 Picocli uses reflection to get the default values from the annotated fields.</p>
 </div>
 <div class="paragraph">
-<p>The variable is replaced with the default value regardless of the <code>@Command(showDefaultValues)</code> attribute
+<p>The <a href="#_variable_interpolation">variable</a> is replaced with the default value regardless of the <code>@Command(showDefaultValues)</code> attribute
 and regardless of the <code>@Option(showDefaultValues)</code> or <code>@Parameters(showDefaultValues)</code> attribute.</p>
 </div>
 <div class="listingblock">
@@ -4579,7 +4590,7 @@ CommandLine.usage(<span class="keyword">new</span> DefaultValues(), <span class=
 <h4 id="__code_completion_candidates_code_variable">13.16.2. <code>${COMPLETION-CANDIDATES}</code> Variable</h4>
 <div class="paragraph">
 <p>Similarly, it is possible to embed the completion candidates in the description for an option or positional parameter by
-specifying the variable <code>${COMPLETION-CANDIDATES}</code> in the description text.</p>
+specifying the <a href="#_variable_interpolation">variable</a> <code>${COMPLETION-CANDIDATES}</code> in the description text.</p>
 </div>
 <div class="paragraph">
 <p>This works for java <code>enum</code> classes and for options or positional parameters of non-enum types for which completion candidates are specified.</p>
@@ -4910,7 +4921,15 @@ On Windows, when picocli detects it is running under a Unix variant like Cygwin 
 <div class="sect3">
 <h4 id="_windows">14.5.2. Windows</h4>
 <div class="paragraph">
-<p>Starting from Windows 10 the Windows console <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx">supports ANSI escape sequences</a>,
+<p>If you are using Windows 10, I strongly recommend <a href="https://docs.microsoft.com/en-us/windows/wsl/install-win10">getting</a> <a href="https://docs.microsoft.com/en-us/windows/wsl/about">Windows Subsystem for Linux</a> (WSL).
+This lets you run a GNU/Linux environment&#8201;&#8212;&#8201;including most command-line tools, utilities, and applications&#8201;&#8212;&#8201;directly on Windows, unmodified, without the overhead of a virtual machine.</p>
+</div>
+<div class="paragraph">
+<p>From June 2019, the Windows Terminal app is available for <a href="https://www.microsoft.com/en-us/p/windows-terminal-preview/9n0dx20hk701?activetab=pivot:overviewtab">download</a> as an early preview build.
+This may be an interesting alternative to the legacy Windows Console application.</p>
+</div>
+<div class="paragraph">
+<p>Starting from Windows 10, the Windows Console <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx">supports ANSI escape sequences</a>,
 but <a href="https://github.com/Microsoft/WSL/issues/1173#issuecomment-254250445">it&#8217;s not enabled by default</a>.
 Unless the specific software you&#8217;re using (e.g. java) enables ANSI processing by calling the <a href="https://docs.microsoft.com/en-us/windows/console/setconsolemode">SetConsoleMode</a> API with the <code>ENABLE_VIRTUAL_TERMINAL_PROCESSING</code> (<code>0x0400</code>) flag (java doesn&#8217;t), you won&#8217;t see colors or get ANSI processing for that application.
 Note that there is a registry setting to <a href="https://superuser.com/questions/413073/windows-console-with-ansi-colors-handling/1300251#1300251">change the global default</a> from <em>opt in</em> to <em>opt out</em>.</p>
@@ -5147,6 +5166,9 @@ map.put(SECTION_KEY_FOOTER,                 help -&gt; help.footer());</code></p
 <div class="paragraph">
 <p>This ordering may be modified with the <code>CommandLine::setHelpSectionKeys</code> setter method (or <code>UsageMessageSpec::sectionKeys(List)</code> for a single <code>CommandSpec</code>).</p>
 </div>
+<div class="paragraph">
+<p>Some examples for customizing the help are <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/customhelp">here</a>.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_custom_layout">15.2. Custom Layout</h3>
@@ -5185,7 +5207,7 @@ zip [-options] [-b path] [-t mmddyyyy] [-n suffixes] [zipfile list] [-xi list]
 </div>
 <div class="paragraph">
 <p>This can be achieved in picocli by subclassing the Help.Layout class.
-See the picocli tests for how to achieve this.</p>
+See the <a href="https://github.com/remkop/picocli/blob/master/src/test/java/picocli/CustomLayoutDemo.java">CustomLayoutDemo</a> class in the picocli tests for how to achieve this.</p>
 </div>
 </div>
 </div>
@@ -5194,7 +5216,43 @@ See the picocli tests for how to achieve this.</p>
 <h2 id="_subcommands">16. Subcommands</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_registering_subcommands_programmatically">16.1. Registering Subcommands Programmatically</h3>
+<h3 id="_registering_subcommands_declaratively">16.1. Registering Subcommands Declaratively</h3>
+<div class="paragraph">
+<p>From v0.9.8, picocli supports registering subcommands declaratively with the <code>@Command</code> annotation&#8217;s <code>subcommands</code> attribute.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(subcommands = {
+    GitStatus.class,
+    GitCommit.class,
+    GitAdd.class,
+    GitBranch.class,
+    GitCheckout.class,
+    GitClone.class,
+    GitDiff.class,
+    GitMerge.class,
+    GitPush.class,
+    GitRebase.class,
+    GitTag.class
+})
+<span class="directive">public</span> <span class="type">class</span> <span class="class">Git</span> { ... }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The declared subcommands are automatically instantiated and added when the <code>new CommandLine(new Git())</code> instance is constructed. The result is the same as if subcommands were added <a href="#_registering_subcommands_programmatically">programmatically</a>.</p>
+</div>
+<div class="paragraph">
+<p>Subcommands referenced in a <code>subcommands</code> attribute <em>must</em> have a <code>@Command</code> annotation with a <code>name</code> attribute, or an exception is thrown from the <code>CommandLine</code> constructor. This name will be used both for generating usage help and for recognizing subcommands when parsing the command line.</p>
+</div>
+<div class="paragraph">
+<p>Custom type converters registered on a <code>CommandLine</code> instance will apply to all subcommands that were declared on the main command with the <code>subcommands</code> annotation.</p>
+</div>
+<div class="paragraph">
+<p>Subcommands referenced in a <code>subcommands</code> attribute need to have a public no-argument constructor to be instantiated, unless a <a href="#_custom_factory">Custom Factory</a> is installed to instantiate classes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_registering_subcommands_programmatically">16.2. Registering Subcommands Programmatically</h3>
 <div class="paragraph">
 <p>Subcommands can be registered with the <code>CommandLine.addSubcommand</code> method.
 You pass in the name of the command and the annotated object to populate with the subcommand options.
@@ -5240,42 +5298,6 @@ adding subcommands.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_registering_subcommands_declaratively">16.2. Registering Subcommands Declaratively</h3>
-<div class="paragraph">
-<p>From v0.9.8, picocli supports registering subcommands declaratively with the <code>@Command</code> annotation&#8217;s <code>subcommands</code> attribute.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(subcommands = {
-    GitStatus.class,
-    GitCommit.class,
-    GitAdd.class,
-    GitBranch.class,
-    GitCheckout.class,
-    GitClone.class,
-    GitDiff.class,
-    GitMerge.class,
-    GitPush.class,
-    GitRebase.class,
-    GitTag.class
-})
-<span class="directive">public</span> <span class="type">class</span> <span class="class">Git</span> { ... }</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The declared subcommands are automatically instantiated and added when the <code>new CommandLine(new Git())</code> instance is constructed. The result is the same as if subcommands were added <a href="#_registering_subcommands_programmatically">programmatically</a>.</p>
-</div>
-<div class="paragraph">
-<p>Subcommands referenced in a <code>subcommands</code> attribute <em>must</em> have a <code>@Command</code> annotation with a <code>name</code> attribute, or an exception is thrown from the <code>CommandLine</code> constructor. This name will be used both for generating usage help and for recognizing subcommands when parsing the command line.</p>
-</div>
-<div class="paragraph">
-<p>Custom type converters registered on a <code>CommandLine</code> instance will apply to all subcommands that were declared on the main command with the <code>subcommands</code> annotation.</p>
-</div>
-<div class="paragraph">
-<p>Subcommands referenced in a <code>subcommands</code> attribute need to have a public no-argument constructor to be instantiated, unless a <a href="#_custom_factory">Custom Factory</a> is installed to instantiate classes.</p>
-</div>
-</div>
-<div class="sect2">
 <h3 id="_subcommand_aliases">16.3. Subcommand Aliases</h3>
 <div class="paragraph">
 <p>Commands may optionally define an <code>aliases</code> attribute to provide alternate names for commands that will be recognized by the parser. Aliases are displayed in the default help output. For example:</p>
@@ -5302,9 +5324,106 @@ adding subcommands.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_parsing_subcommands">16.5. Parsing Subcommands</h3>
+<h3 id="_executing_subcommands">16.5. Executing Subcommands</h3>
 <div class="paragraph">
-<p>For this example, we assume we created an alias <code>git</code> that invokes our Java application. This could also be a script or a function that calls our Java program:</p>
+<p>The easiest way to design an application with subcommands is to let each command and subcommand either be a class that implements <code>Runnable</code> or <code>Callable</code>, or a <code>@Command</code>-annotated method.</p>
+</div>
+<div class="paragraph">
+<p>This will allow you to parse the command line, deal with requests for help and requests for version information, deal with invalid user input, and invoke the business logic of the user-specified subcommand - all of that - in one line of code: the <a href="#execute"><code>execute</code></a> method.</p>
+</div>
+<div class="paragraph">
+<p>For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">foo</span><span class="delimiter">&quot;</span></span>, subcommands = Bar.class)
+<span class="type">class</span> <span class="class">Foo</span> <span class="directive">implements</span> <span class="predefined-type">Callable</span>&lt;<span class="predefined-type">Integer</span>&gt; {
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>) <span class="type">int</span> x;
+
+    <span class="annotation">@Override</span> <span class="directive">public</span> <span class="predefined-type">Integer</span> call() {
+        <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">hi from foo, x=%d%n</span><span class="delimiter">&quot;</span></span>, x);
+        <span class="type">boolean</span> ok = <span class="predefined-constant">true</span>;
+        <span class="keyword">return</span> ok ? <span class="integer">0</span> : <span class="integer">1</span>; <span class="comment">// exit code</span>
+    }
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
+        <span class="type">int</span> exitCode = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> Foo()).execute(args);
+        <span class="predefined-type">System</span>.exit(exitCode);
+    }
+}
+
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">bar</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">I'm a subcommand of `foo`</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">Bar</span> <span class="directive">implements</span> <span class="predefined-type">Callable</span>&lt;<span class="predefined-type">Integer</span>&gt; {
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-y</span><span class="delimiter">&quot;</span></span>) <span class="type">int</span> y;
+
+    <span class="annotation">@Override</span> <span class="directive">public</span> <span class="predefined-type">Integer</span> call() {
+        <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">hi from bar, y=%d%n</span><span class="delimiter">&quot;</span></span>, y);
+        <span class="keyword">return</span> <span class="integer">23</span>;
+    }
+
+    <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">baz</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">I'm a subcommand of `bar`</span><span class="delimiter">&quot;</span></span>)
+    <span class="type">int</span> baz(<span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-z</span><span class="delimiter">&quot;</span></span>) <span class="type">int</span> z) {
+        <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">hi from baz, z=%d%n</span><span class="delimiter">&quot;</span></span>, z);
+        <span class="keyword">return</span> <span class="integer">45</span>;
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To test our example on Linux, we created an alias <code>foo</code> that invokes our Java application. This could also be a script or a function that calls our Java program:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">alias foo='java Foo'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next, we call our top-level command with an option like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">$ foo -x 123
+hi from foo, x=123
+
+#check the exit code
+$ echo $?
+0</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We can also specify a subcommand:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">$ foo -x 123 bar -y=456
+hi from bar, y=456
+
+#check the exit code
+$ echo $?
+23</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And finally, we can also specify a sub-subcommand:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">$ foo bar baz -z=789
+hi from baz, z=789
+
+#check the exit code
+$ echo $?
+45</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>See also <a href="#_executing_commands_with_subcommands">Executing Commands with Subcommands</a> for details on configuring this.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_manually_parsing_subcommands">16.6. Manually Parsing Subcommands</h3>
+<div class="paragraph">
+<p>For the following example, we assume we created an alias <code>git</code> that invokes our Java application. This could also be a script or a function that calls our Java program:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -5370,11 +5489,12 @@ This can be recursively queried until the last nested subcommand was found and t
 </div>
 </div>
 <div class="paragraph">
-<p>You may be interested in the <a href="#execute">execute method</a> to reduce error handling and other boilerplate code in your application.</p>
+<p>You may be interested in the <a href="#execute">execute method</a> to reduce error handling and other boilerplate code in your application.
+See also the previous section, <a href="#_executing_subcommands">Executing Subcommands</a>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="__code_parentcommand_code_annotation">16.6. <code>@ParentCommand</code> Annotation</h3>
+<h3 id="__code_parentcommand_code_annotation">16.7. <code>@ParentCommand</code> Annotation</h3>
 <div class="paragraph">
 <p>In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.</p>
 </div>
@@ -5430,7 +5550,7 @@ The <code>List</code> subcommand can use the <code>@ParentCommand</code> annotat
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_help_for_subcommands">16.7. Usage Help for Subcommands</h3>
+<h3 id="_usage_help_for_subcommands">16.8. Usage Help for Subcommands</h3>
 <div class="paragraph">
 <p>After registering subcommands, calling the <code>commandLine.usage</code> method will show a usage help message that includes all registered subcommands. For example:</p>
 </div>
@@ -5542,7 +5662,7 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hidden_subcommands">16.8. Hidden Subcommands</h3>
+<h3 id="_hidden_subcommands">16.9. Hidden Subcommands</h3>
 <div class="paragraph">
 <p>Commands with the <code>hidden</code> attribute set to <code>true</code> will not be shown in the usage help message of their parent command.</p>
 </div>
@@ -5573,7 +5693,7 @@ Commands:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_help_subcommands">16.9. Help Subcommands</h3>
+<h3 id="_help_subcommands">16.10. Help Subcommands</h3>
 <div class="paragraph">
 <p>Commands with the <code>helpCommand</code> attribute set to <code>true</code> are treated as help commands.
 When picocli encounters a help command on the command line, required options and required positional parameters of the parent command
@@ -5589,7 +5709,7 @@ are not validated (similar to <a href="#_help_options">help options</a>).</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_nested_sub_subcommands">16.10. Nested sub-Subcommands</h3>
+<h3 id="_nested_sub_subcommands">16.11. Nested sub-Subcommands</h3>
 <div class="paragraph">
 <p>The specified object can be an annotated object or a
 <code>CommandLine</code> instance with its own nested subcommands. For example:</p>
@@ -5640,7 +5760,7 @@ The <code>picocli-examples</code> module has an <a href="https://github.com/remk
 </div>
 </div>
 <div class="sect2">
-<h3 id="_required_subcommands">16.11. Required Subcommands</h3>
+<h3 id="_required_subcommands">16.12. Required Subcommands</h3>
 <div class="paragraph">
 <p>For some command suites, it does not make sense to invoke the top-level command by itself, and the user is required to specify a subcommand.</p>
 </div>
@@ -6076,7 +6196,12 @@ helpCommand.command = Shared description of COMMAND parameter of built-in help s
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>,
-         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">This command logs the ${COMMAND-NAME} for ${PARENT-COMMAND-NAME}.</span><span class="delimiter">&quot;</span></span>)
+         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">This command logs the ${COMMAND-NAME} for ${PARENT-COMMAND-NAME}.</span><span class="delimiter">&quot;</span></span>,
+         version = {
+            <span class="string"><span class="delimiter">&quot;</span><span class="content">Versioned Command 1.0</span><span class="delimiter">&quot;</span></span>,
+            <span class="string"><span class="delimiter">&quot;</span><span class="content">Picocli </span><span class="delimiter">&quot;</span></span> + picocli.CommandLine.VERSION,
+            <span class="string"><span class="delimiter">&quot;</span><span class="content">JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})</span><span class="delimiter">&quot;</span></span>,
+            <span class="string"><span class="delimiter">&quot;</span><span class="content">OS: ${os.name} ${os.version} ${os.arch}</span><span class="delimiter">&quot;</span></span>})
 <span class="type">class</span> <span class="class">Status</span> {
     <span class="comment">// -d or --directories</span>
     <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">${dirOptionName1:--d}</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">${dirOptionName2:---directories}</span><span class="delimiter">&quot;</span></span>},
@@ -7562,7 +7687,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.0.4<br>
-Last updated 2019-09-17 19:48:08 JST
+Last updated 2019-09-19 02:18:24 JST
 </div>
 </div>
 </body>
