@@ -3025,6 +3025,7 @@ Applications can add, remove or replace sections in this map. The `CommandLine::
 
 This ordering may be modified with the `CommandLine::setHelpSectionKeys` setter method (or `UsageMessageSpec::sectionKeys(List)` for a single `CommandSpec`).
 
+Some examples for customizing the help are https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/customhelp[here].
 
 
 === Custom Layout
@@ -3058,7 +3059,7 @@ zip [-options] [-b path] [-t mmddyyyy] [-n suffixes] [zipfile list] [-xi list]
 ----
 
 This can be achieved in picocli by subclassing the Help.Layout class.
-See the picocli tests for how to achieve this.
+See the https://github.com/remkop/picocli/blob/master/src/test/java/picocli/CustomLayoutDemo.java[CustomLayoutDemo] class in the picocli tests for how to achieve this.
 
 
 == Subcommands
