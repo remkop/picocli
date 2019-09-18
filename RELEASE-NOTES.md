@@ -24,6 +24,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#813] (DOC) Clarify usage of negatable boolean `@Option` with default value "true". Thanks to [Yann ROBERT](https://github.com/YannRobert) for raising this.
 * [#814] (DOC) Document how a CLI application can be packaged for distribution.
 * [#820] (DOC) Update user manual section on ANSI supported platforms: mention Windows Subsystem for Linux under Windows 10.
+* [#819] (DOC) Update user manual section on Variable Interpolation: improve example, link to this section from other parts of the manual.
 
 ## <a name="4.0.5-deprecated"></a> Deprecations
 No features were deprecated in this release.

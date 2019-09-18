@@ -2643,10 +2643,10 @@ Usage: <main class> <host> <port> [<files>...]
 === Show Default Values
 ==== `${DEFAULT-VALUE}` Variable
 From picocli 3.2, it is possible to embed the <<Default Values,default values>> in the description for an option or positional parameter by
-specifying the variable `${DEFAULT-VALUE}` in the description text.
+specifying the <<Variable Interpolation,variable>> `${DEFAULT-VALUE}` in the description text.
 Picocli uses reflection to get the default values from the annotated fields.
 
-The variable is replaced with the default value regardless of the `@Command(showDefaultValues)` attribute
+The <<Variable Interpolation,variable>> is replaced with the default value regardless of the `@Command(showDefaultValues)` attribute
 and regardless of the `@Option(showDefaultValues)` or `@Parameters(showDefaultValues)` attribute.
 
 [source,java]
@@ -2667,7 +2667,7 @@ Usage: <main class> -f=<file>
 
 ==== `${COMPLETION-CANDIDATES}` Variable
 Similarly, it is possible to embed the completion candidates in the description for an option or positional parameter by
-specifying the variable `${COMPLETION-CANDIDATES}` in the description text.
+specifying the <<Variable Interpolation,variable>> `${COMPLETION-CANDIDATES}` in the description text.
 
 This works for java `enum` classes and for options or positional parameters of non-enum types for which completion candidates are specified.
 
@@ -3754,7 +3754,12 @@ From 4.0, picocli supports variable interpolation (variable expansion) in annota
 
 ```java
 @Command(name = "status",
-         description = "This command logs the ${COMMAND-NAME} for ${PARENT-COMMAND-NAME}.")
+         description = "This command logs the ${COMMAND-NAME} for ${PARENT-COMMAND-NAME}.",
+         version = {
+            "Versioned Command 1.0",
+            "Picocli " + picocli.CommandLine.VERSION,
+            "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
+            "OS: ${os.name} ${os.version} ${os.arch}"})
 class Status {
     // -d or --directories
     @Option(names = {"${dirOptionName1:--d}", "${dirOptionName2:---directories}"},
