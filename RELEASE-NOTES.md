@@ -26,6 +26,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#820] (DOC) Update user manual section on ANSI supported platforms: mention Windows Subsystem for Linux under Windows 10.
 * [#819] (DOC) Update user manual section on Variable Interpolation: improve example, link to this section from other parts of the manual.
 * [#818] (DOC) Update user manual section on Usage Help API to point to `picocli-examples`.
+* [#816] (DOC) Update user manual for `IHelpCommandInitializable2`.
 
 ## <a name="4.0.5-deprecated"></a> Deprecations
 No features were deprecated in this release.

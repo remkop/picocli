@@ -2146,22 +2146,31 @@ Custom help subcommands should mark themselves as a <<Help Subcommands,help comm
 @Command(helpCommand = true)
 ----
 
-Picocli 3.0 introduced a new interface `picocli.CommandLine.IHelpCommandInitializable` that provides custom help
+Picocli 4.0 introduced a new interface `picocli.CommandLine.IHelpCommandInitializable2` that provides custom help
 commands with access to the parent command and sibling commands, whether to use Ansi colors or not, and the streams to print the usage help message to.
+
+The `IHelpCommandInitializable2` interface replaces the `IHelpCommandInitializable` interface which was introduced in picocli 3.0.
 
 [source,java]
 ----
-public interface IHelpCommandInitializable {
+public interface IHelpCommandInitializable2 {
     /**
      * Initializes this object with the information needed to implement a help command that
      * provides usage help for other commands.
      *
-     * @param helpCommandLine provides access to this command's parent and sibling commands
-     * @param ansi whether to use Ansi colors or not
-     * @param out the stream to print the usage help message to
-     * @param err the error stream to print any error messages to
+     * @param helpCommandLine the {@code CommandLine} object associated with this help command.
+      *                       Implementors can use this to walk the command hierarchy and
+      *                       get access to the help command's parent and sibling commands.
+     * @param colorScheme the color scheme to use when printing help, including whether
+     *                    to use Ansi colors or not
+     * @param outWriter the output writer to print the usage help message to
+     * @param errWriter the error writer to print any diagnostic messages to,
+     *                  in addition to the output from the exception handler
      */
-    void init(CommandLine helpCommandLine, Help.Ansi ansi, PrintStream out, PrintStream err);
+    void init(CommandLine helpCommandLine,
+              Help.ColorScheme colorScheme,
+              PrintWriter outWriter,
+              PrintWriter errWriter);
 }
 ----
 
