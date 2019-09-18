@@ -3236,6 +3236,7 @@ $ echo $?
 45
 ----
 
+As you can see, the _last specified_ command or subcommand is executed and its exit code is returned.
 See also <<Executing Commands with Subcommands>> for details on configuring this.
 
 === Manually Parsing Subcommands
