@@ -3072,36 +3072,6 @@ See the https://github.com/remkop/picocli/blob/master/src/test/java/picocli/Cust
 
 
 == Subcommands
-=== Registering Subcommands Programmatically
-Subcommands can be registered with the `CommandLine.addSubcommand` method.
-You pass in the name of the command and the annotated object to populate with the subcommand options.
-The specified name is used by the parser to recognize subcommands in the command line arguments.
-
-[source,java]
-----
-CommandLine commandLine = new CommandLine(new Git())
-        .addSubcommand("status",   new GitStatus())
-        .addSubcommand("commit",   new GitCommit())
-        .addSubcommand("add",      new GitAdd())
-        .addSubcommand("branch",   new GitBranch())
-        .addSubcommand("checkout", new GitCheckout())
-        .addSubcommand("clone",    new GitClone())
-        .addSubcommand("diff",     new GitDiff())
-        .addSubcommand("merge",    new GitMerge())
-        .addSubcommand("push",     new GitPush())
-        .addSubcommand("rebase",   new GitRebase())
-        .addSubcommand("tag",      new GitTag());
-----
-It is strongly recommended that subcommands have a `@Command` annotation with `name` and `description` attributes.
-
-From picocli 3.1, the usage help synopsis of the subcommand shows not only the subcommand name but also the parent command name.
-For example, if the `git` command has a `commit` subcommand, the usage help for the `commit` subcommand shows `Usage: git commit <options>`.
-
-
-CAUTION: _Note on custom type converters:_ custom type converters are registered only with the subcommands and nested
-sub-subcommands that were added _before_ the custom type was registered.
-To ensure a custom type converter is available to all subcommands, register the type converter last, after
-adding subcommands.
 
 === Registering Subcommands Declaratively
 
@@ -3133,6 +3103,37 @@ Custom type converters registered on a `CommandLine` instance will apply to all 
 
 Subcommands referenced in a `subcommands` attribute need to have a public no-argument constructor to be instantiated, unless a <<Custom Factory>> is installed to instantiate classes.
 
+=== Registering Subcommands Programmatically
+Subcommands can be registered with the `CommandLine.addSubcommand` method.
+You pass in the name of the command and the annotated object to populate with the subcommand options.
+The specified name is used by the parser to recognize subcommands in the command line arguments.
+
+[source,java]
+----
+CommandLine commandLine = new CommandLine(new Git())
+        .addSubcommand("status",   new GitStatus())
+        .addSubcommand("commit",   new GitCommit())
+        .addSubcommand("add",      new GitAdd())
+        .addSubcommand("branch",   new GitBranch())
+        .addSubcommand("checkout", new GitCheckout())
+        .addSubcommand("clone",    new GitClone())
+        .addSubcommand("diff",     new GitDiff())
+        .addSubcommand("merge",    new GitMerge())
+        .addSubcommand("push",     new GitPush())
+        .addSubcommand("rebase",   new GitRebase())
+        .addSubcommand("tag",      new GitTag());
+----
+It is strongly recommended that subcommands have a `@Command` annotation with `name` and `description` attributes.
+
+From picocli 3.1, the usage help synopsis of the subcommand shows not only the subcommand name but also the parent command name.
+For example, if the `git` command has a `commit` subcommand, the usage help for the `commit` subcommand shows `Usage: git commit <options>`.
+
+
+CAUTION: _Note on custom type converters:_ custom type converters are registered only with the subcommands and nested
+sub-subcommands that were added _before_ the custom type was registered.
+To ensure a custom type converter is available to all subcommands, register the type converter last, after
+adding subcommands.
+
 === Subcommand Aliases
 Commands may optionally define an `aliases` attribute to provide alternate names for commands that will be recognized by the parser. Aliases are displayed in the default help output. For example:
 [source,java]
@@ -3149,9 +3150,96 @@ status, st    Show the working tree status.
 === Subcommands as Methods
 From picocli 3.6 it is possible to register subcommands in a very compact manner by having a `@Command` class with `@Command`-annotated methods. The methods are automatically <<Subcommand Methods, registered as subcommands>> of the `@Command` class.
 
+=== Executing Subcommands
 
-=== Parsing Subcommands
-For this example, we assume we created an alias `git` that invokes our Java application. This could also be a script or a function that calls our Java program:
+The easiest way to design an application with subcommands is to let each command and subcommand either be a class that implements `Runnable` or `Callable`, or a `@Command`-annotated method.
+
+This will allow you to parse the command line, deal with requests for help and requests for version information, deal with invalid user input, and invoke the business logic of the user-specified subcommand - all of that - in one line of code: the <<Executing Commands,`execute`>> method.
+
+For example:
+
+[source,java]
+----
+@Command(name = "foo", subcommands = Bar.class)
+class Foo implements Callable<Integer> {
+    @Option(names = "-x") int x;
+
+    @Override public Integer call() {
+        System.out.printf("hi from foo, x=%d%n", x);
+        boolean ok = true;
+        return ok ? 0 : 1; // exit code
+    }
+
+    public static void main(String... args) {
+        int exitCode = new CommandLine(new Foo()).execute(args);
+        System.exit(exitCode);
+    }
+}
+
+@Command(name = "bar", description = "I'm a subcommand of `foo`")
+class Bar implements Callable<Integer> {
+    @Option(names = "-y") int y;
+
+    @Override public Integer call() {
+        System.out.printf("hi from bar, y=%d%n", y);
+        return 23;
+    }
+
+    @Command(name = "baz", description = "I'm a subcommand of `bar`")
+    int baz(@Option(names = "-z") int z) {
+        System.out.printf("hi from baz, z=%d%n", z);
+        return 45;
+    }
+}
+
+----
+
+To test our example on Linux, we created an alias `foo` that invokes our Java application. This could also be a script or a function that calls our Java program:
+[source,bash]
+----
+alias foo='java Foo'
+----
+
+Next, we call our top-level command with an option like this:
+
+[source,bash]
+----
+$ foo -x 123
+hi from foo, x=123
+
+#check the exit code
+$ echo $?
+0
+----
+
+We can also specify a subcommand:
+
+[source,bash]
+----
+$ foo -x 123 bar -y=456
+hi from bar, y=456
+
+#check the exit code
+$ echo $?
+23
+----
+
+And finally, we can also specify a sub-subcommand:
+
+[source,bash]
+----
+$ foo bar baz -z=789
+hi from baz, z=789
+
+#check the exit code
+$ echo $?
+45
+----
+
+See also <<Executing Commands with Subcommands>> for details on configuring this.
+
+=== Manually Parsing Subcommands
+For the following example, we assume we created an alias `git` that invokes our Java application. This could also be a script or a function that calls our Java program:
 [source,bash]
 ----
 alias git='java picocli.Demo$Git'
@@ -3211,7 +3299,7 @@ private void handleParseResult(ParseResult parsed) {
 ----
 
 You may be interested in the <<Executing Commands,execute method>> to reduce error handling and other boilerplate code in your application.
-
+See also the previous section, <<Executing Subcommands>>.
 
 === `@ParentCommand` Annotation
 In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.

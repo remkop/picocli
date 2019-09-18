@@ -27,6 +27,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#819] (DOC) Update user manual section on Variable Interpolation: improve example, link to this section from other parts of the manual.
 * [#818] (DOC) Update user manual section on Usage Help API to point to `picocli-examples`.
 * [#816] (DOC) Update user manual for `IHelpCommandInitializable2`.
+* [#817] (DOC) Update user manual section on Subcommands for the execute API.
 
 ## <a name="4.0.5-deprecated"></a> Deprecations
 No features were deprecated in this release.
