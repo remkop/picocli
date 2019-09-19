@@ -28,6 +28,8 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#818] (DOC) Update user manual section on Usage Help API to point to `picocli-examples`.
 * [#816] (DOC) Update user manual for `IHelpCommandInitializable2`.
 * [#817] (DOC) Update user manual section on Subcommands for the execute API.
+* [#809] (DOC) Output completion script as a subcommand of the command itself. Thanks to [George Gastaldi](https://github.com/gastaldi) for the suggestion.
+* [#456] (DOC) Integrate completion generation into command itself. Thanks to [jvassev](https://github.com/jvassev) for the suggestion.
 
 ## <a name="4.0.5-deprecated"></a> Deprecations
 No features were deprecated in this release.

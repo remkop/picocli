@@ -112,6 +112,59 @@ Make sure to use `>>` (append), using a single `>` would overwrite the file.
 
 (See <<Installing Completion Scripts Permanently in Bash,detailed Bash installation>>, <<Installing Completion Scripts Permanently in ZSH>>.)
 
+=== Distribution
+
+TIP: Have a subcommand that generates a completion script.
+
+You could generate completion scripts for your commands <<Generating Completion Scripts During the Build,during the build>> and distribute them with your application,
+but an alternative is to provide a subcommand that generates the completion script for the top-level comand.
+That allows users to source the completion script like this:
+
+.Bash
+[source,bash]
+----
+$ source <(mycommand generate-completion)
+----
+
+Below is an example of what a subcommand that generates a completion script could look like.
+
+[source,java]
+----
+import picocli.AutoComplete;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Spec;
+
+@Command(name = "mycommand", subcommands = GenerateCompletion.class)
+public class CommandWithCompletionSubcommand implements Runnable {
+
+    @Override
+    public void run() { // top-level command business logic here
+    }
+
+    public static void main(String[] args) {
+        new CommandLine(new CommandWithCompletionSubcommand()).execute(args);
+    }
+}
+
+@Command(name = "generate-completion",
+        description = "Generate a completion script for ${PARENT-COMMAND-NAME}")
+class GenerateCompletion implements Runnable {
+
+    @Spec CommandLine.Model.CommandSpec spec;
+
+    @Override
+    public void run() {
+        System.out.println(
+                AutoComplete.bash("mycommand", spec.parent().commandLine()));
+    }
+}
+----
+
+See also this https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/autocomplete/CommandWithCompletionSubcommand.java[example].
+
+
+
 == Designing for Completion
 
 When writing a link:index.html[picocli]-based command line application there are a few things to consider to facilitate autocompletion.
