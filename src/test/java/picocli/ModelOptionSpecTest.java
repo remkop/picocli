@@ -1,9 +1,12 @@
 package picocli;
 
 import org.junit.Test;
+
+import picocli.CommandLine.Command;
 import picocli.CommandLine.Help.Visibility;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.InitializationException;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.IGetter;
 import picocli.CommandLine.Model.ISetter;
 import picocli.CommandLine.Model.OptionSpec;
@@ -315,6 +318,25 @@ public class ModelOptionSpecTest {
         // no errors
         OptionSpec.builder("-x").arity("0").interactive(true).build();
         OptionSpec.builder("-x").arity("0..1").interactive(true).build();
+    }
+
+    @Test
+    public void testOptionHasCommand() {
+        class App {
+            @Option(names = "-x") int x;
+        }
+
+        CommandSpec cmd = new CommandLine(new App()).getCommandSpec();
+        CommandSpec cmd2 = new CommandLine(new App()).getCommandSpec();
+        OptionSpec optx = cmd.findOption('x');
+        assertEquals(cmd, optx.command());
+        OptionSpec opty = OptionSpec.builder("-y").arity("1").build();
+        assertEquals(null, opty.command());
+        cmd.add(opty);
+        assertEquals(cmd, opty.command());
+        cmd2.add(opty);
+        assertEquals(cmd2, opty.command());
+        assertEquals(opty, cmd.findOption('y'));
     }
 
     @Test

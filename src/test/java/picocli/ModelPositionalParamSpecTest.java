@@ -3,8 +3,11 @@ package picocli;
 import org.junit.Test;
 import picocli.CommandLine.Help.Visibility;
 import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.IGetter;
 import picocli.CommandLine.Model.ISetter;
+import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Range;
@@ -233,6 +236,25 @@ public class ModelPositionalParamSpecTest {
         assertTrue(cmd.getCommandSpec().positionalParameters().get(0).interactive());
         assertFalse(cmd.getCommandSpec().positionalParameters().get(1).interactive());
         assertFalse(cmd.getCommandSpec().positionalParameters().get(2).interactive());
+    }
+
+    @Test
+    public void testParameterHasCommand() {
+        class App {
+            @Parameters(index="0") int x;
+        }
+
+        CommandSpec cmd = new CommandLine(new App()).getCommandSpec();
+        CommandSpec cmd2 = new CommandLine(new App()).getCommandSpec();
+        PositionalParamSpec param = cmd.positionalParameters().get(0);
+        assertEquals(cmd, param.command());
+        PositionalParamSpec param1 = PositionalParamSpec.builder().index("1").build();
+        assertEquals(null, param1.command());
+        cmd.add(param1);
+        assertEquals(cmd, param1.command());
+        cmd2.add(param1);
+        assertEquals(cmd2, param1.command());
+        assertEquals(param1, cmd.positionalParameters().get(1));
     }
 
     @Test
