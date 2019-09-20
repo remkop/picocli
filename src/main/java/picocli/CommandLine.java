@@ -7368,6 +7368,10 @@ public class CommandLine {
             public ArgGroupSpec group() { return group; }
 
             /** Returns the command this option or positional parameter belongs to.
+             * <p>Beware that it is possible to programmatically add an option or positional parameter to more than one command model.
+             * (This will not happen in models that are auto-generated from annotations). In that case this method will only return
+             * the one it was added to last.
+             * <p>If the option or positional parameter has not yet been attached to a command, {@code null} will be returned.
              * @since 4.1 */
             public CommandSpec command() { return commandSpec; }
 
