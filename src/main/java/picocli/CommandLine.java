@@ -7367,6 +7367,10 @@ public class CommandLine {
              * @since 4.0 */
             public ArgGroupSpec group() { return group; }
 
+            /** Returns the command this option or positional parameter belongs to.
+             * @since 4.1 */
+            public CommandSpec command() { return commandSpec; }
+
             /** Returns the untyped command line arguments matched by this option or positional parameter spec.
              * @return the matched arguments after {@linkplain #splitRegex() splitting}, but before type conversion.
              *      For map properties, {@code "key=value"} values are split into the key and the value part. */
