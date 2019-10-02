@@ -11905,6 +11905,9 @@ public class CommandLine {
             if (commandSpec.optionsMap().containsKey(arg)) { // -v or -f or --file (not attached to param or other option)
                 return true;
             }
+            if (commandSpec.subcommands().containsKey(arg)) {
+                return true;
+            }
             int separatorIndex = arg.indexOf(config().separator());
             if (separatorIndex > 0) { // -f=FILE or --file==FILE (attached to param via separator)
                 if (commandSpec.optionsMap().containsKey(arg.substring(0, separatorIndex))) {
