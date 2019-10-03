@@ -9,7 +9,7 @@
 
 # picocli - a mighty tiny command line interface
 
-Picocli aims to be the most easy-to-use and most powerful library for creating command line application that can run on and off the JVM.
+Picocli aims to be the most easy-to-use and most powerful library for creating command line applications that can run on and off the JVM.
 
 Picocli is written in Java and contains both an annotations API and a programmatic API. It features usage help with [ANSI colors and styles](https://picocli.info/#_ansi_colors_and_styles), [TAB autocompletion](https://picocli.info/autocomplete.html) and nested subcommands.
 In a single file, so you can include it _in source form_.
