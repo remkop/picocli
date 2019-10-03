@@ -28,6 +28,8 @@ The user manual for the latest release is at http://picocli.info.
 For the busy and impatient: there is also a link:quick-guide.html[Quick Guide].
 
 == Introduction
+Picocli aims to be the most easy-to-use and most powerful library for creating command line applications that can run on and off the JVM.
+
 Picocli is a one-file framework for creating Java command line applications with almost zero code.
 Supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more.
 Generates highly customizable usage help messages with <<ANSI Colors and Styles,ANSI colors and styles>>.
