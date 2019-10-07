@@ -12122,19 +12122,17 @@ public class CommandLine {
                 return new ITypeConverter<Object>() {
                     @SuppressWarnings("unchecked")
                     public Object convert(String value) throws Exception {
-                        String sensitivity = "case-sensitive";
-                        if (commandSpec.parser().caseInsensitiveEnumValuesAllowed()) {
-                            String upper = value.toUpperCase();
-                            for (Object enumConstant : type.getEnumConstants()) {
-                                if (upper.equals(String.valueOf(enumConstant).toUpperCase())) { return enumConstant; }
-                            }
-                            sensitivity = "case-insensitive";
-                        }
                         try { return Enum.valueOf((Class<Enum>) type, value); }
-                        catch (Exception ex) {
+                        catch (IllegalArgumentException ex) {
+                            boolean insensitive = commandSpec.parser().caseInsensitiveEnumValuesAllowed();
+                            for (Object enumConstant : type.getEnumConstants()) {
+                                String thisName = enumConstant.toString();
+                                if( value.equals(thisName) || insensitive && value.equalsIgnoreCase(thisName) ) { return enumConstant; }
+                            }
+                            String sensitivity = insensitive ? "case-insensitive" : "case-sensitive";
                             Enum<?>[] constants = ((Class<Enum<?>>) type).getEnumConstants();
                             String[] names = new String[constants.length];
-                            for (int i = 0; i < names.length; i++) { names[i] = constants[i].name(); }
+                            for (int i = 0; i < names.length; i++) { names[i] = constants[i].toString(); }
                             throw new TypeConversionException(
                                     String.format("expected one of %s (%s) but was '%s'", Arrays.asList(names), sensitivity, value)); }
                     }
