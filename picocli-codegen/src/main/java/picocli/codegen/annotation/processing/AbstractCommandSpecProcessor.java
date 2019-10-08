@@ -21,6 +21,8 @@ import picocli.CommandLine.Unmatched;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -123,6 +125,23 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             result.add("picocli.*");
         }
         return result;
+    }
+
+    /**
+     * Returns the max supported source version.
+     * Returns {@link SourceVersion#latest()} by default,
+     * subclasses may override or may use the {@link SupportedSourceVersion} annotation.
+     * @return the max supported source version
+     */
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        SupportedSourceVersion ssv = this.getClass().getAnnotation(SupportedSourceVersion.class);
+        SourceVersion sv = null;
+        if (ssv == null) {
+            return SourceVersion.latest();
+        } else {
+            return ssv.value();
+        }
     }
 
     @Override
