@@ -2543,4 +2543,38 @@ public class ArgGroupTest {
         // should not throw MutuallyExclusiveArgsException
         new CommandLine(new Issue807NestedCommand()).parseArgs("-s", "-v", "-x", "-y");
     }
+    static class Issue829Group {
+        int x;
+        int y;
+        @Option(names = "-x") void x(int x) {this.x = x;}
+        @Option(names = "-y") void y(int y) {this.y = y;}
+    }
+
+    @Command(subcommands = Issue829Subcommand.class)
+    static class Issue829TopCommand {
+        @ArgGroup Issue829Group group;
+
+        @Command
+        void sub2(@ArgGroup Issue829Group group) {
+            assertEquals(0, group.x);
+            assertEquals(3, group.y);
+        }
+    }
+    @Command(name = "sub")
+    static class Issue829Subcommand {
+        @ArgGroup List<Issue829Group> group;
+    }
+
+    @Test
+    public void testIssue829NPE_inSubcommandWithArgGroup() {
+        //TestUtil.setTraceLevel("DEBUG");
+        ParseResult parseResult = new CommandLine(new Issue829TopCommand()).parseArgs("-x=1", "sub", "-y=2");
+        assertEquals(1, ((Issue829TopCommand)parseResult.commandSpec().userObject()).group.x);
+
+        Issue829Subcommand sub = (Issue829Subcommand) parseResult.subcommand().commandSpec().userObject();
+        assertEquals(0, sub.group.get(0).x);
+        assertEquals(2, sub.group.get(0).y);
+
+        new CommandLine(new Issue829TopCommand()).parseArgs("sub2", "-y=3");
+    }
 }

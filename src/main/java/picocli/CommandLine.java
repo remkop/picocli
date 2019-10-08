@@ -9202,6 +9202,7 @@ public class CommandLine {
                 return isAnnotated(method) ? new TypedMember(method, scope, spec) : null;
             }
             private TypedMember(Method method, IScope scope, CommandSpec spec) {
+                this.scope = scope;
                 accessible = Assert.notNull(method, "method");
                 accessible.setAccessible(true);
                 name = propertyName(method.getName());
@@ -9231,6 +9232,7 @@ public class CommandLine {
                 }
             }
             TypedMember(MethodParam param, IScope scope) {
+                this.scope = scope;
                 accessible = Assert.notNull(param, "command method parameter");
                 accessible.setAccessible(true);
                 name = param.getName();
