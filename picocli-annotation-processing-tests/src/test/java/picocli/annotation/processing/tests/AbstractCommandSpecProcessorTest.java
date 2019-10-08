@@ -246,8 +246,8 @@ public class AbstractCommandSpecProcessorTest {
     }
 
     private void assertOnlySourceVersionWarning(Compilation compilation) {
-        assertThat(compilation).hadWarningCount(1);
-        assertThat(compilation).hadWarningContaining("Supported source version 'RELEASE_6' from annotation processor 'picocli.annotation.processing.tests");
+        assertThat(compilation).hadWarningCount(0); // #826 version warnings are now suppressed
+        // assertThat(compilation).hadWarningContaining("Supported source version 'RELEASE_6' from annotation processor 'picocli.annotation.processing.tests");
     }
 
 }
