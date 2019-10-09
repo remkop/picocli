@@ -10356,8 +10356,11 @@ public class CommandLine {
                 ArgGroupSpec group = argSpec.group();
                 if (group == null || isInitializingDefaultValues) { return; }
                 GroupMatchContainer foundGroupMatchContainer = this.groupMatchContainer.findOrCreateMatchingGroup(argSpec, commandSpec.commandLine);
-                if (foundGroupMatchContainer.lastMatch().matchedMinElements() &&
-                        (argSpec.required() || foundGroupMatchContainer.lastMatch().matchCount(argSpec) > 0)) {
+                GroupMatch match = foundGroupMatchContainer.lastMatch();
+                boolean greedy = true; // commandSpec.parser().greedyMatchMultiValueArgsInGroup(); // or @Option(multiplicity=0..*) to control min/max matches
+                boolean allowMultipleMatchesInGroup = greedy && argSpec.isMultiValue(); // https://github.com/remkop/picocli/issues/815
+                if (match.matchedMinElements() &&
+                        (argSpec.required() || match.matchCount(argSpec) > 0) && !allowMultipleMatchesInGroup) {
                     // we need to create a new match; if maxMultiplicity has been reached, we need to add a new GroupMatchContainer.
                     String previousMatch = argSpec.required() ? "is required" : "has already been matched";
                     String elementDescription = ArgSpec.describe(argSpec, "=");

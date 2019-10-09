@@ -2577,4 +2577,26 @@ public class ArgGroupTest {
 
         new CommandLine(new Issue829TopCommand()).parseArgs("sub2", "-y=3");
     }
+
+    static class Issue815Group {
+        @Option(names = {"--age"})
+        Integer age;
+
+        @Option(names = {"--id"})
+        List<String> id;
+    }
+    static class Issue815 {
+        @ArgGroup(exclusive = false, multiplicity = "1")
+        Issue815Group group;
+    }
+    @Test
+    public void testIssue815() {
+        TestUtil.setTraceLevel("DEBUG");
+        Issue815 userObject = new Issue815();
+        new CommandLine(userObject).parseArgs("--id=123", "--id=456");
+        assertNotNull(userObject.group);
+        assertNull(userObject.group.age);
+        assertNotNull(userObject.group.id);
+        assertEquals(Arrays.asList("123", "456"), userObject.group.id);
+    }
 }
