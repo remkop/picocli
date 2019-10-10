@@ -2537,19 +2537,18 @@ public class ArgGroupTest {
             boolean y = false;
         }
     }
-
     @Test
     public void testIssue807NestedValidation() {
         // should not throw MutuallyExclusiveArgsException
         new CommandLine(new Issue807NestedCommand()).parseArgs("-s", "-v", "-x", "-y");
     }
+
     static class Issue829Group {
         int x;
         int y;
         @Option(names = "-x") void x(int x) {this.x = x;}
         @Option(names = "-y") void y(int y) {this.y = y;}
     }
-
     @Command(subcommands = Issue829Subcommand.class)
     static class Issue829TopCommand {
         @ArgGroup Issue829Group group;
@@ -2591,12 +2590,64 @@ public class ArgGroupTest {
     }
     @Test
     public void testIssue815() {
-        TestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel("DEBUG");
         Issue815 userObject = new Issue815();
         new CommandLine(userObject).parseArgs("--id=123", "--id=456");
         assertNotNull(userObject.group);
         assertNull(userObject.group.age);
         assertNotNull(userObject.group.id);
         assertEquals(Arrays.asList("123", "456"), userObject.group.id);
+    }
+
+    static class Issue810Command {
+        @ArgGroup(validate = false, heading = "%nGrouped options:%n")
+        MyGroup myGroup = new MyGroup();
+
+        static class MyGroup {
+            @Option(names = "-s", description = "ssss", required = true, defaultValue = "false")
+            boolean s = false;
+
+            @Option(names = "-v", description = "vvvv", required = true, defaultValue = "false")
+            boolean v = false;
+        }
+    }
+    @Test
+    public void testIssue810Validation() {
+        // should not throw MutuallyExclusiveArgsException
+        Issue810Command app = new Issue810Command();
+        new CommandLine(app).parseArgs("-s", "-v");
+        assertTrue(app.myGroup.s);
+        assertTrue(app.myGroup.v);
+
+//        app = new Issue810Command();
+        new CommandLine(app).parseArgs("-s");
+        assertTrue(app.myGroup.s);
+        assertFalse(app.myGroup.v);
+
+        new CommandLine(app).parseArgs("-v");
+        assertFalse(app.myGroup.s);
+        assertTrue(app.myGroup.v);
+    }
+
+
+    static class Issue810WithExplicitExclusiveGroup {
+        @ArgGroup(exclusive = true, validate = false, heading = "%nGrouped options:%n")
+        MyGroup myGroup = new MyGroup();
+
+        static class MyGroup {
+            @Option(names = "-s", required = true)
+            boolean s = false;
+
+            @Option(names = "-v", required = true)
+            boolean v = false;
+        }
+    }
+    @Test
+    public void testNonValidatingOptionsAreNotExclusive() {
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new Issue810Command());
+        assertFalse(spec.argGroups().get(0).exclusive());
+
+        CommandSpec spec2 = CommandSpec.forAnnotatedObject(new Issue810WithExplicitExclusiveGroup());
+        assertFalse(spec2.argGroups().get(0).exclusive());
     }
 }

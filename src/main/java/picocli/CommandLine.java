@@ -7300,13 +7300,14 @@ public class CommandLine {
             }
 
             private String defaultValueFromProvider() {
+                if (commandSpec == null) { return null; } // still initializing...
                 String fromProvider = null;
                 IDefaultValueProvider defaultValueProvider = null;
                 try {
                     defaultValueProvider = commandSpec.defaultValueProvider();
                     fromProvider = defaultValueProvider == null ? null : defaultValueProvider.defaultValue(this);
                 } catch (Exception ex) {
-                    new Tracer().info("Error getting default value for %s from %s: %s", this, defaultValueProvider, ex);
+                    new Tracer().info("Error getting default value for %s from %s: %s%n", this, defaultValueProvider, ex);
                 }
                 return fromProvider;
             }
@@ -8327,7 +8328,7 @@ public class CommandLine {
             ArgGroupSpec(ArgGroupSpec.Builder builder) {
                 heading          = NO_HEADING    .equals(builder.heading)    ? null : builder.heading;
                 headingKey       = NO_HEADING_KEY.equals(builder.headingKey) ? null : builder.headingKey;
-                exclusive        = builder.exclusive;
+                exclusive        = builder.exclusive && builder.validate; // non-validating groups cannot be exclusive: https://github.com/remkop/picocli/issues/810
                 multiplicity     = builder.multiplicity;
                 validate         = builder.validate;
                 order            = builder.order;
@@ -8343,6 +8344,10 @@ public class CommandLine {
                 int i = 1;
                 for (ArgGroupSpec sub : subgroups) { sub.parentGroup = this; sub.id = id + "." + i++; }
                 for (ArgSpec arg : args)           { arg.group = this; }
+
+                if (!validate && builder.exclusive) {
+                    new Tracer().info("Setting exclusive=%s because %s is a non-validating group.%n", exclusive, synopsisUnit());
+                }
             }
 
             /** Returns a new {@link Builder}.
@@ -10601,11 +10606,15 @@ public class CommandLine {
                     msg += match.toString();
                     Map<ArgGroupSpec, GroupMatchContainer> subgroups = match.matchedSubgroups();
                     for (ArgGroupSpec group : subgroups.keySet()) {
-                        addValueToListInMap(matchesPerGroup, group, subgroups.get(group).matches());
+                        if (group.validate()) { // don't raise errors for non-validating groups: https://github.com/remkop/picocli/issues/810
+                            addValueToListInMap(matchesPerGroup, group, subgroups.get(group).matches());
+                        }
                     }
                 }
-                if (!simplifyErrorMessageForSingleGroup(matchesPerGroup, commandLine)) {
-                    commandLine.interpreter.maybeThrow(new MaxValuesExceededException(commandLine, "Error: expected only one match but got " + msg));
+                if (!matchesPerGroup.isEmpty()) {
+                    if (!simplifyErrorMessageForSingleGroup(matchesPerGroup, commandLine)) {
+                        commandLine.interpreter.maybeThrow(new MaxValuesExceededException(commandLine, "Error: expected only one match but got " + msg));
+                    }
                 }
             }
 
