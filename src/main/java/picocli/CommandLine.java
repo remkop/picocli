@@ -384,7 +384,16 @@ public class CommandLine {
      * @return whether the parser encountered an option annotated with {@link Option#versionHelp()}.
      * @since 0.9.8 */
     public boolean isVersionHelpRequested() { return interpreter.parseResultBuilder != null && interpreter.parseResultBuilder.versionHelpRequested; }
-
+    /** Returns a new {@code Help} object created by the {@code IHelpFactory} with the {@code CommandSpec} and {@code ColorScheme} of this command.
+     * @see Help#Help(CommandSpec, Help.ColorScheme)
+     * @see #getHelpFactory()
+     * @see #getCommandSpec()
+     * @see #getColorScheme()
+     * @since 4.1
+     */
+    public Help getHelp() {
+        return getHelpFactory().create(getCommandSpec(), getColorScheme());
+    }
     /** Returns the {@code IHelpFactory} that is used to construct the usage help message.
      * @see #setHelpFactory(IHelpFactory)
      * @since 3.9
@@ -2386,7 +2395,7 @@ public class CommandLine {
     /** Similar to {@link #usage(PrintStream)}, but returns the usage help message as a String instead of printing it to the {@code PrintStream}.
      * @since 3.2 */
     public String getUsageMessage() {
-        return usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), getColorScheme())).toString();
+        return usage(new StringBuilder(), getHelp()).toString();
     }
     /** Similar to {@link #usage(PrintStream, Help.Ansi)}, but returns the usage help message as a String instead of printing it to the {@code PrintStream}.
      * @since 3.2 */
@@ -12701,6 +12710,13 @@ public class CommandLine {
         List<PositionalParamSpec> positionalParameters() { return commandSpec.positionalParameters(); }
         String commandName() { return commandSpec.name(); }
 
+        /**
+         * Returns the full usage synopsis of this command.
+         * @since 4.1
+         */
+        public String fullSynopsis() {
+            return this.synopsisHeading() + this.synopsis(this.synopsisHeadingLength());
+        }
         /** Returns a synopsis for the command without reserving space for the synopsis heading.
          * @return a synopsis
          * @see #abbreviatedSynopsis()
