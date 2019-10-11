@@ -26,7 +26,8 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#826] (Enhancement) Suppress compiler warning "Supported source version 'RELEASE_6' from annotation processor... less than -source..." in picocli-codegen.
 * [#815] (Enhancement) `@ArgGroup` should match multiple occurrences of a multi-value `@Option` in the same group instance, not create new group for each occurrence. Thanks to [kacchi](https://github.com/kacchi) for raising this.
 * [#810] (Bugfix) `@ArgGroup` should not validate when marked as `validate = false`. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
-* [#833] (Enhancement) Non-validating ArgGroups are now automatically set to be non-exclusive. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+* [#836] (Enhancement) Add convenience methods `Help.fullSynopsis()` and `CommandLine.getHelp()`.
+* [#833] (Enhancement) Non-validating ArgGroups are now automatically set to be non-exclusive. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.1
 * [#813] (DOC) Clarify usage of negatable boolean `@Option` with default value "true". Thanks to [Yann ROBERT](https://github.com/YannRobert) for raising this.
 * [#814] (DOC) Document how a CLI application can be packaged for distribution.
 * [#820] (DOC) Update user manual section on ANSI supported platforms: mention Windows Subsystem for Linux under Windows 10.
