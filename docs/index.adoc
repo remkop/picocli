@@ -1715,6 +1715,55 @@ try {
 
 The `CommandLine.execute` method is equivalent to the above, and additionally handles subcommands correctly.
 
+=== Customizing the Error Message On Invalid User Input
+
+By default, when the user specifies invalid input, an error message is displayed followed by the usage help message. This can be too verbose.
+Sometimes you want to display a shorter message like:
+
+----
+Error: invalid argument ‘recurese’ for ‘--directories’
+Valid arguments are:
+  - ‘read’
+  - ‘recurse’
+  - ‘skip’
+Usage: grep [OPTION]... PATTERN [FILE]...
+Try 'grep --help' for more information.
+----
+
+
+You can customize the response to invalid user input by setting a custom `IParameterExceptionHandler`:
+
+[source,java]
+----
+new CommandLine(new MyApp())
+    .setParameterExceptionHandler(new ShortErrorMessageHandler())
+    .execute(args);
+----
+
+Where the `IParameterExceptionHandler` implementation could be something like this:
+[source,java]
+----
+static class ShortErrorMessageHandler implements IParameterExceptionHandler {
+
+    public int handleParseException(ParameterException ex, String[] args) {
+        CommandLine cmd = ex.getCommandLine();
+        PrintWriter writer = cmd.getErr();
+
+        writer.println(ex.getMessage());
+        UnmatchedArgumentException.printSuggestions(ex, writer);
+        writer.print(cmd.getHelp().fullSynopsis()); // since 4.1
+
+        CommandSpec spec = cmd.getCommandSpec();
+        writer.printf("Try '%s --help' for more information.%n", spec.qualifiedName());
+
+        return cmd.getExitCodeExceptionMapper() != null
+                    ? cmd.getExitCodeExceptionMapper().getExitCode(ex)
+                    : spec.exitCodeOnInvalidInput();
+    }
+}
+----
+
+
 == Parser Configuration
 
 === Overwriting Single Options
