@@ -1135,6 +1135,34 @@ public class CommandLine {
      * for mistyped options, or the full {@linkplain #usage(PrintWriter, Help.ColorScheme) usage} help message of the {@linkplain ParameterException#getCommandLine() problematic command};
      * it then delegates to the {@linkplain #getExitCodeExceptionMapper() exit code execution mapper} for an exit code, with
      * {@link CommandSpec#exitCodeOnInvalidInput() exitCodeOnInvalidInput} as the default exit code.</p>
+     * <p>
+     * Alternatively, you can install a "short error message handler" like this:
+     * </p>
+     * <pre>
+     * static class ShortErrorMessageHandler implements IParameterExceptionHandler {
+     *     public int handleParseException(ParameterException ex, String[] args) {
+     *         CommandLine cmd = ex.getCommandLine();
+     *         PrintWriter writer = cmd.getErr();
+     *
+     *         writer.println(ex.getMessage());
+     *         UnmatchedArgumentException.printSuggestions(ex, writer);
+     *         writer.print(cmd.getHelp().fullSynopsis());
+     *
+     *         CommandSpec spec = cmd.getCommandSpec();
+     *         writer.printf("Try '%s --help' for more information.%n", spec.qualifiedName());
+     *
+     *         return cmd.getExitCodeExceptionMapper() != null
+     *                     ? cmd.getExitCodeExceptionMapper().getExitCode(ex)
+     *                     : spec.exitCodeOnInvalidInput();
+     *     }
+     * }
+     * </pre>
+     * <p>Install this error hanler like this:</p>
+     * <pre>
+     * new CommandLine(new MyApp())
+     *     .setParameterExceptionHandler(new ShortErrorMessageHandler())
+     *     .execute(args);
+     * </pre>
      * @return the handler for dealing with invalid user input
      * @since 4.0 */
     public IParameterExceptionHandler getParameterExceptionHandler() { return parameterExceptionHandler; }
@@ -1147,6 +1175,7 @@ public class CommandLine {
      * subcommands, call the setter last, after adding subcommands.</p>
      * @param parameterExceptionHandler  the new handler for dealing with invalid user input
      * @return this CommandLine for method chaining
+     * @see #getParameterExceptionHandler()  an example short exception handler
      * @since 4.0 */
     public CommandLine setParameterExceptionHandler(IParameterExceptionHandler parameterExceptionHandler) {
         this.parameterExceptionHandler = Assert.notNull(parameterExceptionHandler, "parameterExceptionHandler");
