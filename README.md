@@ -84,6 +84,7 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 
 ### Articles & Presentations
 #### English
+* [Picocli Structured Objects](https://gist.github.com/hanslovsky/8276da86c53bc6d95bf01447cd5cb2b7#file-00_picocli-structured-objects-md) (2019-09-10) by [Philipp Hanslovsky](https://gist.github.com/hanslovsky) explains how to use picocli's support for repeating argument groups to add or configure structured objects from the command line.
 * [Create a Java Command Line Program with Picocli|Baeldung](https://www.baeldung.com/java-picocli-create-command-line-program) (2019-05-07) by [François Dupire](https://www.baeldung.com/author/francois-dupire/).
 * A whirlwind tour of picocli [JAX Magazine "Putting the spotlight on Java tools"](https://jaxenter.com/jax-mag-java-tools-157592.html) (2019-04-08).
 * [An Introduction to PicoCLI](https://devops.datenkollektiv.de/an-introduction-to-picocli.html) (2019-02-10) by [devop](https://devops.datenkollektiv.de/author/devop.html).
