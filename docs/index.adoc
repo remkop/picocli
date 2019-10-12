@@ -1765,7 +1765,7 @@ This is sufficient for most applications.
 Sometimes you want to display a shorter message. For example, the `grep` utility does not not show the full usage help when it gets an invalid argument:
 
 ----
-$ grep -d recurese "ERROR" logs/
+$ grep -d recurese "ERROR" logs/*
 
 Error: invalid argument ‘recurese’ for ‘--directories’
 Valid arguments are:
