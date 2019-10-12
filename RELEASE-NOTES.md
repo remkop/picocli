@@ -28,7 +28,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#810] (Bugfix) `@ArgGroup` should not validate when marked as `validate = false`. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#836] (Enhancement) Add convenience methods `Help.fullSynopsis()` and `CommandLine.getHelp()`.
 * [#833] (Enhancement) Non-validating ArgGroups are now automatically set to be non-exclusive. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
-* [#480] (DOC) Improve (shorter) error message on invalid input.
+* [#480] (DOC) Added a [Handling Errors](https://picocli.info#_handling_errors) subsection to the Executing Commands section of the user manual to show how to customize how your application deals with invalid input or business logic exceptions.
 * [#813] (DOC) Clarify usage of negatable boolean `@Option` with default value "true". Thanks to [Yann ROBERT](https://github.com/YannRobert) for raising this.
 * [#814] (DOC) Document how a CLI application can be packaged for distribution.
 * [#820] (DOC) Update user manual section on ANSI supported platforms: mention Windows Subsystem for Linux under Windows 10.
