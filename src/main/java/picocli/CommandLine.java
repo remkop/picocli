@@ -12740,7 +12740,8 @@ public class CommandLine {
         String commandName() { return commandSpec.name(); }
 
         /**
-         * Returns the full usage synopsis of this command.
+         * Returns the full usage synopsis of this command. This is equivalent to:
+         * {@code this.synopsisHeading() + this.synopsis(this.synopsisHeadingLength())}
          * @since 4.1
          */
         public String fullSynopsis() {
