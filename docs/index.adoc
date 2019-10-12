@@ -1435,6 +1435,32 @@ Picocli 4.0 introduces an `execute` method for handling all of the above scenari
 new CommandLine(new MyApp()).execute(args);
 ```
 
+With the `execute` method, application code can be *extremely compact*:
+
+[source,java,linenumbers]
+----
+@Command(name = "myapp", mixinStandardHelpOptions = true, version = "1.0")
+class MyApp implements Callable<Integer> {
+
+    @Option(names = "-x") int x;
+
+    @Override
+    public Integer call() { // business logic
+        System.out.printf("x=%s%n", x);
+        return 123; // exit code
+    }
+
+    public static void main(String... args) { // bootstrap the application
+        System.exit(new CommandLine(new MyApp()).execute(args));
+    }
+}
+----
+
+Despite being only 15 lines long, this is a full-fledged application, with <<Mixin Standard Help Options,`--help` and `--version`>> options in addition to the `-x` option.
+The `execute` method will show the usage help or version information if requested by the user, and invalid user input will result
+in a helpful <<Handling Errors,error message>>. If the user input was valid, the business logic is invoked.
+Finally, the `execute` method returns an <<Exit Code,exit status code>> that can be used to call `System.exit` if desired.
+
 IMPORTANT: A command is executable if its user object implements `Runnable` or `Callable`, or is a `@Command`-annotated `Method`. Examples follow below.
 
 NOTE: The `execute` method replaces the older `run`, `call`, `invoke` and `parseWithHandlers` methods.
@@ -1520,7 +1546,7 @@ class MyMapper implements IExitCodeExceptionMapper {
 }
 ```
 
-When the end user specified invalid input, the `execute` method prints an error message followed by the usage help message of the command, and returns an exit code. This can be customized by configuring a `IParameterExceptionHandler`.
+When the end user specified invalid input, the `execute` method prints an error message followed by the usage help message of the command, and returns an exit code. This can be <<Invalid User Input,customized>> by configuring a `IParameterExceptionHandler`.
 
 If the business logic of the command throws an exception, the `execute` method prints the stack trace of the exception and returns an exit code. This can be customized by configuring a `IExecutionExceptionHandler`.
 
@@ -1715,12 +1741,32 @@ try {
 
 The `CommandLine.execute` method is equivalent to the above, and additionally handles subcommands correctly.
 
-=== Customizing the Error Message On Invalid User Input
+=== Handling Errors
 
-By default, when the user specifies invalid input, an error message is displayed followed by the usage help message. This can be too verbose.
-Sometimes you want to display a shorter message like:
+Internally, the `execute` method parses the specified user input and populates the options and positional parameters defined by the annotations.
+When the user specified invalid input, this is handled by the `IParameterExceptionHandler`.
+
+After parsing the user input, the business logic of the command is invoked: the `run`, `call` or `@Command`-annotated method.
+When an exception is thrown by the business logic, this is handled by the `IExecutionExceptionHandler`.
+
+In most cases, the default handlers are sufficient, but the sections below show how they can be customized.
+
+==== Invalid User Input
+
+When the user specified invalid input, the parser throws a `ParameterException`.
+In the `execute` method, such exceptions are caught and passed to the `IParameterExceptionHandler`.
+
+The default parameter exception handler prints an error message describing the problem,
+followed by either https://picocli.info/apidocs/picocli/CommandLine.UnmatchedArgumentException.html#printSuggestions-picocli.CommandLine.ParameterException-java.io.PrintWriter-[suggested alternatives]
+for mistyped options, or the full usage help message of the problematic command.
+Finally, the handler returns an <<Exception Exit Codes,exit code>>.
+This is sufficient for most applications.
+
+Sometimes you want to display a shorter message. For example, the `grep` utility does not not show the full usage help when it gets an invalid argument:
 
 ----
+$ grep -d recurese "ERROR" logs/
+
 Error: invalid argument ‘recurese’ for ‘--directories’
 Valid arguments are:
   - ‘read’
@@ -1731,7 +1777,7 @@ Try 'grep --help' for more information.
 ----
 
 
-You can customize the response to invalid user input by setting a custom `IParameterExceptionHandler`:
+You can customize how your application handles invalid user input by setting a custom `IParameterExceptionHandler`:
 
 [source,java]
 ----
@@ -1743,7 +1789,7 @@ new CommandLine(new MyApp())
 Where the `IParameterExceptionHandler` implementation could be something like this:
 [source,java]
 ----
-static class ShortErrorMessageHandler implements IParameterExceptionHandler {
+class ShortErrorMessageHandler implements IParameterExceptionHandler {
 
     public int handleParseException(ParameterException ex, String[] args) {
         CommandLine cmd = ex.getCommandLine();
@@ -1759,6 +1805,40 @@ static class ShortErrorMessageHandler implements IParameterExceptionHandler {
         return cmd.getExitCodeExceptionMapper() != null
                     ? cmd.getExitCodeExceptionMapper().getExitCode(ex)
                     : spec.exitCodeOnInvalidInput();
+    }
+}
+----
+
+==== Business Logic Exceptions
+
+When the business logic throws an exception, this exception is caught and passed to the `IExecutionExceptionHandler`.
+
+The default execution exception handling results in the stack trace of the exception being printed and an <<Exception Exit Codes,exit code>> being returned.
+This is sufficient for most applications.
+
+If you have designed your business logic to throw exceptions with user-facing error messages, you want to print this error message instead of the stack trace.
+This can be accomplished by installing a custom `IExecutionException`, like this:
+
+[source,java]
+----
+new CommandLine(new MyApp())
+    .setExecutionExceptionHandler(new PrintExceptionMessageHandler())
+    .execute(args);
+----
+
+Where the `IExecutionException` implementation could look something like this:
+[source,java]
+----
+class PrintExceptionMessageHandler implements IExecutionExceptionHandler() {
+    public int handleExecutionException(Exception ex,
+                                        CommandLine commandLine,
+                                        ParseResult parseResult) {
+
+        commandLine.getErr().println(ex.getMessage());
+
+        return cmd.getExitCodeExceptionMapper() != null
+                    ? cmd.getExitCodeExceptionMapper().getExitCode(ex)
+                    : cmd.getCommandSpec().exitCodeOnExecutionException();
     }
 }
 ----

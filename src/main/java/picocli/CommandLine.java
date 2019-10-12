@@ -1133,7 +1133,7 @@ public class CommandLine {
      * Returns the handler for dealing with invalid user input when the command is {@linkplain #execute(String...) executed}.
      * <p>The default implementation prints an error message describing the problem, followed by either {@linkplain UnmatchedArgumentException#printSuggestions(PrintWriter) suggested alternatives}
      * for mistyped options, or the full {@linkplain #usage(PrintWriter, Help.ColorScheme) usage} help message of the {@linkplain ParameterException#getCommandLine() problematic command};
-     * it then delegates to the {@linkplain #getExitCodeExceptionMapper() exit code execution mapper} for an exit code, with
+     * it then delegates to the {@linkplain #getExitCodeExceptionMapper() exit code exception mapper} for an exit code, with
      * {@link CommandSpec#exitCodeOnInvalidInput() exitCodeOnInvalidInput} as the default exit code.</p>
      * <p>
      * Alternatively, you can install a "short error message handler" like this:
@@ -1157,7 +1157,7 @@ public class CommandLine {
      *     }
      * }
      * </pre>
-     * <p>Install this error hanler like this:</p>
+     * <p>Install this error handler like this:</p>
      * <pre>
      * new CommandLine(new MyApp())
      *     .setParameterExceptionHandler(new ShortErrorMessageHandler())
