@@ -10285,7 +10285,7 @@ public class CommandLine {
         public boolean isVersionHelpRequested() { return versionHelpRequested; }
 
         /** Returns this {@code ParseResult} as a list of {@code CommandLine} objects, one for each matched command/subcommand.
-         * For backwards compatibility with pre-3.0 methods. */
+         * @since 3.0 */
         public List<CommandLine> asCommandLineList() {
             List<CommandLine> result = new ArrayList<CommandLine>();
             ParseResult pr = this;
