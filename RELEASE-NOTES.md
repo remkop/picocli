@@ -20,7 +20,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.0.5-fixes"></a> Fixed issues
-* [#829] (Bugfix) `@ArgGroup` with `@Option` methods fail with `NullPointerException`. Thanks to [A2 Geek](https://github.com/a2geek) for raising this.
+* [#829] (Bugfix) `@ArgGroup` with `@Option`-annotated methods fail with `NullPointerException`. Thanks to [A2 Geek](https://github.com/a2geek) for raising this.
 * [#828] (Bugfix/enhancement) Subcommands should not be parsed as option values for options with optional parameters. Thanks to [Martin Paljak](https://github.com/martinpaljak) for raising this.
 * [#811] (Bugfix) `CommandLine.setResourceBundle` did not propagate resource bundle to subcommands recursively. Thanks to [thope](https://github.com/frontfact) for the pull request with the bug fix.
 * [#826] (Enhancement) Suppress compiler warning "Supported source version 'RELEASE_6' from annotation processor... less than -source..." in picocli-codegen.
