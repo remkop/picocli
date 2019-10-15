@@ -2954,6 +2954,22 @@ class GitCommit { ... }
 
 CAUTION: Markup styles cannot be nested, for example: `@|bold this @|underline that|@|@` will not work. You can achieve the same by combining styles, for example: `@|bold this|@ @|bold,underline that|@` will work fine.
 
+=== Styles and Colors in Application Output
+
+The use of ANSI colors and styles is not limited to the <<Usage Help with Styles and Colors,usage help>>
+and <<Static Version Information,version information>>.
+
+Applications can use the picocli `Ansi` class directly to create colored output.
+By using the `Ansi.AUTO` enum value, picocli will  <<Heuristics for Enabling ANSI,auto-detect>> whether it can emit ANSI escape codes or only the plain text.
+
+.Using the picocli `Ansi` API to generate colored output.
+[source,java]
+----
+// import picocli.CommandLine.Help.Ansi;
+String str = Ansi.AUTO.string("@|bold,green,underline Hello, colored world!|@");
+System.out.println(str);
+----
+
 === More Colors
 Most terminals support a https://en.wikipedia.org/wiki/ANSI_escape_code#Colors[256 color indexed palette]:
 ----
