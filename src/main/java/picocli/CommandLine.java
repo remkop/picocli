@@ -4710,11 +4710,39 @@ public class CommandLine {
     /**
      * Factory for instantiating classes that are registered declaratively with annotation attributes, like
      * {@link Command#subcommands()}, {@link Option#converter()}, {@link Parameters#converter()} and {@link Command#versionProvider()}.
-     * <p>The default factory implementation simply creates a new instance of the specified class when {@link #create(Class)} is invoked.
-     * </p><p>
-     * You may provide a custom implementation of this interface.
-     * For example, a custom factory implementation could delegate to a dependency injection container that provides the requested instance.
+     * The factory is also used to instantiate the {@code Collection} or {@code Map} implementation class for multi-value
+     * options and positional parameters with an abstract type, like {@code List<String>}.
+     * <p>You may provide a custom implementation of this interface.
+     * For example, a custom factory implementation could delegate to a dependency injection container that provides the requested instance.</p>
+     * <p><b><em>Custom factory implementations should always fall back to the {@linkplain #defaultFactory() default factory} if instantiation failed.</em></b> For example:
      * </p>
+     * <pre>
+     * class MyFactory implements IFactory {
+     *     private final ApplicationContext applicationContext = getAppContext();
+     *
+     *     public &lt;T&gt; T create(Class&lt;T&gt; cls) throws Exception {
+     *         try {
+     *             applicationContext.getBean(cls);
+     *         } catch (Exception ex) {
+     *             CommandLine.defaultFactory().create(cls);
+     *         }
+     *     }
+     * }
+     * </pre>
+     * <p>Tip: custom factory implementations that have resources that need to be closed when done should consider
+     * implementing {@code java.lang.AutoCloseable} or {@code java.io.Closeable}. This allows applications to use
+     * the following idiom for configuring picocli before running their application:</p>
+     * <pre>
+     * public static void main(String[] args) {
+     *     int exitCode = 0;
+     *     try (MyFactory factory = createMyFactory()) {
+     *         exitCode = new CommandLine(MyClass.class, factory)
+     *                 .setXxx(x) // configure the picocli parser...
+     *                 .execute(args);
+     *     }
+     *     System.exit(exitCode);
+     * }
+     * </pre>
      * @see picocli.CommandLine#CommandLine(Object, IFactory)
      * @see #call(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
      * @see #run(Class, IFactory, PrintStream, PrintStream, Help.Ansi, String...)
@@ -4731,6 +4759,21 @@ public class CommandLine {
         <K> K create(Class<K> cls) throws Exception;
     }
     /** Returns the default {@link IFactory} implementation used if no factory was specified in the {@link #CommandLine(Object) CommandLine constructor}.
+     * <p>This implementation has special logic for instantiating {@code Collections}
+     * and {@code Maps}, and otherwise tries to create an instance by invoking the default constructor of the specified class.
+     * </p><p>Special logic for instantiating Collections and Maps:</p>
+     * <pre>
+     * // if class is an interface that extends java.util.Collection, return a new instance of:
+     * 1. List       -> ArrayList
+     * 2. SortedSet  -> TreeSet
+     * 3. Set        -> LinkedHashSet
+     * 4. Queue      -> LinkedList
+     * 5. Collection -> ArrayList
+     *
+     * // if extending or implementing java.util.Map:
+     * 1. try invoking the default constructor; return this on success.
+     * 2. if this fails, return a LinkedHashMap
+     * </pre>
      * @since 4.0 */
     public static IFactory defaultFactory() { return new DefaultFactory(); }
     private static class DefaultFactory implements IFactory {
