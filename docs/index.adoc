@@ -3008,6 +3008,19 @@ CommandLine.usage(annotatedObject, System.out, colorScheme);
 ...
 ----
 
+When using the <<Executing Commands,`execute`>> API, you can configure a `ColorScheme` like this:
+
+[source,java]
+----
+public static void main(String[] args) {
+    ColorScheme colorScheme = createColorScheme();
+
+    new CommandLine(new MyApp())
+            .setColorScheme(colorScheme) // use this color scheme in the usage help message
+            .execute(args);
+}
+----
+
 ==== Color Scheme Overrides
 
 The following system properties override the color scheme styles. This allows end users to adjust for their individual terminal color setup.
