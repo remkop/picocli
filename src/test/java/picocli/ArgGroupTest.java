@@ -2650,4 +2650,30 @@ public class ArgGroupTest {
         CommandSpec spec2 = CommandSpec.forAnnotatedObject(new Issue810WithExplicitExclusiveGroup());
         assertFalse(spec2.argGroups().get(0).exclusive());
     }
+
+    static class Issue839Defaults {
+        @ArgGroup(validate = false)
+        Group group;
+
+        static class Group {
+            @Option(names = "-a", description = "a. Default-${DEFAULT-VALUE}")
+            String a = "aaa";
+
+            @Option(names = "-b", defaultValue = "bbb", description = "b. Default-${DEFAULT-VALUE}")
+            String b;
+        }
+    }
+
+    @Ignore
+    @Test
+    public void testIssue839Defaults() {
+        Issue839Defaults app = new Issue839Defaults();
+        String actual = new CommandLine(app).getUsageMessage(Help.Ansi.OFF);
+
+        String expected = String.format("" +
+                "Usage: <main class> [-a=<a>] [-b=<b>]%n" +
+                "  -a=<a>    a. Default-aaa%n" +
+                "  -b=<b>    b. Default-bbb%n");
+        assertEquals(expected, actual);
+    }
 }
