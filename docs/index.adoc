@@ -48,9 +48,21 @@ all the source code lives in a single file, to encourage application authors to 
 How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed values in the fields of your class.
 
+.A full working example picocli-based command line application
 [[CheckSum-application]]
 [source,java]
 ----
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+
+import java.io.File;
+import java.math.BigInteger;
+import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.util.concurrent.Callable;
+
 @Command(name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0",
          description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
 class CheckSum implements Callable<Integer> {
