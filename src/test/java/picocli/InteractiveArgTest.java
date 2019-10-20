@@ -399,6 +399,38 @@ public class InteractiveArgTest {
     }
 
     @Test
+    public void testInteractivePositionalDoesntReadFromStdInIfNoFollowingPositionalParam() {
+        class App {
+            @Parameters(index = "0", interactive = true, description = {"Pwd"})
+            int x;
+
+            @Option(names = "-s") String str;
+        }
+
+        PrintStream out = System.out;
+        InputStream in = System.in;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            System.setIn(new ByteArrayInputStream("123".getBytes()));
+
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            cmd.parseArgs("-s", "abc");
+
+            assertEquals("abc", app.str);
+            //assertEquals(123, app.x);
+            assertEquals("No value was read from console", 0, app.x);
+            //String expectedPrompt = format("Enter value for position 0 (Pwd): ");
+            String expectedPrompt = ""; // interactive arg was not prompted
+            assertEquals(expectedPrompt, baos.toString());
+        } finally {
+            System.setOut(out);
+            System.setIn(in);
+        }
+    }
+
+    @Test
     public void testInteractivePositional2ReadsFromStdIn() {
         class App {
             @Parameters(index = "0") int a;
