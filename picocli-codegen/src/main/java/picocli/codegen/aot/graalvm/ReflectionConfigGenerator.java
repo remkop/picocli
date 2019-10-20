@@ -83,7 +83,8 @@ public class ReflectionConfigGenerator {
                     "The generated JSON file can be passed to the -H:ReflectionConfigurationFiles=/path/to/reflect-config.json " +
                     "option of the `native-image` GraalVM utility.",
                     "See https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md"},
-            mixinStandardHelpOptions = true, version = "picocli-codegen gen-reflect-config " + CommandLine.VERSION)
+            mixinStandardHelpOptions = true,
+            version = "picocli-codegen ${COMMAND-NAME} " + CommandLine.VERSION)
     private static class App implements Callable<Integer> {
 
         @Parameters(arity = "1..*", description = "One or more classes to generate a GraalVM ReflectionConfiguration for.")
@@ -195,7 +196,7 @@ public class ReflectionConfigGenerator {
                 if (userObject instanceof Method) {
                     Method method = (Method) spec.userObject();
                     ReflectedClass cls = getOrCreateClass(method.getDeclaringClass());
-                    cls.addMethod(method.getName(), method.getParameterTypes());
+                    cls.addMethod(method);
                 } else if (userObject instanceof Element) {
                     visitElement((Element) userObject);
                 } else if (Proxy.isProxyClass(spec.userObject().getClass())) {
@@ -323,23 +324,19 @@ public class ReflectionConfigGenerator {
             Field[] declaredFields = cls.getDeclaredFields();
             for (Field f : declaredFields) {
                 if (f.isAnnotationPresent(CommandLine.Spec.class)) {
-                    reflectedClass.addField(f.getName(), isFinal(f));
+                    reflectedClass.addField(f);
                 }
                 if (f.isAnnotationPresent(CommandLine.ParentCommand.class)) {
-                    reflectedClass.addField(f.getName(), isFinal(f));
+                    reflectedClass.addField(f);
                 }
                 if (f.isAnnotationPresent(Mixin.class)) {
-                    reflectedClass.addField(f.getName(), isFinal(f));
+                    reflectedClass.addField(f);
                 }
                 if (f.isAnnotationPresent(CommandLine.Unmatched.class)) {
-                    reflectedClass.addField(f.getName(), isFinal(f));
+                    reflectedClass.addField(f);
                 }
             }
             visitAnnotatedFields(cls.getSuperclass());
-        }
-
-        private boolean isFinal(Field f) {
-            return (f.getModifiers() & Modifier.FINAL) == Modifier.FINAL;
         }
 
         private void visitArgSpec(ArgSpec argSpec) throws Exception {
@@ -430,7 +427,7 @@ public class ReflectionConfigGenerator {
         private void visitFieldBinding(Object fieldBinding) throws Exception {
             Field field = (Field) accessibleField(fieldBinding.getClass(), REFLECTED_FIELD_BINDING_FIELD).get(fieldBinding);
             getOrCreateClass(field.getDeclaringClass())
-                    .addField(field.getName(), isFinal(field));
+                    .addField(field);
 
             IScope scope = (IScope) accessibleField(fieldBinding.getClass(), REFLECTED_BINDING_FIELD_SCOPE).get(fieldBinding);
             Object scopeValue = scope.get();
@@ -442,14 +439,14 @@ public class ReflectionConfigGenerator {
         private void visitMethodBinding(Object methodBinding) throws Exception {
             Method method = (Method) accessibleField(methodBinding.getClass(), REFLECTED_METHOD_BINDING_METHOD).get(methodBinding);
             ReflectedClass cls = getOrCreateClass(method.getDeclaringClass());
-            cls.addMethod(method.getName(), method.getParameterTypes());
+            cls.addMethod(method);
 
             IScope scope = (IScope) accessibleField(methodBinding.getClass(), REFLECTED_BINDING_FIELD_SCOPE).get(methodBinding);
             Object scopeValue = scope.get();
             if (scopeValue != null) {
                 ReflectedClass scopeClass = getOrCreateClass(scopeValue.getClass());
                 if (!scope.getClass().equals(method.getDeclaringClass())) {
-                    scopeClass.addMethod(method.getName(), method.getParameterTypes());
+                    scopeClass.addMethod(method);
                 }
             }
         }
@@ -457,7 +454,7 @@ public class ReflectionConfigGenerator {
         private void visitProxyMethodBinding(Object methodBinding) throws Exception {
             Method method = (Method) accessibleField(methodBinding.getClass(), REFLECTED_METHOD_BINDING_METHOD).get(methodBinding);
             ReflectedClass cls = getOrCreateClass(method.getDeclaringClass());
-            cls.addMethod(method.getName(), method.getParameterTypes());
+            cls.addMethod(method);
         }
 
         private static Field accessibleField(Class<?> cls, String fieldName) throws NoSuchFieldException {
@@ -504,6 +501,14 @@ public class ReflectionConfigGenerator {
             this.name = name;
         }
 
+        private boolean isFinal(Field f) {
+            return (f.getModifiers() & Modifier.FINAL) == Modifier.FINAL;
+        }
+
+        ReflectedClass addField(Field field) {
+            return addField(field.getName(), isFinal(field));
+        }
+
         ReflectedClass addField(String fieldName, boolean isFinal) {
             fields.add(new ReflectedField(fieldName, isFinal));
             return this;
@@ -512,6 +517,10 @@ public class ReflectionConfigGenerator {
         ReflectedClass addMethod0(String methodName, String... paramTypes) {
             methods.add(new ReflectedMethod(methodName, paramTypes));
             return this;
+        }
+
+        ReflectedClass addMethod(Method method) {
+            return addMethod(method.getName(), method.getParameterTypes());
         }
 
         ReflectedClass addMethod(String methodName, Class... paramClasses) {
