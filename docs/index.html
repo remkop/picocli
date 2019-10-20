@@ -1065,6 +1065,19 @@ Tar tar = <span class="keyword">new</span> Tar();
 <p>Picocli 3.5 introduced password support: for options and positional parameters marked as <code>interactive</code>, the user is prompted to enter a value on the console.
 When running on Java 6 or higher, picocli will use the <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Console.html#readPassword-java.lang.String-java.lang.Object&#8230;&#8203;-"><code>Console.readPassword</code></a> API so that user input is not echoed to the console.</p>
 </div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+Interactive <em>positional parameters</em> have a limitation: they must be followed by a non-interactive positional parameter.
+Commands where the <em>last</em> positional parameter is <code>interactive</code> are currently not supported.
+</td>
+</tr>
+</table>
+</div>
 <div class="sect3">
 <h4 id="_example">3.2.1. Example</h4>
 <div class="paragraph">
