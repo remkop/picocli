@@ -822,8 +822,20 @@ all the source code lives in a single file, to encourage application authors to 
 converting the input to strongly typed values in the fields of your class.</p>
 </div>
 <div id="CheckSum-application" class="listingblock">
+<div class="title">A full working example picocli-based command line application</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">checksum</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">checksum 4.0</span><span class="delimiter">&quot;</span></span>,
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">picocli.CommandLine</span>;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.Command</span>;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.Option</span>;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.Parameters</span>;
+
+<span class="keyword">import</span> <span class="include">java.io.File</span>;
+<span class="keyword">import</span> <span class="include">java.math.BigInteger</span>;
+<span class="keyword">import</span> <span class="include">java.nio.file.Files</span>;
+<span class="keyword">import</span> <span class="include">java.security.MessageDigest</span>;
+<span class="keyword">import</span> <span class="include">java.util.concurrent.Callable</span>;
+
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">checksum</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">checksum 4.0</span><span class="delimiter">&quot;</span></span>,
          description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Prints the checksum (MD5 by default) of a file to STDOUT.</span><span class="delimiter">&quot;</span></span>)
 <span class="type">class</span> <span class="class">CheckSum</span> <span class="directive">implements</span> <span class="predefined-type">Callable</span>&lt;<span class="predefined-type">Integer</span>&gt; {
 
@@ -2833,6 +2845,52 @@ cmd.parseArgs(<span class="string"><span class="delimiter">&quot;</span><span cl
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp()).execute(args);</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>With the <code>execute</code> method, application code can be <strong>extremely compact</strong>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><table class="CodeRay"><tr>
+  <td class="line-numbers"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+</pre></td>
+  <td class="code"><pre><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myapp</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">1.0</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">MyApp</span> <span class="directive">implements</span> <span class="predefined-type">Callable</span>&lt;<span class="predefined-type">Integer</span>&gt; {
+
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>) <span class="type">int</span> x;
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="predefined-type">Integer</span> call() { <span class="comment">// business logic</span>
+        <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">x=%s%n</span><span class="delimiter">&quot;</span></span>, x);
+        <span class="keyword">return</span> <span class="integer">123</span>; <span class="comment">// exit code</span>
+    }
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) { <span class="comment">// bootstrap the application</span>
+        <span class="predefined-type">System</span>.exit(<span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp()).execute(args));
+    }
+}</pre></td>
+</tr></table></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Despite being only 15 lines long, this is a full-fledged application, with <a href="#_mixin_standard_help_options"><code>--help</code> and <code>--version</code></a> options in addition to the <code>-x</code> option.
+The <code>execute</code> method will show the usage help or version information if requested by the user, and invalid user input will result
+in a helpful <a href="#_handling_errors">error message</a>. If the user input was valid, the business logic is invoked.
+Finally, the <code>execute</code> method returns an <a href="#_exit_code">exit status code</a> that can be used to call <code>System.exit</code> if desired.</p>
 </div>
 <div class="admonitionblock important">
 <table>
@@ -4891,6 +4949,20 @@ ColorScheme colorScheme = <span class="keyword">new</span> ColorScheme()
 
 CommandLine.usage(annotatedObject, <span class="predefined-type">System</span>.out, colorScheme);
 ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When using the <a href="#execute"><code>execute</code></a> API, you can configure a <code>ColorScheme</code> like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+    ColorScheme colorScheme = createColorScheme();
+
+    <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp())
+            .setColorScheme(colorScheme) <span class="comment">// use this color scheme in the usage help message</span>
+            .execute(args);
+}</code></pre>
 </div>
 </div>
 </div>
@@ -7704,7 +7776,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.0.4<br>
-Last updated 2019-09-19 02:18:24 JST
+Last updated 2019-10-20 14:29:24 JST
 </div>
 </div>
 </body>
