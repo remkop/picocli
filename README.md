@@ -158,7 +158,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 * Picocli is used in Pinterest [ktlint](https://ktlint.github.io/).
 * Picocli is used in Spring IO [nohttp-cli](https://github.com/spring-io/nohttp/tree/master/nohttp-cli).
 
-<img src="https://picocli.info/images/downloads-201908.png">
+<img src="https://picocli.info/images/downloads-201909.png">
 
 Glad to see more people are using picocli. We must be doing something right. :-) 
 
