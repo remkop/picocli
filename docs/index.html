@@ -2556,6 +2556,9 @@ In this example the group has <code>multiplicity = "1"</code>, so the group must
 </div>
 </div>
 <div class="paragraph">
+<p>When one of the options in the group is matched, picocli creates an instance of the <code>Exclusive</code> class and assigns it to the <code>@ArgGroup</code>-annotated <code>exclusive</code> field.</p>
+</div>
+<div class="paragraph">
 <p>Note that the options are defined as <code>required = true</code>; this means required <em>within the group</em>, not required within the command.</p>
 </div>
 <div class="paragraph">
@@ -2576,6 +2579,20 @@ CommandLine cmd = <span class="keyword">new</span> CommandLine(example);
 </div>
 <div class="paragraph">
 <p>For the above group, only one of the options can be specified. Any other combination of options, or the absence of options, is invalid.</p>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+Picocli will not initialize the <code>@ArgGroup</code>-annotated field
+if none of the group options is specified on the command line.
+For optional groups (groups with <code>multiplicity = "0..1"</code> - the default) this means that the <code>@ArgGroup</code>-annotated field may remain <code>null</code>.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
@@ -2615,6 +2632,9 @@ In this example the group uses the default multiplicity, <code>multiplicity = "0
 </div>
 </div>
 <div class="paragraph">
+<p>When the first option in the group is matched, picocli creates an instance of the <code>Dependent</code> class and assigns it to the <code>@ArgGroup</code>-annotated <code>dependent</code> field.</p>
+</div>
+<div class="paragraph">
 <p>Note that the options are defined as <code>required = true</code>; this means required <em>within the group</em>, not required within the command.</p>
 </div>
 <div class="paragraph">
@@ -2631,6 +2651,20 @@ CommandLine cmd = <span class="keyword">new</span> CommandLine(example);
     <span class="keyword">assert</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">Error: Missing required argument(s): -c=&lt;c&gt;</span><span class="delimiter">&quot;</span></span>.equals(ex.getMessage());
 }</code></pre>
 </div>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+Picocli will not initialize the <code>@ArgGroup</code>-annotated field
+if none of the group options is specified on the command line.
+For optional groups (groups with <code>multiplicity = "0..1"</code> - the default) this means that the <code>@ArgGroup</code>-annotated field may remain <code>null</code>.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
@@ -2698,6 +2732,20 @@ This is the second section
 <p>Note that the heading text must end with <code>%n</code> to insert a newline between the heading text and the first option.
 This is for consistency with other headings in the usage help, like <code>@Command(headerHeading = "Usage:%n", optionListHeading = "%nOptions:%n")</code>.</p>
 </div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+Picocli will not initialize the <code>@ArgGroup</code>-annotated field
+if none of the group options is specified on the command line.
+For optional groups (groups with <code>multiplicity = "0..1"</code> - the default) this means that the <code>@ArgGroup</code>-annotated field may remain <code>null</code>.
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_option_section_order">8.3.2. Option Section Order</h4>
@@ -2752,7 +2800,7 @@ This is for consistency with other headings in the usage help, like <code>@Comma
 </div>
 </div>
 <div class="paragraph">
-<p>In the above example, the annotated <code>composites</code> field defines a composite group that must be specified at least once, and may be specified many times (<code>multiplicity = "1..*"</code>), on the command line.</p>
+<p>In the above example, the annotated <code>composites</code> field defines a composite group that must be specified at least once, and may be specified many times (<code>multiplicity = "1..*"</code>), on the command line. Notice that for multi-value groups the type of the <code>@ArgGroup</code>-annotated field must be a collection or an array to capture the multiple <code>Composite</code> instances that hold the values that were matched on the command line.</p>
 </div>
 <div class="paragraph">
 <p>The synopsis of this command is:</p>
@@ -2791,6 +2839,23 @@ cmd.parseArgs(<span class="string"><span class="delimiter">&quot;</span><span cl
 <span class="keyword">assert</span> c2.dependent.b == <span class="integer">2</span>;
 <span class="keyword">assert</span> c2.dependent.c == <span class="integer">2</span>;</code></pre>
 </div>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Picocli will not initialize the <code>@ArgGroup</code>-annotated field
+if none of the group options is specified on the command line.
+For optional groups (groups with <code>multiplicity = "0..1"</code> - the default) this means that the <code>@ArgGroup</code>-annotated field may remain <code>null</code>.
+If the application assigned a non-<code>null</code> Collection in the field declaration (e.g., <code>@ArgGroup List&lt;Composite&gt; composites = new ArrayList&lt;&gt;();</code>), then the collection will remain empty if none of the group options is specified on the command line.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">

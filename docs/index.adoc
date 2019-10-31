@@ -1214,6 +1214,8 @@ The synopsis of this command is:
 Usage: exclusivedemo (-a=<a> | -b=<b> | -c=<c>)
 ----
 
+When one of the options in the group is matched, picocli creates an instance of the `Exclusive` class and assigns it to the `@ArgGroup`-annotated `exclusive` field.
+
 Note that the options are defined as `required = true`; this means required _within the group_, not required within the command.
 
 Picocli will validate the arguments and throw a `MutuallyExclusiveArgsException` if multiple mutually exclusive arguments were specified. For example:
@@ -1232,6 +1234,10 @@ try {
 ----
 
 For the above group, only one of the options can be specified. Any other combination of options, or the absence of options, is invalid.
+
+CAUTION: Picocli will not initialize the `@ArgGroup`-annotated field
+if none of the group options is specified on the command line.
+For optional groups (groups with `multiplicity = "0..1"` - the default) this means that the `@ArgGroup`-annotated field may remain `null`.
 
 === Mutually Dependent Options
 
@@ -1264,6 +1270,8 @@ The synopsis of this command is:
 Usage: co-occur [-a=<a> -b=<b> -c=<c>]
 ----
 
+When the first option in the group is matched, picocli creates an instance of the `Dependent` class and assigns it to the `@ArgGroup`-annotated `dependent` field.
+
 Note that the options are defined as `required = true`; this means required _within the group_, not required within the command.
 
 Picocli will validate the arguments and throw a `MissingParameterException` if not all dependent arguments were specified. For example:
@@ -1279,6 +1287,10 @@ try {
     assert "Error: Missing required argument(s): -c=<c>".equals(ex.getMessage());
 }
 ----
+
+CAUTION: Picocli will not initialize the `@ArgGroup`-annotated field
+if none of the group options is specified on the command line.
+For optional groups (groups with `multiplicity = "0..1"` - the default) this means that the `@ArgGroup`-annotated field may remain `null`.
 
 === Option Sections in Usage Help
 
@@ -1339,6 +1351,10 @@ This is the second section
 Note that the heading text must end with `%n` to insert a newline between the heading text and the first option.
 This is for consistency with other headings in the usage help, like `@Command(headerHeading = "Usage:%n", optionListHeading = "%nOptions:%n")`.
 
+CAUTION: Picocli will not initialize the `@ArgGroup`-annotated field
+if none of the group options is specified on the command line.
+For optional groups (groups with `multiplicity = "0..1"` - the default) this means that the `@ArgGroup`-annotated field may remain `null`.
+
 ==== Option Section Order
 Options that are not in any argument group are always displayed before the option sections.
 
@@ -1385,7 +1401,7 @@ public class CompositeGroupDemo {
 }
 ----
 
-In the above example, the annotated `composites` field defines a composite group that must be specified at least once, and may be specified many times (`multiplicity = "1..*"`), on the command line.
+In the above example, the annotated `composites` field defines a composite group that must be specified at least once, and may be specified many times (`multiplicity = "1..*"`), on the command line. Notice that for multi-value groups the type of the `@ArgGroup`-annotated field must be a collection or an array to capture the multiple `Composite` instances that hold the values that were matched on the command line.
 
 The synopsis of this command is:
 
@@ -1419,6 +1435,14 @@ assert c2.dependent.a == 2;
 assert c2.dependent.b == 2;
 assert c2.dependent.c == 2;
 ----
+
+[CAUTION]
+====
+Picocli will not initialize the `@ArgGroup`-annotated field
+if none of the group options is specified on the command line.
+For optional groups (groups with `multiplicity = "0..1"` - the default) this means that the `@ArgGroup`-annotated field may remain `null`.
+If the application assigned a non-`null` Collection in the field declaration (e.g., `@ArgGroup List<Composite> composites = new ArrayList<>();`), then the collection will remain empty if none of the group options is specified on the command line.
+====
 
 === Positional Parameters
 
