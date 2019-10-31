@@ -1444,6 +1444,38 @@ For optional groups (groups with `multiplicity = "0..1"` - the default) this mea
 If the application assigned a non-`null` Collection in the field declaration (e.g., `@ArgGroup List<Composite> composites = new ArrayList<>();`), then the collection will remain empty if none of the group options is specified on the command line.
 ====
 
+=== Default Values in Argument Groups
+
+The default values of options in an argument group are applied to the options when picocli instantiates the user object of the group.
+Picocli instantiates the user object of the group when at least one option in the group is matched on the command line.
+
+Picocli will not initialize the `@ArgGroup`-annotated field
+if none of the group options is specified on the command line.
+For optional groups (groups with `multiplicity = "0..1"`) this means that the `@ArgGroup`-annotated field may remain `null`.
+
+==== Default Values in Group Usage Help
+
+The `${DEFAULT-VALUE}` variable can be used in the description of options in an argument group,
+ but with one limitation: only default values that are defined via the `@Option(defaultValue = "...")` annotations will be shown in the usage help message. For example:
+
+[source,java]
+----
+// this works correctly: usage help shows the default value
+
+@Option(names = "-x", defaultValue = "123", description = "Default: ${DEFAULT-VALUE}")
+int x;
+----
+
+Picocli will not be able to retrieve the default values that are defined by assigning a value in the declaration of an `@Option`-annotated field in a group. For example:
+
+[source,java]
+----
+// this does not work correctly: usage help shows zero as the default value
+
+@Option(names = "-x", description = "Default: ${DEFAULT-VALUE}")
+int x = 123;
+----
+
 === Positional Parameters
 
 When a `@Parameters` positional parameter is part of a group, its `index` is the index _within the group_, not within the command.
