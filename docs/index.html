@@ -653,11 +653,12 @@ table.CodeRay td.code>pre{padding:0}
 <ul class="sectlevel2">
 <li><a href="#_colorized_example">14.1. Colorized Example</a></li>
 <li><a href="#_usage_help_with_styles_and_colors">14.2. Usage Help with Styles and Colors</a></li>
-<li><a href="#_more_colors">14.3. More Colors</a></li>
-<li><a href="#_configuring_fixed_elements">14.4. Configuring Fixed Elements</a></li>
-<li><a href="#_supported_platforms">14.5. Supported Platforms</a></li>
-<li><a href="#_forcing_ansi_on_off">14.6. Forcing ANSI On/Off</a></li>
-<li><a href="#_heuristics_for_enabling_ansi">14.7. Heuristics for Enabling ANSI</a></li>
+<li><a href="#_styles_and_colors_in_application_output">14.3. Styles and Colors in Application Output</a></li>
+<li><a href="#_more_colors">14.4. More Colors</a></li>
+<li><a href="#_configuring_fixed_elements">14.5. Configuring Fixed Elements</a></li>
+<li><a href="#_supported_platforms">14.6. Supported Platforms</a></li>
+<li><a href="#_forcing_ansi_on_off">14.7. Forcing ANSI On/Off</a></li>
+<li><a href="#_heuristics_for_enabling_ansi">14.8. Heuristics for Enabling ANSI</a></li>
 </ul>
 </li>
 <li><a href="#_usage_help_api">15. Usage Help API</a>
@@ -4903,7 +4904,26 @@ Markup styles cannot be nested, for example: <code>@|bold this @|underline that|
 </div>
 </div>
 <div class="sect2">
-<h3 id="_more_colors">14.3. More Colors</h3>
+<h3 id="_styles_and_colors_in_application_output">14.3. Styles and Colors in Application Output</h3>
+<div class="paragraph">
+<p>The use of ANSI colors and styles is not limited to the <a href="#_usage_help_with_styles_and_colors">usage help</a>
+and <a href="#_static_version_information">version information</a>.</p>
+</div>
+<div class="paragraph">
+<p>Applications can use the picocli <code>Ansi</code> class directly to create colored output.
+By using the <code>Ansi.AUTO</code> enum value, picocli will  <a href="#_heuristics_for_enabling_ansi">auto-detect</a> whether it can emit ANSI escape codes or only the plain text.</p>
+</div>
+<div class="listingblock">
+<div class="title">Using the picocli <code>Ansi</code> API to generate colored output.</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">// import picocli.CommandLine.Help.Ansi;</span>
+<span class="predefined-type">String</span> str = Ansi.AUTO.string(<span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold,green,underline Hello, colored world!|@</span><span class="delimiter">&quot;</span></span>);
+<span class="predefined-type">System</span>.out.println(str);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_more_colors">14.4. More Colors</h3>
 <div class="paragraph">
 <p>Most terminals support a <a href="https://en.wikipedia.org/wiki/ANSI_escape_code#Colors">256 color indexed palette</a>:</p>
 </div>
@@ -4928,9 +4948,9 @@ or <code>@|fg(46) the same color by index, as foreground color|@</code>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_configuring_fixed_elements">14.4. Configuring Fixed Elements</h3>
+<h3 id="_configuring_fixed_elements">14.5. Configuring Fixed Elements</h3>
 <div class="sect3">
-<h4 id="_color_scheme">14.4.1. Color Scheme</h4>
+<h4 id="_color_scheme">14.5.1. Color Scheme</h4>
 <div class="paragraph">
 <p>Picocli uses a default color scheme for options, parameters and commands.
 There are no annotations to modify this color scheme, but it can be changed programmatically.</p>
@@ -4967,7 +4987,7 @@ CommandLine.usage(annotatedObject, <span class="predefined-type">System</span>.o
 </div>
 </div>
 <div class="sect3">
-<h4 id="_color_scheme_overrides">14.4.2. Color Scheme Overrides</h4>
+<h4 id="_color_scheme_overrides">14.5.2. Color Scheme Overrides</h4>
 <div class="paragraph">
 <p>The following system properties override the color scheme styles. This allows end users to adjust for their individual terminal color setup.</p>
 </div>
@@ -4994,12 +5014,13 @@ picocli.color.optionParams</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_supported_platforms">14.5. Supported Platforms</h3>
+<h3 id="_supported_platforms">14.6. Supported Platforms</h3>
 <div class="paragraph">
-<p>Picocli will only emit ANSI escape codes on supported platforms.</p>
+<p>Picocli will only emit ANSI escape codes on supported platforms.
+For details, see <a href="#_heuristics_for_enabling_ansi">Heuristics for Enabling ANSI</a>.</p>
 </div>
 <div class="sect3">
-<h4 id="_unix_and_linux">14.5.1. Unix and Linux</h4>
+<h4 id="_unix_and_linux">14.6.1. Unix and Linux</h4>
 <div class="paragraph">
 <p>Most Unix and Linux platforms support ANSI colors natively.
 On Windows, when picocli detects it is running under a Unix variant like Cygwin or MSYS(2) on Windows
@@ -5007,39 +5028,12 @@ On Windows, when picocli detects it is running under a Unix variant like Cygwin 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_windows">14.5.2. Windows</h4>
+<h4 id="_windows">14.6.2. Windows</h4>
 <div class="paragraph">
-<p>If you are using Windows 10, I strongly recommend <a href="https://docs.microsoft.com/en-us/windows/wsl/install-win10">getting</a> <a href="https://docs.microsoft.com/en-us/windows/wsl/about">Windows Subsystem for Linux</a> (WSL).
-This lets you run a GNU/Linux environment&#8201;&#8212;&#8201;including most command-line tools, utilities, and applications&#8201;&#8212;&#8201;directly on Windows, unmodified, without the overhead of a virtual machine.</p>
-</div>
-<div class="paragraph">
-<p>From June 2019, the Windows Terminal app is available for <a href="https://www.microsoft.com/en-us/p/windows-terminal-preview/9n0dx20hk701?activetab=pivot:overviewtab">download</a> as an early preview build.
-This may be an interesting alternative to the legacy Windows Console application.</p>
+<p>Displaying colors on Windows Command Console and PowerShell requires a bit of extra work.</p>
 </div>
 <div class="paragraph">
-<p>Starting from Windows 10, the Windows Console <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx">supports ANSI escape sequences</a>,
-but <a href="https://github.com/Microsoft/WSL/issues/1173#issuecomment-254250445">it&#8217;s not enabled by default</a>.
-Unless the specific software you&#8217;re using (e.g. java) enables ANSI processing by calling the <a href="https://docs.microsoft.com/en-us/windows/console/setconsolemode">SetConsoleMode</a> API with the <code>ENABLE_VIRTUAL_TERMINAL_PROCESSING</code> (<code>0x0400</code>) flag (java doesn&#8217;t), you won&#8217;t see colors or get ANSI processing for that application.
-Note that there is a registry setting to <a href="https://superuser.com/questions/413073/windows-console-with-ansi-colors-handling/1300251#1300251">change the global default</a> from <em>opt in</em> to <em>opt out</em>.</p>
-</div>
-<div class="paragraph">
-<p>For Windows version below 10, the Windows command console doesn&#8217;t support output coloring by default. One option is to install either <a href="http://cmder.net/">Cmder</a>, <a href="http://sourceforge.net/projects/conemu/">ConEmu</a>, <a href="https://github.com/adoxa/ansicon/">ANSICON</a> or <a href="https://mintty.github.io/">Mintty</a> (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.</p>
-</div>
-<div class="paragraph">
-<p>Another option is to use <a href="http://fusesource.github.io/jansi/">Jansi</a> in your application. For example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">org.fusesource.jansi.AnsiConsole</span>;
-...
-public <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
-    AnsiConsole.systemInstall(); <span class="comment">// Jansi magic</span>
-    <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> WindowsJansiDemo())
-            .setColorScheme(CommandLine.Help.defaultColorScheme(Ansi.ON))
-            .execute(args);
-    AnsiConsole.systemUninstall();
-}</code></pre>
-</div>
+<p>The easiest way to accomplish this is to use the <a href="http://fusesource.github.io/jansi/">Jansi</a> library in your application.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -5048,15 +5042,112 @@ public <span class="directive">static</span> <span class="type">void</span> main
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-None of the above is mandatory. If not supported, picocli will simply not emit ANSI escape codes, and everything will work without colors.
+None of the below is mandatory. If not supported, picocli will simply not emit ANSI escape codes, and everything will work without colors.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect4">
+<h5 id="_jansi">Jansi</h5>
+<div class="paragraph">
+<p>To use Jansi, you need to enable it in your application. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">org.fusesource.jansi.AnsiConsole</span>;
+...
+public <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+    AnsiConsole.systemInstall(); <span class="comment">// enable colors on Windows</span>
+    <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> WindowsJansiDemo()).execute(args);
+    AnsiConsole.systemUninstall(); <span class="comment">// cleanup when done</span>
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_jansi_in_graalvm_native_images">Jansi in GraalVM Native Images</h5>
+<div class="paragraph">
+<p>In Java applications compiled to GraalVM native images for Windows, Jansi by itself is <a href="https://github.com/fusesource/jansi/issues/162">insufficient</a> to show colors.
+This is partly because GraalVM requires configuration and partly because Jansi internally depends on non-standard system properties, without a graceful fallback if these properties are absent (as is the case in GraalVM).</p>
+</div>
+<div class="paragraph">
+<p>Users may be interested in combining Jansi with <a href="https://github.com/remkop/picocli-jansi-graalvm">picocli-jansi-graalvm</a> until this issue is fixed. Example usage:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">picocli.jansi.graalvm.AnsiConsole</span>; <span class="comment">// not org.fusesource.jansi.AnsiConsole</span>
+...
+public <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+    <span class="type">boolean</span> windows = <span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">os.name</span><span class="delimiter">&quot;</span></span>).toLowerCase().startsWith(<span class="string"><span class="delimiter">&quot;</span><span class="content">win</span><span class="delimiter">&quot;</span></span>);
+    <span class="keyword">if</span> (windows) { <span class="comment">// only include in native images for Windows</span>
+        AnsiConsole.systemInstall(); <span class="comment">// enable colors on Windows</span>
+    }
+    <span class="type">int</span> exitCode = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp()).execute(args);
+    <span class="keyword">if</span> (windows) {
+        AnsiConsole.systemUninstall(); <span class="comment">// cleanup when done</span>
+    }
+    <span class="predefined-type">System</span>.exit(exitCode);
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_for_reference_without_jansi_on_windows_10_command_console_and_powershell">For Reference: Without Jansi on Windows 10 Command Console and PowerShell</h5>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+As of this writing, the practical way to get colors in Command Console and PowerShell is to use Jansi. The below is just for reference.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Starting from Windows 10, the Windows Console <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx">supports ANSI escape sequences</a>,
+but <a href="https://github.com/Microsoft/WSL/issues/1173#issuecomment-254250445">it&#8217;s not enabled by default</a>.
+Unless the specific software you&#8217;re using (e.g. java) enables ANSI processing by calling the <a href="https://docs.microsoft.com/en-us/windows/console/setconsolemode">SetConsoleMode</a> API with the <code>ENABLE_VIRTUAL_TERMINAL_PROCESSING</code> (<code>0x0400</code>) flag (java doesn&#8217;t), you won&#8217;t see colors or get ANSI processing for that application.</p>
+</div>
+<div class="paragraph">
+<p>Note that there is a registry setting to <a href="https://superuser.com/questions/413073/windows-console-with-ansi-colors-handling/1300251#1300251">change the global default</a> from <em>opt in</em> to <em>opt out</em>.
+This <a href="https://stackoverflow.com/a/51681675/1446916">Stack Overflow answer</a> has more details.</p>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+Note that picocli&#8217;s <a href="#_heuristics_for_enabling_ansi">heuristics for enabling ANSI</a> currently do not include detecting whether support for Virtual Terminal / ANSI escape sequences has been turned on or off via <code>SetConsoleMode</code> or a registry change.
+So just making these changes is not sufficient to let a picocli-based application show colors.
+Environments that enabled colors via a Windows Registry change may want to set environment variable <code>CLICOLOR=1</code>.
 </td>
 </tr>
 </table>
 </div>
 </div>
+<div class="sect4">
+<h5 id="_for_reference_windows_subsystem_for_linux_wsl">For Reference: Windows Subsystem for Linux (WSL)</h5>
+<div class="paragraph">
+<p>You may want to recommend your users to try <a href="https://docs.microsoft.com/en-us/windows/wsl/install-win10">getting</a> <a href="https://docs.microsoft.com/en-us/windows/wsl/about">Windows Subsystem for Linux</a> (WSL).
+This lets them run a GNU/Linux environment&#8201;&#8212;&#8201;including most command-line tools, utilities, and applications&#8201;&#8212;&#8201;directly on Windows, unmodified, without the overhead of a virtual machine.
+Picocli-based applications will show ANSI colors in WSL by default.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_for_reference_3rd_party_software">For Reference: 3rd Party Software</h5>
+<div class="paragraph">
+<p>In Windows version prior to 10, the Windows command console doesn&#8217;t support output coloring by default.
+One option is for end users to install either <a href="http://cmder.net/">Cmder</a>, <a href="http://sourceforge.net/projects/conemu/">ConEmu</a>, <a href="https://github.com/adoxa/ansicon/">ANSICON</a> or <a href="https://mintty.github.io/">Mintty</a> (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.</p>
+</div>
+</div>
+</div>
 </div>
 <div class="sect2">
-<h3 id="_forcing_ansi_on_off">14.6. Forcing ANSI On/Off</h3>
+<h3 id="_forcing_ansi_on_off">14.7. Forcing ANSI On/Off</h3>
 <div class="paragraph">
 <p>You can force picocli to either always use ANSI codes or never use ANSI codes regardless of the platform:</p>
 </div>
@@ -5081,7 +5172,7 @@ CommandLine.usage(<span class="keyword">new</span> App(), <span class="predefine
 </div>
 </div>
 <div class="sect2">
-<h3 id="_heuristics_for_enabling_ansi">14.7. Heuristics for Enabling ANSI</h3>
+<h3 id="_heuristics_for_enabling_ansi">14.8. Heuristics for Enabling ANSI</h3>
 <div class="paragraph">
 <p>Below is the exact sequence of steps picocli uses to determine whether or not to emit ANSI escape codes.</p>
 </div>

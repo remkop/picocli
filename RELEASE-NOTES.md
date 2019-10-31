@@ -40,6 +40,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#809] (DOC) Output completion script as a subcommand of the command itself. Thanks to [George Gastaldi](https://github.com/gastaldi) for the suggestion.
 * [#456] (DOC) Integrate completion generation into command itself. Thanks to [jvassev](https://github.com/jvassev) for the suggestion.
 * [#835] (DOC) Document how to create ANSI colored output in an application.
+* [#847] (DOC) Improve documentation for ANSI colors in Windows.
 
 ## <a name="4.0.5-deprecated"></a> Deprecations
 No features were deprecated in this release.

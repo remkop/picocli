@@ -3059,6 +3059,7 @@ System property values may specify multiple comma separated styles.
 
 === Supported Platforms
 Picocli will only emit ANSI escape codes on supported platforms.
+For details, see <<Heuristics for Enabling ANSI>>.
 
 ==== Unix and Linux
 Most Unix and Linux platforms support ANSI colors natively.
@@ -3066,34 +3067,78 @@ On Windows, when picocli detects it is running under a Unix variant like Cygwin 
  it will display ANSI colors and styles, otherwise it will not emit ANSI codes.
 
 ==== Windows
-If you are using Windows 10, I strongly recommend https://docs.microsoft.com/en-us/windows/wsl/install-win10[getting] https://docs.microsoft.com/en-us/windows/wsl/about[Windows Subsystem for Linux] (WSL).
-This lets you run a GNU/Linux environment -- including most command-line tools, utilities, and applications -- directly on Windows, unmodified, without the overhead of a virtual machine.
 
-From June 2019, the Windows Terminal app is available for https://www.microsoft.com/en-us/p/windows-terminal-preview/9n0dx20hk701?activetab=pivot:overviewtab[download] as an early preview build.
-This may be an interesting alternative to the legacy Windows Console application.
+Displaying colors on Windows Command Console and PowerShell requires a bit of extra work.
 
-Starting from Windows 10, the Windows Console https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx[supports ANSI escape sequences],
-but https://github.com/Microsoft/WSL/issues/1173#issuecomment-254250445[it's not enabled by default].
-Unless the specific software you're using (e.g. java) enables ANSI processing by calling the https://docs.microsoft.com/en-us/windows/console/setconsolemode[SetConsoleMode] API with the `ENABLE_VIRTUAL_TERMINAL_PROCESSING` (`0x0400`) flag (java doesn't), you won't see colors or get ANSI processing for that application.
-Note that there is a registry setting to https://superuser.com/questions/413073/windows-console-with-ansi-colors-handling/1300251#1300251[change the global default] from _opt in_ to _opt out_.
+The easiest way to accomplish this is to use the http://fusesource.github.io/jansi/[Jansi] library in your application.
 
-For Windows version below 10, the Windows command console doesn't support output coloring by default. One option is to install either http://cmder.net/[Cmder], http://sourceforge.net/projects/conemu/[ConEmu], https://github.com/adoxa/ansicon/[ANSICON] or https://mintty.github.io/[Mintty] (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.
+NOTE: None of the below is mandatory. If not supported, picocli will simply not emit ANSI escape codes, and everything will work without colors.
 
-Another option is to use http://fusesource.github.io/jansi/[Jansi] in your application. For example:
+===== Jansi
+To use Jansi, you need to enable it in your application. For example:
 
 [source,java]
 ----
 import org.fusesource.jansi.AnsiConsole;
 ...
 public static void main(String[] args) {
-    AnsiConsole.systemInstall(); // Jansi magic
-    new CommandLine(new WindowsJansiDemo())
-            .setColorScheme(CommandLine.Help.defaultColorScheme(Ansi.ON))
-            .execute(args);
-    AnsiConsole.systemUninstall();
+    AnsiConsole.systemInstall(); // enable colors on Windows
+    new CommandLine(new WindowsJansiDemo()).execute(args);
+    AnsiConsole.systemUninstall(); // cleanup when done
 }
 ----
-NOTE: None of the above is mandatory. If not supported, picocli will simply not emit ANSI escape codes, and everything will work without colors.
+
+===== Jansi in GraalVM Native Images
+In Java applications compiled to GraalVM native images for Windows, Jansi by itself is https://github.com/fusesource/jansi/issues/162[insufficient] to show colors.
+This is partly because GraalVM requires configuration and partly because Jansi internally depends on non-standard system properties, without a graceful fallback if these properties are absent (as is the case in GraalVM).
+
+Users may be interested in combining Jansi with https://github.com/remkop/picocli-jansi-graalvm[picocli-jansi-graalvm] until this issue is fixed. Example usage:
+
+[source,java]
+----
+import picocli.jansi.graalvm.AnsiConsole; // not org.fusesource.jansi.AnsiConsole
+...
+public static void main(String[] args) {
+    boolean windows = System.getProperty("os.name").toLowerCase().startsWith("win");
+    if (windows) { // only include in native images for Windows
+        AnsiConsole.systemInstall(); // enable colors on Windows
+    }
+    int exitCode = new CommandLine(new MyApp()).execute(args);
+    if (windows) {
+        AnsiConsole.systemUninstall(); // cleanup when done
+    }
+    System.exit(exitCode);
+}
+----
+
+===== For Reference: Without Jansi on Windows 10 Command Console and PowerShell
+
+NOTE: As of this writing, the practical way to get colors in Command Console and PowerShell is to use Jansi. The below is just for reference.
+
+Starting from Windows 10, the Windows Console https://msdn.microsoft.com/en-us/library/windows/desktop/mt638032(v=vs.85).aspx[supports ANSI escape sequences],
+but https://github.com/Microsoft/WSL/issues/1173#issuecomment-254250445[it's not enabled by default].
+Unless the specific software you're using (e.g. java) enables ANSI processing by calling the https://docs.microsoft.com/en-us/windows/console/setconsolemode[SetConsoleMode] API with the `ENABLE_VIRTUAL_TERMINAL_PROCESSING` (`0x0400`) flag (java doesn't), you won't see colors or get ANSI processing for that application.
+
+Note that there is a registry setting to https://superuser.com/questions/413073/windows-console-with-ansi-colors-handling/1300251#1300251[change the global default] from _opt in_ to _opt out_.
+This https://stackoverflow.com/a/51681675/1446916[Stack Overflow answer] has more details.
+
+CAUTION: Note that picocli's <<Heuristics for Enabling ANSI,heuristics for enabling ANSI>> currently do not include detecting whether support for Virtual Terminal / ANSI escape sequences has been turned on or off via `SetConsoleMode` or a registry change.
+So just making these changes is not sufficient to let a picocli-based application show colors.
+// https://github.com/remkop/picocli/issues/846
+//Applications that enabled colors via `SetConsoleMode` may want to set system property `picocli.ansi` to `true`.
+Environments that enabled colors via a Windows Registry change may want to set environment variable `CLICOLOR=1`.
+
+
+===== For Reference: Windows Subsystem for Linux (WSL)
+You may want to recommend your users to try https://docs.microsoft.com/en-us/windows/wsl/install-win10[getting] https://docs.microsoft.com/en-us/windows/wsl/about[Windows Subsystem for Linux] (WSL).
+This lets them run a GNU/Linux environment -- including most command-line tools, utilities, and applications -- directly on Windows, unmodified, without the overhead of a virtual machine.
+Picocli-based applications will show ANSI colors in WSL by default.
+
+===== For Reference: 3rd Party Software
+In Windows version prior to 10, the Windows command console doesn't support output coloring by default.
+One option is for end users to install either http://cmder.net/[Cmder], http://sourceforge.net/projects/conemu/[ConEmu], https://github.com/adoxa/ansicon/[ANSICON] or https://mintty.github.io/[Mintty] (used by default in GitBash and Cygwin) to add coloring support to their Windows command console.
+
+
 
 === Forcing ANSI On/Off
 You can force picocli to either always use ANSI codes or never use ANSI codes regardless of the platform:
