@@ -553,8 +553,8 @@ table.CodeRay td.code>pre{padding:0}
 </li>
 <li><a href="#_default_values">5. Default Values</a>
 <ul class="sectlevel2">
-<li><a href="#_field_values">5.1. Field Values</a></li>
-<li><a href="#defaultValue-annotation">5.2. <code>defaultValue</code> Annotation</a></li>
+<li><a href="#defaultValue-annotation">5.1. <code>defaultValue</code> Annotation</a></li>
+<li><a href="#_field_values">5.2. Field Values</a></li>
 <li><a href="#_default_provider">5.3. Default Provider</a></li>
 <li><a href="#fallbackValue-annotation">5.4. <code>fallbackValue</code> Annotation</a></li>
 </ul>
@@ -580,8 +580,9 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_mutually_dependent_options">8.2. Mutually Dependent Options</a></li>
 <li><a href="#_option_sections_in_usage_help">8.3. Option Sections in Usage Help</a></li>
 <li><a href="#_repeating_composite_argument_groups">8.4. Repeating Composite Argument Groups</a></li>
-<li><a href="#_positional_parameters_2">8.5. Positional Parameters</a></li>
-<li><a href="#_argument_group_limitations">8.6. Argument Group Limitations</a></li>
+<li><a href="#_default_values_in_argument_groups">8.5. Default Values in Argument Groups</a></li>
+<li><a href="#_positional_parameters_2">8.6. Positional Parameters</a></li>
+<li><a href="#_argument_group_limitations">8.7. Argument Group Limitations</a></li>
 </ul>
 </li>
 <li><a href="#execute">9. Executing Commands</a>
@@ -1998,21 +1999,12 @@ Not only will picocli validate the input, it allows you to <a href="#_show_defau
 <p>It is possible to define a default value for an option or positional parameter, that is assigned when the user did not specify this option or positional parameter on the command line.</p>
 </div>
 <div class="sect2">
-<h3 id="_field_values">5.1. Field Values</h3>
+<h3 id="defaultValue-annotation">5.1. <code>defaultValue</code> Annotation</h3>
 <div class="paragraph">
-<p>For annotated fields, it is simplest to declare the field with a value:</p>
+<p>The recommended way to give an option or positional parameter a default value is to use the <code>defaultValue</code> annotation attribute. This works correctly with argument groups, <code>@Option</code> and <code>@Parameters</code>-annotated methods, and allows annotation processors to detect and use default values.</p>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">The count (default: ${DEFAULT-VALUE})</span><span class="delimiter">&quot;</span></span>)
-<span class="type">int</span> count = <span class="integer">123</span>; <span class="comment">// default value is 123</span></code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="defaultValue-annotation">5.2. <code>defaultValue</code> Annotation</h3>
 <div class="paragraph">
-<p>For <a href="#option-parameters-methods">@Option and @Parameters-annotated methods</a> and <a href="#command-methods">@Command-annotated methods</a>, use the <code>defaultValue</code> annotation attribute. For example, for an annotated interface:</p>
+<p>For <a href="#option-parameters-methods">@Option and @Parameters-annotated methods</a> and <a href="#command-methods">@Command-annotated methods</a>, there is no alternative but to use the <code>defaultValue</code> annotation attribute. For example, for an annotated interface:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2037,6 +2029,42 @@ Not only will picocli validate the input, it allows you to <a href="#_show_defau
 </div>
 <div class="paragraph">
 <p>Note that you can use the <code>${DEFAULT-VALUE}</code> <a href="#_predefined_variables">variable</a> in the <code>description</code> of the option or positional parameter and picocli will <a href="#_show_default_values">show</a> the actual default value.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_field_values">5.2. Field Values</h3>
+<div class="paragraph">
+<p>For annotated fields, it is possible to declare the field with a value:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">The count (default: ${DEFAULT-VALUE})</span><span class="delimiter">&quot;</span></span>)
+<span class="type">int</span> count = <span class="integer">123</span>; <span class="comment">// default value is 123</span></code></pre>
+</div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Defining a default value by assigning a value at the field declaration has limitations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>when the option is used in a argument group, the usage help <a href="#_default_values_in_argument_groups">cannot show the default value</a></p>
+</li>
+<li>
+<p>picocli&#8217;s annotation processors can only detect default values in annotations, not in the field declaration. Your application may not work correctly with future features like documentation generated from the annotations.</p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
@@ -2859,13 +2887,99 @@ If the application assigned a non-<code>null</code> Collection in the field decl
 </div>
 </div>
 <div class="sect2">
-<h3 id="_positional_parameters_2">8.5. Positional Parameters</h3>
+<h3 id="_default_values_in_argument_groups">8.5. Default Values in Argument Groups</h3>
+<div class="paragraph">
+<p>The <a href="#_default_values">default values</a> of options in an argument group are applied when at least one option in the group is matched on the command line and picocli instantiates the user object of the group.</p>
+</div>
+<div class="paragraph">
+<p>Picocli will not initialize the <code>@ArgGroup</code>-annotated field (and so no default values are applied) if none of the group options is specified on the command line.</p>
+</div>
+<div class="sect3">
+<h4 id="_default_values_in_group_usage_help">8.5.1. Default Values in Group Usage Help</h4>
+<div class="paragraph">
+<p>When options are used in argument groups, they can only define default values via the <code>@Option(defaultValue = "&#8230;&#8203;")</code> annotation (not in the field declaration).</p>
+</div>
+<div class="paragraph">
+<p>When defined this way, the <code>${DEFAULT-VALUE}</code> variable can be used to <a href="#_show_default_values">show the default value</a> in the description of options in an argument group. For example:</p>
+</div>
+<div class="listingblock">
+<div class="title">This works correctly: usage help will show the default value.</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">GoodGroup</span> {
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, defaultValue = <span class="string"><span class="delimiter">&quot;</span><span class="content">123</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Default: ${DEFAULT-VALUE}</span><span class="delimiter">&quot;</span></span>)
+    <span class="type">int</span> x;
+}
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">good</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">usage help shows the default value</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">GoodExample</span> {
+    <span class="annotation">@ArgGroup</span> GoodGroup goodGroup;
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> GoodExample()).usage(<span class="predefined-type">System</span>.out);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When the default value is defined in the annotation, the usage help shows the correct default value:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: good [[-x=&lt;x&gt;]]
+usage help shows the default value
+  -x=&lt;x&gt;    Default: 123</pre>
+</div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Picocli will not be able to retrieve the default values that are defined by assigning a value in the declaration of an <code>@Option</code>-annotated field in a group. For example:</p>
+</div>
+<div class="listingblock">
+<div class="title">This does not work correctly: usage help shows <code>null</code> as the default value.</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">BadGroup</span> {
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Default: ${DEFAULT-VALUE}</span><span class="delimiter">&quot;</span></span>)
+    <span class="type">int</span> x = <span class="integer">123</span>; <span class="comment">// picocli cannot find this value until `BadGroup` is instantiated</span>
+}
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">bad</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">usage help shows the wrong default value</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">BadExample</span> {
+    <span class="annotation">@ArgGroup</span> BadGroup badGroup;
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> BadExample()).usage(<span class="predefined-type">System</span>.out);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When the default value is defined in the field declaration and not in the annotation, usage help for the options in the group incorrectly shows <code>null</code> as the default value:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: bad [[-x=&lt;x&gt;]]
+usage help shows the wrong default value
+  -x=&lt;x&gt;    Default: null</pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_positional_parameters_2">8.6. Positional Parameters</h3>
 <div class="paragraph">
 <p>When a <code>@Parameters</code> positional parameter is part of a group, its <code>index</code> is the index <em>within the group</em>, not within the command.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_argument_group_limitations">8.6. Argument Group Limitations</h3>
+<h3 id="_argument_group_limitations">8.7. Argument Group Limitations</h3>
 <div class="ulist">
 <ul>
 <li>
@@ -4708,9 +4822,9 @@ and regardless of the <code>@Option(showDefaultValues)</code> or <code>@Paramete
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">DefaultValues</span> {
-    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span>},
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span>}, defaultValue = <span class="string"><span class="delimiter">&quot;</span><span class="content">config.xml</span><span class="delimiter">&quot;</span></span>,
             description = <span class="string"><span class="delimiter">&quot;</span><span class="content">the file to use (default: ${DEFAULT-VALUE})</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">File</span> file = <span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">config.xml</span><span class="delimiter">&quot;</span></span>);
+    <span class="predefined-type">File</span> file;
 }
 
 CommandLine.usage(<span class="keyword">new</span> DefaultValues(), <span class="predefined-type">System</span>.out);</code></pre>
@@ -7932,7 +8046,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.0.4<br>
-Last updated 2019-10-20 14:29:24 JST
+Last updated 2019-11-01 07:29:24 JST
 </div>
 </div>
 </body>

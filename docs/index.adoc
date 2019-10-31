@@ -858,17 +858,11 @@ Enum value matching is case-sensitive by default, but from 3.4 this can be contr
 == Default Values
 It is possible to define a default value for an option or positional parameter, that is assigned when the user did not specify this option or positional parameter on the command line.
 
-=== Field Values
-For annotated fields, it is simplest to declare the field with a value:
-[source,java]
-----
-@Option(names = "-c", description = "The count (default: ${DEFAULT-VALUE})")
-int count = 123; // default value is 123
-----
-
 [#defaultValue-annotation]
 === `defaultValue` Annotation
-For <<option-parameters-methods,@Option and @Parameters-annotated methods>> and <<command-methods,@Command-annotated methods>>, use the `defaultValue` annotation attribute. For example, for an annotated interface:
+The recommended way to give an option or positional parameter a default value is to use the `defaultValue` annotation attribute. This works correctly with argument groups, `@Option` and `@Parameters`-annotated methods, and allows annotation processors to detect and use default values.
+
+For <<option-parameters-methods,@Option and @Parameters-annotated methods>> and <<command-methods,@Command-annotated methods>>, there is no alternative but to use the `defaultValue` annotation attribute. For example, for an annotated interface:
 [source,java]
 ----
 interface Spec {
@@ -888,6 +882,23 @@ class CommandMethod {
 ----
 
 Note that you can use the `${DEFAULT-VALUE}` <<Predefined Variables,variable>> in the `description` of the option or positional parameter and picocli will <<Show Default Values,show>> the actual default value.
+
+
+=== Field Values
+For annotated fields, it is possible to declare the field with a value:
+[source,java]
+----
+@Option(names = "-c", description = "The count (default: ${DEFAULT-VALUE})")
+int count = 123; // default value is 123
+----
+
+[WARNING]
+====
+Defining a default value by assigning a value at the field declaration has limitations:
+
+* when the option is used in a argument group, the usage help <<Default Values in Argument Groups,cannot show the default value>>
+* picocli's annotation processors can only detect default values in annotations, not in the field declaration. Your application may not work correctly with future features like documentation generated from the annotations.
+====
 
 === Default Provider
 Finally, you can specify a default provider in the `@Command` annotation:
@@ -1446,35 +1457,70 @@ If the application assigned a non-`null` Collection in the field declaration (e.
 
 === Default Values in Argument Groups
 
-The default values of options in an argument group are applied to the options when picocli instantiates the user object of the group.
-Picocli instantiates the user object of the group when at least one option in the group is matched on the command line.
+The <<Default Values,default values>> of options in an argument group are applied when at least one option in the group is matched on the command line and picocli instantiates the user object of the group.
 
-Picocli will not initialize the `@ArgGroup`-annotated field
-if none of the group options is specified on the command line.
-For optional groups (groups with `multiplicity = "0..1"`) this means that the `@ArgGroup`-annotated field may remain `null`.
+Picocli will not initialize the `@ArgGroup`-annotated field (and so no default values are applied) if none of the group options is specified on the command line.
 
 ==== Default Values in Group Usage Help
 
-The `${DEFAULT-VALUE}` variable can be used in the description of options in an argument group,
- but with one limitation: only default values that are defined via the `@Option(defaultValue = "...")` annotations will be shown in the usage help message. For example:
+When options are used in argument groups, they can only define default values via the `@Option(defaultValue = "...")` annotation (not in the field declaration).
 
+When defined this way, the `${DEFAULT-VALUE}` variable can be used to <<Show Default Values,show the default value>> in the description of options in an argument group. For example:
+
+.This works correctly: usage help will show the default value.
 [source,java]
 ----
-// this works correctly: usage help shows the default value
+class GoodGroup {
+    @Option(names = "-x", defaultValue = "123", description = "Default: ${DEFAULT-VALUE}")
+    int x;
+}
+@Command(name = "good", description = "usage help shows the default value")
+class GoodExample {
+    @ArgGroup GoodGroup goodGroup;
 
-@Option(names = "-x", defaultValue = "123", description = "Default: ${DEFAULT-VALUE}")
-int x;
+    public static void main(String[] args) {
+        new CommandLine(new GoodExample()).usage(System.out);
+    }
+}
 ----
 
+When the default value is defined in the annotation, the usage help shows the correct default value:
+
+----
+Usage: good [[-x=<x>]]
+usage help shows the default value
+  -x=<x>    Default: 123
+----
+
+[WARNING]
+====
 Picocli will not be able to retrieve the default values that are defined by assigning a value in the declaration of an `@Option`-annotated field in a group. For example:
 
+.This does not work correctly: usage help shows `null` as the default value.
 [source,java]
 ----
-// this does not work correctly: usage help shows zero as the default value
+class BadGroup {
+    @Option(names = "-x", description = "Default: ${DEFAULT-VALUE}")
+    int x = 123; // picocli cannot find this value until `BadGroup` is instantiated
+}
+@Command(name = "bad", description = "usage help shows the wrong default value")
+class BadExample {
+    @ArgGroup BadGroup badGroup;
 
-@Option(names = "-x", description = "Default: ${DEFAULT-VALUE}")
-int x = 123;
+    public static void main(String[] args) {
+        new CommandLine(new BadExample()).usage(System.out);
+    }
+}
 ----
+
+When the default value is defined in the field declaration and not in the annotation, usage help for the options in the group incorrectly shows `null` as the default value:
+
+----
+Usage: bad [[-x=<x>]]
+usage help shows the wrong default value
+  -x=<x>    Default: null
+----
+====
 
 === Positional Parameters
 
@@ -2863,9 +2909,9 @@ and regardless of the `@Option(showDefaultValues)` or `@Parameters(showDefaultVa
 [source,java]
 ----
 class DefaultValues {
-    @Option(names = {"-f", "--file"},
+    @Option(names = {"-f", "--file"}, defaultValue = "config.xml",
             description = "the file to use (default: ${DEFAULT-VALUE})")
-    File file = new File("config.xml");
+    File file;
 }
 
 CommandLine.usage(new DefaultValues(), System.out);
