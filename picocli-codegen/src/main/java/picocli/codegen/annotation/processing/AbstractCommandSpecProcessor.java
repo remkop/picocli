@@ -1,6 +1,5 @@
 package picocli.codegen.annotation.processing;
 
-import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.IFactory;
@@ -438,19 +437,16 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         logger.fine("Built mixin: " + mixin + " from " + element);
         if (EnumSet.of(ElementKind.FIELD, ElementKind.PARAMETER).contains(element.getKind())) {
             VariableElement variableElement = (VariableElement) element;
-            String name = element.getAnnotation(Mixin.class).name();
-            if (name.length() == 0) {
-                name = variableElement.getSimpleName().toString();
+            MixinInfo mixinInfo = new MixinInfo(variableElement, mixin);
+
+            CommandSpec mixee = buildCommand(mixinInfo.enclosingElement(), context, roundEnv);
+            Set<MixinInfo> mixinInfos = context.mixinInfoMap.get(mixee);
+            if (mixinInfos == null) {
+                mixinInfos = new HashSet<MixinInfo>(2);
+                context.mixinInfoMap.put(mixee, mixinInfos);
             }
-            Element targetType = element.getEnclosingElement();
-            CommandSpec mixee = buildCommand(targetType, context, roundEnv);
-            Map<CommandSpec, String> mixinInfo = context.mixinInfoMap.get(mixee);
-            if (mixinInfo == null) {
-                mixinInfo = new IdentityHashMap<CommandSpec, String>(2);
-                context.mixinInfoMap.put(mixee, mixinInfo);
-            }
-            mixinInfo.put(mixin, name);
-            logger.fine("Mixin name=" + name + ", target command=" + mixee.userObject());
+            mixinInfos.add(mixinInfo);
+            logger.fine("Mixin name=" + mixinInfo.mixinName() + ", target command=" + mixee.userObject());
         }
     }
 
@@ -791,7 +787,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         Map<Element, OptionSpec.Builder> options = new LinkedHashMap<Element, OptionSpec.Builder>();
         Map<Element, PositionalParamSpec.Builder> parameters = new LinkedHashMap<Element, PositionalParamSpec.Builder>();
         Map<Element, ArgGroupSpec.Builder> argGroupElements = new LinkedHashMap<Element, ArgGroupSpec.Builder>();
-        Map<CommandSpec, Map<CommandSpec, String>> mixinInfoMap = new IdentityHashMap<CommandSpec, Map<CommandSpec, String>>();
+        Map<CommandSpec, Set<MixinInfo>> mixinInfoMap = new IdentityHashMap<CommandSpec, Set<MixinInfo>>();
         Map<Element, IAnnotatedElement> parentCommandElements = new LinkedHashMap<Element, IAnnotatedElement>();
         Map<Element, IAnnotatedElement> specElements = new LinkedHashMap<Element, IAnnotatedElement>();
         Map<Element, IAnnotatedElement> unmatchedElements = new LinkedHashMap<Element, IAnnotatedElement>();
@@ -804,10 +800,10 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 logger.fine(String.format("%s has CommandSpec[name=%s]", cmd.getKey(), cmd.getValue().name()));
             }
             logger.fine("Known mixins...");
-            for (Map.Entry<CommandSpec, Map<CommandSpec, String>> mixinEntry : mixinInfoMap.entrySet()) {
+            for (Map.Entry<CommandSpec, Set<MixinInfo>> mixinEntry : mixinInfoMap.entrySet()) {
                 logger.fine(String.format("mixins for %s:", mixinEntry.getKey().userObject()));
-                for (Map.Entry<CommandSpec, String> mixinInfo : mixinEntry.getValue().entrySet()) {
-                    logger.fine(String.format("mixin name=%s userObj=%s:", mixinInfo.getValue(), mixinInfo.getKey().userObject()));
+                for (MixinInfo mixinInfo : mixinEntry.getValue()) {
+                    logger.fine(String.format("mixin name=%s userObj=%s:", mixinInfo.mixinName(), mixinInfo.mixin().userObject()));
                 }
             }
 
@@ -873,11 +869,11 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                     proc.error(entry.getKey(), "@Unmatched must be enclosed in a @Command, but was %s: %s", entry.getKey().getEnclosingElement(), entry.getKey().getEnclosingElement().getSimpleName());
                 }
             }
-            for (Map.Entry<CommandSpec, Map<CommandSpec, String>> mixinEntry : mixinInfoMap.entrySet()) {
+            for (Map.Entry<CommandSpec, Set<MixinInfo>> mixinEntry : mixinInfoMap.entrySet()) {
                 CommandSpec mixee = mixinEntry.getKey();
-                for (Map.Entry<CommandSpec, String> mixinInfo : mixinEntry.getValue().entrySet()) {
-                    logger.fine(String.format("Adding mixin name=%s to %s", mixinInfo.getValue(), mixee.name()));
-                    mixee.addMixin(mixinInfo.getValue(), mixinInfo.getKey());
+                for (MixinInfo mixinInfo : mixinEntry.getValue()) {
+                    logger.fine(String.format("Adding mixin name=%s to %s", mixinInfo.mixinName(), mixee.name()));
+                    mixee.addMixin(mixinInfo.mixinName(), mixinInfo.mixin()/*, mixinInfo.annotatedElement()*/);
                 }
             }
 
