@@ -873,7 +873,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 CommandSpec mixee = mixinEntry.getKey();
                 for (MixinInfo mixinInfo : mixinEntry.getValue()) {
                     logger.fine(String.format("Adding mixin name=%s to %s", mixinInfo.mixinName(), mixee.name()));
-                    mixee.addMixin(mixinInfo.mixinName(), mixinInfo.mixin()/*, mixinInfo.annotatedElement()*/);
+                    mixee.addMixin(mixinInfo.mixinName(), mixinInfo.mixin(), mixinInfo.annotatedElement());
                 }
             }
 

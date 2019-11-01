@@ -198,6 +198,30 @@ public class NativeImageConfigGeneratorProcessorTest {
                 .contentsAsUtf8String().isEqualTo(slurp("/picocli/codegen/graalvm/example/example-additional-interface-proxy.json"));
     }
 
+
+    @Test
+    public void testGenerateReflectConfigIssue850MissingMixin() {
+        NativeImageConfigGeneratorProcessor processor = new NativeImageConfigGeneratorProcessor();
+        Compilation compilation =
+                javac()
+                        .withProcessors(processor)
+                        .withOptions("-A" + OPTION_PROJECT + "=issue850")
+                        .compile(JavaFileObjects.forSourceLines(
+                                "picocli.issue850missingmixin.App",
+                                slurp("/picocli/issue850missingmixin/App.java")),
+                                JavaFileObjects.forSourceLines(
+                                        "picocli.issue850missingmixin.InitCommand",
+                                        slurp("/picocli/issue850missingmixin/InitCommand.java")),
+                                JavaFileObjects.forSourceLines(
+                                        "picocli.issue850missingmixin.ProviderMixin",
+                                        slurp("/picocli/issue850missingmixin/ProviderMixin.java"))
+                                );
+        assertThat(compilation).succeeded();
+        assertThat(compilation)
+                .generatedFile(StandardLocation.CLASS_OUTPUT, "META-INF/native-image/picocli-generated/issue850/reflect-config.json")
+                .contentsAsUtf8String().isEqualTo(slurp("/picocli/issue850missingmixin/issue850-reflect-config.json"));
+    }
+
     @Test
     public void testGenerateResourceOptionOtherBundlesAndPatterns() {
         NativeImageConfigGeneratorProcessor processor = new NativeImageConfigGeneratorProcessor();

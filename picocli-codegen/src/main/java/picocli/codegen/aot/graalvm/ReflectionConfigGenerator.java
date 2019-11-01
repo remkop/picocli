@@ -229,8 +229,15 @@ public class ReflectionConfigGenerator {
             for (ArgGroupSpec group : spec.argGroups()) {
                 visitGroupSpec(group);
             }
-            for (CommandSpec mixin : spec.mixins().values()) {
+            for (Map.Entry<String, CommandSpec> entry : spec.mixins().entrySet()) {
+                CommandSpec mixin = entry.getValue();
                 visitCommandSpec(mixin);
+
+                String name = entry.getKey();
+                IAnnotatedElement annotatedElement = spec.mixinAnnotatedElements().get(name);
+                if (annotatedElement != null) {
+                    visitGetter(annotatedElement.getter());
+                }
             }
             for (CommandLine sub : spec.subcommands().values()) {
                 visitCommandSpec(sub.getCommandSpec());

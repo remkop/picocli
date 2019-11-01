@@ -24,6 +24,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#829] (Bugfix) `@ArgGroup` with `@Option`-annotated methods fail with `NullPointerException`. Thanks to [A2 Geek](https://github.com/a2geek) for raising this.
 * [#828] (Bugfix/enhancement) Subcommands should not be parsed as option values for options with optional parameters. Thanks to [Martin Paljak](https://github.com/martinpaljak) for raising this.
 * [#811] (Bugfix) `CommandLine.setResourceBundle` did not propagate resource bundle to subcommands recursively. Thanks to [thope](https://github.com/frontfact) for the pull request with the bug fix.
+* [#850] (Bugfix) `@Mixin`-annotated fields were not included in `reflect-config.json` by `picocli-codegen` annotation processor. Thanks to [Nikolaos Georgiou](https://github.com/ngeor) for raising this.
 * [#826] (Enhancement) Suppress compiler warning "Supported source version 'RELEASE_6' from annotation processor... less than -source..." in picocli-codegen.
 * [#815] (Enhancement) `@ArgGroup` should match multiple occurrences of a multi-value `@Option` in the same group instance, not create new group for each occurrence. Thanks to [kacchi](https://github.com/kacchi) for raising this.
 * [#810] (Bugfix) `@ArgGroup` should not validate when marked as `validate = false`. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
