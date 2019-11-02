@@ -48,7 +48,8 @@ Picocli follows [semantic versioning](http://semver.org/).
 No features were deprecated in this release.
 
 ## <a name="4.0.5-breaking-changes"></a> Potential breaking changes
-This release has no breaking changes.
+From this release, subcommands will not be parsed as option values for options with optional parameters.
+
 
 
 # <a name="4.0.4"></a> Picocli 4.0.4
