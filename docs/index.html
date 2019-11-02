@@ -4205,6 +4205,8 @@ was requested, and invoke <code>CommandLine::usage</code> or <code>CommandLine::
 <div class="sectionbody">
 <div class="sect2">
 <h3 id="_static_version_information">12.1. Static Version Information</h3>
+<div class="sect3">
+<h4 id="_command_code_version_code_attribute">12.1.1. Command <code>version</code> Attribute</h4>
 <div class="paragraph">
 <p>Since v0.9.8, applications can specify version information in the <code>version</code> attribute of the <code>@Command</code> annotation.</p>
 </div>
@@ -4232,6 +4234,9 @@ commandLine.parseArgs(args);
 }</code></pre>
 </div>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_multi_line_version_info">12.1.2. Multi-line Version Info</h4>
 <div class="paragraph">
 <p>The <code>version</code> may specify multiple Strings. Each will be printed on a separate line.</p>
 </div>
@@ -4251,6 +4256,9 @@ Build 12345
 (c) 2017</pre>
 </div>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_version_info_with_variables">12.1.3. Version Info With Variables</h4>
 <div class="paragraph">
 <p>Since 4.0, the version strings may contain <a href="#_variable_interpolation">system properties and environment variables</a>. For example:</p>
 </div>
@@ -4275,6 +4283,9 @@ JVM: 1.8.0_202 (Oracle Corporation Substrate VM GraalVM 1.0.0-rc15 CE)
 OS: Linux 4.4.0-17134-Microsoft amd64</pre>
 </div>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_version_info_with_colors">12.1.4. Version Info With Colors</h4>
 <div class="paragraph">
 <p>The version strings may contain <a href="#_usage_help_with_styles_and_colors">markup</a> to show ANSI styles and colors. For example:</p>
 </div>
@@ -4293,6 +4304,9 @@ OS: Linux 4.4.0-17134-Microsoft amd64</pre>
 <div class="paragraph">
 <p><span class="image"><img src="images/VersionInfoWithColors.png" alt="Screenshot of version information containing markup with Ansi styles and colors"></span></p>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_version_info_with_format_specifiers">12.1.5. Version Info With Format Specifiers</h4>
 <div class="paragraph">
 <p>From picocli v1.0, the <code>version</code> may contain <a href="#_format_specifiers">format specifiers</a>:</p>
 </div>
@@ -4316,8 +4330,11 @@ OS: Linux 4.4.0-17134-Microsoft amd64</pre>
 </div>
 </div>
 </div>
+</div>
 <div class="sect2">
 <h3 id="_dynamic_version_information">12.2. Dynamic Version Information</h3>
+<div class="sect3">
+<h4 id="_command_code_versionprovider_code_attribute">12.2.1. Command <code>versionProvider</code> Attribute</h4>
 <div class="paragraph">
 <p>From picocli 2.2, the <code>@Command</code> annotation supports a <code>versionProvider</code> attribute.
 Applications may specify a <code>IVersionProvider</code> implementation in this attribute, and picocli will instantiate this class
@@ -4333,6 +4350,9 @@ and invoke it to collect version information.</p>
 <p>This is useful when the version of an application should be detected dynamically at runtime.
 For example, an implementation may return version information obtained from the JAR manifest, a properties file or some other source.</p>
 </div>
+</div>
+<div class="sect3">
+<h4 id="__code_iversionprovider_code_interface">12.2.2. <code>IVersionProvider</code> Interface</h4>
 <div class="paragraph">
 <p>Custom version providers need to implement the <code>picocli.CommandLine.IVersionProvider</code> interface:</p>
 </div>
@@ -4356,6 +4376,13 @@ For example, an implementation may return version information obtained from the 
 <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/VersionProviderDemo2.java">example</a>
 and a build-generated version properties file-based
 <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/VersionProviderDemo1.java">example</a> version provider implementation.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_dynamic_version_info_with_variables">12.2.3. Dynamic Version Info with Variables</h4>
+<div class="paragraph">
+<p>The version strings returned from the <code>IVersionProvider</code> may contain <a href="#_variable_interpolation">system properties and environment variables</a>.</p>
+</div>
 </div>
 </div>
 </div>
@@ -8046,7 +8073,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.0.4<br>
-Last updated 2019-11-01 07:29:24 JST
+Last updated 2019-11-02 18:29:24 JST
 </div>
 </div>
 </body>

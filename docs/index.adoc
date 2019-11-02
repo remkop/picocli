@@ -2449,6 +2449,7 @@ was requested, and invoke `CommandLine::usage` or `CommandLine::printVersionHelp
 
 == Version Help
 === Static Version Information
+==== Command `version` Attribute
 Since v0.9.8, applications can specify version information in the `version` attribute of the `@Command` annotation.
 
 [source,java]
@@ -2473,6 +2474,7 @@ if (commandLine.isVersionHelpRequested()) {
 }
 ----
 
+==== Multi-line Version Info
 The `version` may specify multiple Strings. Each will be printed on a separate line.
 
 [source,java]
@@ -2488,6 +2490,7 @@ Build 12345
 (c) 2017
 ----
 
+==== Version Info With Variables
 Since 4.0, the version strings may contain <<Variable Interpolation,system properties and environment variables>>. For example:
 [source,java]
 ----
@@ -2507,7 +2510,7 @@ JVM: 1.8.0_202 (Oracle Corporation Substrate VM GraalVM 1.0.0-rc15 CE)
 OS: Linux 4.4.0-17134-Microsoft amd64
 ----
 
-
+==== Version Info With Colors
 
 The version strings may contain <<Usage Help with Styles and Colors,markup>> to show ANSI styles and colors. For example:
 
@@ -2523,6 +2526,7 @@ The markup will be rendered as ANSI escape codes on supported systems.
 
 image:VersionInfoWithColors.png[Screenshot of version information containing markup with Ansi styles and colors]
 
+==== Version Info With Format Specifiers
 From picocli v1.0, the `version` may contain <<Format Specifiers,format specifiers>>:
 
 [source,java]
@@ -2543,6 +2547,7 @@ new CommandLine(new VersionedCommand())
 ----
 
 === Dynamic Version Information
+==== Command `versionProvider` Attribute
 From picocli 2.2, the `@Command` annotation supports a `versionProvider` attribute.
 Applications may specify a `IVersionProvider` implementation in this attribute, and picocli will instantiate this class
 and invoke it to collect version information.
@@ -2556,6 +2561,7 @@ class App { ... }
 This is useful when the version of an application should be detected dynamically at runtime.
 For example, an implementation may return version information obtained from the JAR manifest, a properties file or some other source.
 
+==== `IVersionProvider` Interface
 Custom version providers need to implement the `picocli.CommandLine.IVersionProvider` interface:
 
 [source,java]
@@ -2576,6 +2582,10 @@ The GitHub project has a manifest file-based
 https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/VersionProviderDemo2.java[example]
 and a build-generated version properties file-based
 https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/VersionProviderDemo1.java[example] version provider implementation.
+
+==== Dynamic Version Info with Variables
+The version strings returned from the `IVersionProvider` may contain <<Variable Interpolation,system properties and environment variables>>.
+
 
 == Usage Help
 === Compact Example
