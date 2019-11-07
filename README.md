@@ -130,8 +130,21 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 
 ## Adoption
 
-<img src="https://picocli.info/images/groovy-logo.png" height="50">  <img src="https://picocli.info/images/1x1.png" width="10"> <img src="http://micronaut.io/images/micronaut_mini_copy_tm.svg" height="50">  <img src="https://picocli.info/images/1x1.png" width="10"><img src="https://picocli.info/images/junit5logo-172x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://picocli.info/images/debian-logo-192x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10"> <img src="https://picocli.info/images/karate-logo.png" height="50" width="50"/>  <img src="https://picocli.info/images/checkstyle-logo-260x50.png" height="50"><img src="https://picocli.info/images/1x1.png" width="10">  <img src="https://picocli.info/images/ballerina-logo.png" height="40"><img src="https://picocli.info/images/1x1.png" width="10">  <img src="https://picocli.info/images/apache-hive-logo.png" height="50"><img src="https://picocli.info/images/1x1.png" width="10">  <img src="https://picocli.info/images/apache-ozone-logo.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10">  <img src="https://picocli.info/images/stackshare-logo.png" height="50"> <img src="https://ignite.apache.org/images/Ignite_tm_Logo_blk_RGB.svg" height="50"> <img src="https://camo.githubusercontent.com/501aae78d282faf7a904bbb92f46eb8d19445ad5/687474703a2f2f736c696e672e6170616368652e6f72672f7265732f6c6f676f732f736c696e672e706e67" height="50"> 
-<img src="https://avatars1.githubusercontent.com/u/541152?s=200&v=4" height="50">  <img src="https://camo.qiitausercontent.com/ec81e80366e061c8488b25c013003267b7a578d4/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3939352f33323331306534352d303537332d383534322d373035652d6530313138643434323632302e706e67" height="50">
+<img src="https://picocli.info/images/groovy-logo.png" height="50">  <img src="https://picocli.info/images/1x1.png" width="10"> 
+<img src="http://micronaut.io/images/micronaut_mini_copy_tm.svg" height="50"> <img src="https://picocli.info/images/1x1.png" width="10">
+<img src="https://picocli.info/images/junit5logo-172x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10">
+<img src="https://picocli.info/images/debian-logo-192x50.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10"> 
+<img src="https://picocli.info/images/karate-logo.png" height="50" width="50"/>  
+<img src="https://picocli.info/images/checkstyle-logo-260x50.png" height="50"><img src="https://picocli.info/images/1x1.png" width="10">  
+<img src="https://picocli.info/images/ballerina-logo.png" height="40"><img src="https://picocli.info/images/1x1.png" width="10">  
+<img src="https://picocli.info/images/apache-hive-logo.png" height="50"><img src="https://picocli.info/images/1x1.png" width="10">  
+<img src="https://hadoop.apache.org/hadoop-logo.jpg" height="50"><img src="https://picocli.info/images/1x1.png" width="10"> 
+<img src="https://picocli.info/images/apache-ozone-logo.png" height="50"> <img src="https://picocli.info/images/1x1.png" width="10">  
+<img src="https://picocli.info/images/stackshare-logo.png" height="50"> 
+<img src="https://ignite.apache.org/images/Ignite_tm_Logo_blk_RGB.svg" height="50"> 
+<img src="https://camo.githubusercontent.com/501aae78d282faf7a904bbb92f46eb8d19445ad5/687474703a2f2f736c696e672e6170616368652e6f72672f7265732f6c6f676f732f736c696e672e706e67" height="50"> 
+<img src="https://avatars1.githubusercontent.com/u/541152?s=200&v=4" height="50">  
+<img src="https://camo.qiitausercontent.com/ec81e80366e061c8488b25c013003267b7a578d4/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f3939352f33323331306534352d303537332d383534322d373035652d6530313138643434323632302e706e67" height="50">
 <img src="https://spring.io/img/spring-by-pivotal.png" height="50">
 <img src="https://www.schemacrawler.com/images/schemacrawler_logo.svg" height="50">
 <img src="https://avatars1.githubusercontent.com/u/22600631?s=200&v=4" height="50">
