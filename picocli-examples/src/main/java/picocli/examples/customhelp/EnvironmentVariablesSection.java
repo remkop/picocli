@@ -13,21 +13,8 @@ import java.util.Set;
 
 /**
  * This example demonstrates how to add a section to the usage help message.
- * <pre>
- * Usage: showenv [-hV]
- * Demonstrates a usage help message that shows not just the subcommands of this
- * command, but also the nested sub-subcommands.
- *   -h, --help      Show this help message and exit.
- *   -V, --version   Print version information and exit.
- * Commands:
- *   sub1           subcommand1 of showall
- *     sub1sub1     subcommand1 of subcommand1 of showall
- *     sub1sub2     subcommand2 of subcommand1 of showall
- *   sub2           subcommand2 of showall
- *     sub2sub1     subcommand1 of subcommand2 of showall
- * </pre>
  *
- * As requested in https://github.com/remkop/picocli/issues/566
+ * As requested in https://github.com/remkop/picocli/issues/856
  */
 @CommandLine.Command(name = "showenv", mixinStandardHelpOptions = true,
         version = "showenv 1.0",
