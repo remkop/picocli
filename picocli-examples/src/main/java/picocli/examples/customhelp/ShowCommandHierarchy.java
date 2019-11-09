@@ -38,9 +38,9 @@ import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_COMMAND_LIS
                 "not just the subcommands of this command, " +
                 "but also the nested sub-subcommands.",
         subcommands = {Subcommand1.class, Subcommand2.class} )
-public class ShowAll {
+public class ShowCommandHierarchy {
     public static void main(String[] args) {
-        CommandLine cmd = new CommandLine(new ShowAll());
+        CommandLine cmd = new CommandLine(new ShowCommandHierarchy());
         cmd.getHelpSectionMap().put(SECTION_KEY_COMMAND_LIST, new MyCommandListRenderer());
         cmd.usage(System.out);
     }
