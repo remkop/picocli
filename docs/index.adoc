@@ -35,7 +35,7 @@ Supports a variety of command line syntax styles including POSIX, GNU, MS-DOS an
 Generates highly customizable usage help messages with <<ANSI Colors and Styles,ANSI colors and styles>>.
 Picocli-based applications can have link:autocomplete.html[command line TAB completion] showing available options, option parameters and subcommands, for any level of nested subcommands.
 Picocli-based applications can be ahead-of-time compiled to image:https://www.graalvm.org/resources/img/logo-colored.svg[GraalVM]
-<<GraalVM Native Images,native images>>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.
+<<GraalVM Native Image,native images>>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.
 
 
 image:checksum-usage-help.png[Screenshot of usage help with Ansi codes enabled]
