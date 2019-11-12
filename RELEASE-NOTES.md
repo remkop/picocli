@@ -44,6 +44,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#847] (DOC) Improve documentation for ANSI colors in Windows.
 * [#844] (DOC) Clarify when `@ArgGroup`-annotated fields are initialized in user manual.
 * [#860] (DOC) Fix broken link to GraalVM Native Image section. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#861] (DOC) Fix broken link to `ShowCommandHierarchy` example. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 ## <a name="4.0.5-deprecated"></a> Deprecations
 No features were deprecated in this release.
