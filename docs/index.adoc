@@ -3857,7 +3857,7 @@ class GrandChild3Command3 { }
 
 By default, the usage help message only shows the subcommands of the specified command,
 and not the nested sub-subcommands. This can be customized by specifying your own <<Reordering Sections,`IHelpSectionRenderer`>> for the command list section.
-The `picocli-examples` module has an https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/customhelp/ShowAll.java[example] that shows how to accomplish this.
+The `picocli-examples` module has an https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/customhelp/ShowCommandHierarchy.java[example] that shows how to accomplish this.
 
 === Required Subcommands
 
