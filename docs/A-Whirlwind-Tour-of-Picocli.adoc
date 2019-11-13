@@ -357,16 +357,16 @@ import java.util.regex.Pattern;
 import java.io.File;
 
 class Convert {
-    @Option(names = "-patterns", description = "the regex patterns to use");
+    @Option(names = "-patterns", description = "the regex patterns to use")
     Pattern[] patterns;
 
     @Parameters(/* type = File.class, */ description = "the files to convert")
     List<File> files; // picocli infers type from the generic type
 
-    @Option(names = "-D"); // support -Dkey=value properties
+    @Option(names = "-D") // support -Dkey=value properties
     Map<String, String> properties;
 
-    @Option(names = {"-u", "--timeUnit"});
+    @Option(names = {"-u", "--timeUnit"})
     Map<TimeUnit, Long> timeout; // picocli infers type from the generic type
 }
 ----
@@ -673,7 +673,7 @@ CommandLine cmd = new CommandLine(minimal)
 
 cmd.parseArgs("-x", "5", "-y=unknown");
 assert minimal.x == 5;
-assert cmd.getUnmatchedArguments().equals(Arrays.asList("-y=unknown"))
+assert cmd.getUnmatchedArguments().equals(Arrays.asList("-y=unknown"));
 ----
 
 === Parsing and Running
