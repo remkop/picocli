@@ -1007,16 +1007,16 @@ cmd.registerConverter(<span class="predefined-type">Cipher</span>.class, s -&gt;
 <span class="keyword">import</span> <span class="include">java.io.File</span>;
 
 <span class="type">class</span> <span class="class">Convert</span> {
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-patterns</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">the regex patterns to use</span><span class="delimiter">&quot;</span></span>);
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-patterns</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">the regex patterns to use</span><span class="delimiter">&quot;</span></span>)
     <span class="predefined-type">Pattern</span><span class="type">[]</span> patterns;
 
     <span class="annotation">@Parameters</span>(<span class="comment">/* type = File.class, */</span> description = <span class="string"><span class="delimiter">&quot;</span><span class="content">the files to convert</span><span class="delimiter">&quot;</span></span>)
     <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files; <span class="comment">// picocli infers type from the generic type</span>
 
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-D</span><span class="delimiter">&quot;</span></span>); <span class="comment">// support -Dkey=value properties</span>
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-D</span><span class="delimiter">&quot;</span></span>) <span class="comment">// support -Dkey=value properties</span>
     <span class="predefined-type">Map</span>&lt;<span class="predefined-type">String</span>, <span class="predefined-type">String</span>&gt; properties;
 
-    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-u</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--timeUnit</span><span class="delimiter">&quot;</span></span>});
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-u</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--timeUnit</span><span class="delimiter">&quot;</span></span>})
     <span class="predefined-type">Map</span>&lt;<span class="predefined-type">TimeUnit</span>, <span class="predefined-type">Long</span>&gt; timeout; <span class="comment">// picocli infers type from the generic type</span>
 }</code></pre>
 </div>
@@ -1428,7 +1428,7 @@ CommandLine cmd = <span class="keyword">new</span> CommandLine(minimal)
 
 cmd.parseArgs(<span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">5</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-y=unknown</span><span class="delimiter">&quot;</span></span>);
 <span class="keyword">assert</span> minimal.x == <span class="integer">5</span>;
-<span class="keyword">assert</span> cmd.getUnmatchedArguments().equals(<span class="predefined-type">Arrays</span>.asList(<span class="string"><span class="delimiter">&quot;</span><span class="content">-y=unknown</span><span class="delimiter">&quot;</span></span>))</code></pre>
+<span class="keyword">assert</span> cmd.getUnmatchedArguments().equals(<span class="predefined-type">Arrays</span>.asList(<span class="string"><span class="delimiter">&quot;</span><span class="content">-y=unknown</span><span class="delimiter">&quot;</span></span>));</code></pre>
 </div>
 </div>
 </div>
@@ -1953,7 +1953,7 @@ sys     0m0.002s</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-02-28 14:29:05 JST
+Last updated 2019-11-14 09:38:16 JST
 </div>
 </div>
 </body>
