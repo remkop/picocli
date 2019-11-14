@@ -22,27 +22,33 @@ import java.util.Set;
                 "an additional section for environment variables.")
 public class EnvironmentVariablesSection {
 
-    static final String SECTION_KEY_ENV_HEADER = "environmentVariablesHeader";
+    static final String SECTION_KEY_ENV_HEADING = "environmentVariablesHeading";
     static final String SECTION_KEY_ENV_DETAILS = "environmentVariables";
 
     public static void main(String[] args) {
-        Map<String, String> env = new LinkedHashMap<>();
-        env.put("FOO_CREATOR", "The foo's creator");
-        env.put("BAR_CREATOR", "The bar's creator");
-        env.put("XYZ", "xxxx yyyy zzz");
+    Map<String, String> env = new LinkedHashMap<>();
+    env.put("FOO_CREATOR", "The foo's creator");
+    env.put("BAR_CREATOR", "The bar's creator");
+    env.put("XYZ", "xxxx yyyy zzz");
 
-        CommandLine cmd = new CommandLine(new EnvironmentVariablesSection());
+    CommandLine cmd = new CommandLine(new EnvironmentVariablesSection());
         installRenderers(env, cmd);
         cmd.usage(System.out);
     }
 
-    private static void installRenderers(Map<String, String> env, CommandLine cmd) {
-        cmd.getHelpSectionMap().put(SECTION_KEY_ENV_HEADER, new IHelpSectionRenderer() {
+    private static void installRenderers(final Map<String, String> env, CommandLine cmd) {
+        cmd.getHelpSectionMap().put(SECTION_KEY_ENV_HEADING, new IHelpSectionRenderer() {
             @Override public String render(CommandLine.Help help) {
                 return String.format("Environment Variables:%n");
             }
         });
         cmd.getHelpSectionMap().put(SECTION_KEY_ENV_DETAILS, new EnvironmentVariablesRenderer(env));
+
+        // @since 4.1: replace the above with this:
+        //cmd.getHelpSectionMap().put(SECTION_KEY_ENV_HEADING, help -> help.createHeading("Environment Variables:%n"));
+        //cmd.getHelpSectionMap().put(SECTION_KEY_ENV_DETAILS, help -> help.createTextTable(env).toString());
+
+        // finally, register the section keys
         cmd.setHelpSectionKeys(insertKey(cmd.getHelpSectionKeys()));
     }
 
@@ -50,7 +56,7 @@ public class EnvironmentVariablesSection {
         // find the place to insert the new sections: before the footer heading
         int index = helpSectionKeys.indexOf(CommandLine.Model.UsageMessageSpec.SECTION_KEY_FOOTER_HEADING);
         List<String> result = new ArrayList<>(helpSectionKeys);
-        result.add(index, SECTION_KEY_ENV_HEADER);
+        result.add(index, SECTION_KEY_ENV_HEADING);
         result.add(index + 1, SECTION_KEY_ENV_DETAILS);
         return result;
     }

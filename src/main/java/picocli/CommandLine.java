@@ -13094,7 +13094,7 @@ public class CommandLine {
 
             Collections.sort(groups, new SortByOrder<ArgGroupSpec>());
             for (ArgGroupSpec group : groups) {
-                sb.append(heading(ansi(), width(), adjustCJK(), group.heading()));
+                sb.append(createHeading(group.heading()));
 
                 Layout groupLayout = createDefaultLayout();
                 groupLayout.addPositionalParameters(group.positionalParameters(), valueLabelRenderer);
@@ -13231,14 +13231,14 @@ public class CommandLine {
          * @param params the parameters to use to format the header heading
          * @return the formatted header heading */
         public String headerHeading(Object... params) {
-            return heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().headerHeading(), params);
+            return createHeading(commandSpec.usageMessage().headerHeading(), params);
         }
 
         /** Returns the text displayed before the synopsis text; the result of {@code String.format(synopsisHeading, params)}.
          * @param params the parameters to use to format the synopsis heading
          * @return the formatted synopsis heading */
         public String synopsisHeading(Object... params) {
-            return heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().synopsisHeading(), params);
+            return createHeading(commandSpec.usageMessage().synopsisHeading(), params);
         }
 
         /** Returns the text displayed before the description text; an empty string if there is no description,
@@ -13246,7 +13246,7 @@ public class CommandLine {
          * @param params the parameters to use to format the description heading
          * @return the formatted description heading */
         public String descriptionHeading(Object... params) {
-            return empty(commandSpec.usageMessage().descriptionHeading()) ? "" : heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().descriptionHeading(), params);
+            return empty(commandSpec.usageMessage().descriptionHeading()) ? "" : createHeading(commandSpec.usageMessage().descriptionHeading(), params);
         }
 
         /** Returns the text displayed before the positional parameter list; an empty string if there are no positional
@@ -13254,7 +13254,7 @@ public class CommandLine {
          * @param params the parameters to use to format the parameter list heading
          * @return the formatted parameter list heading */
         public String parameterListHeading(Object... params) {
-            return commandSpec.positionalParameters().isEmpty() ? "" : heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().parameterListHeading(), params);
+            return commandSpec.positionalParameters().isEmpty() ? "" : createHeading(commandSpec.usageMessage().parameterListHeading(), params);
         }
 
         /** Returns the text displayed before the option list; an empty string if there are no options,
@@ -13262,7 +13262,7 @@ public class CommandLine {
          * @param params the parameters to use to format the option list heading
          * @return the formatted option list heading */
         public String optionListHeading(Object... params) {
-            return commandSpec.optionsMap().isEmpty() ? "" : heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().optionListHeading(), params);
+            return commandSpec.optionsMap().isEmpty() ? "" : createHeading(commandSpec.usageMessage().optionListHeading(), params);
         }
 
         /** Returns the text displayed before the command list; an empty string if there are no commands,
@@ -13270,14 +13270,14 @@ public class CommandLine {
          * @param params the parameters to use to format the command list heading
          * @return the formatted command list heading */
         public String commandListHeading(Object... params) {
-            return commands.isEmpty() ? "" : heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().commandListHeading(), params);
+            return commands.isEmpty() ? "" : createHeading(commandSpec.usageMessage().commandListHeading(), params);
         }
 
         /** Returns the text displayed before the footer text; the result of {@code String.format(footerHeading, params)}.
          * @param params the parameters to use to format the footer heading
          * @return the formatted footer heading */
         public String footerHeading(Object... params) {
-            return heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().footerHeading(), params);
+            return createHeading(commandSpec.usageMessage().footerHeading(), params);
         }
 
         /** Returns the text displayed before the exit code list text; the result of {@code String.format(exitCodeHeading, params)}.
@@ -13285,24 +13285,58 @@ public class CommandLine {
          * @return the formatted heading of the exit code section of the usage help message
          * @since 4.0 */
         public String exitCodeListHeading(Object... params) {
-            return heading(ansi(), width(), adjustCJK(), commandSpec.usageMessage().exitCodeListHeading(), params);
+            return createHeading(commandSpec.usageMessage().exitCodeListHeading(), params);
         }
         /** Returns a 2-column list with exit codes and their description. Descriptions containing {@code "%n"} line separators are broken up into multiple lines.
          * @return a usage help section describing the exit codes
          * @since 4.0 */
         public String exitCodeList() {
-            Map<String, String> map = commandSpec.usageMessage().exitCodeList();
-            if (map.isEmpty()) { return ""; }
-            int keyLength = maxLength(map.keySet());
+            return createTextTable(commandSpec.usageMessage().exitCodeList()).toString();
+        }
+
+        /**
+         * Returns a String that can be used as a help section heading. Embedded {@code %n} format
+         * specifiers will be converted to platform-specific line breaks. Long lines will be wrapped
+         * on word boundaries to ensure they do not exceed the {@linkplain UsageMessageSpec#width() usage message width}.
+         * Embedded {@code @|style[,style] ...|@} markup will be converted to {@linkplain Ansi.Text Ansi} escape codes when
+         * {@linkplain Ansi#enabled() Ansi is enabled}, and stripped out otherwise.
+         * @param text a printf-style {@linkplain Formatter format string} that may one or more embedded format specifiers
+         * @param params optional parameters to use when formatting the specified text string
+         * @return a help section heading String
+         * @since 4.1
+         */
+        public String createHeading(String text, Object... params) {
+            return heading(ansi(), width(), adjustCJK(), text, params);
+        }
+
+        /**
+         * Returns a 2-column {@code TextTable} containing data from the specified map:
+         * the keys are put in the left column and the map values are in the right column.
+         * <p>
+         * The width of the left column is the width of the longest key, plus 3 for spacing between the columns.</p>
+         * <p>All map entries are converted to Strings and any embedded {@code %n} format
+         * specifiers are converted to platform-specific line breaks. Long lines are wrapped
+         * on word boundaries to ensure they do not exceed the column width.</p>
+         * <p>Embedded {@code @|style[,style] ...|@} markup will be converted to {@linkplain Ansi.Text Ansi} escape codes when
+         * {@linkplain Ansi#enabled() Ansi is enabled}, and stripped out otherwise.</p>
+         * @param map the map to convert to a {@code TextTable}
+         * @return a 2-column {@code TextTable} containing data from the specified map
+         * @since 4.1
+         */
+        public TextTable createTextTable(Map<?, ?> map) {
+            if (map == null || map.isEmpty()) { return TextTable.forColumnWidths(ansi(), 10, width() - 10); }
+            int spacing = 3;
+            int indent = 2;
+            int keyLength = Math.min(width() - spacing - 1, maxLength(map.keySet()));
             Help.TextTable textTable = Help.TextTable.forColumns(ansi(),
-                    new Help.Column(keyLength + 3, 2, Help.Column.Overflow.SPAN),
-                    new Help.Column(width() - (keyLength + 3), 2, Help.Column.Overflow.WRAP));
+                    new Help.Column(keyLength + spacing, indent, Help.Column.Overflow.SPAN),
+                    new Help.Column(width() - (keyLength + spacing), indent, Help.Column.Overflow.WRAP));
             textTable.setAdjustLineBreaksForWideCJKCharacters(adjustCJK());
 
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                textTable.addRowValues(format(entry.getKey()), format(entry.getValue()));
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                textTable.addRowValues(format(String.valueOf(entry.getKey())), format(String.valueOf(entry.getValue())));
             }
-            return textTable.toString();
+            return textTable;
         }
         /** Returns a 2-column list with command names and the first line of their header or (if absent) description.
          * @return a usage help section describing the added commands */
@@ -13327,10 +13361,10 @@ public class CommandLine {
             }
             return textTable.toString();
         }
-        private static int maxLength(Collection<String> any) {
-            List<String> strings = new ArrayList<String>(any);
-            Collections.sort(strings, Collections.reverseOrder(Help.shortestFirst()));
-            return strings.get(0).length();
+        private static int maxLength(Collection<?> any) {
+            int result = 0;
+            for (Object value : any) { result = Math.max(result, String.valueOf(value).length()); }
+            return result;
         }
 
         /** Returns a {@code Text} object containing the command name and all aliases, separated with the specified separator.

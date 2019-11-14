@@ -21,6 +21,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.5-fixes"></a> Fixed issues
 * [#841] (API) Add `JniConfigGenerator` to `picocli-codegen` module.
+* [#865] (API) Add `Help.createHeading(String, Object...)` and  `Help.createTextTable(Map<?, ?>)` to facilitate creating tabular custom Help sections.
 * [#829] (Bugfix) `@ArgGroup` with `@Option`-annotated methods fail with `NullPointerException`. Thanks to [A2 Geek](https://github.com/a2geek) for raising this.
 * [#828] (Bugfix/enhancement) Subcommands should not be parsed as option values for options with optional parameters. Thanks to [Martin Paljak](https://github.com/martinpaljak) for raising this.
 * [#811] (Bugfix) `CommandLine.setResourceBundle` did not propagate resource bundle to subcommands recursively. Thanks to [thope](https://github.com/frontfact) for the pull request with the bug fix.
