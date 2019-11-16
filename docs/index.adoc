@@ -3373,6 +3373,7 @@ This ordering may be modified with the `CommandLine::setHelpSectionKeys` setter 
 
 Some examples for customizing the help are https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/customhelp[here].
 
+// TODO When creating new sections, the `Help.createHeading(String, Object...)` and `Help.createTextTable(Map<?, ?>)` methods may be useful.
 
 === Custom Layout
 Picocli also supports unconventional option list layouts. An example of an unconventional layout is the `zip` application, which shows multiple options per row:
