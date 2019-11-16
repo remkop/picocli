@@ -381,7 +381,7 @@ The value of `x` is `false` by default, and is set to `true` (the opposite of th
 
 This is enough in most cases, but picocli offers alternatives for applications that need to get the value from something other than the default value. When the option is specified on the command line, the annotated field (or <<option-parameters-methods,method>>) is assigned a value, as follows:
 
-* If the parser is configured to <<Toggle Boolean Flags,toggle boolean options>>, the opposite of the _current value_ is assigned.
+* If the parser is configured to <<Toggle Boolean Flags,toggle boolean options>>, the opposite of the _current value_ is assigned. (This was the default prior to picocli 4.0.)
 * If a <<fallbackValue-annotation, fallback value>> is defined, the fallback value is assigned.
 * If the option is defined with a non-zero <<Arity,arity>>, and an option parameter was specified on the command line, this option <<Boolean Options with Parameters,parameter value is assigned>>.
 * Otherwise, the value assigned is the logical opposite of the _default value_.
@@ -930,6 +930,11 @@ public interface IDefaultValueProvider {
     String defaultValue(ArgSpec argSpec) throws Exception;
 }
 ----
+
+See the
+https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/defaultprovider/PropertiesDefaultProvider.java[PropertiesDefaultProvider example]
+for a default value provider implementation that loads default values from a
+properties file named `".${command.name}.properties"` in the user home directory.
 
 [#fallbackValue-annotation]
 === `fallbackValue` Annotation

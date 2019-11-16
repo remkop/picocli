@@ -47,6 +47,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#860] (DOC) Fix broken link to GraalVM Native Image section. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#861] (DOC) Fix broken link to `ShowCommandHierarchy` example. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#864] (DOC) Fix code examples in documentation. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#867] (DOC) Update user manual to clarify that the toggling behaviour is no longer the default from picocli 4.0. Thanks to [Linus Fernandes](https://github.com/Fernal73) for raising this.
 
 ## <a name="4.0.5-deprecated"></a> Deprecations
 No features were deprecated in this release.

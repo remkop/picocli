@@ -1290,7 +1290,7 @@ one or more single-character options without option-arguments, followed by at mo
 <div class="ulist">
 <ul>
 <li>
-<p>If the parser is configured to <a href="#_toggle_boolean_flags">toggle boolean options</a>, the opposite of the <em>current value</em> is assigned.</p>
+<p>If the parser is configured to <a href="#_toggle_boolean_flags">toggle boolean options</a>, the opposite of the <em>current value</em> is assigned. (This was the default prior to picocli 4.0.)</p>
 </li>
 <li>
 <p>If a <a href="#fallbackValue-annotation">fallback value</a> is defined, the fallback value is assigned.</p>
@@ -2100,6 +2100,12 @@ Default providers need to implement the <code>picocli.CommandLine.IDefaultValueP
     <span class="predefined-type">String</span> defaultValue(ArgSpec argSpec) <span class="directive">throws</span> <span class="exception">Exception</span>;
 }</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>See the
+<a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/defaultprovider/PropertiesDefaultProvider.java">PropertiesDefaultProvider example</a>
+for a default value provider implementation that loads default values from a
+properties file named <code>".${command.name}.properties"</code> in the user home directory.</p>
 </div>
 </div>
 <div class="sect2">
@@ -8073,7 +8079,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.0.4<br>
-Last updated 2019-11-12 23:41:24 JST
+Last updated 2019-11-16 19:04:03 JST
 </div>
 </div>
 </body>
