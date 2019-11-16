@@ -5628,7 +5628,7 @@ public class CommandLine {
              * @param annotatedElement the `{@literal @}Mixin`-annotated program element
              * @return this CommandSpec for method chaining
              * @see #mixinAnnotatedElements()
-             * @since 5.0 */
+             * @since 4.1 */
             public CommandSpec addMixin(String name, CommandSpec mixin, IAnnotatedElement annotatedElement) {
                 CommandSpec result = addMixin(name, mixin);
                 mixinAnnotatedElements.put(interpolator.interpolate(name), annotatedElement);
@@ -5703,7 +5703,7 @@ public class CommandLine {
             /** Returns a map of the mixin names to mixin {@code IAnnotatedElement} objects for this command.
              * @return an immutable map of `{@literal @}Mixin`-annotated elements added to this command.
              * @see #addMixin(String, CommandSpec, IAnnotatedElement)
-             * @since 5.0 */
+             * @since 4.1 */
             public Map<String, IAnnotatedElement> mixinAnnotatedElements() { return Collections.unmodifiableMap(mixinAnnotatedElements); }
 
             /** Returns the list of options configured for this command.
