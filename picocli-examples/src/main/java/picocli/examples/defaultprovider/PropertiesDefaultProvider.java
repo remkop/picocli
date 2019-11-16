@@ -3,6 +3,7 @@ package picocli.examples.defaultprovider;
 import picocli.CommandLine;
 import picocli.CommandLine.IDefaultValueProvider;
 import picocli.CommandLine.Model.ArgSpec;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 
@@ -65,7 +66,7 @@ public class PropertiesDefaultProvider implements IDefaultValueProvider {
         return result;
     }
 
-    private static Properties loadProperties(CommandLine.Model.CommandSpec commandSpec) {
+    private static Properties loadProperties(CommandSpec commandSpec) {
         for (String name : commandSpec.names()) {
             File file = new File(System.getProperty("user.home"), "." + name + ".properties");
             if (file.canRead()) {
@@ -90,8 +91,16 @@ public class PropertiesDefaultProvider implements IDefaultValueProvider {
 
     private String optionDefaultValue(OptionSpec option) {
         String result = getValue(option.descriptionKey(), option.command());
-        result = result != null ? result : getValue(option.longestName(), option.command());
+        result = result != null ? result : getValue(stripPrefix(option.longestName()), option.command());
         return result;
+    }
+    private static String stripPrefix(String prefixed) {
+        for (int i = 0; i < prefixed.length(); i++) {
+            if (Character.isJavaIdentifierPart(prefixed.charAt(i))) {
+                return prefixed.substring(i);
+            }
+        }
+        return prefixed;
     }
 
     private String positionalDefaultValue(PositionalParamSpec positional) {
@@ -100,7 +109,7 @@ public class PropertiesDefaultProvider implements IDefaultValueProvider {
         return result;
     }
 
-    private String getValue(String key, CommandLine.Model.CommandSpec spec) {
+    private String getValue(String key, CommandSpec spec) {
         String result = null;
         if (spec != null) {
             String cmd = spec.qualifiedName(".");
