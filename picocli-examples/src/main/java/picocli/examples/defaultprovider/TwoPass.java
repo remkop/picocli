@@ -61,15 +61,7 @@ public class TwoPass {
     }
 
     public static void main(String[] args) throws IOException {
-        // create some defaults
-        Properties profile = new Properties();
-        profile.setProperty("a", "111111");
-        profile.setProperty("bbb", "99999999");
-        profile.setProperty("long-option", "this is the default for long-option");
-
-        // store them in a file
-        File path = File.createTempFile("twopass", ".properties");
-        profile.store(new FileWriter(path), "Default values for my-command");
+        File path = createExampleProfileFile();
 
         args = ("--profile=" + path.getAbsolutePath() + " -b123 --long-option USER-SPECIFIED").split(" ");
 
@@ -87,5 +79,18 @@ public class TwoPass {
                     .execute(args);
             System.exit(exitCode);
         }
+    }
+
+    // create some defaults
+    private static File createExampleProfileFile() throws IOException {
+        Properties profile = new Properties();
+        profile.setProperty("a", "111111");
+        profile.setProperty("bbb", "99999999");
+        profile.setProperty("long-option", "this is the default for long-option");
+
+        // store them in a file
+        File path = File.createTempFile("twopass", ".properties");
+        profile.store(new FileWriter(path), "Default values for my-command");
+        return path;
     }
 }
