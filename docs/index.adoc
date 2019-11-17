@@ -378,6 +378,7 @@ class BooleanOptions {
 ----
 
 The value of `x` is `false` by default, and is set to `true` (the opposite of the default) if the `-x` option is specified on the command line.
+If the `-x` option is specified multiple times on the command line, the value of `x` remains `true`. (Prior to picocli 4.0, the value of `x` would "toggle" (flip to its opposite) for every `-x` option on the command line. This can still be <<Toggle Boolean Flags,configured>> if required.)
 
 This is enough in most cases, but picocli offers alternatives for applications that need to get the value from something other than the default value. When the option is specified on the command line, the annotated field (or <<option-parameters-methods,method>>) is assigned a value, as follows:
 

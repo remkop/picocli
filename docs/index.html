@@ -1282,7 +1282,8 @@ one or more single-character options without option-arguments, followed by at mo
 </div>
 </div>
 <div class="paragraph">
-<p>The value of <code>x</code> is <code>false</code> by default, and is set to <code>true</code> (the opposite of the default) if the <code>-x</code> option is specified on the command line.</p>
+<p>The value of <code>x</code> is <code>false</code> by default, and is set to <code>true</code> (the opposite of the default) if the <code>-x</code> option is specified on the command line.
+If the <code>-x</code> option is specified multiple times on the command line, the value of <code>x</code> remains <code>true</code>. (Prior to picocli 4.0, the value of <code>x</code> would "toggle" (flip to its opposite) for every <code>-x</code> option on the command line. This can still be <a href="#_toggle_boolean_flags">configured</a> if required.)</p>
 </div>
 <div class="paragraph">
 <p>This is enough in most cases, but picocli offers alternatives for applications that need to get the value from something other than the default value. When the option is specified on the command line, the annotated field (or <a href="#option-parameters-methods">method</a>) is assigned a value, as follows:</p>
@@ -8079,7 +8080,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.0.4<br>
-Last updated 2019-11-16 19:04:03 JST
+Last updated 2019-11-17 19:29:11 JST
 </div>
 </div>
 </body>
