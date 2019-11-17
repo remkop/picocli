@@ -31,8 +31,8 @@ public class TwoPass {
         List<String> remainder;
     }
 
-    @Command(name = "my-command", mixinStandardHelpOptions = true, version = "...",
-            description = "...")
+    @Command(name = "my-command", mixinStandardHelpOptions = true, version = "my-command 1.0",
+            description = "Demonstrates a command that allows users to specify the location of a \"profile\" file with default values for the command line arguments")
     static class FinalPass implements Runnable {
         @Option(names = "--profile", description = "...")
         File profilePath = new File(System.getProperty("user.dir"), "my-command.properties");
@@ -64,6 +64,8 @@ public class TwoPass {
         File path = createExampleProfileFile();
 
         args = ("--profile=" + path.getAbsolutePath() + " -b123 --long-option USER-SPECIFIED").split(" ");
+
+        //args = new String[] {"-h"}; // shows help for my-command (not for FirstPass)
 
         FirstPass firstPass = new FirstPass();
         CommandLine cmd = new CommandLine(firstPass);
