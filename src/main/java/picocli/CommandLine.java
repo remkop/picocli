@@ -8068,9 +8068,10 @@ public class CommandLine {
                 }
                 if (toString() == null) { toString = "option " + longestName(); }
 
-//                if (arity().max == 0 && !(isBoolean(type()) || (isMultiValue() && isBoolean(auxiliaryTypes()[0])))) {
-//                    throw new InitializationException("Option " + longestName() + " is not a boolean so should not be defined with arity=" + arity());
-//                }
+                // https://github.com/remkop/picocli/issues/511
+                //if (arity().max == 0 && !(isBoolean(type()) || (isMultiValue() && isBoolean(auxiliaryTypes()[0])))) {
+                //    throw new InitializationException("Option " + longestName() + " is not a boolean so should not be defined with arity=" + arity());
+                //}
             }
 
             /** Returns a new Builder initialized with the attributes from this {@code OptionSpec}. Calling {@code build} immediately will return a copy of this {@code OptionSpec}.
