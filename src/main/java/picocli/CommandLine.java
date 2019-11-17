@@ -11586,6 +11586,7 @@ public class CommandLine {
                     }
                 } else { // non-boolean option with optional value #325, #279
                     String fallbackValue = argSpec.isOption() ? ((OptionSpec) argSpec).fallbackValue() : "";
+                    // #828 should we call varargCanConsumeNextValue(argSpec, value)?
                     if (isOption(value)) { // value is not a parameter
                         actualValue = fallbackValue;
                         optionalValueExists = false;
@@ -12029,6 +12030,7 @@ public class CommandLine {
             if (commandSpec.optionsMap().containsKey(arg)) { // -v or -f or --file (not attached to param or other option)
                 return true;
             }
+            // [#828] Subcommands should not be parsed as option values for options with optional parameters.
             if (commandSpec.subcommands().containsKey(arg)) {
                 return true;
             }
