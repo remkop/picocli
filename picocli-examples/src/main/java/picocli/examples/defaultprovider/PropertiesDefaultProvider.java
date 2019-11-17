@@ -67,6 +67,7 @@ public class PropertiesDefaultProvider implements IDefaultValueProvider {
     }
 
     private static Properties loadProperties(CommandSpec commandSpec) {
+        if (commandSpec == null) { return null; }
         for (String name : commandSpec.names()) {
             File file = new File(System.getProperty("user.home"), "." + name + ".properties");
             if (file.canRead()) {
