@@ -34,7 +34,7 @@ public class TwoPass {
     @Command(name = "my-command", mixinStandardHelpOptions = true, version = "my-command 1.0",
             description = "Demonstrates a command that allows users to specify the location of a \"profile\" file with default values for the command line arguments")
     static class FinalPass implements Runnable {
-        @Option(names = "--profile", description = "...")
+        @Option(names = "--profile", description = "Path to the profile file. Default: ${DEFAULT-VALUE}")
         File profilePath = new File(System.getProperty("user.dir"), "my-command.properties");
 
         @Option(names = "-a", description = "...")
