@@ -15,7 +15,9 @@ import java.util.Properties;
 
 /**
  * {@link IDefaultValueProvider} implementation that loads default values from a
- * properties file named {@code "." + command.name + ".properties"} in the user home directory.
+ * properties file or {@code Properties} object. By default, if no file or properties object
+ * is specified, this tries to find a properties file named
+ * {@code "." + command.name + ".properties"} in the user home directory.
  * <p>
  * For options, the key is either the {@linkplain CommandLine.Option#descriptionKey() descriptionKey},
  * or the option's {@linkplain OptionSpec#longestName() longest name}.
@@ -37,12 +39,50 @@ public class PropertiesDefaultProvider implements IDefaultValueProvider {
 
     private Properties properties;
 
+    /**
+     * Default constructor, used when this default value provider is specified in
+     * the annotations:
+     * <pre>
+     * {@code
+     * @Command(name = "mycmd",
+     *     defaultValueProvider = PropertiesDefaultProvider.class)
+     * class MyCommand // ...
+     * }
+     * </pre>
+     * <p>
+     * This loads default values from a properties file named
+     * {@code "." + command.name + ".properties"} in the user home directory.
+     * </p>
+     */
     public PropertiesDefaultProvider() {}
 
+    /**
+     * This constructor loads default values from the specified properties object.
+     * This may be used programmatically. For example:
+     * <pre>
+     * CommandLine cmd = new CommandLine(new MyCommand());
+     * Properties defaults = getProperties();
+     * cmd.setDefaultValueProvider(new PropertiesDefaultProvider(defaults));
+     * cmd.execute(args);
+     * </pre>
+     * @param properties the properties containing the default values
+     */
     public PropertiesDefaultProvider(Properties properties) {
         this.properties = properties;
     }
 
+    /**
+     * This constructor loads default values from the specified properties file.
+     * This may be used programmatically. For example:
+     * <pre>
+     * CommandLine cmd = new CommandLine(new MyCommand());
+     * File defaultsFile = new File("path/to/config/file.properties");
+     * cmd.setDefaultValueProvider(new PropertiesDefaultProvider(defaultsFile));
+     * cmd.execute(args);
+     * </pre>
+     * @param file the file to load default values from. Must be non-{@code null} and
+     *             must contain default values in the standard java {@link Properties} format.
+     */
     public PropertiesDefaultProvider(File file) {
         this(createProperties(file));
     }
