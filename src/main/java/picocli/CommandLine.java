@@ -12125,16 +12125,26 @@ public class CommandLine {
                         try { return Enum.valueOf((Class<Enum>) type, value); }
                         catch (IllegalArgumentException ex) {
                             boolean insensitive = commandSpec.parser().caseInsensitiveEnumValuesAllowed();
-                            for (Object enumConstant : type.getEnumConstants()) {
-                                String thisName = enumConstant.toString();
-                                if( value.equals(thisName) || insensitive && value.equalsIgnoreCase(thisName) ) { return enumConstant; }
-                            }
+                            for (Enum enumConstant : ((Class<Enum>) type).getEnumConstants()) {
+                                String str = enumConstant.toString();
+                                String name = enumConstant.name();
+                                if (value.equals(str) || value.equals(name) || insensitive && (value.equalsIgnoreCase(str) || value.equalsIgnoreCase(name))) {
+                                    return enumConstant;
+                                }                            }
                             String sensitivity = insensitive ? "case-insensitive" : "case-sensitive";
                             Enum<?>[] constants = ((Class<Enum<?>>) type).getEnumConstants();
-                            String[] names = new String[constants.length];
-                            for (int i = 0; i < names.length; i++) { names[i] = constants[i].toString(); }
+                            List<String> names = new ArrayList<String>();
+                            for (Enum<?> constant : constants) {
+                                names.add(constant.name());
+                                if (!names.contains(constant.toString())) { // name() != toString()
+                                    if (!(insensitive && constant.name().equalsIgnoreCase(constant.toString()))) {
+                                        names.add(constant.toString());
+                                    }
+                                }
+                            }
                             throw new TypeConversionException(
-                                    String.format("expected one of %s (%s) but was '%s'", Arrays.asList(names), sensitivity, value)); }
+                                    format("expected one of %s (%s) but was '%s'", names, sensitivity, value));
+                        }
                     }
                 };
             }

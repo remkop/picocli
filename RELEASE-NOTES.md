@@ -48,6 +48,7 @@ There are also new convenience methods `Help.fullSynopsis()` and `CommandLine.ge
 * [#870] (Bugfix) Required options were not validated when mixing required and non-required options in an ArgGroup. Thanks to [W Scott Johnson](https://github.com/wjohnson5) for raising this.
 * [#836] (Enhancement) Add convenience methods `Help.fullSynopsis()` and `CommandLine.getHelp()`.
 * [#833] (Enhancement) Non-validating ArgGroups are now automatically set to be non-exclusive. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+* [#830] (Enhancement) Enum constants can now be matched by their `toString()` as well as their `name()`. Improved error reporting. Thanks to [Henning Makholm](https://github.com/hmakholm) for the pull request.
 * [#480] (DOC) Added a [Handling Errors](https://picocli.info#_handling_errors) subsection to the Executing Commands section of the user manual to show how to customize how your application deals with invalid input or business logic exceptions.
 * [#813] (DOC) Clarify usage of negatable boolean `@Option` with default value "true". Thanks to [Yann ROBERT](https://github.com/YannRobert) for raising this.
 * [#814] (DOC) Document how a CLI application can be packaged for distribution.
@@ -70,8 +71,9 @@ There are also new convenience methods `Help.fullSynopsis()` and `CommandLine.ge
 No features were deprecated in this release.
 
 ## <a name="4.1.0-breaking-changes"></a> Potential breaking changes
-From this release, subcommands will not be parsed as option values for options with optional parameters.
 
+* From this release, subcommands will not be parsed as option values for options with optional parameters.
+* Enum constants can now be matched by their `toString()` as well as their `name()`.
 
 
 # <a name="4.0.4"></a> Picocli 4.0.4
