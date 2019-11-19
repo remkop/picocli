@@ -22,6 +22,16 @@ Picocli follows [semantic versioning](http://semver.org/).
 The new `Help.createHeading(String, Object...)` and  `Help.createTextTable(Map<?, ?>)` methods
  facilitate creating tabular custom Help sections.
 
+There are also new convenience methods `Help.fullSynopsis()` and `CommandLine.getHelp()`.
+
+### ArgGroup improvements
+
+* ArgGroups with `@Option`-annotated methods no longer fail with `NullPointerException`
+* ArgGroups now match multiple occurrences of a multi-value `@Option` in the same group instance, and don't create a new group for each occurrence
+* ArgGroups now don't validate when marked as `validate = false`
+* ArgGroups now correctly validate that required options are present
+* Non-validating ArgGroups are now automatically set to be non-exclusive
+
 
 ## <a name="4.1.0-fixes"></a> Fixed issues
 * [#841] (API) Add `JniConfigGenerator` to `picocli-codegen` module.
