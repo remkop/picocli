@@ -10877,16 +10877,25 @@ public class CommandLine {
                 }
                 // finally, validate that the combination of matched args and matched subgroups is valid
                 if (group() != null) {
+
+                    // first validate the options and positional params in the group in isolation
+                    validationResult = group().validateArgs(commandLine, matchedValues.keySet());
+                    if (validationResult.blockingFailure()) {
+                        return;
+                    }
+
+                    // now validate the args combined with subgroups:
+                    // some groups may consist of a required option + a required subgroup:
+                    // the presence of either means that the other must occur
                     Set<ArgSpec> intersection = new LinkedHashSet<ArgSpec>(group().args());
                     Set<ArgSpec> missing = new LinkedHashSet<ArgSpec>(group().requiredArgs());
                     Set<ArgSpec> found = new LinkedHashSet<ArgSpec>();
                     found.addAll(matchedValues.keySet());
                     missing.removeAll(matchedValues.keySet());
                     intersection.retainAll(found);
-
-                    String exclusiveElements = ArgSpec.describe(intersection, ", ");
-                    String requiredElements = ArgSpec.describe(group().requiredArgs(), ", ");
-                    String missingElements = ArgSpec.describe(missing, ", ");
+                    String exclusiveElements = ArgSpec.describe(intersection);
+                    String requiredElements = ArgSpec.describe(group().requiredArgs());
+                    String missingElements = ArgSpec.describe(missing);
 
                     Set<ArgGroupSpec> missingSubgroups = new LinkedHashSet<ArgGroupSpec>(group().subgroups());
                     missingSubgroups.removeAll(matchedSubgroups.keySet());

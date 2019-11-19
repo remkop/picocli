@@ -2676,4 +2676,23 @@ public class ArgGroupTest {
                 "  -b=<b>    b. Default-bbb%n");
         assertEquals(expected, actual);
     }
+    static class Issue870Group {
+        @Option(names = {"--group"}, required = true) String name;
+        @Option(names = {"--opt1"}) int opt1;
+        @Option(names = {"--opt2"}) String opt2;
+    }
+    static class Issue870App {
+        @ArgGroup(exclusive = false, multiplicity = "0..*")
+        List<Issue870Group> groups;
+    }
+
+    @Test
+    public void testIssue870RequiredOptionValidation() {
+        try {
+            new CommandLine(new Issue870App()).parseArgs("--opt1=1");
+            fail("Expected MissingParameterException");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): --group=<name>", ex.getMessage());
+        }
+    }
 }

@@ -1,8 +1,8 @@
 # picocli Release Notes
 
 
-# <a name="4.0.5"></a> Picocli 4.0.5 (UNRELEASED)
-The picocli community is pleased to announce picocli 4.0.5.
+# <a name="4.1.0"></a> Picocli 4.1.0 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.1.0.
 
 This release contains bugfixes and enhancements.
 
@@ -10,16 +10,20 @@ This release contains bugfixes and enhancements.
 This is the sixty-second public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
-## <a name="4.0.5"></a> Table of Contents
-* [New and noteworthy](#4.0.5-new)
-* [Fixed issues](#4.0.5-fixes)
-* [Deprecations](#4.0.5-deprecated)
-* [Potential breaking changes](#4.0.5-breaking-changes)
+## <a name="4.1.0"></a> Table of Contents
+* [New and noteworthy](#4.1.0-new)
+* [Fixed issues](#4.1.0-fixes)
+* [Deprecations](#4.1.0-deprecated)
+* [Potential breaking changes](#4.1.0-breaking-changes)
 
-## <a name="4.0.5-new"></a> New and Noteworthy
+## <a name="4.1.0-new"></a> New and Noteworthy
+
+### Help API improvements
+The new `Help.createHeading(String, Object...)` and  `Help.createTextTable(Map<?, ?>)` methods
+ facilitate creating tabular custom Help sections.
 
 
-## <a name="4.0.5-fixes"></a> Fixed issues
+## <a name="4.1.0-fixes"></a> Fixed issues
 * [#841] (API) Add `JniConfigGenerator` to `picocli-codegen` module.
 * [#865] (API) Add `Help.createHeading(String, Object...)` and  `Help.createTextTable(Map<?, ?>)` to facilitate creating tabular custom Help sections.
 * [#829] (Bugfix) `@ArgGroup` with `@Option`-annotated methods fail with `NullPointerException`. Thanks to [A2 Geek](https://github.com/a2geek) for raising this.
@@ -29,6 +33,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#826] (Enhancement) Suppress compiler warning "Supported source version 'RELEASE_6' from annotation processor... less than -source..." in picocli-codegen.
 * [#815] (Enhancement) `@ArgGroup` should match multiple occurrences of a multi-value `@Option` in the same group instance, not create new group for each occurrence. Thanks to [kacchi](https://github.com/kacchi) for raising this.
 * [#810] (Bugfix) `@ArgGroup` should not validate when marked as `validate = false`. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+* [#870] (Bugfix) Required options were not validated when mixing required and non-required options in an ArgGroup. Thanks to [W Scott Johnson](https://github.com/wjohnson5) for raising this.
 * [#836] (Enhancement) Add convenience methods `Help.fullSynopsis()` and `CommandLine.getHelp()`.
 * [#833] (Enhancement) Non-validating ArgGroups are now automatically set to be non-exclusive. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#480] (DOC) Added a [Handling Errors](https://picocli.info#_handling_errors) subsection to the Executing Commands section of the user manual to show how to customize how your application deals with invalid input or business logic exceptions.
@@ -49,10 +54,10 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#864] (DOC) Fix code examples in documentation. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#867] (DOC) Update user manual to clarify that the toggling behaviour is no longer the default from picocli 4.0. Thanks to [Linus Fernandes](https://github.com/Fernal73) for raising this.
 
-## <a name="4.0.5-deprecated"></a> Deprecations
+## <a name="4.1.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
 
-## <a name="4.0.5-breaking-changes"></a> Potential breaking changes
+## <a name="4.1.0-breaking-changes"></a> Potential breaking changes
 From this release, subcommands will not be parsed as option values for options with optional parameters.
 
 
