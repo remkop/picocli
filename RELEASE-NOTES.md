@@ -21,6 +21,8 @@ Picocli follows [semantic versioning](http://semver.org/).
 ### Help API improvements
 The new `Help.createHeading(String, Object...)` and  `Help.createTextTable(Map<?, ?>)` methods
  facilitate creating tabular custom Help sections.
+ 
+The user manual has an [example](https://picocli.info/index.html#_custom_help_section_example).
 
 There are also new convenience methods `Help.fullSynopsis()` and `CommandLine.getHelp()`.
 

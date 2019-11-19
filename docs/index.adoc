@@ -3372,9 +3372,42 @@ Applications can add, remove or replace sections in this map. The `CommandLine::
 
 This ordering may be modified with the `CommandLine::setHelpSectionKeys` setter method (or `UsageMessageSpec::sectionKeys(List)` for a single `CommandSpec`).
 
-Some examples for customizing the help are https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/customhelp[here].
+==== Custom Help Section Example
 
-// TODO When creating new sections, the `Help.createHeading(String, Object...)` and `Help.createTextTable(Map<?, ?>)` methods may be useful.
+The below example shows how to add a custom Environment Variables section to the usage help message.
+
+.Adding a custom Environment Variables section
+[source,java]
+----
+// help section keys
+static final String SECTION_KEY_ENV_HEADING = "environmentVariablesHeading";
+static final String SECTION_KEY_ENV_DETAILS = "environmentVariables";
+// ...
+
+// the data to display
+Map<String, String> env = new LinkedHashMap<>();
+env.put("FOO", "explanation of foo");
+env.put("BAR", "explanation of bar");
+env.put("XYZ", "xxxx yyyy zzz");
+
+// register the custom section renderers
+CommandLine cmd = new CommandLine(new MyApp());
+cmd.getHelpSectionMap().put(SECTION_KEY_ENV_HEADING,
+                            help -> help.createHeading("Environment Variables:%n"));
+cmd.getHelpSectionMap().put(SECTION_KEY_ENV_DETAILS,
+                            help -> help.createTextTable(env).toString());
+
+// specify the location of the new sections
+List<String> keys = new ArrayList<>(cmd.getHelpSectionKeys());
+int index = keys.indexOf(CommandLine.Model.UsageMessageSpec.SECTION_KEY_FOOTER_HEADING);
+keys.add(index, SECTION_KEY_ENV_HEADING);
+keys.add(index + 1, SECTION_KEY_ENV_DETAILS);
+cmd.setHelpSectionKeys(keys);
+----
+
+
+More examples for customizing the usage help message are https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/customhelp[here].
+
 
 === Custom Layout
 Picocli also supports unconventional option list layouts. An example of an unconventional layout is the `zip` application, which shows multiple options per row:
