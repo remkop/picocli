@@ -1,0 +1,166 @@
+package picocli;
+
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.rules.TestRule;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.PropertiesDefaultProvider;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
+
+import static org.junit.Assert.*;
+
+public class PropertiesDefaultProviderTest {
+    @Rule
+    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+
+    @Command(name = "providertest", subcommands = Subcommand.class,
+            defaultValueProvider = PropertiesDefaultProvider.class)
+    static class MyApp {
+        @Option(names = "--aaa") int aaa;
+        @Option(names = "-b", descriptionKey = "bbb") int bbb;
+        @Parameters(index = "1", paramLabel = "ppp") int ppp;
+        @Parameters(index = "0", paramLabel = "qqq", descriptionKey = "xxx") int xxx;
+    }
+
+    @Command(name = "providersub",
+            defaultValueProvider = PropertiesDefaultProvider.class)
+    static class Subcommand {
+        @Option(names = "--aaa") int aaa;
+        @Option(names = "-b", descriptionKey = "bbb") int bbb;
+        @Parameters(index = "1", paramLabel = "ppp") int ppp;
+        @Parameters(index = "0", paramLabel = "qqq", descriptionKey = "xxx") int xxx;
+    }
+
+    @Test
+    public void testLoadFromUserHomeCommandNameByDefault() throws IOException {
+        File f = new File(System.getProperty("user.home"), ".providertest.properties");
+        if (f.exists()) {
+            f.delete();
+        }
+        Properties expected = new Properties();
+        expected.setProperty("aaa", "111");
+        expected.setProperty("bbb", "222");
+        expected.setProperty("ppp", "333");
+        expected.setProperty("xxx", "444");
+        expected.store(new FileOutputStream(f), "exported from test");
+
+        MyApp myApp = new MyApp();
+        assertEquals(myApp.aaa, 0);
+        assertEquals(myApp.bbb, 0);
+        assertEquals(myApp.ppp, 0);
+        assertEquals(myApp.xxx, 0);
+        new CommandLine(myApp).parseArgs();
+        f.delete();
+
+        assertEquals(myApp.aaa, 111);
+        assertEquals(myApp.bbb, 222);
+        assertEquals(myApp.ppp, 333);
+        assertEquals(myApp.xxx, 444);
+    }
+
+    @Test
+    public void testLoadFromDifferentLocationIfPropertySpecified() throws IOException {
+        File tempFile = File.createTempFile("providertest", "properties");
+
+        System.setProperty("picocli.defaults.providertest.path", tempFile.getAbsolutePath());
+
+        if (tempFile.exists()) {
+            tempFile.delete();
+        }
+        Properties expected = new Properties();
+        expected.setProperty("aaa", "123");
+        expected.setProperty("bbb", "234");
+        expected.setProperty("ppp", "345");
+        expected.setProperty("xxx", "456");
+        expected.store(new FileOutputStream(tempFile), "exported from test to specific location");
+
+        MyApp myApp = new MyApp();
+        assertEquals(myApp.aaa, 0);
+        assertEquals(myApp.bbb, 0);
+        assertEquals(myApp.ppp, 0);
+        assertEquals(myApp.xxx, 0);
+        new CommandLine(myApp).parseArgs();
+        tempFile.delete();
+        assertEquals(myApp.aaa, 123);
+        assertEquals(myApp.bbb, 234);
+        assertEquals(myApp.ppp, 345);
+        assertEquals(myApp.xxx, 456);
+    }
+
+    @Test
+    public void testDefaultsForNestedSubcommandsCanBeLoadedFromTheirOwnFile() throws IOException {
+        File parent = new File(System.getProperty("user.home"), ".providertest.properties");
+        parent.delete();
+        File f = new File(System.getProperty("user.home"), ".providersub.properties");
+        if (f.exists()) {
+            f.delete();
+        }
+        Properties expected = new Properties();
+        expected.setProperty("aaa", "111");
+        expected.setProperty("bbb", "222");
+        expected.setProperty("ppp", "333");
+        expected.setProperty("xxx", "444");
+        expected.store(new FileOutputStream(f), "exported from test");
+
+        MyApp myApp = new MyApp();
+        //TestUtil.setTraceLevel("DEBUG");
+        CommandLine.ParseResult parseResult = new CommandLine(myApp).parseArgs("999", "888", "providersub");
+        f.delete();
+
+        assertEquals(myApp.aaa, 0);
+        assertEquals(myApp.bbb, 0);
+        assertEquals(myApp.ppp, 888);
+        assertEquals(myApp.xxx, 999);
+
+        Subcommand sub = (Subcommand) parseResult.subcommand().commandSpec().userObject();
+        assertEquals(sub.aaa, 111);
+        assertEquals(sub.bbb, 222);
+        assertEquals(sub.ppp, 333);
+        assertEquals(sub.xxx, 444);
+    }
+
+    @Test
+    public void testDefaultsForNestedSubcommandsCanBeLoadedFromParentFile() throws IOException {
+        File parent = new File(System.getProperty("user.home"), ".providertest.properties");
+        parent.delete();
+        File f = new File(System.getProperty("user.home"), ".providersub.properties");
+        if (f.exists()) {
+            f.delete();
+        }
+        Properties expected = new Properties();
+        expected.setProperty("providertest.providersub.aaa", "111");
+        expected.setProperty("providertest.providersub.bbb", "222");
+        expected.setProperty("providertest.providersub.ppp", "333");
+        expected.setProperty("providertest.providersub.xxx", "444");
+        expected.store(new FileOutputStream(parent), "exported from test");
+
+        MyApp myApp = new MyApp();
+        //TestUtil.setTraceLevel("DEBUG");
+        CommandLine.ParseResult parseResult = null;
+        try {
+            parseResult = new CommandLine(myApp).parseArgs("999", "888", "providersub");
+        } finally {
+            f.delete();
+        }
+
+        assertEquals(myApp.aaa, 0);
+        assertEquals(myApp.bbb, 0);
+        assertEquals(myApp.ppp, 888);
+        assertEquals(myApp.xxx, 999);
+
+        Subcommand sub = (Subcommand) parseResult.subcommand().commandSpec().userObject();
+        assertEquals(sub.aaa, 111);
+        assertEquals(sub.bbb, 222);
+        assertEquals(sub.ppp, 333);
+        assertEquals(sub.xxx, 444);
+    }
+}

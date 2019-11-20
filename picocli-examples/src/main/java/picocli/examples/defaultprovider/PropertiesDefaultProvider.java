@@ -14,10 +14,33 @@ import java.io.Reader;
 import java.util.Properties;
 
 /**
- * {@link IDefaultValueProvider} implementation that loads default values from a
- * properties file or {@code Properties} object. By default, if no file or properties object
- * is specified, this tries to find a properties file named
- * {@code "." + command.name + ".properties"} in the user home directory.
+ * {@link IDefaultValueProvider IDefaultValueProvider} implementation that loads default values for command line
+ * options and positional parameters from a properties file or {@code Properties} object.
+ * <h2>Location</h2>
+ * By default, this implementation tries to find a properties file named
+ * {@code ".<YOURCOMMAND>.properties"} in the user home directory, where {@code "<YOURCOMMAND>"} is the {@linkplain CommandLine.Command#name() name} of the command.
+ * If a command has {@linkplain CommandLine.Command#aliases() aliases} in addition to its {@linkplain CommandLine.Command#name() name},
+ * these aliases are also used to try to find the properties file. For example:
+ * <pre>{@code
+ * @Command(name = "git", defaultValueProvider = PropertiesDefaultProvider.class)
+ * class Git { }
+ * }</pre>
+ * <p>The above will try to load default values from {@code new File(System.getProperty("user.home"), ".git.properties")}.
+ * </p>
+ * <p>
+ * The location of the properties file can also be controlled with system property {@code "picocli.defaults.<YOURCOMMAND>.path"},
+ * in which case the value of the property must be the path to the file containing the default values.
+ * </p>
+ * <p>
+ * The location of the properties file may also be specified programmatically. For example:
+ * </p>
+ * <pre>
+ * CommandLine cmd = new CommandLine(new MyCommand());
+ * File defaultsFile = new File("path/to/config/mycommand.properties");
+ * cmd.setDefaultValueProvider(new PropertiesDefaultProvider(defaultsFile));
+ * cmd.execute(args);
+ * </pre>
+ * <h2>Format</h2>
  * <p>
  * For options, the key is either the {@linkplain CommandLine.Option#descriptionKey() descriptionKey},
  * or the option's {@linkplain OptionSpec#longestName() longest name}.
@@ -26,8 +49,15 @@ import java.util.Properties;
  * {@linkplain CommandLine.Parameters#descriptionKey() descriptionKey},
  * or the positional parameter's {@linkplain PositionalParamSpec#paramLabel() param label}.
  * </p><p>
- * In addition, it is possible to prefix the key with the command's qualified name.
- * For example, to give the {@code git commit} command's {@code --cleanup} option a
+ * End users may not know what the {@code descriptionKey} of your options and positional parameters are, so be sure
+ * to document that with your application.
+ * </p>
+ * <h2>Subcommands</h2>
+ * <p>
+ * The default values for options and positional parameters of subcommands can be included in the
+ * properties file for the top-level command, so that end users need to maintain only a single file.
+ * This can be achieved by prefixing the key with the command's qualified name.
+ * For example, to give the {@code `git commit`} command's {@code --cleanup} option a
  * default value of {@code strip}, define a key of {@code git.commit.cleanup} and assign
  * it a default value.
  * </p><pre>
@@ -51,8 +81,12 @@ public class PropertiesDefaultProvider implements IDefaultValueProvider {
      * </pre>
      * <p>
      * This loads default values from a properties file named
-     * {@code "." + command.name + ".properties"} in the user home directory.
+     * {@code ".mycmd.properties"} in the user home directory.
+     * </p><p>
+     * The location of the properties file can also be controlled with system property {@code "picocli.defaults.<YOURCOMMAND>.path"},
+     * in which case the value of the property must be the path to the file containing the default values.
      * </p>
+     * @see PropertiesDefaultProvider the PropertiesDefaultProvider class description
      */
     public PropertiesDefaultProvider() {}
 
@@ -66,6 +100,7 @@ public class PropertiesDefaultProvider implements IDefaultValueProvider {
      * cmd.execute(args);
      * </pre>
      * @param properties the properties containing the default values
+     * @see PropertiesDefaultProvider the PropertiesDefaultProvider class description
      */
     public PropertiesDefaultProvider(Properties properties) {
         this.properties = properties;
@@ -82,6 +117,7 @@ public class PropertiesDefaultProvider implements IDefaultValueProvider {
      * </pre>
      * @param file the file to load default values from. Must be non-{@code null} and
      *             must contain default values in the standard java {@link Properties} format.
+     * @see PropertiesDefaultProvider the PropertiesDefaultProvider class description
      */
     public PropertiesDefaultProvider(File file) {
         this(createProperties(file));
@@ -98,23 +134,26 @@ public class PropertiesDefaultProvider implements IDefaultValueProvider {
                 reader = new FileReader(file);
                 result.load(reader);
             } catch (IOException ioe) {
-                System.err.println("INFO - could not read defaults from " + file.getAbsolutePath() + ": " + ioe);
+                System.err.println("WARN - could not read defaults from " + file.getAbsolutePath() + ": " + ioe);
             }
         } else {
-            System.err.println("INFO - defaults configuration file " + file.getAbsolutePath() + " does not exist or is not readable");
+            System.err.println("WARN - defaults configuration file " + file.getAbsolutePath() + " does not exist or is not readable");
         }
         return result;
     }
 
     private static Properties loadProperties(CommandSpec commandSpec) {
         if (commandSpec == null) { return null; }
+        Properties p = System.getProperties();
         for (String name : commandSpec.names()) {
-            File file = new File(System.getProperty("user.home"), "." + name + ".properties");
+            String path = p.getProperty("picocli.defaults." + name + ".path");
+            File defaultPath = new File(p.getProperty("user.home"), "." + name + ".properties");
+            File file = path == null ? defaultPath : new File(path);
             if (file.canRead()) {
                 return createProperties(file);
             }
         }
-        return null;
+        return loadProperties(commandSpec.parent());
     }
 
     @Override

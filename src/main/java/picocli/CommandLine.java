@@ -6425,7 +6425,7 @@ public class CommandLine {
                             tracer.debug("getTerminalWidth() ERROR: %s%n", ignored);
                         } finally {
                             if (proc != null) { proc.destroy(); }
-                            if (reader != null) { try { reader.close(); } catch (Exception ignored) {} }
+                            close(reader);
                         }
                     }
                 });
@@ -11096,7 +11096,7 @@ public class CommandLine {
             } catch (Exception ex) {
                 throw new InitializationException("Could not read argument file @" + fileName, ex);
             } finally {
-                if (reader != null) { try {reader.close();} catch (Exception ignored) {} }
+                close(reader);
             }
             if (tracer.isInfo()) {tracer.info("Expanded file @%s to arguments %s%n", fileName, result);}
             arguments.addAll(result);
@@ -11221,7 +11221,8 @@ public class CommandLine {
             String defaultValue = fromProvider == null ? arg.defaultValue() : fromProvider;
 
             if (defaultValue != null) {
-                if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s) to %s%n", defaultValue, arg);}
+                String provider = defaultValueProvider == null ? "" : (" from " + defaultValueProvider.toString());
+                if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s)%s to %s%n", defaultValue, provider, arg);}
                 Range arity = arg.arity().min(Math.max(1, arg.arity().min));
                 applyOption(arg, false, LookBehind.SEPARATE, false, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
             }
@@ -12276,6 +12277,14 @@ public class CommandLine {
         return (value.length() > 1 && value.startsWith("\"") && value.endsWith("\""))
                 ? value.substring(1, value.length() - 1)
                 : value;
+    }
+    static void close(Closeable closeable) {
+        if (closeable == null) { return; }
+        try {
+            closeable.close();
+        } catch (Exception ex) {
+            new Tracer().warn("Could not close " + closeable + ": " + ex.toString());
+        }
     }
     private static class PositionalParametersSorter implements Comparator<ArgSpec> {
         private static final Range OPTION_INDEX = new Range(0, 0, false, true, "0");
@@ -15349,5 +15358,202 @@ public class CommandLine {
     public static class MissingTypeConverterException extends ParameterException {
         private static final long serialVersionUID = -6050931703233083760L;
         public MissingTypeConverterException(CommandLine commandLine, String msg) { super(commandLine, msg); }
+    }
+    /**
+     * {@link IDefaultValueProvider IDefaultValueProvider} implementation that loads default values for command line
+     * options and positional parameters from a properties file or {@code Properties} object.
+     * <h2>Location</h2>
+     * By default, this implementation tries to find a properties file named
+     * {@code ".<YOURCOMMAND>.properties"} in the user home directory, where {@code "<YOURCOMMAND>"} is the {@linkplain CommandLine.Command#name() name} of the command.
+     * If a command has {@linkplain CommandLine.Command#aliases() aliases} in addition to its {@linkplain CommandLine.Command#name() name},
+     * these aliases are also used to try to find the properties file. For example:
+     * <pre>{@code
+     * @Command(name = "git", defaultValueProvider = PropertiesDefaultProvider.class)
+     * class Git { }
+     * }</pre>
+     * <p>The above will try to load default values from {@code new File(System.getProperty("user.home"), ".git.properties")}.
+     * </p>
+     * <p>
+     * The location of the properties file can also be controlled with system property {@code "picocli.defaults.<YOURCOMMAND>.path"},
+     * in which case the value of the property must be the path to the file containing the default values.
+     * </p>
+     * <p>
+     * The location of the properties file may also be specified programmatically. For example:
+     * </p>
+     * <pre>
+     * CommandLine cmd = new CommandLine(new MyCommand());
+     * File defaultsFile = new File("path/to/config/mycommand.properties");
+     * cmd.setDefaultValueProvider(new PropertiesDefaultProvider(defaultsFile));
+     * cmd.execute(args);
+     * </pre>
+     * <h2>Format</h2>
+     * <p>
+     * For options, the key is either the {@linkplain CommandLine.Option#descriptionKey() descriptionKey},
+     * or the option's {@linkplain OptionSpec#longestName() longest name}.
+     * </p><p>
+     * For positional parameters, the key is either the
+     * {@linkplain CommandLine.Parameters#descriptionKey() descriptionKey},
+     * or the positional parameter's {@linkplain PositionalParamSpec#paramLabel() param label}.
+     * </p><p>
+     * End users may not know what the {@code descriptionKey} of your options and positional parameters are, so be sure
+     * to document that with your application.
+     * </p>
+     * <h2>Subcommands</h2>
+     * <p>
+     * The default values for options and positional parameters of subcommands can be included in the
+     * properties file for the top-level command, so that end users need to maintain only a single file.
+     * This can be achieved by prefixing the key with the command's qualified name.
+     * For example, to give the {@code `git commit`} command's {@code --cleanup} option a
+     * default value of {@code strip}, define a key of {@code git.commit.cleanup} and assign
+     * it a default value.
+     * </p><pre>
+     * # /home/remko/.git.properties
+     * git.commit.cleanup = strip
+     * </pre>
+     * @since 4.1
+     */
+    public static class PropertiesDefaultProvider implements IDefaultValueProvider {
+
+        private Properties properties;
+        private File location;
+
+        /**
+         * Default constructor, used when this default value provider is specified in
+         * the annotations:
+         * <pre>
+         * {@code
+         * @Command(name = "mycmd",
+         *     defaultValueProvider = PropertiesDefaultProvider.class)
+         * class MyCommand // ...
+         * }
+         * </pre>
+         * <p>
+         * This loads default values from a properties file named
+         * {@code ".mycmd.properties"} in the user home directory.
+         * </p><p>
+         * The location of the properties file can also be controlled with system property {@code "picocli.defaults.<YOURCOMMAND>.path"},
+         * in which case the value of the property must be the path to the file containing the default values.
+         * </p>
+         * @see PropertiesDefaultProvider the PropertiesDefaultProvider class description
+         */
+        public PropertiesDefaultProvider() {}
+
+        /**
+         * This constructor loads default values from the specified properties object.
+         * This may be used programmatically. For example:
+         * <pre>
+         * CommandLine cmd = new CommandLine(new MyCommand());
+         * Properties defaults = getProperties();
+         * cmd.setDefaultValueProvider(new PropertiesDefaultProvider(defaults));
+         * cmd.execute(args);
+         * </pre>
+         * @param properties the properties containing the default values
+         * @see PropertiesDefaultProvider the PropertiesDefaultProvider class description
+         */
+        public PropertiesDefaultProvider(Properties properties) {
+            this.properties = properties;
+        }
+
+        /**
+         * This constructor loads default values from the specified properties file.
+         * This may be used programmatically. For example:
+         * <pre>
+         * CommandLine cmd = new CommandLine(new MyCommand());
+         * File defaultsFile = new File("path/to/config/file.properties");
+         * cmd.setDefaultValueProvider(new PropertiesDefaultProvider(defaultsFile));
+         * cmd.execute(args);
+         * </pre>
+         * @param file the file to load default values from. Must be non-{@code null} and
+         *             must contain default values in the standard java {@link Properties} format.
+         * @see PropertiesDefaultProvider the PropertiesDefaultProvider class description
+         */
+        public PropertiesDefaultProvider(File file) {
+            this(createProperties(file, null));
+            location = file;
+        }
+
+        private static Properties createProperties(File file, CommandSpec commandSpec) {
+            if (file == null) {
+                throw new NullPointerException("file is null");
+            }
+            Tracer tracer = new Tracer();
+            Properties result = new Properties();
+            if (file.exists() && file.canRead()) {
+                InputStream in = null;
+                try {
+                    String command = commandSpec == null ? "unknown command" : commandSpec.qualifiedName();
+                    tracer.debug("Reading defaults from %s for %s%n", file.getAbsolutePath(), command);
+                    in = new FileInputStream(file);
+                    result.load(in);
+                    result.put("__picocli_internal_location", file);
+                } catch (IOException ioe) {
+                    tracer.warn("could not read defaults from %s: %s%n", file.getAbsolutePath(), ioe);
+                } finally {
+                    close(in);
+                }
+            } else {
+                tracer.warn("defaults configuration file %s does not exist or is not readable%n", file.getAbsolutePath());
+            }
+            return result;
+        }
+
+        private static Properties loadProperties(CommandSpec commandSpec) {
+            if (commandSpec == null) { return null; }
+            Properties p = System.getProperties();
+            for (String name : commandSpec.names()) {
+                String path = p.getProperty("picocli.defaults." + name + ".path");
+                File defaultPath = new File(p.getProperty("user.home"), "." + name + ".properties");
+                File file = path == null ? defaultPath : new File(path);
+                if (file.canRead()) {
+                    return createProperties(file, commandSpec);
+                }
+            }
+            return loadProperties(commandSpec.parent());
+        }
+
+        public String defaultValue(ArgSpec argSpec) throws Exception {
+            if (properties == null) {
+                properties = loadProperties(argSpec.command());
+                location = properties == null ? null : (File) properties.get("__picocli_internal_location");
+            }
+            if (properties == null || properties.isEmpty()) {
+                return null;
+            }
+            return argSpec.isOption()
+                    ? optionDefaultValue((OptionSpec) argSpec)
+                    : positionalDefaultValue((PositionalParamSpec) argSpec);
+        }
+
+        private String optionDefaultValue(OptionSpec option) {
+            String result = getValue(option.descriptionKey(), option.command());
+            result = result != null ? result : getValue(stripPrefix(option.longestName()), option.command());
+            return result;
+        }
+        private static String stripPrefix(String prefixed) {
+            for (int i = 0; i < prefixed.length(); i++) {
+                if (Character.isJavaIdentifierPart(prefixed.charAt(i))) {
+                    return prefixed.substring(i);
+                }
+            }
+            return prefixed;
+        }
+
+        private String positionalDefaultValue(PositionalParamSpec positional) {
+            String result = getValue(positional.descriptionKey(), positional.command());
+            result = result != null ? result : getValue(positional.paramLabel(), positional.command());
+            return result;
+        }
+
+        private String getValue(String key, CommandSpec spec) {
+            String result = null;
+            if (spec != null) {
+                String cmd = spec.qualifiedName(".");
+                result = properties.getProperty(cmd + "." + key);
+            }
+            return result != null ? result : properties.getProperty(key);
+        }
+        @Override public String toString() {
+            return getClass().getSimpleName() + "[" + location + "]";
+        }
     }
 }

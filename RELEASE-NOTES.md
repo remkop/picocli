@@ -46,6 +46,7 @@ There are also new convenience methods `Help.fullSynopsis()` and `CommandLine.ge
 * [#815] (Enhancement) `@ArgGroup` should match multiple occurrences of a multi-value `@Option` in the same group instance, not create new group for each occurrence. Thanks to [kacchi](https://github.com/kacchi) for raising this.
 * [#810] (Bugfix) `@ArgGroup` should not validate when marked as `validate = false`. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#870] (Bugfix) Required options were not validated when mixing required and non-required options in an ArgGroup. Thanks to [W Scott Johnson](https://github.com/wjohnson5) for raising this.
+* [#868] (Enhancement) Add built-in default value provider implementation `PropertiesDefaultProvider` that loads default values from properties file in home directory or specified location.
 * [#836] (Enhancement) Add convenience methods `Help.fullSynopsis()` and `CommandLine.getHelp()`.
 * [#833] (Enhancement) Non-validating ArgGroups are now automatically set to be non-exclusive. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#830] (Enhancement) Enum constants can now be matched by their `toString()` as well as their `name()`. Improved error reporting. Thanks to [Henning Makholm](https://github.com/hmakholm) for the pull request.
