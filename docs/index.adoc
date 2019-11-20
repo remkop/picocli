@@ -933,9 +933,64 @@ public interface IDefaultValueProvider {
 ----
 
 See the
-https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/defaultprovider/PropertiesDefaultProvider.java[PropertiesDefaultProvider example]
-for a default value provider implementation that loads default values from a
-properties file named `".${command.name}.properties"` in the user home directory.
+https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/defaultprovider/[default provider examples]
+for example implementations.
+
+
+=== PropertiesDefaultProvider
+From picocli 4.1, applications can use the built-in `PropertiesDefaultProvider`
+implementation that loads default values from a properties file.
+
+By default, this implementation tries to find a properties file named `.${COMMAND-NAME}.properties` in the user home directory, where `${COMMAND-NAME}` is the name of the command. If a command has aliases in addition to its name, these aliases are also used to try to find the properties file. For example:
+
+[source,java]
+----
+import picocli.CommandLine.PropertiesDefaultProvider;
+// ...
+@Command(name = "git", defaultValueProvider = PropertiesDefaultProvider.class)
+class Git { }
+----
+
+The above will try to load default values from `new File(System.getProperty("user.home"), ".git.properties")`.
+The location of the properties file can also be controlled with system property `"picocli.defaults.${COMMAND-NAME}.path"` (`"picocli.defaults.git.path"` in this example), in which case the value of the property must be the path to the file containing the default values.
+
+The location of the properties file may also be specified programmatically. For example:
+
+[source,java]
+----
+CommandLine cmd = new CommandLine(new MyCommand());
+File defaultsFile = new File("path/to/config/mycommand.properties");
+cmd.setDefaultValueProvider(new PropertiesDefaultProvider(defaultsFile));
+cmd.execute(args);
+----
+
+==== PropertiesDefaultProvider Format
+The `PropertiesDefaultProvider` expects the properties file to be in the standard java `.properties` https://en.wikipedia.org/wiki/.properties[format].
+
+For options, the key is either the https://picocli.info/apidocs/picocli/CommandLine.Option.html#descriptionKey--[descriptionKey],
+or the option's https://picocli.info/apidocs/picocli/CommandLine.Model.OptionSpec.html#longestName--[longest name], without the prefix. So, for an option `--verbose`, the key would be `verbose`, and for an option `/F`, the key would be `F`.
+
+For positional parameters, the key is either the https://picocli.info/apidocs/picocli/CommandLine.Parameters.html#descriptionKey--[descriptionKey],
+or the positional parameter's https://picocli.info/apidocs/picocli/CommandLine.Parameters.html#paramLabel--[param label].
+
+End users may not know what the `descriptionKey` of your options and positional parameters are, so be sure  to document that with your application.
+
+==== Subcommands Default Values
+
+The default values for options and positional parameters of subcommands can be included in the
+properties file for the top-level command, so that end users need to maintain only a single file.
+This can be achieved by prefixing the keys for the options and positional parameters
+with their command's qualified name.
+For example, to give the  `git commit` command's `--cleanup` option a
+default value of `strip`, define a key of `git.commit.cleanup` and assign
+it a default value:
+
+[source]
+----
+# /home/remko/.git.properties
+git.commit.cleanup = strip
+----
+
 
 [#fallbackValue-annotation]
 === `fallbackValue` Annotation

@@ -18,6 +18,54 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.1.0-new"></a> New and Noteworthy
 
+### PropertiesDefaultProvider
+From picocli 4.1, applications can use the built-in `PropertiesDefaultProvider`
+implementation that loads default values from a properties file.
+
+By default, this implementation tries to find a properties file named `.${COMMAND-NAME}.properties` in the user home directory, where `${COMMAND-NAME}` is the name of the command. If a command has aliases in addition to its name, these aliases are also used to try to find the properties file. For example:
+
+```java
+import picocli.CommandLine.PropertiesDefaultProvider;
+// ...
+@Command(name = "git", defaultValueProvider = PropertiesDefaultProvider.class)
+class Git { }
+```
+
+The above will try to load default values from `new File(System.getProperty("user.home"), ".git.properties")`.
+The location of the properties file can also be controlled with system property `"picocli.defaults.${COMMAND-NAME}.path"` (`"picocli.defaults.git.path"` in this example), in which case the value of the property must be the path to the file containing the default values.
+
+The location of the properties file may also be specified programmatically. For example:
+
+```java
+CommandLine cmd = new CommandLine(new MyCommand());
+File defaultsFile = new File("path/to/config/mycommand.properties");
+cmd.setDefaultValueProvider(new PropertiesDefaultProvider(defaultsFile));
+cmd.execute(args);
+```
+
+
+#### PropertiesDefaultProvider Format
+The `PropertiesDefaultProvider` expects the properties file to be in the standard java `.properties` https://en.wikipedia.org/wiki/.properties[format].
+
+For options, the key is either the [descriptionKey](https://picocli.info/apidocs/picocli/CommandLine.Option.html#descriptionKey--), or the option's [longest name](https://picocli.info/apidocs/picocli/CommandLine.Model.OptionSpec.html#longestName--), without the prefix. So, for an option `--verbose`, the key would be `verbose`, and for an option `/F`, the key would be `F`.
+
+For positional parameters, the key is either the [descriptionKey](https://picocli.info/apidocs/picocli/CommandLine.Parameters.html#descriptionKey--), or the positional parameter's [param label](https://picocli.info/apidocs/picocli/CommandLine.Parameters.html#paramLabel--).
+
+End users may not know what the `descriptionKey` of your options and positional parameters are, so be sure  to document that with your application.
+
+#### Subcommands Default Values
+
+The default values for options and positional parameters of subcommands can be included in the properties file for the top-level command, so that end users need to maintain only a single file.
+This can be achieved by prefixing the keys for the options and positional parameters with their command's qualified name.
+For example, to give the  `git commit` command's `--cleanup` option a default value of `strip`, define a key of `git.commit.cleanup` and assign it a default value:
+
+```
+# /home/remko/.git.properties
+git.commit.cleanup = strip
+```
+
+
+
 ### Help API improvements
 The new `Help.createHeading(String, Object...)` and  `Help.createTextTable(Map<?, ?>)` methods
  facilitate creating tabular custom Help sections.
@@ -73,7 +121,7 @@ No features were deprecated in this release.
 
 ## <a name="4.1.0-breaking-changes"></a> Potential breaking changes
 
-* From this release, subcommands will not be parsed as option values for options with optional parameters.
+* From picocli 4.1, subcommands will not be parsed as option values for options with optional parameters.
 * Enum constants can now be matched by their `toString()` as well as their `name()`.
 
 

@@ -15469,6 +15469,7 @@ public class CommandLine {
          */
         public PropertiesDefaultProvider(File file) {
             this(createProperties(file, null));
+            properties.remove("__picocli_internal_location");
             location = file;
         }
 
@@ -15514,7 +15515,7 @@ public class CommandLine {
         public String defaultValue(ArgSpec argSpec) throws Exception {
             if (properties == null) {
                 properties = loadProperties(argSpec.command());
-                location = properties == null ? null : (File) properties.get("__picocli_internal_location");
+                location = properties == null ? null : (File) properties.remove("__picocli_internal_location");
             }
             if (properties == null || properties.isEmpty()) {
                 return null;
