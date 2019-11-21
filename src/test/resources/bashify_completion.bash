@@ -39,6 +39,7 @@
 # [4] http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETE_005fALIASES
 # [5] https://stackoverflow.com/questions/17042057/bash-check-element-in-array-for-elements-in-another-array/17042655#17042655
 # [6] https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion.html#Programmable-Completion
+# [7] https://stackoverflow.com/questions/3249432/can-a-bash-tab-completion-script-be-used-in-zsh/27853970#27853970
 #
 
 if [ -n "$BASH_VERSION" ]; then
@@ -48,6 +49,10 @@ elif [ -n "$ZSH_VERSION" ]; then
   # Make alias a distinct command for completion purposes when using zsh (see [4])
   setopt COMPLETE_ALIASES
   alias compopt=complete
+
+  # Enable bash completion in zsh (see [7])
+  autoload -U +X compinit && compinit
+  autoload -U +X bashcompinit && bashcompinit
 fi
 
 # ArrContains takes two arguments, both of which are the name of arrays.

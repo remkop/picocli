@@ -110,6 +110,16 @@ There are also new convenience methods `Help.fullSynopsis()` and `CommandLine.ge
 * ArgGroups now correctly validate that required options are present
 * Non-validating ArgGroups are now automatically set to be non-exclusive
 
+### Autocompletion script improvements
+
+The generated completion script itself now enables bash completion in zsh.
+
+That means it is no longer necessary to run the below commands in ZSH before sourcing the completion script:
+
+```zsh
+autoload -U +X compinit && compinit
+autoload -U +X bashcompinit && bashcompinit
+```
 
 ## <a name="4.1.0-fixes"></a> Fixed issues
 * [#841] (API) Add `JniConfigGenerator` to `picocli-codegen` module.
@@ -126,7 +136,8 @@ There are also new convenience methods `Help.fullSynopsis()` and `CommandLine.ge
 * [#836] (Enhancement) Add convenience methods `Help.fullSynopsis()` and `CommandLine.getHelp()`.
 * [#833] (Enhancement) Non-validating ArgGroups are now automatically set to be non-exclusive. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#830] (Enhancement) Enum constants can now be matched by their `toString()` as well as their `name()`. Improved error reporting. Thanks to [Henning Makholm](https://github.com/hmakholm) for the pull request.
-* [#846] (Enhancement) Allow value `tty` for system property `picocli.ansi`: force picocli to emit ANSI escape characters if the process is using an interactive console. 
+* [#846] (Enhancement) Allow value `tty` for system property `picocli.ansi`: force picocli to emit ANSI escape characters if the process is using an interactive console.
+* [#772] (Enhancement) Generated completion script should enable bash completion in zsh. Thanks to [Bob Tiernay](https://github.com/bobtiernay-okta) for raising this.
 * [#480] (DOC) Added a [Handling Errors](https://picocli.info#_handling_errors) subsection to the Executing Commands section of the user manual to show how to customize how your application deals with invalid input or business logic exceptions.
 * [#813] (DOC) Clarify usage of negatable boolean `@Option` with default value "true". Thanks to [Yann ROBERT](https://github.com/YannRobert) for raising this.
 * [#814] (DOC) Document how a CLI application can be packaged for distribution.

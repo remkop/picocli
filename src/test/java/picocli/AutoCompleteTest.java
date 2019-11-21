@@ -604,6 +604,7 @@ public class AutoCompleteTest {
                 "# [4] http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETE_005fALIASES\n" +
                 "# [5] https://stackoverflow.com/questions/17042057/bash-check-element-in-array-for-elements-in-another-array/17042655#17042655\n" +
                 "# [6] https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion.html#Programmable-Completion\n" +
+                "# [7] https://stackoverflow.com/questions/3249432/can-a-bash-tab-completion-script-be-used-in-zsh/27853970#27853970\n" +
                 "#\n" +
                 "\n" +
                 "if [ -n \"$BASH_VERSION\" ]; then\n" +
@@ -613,6 +614,10 @@ public class AutoCompleteTest {
                 "  # Make alias a distinct command for completion purposes when using zsh (see [4])\n" +
                 "  setopt COMPLETE_ALIASES\n" +
                 "  alias compopt=complete\n" +
+                "\n" +
+                "  # Enable bash completion in zsh (see [7])\n" +
+                "  autoload -U +X compinit && compinit\n" +
+                "  autoload -U +X bashcompinit && bashcompinit\n" +
                 "fi\n" +
                 "\n" +
                 "# ArrContains takes two arguments, both of which are the name of arrays.\n" +
@@ -770,6 +775,7 @@ public class AutoCompleteTest {
                 "# [4] http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETE_005fALIASES\n" +
                 "# [5] https://stackoverflow.com/questions/17042057/bash-check-element-in-array-for-elements-in-another-array/17042655#17042655\n" +
                 "# [6] https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion.html#Programmable-Completion\n" +
+                "# [7] https://stackoverflow.com/questions/3249432/can-a-bash-tab-completion-script-be-used-in-zsh/27853970#27853970\n" +
                 "#\n" +
                 "\n" +
                 "if [ -n \"$BASH_VERSION\" ]; then\n" +
@@ -779,6 +785,10 @@ public class AutoCompleteTest {
                 "  # Make alias a distinct command for completion purposes when using zsh (see [4])\n" +
                 "  setopt COMPLETE_ALIASES\n" +
                 "  alias compopt=complete\n" +
+                "\n" +
+                "  # Enable bash completion in zsh (see [7])\n" +
+                "  autoload -U +X compinit && compinit\n" +
+                "  autoload -U +X bashcompinit && bashcompinit\n" +
                 "fi\n" +
                 "\n" +
                 "# ArrContains takes two arguments, both of which are the name of arrays.\n" +
