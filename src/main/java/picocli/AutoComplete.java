@@ -191,6 +191,38 @@ public class AutoComplete {
         }
     }
 
+    /**
+     * Command that generates a Bash/ZSH completion script for its parent command (which should be the top-level command).
+     * <p>
+     * This class can be used as a subcommand for the top-level command in your application.
+     * Users can then install completion for the top-level command by running the following command:
+     * </p><pre>
+     * source &lt;(top-level-command generate-completion)
+     * </pre>
+     * @since 4.1
+     */
+    @Command(name = "generate-completion", version = "generate-completion " + CommandLine.VERSION,
+            mixinStandardHelpOptions = true,
+            description = {
+                "Generate bash/zsh completion script for ${PARENT-COMMAND-NAME}.",
+                "Run the following command to give `${PARENT-COMMAND-NAME}` TAB completion in the current shell:",
+                "",
+                "source <(${PARENT-COMMAND-NAME} ${COMMAND-NAME})",
+                ""},
+            optionListHeading = "Options:%n"
+    )
+    public static class GenerateCompletion implements Runnable {
+
+        @Spec CommandLine.Model.CommandSpec spec;
+
+        public void run() {
+            String script = AutoComplete.bash(
+                    spec.parent().name(),
+                    spec.parent().commandLine());
+            System.out.println(script);
+        }
+    }
+
     private static interface Function<T, V> {
         V apply(T t);
     }

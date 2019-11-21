@@ -1197,4 +1197,51 @@ public class AutoCompleteTest {
         m.invoke(null, null, candidates);
         assertTrue("null PositionalParamSpec adds no candidates", candidates.isEmpty());
     }
+
+    @Command(name = "myapp", mixinStandardHelpOptions = true,
+            subcommands = AutoComplete.GenerateCompletion.class)
+    static class MyApp implements Runnable {
+        public void run() { }
+    }
+
+    @Test
+    public void testGenerateCompletionParentUsageMessage() {
+        CommandLine cmd = new CommandLine(new MyApp());
+        String expected = String.format("" +
+                "Usage: myapp [-hV] [COMMAND]%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "Commands:%n" +
+                "  generate-completion  Generate bash/zsh completion script for myapp.%n");
+        assertEquals(expected, cmd.getUsageMessage(CommandLine.Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testGenerateCompletionCanBeHiddenFromParentUsageMessage() {
+        CommandLine cmd = new CommandLine(new MyApp());
+        CommandLine gen = cmd.getSubcommands().get("generate-completion");
+        gen.getCommandSpec().usageMessage().hidden(true);
+        String expected = String.format("" +
+                "Usage: myapp [-hV] [COMMAND]%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n");
+        assertEquals(expected, cmd.getUsageMessage(CommandLine.Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testGenerateCompletionUsageMessage() {
+        CommandLine cmd = new CommandLine(new MyApp());
+        String expected = String.format("" +
+                "Usage: myapp generate-completion [-hV]%n" +
+                "Generate bash/zsh completion script for myapp.%n" +
+                "Run the following command to give `myapp` TAB completion in the current shell:%n" +
+                "%n" +
+                "source <(myapp generate-completion)%n" +
+                "%n" +
+                "Options:%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n");
+        CommandLine gen = cmd.getSubcommands().get("generate-completion");
+        assertEquals(expected, gen.getUsageMessage(CommandLine.Help.Ansi.OFF));
+    }
 }

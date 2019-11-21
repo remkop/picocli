@@ -110,6 +110,25 @@ There are also new convenience methods `Help.fullSynopsis()` and `CommandLine.ge
 * ArgGroups now correctly validate that required options are present
 * Non-validating ArgGroups are now automatically set to be non-exclusive
 
+### AutoComplete.GenerateCompletion
+
+This release adds a built-in `generate-completion` subcommand that generates a completion script for its parent command.
+
+Example usage:
+
+```java
+@Command(name = "myapp",
+        subcommands = picocli.AutoComplete.GenerateCompletion.class)
+static class MyApp { //...
+}
+```
+
+This allows users to install completion for the `myapp` command by running the following command:
+
+```bash
+source <(myapp generate-completion)
+```
+
 ### Autocompletion script improvements
 
 The generated completion script itself now enables bash completion in zsh.
@@ -133,6 +152,7 @@ autoload -U +X bashcompinit && bashcompinit
 * [#810] (Bugfix) `@ArgGroup` should not validate when marked as `validate = false`. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#870] (Bugfix) Required options were not validated when mixing required and non-required options in an ArgGroup. Thanks to [W Scott Johnson](https://github.com/wjohnson5) for raising this.
 * [#868] (Enhancement) Add built-in default value provider implementation `PropertiesDefaultProvider` that loads default values from properties file in home directory or specified location.
+* [#809] (Enhancement) Add built-in `generate-completion` subcommand that generates a completion script for its parent command. Thanks to [George Gastaldi](https://github.com/gastaldi) for the suggestion.
 * [#836] (Enhancement) Add convenience methods `Help.fullSynopsis()` and `CommandLine.getHelp()`.
 * [#833] (Enhancement) Non-validating ArgGroups are now automatically set to be non-exclusive. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#830] (Enhancement) Enum constants can now be matched by their `toString()` as well as their `name()`. Improved error reporting. Thanks to [Henning Makholm](https://github.com/hmakholm) for the pull request.
