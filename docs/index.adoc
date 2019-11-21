@@ -3272,13 +3272,9 @@ Users may be interested in combining Jansi with https://github.com/remkop/picocl
 import picocli.jansi.graalvm.AnsiConsole; // not org.fusesource.jansi.AnsiConsole
 ...
 public static void main(String[] args) {
-    boolean windows = System.getProperty("os.name").toLowerCase().startsWith("win");
-    if (windows) { // only include in native images for Windows
-        AnsiConsole.systemInstall(); // enable colors on Windows
-    }
-    int exitCode = new CommandLine(new MyApp()).execute(args);
-    if (windows) {
-        AnsiConsole.systemUninstall(); // cleanup when done
+    int exitCode;
+    try (AnsiConsole ansi = AnsiConsole.windowsInstall()) {
+        exitCode = new CommandLine(new MyApp()).execute(args);
     }
     System.exit(exitCode);
 }
@@ -3297,8 +3293,7 @@ This https://stackoverflow.com/a/51681675/1446916[Stack Overflow answer] has mor
 
 CAUTION: Note that picocli's <<Heuristics for Enabling ANSI,heuristics for enabling ANSI>> currently do not include detecting whether support for Virtual Terminal / ANSI escape sequences has been turned on or off via `SetConsoleMode` or a registry change.
 So just making these changes is not sufficient to let a picocli-based application show colors.
-// https://github.com/remkop/picocli/issues/846
-//Applications that enabled colors via `SetConsoleMode` may want to set system property `picocli.ansi` to `true`.
+Applications that enabled colors via `SetConsoleMode` may want to set system property `picocli.ansi` to `tty`.
 Environments that enabled colors via a Windows Registry change may want to set environment variable `CLICOLOR=1`.
 
 
@@ -3316,7 +3311,8 @@ One option is for end users to install either http://cmder.net/[Cmder], http://s
 === Forcing ANSI On/Off
 You can force picocli to either always use ANSI codes or never use ANSI codes regardless of the platform:
 
-* Setting system property `picocli.ansi` to `true` forces picocli to use ANSI codes; setting `picocli.ansi` to `false` forces picocli to *not* use ANSI codes. This may be a useful facility for users of your command line application.
+* Setting system property `picocli.ansi` to `true` forces picocli to use ANSI codes; setting `picocli.ansi` to `false` forces picocli to *not* use ANSI codes. It may be useful for your users to mention this system property in the documentation for your command line application.
+* Setting system property `picocli.ansi` to `tty` (case-insensitive) forces picocli to use ANSI codes only if picocli guesses that the process is using an interactive console: either `System.console() != null` or picocli guesses the application is running in a pseudo-terminal pty on a Linux emulator in Windows. Otherwise the <<Heuristics for Enabling ANSI,below heuristics>> are used to determine whether to output ANSI escape codes.
 * You can decide to force disable or force enable ANSI escape codes programmatically by specifying `Ansi.ON` or `Ansi.OFF` when invoking `CommandLine.usage`.
 This overrides the value of system property `picocli.ansi`. For example:
 

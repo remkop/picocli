@@ -14555,14 +14555,19 @@ public class CommandLine {
             }
 
             /** Returns {@code true} if ANSI escape codes should be emitted, {@code false} otherwise.
-             * @return ON: {@code true}, OFF: {@code false}, AUTO: if system property {@code "picocli.ansi"} is
-             *      defined then return its boolean value, otherwise return whether the platform supports ANSI escape codes */
+             * @return ON: {@code true}, OFF: {@code false}, AUTO: if system property {@code "picocli.ansi"} has value
+             *      {@code "tty"} (case-insensitive), then return {@code true} if either {@code System.console() != null}
+             *      or picocli guesses the application is running in a pseudo-terminal pty on a Linux emulator in Windows.
+             *      If system property {@code "picocli.ansi"} has value {@code "true"} (case-sensitive) then return {@code true}.
+             *      Otherwise use picocli's <a href="https://picocli.info/#_heuristics_for_enabling_ansi">Heuristics for Enabling ANSI</a>
+             *      to determine whether the platform supports ANSI escape codes. */
             public boolean enabled() {
                 if (this == ON)  { return true; }
                 if (this == OFF) { return false; }
                 String ansi = System.getProperty("picocli.ansi");
                 boolean auto = ansi == null || "AUTO".equalsIgnoreCase(ansi);
-                return auto ? ansiPossible() : Boolean.getBoolean("picocli.ansi");
+                boolean tty = "TTY".equalsIgnoreCase(ansi) && (isTTY() || isPseudoTTY());
+                return auto ? ansiPossible() : tty || Boolean.getBoolean("picocli.ansi");
             }
             /**
              * Returns a new Text object for this Ansi mode, encapsulating the specified string

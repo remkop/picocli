@@ -97,6 +97,10 @@ public class CommandLineHelpAnsiTest {
         assertTrue(Ansi.ON.enabled());
         assertFalse(Ansi.OFF.enabled());
 
+        System.setProperty("picocli.ansi", "tty");
+        boolean hasConsole = Ansi.calcTTY() || Ansi.isPseudoTTY();
+        assertEquals(hasConsole, Ansi.AUTO.enabled());
+
         System.setProperty("picocli.ansi", "true");
         assertEquals(true, Ansi.AUTO.enabled());
 
