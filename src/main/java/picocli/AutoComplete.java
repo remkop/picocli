@@ -219,7 +219,7 @@ public class AutoComplete {
             String script = AutoComplete.bash(
                     spec.parent().name(),
                     spec.parent().commandLine());
-            System.out.println(script);
+            spec.commandLine().getOut().println(script);
         }
     }
 
