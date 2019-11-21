@@ -70,7 +70,35 @@ git.commit.cleanup = strip
 The new `Help.createHeading(String, Object...)` and  `Help.createTextTable(Map<?, ?>)` methods
  facilitate creating tabular custom Help sections.
  
-The user manual has an [example](https://picocli.info/index.html#_custom_help_section_example).
+
+The below example shows how to add a custom Environment Variables section to the usage help message.
+
+```java
+// help section keys
+static final String SECTION_KEY_ENV_HEADING = "environmentVariablesHeading";
+static final String SECTION_KEY_ENV_DETAILS = "environmentVariables";
+// ...
+
+// the data to display
+Map<String, String> env = new LinkedHashMap<>();
+env.put("FOO", "explanation of foo");
+env.put("BAR", "explanation of bar");
+env.put("XYZ", "xxxx yyyy zzz");
+
+// register the custom section renderers
+CommandLine cmd = new CommandLine(new MyApp());
+cmd.getHelpSectionMap().put(SECTION_KEY_ENV_HEADING,
+                            help -> help.createHeading("Environment Variables:%n"));
+cmd.getHelpSectionMap().put(SECTION_KEY_ENV_DETAILS,
+                            help -> help.createTextTable(env).toString());
+
+// specify the location of the new sections
+List<String> keys = new ArrayList<>(cmd.getHelpSectionKeys());
+int index = keys.indexOf(CommandLine.Model.UsageMessageSpec.SECTION_KEY_FOOTER_HEADING);
+keys.add(index, SECTION_KEY_ENV_HEADING);
+keys.add(index + 1, SECTION_KEY_ENV_DETAILS);
+cmd.setHelpSectionKeys(keys);
+```
 
 There are also new convenience methods `Help.fullSynopsis()` and `CommandLine.getHelp()`.
 
