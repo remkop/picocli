@@ -62,6 +62,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -4291,5 +4292,68 @@ public class CommandLineHelpTest {
                 "  -V, --version             Print version information and exit.%n");
         String actual = new CommandLine(new App()).getUsageMessage();
         assertEquals(expected, actual);
+    }
+
+    @Command(name = "showenv", mixinStandardHelpOptions = true,
+            version = "showenv 1.0",
+            description = "Demonstrates a usage help message with " +
+                    "an additional section for environment variables.",
+            exitCodeListHeading = "Exit Codes:%n",
+            exitCodeList = {
+                    " 0:Successful program execution",
+                    "64:Usage error: user input for the command was incorrect, " +
+                            "e.g., the wrong number of arguments, a bad flag, " +
+                            "a bad syntax in a parameter, etc.",
+                    "70:Internal software error: an exception occurred when invoking " +
+                            "the business logic of this command."
+            }
+    )
+    public class EnvironmentVariablesSection { }
+
+    @Test
+    public void testCustomTabularSection() {
+        String SECTION_KEY_ENV_HEADING = "environmentVariablesHeading";
+        String SECTION_KEY_ENV_DETAILS = "environmentVariables";
+
+        // the data to display
+        final Map<String, String> env = new LinkedHashMap<String, String>();
+        env.put("FOO", "explanation of foo. If very long, then the line is wrapped and the wrapped line is indented with two spaces.");
+        env.put("BAR", "explanation of bar");
+        env.put("XYZ", "xxxx yyyy zzz");
+
+        // register the custom section renderers
+        CommandLine cmd = new CommandLine(new EnvironmentVariablesSection());
+        cmd.getHelpSectionMap().put(SECTION_KEY_ENV_HEADING, new IHelpSectionRenderer() {
+            public String render(Help help) { return help.createHeading("Environment Variables:%n"); }
+        });
+        cmd.getHelpSectionMap().put(SECTION_KEY_ENV_DETAILS, new IHelpSectionRenderer() {
+            public String render(Help help) { return help.createTextTable(env).toString(); }
+        });
+
+        // specify the location of the new sections
+        List<String> keys = new ArrayList<String>(cmd.getHelpSectionKeys());
+        int index = keys.indexOf(CommandLine.Model.UsageMessageSpec.SECTION_KEY_FOOTER_HEADING);
+        keys.add(index, SECTION_KEY_ENV_HEADING);
+        keys.add(index + 1, SECTION_KEY_ENV_DETAILS);
+        cmd.setHelpSectionKeys(keys);
+
+        String expected = String.format("" +
+                "Usage: showenv [-hV]%n" +
+                "Demonstrates a usage help message with an additional section for environment%n" +
+                "variables.%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "Exit Codes:%n" +
+                "   0   Successful program execution%n" +
+                "  64   Usage error: user input for the command was incorrect, e.g., the wrong%n" +
+                "         number of arguments, a bad flag, a bad syntax in a parameter, etc.%n" +
+                "  70   Internal software error: an exception occurred when invoking the%n" +
+                "         business logic of this command.%n" +
+                "Environment Variables:%n" +
+                "  FOO   explanation of foo. If very long, then the line is wrapped and the%n" +
+                "          wrapped line is indented with two spaces.%n" +
+                "  BAR   explanation of bar%n" +
+                "  XYZ   xxxx yyyy zzz%n");
+        assertEquals(expected, cmd.getUsageMessage(Help.Ansi.OFF));
     }
 }
