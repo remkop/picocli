@@ -514,8 +514,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>Autocomplete for Java Command Line Applications</h1>
 <div class="details">
-<span id="revnumber">version 4.0.4,</span>
-<span id="revdate">2019-09-09</span>
+<span id="revnumber">version 4.1.0,</span>
+<span id="revdate">2019-11-22</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -558,18 +558,23 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_programmatically_registered_subcommands">5.4. Programmatically Registered Subcommands</a></li>
 </ul>
 </li>
-<li><a href="#_installing_completion_scripts_permanently_in_bash">6. Installing Completion Scripts Permanently in Bash</a></li>
-<li><a href="#_installing_completion_scripts_permanently_in_zsh">7. Installing Completion Scripts Permanently in ZSH</a></li>
-<li><a href="#_generating_completion_scripts_during_the_build">8. Generating Completion Scripts During the Build</a>
+<li><a href="#_installing_completion_scripts_permanently_in_bash_zsh">6. Installing Completion Scripts Permanently in Bash/ZSH</a>
 <ul class="sectlevel2">
-<li><a href="#_maven_example">8.1. Maven Example</a></li>
+<li><a href="#_zsh">6.1. ZSH</a></li>
+<li><a href="#_if_a_href_https_github_com_scop_bash_completion_code_bash_completion_code_a_is_installed">6.2. If <a href="https://github.com/scop/bash-completion"><code>bash-completion</code></a> is Installed</a></li>
+<li><a href="#_without_code_bash_completion_code_installed">6.3. Without <code>bash-completion</code> Installed</a></li>
 </ul>
 </li>
-<li><a href="#_picocli_user_manual">9. Picocli User Manual</a></li>
-<li><a href="#_github_project">10. GitHub Project</a></li>
-<li><a href="#_issue_tracker">11. Issue Tracker</a></li>
-<li><a href="#_license">12. License</a></li>
-<li><a href="#_releases">13. Releases</a></li>
+<li><a href="#_generating_completion_scripts_during_the_build">7. Generating Completion Scripts During the Build</a>
+<ul class="sectlevel2">
+<li><a href="#_maven_example">7.1. Maven Example</a></li>
+</ul>
+</li>
+<li><a href="#_picocli_user_manual">8. Picocli User Manual</a></li>
+<li><a href="#_github_project">9. GitHub Project</a></li>
+<li><a href="#_issue_tracker">10. Issue Tracker</a></li>
+<li><a href="#_license">11. License</a></li>
+<li><a href="#_releases">12. Releases</a></li>
 </ul>
 </div>
 </div>
@@ -656,7 +661,7 @@ Prints the checksum (MD5 by default) of a file to STDOUT.
 </div>
 </div>
 <div class="paragraph">
-<p>This generated a <code>jchecksum_completion</code> script in the current directory. To verify:</p>
+<p>This generates a <code>jchecksum_completion</code> script in the current directory. To verify:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -671,17 +676,9 @@ jchecksum_completion  myproject.jar  picocli-1.0.0.jar</code></pre>
 <p>Finally, <a href="http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html">source</a> the completion script:</p>
 </div>
 <div class="listingblock">
-<div class="title">Bash</div>
+<div class="title">Bash or ZSH</div>
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="bash">. jchecksum_completion</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="title">ZSH</div>
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">autoload -U +X compinit &amp;&amp; compinit
-autoload -U +X bashcompinit &amp;&amp; bashcompinit
-. ./jchecksum_completion</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -713,7 +710,7 @@ echo &quot;. jchecksum_completion&quot; &gt;&gt; ~/.bashrc</code></pre>
 <p><code>~/.bashrc</code> indicates <code>.bashrc</code> is in your home directory.</p>
 </div>
 <div class="paragraph">
-<p>(See <a href="#_installing_completion_scripts_permanently_in_bash">detailed Bash installation</a>, <a href="#_installing_completion_scripts_permanently_in_zsh">Installing Completion Scripts Permanently in ZSH</a>.)</p>
+<p>(See <a href="#_installing_completion_scripts_permanently_in_bash_zsh">Installing Completion Scripts Permanently in Bash/ZSH</a>.)</p>
 </div>
 </div>
 <div class="sect2">
@@ -732,8 +729,11 @@ Have a subcommand that generates a completion script.
 </div>
 <div class="paragraph">
 <p>You could generate completion scripts for your commands <a href="#_generating_completion_scripts_during_the_build">during the build</a> and distribute them with your application,
-but an alternative is to provide a subcommand that generates the completion script for the top-level comand.
-That allows users to source the completion script like this:</p>
+but an alternative is to give your application the ability to generate its own completion script on demand.</p>
+</div>
+<div class="paragraph">
+<p>That allows end users to install completion for your application with a single command.
+For example, if your utility is called <code>mycommand</code>, users can install completion for it by running the following command:</p>
 </div>
 <div class="listingblock">
 <div class="title">Bash</div>
@@ -742,43 +742,44 @@ That allows users to source the completion script like this:</p>
 </div>
 </div>
 <div class="paragraph">
-<p>Below is an example of what a subcommand that generates a completion script could look like.</p>
+<p>This can be accomplished by registering the built-in <code>picocli.AutoComplete.GenerateCompletion</code> class as a subcommand of the top-level command.</p>
+</div>
+<div class="paragraph">
+<p>For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">picocli.AutoComplete</span>;
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">picocli.AutoComplete.GenerateCompletion</span>;
 <span class="keyword">import</span> <span class="include">picocli.CommandLine</span>;
 <span class="keyword">import</span> <span class="include">picocli.CommandLine.Command</span>;
-<span class="keyword">import</span> <span class="include">picocli.CommandLine.Spec</span>;
 
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">mycommand</span><span class="delimiter">&quot;</span></span>, subcommands = GenerateCompletion.class)
-<span class="directive">public</span> <span class="type">class</span> <span class="class">CommandWithCompletionSubcommand</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+<span class="directive">public</span> <span class="type">class</span> <span class="class">MyApp</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
 
     <span class="annotation">@Override</span>
     <span class="directive">public</span> <span class="type">void</span> run() { <span class="comment">// top-level command business logic here</span>
     }
 
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
-        <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> CommandWithCompletionSubcommand()).execute(args);
-    }
-}
-
-<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">generate-completion</span><span class="delimiter">&quot;</span></span>,
-        description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Generate a completion script for ${PARENT-COMMAND-NAME}</span><span class="delimiter">&quot;</span></span>)
-<span class="type">class</span> <span class="class">GenerateCompletion</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
-
-    <span class="annotation">@Spec</span> CommandLine.Model.CommandSpec spec;
-
-    <span class="annotation">@Override</span>
-    <span class="directive">public</span> <span class="type">void</span> run() {
-        <span class="predefined-type">System</span>.out.println(
-                AutoComplete.bash(<span class="string"><span class="delimiter">&quot;</span><span class="content">mycommand</span><span class="delimiter">&quot;</span></span>, spec.parent().commandLine()));
+        <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp()).execute(args);
     }
 }</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>See also this <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/autocomplete/CommandWithCompletionSubcommand.java">example</a>.</p>
+<p>By default, the <code>generate-completion</code> command shows up as a subcommand in the usage help message of it parent command.
+Applications that want the completion subcommand to be hidden in the usage help message, can do the following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
+    CommandLine cmd = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp());
+    CommandLine gen = cmd.getSubcommands().get(<span class="string"><span class="delimiter">&quot;</span><span class="content">generate-completion</span><span class="delimiter">&quot;</span></span>);
+    gen.getCommandSpec().usageMessage().hidden(<span class="predefined-constant">true</span>);
+    <span class="type">int</span> exitCode = cmd.execute(args);
+    <span class="comment">// ...</span>
+}</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -1043,22 +1044,40 @@ CommandLine hierarchy = <span class="keyword">new</span> CommandLine(<span class
 </div>
 </div>
 <div class="sect1">
-<h2 id="_installing_completion_scripts_permanently_in_bash">6. Installing Completion Scripts Permanently in Bash</h2>
+<h2 id="_installing_completion_scripts_permanently_in_bash_zsh">6. Installing Completion Scripts Permanently in Bash/ZSH</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>This section describes installing completion scripts in more depth than the <a href="#_quick_start_tutorial">Quick Start Tutorial</a>.</p>
 </div>
 <div class="paragraph">
-<p>Make sure bash completion is installed.</p>
+<p><a href="http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html">Source</a> the generated completion script to install it in your current bash or zsh session.</p>
+</div>
+<div class="sect2">
+<h3 id="_zsh">6.1. ZSH</h3>
+<div class="paragraph">
+<p>Zsh can handle bash completions functions. The latest development version of zsh has a function <code>bashcompinit</code>, that when run will allow zsh to read bash completion specifications and functions. The zshcompsys man page has details.</p>
 </div>
 <div class="paragraph">
-<p><a href="http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html">Source</a> the generated completion script to install it in your current bash session.</p>
+<p>Since picocli 4.1, the generated completion script contains the following code to run <code>bashcompinit</code> after <code>compinit</code>; this will define <code>complete</code> and <code>compgen</code> functions corresponding to the bash builtins.
+It is no longer necessary to manually run the below commands.</p>
 </div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">autoload -U +X compinit &amp;&amp; compinit
+autoload -U +X bashcompinit &amp;&amp; bashcompinit</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_if_a_href_https_github_com_scop_bash_completion_code_bash_completion_code_a_is_installed">6.2. If <a href="https://github.com/scop/bash-completion"><code>bash-completion</code></a> is Installed</h3>
 <div class="paragraph">
 <p>To install it more permanently, place the completion script file in <code>/etc/bash_completion.d</code> (or <code>/usr/local/etc/bash_completion.d</code> on a Mac). If <code>bash-completion</code> is installed, placing the completion script in either of these directories should be sufficient. (Source your <code>~/.bash_profile</code> or launch a new terminal to start using this completion script.)</p>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_without_code_bash_completion_code_installed">6.3. Without <code>bash-completion</code> Installed</h3>
 <div class="paragraph">
-<p>Alternatively, make a directory <code>mkdir ~/bash_completion.d</code>, and place the completion script in this directory. Edit your <code>~/.bashrc</code> file and add the following:</p>
+<p>Alternatively, make a directory <code>mkdir ~/bash_completion.d</code>, and place the completion script in this directory. Edit your <code>~/.bashrc</code> file (or <code>~/.zshrc</code> file on ZSH) and add the following:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1071,56 +1090,20 @@ done</code></pre>
 <p>All completion scripts in the <code>~/bash_completion.d</code> directory will now be available every time you launch a new shell.</p>
 </div>
 <div class="paragraph">
-<p>Source your <code>~/.bash_profile</code> or launch a new terminal to start using this completion script.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_installing_completion_scripts_permanently_in_zsh">7. Installing Completion Scripts Permanently in ZSH</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>This section describes installing completion scripts in more depth than the <a href="#_quick_start_tutorial">Quick Start Tutorial</a>.</p>
-</div>
-<div class="paragraph">
-<p>Zsh can handle bash completions functions. The latest development version of zsh has a function bashcompinit, that when run will allow zsh to read bash completion specifications and functions. The zshcompsys man page has details. To use it, run bashcompinit at any time after compinit. It will define complete and compgen functions corresponding to the bash builtins.</p>
-</div>
-<div class="paragraph">
-<p><a href="http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html">Source</a> the generated completion script to install it in your current shell session.</p>
-</div>
-<div class="paragraph">
-<p>To install it more permanently, make a directory <code>mkdir ~/bash_completion.d</code>, and place the completion script in this directory. Edit your <code>~/.zshrc</code> file and add the following:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">autoload -U +X compinit &amp;&amp; compinit
-autoload -U +X bashcompinit &amp;&amp; bashcompinit
-for bcfile in ~/bash_completion.d/* ; do
-  . $bcfile
-done</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>All completion scripts in the <code>~/bash_completion.d</code> directory will now be available every time you launch a new shell.</p>
-</div>
-<div class="paragraph">
-<p>Then reload your shell:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">exec $SHELL -l</code></pre>
+<p>Source the generated completion script or launch a new terminal to start using this completion script.</p>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_generating_completion_scripts_during_the_build">8. Generating Completion Scripts During the Build</h2>
+<h2 id="_generating_completion_scripts_during_the_build">7. Generating Completion Scripts During the Build</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>It may be useful to generate your completion scripts automatically during the build.
 Below is an example Maven snippet that demonstrates how to achieve this.</p>
 </div>
 <div class="sect2">
-<h3 id="_maven_example">8.1. Maven Example</h3>
+<h3 id="_maven_example">7.1. Maven Example</h3>
 <div class="admonitionblock tip">
 <table>
 <tr>
@@ -1168,7 +1151,7 @@ Setting system property <code>picocli.autocomplete.systemExitOnError</code> ensu
 </div>
 </div>
 <div class="sect1">
-<h2 id="_picocli_user_manual">9. Picocli User Manual</h2>
+<h2 id="_picocli_user_manual">8. Picocli User Manual</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="index.html">picocli user manual</a> explains how to build Java command line applications with picocli.</p>
@@ -1176,7 +1159,7 @@ Setting system property <code>picocli.autocomplete.systemExitOnError</code> ensu
 </div>
 </div>
 <div class="sect1">
-<h2 id="_github_project">10. GitHub Project</h2>
+<h2 id="_github_project">9. GitHub Project</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="https://github.com/remkop/picocli">GitHub project</a> has the source code, tests, build scripts, etc.</p>
@@ -1188,7 +1171,7 @@ Setting system property <code>picocli.autocomplete.systemExitOnError</code> ensu
 </div>
 </div>
 <div class="sect1">
-<h2 id="_issue_tracker">11. Issue Tracker</h2>
+<h2 id="_issue_tracker">10. Issue Tracker</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Please use the <a href="https://github.com/remkop/picocli/issues">Issue Tracker</a> to report bugs or request features.</p>
@@ -1196,7 +1179,7 @@ Setting system property <code>picocli.autocomplete.systemExitOnError</code> ensu
 </div>
 </div>
 <div class="sect1">
-<h2 id="_license">12. License</h2>
+<h2 id="_license">11. License</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli is licensed under the <a href="https://github.com/remkop/picocli/blob/master/LICENSE">Apache License 2.0</a>.</p>
@@ -1204,7 +1187,7 @@ Setting system property <code>picocli.autocomplete.systemExitOnError</code> ensu
 </div>
 </div>
 <div class="sect1">
-<h2 id="_releases">13. Releases</h2>
+<h2 id="_releases">12. Releases</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Previous versions are available from the GitHub project <a href="https://github.com/remkop/picocli/releases">Releases</a>.</p>
@@ -1214,8 +1197,8 @@ Setting system property <code>picocli.autocomplete.systemExitOnError</code> ensu
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.0.4<br>
-Last updated 2019-09-19 11:16:51 JST
+Version 4.1.0<br>
+Last updated 2019-11-22 18:36:07 JST
 </div>
 </div>
 </body>

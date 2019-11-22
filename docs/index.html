@@ -514,8 +514,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 4.0.4,</span>
-<span id="revdate">2019-09-09</span>
+<span id="revnumber">version 4.1.0,</span>
+<span id="revdate">2019-11-22</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -556,7 +556,8 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#defaultValue-annotation">5.1. <code>defaultValue</code> Annotation</a></li>
 <li><a href="#_field_values">5.2. Field Values</a></li>
 <li><a href="#_default_provider">5.3. Default Provider</a></li>
-<li><a href="#fallbackValue-annotation">5.4. <code>fallbackValue</code> Annotation</a></li>
+<li><a href="#_propertiesdefaultprovider">5.4. PropertiesDefaultProvider</a></li>
+<li><a href="#fallbackValue-annotation">5.5. <code>fallbackValue</code> Annotation</a></li>
 </ul>
 </li>
 <li><a href="#_multiple_values">6. Multiple Values</a>
@@ -594,6 +595,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_execution_configuration">9.5. Execution Configuration</a></li>
 <li><a href="#_migration">9.6. Migration</a></li>
 <li><a href="#_diy_command_execution">9.7. DIY Command Execution</a></li>
+<li><a href="#_handling_errors">9.8. Handling Errors</a></li>
 </ul>
 </li>
 <li><a href="#_parser_configuration">10. Parser Configuration</a>
@@ -890,7 +892,7 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <h4 id="_gradle">2.1.1. Gradle</h4>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.0.4'</pre>
+<pre>compile 'info.picocli:picocli:4.1.0'</pre>
 </div>
 </div>
 </div>
@@ -901,7 +903,7 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.0.4&lt;/version&gt;
+  &lt;version&gt;4.1.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -966,7 +968,7 @@ In most cases no further configuration is needed when generating a native image.
       &lt;path&gt;
         &lt;groupId&gt;info.picocli&lt;/groupId&gt;
         &lt;artifactId&gt;picocli-codegen&lt;/artifactId&gt;
-        &lt;version&gt;4.0.4&lt;/version&gt;
+        &lt;version&gt;4.1.0&lt;/version&gt;
       &lt;/path&gt;
     &lt;/annotationProcessorPaths&gt;
     &lt;compilerArgs&gt;
@@ -985,8 +987,8 @@ In most cases no further configuration is needed when generating a native image.
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code>dependencies {
-    compile 'info.picocli:picocli:4.0.4'
-    annotationProcessor 'info.picocli:picocli-codegen:4.0.4'
+    compile 'info.picocli:picocli:4.1.0'
+    annotationProcessor 'info.picocli:picocli-codegen:4.1.0'
 }</code></pre>
 </div>
 </div>
@@ -2104,13 +2106,80 @@ Default providers need to implement the <code>picocli.CommandLine.IDefaultValueP
 </div>
 <div class="paragraph">
 <p>See the
-<a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/defaultprovider/PropertiesDefaultProvider.java">PropertiesDefaultProvider example</a>
-for a default value provider implementation that loads default values from a
-properties file named <code>".${command.name}.properties"</code> in the user home directory.</p>
+<a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/defaultprovider/">default provider examples</a>
+for example implementations.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="fallbackValue-annotation">5.4. <code>fallbackValue</code> Annotation</h3>
+<h3 id="_propertiesdefaultprovider">5.4. PropertiesDefaultProvider</h3>
+<div class="paragraph">
+<p>From picocli 4.1, applications can use the built-in <code>PropertiesDefaultProvider</code>
+implementation that loads default values from a properties file.</p>
+</div>
+<div class="paragraph">
+<p>By default, this implementation tries to find a properties file named <code>.${COMMAND-NAME}.properties</code> in the user home directory, where <code>${COMMAND-NAME}</code> is the name of the command. If a command has aliases in addition to its name, these aliases are also used to try to find the properties file. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">picocli.CommandLine.PropertiesDefaultProvider</span>;
+<span class="comment">// ...</span>
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">git</span><span class="delimiter">&quot;</span></span>, defaultValueProvider = PropertiesDefaultProvider.class)
+<span class="type">class</span> <span class="class">Git</span> { }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The above will try to load default values from <code>new File(System.getProperty("user.home"), ".git.properties")</code>.
+The location of the properties file can also be controlled with system property <code>"picocli.defaults.${COMMAND-NAME}.path"</code> (<code>"picocli.defaults.git.path"</code> in this example), in which case the value of the property must be the path to the file containing the default values.</p>
+</div>
+<div class="paragraph">
+<p>The location of the properties file may also be specified programmatically. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">CommandLine cmd = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyCommand());
+<span class="predefined-type">File</span> defaultsFile = <span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">path/to/config/mycommand.properties</span><span class="delimiter">&quot;</span></span>);
+cmd.setDefaultValueProvider(<span class="keyword">new</span> PropertiesDefaultProvider(defaultsFile));
+cmd.execute(args);</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_propertiesdefaultprovider_format">5.4.1. PropertiesDefaultProvider Format</h4>
+<div class="paragraph">
+<p>The <code>PropertiesDefaultProvider</code> expects the properties file to be in the standard java <code>.properties</code> <a href="https://en.wikipedia.org/wiki/.properties">format</a>.</p>
+</div>
+<div class="paragraph">
+<p>For options, the key is either the <a href="https://picocli.info/apidocs/picocli/CommandLine.Option.html#descriptionKey--">descriptionKey</a>,
+or the option&#8217;s <a href="https://picocli.info/apidocs/picocli/CommandLine.Model.OptionSpec.html#longestName--">longest name</a>, without the prefix. So, for an option <code>--verbose</code>, the key would be <code>verbose</code>, and for an option <code>/F</code>, the key would be <code>F</code>.</p>
+</div>
+<div class="paragraph">
+<p>For positional parameters, the key is either the <a href="https://picocli.info/apidocs/picocli/CommandLine.Parameters.html#descriptionKey--">descriptionKey</a>,
+or the positional parameter&#8217;s <a href="https://picocli.info/apidocs/picocli/CommandLine.Parameters.html#paramLabel--">param label</a>.</p>
+</div>
+<div class="paragraph">
+<p>End users may not know what the <code>descriptionKey</code> of your options and positional parameters are, so be sure  to document that with your application.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_subcommands_default_values">5.4.2. Subcommands Default Values</h4>
+<div class="paragraph">
+<p>The default values for options and positional parameters of subcommands can be included in the
+properties file for the top-level command, so that end users need to maintain only a single file.
+This can be achieved by prefixing the keys for the options and positional parameters
+with their command&#8217;s qualified name.
+For example, to give the  <code>git commit</code> command&#8217;s <code>--cleanup</code> option a
+default value of <code>strip</code>, define a key of <code>git.commit.cleanup</code> and assign
+it a default value:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code># /home/remko/.git.properties
+git.commit.cleanup = strip</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="fallbackValue-annotation">5.5. <code>fallbackValue</code> Annotation</h3>
 <div class="paragraph">
 <p>If an option is defined with <code>arity = "0..1"</code>, it may or not have a parameter value.
 If such an option is specified without a value on the command line, it is assigned the fallback value.</p>
@@ -3210,7 +3279,7 @@ Older versions of picocli had some limited exit code support where picocli would
 </div>
 </div>
 <div class="paragraph">
-<p>When the end user specified invalid input, the <code>execute</code> method prints an error message followed by the usage help message of the command, and returns an exit code. This can be customized by configuring a <code>IParameterExceptionHandler</code>.</p>
+<p>When the end user specified invalid input, the <code>execute</code> method prints an error message followed by the usage help message of the command, and returns an exit code. This can be <a href="#_invalid_user_input">customized</a> by configuring a <code>IParameterExceptionHandler</code>.</p>
 </div>
 <div class="paragraph">
 <p>If the business logic of the command throws an exception, the <code>execute</code> method prints the stack trace of the exception and returns an exit code. This can be customized by configuring a <code>IExecutionExceptionHandler</code>.</p>
@@ -3474,6 +3543,125 @@ CommandLine cmd = <span class="keyword">new</span> CommandLine(callable);
 </div>
 <div class="paragraph">
 <p>The <code>CommandLine.execute</code> method is equivalent to the above, and additionally handles subcommands correctly.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_handling_errors">9.8. Handling Errors</h3>
+<div class="paragraph">
+<p>Internally, the <code>execute</code> method parses the specified user input and populates the options and positional parameters defined by the annotations.
+When the user specified invalid input, this is handled by the <code>IParameterExceptionHandler</code>.</p>
+</div>
+<div class="paragraph">
+<p>After parsing the user input, the business logic of the command is invoked: the <code>run</code>, <code>call</code> or <code>@Command</code>-annotated method.
+When an exception is thrown by the business logic, this is handled by the <code>IExecutionExceptionHandler</code>.</p>
+</div>
+<div class="paragraph">
+<p>In most cases, the default handlers are sufficient, but the sections below show how they can be customized.</p>
+</div>
+<div class="sect3">
+<h4 id="_invalid_user_input">9.8.1. Invalid User Input</h4>
+<div class="paragraph">
+<p>When the user specified invalid input, the parser throws a <code>ParameterException</code>.
+In the <code>execute</code> method, such exceptions are caught and passed to the <code>IParameterExceptionHandler</code>.</p>
+</div>
+<div class="paragraph">
+<p>The default parameter exception handler prints an error message describing the problem,
+followed by either <a href="https://picocli.info/apidocs/picocli/CommandLine.UnmatchedArgumentException.html#printSuggestions-picocli.CommandLine.ParameterException-java.io.PrintWriter-">suggested alternatives</a>
+for mistyped options, or the full usage help message of the problematic command.
+Finally, the handler returns an <a href="#_exception_exit_codes">exit code</a>.
+This is sufficient for most applications.</p>
+</div>
+<div class="paragraph">
+<p>Sometimes you want to display a shorter message. For example, the <code>grep</code> utility does not not show the full usage help when it gets an invalid argument:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>$ grep -d recurese "ERROR" logs/*
+
+Error: invalid argument ‘recurese’ for ‘--directories’
+Valid arguments are:
+  - ‘read’
+  - ‘recurse’
+  - ‘skip’
+Usage: grep [OPTION]... PATTERN [FILE]...
+Try 'grep --help' for more information.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can customize how your application handles invalid user input by setting a custom <code>IParameterExceptionHandler</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp())
+    .setParameterExceptionHandler(<span class="keyword">new</span> ShortErrorMessageHandler())
+    .execute(args);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Where the <code>IParameterExceptionHandler</code> implementation could be something like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">ShortErrorMessageHandler</span> <span class="directive">implements</span> IParameterExceptionHandler {
+
+    <span class="directive">public</span> <span class="type">int</span> handleParseException(ParameterException ex, <span class="predefined-type">String</span><span class="type">[]</span> args) {
+        CommandLine cmd = ex.getCommandLine();
+        <span class="predefined-type">PrintWriter</span> writer = cmd.getErr();
+
+        writer.println(ex.getMessage());
+        UnmatchedArgumentException.printSuggestions(ex, writer);
+        writer.print(cmd.getHelp().fullSynopsis()); <span class="comment">// since 4.1</span>
+
+        CommandSpec spec = cmd.getCommandSpec();
+        writer.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">Try '%s --help' for more information.%n</span><span class="delimiter">&quot;</span></span>, spec.qualifiedName());
+
+        <span class="keyword">return</span> cmd.getExitCodeExceptionMapper() != <span class="predefined-constant">null</span>
+                    ? cmd.getExitCodeExceptionMapper().getExitCode(ex)
+                    : spec.exitCodeOnInvalidInput();
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_business_logic_exceptions">9.8.2. Business Logic Exceptions</h4>
+<div class="paragraph">
+<p>When the business logic throws an exception, this exception is caught and passed to the <code>IExecutionExceptionHandler</code>.</p>
+</div>
+<div class="paragraph">
+<p>The default execution exception handling results in the stack trace of the exception being printed and an <a href="#_exception_exit_codes">exit code</a> being returned.
+This is sufficient for most applications.</p>
+</div>
+<div class="paragraph">
+<p>If you have designed your business logic to throw exceptions with user-facing error messages, you want to print this error message instead of the stack trace.
+This can be accomplished by installing a custom <code>IExecutionException</code>, like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp())
+    .setExecutionExceptionHandler(<span class="keyword">new</span> PrintExceptionMessageHandler())
+    .execute(args);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Where the <code>IExecutionException</code> implementation could look something like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">PrintExceptionMessageHandler</span> <span class="directive">implements</span> IExecutionExceptionHandler() {
+    <span class="directive">public</span> <span class="type">int</span> handleExecutionException(<span class="exception">Exception</span> ex,
+                                        CommandLine commandLine,
+                                        ParseResult parseResult) {
+
+        commandLine.getErr().println(ex.getMessage());
+
+        <span class="keyword">return</span> cmd.getExitCodeExceptionMapper() != <span class="predefined-constant">null</span>
+                    ? cmd.getExitCodeExceptionMapper().getExitCode(ex)
+                    : cmd.getCommandSpec().exitCodeOnExecutionException();
+    }
+}</code></pre>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -5291,13 +5479,9 @@ This is partly because GraalVM requires configuration and partly because Jansi i
 <pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">picocli.jansi.graalvm.AnsiConsole</span>; <span class="comment">// not org.fusesource.jansi.AnsiConsole</span>
 ...
 public <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
-    <span class="type">boolean</span> windows = <span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">os.name</span><span class="delimiter">&quot;</span></span>).toLowerCase().startsWith(<span class="string"><span class="delimiter">&quot;</span><span class="content">win</span><span class="delimiter">&quot;</span></span>);
-    <span class="keyword">if</span> (windows) { <span class="comment">// only include in native images for Windows</span>
-        AnsiConsole.systemInstall(); <span class="comment">// enable colors on Windows</span>
-    }
-    <span class="type">int</span> exitCode = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp()).execute(args);
-    <span class="keyword">if</span> (windows) {
-        AnsiConsole.systemUninstall(); <span class="comment">// cleanup when done</span>
+    <span class="type">int</span> exitCode;
+    <span class="keyword">try</span> (AnsiConsole ansi = AnsiConsole.windowsInstall()) {
+        exitCode = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp()).execute(args);
     }
     <span class="predefined-type">System</span>.exit(exitCode);
 }</code></pre>
@@ -5336,6 +5520,7 @@ This <a href="https://stackoverflow.com/a/51681675/1446916">Stack Overflow answe
 <td class="content">
 Note that picocli&#8217;s <a href="#_heuristics_for_enabling_ansi">heuristics for enabling ANSI</a> currently do not include detecting whether support for Virtual Terminal / ANSI escape sequences has been turned on or off via <code>SetConsoleMode</code> or a registry change.
 So just making these changes is not sufficient to let a picocli-based application show colors.
+Applications that enabled colors via <code>SetConsoleMode</code> may want to set system property <code>picocli.ansi</code> to <code>tty</code>.
 Environments that enabled colors via a Windows Registry change may want to set environment variable <code>CLICOLOR=1</code>.
 </td>
 </tr>
@@ -5367,7 +5552,10 @@ One option is for end users to install either <a href="http://cmder.net/">Cmder<
 <div class="ulist">
 <ul>
 <li>
-<p>Setting system property <code>picocli.ansi</code> to <code>true</code> forces picocli to use ANSI codes; setting <code>picocli.ansi</code> to <code>false</code> forces picocli to <strong>not</strong> use ANSI codes. This may be a useful facility for users of your command line application.</p>
+<p>Setting system property <code>picocli.ansi</code> to <code>true</code> forces picocli to use ANSI codes; setting <code>picocli.ansi</code> to <code>false</code> forces picocli to <strong>not</strong> use ANSI codes. It may be useful for your users to mention this system property in the documentation for your command line application.</p>
+</li>
+<li>
+<p>Setting system property <code>picocli.ansi</code> to <code>tty</code> (case-insensitive) forces picocli to use ANSI codes only if picocli guesses that the process is using an interactive console: either <code>System.console() != null</code> or picocli guesses the application is running in a pseudo-terminal pty on a Linux emulator in Windows. Otherwise the <a href="#_heuristics_for_enabling_ansi">below heuristics</a> are used to determine whether to output ANSI escape codes.</p>
 </li>
 <li>
 <p>You can decide to force disable or force enable ANSI escape codes programmatically by specifying <code>Ansi.ON</code> or <code>Ansi.OFF</code> when invoking <code>CommandLine.usage</code>.
@@ -5558,8 +5746,43 @@ map.put(SECTION_KEY_FOOTER,                 help -&gt; help.footer());</code></p
 <div class="paragraph">
 <p>This ordering may be modified with the <code>CommandLine::setHelpSectionKeys</code> setter method (or <code>UsageMessageSpec::sectionKeys(List)</code> for a single <code>CommandSpec</code>).</p>
 </div>
+<div class="sect3">
+<h4 id="_custom_help_section_example">15.1.1. Custom Help Section Example</h4>
 <div class="paragraph">
-<p>Some examples for customizing the help are <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/customhelp">here</a>.</p>
+<p>The below example shows how to add a custom Environment Variables section to the usage help message.</p>
+</div>
+<div class="listingblock">
+<div class="title">Adding a custom Environment Variables section</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">// help section keys</span>
+<span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> SECTION_KEY_ENV_HEADING = <span class="string"><span class="delimiter">&quot;</span><span class="content">environmentVariablesHeading</span><span class="delimiter">&quot;</span></span>;
+<span class="directive">static</span> <span class="directive">final</span> <span class="predefined-type">String</span> SECTION_KEY_ENV_DETAILS = <span class="string"><span class="delimiter">&quot;</span><span class="content">environmentVariables</span><span class="delimiter">&quot;</span></span>;
+<span class="comment">// ...</span>
+
+<span class="comment">// the data to display</span>
+<span class="predefined-type">Map</span>&lt;<span class="predefined-type">String</span>, <span class="predefined-type">String</span>&gt; env = <span class="keyword">new</span> <span class="predefined-type">LinkedHashMap</span>&lt;&gt;();
+env.put(<span class="string"><span class="delimiter">&quot;</span><span class="content">FOO</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">explanation of foo</span><span class="delimiter">&quot;</span></span>);
+env.put(<span class="string"><span class="delimiter">&quot;</span><span class="content">BAR</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">explanation of bar</span><span class="delimiter">&quot;</span></span>);
+env.put(<span class="string"><span class="delimiter">&quot;</span><span class="content">XYZ</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">xxxx yyyy zzz</span><span class="delimiter">&quot;</span></span>);
+
+<span class="comment">// register the custom section renderers</span>
+CommandLine cmd = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp());
+cmd.getHelpSectionMap().put(SECTION_KEY_ENV_HEADING,
+                            help -&gt; help.createHeading(<span class="string"><span class="delimiter">&quot;</span><span class="content">Environment Variables:%n</span><span class="delimiter">&quot;</span></span>));
+cmd.getHelpSectionMap().put(SECTION_KEY_ENV_DETAILS,
+                            help -&gt; help.createTextTable(env).toString());
+
+<span class="comment">// specify the location of the new sections</span>
+<span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; keys = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;&gt;(cmd.getHelpSectionKeys());
+<span class="type">int</span> index = keys.indexOf(CommandLine.Model.UsageMessageSpec.SECTION_KEY_FOOTER_HEADING);
+keys.add(index, SECTION_KEY_ENV_HEADING);
+keys.add(index + <span class="integer">1</span>, SECTION_KEY_ENV_DETAILS);
+cmd.setHelpSectionKeys(keys);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>More examples for customizing the usage help message are <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/customhelp">here</a>.</p>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -7811,7 +8034,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.0.4</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.1.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -7839,7 +8062,7 @@ count.times {
 </td>
 <td class="content">
 When upgrading scripts to picocli 4.0, just changing the version number is not enough!
-Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.0.4')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.0.4')</code> will not work,
+Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.1.0')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.1.0')</code> will not work,
 because the <code>@picocli.groovy.PicocliScript</code> annotation class and supporting classes have been moved into a separate module, <code>picocli-groovy</code>.
 </td>
 </tr>
@@ -7860,7 +8083,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.0.4</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.1.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -8035,7 +8258,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle_3">34.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.0.4'</pre>
+<pre>compile 'info.picocli:picocli:4.1.0'</pre>
 </div>
 </div>
 </div>
@@ -8046,7 +8269,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.0.4&lt;/version&gt;
+  &lt;version&gt;4.1.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -8055,7 +8278,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">34.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "4.0.4"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "4.1.0"</pre>
 </div>
 </div>
 </div>
@@ -8063,7 +8286,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">34.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.0.4" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.1.0" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -8079,8 +8302,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.0.4<br>
-Last updated 2019-11-17 19:29:11 JST
+Version 4.1.0<br>
+Last updated 2019-11-22 18:36:07 JST
 </div>
 </div>
 </body>

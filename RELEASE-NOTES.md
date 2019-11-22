@@ -1,12 +1,21 @@
 # picocli Release Notes
 
 
-# <a name="4.1.0"></a> Picocli 4.1.0 (UNRELEASED)
+# <a name="4.1.0"></a> Picocli 4.1.0
 The picocli community is pleased to announce picocli 4.1.0.
 
-This release contains bugfixes and enhancements.
+This release contains bugfixes, and enhancements. 
 
+The library now provides functionality that previously required custom code:
 
+[PropertiesDefaultProvider](#4.1.0-PropertiesDefaultProvider) - this release includes a built-in default provider allows end users to maintain their own default values for options and positional parameters, which may override the defaults that are hard-coded in the application.
+
+[AutoComplete.GenerateCompletion](#4.1.0-Completion) - this release includes a built-in `generate-completion` subcommand that end users can use to easily install Bash/ZSH completion for your application.
+
+[Help API improvements](#4.1.0-HelpAPI) make it even easier to add custom sections to the usage help message.
+
+This release also includes various bug fixes for [ArgGroups](#4.1.0-ArgGroups), which were first introduced in picocli 4.0, and are still maturing.
+ 
 This is the sixty-second public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
@@ -18,7 +27,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.1.0-new"></a> New and Noteworthy
 
-### PropertiesDefaultProvider
+### <a name="4.1.0-PropertiesDefaultProvider"></a> PropertiesDefaultProvider
 From picocli 4.1, applications can use the built-in `PropertiesDefaultProvider`
 implementation that loads default values from a properties file.
 
@@ -65,8 +74,38 @@ git.commit.cleanup = strip
 ```
 
 
+### <a name="4.1.0-Completion"></a> AutoComplete.GenerateCompletion
 
-### Help API improvements
+This release adds a built-in `generate-completion` subcommand that generates a completion script for its parent command.
+
+Example usage:
+
+```java
+@Command(name = "myapp",
+        subcommands = picocli.AutoComplete.GenerateCompletion.class)
+static class MyApp { //...
+}
+```
+
+This allows users to install completion for the `myapp` command by running the following command:
+
+```bash
+source <(myapp generate-completion)
+```
+
+### Autocompletion script improvements
+
+The generated completion script itself now enables bash completion in zsh.
+
+That means it is no longer necessary to run the below commands in ZSH before sourcing the completion script:
+
+```zsh
+autoload -U +X compinit && compinit
+autoload -U +X bashcompinit && bashcompinit
+```
+
+
+### <a name="4.1.0-HelpAPI"></a> Help API improvements
 The new `Help.createHeading(String, Object...)` and  `Help.createTextTable(Map<?, ?>)` methods
  facilitate creating tabular custom Help sections.
  
@@ -102,43 +141,13 @@ cmd.setHelpSectionKeys(keys);
 
 There are also new convenience methods `Help.fullSynopsis()` and `CommandLine.getHelp()`.
 
-### ArgGroup improvements
+### <a name="4.1.0-ArgGroups"></a> ArgGroup improvements
 
 * ArgGroups with `@Option`-annotated methods no longer fail with `NullPointerException`
 * ArgGroups now match multiple occurrences of a multi-value `@Option` in the same group instance, and don't create a new group for each occurrence
 * ArgGroups now don't validate when marked as `validate = false`
 * ArgGroups now correctly validate that required options are present
 * Non-validating ArgGroups are now automatically set to be non-exclusive
-
-### AutoComplete.GenerateCompletion
-
-This release adds a built-in `generate-completion` subcommand that generates a completion script for its parent command.
-
-Example usage:
-
-```java
-@Command(name = "myapp",
-        subcommands = picocli.AutoComplete.GenerateCompletion.class)
-static class MyApp { //...
-}
-```
-
-This allows users to install completion for the `myapp` command by running the following command:
-
-```bash
-source <(myapp generate-completion)
-```
-
-### Autocompletion script improvements
-
-The generated completion script itself now enables bash completion in zsh.
-
-That means it is no longer necessary to run the below commands in ZSH before sourcing the completion script:
-
-```zsh
-autoload -U +X compinit && compinit
-autoload -U +X bashcompinit && bashcompinit
-```
 
 ## <a name="4.1.0-fixes"></a> Fixed issues
 * [#841] (API) Add `JniConfigGenerator` to `picocli-codegen` module.
