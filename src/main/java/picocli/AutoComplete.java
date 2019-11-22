@@ -219,7 +219,10 @@ public class AutoComplete {
             String script = AutoComplete.bash(
                     spec.parent().name(),
                     spec.parent().commandLine());
-            spec.commandLine().getOut().println(script);
+            // not PrintWriter.println: scripts with Windows line separators fail in strange ways!
+            spec.commandLine().getOut().print(script);
+            spec.commandLine().getOut().print('\n');
+            spec.commandLine().getOut().flush();
         }
     }
 

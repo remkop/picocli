@@ -109,8 +109,10 @@ Make sure to use `>>` (append), using a single `>` would overwrite the file.
 TIP: Have a subcommand that generates a completion script.
 
 You could generate completion scripts for your commands <<Generating Completion Scripts During the Build,during the build>> and distribute them with your application,
-but an alternative is to provide a subcommand that generates the completion script for the top-level comand.
-That allows users to source the completion script like this:
+but an alternative is to give your application the ability to generate its own completion script on demand.
+
+That allows end users to install completion for your application with a single command.
+For example, if your utility is called `mycommand`, users can install completion for it by running the following command:
 
 .Bash
 [source,bash]
@@ -118,42 +120,44 @@ That allows users to source the completion script like this:
 $ source <(mycommand generate-completion)
 ----
 
-Below is an example of what a subcommand that generates a completion script could look like.
+This can be accomplished by registering the built-in `picocli.AutoComplete.GenerateCompletion` class as a subcommand of the top-level command.
+
+For example:
+
 
 [source,java]
 ----
-import picocli.AutoComplete;
+import picocli.AutoComplete.GenerateCompletion;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Spec;
 
 @Command(name = "mycommand", subcommands = GenerateCompletion.class)
-public class CommandWithCompletionSubcommand implements Runnable {
+public class MyApp implements Runnable {
 
     @Override
     public void run() { // top-level command business logic here
     }
 
     public static void main(String[] args) {
-        new CommandLine(new CommandWithCompletionSubcommand()).execute(args);
-    }
-}
-
-@Command(name = "generate-completion",
-        description = "Generate a completion script for ${PARENT-COMMAND-NAME}")
-class GenerateCompletion implements Runnable {
-
-    @Spec CommandLine.Model.CommandSpec spec;
-
-    @Override
-    public void run() {
-        System.out.println(
-                AutoComplete.bash("mycommand", spec.parent().commandLine()));
+        new CommandLine(new MyApp()).execute(args);
     }
 }
 ----
 
-See also this https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/autocomplete/CommandWithCompletionSubcommand.java[example].
+By default, the `generate-completion` command shows up as a subcommand in the usage help message of it parent command.
+Applications that want the completion subcommand to be hidden in the usage help message, can do the following:
+
+[source,java]
+----
+public static void main(String... args) {
+    CommandLine cmd = new CommandLine(new MyApp());
+    CommandLine gen = cmd.getSubcommands().get("generate-completion");
+    gen.getCommandSpec().usageMessage().hidden(true);
+    int exitCode = cmd.execute(args);
+    // ...
+}
+----
+
 
 
 
