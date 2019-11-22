@@ -145,7 +145,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
 public class CommandLine {
 
     /** This is picocli version {@value}. */
-    public static final String VERSION = "4.1.0";
+    public static final String VERSION = "4.1.1-SNAPSHOT";
 
     private final Tracer tracer = new Tracer();
     private final CommandSpec commandSpec;
@@ -4020,6 +4020,12 @@ public class CommandLine {
          *         .addSubcommand("commit",   new GitCommit())
          *         .addSubcommand("branch",   new GitBranch());
          * </pre>
+         * Applications may be interested in the following built-in commands in picocli
+         * that can be used as subcommands:
+         * <ul>
+         *   <li>{@link HelpCommand} - a {@code help} subcommand that prints help on the following or preceding command</li>>
+         *   <li>{@link AutoComplete.GenerateCompletion} - a {@code generate-completion} subcommand that prints a Bash/ZSH completion script for its parent command, so that clients can install autocompletion in one line by running {@code source <(parent-command generate-completion)} in the shell</li>>
+         * </ul>
          * @return the declaratively registered subcommands of this command, or an empty array if none
          * @see CommandLine#addSubcommand(String, Object)
          * @see HelpCommand
@@ -4178,6 +4184,11 @@ public class CommandLine {
 
         /** Class that can provide default values dynamically at runtime. An implementation may return default
          * value obtained from a configuration file like a properties file or some other source.
+         * <p>
+         * Applications may be interested in the {@link PropertiesDefaultProvider} built-in default provider
+         * that allows end users to maintain their own default values for options and positional parameters,
+         * which may override the defaults that are hard-coded in the application.
+         * </p>
          * @return a Class that can provide default values dynamically at runtime
          * @since 3.6 */
         Class<? extends IDefaultValueProvider> defaultValueProvider() default NoDefaultProvider.class;
