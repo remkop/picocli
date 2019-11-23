@@ -262,7 +262,7 @@ public class CommandLine {
     /** Registers a subcommand with the name obtained from the {@code @Command(name = "...")} {@linkplain Command#name() annotation attribute} of the specified command.
      * @param command the object to initialize with command line arguments following the subcommand name.
      *                This may be a {@code Class} that has a {@code @Command} annotation, or an instance of such a
-     *                class, or a {@code ComandSpec} or {@code CommandLine} instance with its own (nested) subcommands.
+     *                class, or a {@code CommandSpec} or {@code CommandLine} instance with its own (nested) subcommands.
      * @return this CommandLine object, to allow method chaining
      * @since 4.0
      * @throws InitializationException if no name could be found for the specified subcommand,
@@ -311,7 +311,7 @@ public class CommandLine {
      *             if this is also {@code null}, the first {@linkplain CommandSpec#aliases() alias} is used.
      * @param command the object to initialize with command line arguments following the subcommand name.
      *                This may be a {@code Class} that has a {@code @Command} annotation, or an instance of such a
-     *                class, or a {@code ComandSpec} or {@code CommandLine} instance with its own (nested) subcommands.
+     *                class, or a {@code CommandSpec} or {@code CommandLine} instance with its own (nested) subcommands.
      * @return this CommandLine object, to allow method chaining
      * @see #registerConverter(Class, ITypeConverter)
      * @since 0.9.7
@@ -330,7 +330,7 @@ public class CommandLine {
      *             if this is also {@code null}, the first {@linkplain CommandSpec#aliases() alias} is used.
      * @param command the object to initialize with command line arguments following the subcommand name.
      *                This may be a {@code Class} that has a {@code @Command} annotation, or an instance of such a
-     *                class, or a {@code ComandSpec} or {@code CommandLine} instance with its own (nested) subcommands.
+     *                class, or a {@code CommandSpec} or {@code CommandLine} instance with its own (nested) subcommands.
      * @param aliases zero or more alias names that are also recognized on the command line as this subcommand
      * @return this CommandLine object, to allow method chaining
      * @since 3.1
@@ -15383,10 +15383,10 @@ public class CommandLine {
      * {@code ".<YOURCOMMAND>.properties"} in the user home directory, where {@code "<YOURCOMMAND>"} is the {@linkplain CommandLine.Command#name() name} of the command.
      * If a command has {@linkplain CommandLine.Command#aliases() aliases} in addition to its {@linkplain CommandLine.Command#name() name},
      * these aliases are also used to try to find the properties file. For example:
-     * <pre>{@code
-     * @Command(name = "git", defaultValueProvider = PropertiesDefaultProvider.class)
+     * <pre>
+     * &#64;Command(name = "git", defaultValueProvider = PropertiesDefaultProvider.class)
      * class Git { }
-     * }</pre>
+     * </pre>
      * <p>The above will try to load default values from {@code new File(System.getProperty("user.home"), ".git.properties")}.
      * </p>
      * <p>
@@ -15437,11 +15437,9 @@ public class CommandLine {
          * Default constructor, used when this default value provider is specified in
          * the annotations:
          * <pre>
-         * {@code
-         * @Command(name = "mycmd",
+         * &#64;Command(name = "mycmd",
          *     defaultValueProvider = PropertiesDefaultProvider.class)
          * class MyCommand // ...
-         * }
          * </pre>
          * <p>
          * This loads default values from a properties file named
