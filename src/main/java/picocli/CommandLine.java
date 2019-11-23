@@ -639,8 +639,7 @@ public class CommandLine {
     /** Returns whether the parser should trim quotes from command line arguments. The default is
      * read from the system property "picocli.trimQuotes" and will be {@code true} if the property is present and empty,
      * or if its value is "true".
-     * <p>
-     * If this property is set to {@code true}, the parser will remove quotes from the command line arguments, as follows:
+     * <p>If this property is set to {@code true}, the parser will remove quotes from the command line arguments, as follows:</p>
      * <ul>
      *   <li>if the command line argument contains just the leading and trailing quote, these quotes are removed</li>
      *   <li>if the command line argument contains more quotes than just the leading and trailing quote, the parser first
@@ -648,7 +647,6 @@ public class CommandLine {
      *   a quoted region should be ignored, so arguments like {@code "a,b","x,y"} are handled correctly.
      *   For arguments with nested quotes, quotes are removed later in the processing pipeline, after {@code split} operations are applied.</li>
      * </ul>
-     * </p>
      * @return {@code true} if the parser should trim quotes from command line arguments before processing them, {@code false} otherwise;
      * @see ParserSpec#trimQuotes()
      * @since 3.7 */
@@ -657,8 +655,7 @@ public class CommandLine {
     /** Sets whether the parser should trim quotes from command line arguments before processing them. The default is
      * read from the system property "picocli.trimQuotes" and will be {@code true} if the property is set and empty, or
      * if its value is "true".
-     * <p>
-     * If this property is set to {@code true}, the parser will remove quotes from the command line arguments, as follows:
+     * <p>If this property is set to {@code true}, the parser will remove quotes from the command line arguments, as follows:</p>
      * <ul>
      *   <li>if the command line argument contains just the leading and trailing quote, these quotes are removed</li>
      *   <li>if the command line argument contains more quotes than just the leading and trailing quote, the parser first
@@ -666,7 +663,6 @@ public class CommandLine {
      *   a quoted region should be ignored, so arguments like {@code "a,b","x,y"} are handled correctly.
      *   For arguments with nested quotes, quotes are removed later in the processing pipeline, after {@code split} operations are applied.</li>
      * </ul>
-     * </p>
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
@@ -4023,8 +4019,8 @@ public class CommandLine {
          * Applications may be interested in the following built-in commands in picocli
          * that can be used as subcommands:
          * <ul>
-         *   <li>{@link HelpCommand} - a {@code help} subcommand that prints help on the following or preceding command</li>>
-         *   <li>{@link AutoComplete.GenerateCompletion} - a {@code generate-completion} subcommand that prints a Bash/ZSH completion script for its parent command, so that clients can install autocompletion in one line by running {@code source <(parent-command generate-completion)} in the shell</li>>
+         *   <li>{@link HelpCommand} - a {@code help} subcommand that prints help on the following or preceding command</li>
+         *   <li>{@link AutoComplete.GenerateCompletion} - a {@code generate-completion} subcommand that prints a Bash/ZSH completion script for its parent command, so that clients can install autocompletion in one line by running {@code source <(parent-command generate-completion)} in the shell</li>
          * </ul>
          * @return the declaratively registered subcommands of this command, or an empty array if none
          * @see CommandLine#addSubcommand(String, Object)
@@ -4773,7 +4769,7 @@ public class CommandLine {
      * <p>This implementation has special logic for instantiating {@code Collections}
      * and {@code Maps}, and otherwise tries to create an instance by invoking the default constructor of the specified class.
      * </p><p>Special logic for instantiating Collections and Maps:</p>
-     * <pre>
+     * <pre>{@code
      * // if class is an interface that extends java.util.Collection, return a new instance of:
      * 1. List       -> ArrayList
      * 2. SortedSet  -> TreeSet
@@ -4784,7 +4780,7 @@ public class CommandLine {
      * // if extending or implementing java.util.Map:
      * 1. try invoking the default constructor; return this on success.
      * 2. if this fails, return a LinkedHashMap
-     * </pre>
+     * }</pre>
      * @since 4.0 */
     public static IFactory defaultFactory() { return new DefaultFactory(); }
     private static class DefaultFactory implements IFactory {
