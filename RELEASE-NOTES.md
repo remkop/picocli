@@ -8,18 +8,18 @@ This release contains bugfixes, and enhancements.
 
 The library now provides functionality that previously required custom code:
 
-[PropertiesDefaultProvider](#4.1.0-PropertiesDefaultProvider) - this release includes a built-in default provider allows end users to maintain their own default values for options and positional parameters, which may override the defaults that are hard-coded in the application.
+[PropertiesDefaultProvider](#4.1.0-propertiesdefaultprovider) - this release includes a built-in default provider allows end users to maintain their own default values for options and positional parameters, which may override the defaults that are hard-coded in the application.
 
-[AutoComplete.GenerateCompletion](#4.1.0-Completion) - this release includes a built-in `generate-completion` subcommand that end users can use to easily install Bash/ZSH completion for your application.
+[AutoComplete.GenerateCompletion](#4.1.0-completion) - this release includes a built-in `generate-completion` subcommand that end users can use to easily install Bash/ZSH completion for your application.
 
-[Help API improvements](#4.1.0-HelpAPI) make it even easier to add custom sections to the usage help message.
+[Help API improvements](#4.1.0-helpapi) make it even easier to add custom sections to the usage help message.
 
-This release also includes various bug fixes for [ArgGroups](#4.1.0-ArgGroups), which were first introduced in picocli 4.0, and are still maturing.
+This release also includes various bug fixes for [ArgGroups](#4.1.0-arggroups), which were first introduced in picocli 4.0, and are still maturing.
  
 This is the sixty-second public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
-## <a name="4.1.0"></a> Table of Contents
+## <a name="4.1.0-toc"></a> Table of Contents
 * [New and noteworthy](#4.1.0-new)
 * [Fixed issues](#4.1.0-fixes)
 * [Deprecations](#4.1.0-deprecated)
@@ -27,9 +27,9 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.1.0-new"></a> New and Noteworthy
 
-### <a name="4.1.0-PropertiesDefaultProvider"></a> PropertiesDefaultProvider
-From picocli 4.1, applications can use the built-in `PropertiesDefaultProvider`
-implementation that loads default values from a properties file.
+
+###  <a name="4.1.0-propertiesdefaultprovider" id="4.1.0-propertiesdefaultprovider"></a> PropertiesDefaultProvider
+From picocli 4.1, applications can use the built-in `PropertiesDefaultProvider` implementation that loads default values from a properties file.
 
 By default, this implementation tries to find a properties file named `.${COMMAND-NAME}.properties` in the user home directory, where `${COMMAND-NAME}` is the name of the command. If a command has aliases in addition to its name, these aliases are also used to try to find the properties file. For example:
 
@@ -74,7 +74,7 @@ git.commit.cleanup = strip
 ```
 
 
-### <a name="4.1.0-Completion"></a> AutoComplete.GenerateCompletion
+### <a name="4.1.0-completion"></a> AutoComplete.GenerateCompletion
 
 This release adds a built-in `generate-completion` subcommand that generates a completion script for its parent command.
 
@@ -105,7 +105,7 @@ autoload -U +X bashcompinit && bashcompinit
 ```
 
 
-### <a name="4.1.0-HelpAPI"></a> Help API improvements
+### <a name="4.1.0-helpapi"></a> Help API improvements
 The new `Help.createHeading(String, Object...)` and  `Help.createTextTable(Map<?, ?>)` methods
  facilitate creating tabular custom Help sections.
  
@@ -141,7 +141,7 @@ cmd.setHelpSectionKeys(keys);
 
 There are also new convenience methods `Help.fullSynopsis()` and `CommandLine.getHelp()`.
 
-### <a name="4.1.0-ArgGroups"></a> ArgGroup improvements
+### <a name="4.1.0-arggroups"></a> ArgGroup improvements
 
 * ArgGroups with `@Option`-annotated methods no longer fail with `NullPointerException`
 * ArgGroups now match multiple occurrences of a multi-value `@Option` in the same group instance, and don't create a new group for each occurrence
@@ -192,7 +192,6 @@ No features were deprecated in this release.
 
 * From picocli 4.1, subcommands will not be parsed as option values for options with optional parameters.
 * Enum constants can now be matched by their `toString()` as well as their `name()`.
-
 
 # <a name="4.0.4"></a> Picocli 4.0.4
 The picocli community is pleased to announce picocli 4.0.4.
