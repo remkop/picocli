@@ -1,5 +1,35 @@
 # picocli Release Notes
 
+# <a name="4.1.1"></a> Picocli 4.1.1 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.1.1.
+
+This release contains bugfixes, and enhancements. 
+
+
+ 
+This is the sixty-third public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.1.1-toc"></a> Table of Contents
+* [New and noteworthy](#4.1.1-new)
+* [Fixed issues](#4.1.1-fixes)
+* [Deprecations](#4.1.1-deprecated)
+* [Potential breaking changes](#4.1.1-breaking-changes)
+
+## <a name="4.1.1-new"></a> New and Noteworthy
+
+
+
+## <a name="4.1.1-fixes"></a> Fixed issues
+[#875] (DOC) Fix broken internal links in RELEASE-NOTES. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+
+## <a name="4.1.1-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.1.1-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 
 # <a name="4.1.0"></a> Picocli 4.1.0
 The picocli community is pleased to announce picocli 4.1.0.
@@ -192,6 +222,7 @@ No features were deprecated in this release.
 
 * From picocli 4.1, subcommands will not be parsed as option values for options with optional parameters.
 * Enum constants can now be matched by their `toString()` as well as their `name()`.
+
 
 # <a name="4.0.4"></a> Picocli 4.0.4
 The picocli community is pleased to announce picocli 4.0.4.
