@@ -1,10 +1,12 @@
 package picocli;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -13,6 +15,7 @@ import picocli.CommandLine.PropertiesDefaultProvider;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -162,5 +165,43 @@ public class PropertiesDefaultProviderTest {
         assertEquals(sub.bbb, 222);
         assertEquals(sub.ppp, 333);
         assertEquals(sub.xxx, 444);
+    }
+
+    @Command( name="myCommand")
+    static class MyCommand implements Runnable {
+
+        @Option(names = "-x")
+        int x;
+
+        @ArgGroup()
+        MyArgGroup anArgGroup;
+        //MyArgGroup anArgGroup = new MyArgGroup(); // this does work!
+
+        static class MyArgGroup {
+            @Option(names = { "-y" }, descriptionKey= "myOption")
+            int y;
+        }
+
+
+        public void run() {
+            System.out.println("Option x is picked up: " + x);
+            System.out.println("Option y inside arg group is not picked up (static class!): " + anArgGroup.y);
+        }
+    }
+
+    @Ignore
+    @Test
+    public void testArgGroups() throws IOException {
+        File temp = File.createTempFile("MyCommand", ".properties");
+        FileWriter fw = new FileWriter(temp);
+        fw.write("myCommand.x=6\n" +
+                "myCommand.y=9\n" +
+                "myCommand.myOption=9\n");
+        fw.flush();
+        fw.close();
+
+        CommandLine cmd = new CommandLine(new MyCommand());
+        cmd.setDefaultValueProvider(new PropertiesDefaultProvider(temp));
+        cmd.execute();
     }
 }
