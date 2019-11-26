@@ -1040,7 +1040,10 @@ public class CommandLine {
      * By <a href="http://www.gnu.org/prep/standards/html_node/_002d_002dhelp.html">convention</a>, when the user requests
      * help with a {@code --help} or similar option, the usage help message is printed to the standard output stream so that it can be easily searched and paged.</p>
      * @since 4.0 */
-    public PrintWriter getOut() { return out != null ? out : new PrintWriter(System.out, true); }
+    public PrintWriter getOut() {
+        if (out == null) { setOut(new PrintWriter(System.out, true)); }
+        return out;
+    }
 
     /** Sets the writer to use when printing user-requested usage help or version help during command {@linkplain #execute(String...) execution}.
      * <p>This method is used by {@link #execute(String...)}. Custom {@link IExecutionStrategy IExecutionStrategy} implementations should also use this writer.</p>
@@ -1064,7 +1067,10 @@ public class CommandLine {
      * {@link IParameterExceptionHandler IParameterExceptionHandler} and {@link IExecutionExceptionHandler IExecutionExceptionHandler} implementations
      * should use this writer to print error messages (which may include a usage help message) when an unexpected error occurs.</p>
      * @since 4.0 */
-    public PrintWriter getErr() { return err != null ? err : new PrintWriter(System.err, true); }
+    public PrintWriter getErr() {
+        if (err == null) { setErr(new PrintWriter(System.err, true)); }
+        return err;
+    }
 
     /** Sets the writer to use when printing diagnostic (error) messages during command {@linkplain #execute(String...) execution}.
      * <p>This method is used by {@link #execute(String...)}.

@@ -3,7 +3,7 @@
 # <a name="4.1.1"></a> Picocli 4.1.1 (UNRELEASED)
 The picocli community is pleased to announce picocli 4.1.1.
 
-This release contains bugfixes, and enhancements. 
+This release contains bugfixes, and documentation enhancements. 
 
 
  
@@ -21,7 +21,11 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.1.1-fixes"></a> Fixed issues
-[#875] (DOC) Fix broken internal links in RELEASE-NOTES. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+[#880] (Bugfix) Built-in `picocli.AutoComplete.GenerateCompletion` (`generate-completion`) subcommand does not flush, resulting in no output. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+[#875] (DOC) Fix broken internal links in RELEASE-NOTES for 4.1. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+[#881] (DOC) Update of Quick Guide to the latest `execute` API. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+[#874] (DOC) Fix Javadoc issues. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+   
 
 ## <a name="4.1.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
