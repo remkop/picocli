@@ -1,6 +1,5 @@
 package picocli;
 
-import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -13,7 +12,6 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.PropertiesDefaultProvider;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -168,7 +166,7 @@ public class PropertiesDefaultProviderTest {
     }
 
     @Command( name="myCommand")
-    static class MyCommand implements Runnable {
+    static class CommandIssue876 implements Runnable {
 
         @Option(names = "-x")
         int x;
@@ -181,7 +179,6 @@ public class PropertiesDefaultProviderTest {
             @Option(names = { "-y" }, descriptionKey= "myOption")
             int y;
         }
-
 
         public void run() {
             System.out.println("Option x is picked up: " + x);
@@ -200,7 +197,7 @@ public class PropertiesDefaultProviderTest {
         fw.flush();
         fw.close();
 
-        CommandLine cmd = new CommandLine(new MyCommand());
+        CommandLine cmd = new CommandLine(new CommandIssue876());
         cmd.setDefaultValueProvider(new PropertiesDefaultProvider(temp));
         cmd.execute();
     }
