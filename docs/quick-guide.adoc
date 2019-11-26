@@ -97,7 +97,7 @@ Picocli matches the option names to set the field values.
 ----
 String[] args = { "-c", "--file", "result.tar", "file1.txt", "file2.txt" };
 Tar tar = new Tar();
-new CommandLine(tar).parse(args);
+new CommandLine(tar).parseArgs(args);
 
 assert !tar.helpRequested;
 assert  tar.create;
@@ -324,7 +324,7 @@ usage help or version information was requested (without inspecting the annotate
 [source,java]
 ----
 CommandLine commandLine = new CommandLine(new App());
-commandLine.parse(args);
+commandLine.parseArgs(args);
 if (commandLine.isUsageHelpRequested()) {
    commandLine.usage(System.out);
    return;
@@ -334,7 +334,7 @@ if (commandLine.isUsageHelpRequested()) {
 }
 // ... run App's business logic
 ----
-See also <<Parsing>> and <<Runnable and Callable>> for how picocli can help reduce boilerplate code.
+See also the chapter link:http://picocli.info/#_printing_help_automatically[Printing Help Automatically] of the user manual.
 
 == Version Help
 === Static Version Information
@@ -400,13 +400,13 @@ Concatenate FILE(s), or standard input, to standard output.
   -v, --show-nonprinting   use ^ and M- notation, except for LDF and TAB
       --help               display this help and exit
       --version            output version information and exit
-Copyright(c) 2017
+Copyright(c) 2019
 ----
 
 The usage help message is generated from annotation attributes, like below:
 [source,java]
 ----
-@Command(name = "cat", footer = "Copyright(c) 2017",
+@Command(name = "cat", footer = "Copyright(c) 2019",
          description = "Concatenate FILE(s), or standard input, to standard output.")
 class Cat {
 
