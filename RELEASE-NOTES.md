@@ -1,5 +1,38 @@
 # picocli Release Notes
 
+
+# <a name="4.1.2"></a> Picocli 4.1.2
+The picocli community is pleased to announce picocli 4.1.2.
+
+This release contains bugfixes, and documentation enhancements. 
+
+
+ 
+This is the sixty-fourth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.1.2-toc"></a> Table of Contents
+* [New and noteworthy](#4.1.2-new)
+* [Fixed issues](#4.1.2-fixes)
+* [Deprecations](#4.1.2-deprecated)
+* [Potential breaking changes](#4.1.2-breaking-changes)
+
+## <a name="4.1.2-new"></a> New and Noteworthy
+
+
+
+## <a name="4.1.2-fixes"></a> Fixed issues
+[#884] (Bugfix) Built-in `picocli.AutoComplete.GenerateCompletion` (`generate-completion`) subcommand should omit validation of mandatory options in the parent command. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+[#883] (DOC) Update of Quick Guide . Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+   
+
+## <a name="4.1.2-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.1.2-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 # <a name="4.1.1"></a> Picocli 4.1.1
 The picocli community is pleased to announce picocli 4.1.1.
 

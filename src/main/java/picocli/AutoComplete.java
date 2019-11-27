@@ -209,7 +209,8 @@ public class AutoComplete {
                 "",
                 "source <(${PARENT-COMMAND-NAME} ${COMMAND-NAME})",
                 ""},
-            optionListHeading = "Options:%n"
+            optionListHeading = "Options:%n",
+            helpCommand = true
     )
     public static class GenerateCompletion implements Runnable {
 

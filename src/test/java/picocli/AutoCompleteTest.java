@@ -1207,6 +1207,10 @@ public class AutoCompleteTest {
     @Command(name = "myapp", mixinStandardHelpOptions = true,
             subcommands = AutoComplete.GenerateCompletion.class)
     static class MyApp implements Runnable {
+
+        @Parameters(index = "0", description = "Required positional param")
+        String value;
+
         public void run() { }
     }
 
@@ -1214,7 +1218,8 @@ public class AutoCompleteTest {
     public void testGenerateCompletionParentUsageMessage() {
         CommandLine cmd = new CommandLine(new MyApp());
         String expected = String.format("" +
-                "Usage: myapp [-hV] [COMMAND]%n" +
+                "Usage: myapp [-hV] <value> [COMMAND]%n" +
+                "      <value>     Required positional param%n" +
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n" +
                 "Commands:%n" +
@@ -1228,7 +1233,8 @@ public class AutoCompleteTest {
         CommandLine gen = cmd.getSubcommands().get("generate-completion");
         gen.getCommandSpec().usageMessage().hidden(true);
         String expected = String.format("" +
-                "Usage: myapp [-hV] [COMMAND]%n" +
+                "Usage: myapp [-hV] <value> [COMMAND]%n" +
+                "      <value>     Required positional param%n" +
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n");
         assertEquals(expected, cmd.getUsageMessage(CommandLine.Help.Ansi.OFF));
