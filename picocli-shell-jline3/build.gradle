@@ -8,6 +8,8 @@ plugins {
 group 'info.picocli'
 description 'Picocli Shell JLine3 - easily build interactive shell applications with JLine 3 and picocli.'
 version "$projectVersion"
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 dependencies {
     compile rootProject
