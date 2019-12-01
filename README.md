@@ -144,6 +144,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 <img src="https://www.viva64.com/media/img/logo.png" height="50">
 <img src="https://concord.walmartlabs.com/assets/img/logo.png" height="50">
 <img src="https://res-3.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_120,w_120,f_auto,b_white,q_auto:eco/etxip1k2sx4sphvwgkdu" height="50">
+<img src="https://www.minecraftforge.net/forum/uploads/set_resources_2/4eeef9d314eb4c008c0f37dacad2cdd5_logo.svg" height="50">
 
 * Picocli is now part of Groovy. From Groovy 2.5, all Groovy command line tools are picocli-based, and picocli is the underlying parser for Groovy's [CliBuilder DSL](http://groovy-lang.org/dsls.html#_clibuilder). 
 * Picocli is now part of Micronaut. The Micronaut CLI has been rewritten with picocli, and Micronaut has dedicated support for running microservices [standalone with picocli](https://docs.micronaut.io/snapshot/guide/index.html#commandLineApps).
@@ -157,6 +158,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 * Picocli is listed on [StackShare](https://stackshare.io/picocli). Please add it to your stack and add/upvote reasons why you like picocli!
 * Picocli is used in Pinterest [ktlint](https://ktlint.github.io/).
 * Picocli is used in Spring IO [nohttp-cli](https://github.com/spring-io/nohttp/tree/master/nohttp-cli).
+* The [MinecraftPicocli](https://github.com/Rubydesic/MinecraftPicocli) library allows the use of picocli in [Minecraft Forge](https://files.minecraftforge.net/).
 
 <img src="https://picocli.info/images/downloads-201909.png">
 
