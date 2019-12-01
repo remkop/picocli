@@ -107,6 +107,9 @@ public class Example {
         }
     }
 
+    /**
+     * Provide command descriptions for JLine TailTipWidgets to be displayed in status bar
+     */
     private static class DescriptionGenerator {
         Builtins builtins;
         PicocliCommands picocli;
@@ -133,9 +136,10 @@ public class Example {
             return out;
         }
     }
+
     public static void main(String[] args) {
         try {
-            // set up jline built-in commands
+            // set up JLine built-in commands
             Path workDir = Paths.get("");
             Builtins builtins = new Builtins(workDir, null, null);
             builtins.rename(org.jline.builtins.Builtins.Command.TTOP, "top");
