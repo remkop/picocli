@@ -29,7 +29,7 @@ Simply implement `Runnable` or `Callable`, or put the business logic of your com
 How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed data. Supports git-like [subcommands](https://picocli.info/#_subcommands)
 (and nested [sub-subcommands](https://picocli.info/#_nested_sub_subcommands)),
-any option prefix style, POSIX-style [grouped short options](https://picocli.info/#_short_options),
+any option prefix style, POSIX-style [grouped short options](https://picocli.info/#_short_posix_options),
 custom [type converters](https://picocli.info/#_custom_type_converters),
 [password options](http://picocli.info/#_interactive_password_options) and more.
 
@@ -49,7 +49,7 @@ Requires at minimum Java 5, but is designed to facilitate the use of Java 8 lamb
 
 Picocli-based command line applications can have [TAB autocompletion](https://picocli.info/autocomplete.html),
 interactively showing users what options and subcommands are available.
-When an option has [`completionCandidates`](https://picocli.info/#__code_completion_candidates_code_variable) or has an `enum` type, autocompletion can also suggest option values.
+When an option has [`completionCandidates`](https://picocli.info/#_completion_candidates_variable) or has an `enum` type, autocompletion can also suggest option values.
 Picocli can generate completion scripts for bash and zsh, and offers [`picocli-shell-jline2`](picocli-shell-jline2/README.md) and [`picocli-shell-jline3`](picocli-shell-jline3/README.md) modules with JLine `Completer` implementations for building interactive shell applications.
 
 Picocli-based applications can easily [integrate](https://picocli.info/#_dependency_injection) with Dependency Injection containers.
