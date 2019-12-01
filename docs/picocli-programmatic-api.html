@@ -600,10 +600,12 @@ This document covers the programmatic API for picocli 4.0 and higher. For older 
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
         CommandSpec spec = CommandSpec.create();
         spec.mixinStandardHelpOptions(<span class="predefined-constant">true</span>); <span class="comment">// usageHelp and versionHelp options</span>
-        spec.addOption(OptionSpec.builder(<span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--count</span><span class="delimiter">&quot;</span></span>).paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">COUNT</span><span class="delimiter">&quot;</span></span>)
+        spec.addOption(OptionSpec.builder(<span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--count</span><span class="delimiter">&quot;</span></span>)
+                .paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">COUNT</span><span class="delimiter">&quot;</span></span>)
                 .type(<span class="type">int</span>.class)
                 .description(<span class="string"><span class="delimiter">&quot;</span><span class="content">number of times to execute</span><span class="delimiter">&quot;</span></span>).build());
-        spec.addPositional(PositionalParamSpec.builder().paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">FILES</span><span class="delimiter">&quot;</span></span>)
+        spec.addPositional(PositionalParamSpec.builder()
+                .paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">FILES</span><span class="delimiter">&quot;</span></span>)
                 .type(<span class="predefined-type">List</span>.class).auxiliaryTypes(<span class="predefined-type">File</span>.class) <span class="comment">// List&lt;File&gt;</span>
                 .description(<span class="string"><span class="delimiter">&quot;</span><span class="content">The files to process</span><span class="delimiter">&quot;</span></span>).build());
         CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
@@ -615,6 +617,11 @@ This document covers the programmatic API for picocli 4.0 and higher. For older 
     }
 
     <span class="directive">static</span> <span class="type">int</span> run(ParseResult pr) {
+        <span class="comment">// handle requests for help or version information</span>
+        <span class="predefined-type">Integer</span> helpExitCode = CommandLine.executeHelpRequest(pr);
+        <span class="keyword">if</span> (helpExitCode != <span class="predefined-constant">null</span>) { <span class="keyword">return</span> helpExitCode; }
+
+        <span class="comment">// implement the business logic</span>
         <span class="type">int</span> count = pr.matchedOptionValue(<span class="string"><span class="delimiter">'</span><span class="content">c</span><span class="delimiter">'</span></span>, <span class="integer">1</span>);
         <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files = pr.matchedPositionalValue(<span class="integer">0</span>, <span class="predefined-type">Collections</span>.&lt;<span class="predefined-type">File</span>&gt;emptyList());
         <span class="keyword">for</span> (<span class="predefined-type">File</span> f : files) {
@@ -985,35 +992,42 @@ For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="type">class</span> <span class="class">ProgrammaticCommand</span> {
+<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="type">class</span> <span class="class">MyApp</span> {
 
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
         CommandSpec spec = CommandSpec.create();
         spec.mixinStandardHelpOptions(<span class="predefined-constant">true</span>); <span class="comment">// usageHelp and versionHelp options</span>
-        spec.addOption(OptionSpec.builder(<span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--count</span><span class="delimiter">&quot;</span></span>).paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">COUNT</span><span class="delimiter">&quot;</span></span>)
+        spec.addOption(OptionSpec.builder(<span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--count</span><span class="delimiter">&quot;</span></span>)
+                .paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">COUNT</span><span class="delimiter">&quot;</span></span>)
                 .type(<span class="type">int</span>.class)
                 .description(<span class="string"><span class="delimiter">&quot;</span><span class="content">number of times to execute</span><span class="delimiter">&quot;</span></span>).build());
-        spec.addPositional(PositionalParamSpec.builder().paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">FILES</span><span class="delimiter">&quot;</span></span>)
+        spec.addPositional(PositionalParamSpec.builder()
+                .paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">FILES</span><span class="delimiter">&quot;</span></span>)
                 .type(<span class="predefined-type">List</span>.class).auxiliaryTypes(<span class="predefined-type">File</span>.class) <span class="comment">// List&lt;File&gt;</span>
                 .description(<span class="string"><span class="delimiter">&quot;</span><span class="content">The files to process</span><span class="delimiter">&quot;</span></span>).build());
         CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
 
         <span class="comment">// optionally configure streams and handlers to be used</span>
-        commandLine.setCaseInsensitiveEnumValuesAllowed(<span class="predefined-constant">true</span>) <span class="comment">// configure a non-default parser option</span>
+        commandLine.setCaseInsensitiveEnumValuesAllowed(<span class="predefined-constant">true</span>) <span class="comment">//configure a parser option</span>
             .setOut(myOutWriter()) <span class="comment">// configure an alternative to System.out</span>
             .setErr(myErrWriter()) <span class="comment">// configure an alternative to System.err</span>
             .setColorScheme(myColorScheme()) <span class="comment">// configure a custom color scheme</span>
             .setExitCodeExceptionMapper(myMapper()) <span class="comment">//  map exception to exit code</span>
-            .setParameterExceptionHandler(Tmp::invalidUserInput) <span class="comment">// configure a custom handler</span>
-            .setExecutionExceptionHandler(Tmp::runtimeException) <span class="comment">// configure a custom handler</span>
+            .setParameterExceptionHandler(MyApp::invalidUserInput) <span class="comment">// configure a custom handler</span>
+            .setExecutionExceptionHandler(MyApp::runtimeException) <span class="comment">// configure a custom handler</span>
         ;
         <span class="comment">// set an execution strategy so we can call CommandLine.execute(args)</span>
-        commandLine.setExecutionStrategy(ProgrammaticCommand::run);
+        commandLine.setExecutionStrategy(MyApp::run);
         <span class="type">int</span> exitCode = commandLine.execute(args);
         <span class="predefined-type">System</span>.exit(exitCode);
     }
 
     <span class="directive">static</span> <span class="type">int</span> run(ParseResult pr) {
+        <span class="comment">// handle requests for help or version information</span>
+        <span class="predefined-type">Integer</span> helpExitCode = CommandLine.executeHelpRequest(pr);
+        <span class="keyword">if</span> (helpExitCode != <span class="predefined-constant">null</span>) { <span class="keyword">return</span> helpExitCode; }
+
+        <span class="comment">// implement the business logic</span>
         <span class="type">int</span> count = pr.matchedOptionValue(<span class="string"><span class="delimiter">'</span><span class="content">c</span><span class="delimiter">'</span></span>, <span class="integer">1</span>);
         <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files = pr.matchedPositionalValue(<span class="integer">0</span>, <span class="predefined-type">Collections</span>.&lt;<span class="predefined-type">File</span>&gt;emptyList());
         <span class="keyword">for</span> (<span class="predefined-type">File</span> f : files) {
@@ -1051,7 +1065,7 @@ For example:</p>
 <div id="footer">
 <div id="footer-text">
 Version 4.1.2-SNAPSHOT<br>
-Last updated 2019-12-01 11:08:52 +0900
+Last updated 2019-12-01 21:18:39 +0900
 </div>
 </div>
 </body>

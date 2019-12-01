@@ -25,10 +25,12 @@ public class ProgrammaticCommand {
     public static void main(String[] args) {
         CommandSpec spec = CommandSpec.create();
         spec.mixinStandardHelpOptions(true); // usageHelp and versionHelp options
-        spec.addOption(OptionSpec.builder("-c", "--count").paramLabel("COUNT")
+        spec.addOption(OptionSpec.builder("-c", "--count")
+                .paramLabel("COUNT")
                 .type(int.class)
                 .description("number of times to execute").build());
-        spec.addPositional(PositionalParamSpec.builder().paramLabel("FILES")
+        spec.addPositional(PositionalParamSpec.builder()
+                .paramLabel("FILES")
                 .type(List.class).auxiliaryTypes(File.class) // List<File>
                 .description("The files to process").build());
         CommandLine commandLine = new CommandLine(spec);
@@ -40,6 +42,11 @@ public class ProgrammaticCommand {
     }
 
     static int run(ParseResult pr) {
+        // handle requests for help or version information
+        Integer helpExitCode = CommandLine.executeHelpRequest(pr);
+        if (helpExitCode != null) { return helpExitCode; }
+
+        // implement the business logic
         int count = pr.matchedOptionValue('c', 1);
         List<File> files = pr.matchedPositionalValue(0, Collections.<File>emptyList());
         for (File f : files) {
@@ -333,35 +340,42 @@ For example:
 
 [source,java]
 ----
-public class ProgrammaticCommand {
+public class MyApp {
 
     public static void main(String[] args) {
         CommandSpec spec = CommandSpec.create();
         spec.mixinStandardHelpOptions(true); // usageHelp and versionHelp options
-        spec.addOption(OptionSpec.builder("-c", "--count").paramLabel("COUNT")
+        spec.addOption(OptionSpec.builder("-c", "--count")
+                .paramLabel("COUNT")
                 .type(int.class)
                 .description("number of times to execute").build());
-        spec.addPositional(PositionalParamSpec.builder().paramLabel("FILES")
+        spec.addPositional(PositionalParamSpec.builder()
+                .paramLabel("FILES")
                 .type(List.class).auxiliaryTypes(File.class) // List<File>
                 .description("The files to process").build());
         CommandLine commandLine = new CommandLine(spec);
 
         // optionally configure streams and handlers to be used
-        commandLine.setCaseInsensitiveEnumValuesAllowed(true) // configure a non-default parser option
+        commandLine.setCaseInsensitiveEnumValuesAllowed(true) //configure a parser option
             .setOut(myOutWriter()) // configure an alternative to System.out
             .setErr(myErrWriter()) // configure an alternative to System.err
             .setColorScheme(myColorScheme()) // configure a custom color scheme
             .setExitCodeExceptionMapper(myMapper()) //  map exception to exit code
-            .setParameterExceptionHandler(Tmp::invalidUserInput) // configure a custom handler
-            .setExecutionExceptionHandler(Tmp::runtimeException) // configure a custom handler
+            .setParameterExceptionHandler(MyApp::invalidUserInput) // configure a custom handler
+            .setExecutionExceptionHandler(MyApp::runtimeException) // configure a custom handler
         ;
         // set an execution strategy so we can call CommandLine.execute(args)
-        commandLine.setExecutionStrategy(ProgrammaticCommand::run);
+        commandLine.setExecutionStrategy(MyApp::run);
         int exitCode = commandLine.execute(args);
         System.exit(exitCode);
     }
 
     static int run(ParseResult pr) {
+        // handle requests for help or version information
+        Integer helpExitCode = CommandLine.executeHelpRequest(pr);
+        if (helpExitCode != null) { return helpExitCode; }
+
+        // implement the business logic
         int count = pr.matchedOptionValue('c', 1);
         List<File> files = pr.matchedPositionalValue(0, Collections.<File>emptyList());
         for (File f : files) {
