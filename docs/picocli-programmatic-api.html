@@ -573,8 +573,20 @@ For most applications the annotations API is a better fit than the programmatic 
 </tr>
 </table>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+This document covers the programmatic API for picocli 4.0 and higher. For older versions, check <a href="https://picocli.info/man/3.x/picocli-3.0-programmatic-api.html">picocli-3.0-programmatic-api.html</a>.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
-<p>Picocli 4.1 offers a programmatic API for creating command line applications, in addition to annotations. The programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for processing command line arguments, using picocli, in other JVM languages.</p>
+<p>Picocli offers a programmatic API for creating command line applications, in addition to annotations. The programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for processing command line arguments, using picocli, in other JVM languages.</p>
 </div>
 </div>
 </div>
@@ -588,33 +600,21 @@ For most applications the annotations API is a better fit than the programmatic 
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
         CommandSpec spec = CommandSpec.create();
         spec.mixinStandardHelpOptions(<span class="predefined-constant">true</span>); <span class="comment">// usageHelp and versionHelp options</span>
-        spec.addOption(OptionSpec.builder(<span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--count</span><span class="delimiter">&quot;</span></span>).paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">COUNT</span><span class="delimiter">&quot;</span></span>).type(<span class="type">int</span>.class)
+        spec.addOption(OptionSpec.builder(<span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--count</span><span class="delimiter">&quot;</span></span>).paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">COUNT</span><span class="delimiter">&quot;</span></span>)
+                .type(<span class="type">int</span>.class)
                 .description(<span class="string"><span class="delimiter">&quot;</span><span class="content">number of times to execute</span><span class="delimiter">&quot;</span></span>).build());
-        spec.addPositional(PositionalParamSpec.builder().paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">FILES</span><span class="delimiter">&quot;</span></span>).type(<span class="predefined-type">List</span>.class).auxiliaryTypes(<span class="predefined-type">File</span>.class) <span class="comment">// List&lt;File&gt;</span>
+        spec.addPositional(PositionalParamSpec.builder().paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">FILES</span><span class="delimiter">&quot;</span></span>)
+                .type(<span class="predefined-type">List</span>.class).auxiliaryTypes(<span class="predefined-type">File</span>.class) <span class="comment">// List&lt;File&gt;</span>
                 .description(<span class="string"><span class="delimiter">&quot;</span><span class="content">The files to process</span><span class="delimiter">&quot;</span></span>).build());
         CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
 
-        <span class="comment">// set the execution strategy and control other aspects,</span>
-        <span class="comment">// like streams and handlers to be used and exit codes</span>
-        commandLine.setExecutionStrategy(<span class="keyword">new</span> Strategy())
-            .setCaseInsensitiveEnumValuesAllowed(<span class="predefined-constant">true</span>) <span class="comment">// configure a non-default parser option</span>
-            .setOut(<span class="predefined-type">System</span>.outmyOutWriter()) <span class="comment">// configure an alternative to System.out</span>
-            .setErr(myErrWriter()) <span class="comment">// configure an alternative to System.err</span>
-            .setColorScheme(myColorScheme()) <span class="comment">// configure a custom color scheme</span>
-            .setParameterExceptionHandler(myHandler()) <span class="comment">// configure a custom handler</span>
-            .setExecutionExceptionHandler(myHandler()) <span class="comment">// configure a custom handler</span>
-            .setExitCodeExceptionMapper(myMapper()); <span class="comment">//  map exception to exit code</span>
+        <span class="comment">// set an execution strategy so we can call CommandLine.execute(args)</span>
+        commandLine.setExecutionStrategy(ProgrammaticCommand::run);
         <span class="type">int</span> exitCode = commandLine.execute(args);
         <span class="predefined-type">System</span>.exit(exitCode);
     }
-}
 
-<span class="comment">// processing parse results can be done manually</span>
-<span class="comment">// or delegated to a configured execution strategy.</span>
-<span class="type">class</span> <span class="class">Strategy</span> <span class="directive">implements</span> IExecutionStrategy {
-
-    <span class="annotation">@Override</span>
-    <span class="directive">public</span> <span class="type">int</span> execute(ParseResult pr) <span class="directive">throws</span> <span class="exception">ExecutionException</span>, ParameterException {
+    <span class="directive">static</span> <span class="type">int</span> run(ParseResult pr) {
         <span class="type">int</span> count = pr.matchedOptionValue(<span class="string"><span class="delimiter">'</span><span class="content">c</span><span class="delimiter">'</span></span>, <span class="integer">1</span>);
         <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files = pr.matchedPositionalValue(<span class="integer">0</span>, <span class="predefined-type">Collections</span>.&lt;<span class="predefined-type">File</span>&gt;emptyList());
         <span class="keyword">for</span> (<span class="predefined-type">File</span> f : files) {
@@ -985,17 +985,63 @@ For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
-commandLine.setExecutionStrategy(<span class="keyword">new</span> Strategy())
-    .setCaseInsensitiveEnumValuesAllowed(<span class="predefined-constant">true</span>) <span class="comment">// configure a non-default parser option</span>
-    .setOut(<span class="predefined-type">System</span>.outmyOutWriter()) <span class="comment">// configure an alternative to System.out</span>
-    .setErr(myErrWriter()) <span class="comment">// configure an alternative to System.err</span>
-    .setColorScheme(myColorScheme()) <span class="comment">// configure a custom color scheme</span>
-    .setParameterExceptionHandler(myHandler()) <span class="comment">// configure a custom handler</span>
-    .setExecutionExceptionHandler(myHandler()) <span class="comment">// configure a custom handler</span>
-    .setExitCodeExceptionMapper(myMapper()); <span class="comment">// map exception to exit code</span>
-<span class="type">int</span> exitCode = commandLine.execute(args);
-<span class="predefined-type">System</span>.exit(exitCode);</code></pre>
+<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="type">class</span> <span class="class">ProgrammaticCommand</span> {
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        CommandSpec spec = CommandSpec.create();
+        spec.mixinStandardHelpOptions(<span class="predefined-constant">true</span>); <span class="comment">// usageHelp and versionHelp options</span>
+        spec.addOption(OptionSpec.builder(<span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--count</span><span class="delimiter">&quot;</span></span>).paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">COUNT</span><span class="delimiter">&quot;</span></span>)
+                .type(<span class="type">int</span>.class)
+                .description(<span class="string"><span class="delimiter">&quot;</span><span class="content">number of times to execute</span><span class="delimiter">&quot;</span></span>).build());
+        spec.addPositional(PositionalParamSpec.builder().paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">FILES</span><span class="delimiter">&quot;</span></span>)
+                .type(<span class="predefined-type">List</span>.class).auxiliaryTypes(<span class="predefined-type">File</span>.class) <span class="comment">// List&lt;File&gt;</span>
+                .description(<span class="string"><span class="delimiter">&quot;</span><span class="content">The files to process</span><span class="delimiter">&quot;</span></span>).build());
+        CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
+
+        <span class="comment">// optionally configure streams and handlers to be used</span>
+        commandLine.setCaseInsensitiveEnumValuesAllowed(<span class="predefined-constant">true</span>) <span class="comment">// configure a non-default parser option</span>
+            .setOut(myOutWriter()) <span class="comment">// configure an alternative to System.out</span>
+            .setErr(myErrWriter()) <span class="comment">// configure an alternative to System.err</span>
+            .setColorScheme(myColorScheme()) <span class="comment">// configure a custom color scheme</span>
+            .setExitCodeExceptionMapper(myMapper()) <span class="comment">//  map exception to exit code</span>
+            .setParameterExceptionHandler(Tmp::invalidUserInput) <span class="comment">// configure a custom handler</span>
+            .setExecutionExceptionHandler(Tmp::runtimeException) <span class="comment">// configure a custom handler</span>
+        ;
+        <span class="comment">// set an execution strategy so we can call CommandLine.execute(args)</span>
+        commandLine.setExecutionStrategy(ProgrammaticCommand::run);
+        <span class="type">int</span> exitCode = commandLine.execute(args);
+        <span class="predefined-type">System</span>.exit(exitCode);
+    }
+
+    <span class="directive">static</span> <span class="type">int</span> run(ParseResult pr) {
+        <span class="type">int</span> count = pr.matchedOptionValue(<span class="string"><span class="delimiter">'</span><span class="content">c</span><span class="delimiter">'</span></span>, <span class="integer">1</span>);
+        <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files = pr.matchedPositionalValue(<span class="integer">0</span>, <span class="predefined-type">Collections</span>.&lt;<span class="predefined-type">File</span>&gt;emptyList());
+        <span class="keyword">for</span> (<span class="predefined-type">File</span> f : files) {
+            <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; count; i++) {
+                <span class="predefined-type">System</span>.out.println(i + <span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span> + f.getName());
+            }
+        }
+        <span class="keyword">return</span> files.size();
+    }
+
+    <span class="comment">// custom handler for runtime errors that does not print a stack trace</span>
+    <span class="directive">static</span> <span class="type">int</span> runtimeException(<span class="exception">Exception</span> e,
+                                CommandLine commandLine,
+                                ParseResult parseResult) {
+        commandLine.getErr().println(<span class="string"><span class="delimiter">&quot;</span><span class="content">INTERNAL ERROR: </span><span class="delimiter">&quot;</span></span> + e.getMessage());
+        <span class="keyword">return</span> CommandLine.ExitCode.SOFTWARE;
+    }
+
+    <span class="comment">// custom handler for invalid input that does not print usage help</span>
+    <span class="directive">static</span> <span class="type">int</span> invalidUserInput(ParameterException e, <span class="predefined-type">String</span><span class="type">[]</span> strings) {
+        CommandLine commandLine = e.getCommandLine();
+        commandLine.getErr().println(<span class="string"><span class="delimiter">&quot;</span><span class="content">ERROR: </span><span class="delimiter">&quot;</span></span> + e.getMessage());
+        commandLine.getErr().println(<span class="string"><span class="delimiter">&quot;</span><span class="content">Try '</span><span class="delimiter">&quot;</span></span>
+                + commandLine.getCommandSpec().qualifiedName()
+                + <span class="string"><span class="delimiter">&quot;</span><span class="content"> --help' for more information.</span><span class="delimiter">&quot;</span></span>);
+        <span class="keyword">return</span> CommandLine.ExitCode.USAGE;
+    }
+}</code></pre>
 </div>
 </div>
 </div>
@@ -1005,7 +1051,7 @@ commandLine.setExecutionStrategy(<span class="keyword">new</span> Strategy())
 <div id="footer">
 <div id="footer-text">
 Version 4.1.2-SNAPSHOT<br>
-Last updated 2019-11-30 22:13:20 +0100
+Last updated 2019-12-01 11:08:52 +0900
 </div>
 </div>
 </body>

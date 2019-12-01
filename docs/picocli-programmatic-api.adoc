@@ -2,7 +2,7 @@
 //:author: Remko Popma
 //:email: rpopma@apache.org
 :revnumber: 4.1.2-SNAPSHOT
-:revdate: 2019-11-27
+:revdate: 2019-11-29
 :toc: left
 :numbered:
 :toclevels: 2
@@ -10,33 +10,36 @@
 :icons: font
 :imagesdir: images
 
-TIP: For most applications the annotations API is a better fit than the programmatic API: the annotation syntax is more compact, easier to read, and easier to maintain. See this https://github.com/remkop/picocli/wiki/Picocli-2.0:-Do-More-With-Less[introductory article] and for more details, the http://picocli.info[user manual].
+TIP: For most applications the annotations API is a better fit than the programmatic API: the annotation syntax is more compact, easier to read, and easier to maintain. See this https://picocli.info/quick-guide.html[quick guide] and for more details, the http://picocli.info[user manual].
 
-Picocli 3.0 offers a programmatic API for creating command line applications, in addition to annotations. The programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for processing command line arguments, using picocli, in other JVM languages.
+TIP: This document covers the programmatic API for picocli 4.0 and higher. For older versions, check link:https://picocli.info/man/3.x/picocli-3.0-programmatic-api.html[picocli-3.0-programmatic-api.html].
+
+Picocli offers a programmatic API for creating command line applications, in addition to annotations. The programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for processing command line arguments, using picocli, in other JVM languages.
 
 == Example
 
 [source,java]
 ----
-CommandSpec spec = CommandSpec.create();
-spec.mixinStandardHelpOptions(true); // usageHelp and versionHelp options
-spec.addOption(OptionSpec.builder("-c", "--count")
-        .paramLabel("COUNT")
-        .type(int.class)
-        .description("number of times to execute").build());
-spec.addPositional(PositionalParamSpec.builder()
-        .paramLabel("FILES")
-        .type(List.class)
-        .auxiliaryTypes(File.class) // List<File>
-        .description("The files to process").build());
-CommandLine commandLine = new CommandLine(spec);
+public class ProgrammaticCommand {
 
-// processing parse results can be done manually
-// or delegated to a handler
-class Handler extends AbstractParseResultHandler<Integer> {
-    protected Handler self() { return this; }
+    public static void main(String[] args) {
+        CommandSpec spec = CommandSpec.create();
+        spec.mixinStandardHelpOptions(true); // usageHelp and versionHelp options
+        spec.addOption(OptionSpec.builder("-c", "--count").paramLabel("COUNT")
+                .type(int.class)
+                .description("number of times to execute").build());
+        spec.addPositional(PositionalParamSpec.builder().paramLabel("FILES")
+                .type(List.class).auxiliaryTypes(File.class) // List<File>
+                .description("The files to process").build());
+        CommandLine commandLine = new CommandLine(spec);
 
-    public Integer handle(ParseResult pr) {
+        // set an execution strategy so we can call CommandLine.execute(args)
+        commandLine.setExecutionStrategy(ProgrammaticCommand::run);
+        int exitCode = commandLine.execute(args);
+        System.exit(exitCode);
+    }
+
+    static int run(ParseResult pr) {
         int count = pr.matchedOptionValue('c', 1);
         List<File> files = pr.matchedPositionalValue(0, Collections.<File>emptyList());
         for (File f : files) {
@@ -47,13 +50,6 @@ class Handler extends AbstractParseResultHandler<Integer> {
         return files.size();
     }
 }
-
-// using a handler gives fine-grained control
-// over which streams to use and exit codes
-Integer processed = commandLine.parseWithHandlers(
-        new Handler().useOut(System.out).andExit(123),
-        new DefaultExceptionHandler<Integer>().andExit(567),
-        args);
 ----
 
 == Configuration
@@ -329,28 +325,43 @@ try {
 }
 ----
 
-=== Convenience Methods
+=== `Execute` Convenience Method
 
-There are a number of `parseWithHandler` convenience methods to reduce some boilerplate when processing the `ParseResult` programmatically. The convenience methods take care of printing help when requested by the user, and handle invalid input.
-
-
-==== Handlers
-
-It is possible for the parse result processing logic to return a result. To accomplish this, call the `CommandLine::parseWithHandler` method with a class that extends `AbstractParseResultHandler`.
-
-Example:
+The `CommandLine` class has an `execute` convenience instance method which allows to reduce some boilerplate when executing the command programmatically.
+Applications can do configuration of the execution before invoking the command.
+For example:
 
 [source,java]
 ----
-CommandSpec spec = CommandSpec.create();
-// add options and positional parameters
+public class ProgrammaticCommand {
 
-CommandLine commandLine = new CommandLine(spec);
+    public static void main(String[] args) {
+        CommandSpec spec = CommandSpec.create();
+        spec.mixinStandardHelpOptions(true); // usageHelp and versionHelp options
+        spec.addOption(OptionSpec.builder("-c", "--count").paramLabel("COUNT")
+                .type(int.class)
+                .description("number of times to execute").build());
+        spec.addPositional(PositionalParamSpec.builder().paramLabel("FILES")
+                .type(List.class).auxiliaryTypes(File.class) // List<File>
+                .description("The files to process").build());
+        CommandLine commandLine = new CommandLine(spec);
 
-class Handler extends AbstractParseResultHandler<Integer> {
-    protected Handler self() { return this; }
+        // optionally configure streams and handlers to be used
+        commandLine.setCaseInsensitiveEnumValuesAllowed(true) // configure a non-default parser option
+            .setOut(myOutWriter()) // configure an alternative to System.out
+            .setErr(myErrWriter()) // configure an alternative to System.err
+            .setColorScheme(myColorScheme()) // configure a custom color scheme
+            .setExitCodeExceptionMapper(myMapper()) //  map exception to exit code
+            .setParameterExceptionHandler(Tmp::invalidUserInput) // configure a custom handler
+            .setExecutionExceptionHandler(Tmp::runtimeException) // configure a custom handler
+        ;
+        // set an execution strategy so we can call CommandLine.execute(args)
+        commandLine.setExecutionStrategy(ProgrammaticCommand::run);
+        int exitCode = commandLine.execute(args);
+        System.exit(exitCode);
+    }
 
-    public Integer handle(ParseResult pr) {
+    static int run(ParseResult pr) {
         int count = pr.matchedOptionValue('c', 1);
         List<File> files = pr.matchedPositionalValue(0, Collections.<File>emptyList());
         for (File f : files) {
@@ -360,26 +371,23 @@ class Handler extends AbstractParseResultHandler<Integer> {
         }
         return files.size();
     }
+
+    // custom handler for runtime errors that does not print a stack trace
+    static int runtimeException(Exception e,
+                                CommandLine commandLine,
+                                ParseResult parseResult) {
+        commandLine.getErr().println("INTERNAL ERROR: " + e.getMessage());
+        return CommandLine.ExitCode.SOFTWARE;
+    }
+
+    // custom handler for invalid input that does not print usage help
+    static int invalidUserInput(ParameterException e, String[] strings) {
+        CommandLine commandLine = e.getCommandLine();
+        commandLine.getErr().println("ERROR: " + e.getMessage());
+        commandLine.getErr().println("Try '"
+                + commandLine.getCommandSpec().qualifiedName()
+                + " --help' for more information.");
+        return CommandLine.ExitCode.USAGE;
+    }
 }
-
-int processed = commandLine.parseWithHandler(new Handler(), args);
-// do something with result...
-----
-
-
-This method also has a variation, `parseWithHandlers`, which additionally takes an `IExceptionHandler2` to customize how invalid input should be handled and optionally set an exit code.
-
-Example:
-
-[source,java]
-----
-CommandSpec spec = CommandSpec.create();
-// add options and positional parameters
-
-CommandLine commandLine = new CommandLine(spec);
-Integer result = commandLine.parseWithHandlers(
-        new MyHandler().useOut(System.out).andExit(123),
-        new DefaultExceptionHandler<Integer>().andExit(567),
-        args);
-// do something with result...
 ----

@@ -288,7 +288,7 @@ task bumpVersion {
             fileset(dir: 'docs', includes: 'index.adoc')
             fileset(dir: 'docs', includes: 'quick-guide.adoc')
             fileset(dir: 'docs', includes: 'autocomplete.adoc')
-            fileset(dir: 'docs', includes: 'picocli-3.0-programmatic-api.adoc')
+            fileset(dir: 'docs', includes: 'picocli-programmatic-api.adoc')
         }
         // Annotation Processor section
         ant.replaceregexp(match: ":picocli-codegen:$projectPreviousVersionRegex", replace: ":picocli-codegen:$version", flags: 'g', byline: true, encoding: 'UTF8') {
@@ -318,7 +318,7 @@ task bumpVersion {
             fileset(dir: 'docs', includes: 'index.adoc')
             fileset(dir: 'docs', includes: 'quick-guide.adoc')
             fileset(dir: 'docs', includes: 'autocomplete.adoc')
-            fileset(dir: 'docs', includes: 'picocli-3.0-programmatic-api.adoc')
+            fileset(dir: 'docs', includes: 'picocli-programmatic-api.adoc')
             fileset(dir: 'picocli-codegen', includes: 'README.adoc')
         }
     }
