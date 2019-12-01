@@ -39,6 +39,8 @@ commandDescription() that provides command descriptions for JLine `TailTipWidget
 
 <a href="https://asciinema.org/a/284482?t=5" target="_blank"><img src="https://asciinema.org/a/284482.png" width="400" /></a>
 
+JLine [Wiki](https://github.com/jline/jline3/wiki) and some more [Demos](https://github.com/jline/jline3/wiki/Demos).
+
 ## Example
 
 ```java
