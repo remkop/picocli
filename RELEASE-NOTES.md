@@ -25,6 +25,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 [#884] (Bugfix) Built-in `picocli.AutoComplete.GenerateCompletion` (`generate-completion`) subcommand should omit validation of mandatory options in the parent command. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 [#883] (DOC) Update of Quick Guide. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 [#889][#885] (DOC) Update of Picocli Programmatic API documentation. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+[#891] (DOC) Fixed broken links in README. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 ## <a name="4.1.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
