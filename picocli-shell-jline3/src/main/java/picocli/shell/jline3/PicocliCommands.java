@@ -14,6 +14,7 @@ import org.jline.builtins.Completers.SystemCompleter;
 import org.jline.builtins.Options.HelpException;
 import org.jline.builtins.Widgets.ArgDesc;
 import org.jline.builtins.Widgets.CmdDesc;
+import org.jline.reader.Completer;
 import org.jline.reader.impl.completer.ArgumentCompleter;
 import org.jline.reader.impl.completer.NullCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
@@ -24,10 +25,19 @@ import picocli.CommandLine.Help;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 
+/**
+ * Compiles SystemCompleter for command completion and implements a method commandDescription() that provides command descriptions
+ * for JLine TailTipWidgets to be displayed in terminal status bar.
+ * SystemCompleter implements the JLine 3 {@link Completer} interface. SystemCompleter generates completion
+ * candidates for the specified command line based on the {@link CommandSpec} that this {@code PicocliCommands} was constructed with.
+ *
+ * @since 4.1.2
+ */
 public class PicocliCommands {
     private final Supplier<Path> workDir;
     private final CommandLine cmd;
     private final List<String> commands;
+    private final Map<String,String> aliasCommand = new HashMap<>();
 
     public PicocliCommands(Path workDir, CommandLine cmd) {
         this(() -> workDir, cmd);
@@ -36,20 +46,30 @@ public class PicocliCommands {
     public PicocliCommands(Supplier<Path> workDir, CommandLine cmd) {
         this.workDir = workDir;
         this.cmd = cmd;
-        commands = new ArrayList<>(Arrays.asList(cmd.getCommandSpec().aliases()));
-        commands.addAll(cmd.getCommandSpec().subcommands().keySet());
-
+        commands = new ArrayList<>(cmd.getCommandSpec().subcommands().keySet());
+        for (String c: commands) {
+            for (String a: cmd.getSubcommands().get(c).getCommandSpec().aliases()) {
+                aliasCommand.put(a, c);
+            }
+        }
     }
 
+    /**
+     *
+     * @param command
+     * @return true if PicocliCommands contains command
+     */
     public boolean hasCommand(String command) {
-        return commands.contains(command);
+        return commands.contains(command) || aliasCommand.containsKey(command);
     }
 
+    /**
+     *
+     * @return SystemCompleter for command completion
+     */
     public SystemCompleter compileCompleters() {
         SystemCompleter out = new SystemCompleter();
-        // with original completer...
-        //        out.add(commands, new PicocliJLineCompleter(cmd.getCommandSpec()));
-        //        return out;
+        out.addAliases(aliasCommand);
         for (String s: commands) {
             CommandSpec spec = cmd.getSubcommands().get(s).getCommandSpec();
             List<String> options = new ArrayList<>();
@@ -79,7 +99,11 @@ public class PicocliCommands {
         }
         return out;
     }
-
+    /**
+     *
+     * @param command
+     * @return command description for JLine TailTipWidgets to be displayed in terminal status bar.
+     */
     public CmdDesc commandDescription(String command) {
         CommandSpec spec = cmd.getSubcommands().get(command).getCommandSpec();
         Help cmdhelp= new picocli.CommandLine.Help(spec);
