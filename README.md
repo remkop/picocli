@@ -70,7 +70,7 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 * [4.x Quick Guide](https://picocli.info/quick-guide.html)
 * [4.x API Javadoc](https://picocli.info/apidocs/)
 * [Command line autocompletion](https://picocli.info/autocomplete.html)
-* [Programmatic API](https://picocli.info/picocli-3.0-programmatic-api.html)
+* [Programmatic API](https://picocli.info/picocli-programmatic-api.html)
 * [FAQ](https://github.com/remkop/picocli/wiki/FAQ)
 * [GraalVM AOT Compilation to Native Image](https://picocli.info/picocli-on-graalvm.html) <img src="https://www.graalvm.org/resources/img/logo-colored.svg" > 
 
