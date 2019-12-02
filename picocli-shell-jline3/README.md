@@ -32,8 +32,13 @@ The picocli user manual is [here](https://picocli.info), and the GitHub project 
 get command line TAB auto-completion for a picocli-based application running in a JLine 3 shell.
 
 ## PicocliCommands
-`PicocliCommands` is a small component that compiles SystemCompleter for command TAB completion and implements a method 
-commandDescription() that provides command descriptions for JLine `TailTipWidgets` to be displayed in terminal status bar.
+`PicocliCommands` is a small component, analogous to JLine's `Builtins`, that takes a `picocli.CommandLine`
+object with a picocli-based command hierarchy and creates a JLine `SystemCompleter` for all commands
+in the hierarchy to set up command TAB completion in JLine.
+In addition, it makes a `org.jline.builtins.Widgets.CmdDesc` object available for each command,
+which allows a detailed description of the command and its options to be displayed
+in the JLine `TailTipWidgets` terminal status bar.
+
 
 ## Demo
 
@@ -46,16 +51,7 @@ JLine [Wiki](https://github.com/jline/jline3/wiki) and some more [Demos](https:/
 ```java
 package picocli.shell.jline3.example;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Paths;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-
+import org.fusesource.jansi.AnsiConsole;
 import org.jline.builtins.Builtins;
 import org.jline.builtins.Completers.SystemCompleter;
 import org.jline.builtins.Options.HelpException;
@@ -63,25 +59,27 @@ import org.jline.builtins.Widgets.CmdDesc;
 import org.jline.builtins.Widgets.CmdLine;
 import org.jline.builtins.Widgets.TailTipWidgets;
 import org.jline.builtins.Widgets.TailTipWidgets.TipType;
-import org.jline.reader.EndOfFileException;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.MaskingCallback;
-import org.jline.reader.ParsedLine;
-import org.jline.reader.Parser;
-import org.jline.reader.UserInterruptException;
+import org.jline.reader.*;
 import org.jline.reader.impl.DefaultParser;
 import org.jline.reader.impl.LineReaderImpl;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
-
 import picocli.CommandLine;
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
 import picocli.shell.jline3.PicocliCommands;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Example that demonstrates how to build an interactive shell with JLine3 and picocli.
@@ -92,9 +90,16 @@ public class Example {
     /**
      * Top-level command that just prints help.
      */
-    @Command(name = "", description = "Example interactive shell with completion",
+    @Command(name = "",
+            description = {
+                "Example interactive shell with completion. " +
+                    "Hit @|magenta <TAB>|@ to see available commands.",
+                "Type `@|bold,yellow keymap ^[s tailtip-toggle|@`, " +
+                        "then hit @|magenta ALT-S|@ to toggle tailtips.",
+                ""},
             footer = {"", "Press Ctl-D to exit."},
-            subcommands = {MyCommand.class, ClearScreen.class})
+            subcommands = {
+                MyCommand.class, ClearScreen.class, CommandLine.HelpCommand.class})
     static class CliCommands implements Runnable {
         LineReaderImpl reader;
         PrintWriter out;
@@ -116,22 +121,35 @@ public class Example {
      */
     @Command(name = "cmd", mixinStandardHelpOptions = true, version = "1.0",
             description = "Command with some options to demonstrate TAB-completion" +
-                    " (note that enum values also get completed)")
+                    " (note that enum values also get completed)",
+            subcommands = CommandLine.HelpCommand.class)
     static class MyCommand implements Runnable {
-        @Option(names = {"-v", "--verbose"})
+        @Option(names = {"-v", "--verbose"},
+                description = { "Specify multiple -v options to increase verbosity.",
+                                "For example, `-v -v -v` or `-vvv`"})
         private boolean[] verbosity = {};
 
-        @Option(names = {"-d", "--duration"})
-        private int amount;
+        @ArgGroup(exclusive = false)
+        private MyDuration myDuration = new MyDuration();
 
-        @Option(names = {"-u", "--timeUnit"})
-        private TimeUnit unit;
+        static class MyDuration {
+            @Option(names = {"-d", "--duration"},
+                    description = "The duration quantity.",
+                    required = true)
+            private int amount;
+
+            @Option(names = {"-u", "--timeUnit"},
+                    description = "The duration time unit.",
+                    required = true)
+            private TimeUnit unit;
+        }
 
         @ParentCommand CliCommands parent;
 
         public void run() {
             if (verbosity.length > 0) {
-                parent.out.printf("Hi there. You asked for %d %s.%n", amount, unit);
+                parent.out.printf("Hi there. You asked for %d %s.%n",
+                        myDuration.amount, myDuration.unit);
             } else {
                 parent.out.println("hi!");
             }
@@ -154,7 +172,8 @@ public class Example {
     }
 
     /**
-     * Provide command descriptions for JLine TailTipWidgets to be displayed in status bar
+     * Provide command descriptions for JLine TailTipWidgets
+     * to be displayed in the status bar.
      */
     private static class DescriptionGenerator {
         Builtins builtins;
@@ -184,6 +203,7 @@ public class Example {
     }
 
     public static void main(String[] args) {
+        AnsiConsole.systemInstall();
         try {
             // set up JLine built-in commands
             Path workDir = Paths.get("");

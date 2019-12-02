@@ -27,6 +27,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 [#883] (DOC) Update of Quick Guide. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 [#889][#885] (DOC) Update of Picocli Programmatic API documentation. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 [#891] (DOC) Fixed broken links in README. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+[#892] (DOC) Minor improvements to example app in `picocli-shell-jline3`.
 
 ## <a name="4.1.2-deprecated"></a> Deprecations
 No features were deprecated in this release.

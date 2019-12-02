@@ -1,15 +1,6 @@
 package picocli.shell.jline3.example;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Paths;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-
+import org.fusesource.jansi.AnsiConsole;
 import org.jline.builtins.Builtins;
 import org.jline.builtins.Completers.SystemCompleter;
 import org.jline.builtins.Options.HelpException;
@@ -17,25 +8,27 @@ import org.jline.builtins.Widgets.CmdDesc;
 import org.jline.builtins.Widgets.CmdLine;
 import org.jline.builtins.Widgets.TailTipWidgets;
 import org.jline.builtins.Widgets.TailTipWidgets.TipType;
-import org.jline.reader.EndOfFileException;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.MaskingCallback;
-import org.jline.reader.ParsedLine;
-import org.jline.reader.Parser;
-import org.jline.reader.UserInterruptException;
+import org.jline.reader.*;
 import org.jline.reader.impl.DefaultParser;
 import org.jline.reader.impl.LineReaderImpl;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
-
 import picocli.CommandLine;
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
 import picocli.shell.jline3.PicocliCommands;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Example that demonstrates how to build an interactive shell with JLine3 and picocli.
@@ -46,9 +39,16 @@ public class Example {
     /**
      * Top-level command that just prints help.
      */
-    @Command(name = "", description = "Example interactive shell with completion",
+    @Command(name = "",
+            description = {
+                    "Example interactive shell with completion. " +
+                            "Hit @|magenta <TAB>|@ to see available commands.",
+                    "Type `@|bold,yellow keymap ^[s tailtip-toggle|@`, " +
+                            "then hit @|magenta ALT-S|@ to toggle tailtips.",
+                    ""},
             footer = {"", "Press Ctl-D to exit."},
-            subcommands = {MyCommand.class, ClearScreen.class})
+            subcommands = {
+                    MyCommand.class, ClearScreen.class, CommandLine.HelpCommand.class})
     static class CliCommands implements Runnable {
         LineReaderImpl reader;
         PrintWriter out;
@@ -70,22 +70,35 @@ public class Example {
      */
     @Command(name = "cmd", mixinStandardHelpOptions = true, version = "1.0",
             description = "Command with some options to demonstrate TAB-completion" +
-                    " (note that enum values also get completed)")
+                    " (note that enum values also get completed)",
+            subcommands = CommandLine.HelpCommand.class)
     static class MyCommand implements Runnable {
-        @Option(names = {"-v", "--verbose"})
+        @Option(names = {"-v", "--verbose"},
+                description = { "Specify multiple -v options to increase verbosity.",
+                        "For example, `-v -v -v` or `-vvv`"})
         private boolean[] verbosity = {};
 
-        @Option(names = {"-d", "--duration"})
-        private int amount;
+        @ArgGroup(exclusive = false)
+        private MyDuration myDuration = new MyDuration();
 
-        @Option(names = {"-u", "--timeUnit"})
-        private TimeUnit unit;
+        static class MyDuration {
+            @Option(names = {"-d", "--duration"},
+                    description = "The duration quantity.",
+                    required = true)
+            private int amount;
+
+            @Option(names = {"-u", "--timeUnit"},
+                    description = "The duration time unit.",
+                    required = true)
+            private TimeUnit unit;
+        }
 
         @ParentCommand CliCommands parent;
 
         public void run() {
             if (verbosity.length > 0) {
-                parent.out.printf("Hi there. You asked for %d %s.%n", amount, unit);
+                parent.out.printf("Hi there. You asked for %d %s.%n",
+                        myDuration.amount, myDuration.unit);
             } else {
                 parent.out.println("hi!");
             }
@@ -108,7 +121,8 @@ public class Example {
     }
 
     /**
-     * Provide command descriptions for JLine TailTipWidgets to be displayed in status bar
+     * Provide command descriptions for JLine TailTipWidgets
+     * to be displayed in the status bar.
      */
     private static class DescriptionGenerator {
         Builtins builtins;
@@ -122,22 +136,23 @@ public class Example {
         CmdDesc commandDescription(CmdLine line) {
             CmdDesc out = null;
             switch (line.getDescriptionType()) {
-            case COMMAND:
-                String cmd = Parser.getCommand(line.getArgs().get(0));
-                if (builtins.hasCommand(cmd)) {
-                    out = builtins.commandDescription(cmd);
-                } else if (picocli.hasCommand(cmd)) {
-                    out = picocli.commandDescription(cmd);
-                }
-                break;
-            default:
-                break;
+                case COMMAND:
+                    String cmd = Parser.getCommand(line.getArgs().get(0));
+                    if (builtins.hasCommand(cmd)) {
+                        out = builtins.commandDescription(cmd);
+                    } else if (picocli.hasCommand(cmd)) {
+                        out = picocli.commandDescription(cmd);
+                    }
+                    break;
+                default:
+                    break;
             }
             return out;
         }
     }
 
     public static void main(String[] args) {
+        AnsiConsole.systemInstall();
         try {
             // set up JLine built-in commands
             Path workDir = Paths.get("");
@@ -180,7 +195,7 @@ public class Example {
                     String command = Parser.getCommand(pl.word());
                     if (builtins.hasCommand(command)) {
                         builtins.execute(command, Arrays.copyOfRange(arguments, 1, arguments.length)
-                                                , System.in, System.out, System.err);
+                                , System.in, System.out, System.err);
                     } else {
                         new CommandLine(commands).execute(arguments);
                     }
