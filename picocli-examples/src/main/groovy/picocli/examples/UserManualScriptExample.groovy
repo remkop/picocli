@@ -1,6 +1,6 @@
 package picocli.examples
 
-@Grab('info.picocli:picocli-groovy:4.0.0')
+@Grab('info.picocli:picocli-groovy:4.1.1')
 @Command(name = "myCommand",
         mixinStandardHelpOptions = true,
         description = "@|bold Groovy script|@ @|underline picocli|@ example")

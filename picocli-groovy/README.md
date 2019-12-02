@@ -1,4 +1,6 @@
-<p align="center"><img src="https://picocli.info/images/groovy-logo.png" height="150px"><img src="https://picocli.info/images/logo/horizontal-400x150.png" alt="picocli" height="150px"></p>
+<p align="center">
+<a href="https://groovy-lang.org"><img src="https://picocli.info/images/groovy-logo.png" height="150px" alt="Groovy programming language"></a>
+<a href="https://picocli.info"><img src="https://picocli.info/images/logo/horizontal-400x150.png" alt="picocli" height="150px"></p></a>
 
 
 # Picocli in Groovy Scripts
@@ -25,7 +27,7 @@ import static picocli.CommandLine.*
 
 @Option(names = ["-a", "--algorithm"], description = [
         "MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512, or",
-        "  any other MessageDigest algorithm. See [1] for more details."])
+        "  any other MessageDigest algorithm."])
 @Field private String algorithm = "MD5"
 
 files.each {

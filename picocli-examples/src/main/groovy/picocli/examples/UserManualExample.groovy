@@ -4,7 +4,7 @@ import picocli.CommandLine
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 
-@Command(name = "MyApp", version = "Groovy picocli demo v3.0",
+@Command(name = "MyApp", version = "Groovy picocli demo v4.1",
         mixinStandardHelpOptions = true,
         description = "@|bold Groovy|@ @|underline picocli|@ example")
 class UserManualExample implements Runnable {
@@ -20,6 +20,7 @@ class UserManualExample implements Runnable {
     }
 
     static void main(String[] args) {
-        CommandLine.run(new UserManualExample(), args)
+        CommandLine cmd = new CommandLine(new UserManualExample())
+        cmd.execute(args)
     }
 }

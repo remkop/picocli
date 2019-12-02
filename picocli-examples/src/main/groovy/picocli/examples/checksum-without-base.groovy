@@ -1,6 +1,6 @@
 package picocli.examples
 
-@Grab('info.picocli:picocli-groovy:4.0.0')
+@Grab('info.picocli:picocli-groovy:4.1.1')
 @GrabExclude('org.codehaus.groovy:groovy-all')
 import java.security.MessageDigest
 import picocli.CommandLine
@@ -20,7 +20,7 @@ class Checksum {
 Checksum checksum = new Checksum()
 CommandLine commandLine = new CommandLine(checksum)
 try {
-    commandLine.parse(args)
+    commandLine.parseArgs(args)
     if (commandLine.usageHelpRequested) {
         commandLine.usage(System.out)
     } else {
