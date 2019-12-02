@@ -14,7 +14,22 @@ TIP: For most applications the annotations API is a better fit than the programm
 
 TIP: This document covers the programmatic API for picocli 4.0 and higher. For older versions, check link:https://picocli.info/man/3.x/picocli-3.0-programmatic-api.html[picocli-3.0-programmatic-api.html].
 
+== Introduction
 Picocli offers a programmatic API for creating command line applications, in addition to annotations. The programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for processing command line arguments, using picocli, in other JVM languages.
+
+CAUTION: This document does not cover all of picocli's features. If you find yourself wondering "Can picocli do X?", please refer to the http://picocli.info[user manual]. The examples in the user manual use the annotations API, but *everything that can be done with the annotations API can also be done via the programmatic API*.
+
+To create an application using the programmatic API,
+use the `CommandSpec`, `OptionSpec` and `PositionalParamSpec` classes to define one or more commands and their options and positional parameters.
+Then, create a `CommandLine` instance with the top-level command's `CommandSpec`,
+and use this object to parse the command line arguments and process the results.
+The rest of this document goes into more detail.
+
+Picocli can be used as a library or as a framework.
+When used as a framework, the application needs to
+designate a method that will be called when the user input was valid, and call the `CommandLine.execute` method.
+When used as a library, the application calls the `CommandLine.parseArgs` method to obtain a `ParseResult` object, and is then responsible for handling the result. See the <<Parsing and Result Processing>> section for details. The example below uses the (more compact) `execute` method.
+
 
 == Example
 
@@ -35,7 +50,8 @@ public class ProgrammaticCommand {
                 .description("The files to process").build());
         CommandLine commandLine = new CommandLine(spec);
 
-        // set an execution strategy so we can call CommandLine.execute(args)
+        // set an execution strategy (the run(ParseResult) method) that will be called
+        // by CommandLine.execute(args) when user input was valid
         commandLine.setExecutionStrategy(ProgrammaticCommand::run);
         int exitCode = commandLine.execute(args);
         System.exit(exitCode);
@@ -104,8 +120,11 @@ cmd.parser()
         .overwrittenOptionsAllowed(true);
 ----
 
-==== Mixins
+==== Reusing Options with Mixins
 `CommandSpec` has methods to add options (`OptionSpec` objects) and positional parameters (`PositionalParamSpec` objects). A `CommandSpec` can be mixed in with another `CommandSpec`, so its options, positional parameters and usage help attributes are merged into the other `CommandSpec`.
+
+This allows application to define some common options in one class and reuse them in many other commands. For example:
+
 [source,java]
 ----
 CommandSpec standardHelpOptions = CommandSpec.create()
@@ -128,7 +147,12 @@ spec.mixinStandardHelpOptions(true); // usageHelp and versionHelp options
 ----
 
 ==== Subcommands
-Finally, `CommandSpec` objects can be subcommands of other `CommandSpecs`. There is no limit to the depth of a hierarchy of command and subcommands. `CommandSpec` also allows registration of type converters that are used while parsing the command line arguments to convert a command line argument string to the strongly typed value of a `OptionSpec` or `PositionalParamSpec`
+It is common for complex applications to break up functionality into "verbs" or "subcommands".
+For example, the `git` application has many subcommands like `commit`, `push`, `status`, etc.
+Picocli makes it easy to build applications with subcommands (and sub-subcommands).
+
+`CommandSpec` objects can be subcommands of other `CommandSpecs`. There is no limit to the depth of a hierarchy of command and subcommands.
+
 [source,java]
 ----
 CommandSpec helpSubcommand = CommandSpec.forAnnotatedObject(
@@ -157,9 +181,24 @@ Similar to `OptionSpec` objects, Once a `PositionalParamSpec` is constructed, it
 The value is set via getter and setter _bindings_. We’ll look at bindings next.
 
 === Bindings
+
+==== Bindings Overview
+When an option or positional parameter is matched on the command line,
+the parser will create a https://picocli.info/#_strongly_typed_everything[strongly typed] value for the text value
+that was matched on the command line. Picocli stores this value in the `ArgSpec` by using its `IGetter` or `ISetter`.
+
+Most applications don't need to know the details of getter and setter bindings, and can just call
+https://picocli.info/apidocs/picocli/CommandLine.Model.ArgSpec.html#getValue--[getValue] or
+https://picocli.info/apidocs/picocli/CommandLine.Model.ArgSpec.html#setValue-T-[setValue].
+The below may be of interest for applications or libraries that use picocli to design a domain-specific language, or implement some other dynamic behaviour.
+
+Picocli internally uses bindings to allow `@Option` and `@Parameters`-annotated fields and setter methods on implementation classes, and annotated getter methods on interfaces.
+
+==== Bindings Details
+
 Bindings decouple the option and positional parameter specification from the place where their value is held.
 
-Option specifications and positional parameter specifications created from annotated objects have a `FieldBinding` (and in the near future they can have a `MethodBinding`), so when the value is set on an option specification, the field's value is set (or the setter method is invoked).
+Option specifications and positional parameter specifications created from annotated fields have a `FieldBinding`, and annotated methods have a `MethodBinding`, so when the value is set on an option specification, the field's value is set (or the setter method is invoked).
 
 Option specifications and positional parameter specifications created programmatically without annotated object by default have an `ObjectBinding` that simply stores the value in a field of the `ObjectBinding`.
 
@@ -307,36 +346,81 @@ assert !subResult.hasMatchedPositional(3);
 === Basic Processing
 The most basic way to parse the command line is to call the `CommandLine::parseArgs` method and inspect the resulting `ParseResult` object.
 
-For example:
+The `parseArgs` method allows applications to use picocli _as a library_. See the <<Execute,Execute Framework>> section below on how to use picocli _as a framework_.
+
+Using picocli as a library via the `parseArgs` method is straightforward and leaves the application in control, but doing this correctly means that the application need to take care of many things:
+
+* check if usage help or version help was requested
+* handle invalid user input
+* if user input was valid, invoke the business logic
+* handle runtime errors in the business logic
+* optionally return an exit code for all of the above
+
+
+An application that handles all of these cases could look something like this:
 [source,java]
 ----
-CommandSpec spec = CommandSpec.create();
-// add options and positional parameters
+public static void main(String... args) {
+    int exitCode = myParse(args);
+    System.exit(exitCode);
+}
 
-CommandLine commandLine = new CommandLine(spec);
-try {
-    ParseResult pr = commandLine.parseArgs(args);
-    if (CommandLine.printHelpIfRequested(pr)) {
-        return;
+int myParse(String... args) {
+    CommandSpec spec = CommandSpec.create();
+    // add options and positional parameters
+
+    CommandLine cmd = new CommandLine(spec);
+    try {
+        ParseResult parseResult = cmd.parseArgs(args);
+
+        // Did user request usage help (--help)?
+        if (cmd.isUsageHelpRequested()) {
+            cmd.usage(cmd.getOut());
+            return cmd.getCommandSpec().exitCodeOnUsageHelp();
+
+        // Did user request version help (--version)?
+        } else if (cmd.isVersionHelpRequested()) {
+            cmd.printVersionHelp(cmd.getOut());
+            return cmd.getCommandSpec().exitCodeOnVersionHelp();
+        }
+        // invoke the business logic
+        myBusinessLogic(parseResult);
+        return cmd.getCommandSpec().exitCodeOnSuccess();
+
+    // invalid user input: print error message and usage help
+    } catch (ParameterException ex) {
+        cmd.getErr().println(ex.getMessage());
+        if (!UnmatchedArgumentException.printSuggestions(ex, cmd.getErr())) {
+            ex.getCommandLine().usage(cmd.getErr());
+        }
+        return cmd.getCommandSpec().exitCodeOnInvalidInput();
+
+    // exception occurred in business logic
+    } catch (Exception ex) {
+        ex.printStackTrace(cmd.getErr());
+        return cmd.getCommandSpec().exitCodeOnExecutionException();
     }
+}
+
+void myBusinessLogic(ParseResult pr) throws java.io.IOException {
     int count = pr.matchedOptionValue('c', 1);
     List<File> files = pr.matchedPositionalValue(0, Collections.<File>emptyList());
     for (File f : files) {
         for (int i = 0; i < count; i++) {
-            System.out.printf("%d: %s%n", i, f);
+            System.out.printf("%d: %s%n", i, f.getCanonicalFile());
         }
     }
-} catch (ParameterException invalidInput) {
-    System.err.println(invalidInput.getMessage());
-    invalidInput.getCommandLine().usage(System.err);
 }
 ----
 
-=== `Execute` Convenience Method
+[[Execute]]
+=== `Execute` Framework [[_execute_convenience_method]]
 
-The `CommandLine` class has an `execute` convenience instance method which allows to reduce some boilerplate when executing the command programmatically.
-Applications can do configuration of the execution before invoking the command.
-For example:
+The `CommandLine` class has an `execute` method which allows applications to reduce some boilerplate when executing the command.
+
+It takes care of requests for usage or version help, printing errors if the user input was invalid, invoking the business logic, handling any runtime exceptions in the business logic, and finally returning an exit code. The framework has reasonable defaults for each of these tasks, but they can all be configured.
+
+The example below demonstrates how to customize and invoke the command:
 
 [source,java]
 ----
@@ -364,7 +448,8 @@ public class MyApp {
             .setParameterExceptionHandler(MyApp::invalidUserInput) // configure a custom handler
             .setExecutionExceptionHandler(MyApp::runtimeException) // configure a custom handler
         ;
-        // set an execution strategy so we can call CommandLine.execute(args)
+        // set an execution strategy (the run(ParseResult) method) that will be called
+        // by CommandLine.execute(args) when user input was valid
         commandLine.setExecutionStrategy(MyApp::run);
         int exitCode = commandLine.execute(args);
         System.exit(exitCode);
@@ -405,3 +490,5 @@ public class MyApp {
     }
 }
 ----
+
+For more detail, see the https://picocli.info/#execute[Executing Commands] section of the user manual.

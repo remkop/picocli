@@ -532,27 +532,28 @@ table.CodeRay td.code>pre{padding:0}
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_example">1. Example</a></li>
-<li><a href="#_configuration">2. Configuration</a>
+<li><a href="#_introduction">1. Introduction</a></li>
+<li><a href="#_example">2. Example</a></li>
+<li><a href="#_configuration">3. Configuration</a>
 <ul class="sectlevel2">
-<li><a href="#_commandspec">2.1. <code>CommandSpec</code></a></li>
-<li><a href="#_optionspec">2.2. <code>OptionSpec</code></a></li>
-<li><a href="#_positionalparamspec">2.3. <code>PositionalParamSpec</code></a></li>
-<li><a href="#_bindings">2.4. Bindings</a></li>
+<li><a href="#_commandspec">3.1. <code>CommandSpec</code></a></li>
+<li><a href="#_optionspec">3.2. <code>OptionSpec</code></a></li>
+<li><a href="#_positionalparamspec">3.3. <code>PositionalParamSpec</code></a></li>
+<li><a href="#_bindings">3.4. Bindings</a></li>
 </ul>
 </li>
-<li><a href="#_parse_result">3. Parse Result</a>
+<li><a href="#_parse_result">4. Parse Result</a>
 <ul class="sectlevel2">
-<li><a href="#_querying_for_options">3.1. Querying for Options</a></li>
-<li><a href="#_matched_option_values">3.2. Matched Option Values</a></li>
-<li><a href="#_original_option_values">3.3. Original Option Values</a></li>
-<li><a href="#_subcommands_2">3.4. Subcommands</a></li>
+<li><a href="#_querying_for_options">4.1. Querying for Options</a></li>
+<li><a href="#_matched_option_values">4.2. Matched Option Values</a></li>
+<li><a href="#_original_option_values">4.3. Original Option Values</a></li>
+<li><a href="#_subcommands_2">4.4. Subcommands</a></li>
 </ul>
 </li>
-<li><a href="#_parsing_and_result_processing">4. Parsing and Result Processing</a>
+<li><a href="#_parsing_and_result_processing">5. Parsing and Result Processing</a>
 <ul class="sectlevel2">
-<li><a href="#_basic_processing">4.1. Basic Processing</a></li>
-<li><a href="#_execute_convenience_method">4.2. <code>Execute</code> Convenience Method</a></li>
+<li><a href="#_basic_processing">5.1. Basic Processing</a></li>
+<li><a href="#Execute">5.2. <code>Execute</code> Framework </a></li>
 </ul>
 </li>
 </ul>
@@ -585,13 +586,43 @@ This document covers the programmatic API for picocli 4.0 and higher. For older 
 </tr>
 </table>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_introduction">1. Introduction</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>Picocli offers a programmatic API for creating command line applications, in addition to annotations. The programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for processing command line arguments, using picocli, in other JVM languages.</p>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+This document does not cover all of picocli&#8217;s features. If you find yourself wondering "Can picocli do X?", please refer to the <a href="http://picocli.info">user manual</a>. The examples in the user manual use the annotations API, but <strong>everything that can be done with the annotations API can also be done via the programmatic API</strong>.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>To create an application using the programmatic API,
+use the <code>CommandSpec</code>, <code>OptionSpec</code> and <code>PositionalParamSpec</code> classes to define one or more commands and their options and positional parameters.
+Then, create a <code>CommandLine</code> instance with the top-level command&#8217;s <code>CommandSpec</code>,
+and use this object to parse the command line arguments and process the results.
+The rest of this document goes into more detail.</p>
+</div>
+<div class="paragraph">
+<p>Picocli can be used as a library or as a framework.
+When used as a framework, the application needs to
+designate a method that will be called when the user input was valid, and call the <code>CommandLine.execute</code> method.
+When used as a library, the application calls the <code>CommandLine.parseArgs</code> method to obtain a <code>ParseResult</code> object, and is then responsible for handling the result. See the <a href="#_parsing_and_result_processing">Parsing and Result Processing</a> section for details. The example below uses the (more compact) <code>execute</code> method.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_example">1. Example</h2>
+<h2 id="_example">2. Example</h2>
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
@@ -610,7 +641,8 @@ This document covers the programmatic API for picocli 4.0 and higher. For older 
                 .description(<span class="string"><span class="delimiter">&quot;</span><span class="content">The files to process</span><span class="delimiter">&quot;</span></span>).build());
         CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
 
-        <span class="comment">// set an execution strategy so we can call CommandLine.execute(args)</span>
+        <span class="comment">// set an execution strategy (the run(ParseResult) method) that will be called</span>
+        <span class="comment">// by CommandLine.execute(args) when user input was valid</span>
         commandLine.setExecutionStrategy(ProgrammaticCommand::run);
         <span class="type">int</span> exitCode = commandLine.execute(args);
         <span class="predefined-type">System</span>.exit(exitCode);
@@ -637,7 +669,7 @@ This document covers the programmatic API for picocli 4.0 and higher. For older 
 </div>
 </div>
 <div class="sect1">
-<h2 id="_configuration">2. Configuration</h2>
+<h2 id="_configuration">3. Configuration</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The following classes are the main model classes used to configure the parser:</p>
@@ -656,9 +688,9 @@ This document covers the programmatic API for picocli 4.0 and higher. For older 
 </ul>
 </div>
 <div class="sect2">
-<h3 id="_commandspec">2.1. <code>CommandSpec</code></h3>
+<h3 id="_commandspec">3.1. <code>CommandSpec</code></h3>
 <div class="sect3">
-<h4 id="_command_name_and_version">2.1.1. Command Name and Version</h4>
+<h4 id="_command_name_and_version">3.1.1. Command Name and Version</h4>
 <div class="paragraph">
 <p><code>CommandSpec</code> models a command. It has a name and a version, both of which may be empty.  For example:</p>
 </div>
@@ -674,7 +706,7 @@ This document covers the programmatic API for picocli 4.0 and higher. For older 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_usage_help">2.1.2. Usage Help</h4>
+<h4 id="_usage_help">3.1.2. Usage Help</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java">cmd.usageMessage()
@@ -693,7 +725,7 @@ This document covers the programmatic API for picocli 4.0 and higher. For older 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_parser_options">2.1.3. Parser Options</h4>
+<h4 id="_parser_options">3.1.3. Parser Options</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java">cmd.parser()
@@ -703,9 +735,12 @@ This document covers the programmatic API for picocli 4.0 and higher. For older 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_mixins">2.1.4. Mixins</h4>
+<h4 id="_reusing_options_with_mixins">3.1.4. Reusing Options with Mixins</h4>
 <div class="paragraph">
 <p><code>CommandSpec</code> has methods to add options (<code>OptionSpec</code> objects) and positional parameters (<code>PositionalParamSpec</code> objects). A <code>CommandSpec</code> can be mixed in with another <code>CommandSpec</code>, so its options, positional parameters and usage help attributes are merged into the other <code>CommandSpec</code>.</p>
+</div>
+<div class="paragraph">
+<p>This allows application to define some common options in one class and reuse them in many other commands. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -733,9 +768,14 @@ spec.mixinStandardHelpOptions(<span class="predefined-constant">true</span>); <s
 </div>
 </div>
 <div class="sect3">
-<h4 id="_subcommands">2.1.5. Subcommands</h4>
+<h4 id="_subcommands">3.1.5. Subcommands</h4>
 <div class="paragraph">
-<p>Finally, <code>CommandSpec</code> objects can be subcommands of other <code>CommandSpecs</code>. There is no limit to the depth of a hierarchy of command and subcommands. <code>CommandSpec</code> also allows registration of type converters that are used while parsing the command line arguments to convert a command line argument string to the strongly typed value of a <code>OptionSpec</code> or <code>PositionalParamSpec</code></p>
+<p>It is common for complex applications to break up functionality into "verbs" or "subcommands".
+For example, the <code>git</code> application has many subcommands like <code>commit</code>, <code>push</code>, <code>status</code>, etc.
+Picocli makes it easy to build applications with subcommands (and sub-subcommands).</p>
+</div>
+<div class="paragraph">
+<p><code>CommandSpec</code> objects can be subcommands of other <code>CommandSpecs</code>. There is no limit to the depth of a hierarchy of command and subcommands.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -750,7 +790,7 @@ CommandSpec cmd = CommandSpec.create()
 </div>
 </div>
 <div class="sect2">
-<h3 id="_optionspec">2.2. <code>OptionSpec</code></h3>
+<h3 id="_optionspec">3.2. <code>OptionSpec</code></h3>
 <div class="paragraph">
 <p><code>OptionSpec</code> models a command option. An <code>OptionSpec</code> must have at least one name, which is used during parsing to match command line arguments. Other attributes can be left empty and picocli will give them a reasonable default value. This defaulting is why <code>OptionSpec</code> objects are created with a builder: this allows you to specify only some attributes and let picocli initialise the other attributes. For example, if only the option’s name is specified, picocli assumes the option takes no parameters (arity = 0), and is of type <code>boolean</code>. Another example, if arity is larger than <code>1</code>, picocli sets the type to <code>List</code> and the <code>auxiliary type</code> to <code>String</code>.</p>
 </div>
@@ -765,7 +805,7 @@ CommandSpec cmd = CommandSpec.create()
 </div>
 </div>
 <div class="sect2">
-<h3 id="_positionalparamspec">2.3. <code>PositionalParamSpec</code></h3>
+<h3 id="_positionalparamspec">3.3. <code>PositionalParamSpec</code></h3>
 <div class="paragraph">
 <p><code>PositionalParamSpec</code> objects don’t have names, but have an index range instead. A single <code>PositionalParamSpec</code> object can capture multiple positional parameters. The default index range is set to <code>0..*</code> (all indices). A command may have multiple <code>PositionalParamSpec</code> objects to capture positional parameters at different index ranges. This can be useful if positional parameters at different index ranges have different data types.</p>
 </div>
@@ -777,12 +817,31 @@ CommandSpec cmd = CommandSpec.create()
 </div>
 </div>
 <div class="sect2">
-<h3 id="_bindings">2.4. Bindings</h3>
+<h3 id="_bindings">3.4. Bindings</h3>
+<div class="sect3">
+<h4 id="_bindings_overview">3.4.1. Bindings Overview</h4>
+<div class="paragraph">
+<p>When an option or positional parameter is matched on the command line,
+the parser will create a <a href="https://picocli.info/#_strongly_typed_everything">strongly typed</a> value for the text value
+that was matched on the command line. Picocli stores this value in the <code>ArgSpec</code> by using its <code>IGetter</code> or <code>ISetter</code>.</p>
+</div>
+<div class="paragraph">
+<p>Most applications don&#8217;t need to know the details of getter and setter bindings, and can just call
+<a href="https://picocli.info/apidocs/picocli/CommandLine.Model.ArgSpec.html#getValue--">getValue</a> or
+<a href="https://picocli.info/apidocs/picocli/CommandLine.Model.ArgSpec.html#setValue-T-">setValue</a>.
+The below may be of interest for applications or libraries that use picocli to design a domain-specific language, or implement some other dynamic behaviour.</p>
+</div>
+<div class="paragraph">
+<p>Picocli internally uses bindings to allow <code>@Option</code> and <code>@Parameters</code>-annotated fields and setter methods on implementation classes, and annotated getter methods on interfaces.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_bindings_details">3.4.2. Bindings Details</h4>
 <div class="paragraph">
 <p>Bindings decouple the option and positional parameter specification from the place where their value is held.</p>
 </div>
 <div class="paragraph">
-<p>Option specifications and positional parameter specifications created from annotated objects have a <code>FieldBinding</code> (and in the near future they can have a <code>MethodBinding</code>), so when the value is set on an option specification, the field&#8217;s value is set (or the setter method is invoked).</p>
+<p>Option specifications and positional parameter specifications created from annotated fields have a <code>FieldBinding</code>, and annotated methods have a <code>MethodBinding</code>, so when the value is set on an option specification, the field&#8217;s value is set (or the setter method is invoked).</p>
 </div>
 <div class="paragraph">
 <p>Option specifications and positional parameter specifications created programmatically without annotated object by default have an <code>ObjectBinding</code> that simply stores the value in a field of the <code>ObjectBinding</code>.</p>
@@ -832,8 +891,9 @@ If the getter returns <code>null</code>, a new array, collection, or map is crea
 </div>
 </div>
 </div>
+</div>
 <div class="sect1">
-<h2 id="_parse_result">3. Parse Result</h2>
+<h2 id="_parse_result">4. Parse Result</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>For the below examples, we use the following parser configuration:</p>
@@ -856,7 +916,7 @@ CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);</c
 </div>
 </div>
 <div class="sect2">
-<h3 id="_querying_for_options">3.1. Querying for Options</h3>
+<h3 id="_querying_for_options">4.1. Querying for Options</h3>
 <div class="paragraph">
 <p>The <code>CommandLine::parseArgs</code> method returns a <code>ParseResult</code> object that allows client code to query which options and positional parameters were matched for a given command.</p>
 </div>
@@ -876,7 +936,7 @@ ParseResult pr = commandLine.parseArgs(args);
 </div>
 </div>
 <div class="sect2">
-<h3 id="_matched_option_values">3.2. Matched Option Values</h3>
+<h3 id="_matched_option_values">4.2. Matched Option Values</h3>
 <div class="paragraph">
 <p>The <code>matchedOptionValue</code> method returns the command line value or values, converted to the option&#8217;s type. This method requires a default value, which will be returned in case the option was not matched on the command line. In the above example, we defined the <code>--file</code> option to be of type <code>List&lt;File&gt;</code>, so we pass in an empty list as the default value:</p>
 </div>
@@ -895,7 +955,7 @@ ParseResult pr = commandLine.parseArgs(args);
 </div>
 </div>
 <div class="sect2">
-<h3 id="_original_option_values">3.3. Original Option Values</h3>
+<h3 id="_original_option_values">4.3. Original Option Values</h3>
 <div class="paragraph">
 <p>Use the <code>OptionSpec.stringValues()</code> or <code>OptionSpec.originalStringValues()</code> method to get a list of all values specified on the command line for an option.
 The <code>stringValues()</code> method returns the arguments after splitting but before type conversion, while
@@ -916,7 +976,7 @@ the <code>originalStringValues()</code> method returns the matched arguments as 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_subcommands_2">3.4. Subcommands</h3>
+<h3 id="_subcommands_2">4.4. Subcommands</h3>
 <div class="paragraph">
 <p>Use the <code>hasSubcommand</code> method to determine whether the command line contained subcommands. The <code>subcommand</code> method returns a different <code>ParseResult</code> object that can be used to query which options and positional parameters were matched for the subcommand.</p>
 </div>
@@ -948,47 +1008,107 @@ ParseResult subResult = parseResult.subcommand();
 </div>
 </div>
 <div class="sect1">
-<h2 id="_parsing_and_result_processing">4. Parsing and Result Processing</h2>
+<h2 id="_parsing_and_result_processing">5. Parsing and Result Processing</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_basic_processing">4.1. Basic Processing</h3>
+<h3 id="_basic_processing">5.1. Basic Processing</h3>
 <div class="paragraph">
 <p>The most basic way to parse the command line is to call the <code>CommandLine::parseArgs</code> method and inspect the resulting <code>ParseResult</code> object.</p>
 </div>
 <div class="paragraph">
-<p>For example:</p>
+<p>The <code>parseArgs</code> method allows applications to use picocli <em>as a library</em>. See the <a href="#Execute">Execute Framework</a> section below on how to use picocli <em>as a framework</em>.</p>
+</div>
+<div class="paragraph">
+<p>Using picocli as a library via the <code>parseArgs</code> method is straightforward and leaves the application in control, but doing this correctly means that the application need to take care of many things:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>check if usage help or version help was requested</p>
+</li>
+<li>
+<p>handle invalid user input</p>
+</li>
+<li>
+<p>if user input was valid, invoke the business logic</p>
+</li>
+<li>
+<p>handle runtime errors in the business logic</p>
+</li>
+<li>
+<p>optionally return an exit code for all of the above</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>An application that handles all of these cases could look something like this:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">CommandSpec spec = CommandSpec.create();
-<span class="comment">// add options and positional parameters</span>
+<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
+    <span class="type">int</span> exitCode = myParse(args);
+    <span class="predefined-type">System</span>.exit(exitCode);
+}
 
-CommandLine commandLine = <span class="keyword">new</span> CommandLine(spec);
-<span class="keyword">try</span> {
-    ParseResult pr = commandLine.parseArgs(args);
-    <span class="keyword">if</span> (CommandLine.printHelpIfRequested(pr)) {
-        <span class="keyword">return</span>;
+<span class="type">int</span> myParse(<span class="predefined-type">String</span>... args) {
+    CommandSpec spec = CommandSpec.create();
+    <span class="comment">// add options and positional parameters</span>
+
+    CommandLine cmd = <span class="keyword">new</span> CommandLine(spec);
+    <span class="keyword">try</span> {
+        ParseResult parseResult = cmd.parseArgs(args);
+
+        <span class="comment">// Did user request usage help (--help)?</span>
+        <span class="keyword">if</span> (cmd.isUsageHelpRequested()) {
+            cmd.usage(cmd.getOut());
+            <span class="keyword">return</span> cmd.getCommandSpec().exitCodeOnUsageHelp();
+
+        <span class="comment">// Did user request version help (--version)?</span>
+        } <span class="keyword">else</span> <span class="keyword">if</span> (cmd.isVersionHelpRequested()) {
+            cmd.printVersionHelp(cmd.getOut());
+            <span class="keyword">return</span> cmd.getCommandSpec().exitCodeOnVersionHelp();
+        }
+        <span class="comment">// invoke the business logic</span>
+        myBusinessLogic(parseResult);
+        <span class="keyword">return</span> cmd.getCommandSpec().exitCodeOnSuccess();
+
+    <span class="comment">// invalid user input: print error message and usage help</span>
+    } <span class="keyword">catch</span> (ParameterException ex) {
+        cmd.getErr().println(ex.getMessage());
+        <span class="keyword">if</span> (!UnmatchedArgumentException.printSuggestions(ex, cmd.getErr())) {
+            ex.getCommandLine().usage(cmd.getErr());
+        }
+        <span class="keyword">return</span> cmd.getCommandSpec().exitCodeOnInvalidInput();
+
+    <span class="comment">// exception occurred in business logic</span>
+    } <span class="keyword">catch</span> (<span class="exception">Exception</span> ex) {
+        ex.printStackTrace(cmd.getErr());
+        <span class="keyword">return</span> cmd.getCommandSpec().exitCodeOnExecutionException();
     }
+}
+
+<span class="type">void</span> myBusinessLogic(ParseResult pr) <span class="directive">throws</span> java.io.IOException {
     <span class="type">int</span> count = pr.matchedOptionValue(<span class="string"><span class="delimiter">'</span><span class="content">c</span><span class="delimiter">'</span></span>, <span class="integer">1</span>);
     <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; files = pr.matchedPositionalValue(<span class="integer">0</span>, <span class="predefined-type">Collections</span>.&lt;<span class="predefined-type">File</span>&gt;emptyList());
     <span class="keyword">for</span> (<span class="predefined-type">File</span> f : files) {
         <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">0</span>; i &lt; count; i++) {
-            <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">%d: %s%n</span><span class="delimiter">&quot;</span></span>, i, f);
+            <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">%d: %s%n</span><span class="delimiter">&quot;</span></span>, i, f.getCanonicalFile());
         }
     }
-} <span class="keyword">catch</span> (ParameterException invalidInput) {
-    <span class="predefined-type">System</span>.err.println(invalidInput.getMessage());
-    invalidInput.getCommandLine().usage(<span class="predefined-type">System</span>.err);
 }</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_execute_convenience_method">4.2. <code>Execute</code> Convenience Method</h3>
+<h3 id="Execute">5.2. <code>Execute</code> Framework <a id="_execute_convenience_method"></a></h3>
 <div class="paragraph">
-<p>The <code>CommandLine</code> class has an <code>execute</code> convenience instance method which allows to reduce some boilerplate when executing the command programmatically.
-Applications can do configuration of the execution before invoking the command.
-For example:</p>
+<p>The <code>CommandLine</code> class has an <code>execute</code> method which allows applications to reduce some boilerplate when executing the command.</p>
+</div>
+<div class="paragraph">
+<p>It takes care of requests for usage or version help, printing errors if the user input was invalid, invoking the business logic, handling any runtime exceptions in the business logic, and finally returning an exit code. The framework has reasonable defaults for each of these tasks, but they can all be configured.</p>
+</div>
+<div class="paragraph">
+<p>The example below demonstrates how to customize and invoke the command:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1016,7 +1136,8 @@ For example:</p>
             .setParameterExceptionHandler(MyApp::invalidUserInput) <span class="comment">// configure a custom handler</span>
             .setExecutionExceptionHandler(MyApp::runtimeException) <span class="comment">// configure a custom handler</span>
         ;
-        <span class="comment">// set an execution strategy so we can call CommandLine.execute(args)</span>
+        <span class="comment">// set an execution strategy (the run(ParseResult) method) that will be called</span>
+        <span class="comment">// by CommandLine.execute(args) when user input was valid</span>
         commandLine.setExecutionStrategy(MyApp::run);
         <span class="type">int</span> exitCode = commandLine.execute(args);
         <span class="predefined-type">System</span>.exit(exitCode);
@@ -1058,6 +1179,9 @@ For example:</p>
 }</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>For more detail, see the <a href="https://picocli.info/#execute">Executing Commands</a> section of the user manual.</p>
+</div>
 </div>
 </div>
 </div>
@@ -1065,7 +1189,7 @@ For example:</p>
 <div id="footer">
 <div id="footer-text">
 Version 4.1.2-SNAPSHOT<br>
-Last updated 2019-12-01 21:18:39 +0900
+Last updated 2019-12-02 22:12:05 +0900
 </div>
 </div>
 </body>
