@@ -1,15 +1,17 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 import picocli.CommandLine.UnmatchedArgumentException;
+import picocli.test.Execution;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -108,4 +110,38 @@ public class UnmatchedArgumentExceptionTest {
                 "Possible solutions: --fixup, --file%n");
         assertEquals(expected, sw.toString());
     }
+
+    @Ignore("https://github.com/remkop/picocli/issues/887")
+    @Test
+    public void testHiddenOptionsNotSuggested() {
+        class MyApp {
+            @Option(names = "--aaa", hidden = true) int a;
+            @Option(names = "--apples", hidden = false) int apples;
+            @Option(names = "--bbb", hidden = false) int b;
+        }
+        CommandLine cmd = new CommandLine(new MyApp());
+        UnmatchedArgumentException ex = new UnmatchedArgumentException(cmd, Arrays.asList("-a", null));
+        StringWriter sw = new StringWriter();
+        UnmatchedArgumentException.printSuggestions(ex, new PrintWriter(sw));
+        String expected = format("" +
+                "Possible solutions: --apples%n");
+        assertEquals(expected, sw.toString());
+    }
+
+    @Ignore("https://github.com/remkop/picocli/issues/887")
+    @Test
+    public void testHiddenCommandsNotSuggested() {
+
+        @Command(name="Completion", subcommands = { picocli.AutoComplete.GenerateCompletion.class, CommandLine.HelpCommand.class } )
+        class CompletionSubcommandDemo implements Runnable {
+            public void run() { }
+        }
+        CommandLine cmd = new CommandLine(new CompletionSubcommandDemo());
+        CommandLine gen = cmd.getSubcommands().get("generate-completion");
+        gen.getCommandSpec().usageMessage().hidden(true);
+
+        Execution execution = Execution.builder(cmd).execute("ge");
+        execution.assertSystemErr("Unmatched argument at index 0: 'ge'%n");
+    }
+
 }

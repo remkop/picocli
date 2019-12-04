@@ -16,10 +16,15 @@
 package picocli;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.*;
+import org.junit.contrib.java.lang.system.Assertion;
+import org.junit.contrib.java.lang.system.ExpectedSystemExit;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.contrib.java.lang.system.SystemErrRule;
+import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
@@ -29,13 +34,11 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
@@ -49,7 +52,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.String.*;
+import static java.lang.String.format;
 import static org.junit.Assert.*;
 
 /**
@@ -1269,22 +1272,10 @@ public class AutoCompleteTest {
 
     @Test
     public void testGenerateCompletionScriptStandardOut() {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ByteArrayOutputStream err = new ByteArrayOutputStream();
-        PrintStream oldOut = System.out;
-        PrintStream oldErr = System.err;
-        try {
-            System.setOut(new PrintStream(out));
-            System.setErr(new PrintStream(err));
-            CommandLine cmd = new CommandLine(new MyApp());
-            cmd.execute("generate-completion");
-        } finally {
-            System.setOut(oldOut);
-            System.setOut(oldErr);
-        }
-        String expected = getCompletionScriptText("myapp");
-        assertEquals("", err.toString());
-        assertEquals(expected, out.toString());
+        int exitCode = new CommandLine(new MyApp()).execute("generate-completion");
+        assertEquals(CommandLine.ExitCode.OK, exitCode);
+        assertEquals("", systemErrRule.getLog());
+        assertEquals(getCompletionScriptText("myapp"), systemOutRule.getLog());
     }
 
     private String getCompletionScriptText(String cmdName) {
@@ -1421,4 +1412,34 @@ public class AutoCompleteTest {
                     "complete -F _complete_%1$s -o default %1$s %1$s.sh %1$s.bash\n" +
                     "\n", cmdName, CommandLine.VERSION);
     }
+
+    @Ignore("https://github.com/remkop/picocli/issues/887")
+    @Test
+    public void testHiddenOptionsAndSubcommandsNotSuggested() {
+
+        @Command(name="Completion", subcommands = { /*picocli.AutoComplete.GenerateCompletion.class,*/ CommandLine.HelpCommand.class } )
+        class CompletionSubcommandDemo implements Runnable {
+            @Option(names = "--aaa", hidden = true) int a;
+            @Option(names = "--apples", hidden = false) int apples;
+            @Option(names = "--bbb", hidden = false) int b;
+
+            public void run() { }
+        }
+        CommandLine cmd = new CommandLine(new CompletionSubcommandDemo());
+        CommandLine gen = cmd.getSubcommands().get("generate-completion");
+        gen.getCommandSpec().usageMessage().hidden(true);
+
+        String expected = String.format("" +
+                "Usage: Completion [--apples=<apples>] [--bbb=<b>] [COMMAND]%n" +
+                "      --apples=<apples>%n" +
+                "      --bbb=<b>%n" +
+                "Commands:%n" +
+                "  help  Displays help information about the specified command%n");
+        assertEquals(expected, cmd.getUsageMessage(CommandLine.Help.Ansi.OFF));
+
+        int exitCode = cmd.execute("ge");
+        assertEquals(CommandLine.ExitCode.USAGE, exitCode);
+        assertEquals("Unmatched argument at index 0: 'ge'", systemErrRule.getLog());
+    }
+
 }
