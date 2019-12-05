@@ -430,6 +430,7 @@ public class AutoComplete {
         result.append(generateEntryPointFunction(scriptName, commandLine, function2command));
 
         for (Map.Entry<CommandDescriptor, CommandLine> functionSpec : function2command.entrySet()) {
+            if (functionSpec.getValue().getCommandSpec().usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
             CommandDescriptor descriptor = functionSpec.getKey();
             result.append(generateFunctionForCommand(descriptor.functionName, descriptor.commandName, functionSpec.getValue()));
         }
@@ -493,6 +494,7 @@ public class AutoComplete {
 
         // breadth-first: generate command lists and function calls for predecessors + each subcommand
         for (Map.Entry<String, CommandLine> entry : commandLine.getSubcommands().entrySet()) {
+            if (entry.getValue().getCommandSpec().usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
             int count = functionCalls.size();
             String functionName = "_picocli_" + scriptName + "_" + concat("_", predecessors, entry.getKey(), new Bashify());
             functionCalls.add(format("  ArrContains COMP_WORDS CMDS%2$d && { %1$s; return $?; }\n", functionName, count));
@@ -504,6 +506,7 @@ public class AutoComplete {
 
         // then recursively do the same for all nested subcommands
         for (Map.Entry<String, CommandLine> entry : commandLine.getSubcommands().entrySet()) {
+            if (entry.getValue().getCommandSpec().usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
             predecessors.add(entry.getKey());
             generateFunctionCallsToArrContains(scriptName, predecessors, entry.getValue(), buff, functionCalls, function2command);
             predecessors.remove(predecessors.size() - 1);
@@ -564,6 +567,7 @@ public class AutoComplete {
 
         // Generate completion lists for options with a known set of valid values (including java enums)
         for (OptionSpec f : commandSpec.options()) {
+            if (f.hidden()) { continue; } // #887 skip hidden options
             if (f.completionCandidates() != null) {
                 generateCompletionCandidates(buff, f);
             }
@@ -616,6 +620,7 @@ public class AutoComplete {
     private static String generateOptionsCases(List<OptionSpec> argOptionFields, String indent, String currWord) {
         StringBuilder buff = new StringBuilder(1024);
         for (OptionSpec option : argOptionFields) {
+            if (option.hidden()) { continue; } // #887 skip hidden options
             if (option.completionCandidates() != null) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -u|--timeUnit)\n"
                 buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_OPTION_ARGS}\" -- %s ) )\n", indent, bashify(option.paramLabel()), currWord));
@@ -645,6 +650,7 @@ public class AutoComplete {
     private static String optionNames(List<OptionSpec> options) {
         List<String> result = new ArrayList<String>();
         for (OptionSpec option : options) {
+            if (option.hidden()) { continue; } // #887 skip hidden options
             result.addAll(Arrays.asList(option.names()));
         }
         return concat(" ", result, "", new NullFunction()).trim();
@@ -785,21 +791,23 @@ public class AutoComplete {
     private static void addCandidatesForArgsFollowing(CommandSpec commandSpec, List<CharSequence> candidates) {
         if (commandSpec == null) { return; }
         for (Map.Entry<String, CommandLine> entry : commandSpec.subcommands().entrySet()) {
+            if (entry.getValue().getCommandSpec().usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
             candidates.add(entry.getKey());
             candidates.addAll(Arrays.asList(entry.getValue().getCommandSpec().aliases()));
         }
         candidates.addAll(commandSpec.optionsMap().keySet());
         for (PositionalParamSpec positional : commandSpec.positionalParameters()) {
+            if (positional.hidden()) { continue; } // #887 skip hidden subcommands
             addCandidatesForArgsFollowing(positional, candidates);
         }
     }
     private static void addCandidatesForArgsFollowing(OptionSpec optionSpec, List<CharSequence> candidates) {
-        if (optionSpec != null) {
+        if (optionSpec != null && !optionSpec.hidden()) {
             addCompletionCandidates(optionSpec.completionCandidates(), candidates);
         }
     }
     private static void addCandidatesForArgsFollowing(PositionalParamSpec positionalSpec, List<CharSequence> candidates) {
-        if (positionalSpec != null) {
+        if (positionalSpec != null && !positionalSpec.hidden()) {
             addCompletionCandidates(positionalSpec.completionCandidates(), candidates);
         }
     }
