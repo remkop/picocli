@@ -24,6 +24,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 ## <a name="4.1.2-fixes"></a> Fixed issues
 [#888] (API) Added new `PicocliCommands` class to `picocli-shell-jline3` module; bumped `JLine` to 3.13.2. Thanks to [mattirn](https://github.com/mattirn) for the pull request.
 [#884] (Bugfix) Built-in `picocli.AutoComplete.GenerateCompletion` (`generate-completion`) subcommand should omit validation of mandatory options in the parent command. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+[#887] (Bugfix) "Hidden" subcommands and options should not be shown as suggestions in unmatched argument usage help or autocompletion scripts. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 [#883] (DOC) Update of Quick Guide. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 [#889][#885] (DOC) Update of Picocli Programmatic API documentation. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 [#891] (DOC) Fixed broken links in README. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.

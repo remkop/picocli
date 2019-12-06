@@ -6076,11 +6076,11 @@ public class CommandLine {
                 }
                 return prefixed;
             }
-            List<String> findOptionNamesWithPrefix(String prefix) {
+            List<String> findVisibleOptionNamesWithPrefix(String prefix) {
                 List<String> result = new ArrayList<String>();
                 for (OptionSpec option : options()) {
                     for (String name : option.names()) {
-                        if (stripPrefix(name).startsWith(prefix)) { result.add(name); }
+                        if (!option.hidden() && stripPrefix(name).startsWith(prefix)) { result.add(name); }
                     }
                 }
                 return result;
@@ -15322,9 +15322,13 @@ public class CommandLine {
             String stripped = CommandSpec.stripPrefix(arg);
             CommandSpec spec = getCommandLine().getCommandSpec();
             if (spec.resemblesOption(arg, null)) {
-                return spec.findOptionNamesWithPrefix(stripped.substring(0, Math.min(2, stripped.length())));
+                return spec.findVisibleOptionNamesWithPrefix(stripped.substring(0, Math.min(2, stripped.length())));
             } else if (!spec.subcommands().isEmpty()) {
-                List<String> mostSimilar = CosineSimilarity.mostSimilar(arg, spec.subcommands().keySet());
+                List<String> visibleSubs = new ArrayList<String>();
+                for (Map.Entry<String, CommandLine> entry : spec.subcommands().entrySet()) {
+                    if (!entry.getValue().getCommandSpec().usageMessage().hidden()) { visibleSubs.add(entry.getKey()); }
+                }
+                List<String> mostSimilar = CosineSimilarity.mostSimilar(arg, visibleSubs);
                 return mostSimilar.subList(0, Math.min(3, mostSimilar.size()));
             }
             return Collections.emptyList();

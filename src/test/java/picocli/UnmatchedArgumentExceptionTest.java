@@ -111,7 +111,7 @@ public class UnmatchedArgumentExceptionTest {
         assertEquals(expected, sw.toString());
     }
 
-    @Ignore("https://github.com/remkop/picocli/issues/887")
+    //https://github.com/remkop/picocli/issues/887
     @Test
     public void testHiddenOptionsNotSuggested() {
         class MyApp {
@@ -120,7 +120,7 @@ public class UnmatchedArgumentExceptionTest {
             @Option(names = "--bbb", hidden = false) int b;
         }
         CommandLine cmd = new CommandLine(new MyApp());
-        UnmatchedArgumentException ex = new UnmatchedArgumentException(cmd, Arrays.asList("-a", null));
+        UnmatchedArgumentException ex = new UnmatchedArgumentException(cmd, Arrays.asList("--a", null));
         StringWriter sw = new StringWriter();
         UnmatchedArgumentException.printSuggestions(ex, new PrintWriter(sw));
         String expected = format("" +
@@ -128,11 +128,11 @@ public class UnmatchedArgumentExceptionTest {
         assertEquals(expected, sw.toString());
     }
 
-    @Ignore("https://github.com/remkop/picocli/issues/887")
+    //https://github.com/remkop/picocli/issues/887
     @Test
     public void testHiddenCommandsNotSuggested() {
 
-        @Command(name="Completion", subcommands = { picocli.AutoComplete.GenerateCompletion.class, CommandLine.HelpCommand.class } )
+        @Command(name="Completion", subcommands = { picocli.AutoComplete.GenerateCompletion.class } )
         class CompletionSubcommandDemo implements Runnable {
             public void run() { }
         }
@@ -141,7 +141,9 @@ public class UnmatchedArgumentExceptionTest {
         gen.getCommandSpec().usageMessage().hidden(true);
 
         Execution execution = Execution.builder(cmd).execute("ge");
-        execution.assertSystemErr("Unmatched argument at index 0: 'ge'%n");
+        execution.assertSystemErr("" +
+                "Unmatched argument at index 0: 'ge'%n" +
+                "Usage: Completion [COMMAND]%n");
     }
 
 }
