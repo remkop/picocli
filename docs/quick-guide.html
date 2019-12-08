@@ -526,8 +526,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>Quick Guide</h1>
 <div class="details">
-<span id="revnumber">version 4.1.1,</span>
-<span id="revdate">2019-11-27</span>
+<span id="revnumber">version 4.1.2,</span>
+<span id="revdate">2019-12-08</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -678,7 +678,7 @@ Option names commonly start with <code>-</code> or <code>--</code>, but picocli 
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">String</span><span class="type">[]</span> args = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--file</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">result.tar</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1.txt</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file2.txt</span><span class="delimiter">&quot;</span></span> };
 Tar tar = <span class="keyword">new</span> Tar();
-<span class="keyword">new</span> CommandLine(tar).parse(args);
+<span class="keyword">new</span> CommandLine(tar).parseArgs(args);
 
 <span class="keyword">assert</span> !tar.helpRequested;
 <span class="keyword">assert</span>  tar.create;
@@ -1001,7 +1001,7 @@ usage help or version information was requested (without inspecting the annotate
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> App());
-commandLine.parse(args);
+commandLine.parseArgs(args);
 <span class="keyword">if</span> (commandLine.isUsageHelpRequested()) {
    commandLine.usage(<span class="predefined-type">System</span>.out);
    <span class="keyword">return</span>;
@@ -1013,7 +1013,7 @@ commandLine.parse(args);
 </div>
 </div>
 <div class="paragraph">
-<p>See also <a href="#Parsing">[Parsing]</a> and <a href="#Runnable and Callable">[Runnable and Callable]</a> for how picocli can help reduce boilerplate code.</p>
+<p>See also the chapter <a href="http://picocli.info/#_printing_help_automatically">Printing Help Automatically</a> of the user manual.</p>
 </div>
 </div>
 </div>
@@ -1104,7 +1104,7 @@ Concatenate FILE(s), or standard input, to standard output.
   -v, --show-nonprinting   use ^ and M- notation, except for LDF and TAB
       --help               display this help and exit
       --version            output version information and exit
-Copyright(c) 2017</pre>
+Copyright(c) 2019</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1112,7 +1112,7 @@ Copyright(c) 2017</pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">cat</span><span class="delimiter">&quot;</span></span>, footer = <span class="string"><span class="delimiter">&quot;</span><span class="content">Copyright(c) 2017</span><span class="delimiter">&quot;</span></span>,
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">cat</span><span class="delimiter">&quot;</span></span>, footer = <span class="string"><span class="delimiter">&quot;</span><span class="content">Copyright(c) 2019</span><span class="delimiter">&quot;</span></span>,
          description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Concatenate FILE(s), or standard input, to standard output.</span><span class="delimiter">&quot;</span></span>)
 <span class="type">class</span> <span class="class">Cat</span> {
 
@@ -2100,8 +2100,8 @@ Your stars keep me going! :-)</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.1.1<br>
-Last updated 2019-11-27 00:16:25 +0900
+Version 4.1.2<br>
+Last updated 2019-12-08 16:35:08 +0900
 </div>
 </div>
 </body>

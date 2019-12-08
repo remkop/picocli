@@ -526,8 +526,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 4.1.1,</span>
-<span id="revdate">2019-11-27</span>
+<span id="revnumber">version 4.1.2,</span>
+<span id="revdate">2019-12-08</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -904,7 +904,7 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <h4 id="_gradle">2.1.1. Gradle</h4>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.1.1'</pre>
+<pre>compile 'info.picocli:picocli:4.1.2'</pre>
 </div>
 </div>
 </div>
@@ -915,7 +915,7 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.1.1&lt;/version&gt;
+  &lt;version&gt;4.1.2&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -980,7 +980,7 @@ In most cases no further configuration is needed when generating a native image.
       &lt;path&gt;
         &lt;groupId&gt;info.picocli&lt;/groupId&gt;
         &lt;artifactId&gt;picocli-codegen&lt;/artifactId&gt;
-        &lt;version&gt;4.1.1&lt;/version&gt;
+        &lt;version&gt;4.1.2&lt;/version&gt;
       &lt;/path&gt;
     &lt;/annotationProcessorPaths&gt;
     &lt;compilerArgs&gt;
@@ -999,8 +999,8 @@ In most cases no further configuration is needed when generating a native image.
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code>dependencies {
-    compile 'info.picocli:picocli:4.1.1'
-    annotationProcessor 'info.picocli:picocli-codegen:4.1.1'
+    compile 'info.picocli:picocli:4.1.2'
+    annotationProcessor 'info.picocli:picocli-codegen:4.1.2'
 }</code></pre>
 </div>
 </div>
@@ -2677,6 +2677,18 @@ In this example the group has <code>multiplicity = "1"</code>, so the group must
 <div class="paragraph">
 <p>Note that the options are defined as <code>required = true</code>; this means required <em>within the group</em>, not required within the command.</p>
 </div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+From picocli 4.1.2, all options in an exclusive group are automatically considered required, even if they are not marked as <code>required = true</code> in the annotations. Applications using older versions of picocli should mark all options in exclusive groups as required.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Picocli will validate the arguments and throw a <code>MutuallyExclusiveArgsException</code> if multiple mutually exclusive arguments were specified. For example:</p>
 </div>
@@ -2713,6 +2725,8 @@ For optional groups (groups with <code>multiplicity = "0..1"</code> - the defaul
 </div>
 <div class="sect2">
 <h3 id="_mutually_dependent_options">8.2. Mutually Dependent Options</h3>
+<div class="sect3">
+<h4 id="_overview">8.2.1. Overview</h4>
 <div class="paragraph">
 <p>Annotate a field or method with <code>@ArgGroup(exclusive = false)</code> to create a group of dependent options and positional parameters that must co-occur. For example:</p>
 </div>
@@ -2781,6 +2795,36 @@ For optional groups (groups with <code>multiplicity = "0..1"</code> - the defaul
 </td>
 </tr>
 </table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_non_required_options_in_mutually_dependent_groups">8.2.2. Non-Required Options in Mutually Dependent Groups</h4>
+<div class="paragraph">
+<p>In mutually dependent groups it is possible to have one or more options that are not required. This is different from <a href="#_mutually_exclusive_options">exclusive groups</a>, where all options are always required.</p>
+</div>
+<div class="paragraph">
+<p>It is useful to be able to define a co-occurring group as <code>(-a -b [-c])</code> so that both <code>-a -b -c</code> and <code>-a -b</code> are valid on the command line, but not <code>-a -c</code> for example.
+This can be implemented by marking the optional option with <code>required = false</code>, as in the below example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">co-occur-with-optional-options</span><span class="delimiter">&quot;</span></span>)
+<span class="directive">public</span> <span class="type">class</span> <span class="class">DependentWithOptionalOptionsDemo</span> {
+
+    <span class="annotation">@ArgGroup</span>(exclusive = <span class="predefined-constant">false</span>, multiplicity = <span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>)
+    DependentWithOptionalOptions group;
+
+    <span class="directive">static</span> <span class="type">class</span> <span class="class">DependentWithOptionalOptions</span> {
+        <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-a</span><span class="delimiter">&quot;</span></span>, required = <span class="predefined-constant">true</span>) <span class="type">int</span> a;
+        <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-b</span><span class="delimiter">&quot;</span></span>, required = <span class="predefined-constant">true</span>) <span class="type">int</span> b;
+        <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, required = <span class="predefined-constant">false</span>) <span class="type">int</span> c;
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>More than one option can be optional in mutually dependent groups, but it is recommended to have at least one required option in the group (or there is not much point in using a mutually dependent group).</p>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -8046,7 +8090,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.1.1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.1.2</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -8074,7 +8118,7 @@ count.times {
 </td>
 <td class="content">
 When upgrading scripts to picocli 4.0, just changing the version number is not enough!
-Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.1.1')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.1.1')</code> will not work,
+Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.1.2')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.1.2')</code> will not work,
 because the <code>@picocli.groovy.PicocliScript</code> annotation class and supporting classes have been moved into a separate module, <code>picocli-groovy</code>.
 </td>
 </tr>
@@ -8095,7 +8139,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.1.1</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.1.2</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -8270,7 +8314,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle_3">34.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.1.1'</pre>
+<pre>compile 'info.picocli:picocli:4.1.2'</pre>
 </div>
 </div>
 </div>
@@ -8281,7 +8325,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.1.1&lt;/version&gt;
+  &lt;version&gt;4.1.2&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -8290,7 +8334,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">34.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "4.1.1"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "4.1.2"</pre>
 </div>
 </div>
 </div>
@@ -8298,7 +8342,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">34.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.1.1" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.1.2" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -8314,8 +8358,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.1.1<br>
-Last updated 2019-11-27 00:16:25 +0900
+Version 4.1.2<br>
+Last updated 2019-12-08 16:35:08 +0900
 </div>
 </div>
 </body>
