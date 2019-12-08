@@ -4,7 +4,16 @@
 # <a name="4.1.2"></a> Picocli 4.1.2
 The picocli community is pleased to announce picocli 4.1.2.
 
-This release contains bugfixes, and documentation enhancements. 
+This release contains bugfixes, improvements, and documentation enhancements. 
+
+This version of picocli requires JLine 3.13.2 or higher and adds a `PicocliCommands` class that provides command descriptions that can be displayed in the terminal status bar via the new JLine `TailTipWidgets` functionality.
+
+The built-in `picocli.AutoComplete.GenerateCompletion` (`generate-completion`) subcommand now omits validation of mandatory options in the parent command.
+
+"Hidden" subcommands and options are no longer shown as suggestions in unmatched argument usage help or autocompletion scripts.
+
+From picocli 4.1.2, all options in an exclusive group are automatically considered required, even if they are not marked as `required = true` in the annotations. Applications using older versions of picocli should mark all options in exclusive groups as required.
+
 
 
  
@@ -19,12 +28,24 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.1.2-new"></a> New and Noteworthy
 
+### <a name="4.1.2-jline3"></a> JLine3
+JLine has had some interesting improvements in its 3.12 release. 
+
+This version of picocli requires JLine 3.13.2 or higher and adds a `PicocliCommands` class that provides command descriptions that can be displayed in the terminal status bar via the new JLine `TailTipWidgets` functionality.
+
+See the `picocli-shell-jline3` [README](https://github.com/remkop/picocli/tree/master/picocli-shell-jline3) for details.
+
+### <a name="4.1.2-completion"></a> Completion
+The built-in `picocli.AutoComplete.GenerateCompletion` (`generate-completion`) subcommand now omits validation of mandatory options in the parent command.
+
+Also, "hidden" subcommands and options are no longer shown as suggestions in unmatched argument usage help or autocompletion scripts.
 
 
 ## <a name="4.1.2-fixes"></a> Fixed issues
 [#888] (API) Added new `PicocliCommands` class to `picocli-shell-jline3` module; bumped `JLine` to 3.13.2. Thanks to [mattirn](https://github.com/mattirn) for the pull request.
-[#884] (Bugfix) Built-in `picocli.AutoComplete.GenerateCompletion` (`generate-completion`) subcommand should omit validation of mandatory options in the parent command. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
-[#887] (Bugfix) "Hidden" subcommands and options should not be shown as suggestions in unmatched argument usage help or autocompletion scripts. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+[#884] (Bugfix) Built-in `picocli.AutoComplete.GenerateCompletion` (`generate-completion`) subcommand now omits validation of mandatory options in the parent command. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+[#887] (Bugfix) "Hidden" subcommands and options are no longer shown as suggestions in unmatched argument usage help or autocompletion scripts. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+[#871] (Bugfix) All options in an exclusive group are now automatically considered `required`, to prevent unexpected results when mixing required and non-required options in exclusive ArgGroups. Thanks to [W Scott Johnson](https://github.com/wjohnson5) for raising this.
 [#883] (DOC) Update of Quick Guide. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 [#889][#885] (DOC) Update of Picocli Programmatic API documentation. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 [#891] (DOC) Fixed broken links in README. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.

@@ -1290,6 +1290,8 @@ When one of the options in the group is matched, picocli creates an instance of 
 
 Note that the options are defined as `required = true`; this means required _within the group_, not required within the command.
 
+CAUTION: From picocli 4.1.2, all options in an exclusive group are automatically considered required, even if they are not marked as `required = true` in the annotations. Applications using older versions of picocli should mark all options in exclusive groups as required.
+
 Picocli will validate the arguments and throw a `MutuallyExclusiveArgsException` if multiple mutually exclusive arguments were specified. For example:
 
 [source, java]
@@ -1312,6 +1314,8 @@ if none of the group options is specified on the command line.
 For optional groups (groups with `multiplicity = "0..1"` - the default) this means that the `@ArgGroup`-annotated field may remain `null`.
 
 === Mutually Dependent Options
+
+==== Overview
 
 Annotate a field or method with `@ArgGroup(exclusive = false)` to create a group of dependent options and positional parameters that must co-occur. For example:
 
@@ -1363,6 +1367,30 @@ try {
 CAUTION: Picocli will not initialize the `@ArgGroup`-annotated field
 if none of the group options is specified on the command line.
 For optional groups (groups with `multiplicity = "0..1"` - the default) this means that the `@ArgGroup`-annotated field may remain `null`.
+
+==== Non-Required Options in Mutually Dependent Groups
+In mutually dependent groups it is possible to have one or more options that are not required. This is different from <<Mutually Exclusive Options,exclusive groups>>, where all options are always required.
+
+It is useful to be able to define a co-occurring group as `(-a -b [-c])` so that both `-a -b -c` and `-a -b` are valid on the command line, but not `-a -c` for example.
+This can be implemented by marking the optional option with `required = false`, as in the below example:
+
+[source, java]
+----
+@Command(name = "co-occur-with-optional-options")
+public class DependentWithOptionalOptionsDemo {
+
+    @ArgGroup(exclusive = false, multiplicity = "1")
+    DependentWithOptionalOptions group;
+
+    static class DependentWithOptionalOptions {
+        @Option(names = "-a", required = true) int a;
+        @Option(names = "-b", required = true) int b;
+        @Option(names = "-c", required = false) int c;
+    }
+}
+----
+
+More than one option can be optional in mutually dependent groups, but there should be at least one required option in the group.
 
 === Option Sections in Usage Help
 

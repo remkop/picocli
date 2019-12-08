@@ -1079,16 +1079,16 @@ public class ArgGroupTest {
                 .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG2").required(true).build())
                 .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG3").required(true).build());
 
-        assertEquals("[ARG1 | ARG2 | ARG3 | [-a | [-b] | -c] | ([-e] | -f)]", composite.build().synopsis());
+        assertEquals("[ARG1 | ARG2 | ARG3 | [-a | -b | -c] | (-e | -f)]", composite.build().synopsis());
 
         composite.multiplicity("1");
-        assertEquals("(ARG1 | ARG2 | ARG3 | [-a | [-b] | -c] | ([-e] | -f))", composite.build().synopsis());
+        assertEquals("(ARG1 | ARG2 | ARG3 | [-a | -b | -c] | (-e | -f))", composite.build().synopsis());
 
         composite.exclusive(false);
-        assertEquals("(ARG1 ARG2 ARG3 [-a | [-b] | -c] ([-e] | -f))", composite.build().synopsis());
+        assertEquals("(ARG1 ARG2 ARG3 [-a | -b | -c] (-e | -f))", composite.build().synopsis());
 
         composite.multiplicity("0..1");
-        assertEquals("[ARG1 ARG2 ARG3 [-a | [-b] | -c] ([-e] | -f)]", composite.build().synopsis());
+        assertEquals("[ARG1 ARG2 ARG3 [-a | -b | -c] (-e | -f)]", composite.build().synopsis());
     }
 
     @Test
@@ -2694,5 +2694,60 @@ public class ArgGroupTest {
         } catch (MissingParameterException ex) {
             assertEquals("Error: Missing required argument(s): --group=<name>", ex.getMessage());
         }
+    }
+
+    static class ExclusiveBooleanGroup871 {
+        @Option(names = "-a", required = true) boolean a;
+        @Option(names = "-b", required = true) boolean b;
+        //@Option(names = "--opt") String opt;
+    }
+
+    @Test
+    public void testMultivalueExclusiveBooleanGroup() {
+        class MyApp {
+            @ArgGroup(exclusive = true, multiplicity = "0..*")
+            List<ExclusiveBooleanGroup871> groups;
+        }
+
+        MyApp myApp = CommandLine.populateCommand(new MyApp(), "-a", "-b");
+        assertEquals(2, myApp.groups.size());
+
+        MyApp myApp2 = CommandLine.populateCommand(new MyApp(), "-b", "-a");
+        assertEquals(2, myApp2.groups.size());
+    }
+
+    static class ExclusiveStringOptionGroup871 {
+        @Option(names = "-a", required = false) String a;
+        @Option(names = "-b", required = true) String b;
+        @Option(names = "--opt") String opt;
+    }
+
+    @Test
+    public void testAllOptionsRequiredInExclusiveGroup() {
+        class MyApp {
+            @ArgGroup(exclusive = true)
+            ExclusiveStringOptionGroup871 group;
+        }
+        CommandLine cmd = new CommandLine(new MyApp());
+        List<ArgGroupSpec> argGroupSpecs = cmd.getCommandSpec().argGroups();
+        assertEquals(1, argGroupSpecs.size());
+
+        for (ArgSpec arg : argGroupSpecs.get(0).args()) {
+            assertTrue(arg.required());
+        }
+    }
+
+    @Test
+    public void testMultivalueExclusiveStringOptionGroup() {
+        class MyApp {
+            @ArgGroup(exclusive = true, multiplicity = "0..*")
+            List<ExclusiveStringOptionGroup871> groups;
+        }
+
+        MyApp myApp = CommandLine.populateCommand(new MyApp(), "-a=1", "-b=2");
+        assertEquals(2, myApp.groups.size());
+
+        MyApp myApp2 = CommandLine.populateCommand(new MyApp(), "-b=1", "-a=2");
+        assertEquals(2, myApp2.groups.size());
     }
 }

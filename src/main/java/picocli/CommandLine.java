@@ -7145,8 +7145,8 @@ public class CommandLine {
             private final Object userObject;
 
             // parser fields
+            private boolean required;
             private final boolean interactive;
-            private final boolean required;
             private final String splitRegex;
             private final ITypeInfo typeInfo;
             private final ITypeConverter<?>[] converters;
@@ -8470,6 +8470,19 @@ public class CommandLine {
 
                 if (!validate && builder.exclusive) {
                     new Tracer().info("Setting exclusive=%s because %s is a non-validating group.%n", exclusive, synopsisUnit());
+                }
+                if (exclusive) {
+                    String modifiedArgs = ""; String sep = "";
+                    for (ArgSpec arg : args) {
+                        if (!arg.required()) {
+                            modifiedArgs += sep + (arg.isOption() ? ((OptionSpec) arg).longestName() : (((PositionalParamSpec) arg).paramLabel() + "[" + ((PositionalParamSpec) arg).index() + "]"));
+                            sep = ",";
+                            arg.required = true;
+                        }
+                    }
+                    if (modifiedArgs.length() > 0) {
+                        new Tracer().info("Made %s required in the group because %s is an exclusive group.%n", modifiedArgs, synopsisUnit());
+                    }
                 }
             }
 
