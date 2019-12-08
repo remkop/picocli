@@ -1390,7 +1390,7 @@ public class DependentWithOptionalOptionsDemo {
 }
 ----
 
-More than one option can be optional in mutually dependent groups, but there should be at least one required option in the group.
+More than one option can be optional in mutually dependent groups, but it is recommended to have at least one required option in the group (or there is not much point in using a mutually dependent group).
 
 === Option Sections in Usage Help
 

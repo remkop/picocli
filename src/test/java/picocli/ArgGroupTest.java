@@ -2750,4 +2750,75 @@ public class ArgGroupTest {
         MyApp myApp2 = CommandLine.populateCommand(new MyApp(), "-b=1", "-a=2");
         assertEquals(2, myApp2.groups.size());
     }
+
+    static class NonExclusiveGroup871 {
+        @Option(names = "-a", required = false) String a;
+        @Option(names = "-b", required = false) String b;
+        @Option(names = "-c") String c; // default is not required
+        public String toString() {
+            return String.format("a=%s, b=%s, c=%s", a, b, c);
+        }
+    }
+
+    @Ignore //https://github.com/remkop/picocli/issues/871
+    @Test
+    public void testNonExclusiveGroupMustHaveOneRequiredOption() {
+        class MyApp {
+            @ArgGroup(exclusive = false)
+            NonExclusiveGroup871 group;
+        }
+        CommandLine cmd = new CommandLine(new MyApp());
+        List<ArgGroupSpec> argGroupSpecs = cmd.getCommandSpec().argGroups();
+        assertEquals(1, argGroupSpecs.size());
+
+        int requiredCount = 0;
+        for (ArgSpec arg : argGroupSpecs.get(0).args()) {
+            if (arg.required()) {
+                requiredCount++;
+            }
+        }
+        assertTrue(requiredCount > 0);
+    }
+
+    @Test
+    public void testNonExclusiveGroupWithoutRequiredOption() {
+        class MyApp {
+            @ArgGroup(exclusive = false)
+            NonExclusiveGroup871 group;
+        }
+        CommandLine cmd = new CommandLine(new MyApp());
+        MyApp myApp1 = CommandLine.populateCommand(new MyApp(), "-a=1");
+        //System.out.println(myApp1.group);
+        assertEquals("1", myApp1.group.a);
+        assertNull(myApp1.group.b);
+        assertNull(myApp1.group.c);
+
+        MyApp myApp2 = CommandLine.populateCommand(new MyApp(), "-b=1", "-a=2");
+        //System.out.println(myApp2.group);
+        assertEquals("2", myApp2.group.a);
+        assertEquals("1", myApp2.group.b);
+        assertNull(myApp2.group.c);
+
+        MyApp myApp3 = CommandLine.populateCommand(new MyApp(), "-c=1", "-a=2");
+        //System.out.println(myApp3.group);
+        assertEquals("2", myApp3.group.a);
+        assertEquals("1", myApp3.group.c);
+        assertNull(myApp3.group.b);
+
+        MyApp myApp4 = CommandLine.populateCommand(new MyApp(), "-c=1", "-b=2");
+        //System.out.println(myApp4.group);
+        assertEquals("2", myApp4.group.b);
+        assertEquals("1", myApp4.group.c);
+        assertNull(myApp4.group.a);
+
+        MyApp myApp5 = CommandLine.populateCommand(new MyApp(), "-c=1");
+        //System.out.println(myApp5.group);
+        assertNull(myApp5.group.b);
+        assertEquals("1", myApp5.group.c);
+        assertNull(myApp5.group.a);
+
+        MyApp myApp6 = CommandLine.populateCommand(new MyApp());
+        //System.out.println(myApp6.group);
+        assertNull(myApp6.group);
+    }
 }
