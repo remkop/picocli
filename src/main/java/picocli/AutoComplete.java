@@ -637,31 +637,38 @@ public class AutoComplete {
         return result;
     }
 
+    private static void appendCodeBlock(StringBuilder buff, String[] parts, PositionalParamSpec param, String indent) {
+        buff.append(format("%s    %s ((${currIndex} >= %d && ${currIndex} <= %d)); then\n", indent, buff.length() > 0 ? "elif" : "if", param.index().min(), param.index().max()));
+        for (String part : parts) {
+            buff.append(part);
+        }
+        buff.append(format("%s      return $?\n", indent));
+    }
+
+    private static void generateParamCase(StringBuilder buff, PositionalParamSpec param, String indent, String currWord) {
+        Class<?> type = param.type();
+        if (param.typeInfo().isMultiValue()) {
+            type = param.typeInfo().getAuxiliaryTypes()[0];
+        }
+        String paramName = bashify(param.paramLabel());
+        if (param.completionCandidates() != null) {
+            appendCodeBlock(buff, new String[]{"",
+                            format("%s      COMPREPLY=( $( compgen -W \"$%s_POS_PARAM_ARGS\" -- %s ) )\n", indent, paramName, currWord)},
+                    param, indent);
+        } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
+            appendCodeBlock(buff, new String[]{format("%s      compopt -o filenames\n", indent),
+                    format("%s      COMPREPLY=( $( compgen -f -- %s ) ) # files\n", indent, currWord)}, param, indent);
+        } else if (type.equals(InetAddress.class)) {
+            appendCodeBlock(buff, new String[]{format("%s      compopt -o filenames\n", indent),
+                    format("%s      COMPREPLY=( $( compgen -A hostname -- %s ) )\n", indent, currWord)}, param, indent);
+        }
+    }
+
     private static String generateParamsCases(List<PositionalParamSpec> posParams, String indent, String currWord) {
         StringBuilder buff = new StringBuilder(1024);
         for (PositionalParamSpec param : posParams) {
             if (param.hidden()) { continue; } // #887 skip hidden params
-            Class<?> type = param.type();
-            if (param.typeInfo().isMultiValue()){
-                type = param.typeInfo().getAuxiliaryTypes()[0];
-            }
-            String blockStart = format("%s    %s ((${currIndex} >= %d && ${currIndex} <= %d)); then\n", indent, buff.length() > 0 ? "elif" : "if", param.index().min(), param.index().max());
-            String paramName = bashify(param.paramLabel());
-            if (param.completionCandidates() != null) {
-                buff.append(blockStart);
-                buff.append(format("%s      COMPREPLY=( $( compgen -W \"$%s_POS_PARAM_ARGS\" -- %s ) )\n", indent, paramName, currWord));
-                buff.append(format("%s      return $?\n", indent));
-            } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
-                buff.append(blockStart);
-                buff.append(format("%s      compopt -o filenames\n", indent));
-                buff.append(format("%s      COMPREPLY=( $( compgen -f -- %s ) ) # files\n", indent, currWord));
-                buff.append(format("%s      return $?\n", indent));
-            } else if (type.equals(InetAddress.class)) {
-                buff.append(blockStart);
-                buff.append(format("%s      compopt -o filenames\n", indent));
-                buff.append(format("%s      COMPREPLY=( $( compgen -A hostname -- %s ) )\n", indent, currWord));
-                buff.append(format("%s      return $?\n", indent));
-            }
+            generateParamCase(buff, param, indent, currWord);
         }
         if (buff.length() > 0) {
             buff.append(format("%s    fi\n", indent));
