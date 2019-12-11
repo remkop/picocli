@@ -138,6 +138,13 @@ public class AutoCompleteTest {
         @Parameters(completionCandidates = Candidates.class, description = "with candidates") String str2;
     }
 
+    @Command(description = "Second level sub-subcommand 3")
+    public static class Sub2Child3 {
+        @Parameters(index = "1..2") File files;
+        @Parameters(index = "3..*") InetAddress other;
+        @Parameters(completionCandidates = Candidates.class, index = "0") String cands;
+    }
+
     @Test
     public void nestedSubcommands() throws Exception {
         CommandLine hierarchy = new CommandLine(new TopLevel())
@@ -145,6 +152,7 @@ public class AutoCompleteTest {
                 .addSubcommand("sub2", new CommandLine(new Sub2())
                         .addSubcommand("subsub1", new Sub2Child1())
                         .addSubcommand("subsub2", new Sub2Child2())
+                        .addSubcommand("subsub3", new Sub2Child3())
                 );
         String script = AutoComplete.bash("picocompletion-demo", hierarchy);
         String expected = format(loadTextFromClasspath("/picocompletion-demo_completion.bash"),

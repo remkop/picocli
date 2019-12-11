@@ -547,9 +547,26 @@ public class AutoComplete {
                 "  if [[ \"${CURR_WORD}\" == -* ]]; then\n" +
                 "    COMPREPLY=( $(compgen -W \"${FLAG_OPTS} ${ARG_OPTS}\" -- ${CURR_WORD}) )\n" +
                 "  else\n" +
+                "%s" +
                 "    COMPREPLY=( $(compgen -W \"${COMMANDS}\" -- ${CURR_WORD}) )\n" +
                 "  fi\n" +
                 "}\n";
+
+        String POSITIONAL_PARAMS_FOOTER = "" +
+                "    currIndex=0\n" +
+                "    for i in $(seq $(($COMP_CWORD-2)) -1 0); do\n" +
+                "      if [ \"${PREV_WORD}\" = \"%s\" ]; then\n" +
+                "        break\n" +
+                "      fi\n" +
+                "      if [[ \"${ARG_OPTS}\" =~ \"${PREV_WORD}\" ]]; then\n" +
+                "        ((currIndex-=2)) # Arg option and its value not counted as positional param\n" +
+                "      elif [[ \"${FLAG_OPTS}\" =~ \"${PREV_WORD}\" ]]; then\n" +
+                "        ((currIndex-=1)) # Flag option itself not counted as positional param\n" +
+                "      fi\n" +
+                "      PREV_WORD=${COMP_WORDS[i]}\n" +
+                "      ((currIndex++))\n" +
+                "    done\n" +
+                "%s";
 
         // Get the fields annotated with @Option and @Parameters for the specified CommandLine.
         CommandSpec commandSpec = commandLine.getCommandSpec();
@@ -581,9 +598,29 @@ public class AutoComplete {
         // Now generate the "case" switches for the options whose arguments we can generate completions for
         buff.append(generateOptionsSwitch(argOptionFields));
 
+        // Generate completion lists for positional params with a known set of valid values (including java enums)
+        for (PositionalParamSpec f : commandSpec.positionalParameters()) {
+            if (f.completionCandidates() != null) {
+                generatePositionParamCompletionCandidates(buff, f);
+            }
+        }
+
+        String paramsCases = generateParamsCases(commandSpec.positionalParameters(), "", "${CURR_WORD}");
+        String posParamsFooter = "";
+        if (!paramsCases.isEmpty()) {
+            posParamsFooter = format(POSITIONAL_PARAMS_FOOTER, commandName, paramsCases);
+        }
         // Generate the footer: a default COMPREPLY to fall back to, and the function closing brace.
-        buff.append(format(FOOTER));
+        buff.append(format(FOOTER, posParamsFooter));
         return buff.toString();
+    }
+
+    private static void generatePositionParamCompletionCandidates(StringBuilder buff, PositionalParamSpec f) {
+        String paramName = bashify(f.paramLabel());
+        buff.append(format("  %s_POS_PARAM_ARGS=\"%s\" # %d-%d values\n",
+                paramName,
+                concat(" ", extract(f.completionCandidates())).trim(),
+                f.index().min(), f.index().max()));
     }
 
     private static void generateCompletionCandidates(StringBuilder buff, OptionSpec f) {
@@ -598,6 +635,34 @@ public class AutoComplete {
             result.add(e);
         }
         return result;
+    }
+
+    private static String generateParamsCases(List<PositionalParamSpec> posParams, String indent, String currWord) {
+        StringBuilder buff = new StringBuilder(1024);
+        for (PositionalParamSpec param : posParams) {
+            if (param.hidden()) { continue; } // #887 skip hidden params
+            String blockStart = format("%s    %s ((${currIndex} >= %d && ${currIndex} <= %d)); then\n", indent, buff.length() > 0 ? "elif" : "if", param.index().min(), param.index().max());
+            String paramName = bashify(param.paramLabel());
+            if (param.completionCandidates() != null) {
+                buff.append(blockStart);
+                buff.append(format("%s      COMPREPLY=( $( compgen -W \"$%s_POS_PARAM_ARGS\" -- %s ) )\n", indent, paramName, currWord));
+                buff.append(format("%s      return $?\n", indent));
+            } else if (param.type().equals(File.class) || "java.nio.file.Path".equals(param.type().getName())) {
+                buff.append(blockStart);
+                buff.append(format("%s      compopt -o filenames\n", indent));
+                buff.append(format("%s      COMPREPLY=( $( compgen -f -- %s ) ) # files\n", indent, currWord));
+                buff.append(format("%s      return $?\n", indent));
+            } else if (param.type().equals(InetAddress.class)) {
+                buff.append(blockStart);
+                buff.append(format("%s      compopt -o filenames\n", indent));
+                buff.append(format("%s      COMPREPLY=( $( compgen -A hostname -- %s ) )\n", indent, currWord));
+                buff.append(format("%s      return $?\n", indent));
+            }
+        }
+        if (buff.length() > 0) {
+            buff.append(format("%s    fi\n", indent));
+        }
+        return buff.toString();
     }
 
     private static String generateOptionsSwitch(List<OptionSpec> argOptions) {
