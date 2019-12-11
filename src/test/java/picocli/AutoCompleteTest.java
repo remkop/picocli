@@ -119,17 +119,17 @@ public class AutoCompleteTest {
     public static class Sub1 {
         @Option(names = "--num", description = "a number") double number;
         @Option(names = "--str", description = "a String") String str;
-        @Option(names = "--candidates", completionCandidates = Candidates.class, description = "with candidates") String str2;
+        @Option(names = "--candidates", completionCandidates = Candidates.class, description = "with candidates") String[] str2;
     }
     @Command(description = "First level subcommand 2")
     public static class Sub2 {
         @Option(names = "--num2", description = "another number") int number2;
-        @Option(names = {"--directory", "-d"}, description = "a directory") File directory;
+        @Option(names = {"--directory", "-d"}, description = "a directory") File[] directory;
         @Parameters(arity = "0..1") Possibilities possibilities;
     }
     @Command(description = "Second level sub-subcommand 1")
     public static class Sub2Child1 {
-        @Option(names = {"-h", "--host"}, description = "a host") InetAddress host;
+        @Option(names = {"-h", "--host"}, description = "a host") List<InetAddress> host;
     }
     @Command(description = "Second level sub-subcommand 2")
     public static class Sub2Child2 {
@@ -140,9 +140,9 @@ public class AutoCompleteTest {
 
     @Command(description = "Second level sub-subcommand 3")
     public static class Sub2Child3 {
-        @Parameters(index = "1..2") File files;
-        @Parameters(index = "3..*") InetAddress other;
-        @Parameters(completionCandidates = Candidates.class, index = "0") String cands;
+        @Parameters(index = "1..2") File[] files;
+        @Parameters(index = "3..*") List<InetAddress> other;
+        @Parameters(completionCandidates = Candidates.class, index = "0") String[] cands;
     }
 
     @Test

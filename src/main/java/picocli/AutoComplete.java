@@ -641,18 +641,22 @@ public class AutoComplete {
         StringBuilder buff = new StringBuilder(1024);
         for (PositionalParamSpec param : posParams) {
             if (param.hidden()) { continue; } // #887 skip hidden params
+            Class<?> type = param.type();
+            if (param.typeInfo().isMultiValue()){
+                type = param.typeInfo().getAuxiliaryTypes()[0];
+            }
             String blockStart = format("%s    %s ((${currIndex} >= %d && ${currIndex} <= %d)); then\n", indent, buff.length() > 0 ? "elif" : "if", param.index().min(), param.index().max());
             String paramName = bashify(param.paramLabel());
             if (param.completionCandidates() != null) {
                 buff.append(blockStart);
                 buff.append(format("%s      COMPREPLY=( $( compgen -W \"$%s_POS_PARAM_ARGS\" -- %s ) )\n", indent, paramName, currWord));
                 buff.append(format("%s      return $?\n", indent));
-            } else if (param.type().equals(File.class) || "java.nio.file.Path".equals(param.type().getName())) {
+            } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
                 buff.append(blockStart);
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      COMPREPLY=( $( compgen -f -- %s ) ) # files\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
-            } else if (param.type().equals(InetAddress.class)) {
+            } else if (type.equals(InetAddress.class)) {
                 buff.append(blockStart);
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      COMPREPLY=( $( compgen -A hostname -- %s ) )\n", indent, currWord));
@@ -686,18 +690,22 @@ public class AutoComplete {
         StringBuilder buff = new StringBuilder(1024);
         for (OptionSpec option : argOptionFields) {
             if (option.hidden()) { continue; } // #887 skip hidden options
+            Class<?> type = option.type();
+            if (option.typeInfo().isMultiValue()){
+                type = option.typeInfo().getAuxiliaryTypes()[0];
+            }
             if (option.completionCandidates() != null) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -u|--timeUnit)\n"
                 buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_OPTION_ARGS}\" -- %s ) )\n", indent, bashify(option.paramLabel()), currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
-            } else if (option.type().equals(File.class) || "java.nio.file.Path".equals(option.type().getName())) {
+            } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -f|--file)\n"
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      COMPREPLY=( $( compgen -f -- %s ) ) # files\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
-            } else if (option.type().equals(InetAddress.class)) {
+            } else if (type.equals(InetAddress.class)) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -h|--host)\n"
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      COMPREPLY=( $( compgen -A hostname -- %s ) )\n", indent, currWord));
