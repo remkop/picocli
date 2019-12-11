@@ -3069,7 +3069,7 @@ This attribute accepts three values:
 These legacy mechanisms still work but for maximum flexibility use the variables explained above.
 
 === Required-Option Marker
-Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with `abbreviatedSynopsis`. For example:
+Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with the <<Abbreviated Synopsis,`abbreviateSynopsis`>> attribute. For example:
 
 [source,java]
 ----
