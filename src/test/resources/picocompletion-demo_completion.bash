@@ -82,7 +82,9 @@ function _complete_picocompletion-demo() {
   CMDS1=(sub2)
   CMDS2=(sub2 subsub1)
   CMDS3=(sub2 subsub2)
+  CMDS4=(sub2 subsub3)
 
+  ArrContains COMP_WORDS CMDS4 && { _picocli_picocompletion-demo_sub2_subsub3; return $?; }
   ArrContains COMP_WORDS CMDS3 && { _picocli_picocompletion-demo_sub2_subsub2; return $?; }
   ArrContains COMP_WORDS CMDS2 && { _picocli_picocompletion-demo_sub2_subsub1; return $?; }
   ArrContains COMP_WORDS CMDS1 && { _picocli_picocompletion-demo_sub2; return $?; }
@@ -148,7 +150,7 @@ function _picocli_picocompletion-demo_sub2() {
   CURR_WORD=${COMP_WORDS[COMP_CWORD]}
   PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}
 
-  COMMANDS="subsub1 subsub2"
+  COMMANDS="subsub1 subsub2 subsub3"
   FLAG_OPTS=""
   ARG_OPTS="--num2 --directory -d"
 
@@ -164,10 +166,28 @@ function _picocli_picocompletion-demo_sub2() {
       return $?
       ;;
   esac
+  possibilities_POS_PARAM_ARGS="Aaa Bbb Ccc" # 0-2147483647 values
 
   if [[ "${CURR_WORD}" == -* ]]; then
     COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
   else
+    currIndex=0
+    for i in $(seq $(($COMP_CWORD-2)) -1 0); do
+      if [ "${PREV_WORD}" = "sub2" ]; then
+        break
+      fi
+      if [[ "${ARG_OPTS}" =~ "${PREV_WORD}" ]]; then
+        ((currIndex-=2)) # Arg option and its value not counted as positional param
+      elif [[ "${FLAG_OPTS}" =~ "${PREV_WORD}" ]]; then
+        ((currIndex-=1)) # Flag option itself not counted as positional param
+      fi
+      PREV_WORD=${COMP_WORDS[i]}
+      ((currIndex++))
+    done
+    if ((${currIndex} >= 0 && ${currIndex} <= 2147483647)); then
+      COMPREPLY=( $( compgen -W "$possibilities_POS_PARAM_ARGS" -- ${CURR_WORD} ) )
+      return $?
+    fi
     COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
   fi
 }
@@ -221,10 +241,71 @@ function _picocli_picocompletion-demo_sub2_subsub2() {
       return
       ;;
   esac
+  str2_POS_PARAM_ARGS="aaa bbb ccc" # 0-2147483647 values
 
   if [[ "${CURR_WORD}" == -* ]]; then
     COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
   else
+    currIndex=0
+    for i in $(seq $(($COMP_CWORD-2)) -1 0); do
+      if [ "${PREV_WORD}" = "subsub2" ]; then
+        break
+      fi
+      if [[ "${ARG_OPTS}" =~ "${PREV_WORD}" ]]; then
+        ((currIndex-=2)) # Arg option and its value not counted as positional param
+      elif [[ "${FLAG_OPTS}" =~ "${PREV_WORD}" ]]; then
+        ((currIndex-=1)) # Flag option itself not counted as positional param
+      fi
+      PREV_WORD=${COMP_WORDS[i]}
+      ((currIndex++))
+    done
+    if ((${currIndex} >= 0 && ${currIndex} <= 2147483647)); then
+      COMPREPLY=( $( compgen -W "$str2_POS_PARAM_ARGS" -- ${CURR_WORD} ) )
+      return $?
+    fi
+    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+  fi
+}
+
+# Generates completions for the options and subcommands of the `subsub3` subcommand.
+function _picocli_picocompletion-demo_sub2_subsub3() {
+  # Get completion data
+  CURR_WORD=${COMP_WORDS[COMP_CWORD]}
+  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}
+
+  COMMANDS=""
+  FLAG_OPTS=""
+  ARG_OPTS=""
+  cands_POS_PARAM_ARGS="aaa bbb ccc" # 0-0 values
+
+  if [[ "${CURR_WORD}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  else
+    currIndex=0
+    for i in $(seq $(($COMP_CWORD-2)) -1 0); do
+      if [ "${PREV_WORD}" = "subsub3" ]; then
+        break
+      fi
+      if [[ "${ARG_OPTS}" =~ "${PREV_WORD}" ]]; then
+        ((currIndex-=2)) # Arg option and its value not counted as positional param
+      elif [[ "${FLAG_OPTS}" =~ "${PREV_WORD}" ]]; then
+        ((currIndex-=1)) # Flag option itself not counted as positional param
+      fi
+      PREV_WORD=${COMP_WORDS[i]}
+      ((currIndex++))
+    done
+    if ((${currIndex} >= 0 && ${currIndex} <= 0)); then
+      COMPREPLY=( $( compgen -W "$cands_POS_PARAM_ARGS" -- ${CURR_WORD} ) )
+      return $?
+    elif ((${currIndex} >= 1 && ${currIndex} <= 2)); then
+      compopt -o filenames
+      COMPREPLY=( $( compgen -f -- ${CURR_WORD} ) ) # files
+      return $?
+    elif ((${currIndex} >= 3 && ${currIndex} <= 2147483647)); then
+      compopt -o filenames
+      COMPREPLY=( $( compgen -A hostname -- ${CURR_WORD} ) )
+      return $?
+    fi
     COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
   fi
 }
