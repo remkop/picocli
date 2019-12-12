@@ -75,12 +75,12 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 * [GraalVM AOT Compilation to Native Image](https://picocli.info/picocli-on-graalvm.html) <img src="https://www.graalvm.org/resources/img/logo-colored.svg" > 
 
 ### Older
-* [3.x User manual](https://picocli.info/man/3.x)
-* [3.x Quick Guide](https://picocli.info/man/3.x/quick-guide.html)
-* [3.x API Javadoc](https://picocli.info/man/3.x/apidocs/)
-* [2.x User manual](https://picocli.info/man/2.x)
-* [2.x API Javadoc](https://picocli.info/man/2.x/apidocs/)
-* [1.x User manual](https://picocli.info/man/1.x)
+* ~~[3.x User manual](https://picocli.info/man/3.x)~~
+* ~~[3.x Quick Guide](https://picocli.info/man/3.x/quick-guide.html)~~
+* ~~[3.x API Javadoc](https://picocli.info/man/3.x/apidocs/)~~
+* ~~[2.x User manual](https://picocli.info/man/2.x)~~
+* ~~[2.x API Javadoc](https://picocli.info/man/2.x/apidocs/)~~
+* ~~[1.x User manual](https://picocli.info/man/1.x)~~
 
 ### Articles & Presentations
 #### English
