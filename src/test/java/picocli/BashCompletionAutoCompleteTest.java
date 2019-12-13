@@ -51,11 +51,17 @@ public class BashCompletionAutoCompleteTest {
                 "\n" +
                 "    local commands options\n" +
                 "    commands='foo bar'\n" +
-                "    options='--help --version --interface='\n" +
+                "    options='--interface= --help --version'\n" +
                 "\n" +
                 "    case $prev in\n" +
                 "        -i|--interface)\n" +
                 "            _available_interfaces\n" +
+                "            return\n" +
+                "            ;;\n" +
+                "        -h|--help)\n" +
+                "            return\n" +
+                "            ;;\n" +
+                "        -V|--version)\n" +
                 "            return\n" +
                 "            ;;\n" +
                 "    esac\n" +
