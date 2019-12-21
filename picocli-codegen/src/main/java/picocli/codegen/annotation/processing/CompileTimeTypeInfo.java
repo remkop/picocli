@@ -212,7 +212,8 @@ class CompileTimeTypeInfo implements CommandLine.Model.ITypeInfo {
         return segment.accept(new SimpleElementVisitor6<StringBuilder, StringBuilder>() {
             @Override
             public StringBuilder visitPackage(PackageElement e, StringBuilder sb) {
-                sb.insert(0, e.getQualifiedName() + (sb.length() > 0 ? "." : ""));
+                String postfix = sb.length() > 0 && !e.isUnnamed() ? "." : "";
+                sb.insert(0, e.getQualifiedName() + postfix);
                 return sb;
             }
 
