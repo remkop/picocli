@@ -3,7 +3,7 @@
 # <a name="4.1.4"></a> Picocli 4.1.4
 The picocli community is pleased to announce picocli 4.1.4.
 
-This release contains bugfixes, improvements, and documentation enhancements. 
+This release contains a bugfix for GraalVM users, and minor documentation enhancements. 
 
 This release fixes a bug in the `picocli-codegen` annotation processor that generates an incorrect `reflect-config.json` file with invalid entries for inner classes of commands in the unnamed package, that are unnecessarily prefixed with a dot. This makes the GraalVM `native-image` generator fail with an error like "Class .Outer$Inner not found".
 
