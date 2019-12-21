@@ -1,5 +1,36 @@
 # picocli Release Notes
 
+# <a name="4.1.3"></a> Picocli 4.1.3
+The picocli community is pleased to announce picocli 4.1.3.
+
+This release contains bugfixes, improvements, and documentation enhancements. 
+
+This release fixes a bug in the `picocli-codegen` annotation processor that generates an incorrect `reflect-config.json` file with duplicate entries for inner classes of a command, one with the standard class name and one with the canonical class name. This makes the GraalVM `native-image` generator fail with an error like "Class Outer.Inner not found".
+
+
+ 
+This is the sixty-fifth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.1.3-toc"></a> Table of Contents
+* [New and noteworthy](#4.1.3-new)
+* [Fixed issues](#4.1.3-fixes)
+* [Deprecations](#4.1.3-deprecated)
+* [Potential breaking changes](#4.1.3-breaking-changes)
+
+## <a name="4.1.3-new"></a> New and Noteworthy
+
+
+## <a name="4.1.3-fixes"></a> Fixed issues
+[#901] Bugfix: `picocli-codegen` generated invalid reflect-config.json for inner classes.
+
+## <a name="4.1.3-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.1.3-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 
 # <a name="4.1.2"></a> Picocli 4.1.2
 The picocli community is pleased to announce picocli 4.1.2.

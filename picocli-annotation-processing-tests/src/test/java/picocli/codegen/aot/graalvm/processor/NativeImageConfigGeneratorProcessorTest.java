@@ -136,6 +136,22 @@ public class NativeImageConfigGeneratorProcessorTest {
     }
 
     @Test
+    public void testGenerateReflectForNestedInnerEnum() {
+        NativeImageConfigGeneratorProcessor processor = new NativeImageConfigGeneratorProcessor();
+        Compilation compilation =
+                javac()
+                        .withProcessors(processor)
+                        .withOptions("-A" + OPTION_PROJECT + "=nested/enum")
+                        .compile(JavaFileObjects.forSourceLines(
+                                "picocli.ls.FileList",
+                                slurp("/picocli/ls/FileList.java")));
+        assertThat(compilation).succeeded();
+        assertThat(compilation)
+                .generatedFile(StandardLocation.CLASS_OUTPUT, "META-INF/native-image/picocli-generated/nested/enum/reflect-config.json")
+                .contentsAsUtf8String().isEqualTo(slurp("/picocli/ls/expected-reflect.json"));
+    }
+
+    @Test
     public void testGenerateReflectNestedWithSubcommands() {
         NativeImageConfigGeneratorProcessor processor = new NativeImageConfigGeneratorProcessor();
         Compilation compilation =

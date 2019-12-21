@@ -472,8 +472,11 @@ public class ReflectionConfigGenerator {
 
         ReflectedClass getOrCreateClass(Class<?> cls) {
             if (cls.isPrimitive() || (cls.isInterface() && cls.getName().startsWith("java"))) {
-                return new ReflectedClass(cls.getName()); // don't store
+                return new ReflectedClass(cls); // don't store
             }
+            return getOrCreateClassByName(cls);
+        }
+        private ReflectedClass getOrCreateClassByName(Class<?> cls) {
             return getOrCreateClassByName(cls.getName());
         }
         private ReflectedClass getOrCreateClassByName(String name) {
@@ -504,6 +507,9 @@ public class ReflectionConfigGenerator {
         private final Set<ReflectedField> fields = new TreeSet<ReflectedField>();
         private final Set<ReflectedMethod> methods = new TreeSet<ReflectedMethod>();
 
+        ReflectedClass(Class<?> cls) {
+            this(cls.getName());
+        }
         ReflectedClass(String name) {
             this.name = name;
         }

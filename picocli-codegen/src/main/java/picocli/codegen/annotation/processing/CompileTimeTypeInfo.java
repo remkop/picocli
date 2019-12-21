@@ -5,11 +5,14 @@ import picocli.CommandLine;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.NestingKind;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.SimpleElementVisitor6;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -193,9 +196,36 @@ class CompileTimeTypeInfo implements CommandLine.Model.ITypeInfo {
         return result;
     }
 
+    /**
+     * Returns the fully qualified class name (not the canonical name, but with $-signs
+     * for inner classes) of the typeElement.
+     * If only a typeMirror is available, this method falls back to TypeMirror.toString,
+     * which returns the canonical name.
+     * @return the fully qualified class name of the type
+     */
     @Override
     public String getClassName() {
-        return typeElement == null ? typeMirror.toString() : typeElement.getQualifiedName().toString();
+        if (typeElement == null) {
+            return typeMirror.toString();
+        }
+        Element segment = typeElement;
+        return segment.accept(new SimpleElementVisitor6<StringBuilder, StringBuilder>() {
+            @Override
+            public StringBuilder visitPackage(PackageElement e, StringBuilder sb) {
+                sb.insert(0, e.getQualifiedName() + (sb.length() > 0 ? "." : ""));
+                return sb;
+            }
+
+            @Override
+            public StringBuilder visitType(TypeElement e, StringBuilder sb) {
+                if (e.getNestingKind() == NestingKind.MEMBER) {
+                    sb.insert(0, "$" + e.getSimpleName());
+                } else {
+                    sb.insert(0, e.getSimpleName());
+                }
+                return visit(e.getEnclosingElement(), sb);
+            }
+        }, new StringBuilder()).toString();
     }
 
     @Override
