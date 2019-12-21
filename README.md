@@ -60,7 +60,7 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 
 ### Releases
 * [All Releases](https://github.com/remkop/picocli/releases)
-* Latest: 4.1.2 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.1.2)
+* Latest: 4.1.3 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.1.3)
 * Older: Picocli 4.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v4.0.0)
 * Older: Picocli 3.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v3.0.0)
 * Older: Picocli 2.0 [Release Notes](https://github.com/remkop/picocli/releases/tag/v2.0.0)
@@ -167,9 +167,9 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 Glad to see more people are using picocli. We must be doing something right. :-) 
 
 ### Help to promote picocli
-If you like picocli and your project is on GitHub, consider adding this badge to your README.md: [![picocli](https://img.shields.io/badge/picocli-4.1.2-green.svg)](https://github.com/remkop/picocli)
+If you like picocli and your project is on GitHub, consider adding this badge to your README.md: [![picocli](https://img.shields.io/badge/picocli-4.1.3-green.svg)](https://github.com/remkop/picocli)
 ```
-[![picocli](https://img.shields.io/badge/picocli-4.1.2-green.svg)](https://github.com/remkop/picocli)
+[![picocli](https://img.shields.io/badge/picocli-4.1.3-green.svg)](https://github.com/remkop/picocli)
 ```
 
 
@@ -257,35 +257,35 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:4.1.2'
+compile 'info.picocli:picocli:4.1.3'
 ```
 ### Maven
 ```
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.1.2</version>
+  <version>4.1.3</version>
 </dependency>
 ```
 ### Scala SBT
 ```
-libraryDependencies += "info.picocli" % "picocli" % "4.1.2"
+libraryDependencies += "info.picocli" % "picocli" % "4.1.3"
 ```
 ### Ivy
 ```
-<dependency org="info.picocli" name="picocli" rev="4.1.2" />
+<dependency org="info.picocli" name="picocli" rev="4.1.3" />
 ```
 ### Grape
 ```groovy
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='4.1.2')
+    @Grab(group='info.picocli', module='picocli', version='4.1.3')
 )
 ```
 ### Leiningen
 ```
-[info.picocli/picocli "4.1.2"]
+[info.picocli/picocli "4.1.3"]
 ```
 ### Buildr
 ```
-'info.picocli:picocli:jar:4.1.2'
+'info.picocli:picocli:jar:4.1.3'
 ```
