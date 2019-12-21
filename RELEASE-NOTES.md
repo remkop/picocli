@@ -23,6 +23,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.1.4-fixes"></a> Fixed issues
 [#903] Bugfix: `picocli-codegen` generates invalid reflect-config.json for classes in unnamed package.
+[#902] DOC: replace deprecated `CommandLine.invoke()` function. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 ## <a name="4.1.4-deprecated"></a> Deprecations
 No features were deprecated in this release.
