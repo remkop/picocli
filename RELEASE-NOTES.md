@@ -9,7 +9,7 @@ This release fixes a bug in the `picocli-codegen` annotation processor that gene
 
 
  
-This is the sixty-fifth public release.
+This is the sixty-sixth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.1.4-toc"></a> Table of Contents
