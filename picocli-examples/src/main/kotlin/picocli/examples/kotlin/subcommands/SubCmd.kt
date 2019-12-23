@@ -1,10 +1,7 @@
 package picocli.examples.kotlin.subcommands
 
-import picocli.CommandLine
 import picocli.CommandLine.*
 import picocli.CommandLine.Model.CommandSpec
-import picocli.examples.kotlin.MyApp
-
 
 @Command(name = "sub", mixinStandardHelpOptions = true,
         description = ["I'm a subcommand. Prints help if count=7."])
