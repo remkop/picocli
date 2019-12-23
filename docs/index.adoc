@@ -5248,6 +5248,8 @@ NOTE: When using a Groovy version older than 2.4.7, use this workaround for the 
 ...
 ----
 
+In order to get you started quickly, you may have a look at the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/groovy/picocli/examples[Groovy examples] folder of the picocli code repository.
+
 === Kotlin
 
 Kotlin 1.2 (released Nov 28, 2017) officially supports http://kotlinlang.org/docs/reference/whatsnew12.html#array-literals-in-annotations[array literals in annotations], allowing a more compact notation:
@@ -5288,9 +5290,6 @@ class SubCmd { // ...
 }
 ----
 
-
-
-
 Kotlin versions prior to 1.2 did not allow the https://kotlinlang.org/docs/reference/annotations.html[array literal syntax in annotations], so with older versions of Kotlin you will have to write `arrayOf(...)` for the `names`, `description` and `type` attributes.
 
 [source,kotlin]
@@ -5313,6 +5312,8 @@ class MyApp : Callable<Int> {
 }
 fun main(args: Array<String>) = System.exit(CommandLine(MyApp()).execute(*args))
 ----
+
+In order to get you started quickly, you may have a look at the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin[Kotlin examples] folder of the picocli code repository.
 
 === Scala
 Scala does not allow specifying array annotation attribute as a single value,
