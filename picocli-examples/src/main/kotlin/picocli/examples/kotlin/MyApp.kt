@@ -20,10 +20,5 @@ class MyApp : Callable<Int> {
         }
         return 123
     }
-//    companion object {
-//        @JvmStatic fun main(args: Array<String>) {
-//            CommandLine.run(MyApp(), *args)
-//        }
-//    }
 }
 fun main(args: Array<String>) = System.exit(CommandLine(MyApp()).execute(*args))
