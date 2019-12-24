@@ -4216,7 +4216,7 @@ xoption = This is the description for the -x option.
 When the `descriptionKey` is omitted, the https://picocli.info/apidocs/picocli/CommandLine.Option.html#descriptionKey--[fallback for options] is any option name without the leading dashes, for example:
 
 ```java
-@Option(names = {"-v", "--verbose") boolean[] verbose;
+@Option(names = {"-v", "--verbose"}) boolean[] verbose;
 ```
 The matching entry in the resource bundle could look like this:
 ----
