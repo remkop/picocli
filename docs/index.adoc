@@ -839,13 +839,13 @@ The `type` attribute can be specified to convert to a stronger type than String.
 [source,java]
 ----
 class TypeDemo {
-    @Option(names = "-x"); // not enough information to convert
+    @Option(names = "-x")  // not enough information to convert
     Map<?, ?> weaklyTyped; // String keys and values are added as is
 
-    @Option(names = "-y", type = {Short.class, BigDecimal.class});
+    @Option(names = "-y", type = {Short.class, BigDecimal.class})
     Map<? extends Number, ? super Number> stronglyTyped;
 
-    @Option(names = "-s", type = CharBuffer.class);
+    @Option(names = "-s", type = CharBuffer.class)
     List<CharSequence> text;
 }
 ----
