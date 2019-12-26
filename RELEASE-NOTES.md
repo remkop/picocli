@@ -1,5 +1,35 @@
 # picocli Release Notes
 
+# <a name="4.2.0"></a> Picocli 4.2.0 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.2.0.
+
+This release contains bugfixes and enhancements. 
+
+ 
+This is the sixty-seventh public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.2.0-toc"></a> Table of Contents
+* [New and noteworthy](#4.2.0-new)
+* [Fixed issues](#4.2.0-fixes)
+* [Deprecations](#4.2.0-deprecated)
+* [Potential breaking changes](#4.2.0-breaking-changes)
+
+## <a name="4.2.0-new"></a> New and Noteworthy
+
+
+## <a name="4.2.0-fixes"></a> Fixed issues
+[#909] DOC: User manual: minor fixes. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+[#908] DOC: Fix typo in user manual: Add missing closing curly bracket. Thanks to [Piotrek Żygieło](https://github.com/pzygielo) for the pull request.
+[#907] DOC: Updated and added Kotlin examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+
+## <a name="4.2.0-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.2.0-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 # <a name="4.1.4"></a> Picocli 4.1.4
 The picocli community is pleased to announce picocli 4.1.4.
 

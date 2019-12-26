@@ -1982,13 +1982,13 @@ For example:</p>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">TypeDemo</span> {
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>); <span class="comment">// not enough information to convert</span>
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>)  <span class="comment">// not enough information to convert</span>
     <span class="predefined-type">Map</span>&lt;?, ?&gt; weaklyTyped; <span class="comment">// String keys and values are added as is</span>
 
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-y</span><span class="delimiter">&quot;</span></span>, type = {<span class="predefined-type">Short</span>.class, <span class="predefined-type">BigDecimal</span>.class});
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-y</span><span class="delimiter">&quot;</span></span>, type = {<span class="predefined-type">Short</span>.class, <span class="predefined-type">BigDecimal</span>.class})
     <span class="predefined-type">Map</span>&lt;? <span class="directive">extends</span> <span class="predefined-type">Number</span>, ? <span class="local-variable">super</span> <span class="predefined-type">Number</span>&gt; stronglyTyped;
 
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-s</span><span class="delimiter">&quot;</span></span>, type = <span class="predefined-type">CharBuffer</span>.class);
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-s</span><span class="delimiter">&quot;</span></span>, type = <span class="predefined-type">CharBuffer</span>.class)
     <span class="predefined-type">List</span>&lt;<span class="predefined-type">CharSequence</span>&gt; text;
 }</code></pre>
 </div>
@@ -6742,7 +6742,7 @@ usage.exitCodeList.2 = 70:An exception occurred when invoking the business logic
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span>) <span class="type">boolean</span><span class="type">[]</span> verbose;</code></pre>
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span>}) <span class="type">boolean</span><span class="type">[]</span> verbose;</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -8146,6 +8146,9 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 ...</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>In order to get you started quickly, you may have a look at the <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/groovy/picocli/examples">Groovy examples</a> folder of the picocli code repository.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_kotlin">27.2. Kotlin</h3>
@@ -8212,6 +8215,9 @@ class MyApp : Callable&lt;Int&gt; {
 }
 fun main(args: Array&lt;String&gt;) = System.exit(CommandLine(MyApp()).execute(*args))</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>In order to get you started quickly, you may have a look at the <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin">Kotlin examples</a> folder of the picocli code repository.</p>
 </div>
 </div>
 <div class="sect2">
@@ -8361,7 +8367,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.1.4<br>
-Last updated 2019-12-22 08:17:57 +0900
+Last updated 2019-12-26 10:01:39 +0900
 </div>
 </div>
 </body>

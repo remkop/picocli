@@ -20,5 +20,11 @@ class MyApp : Callable<Int> {
         }
         return 123
     }
+    companion object {
+        @JvmStatic fun main(args: Array<String>) {
+            CommandLine.run(MyApp(), *args)
+        }
+    }
 }
-fun main(args: Array<String>) = System.exit(CommandLine(MyApp()).execute(*args))
+// NOTE: below is an alternative to defining a @JvmStatic main function in a companion object:
+//fun main(args: Array<String>) = System.exit(CommandLine(MyApp()).execute(*args))
