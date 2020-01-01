@@ -3901,11 +3901,12 @@ public class CommandLine {
      * </p><p>
      * The {@code Mixin} annotation provides a way to reuse common options and parameters without subclassing. For example:
      * </p><pre>
+     * &#064;Command(name="HelloWorld")
      * class HelloWorld implements Runnable {
      *
      *     // adds the --help and --version options to this command
      *     &#064;Mixin
-     *     private HelpOptions = new HelpOptions();
+     *     private HelpOptions options = new HelpOptions();
      *
      *     &#064;Option(names = {"-u", "--userName"}, required = true, description = "The user name")
      *     String userName;
