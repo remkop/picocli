@@ -3236,7 +3236,7 @@ public class CommandLine {
      * @param transformer the {@code INegatableOptionTransformer} used to create negative option names.
      * @return this {@code CommandLine} object, to allow method chaining
      * @see Option#negatable()
-     * @see CommandSpec#negatableOptionTransformer(INegatableOptionTransformer)
+     * @see CommandSpec#negatableOptionTransformer(CommandLine.INegatableOptionTransformer)
      * @since 4.0 */
     public CommandLine setNegatableOptionTransformer(INegatableOptionTransformer transformer) {
         getCommandSpec().negatableOptionTransformer(transformer);
@@ -4672,8 +4672,8 @@ public class CommandLine {
              * </table>
              *
              * @param regex regular expression to match an option name
-             * @param negativeReplacement the replacement to use to generate a {@linkplain #makeNegative(String, CommandSpec) negative name} when the option name matches
-             * @param synopsisReplacement the replacement to use to generate a {@linkplain #makeSynopsis(String, CommandSpec) documentation string} when the option name matches
+             * @param negativeReplacement the replacement to use to generate a {@linkplain RegexTransformer#makeNegative(String, CommandLine.Model.CommandSpec) negative name} when the option name matches
+             * @param synopsisReplacement the replacement to use to generate a {@linkplain RegexTransformer#makeSynopsis(String, CommandLine.Model.CommandSpec) documentation string} when the option name matches
              * @return this {@code RegexTransformer} for method chaining
              */
             public RegexTransformer.Builder addPattern(String regex, String negativeReplacement, String synopsisReplacement) {
@@ -5289,9 +5289,9 @@ public class CommandLine {
              * @return the resource bundle base name from the {@linkplain UsageMessageSpec#messages()}
              * @since 4.0 */
             public String resourceBundleBaseName() { return Messages.resourceBundleBaseName(usageMessage.messages()); }
-            /** Initializes the resource bundle for this command: sets the {@link UsageMessageSpec#messages(Messages) UsageMessageSpec.messages} to
+            /** Initializes the resource bundle for this command: sets the {@link UsageMessageSpec#messages(CommandLine.Model.Messages) UsageMessageSpec.messages} to
              * a {@link Messages Messages} object created from this command spec and the specified bundle, and then sets the
-             * {@link ArgSpec#messages(Messages) ArgSpec.messages} of all options and positional parameters in this command
+             * {@link ArgSpec#messages(CommandLine.Model.Messages) ArgSpec.messages} of all options and positional parameters in this command
              * to the same {@code Messages} instance. Subcommands are not modified.
              * <p>This method is preferable to {@link #resourceBundle(ResourceBundle)} for pre-Java 8</p>
              * @param resourceBundleBaseName the base name of the ResourceBundle to set, may be {@code null}
@@ -5307,9 +5307,9 @@ public class CommandLine {
              * @return the resource bundle from the {@linkplain UsageMessageSpec#messages()}
              * @since 3.6 */
             public ResourceBundle resourceBundle() { return Messages.resourceBundle(usageMessage.messages()); }
-            /** Initializes the resource bundle for this command: sets the {@link UsageMessageSpec#messages(Messages) UsageMessageSpec.messages} to
+            /** Initializes the resource bundle for this command: sets the {@link UsageMessageSpec#messages(CommandLine.Model.Messages) UsageMessageSpec.messages} to
              * a {@link Messages Messages} object created from this command spec and the specified bundle, and then sets the
-             * {@link ArgSpec#messages(Messages) ArgSpec.messages} of all options and positional parameters in this command
+             * {@link ArgSpec#messages(CommandLine.Model.Messages) ArgSpec.messages} of all options and positional parameters in this command
              * to the same {@code Messages} instance. Subcommands are not modified.
              * @param bundle the ResourceBundle to set, may be {@code null}
              * @return this commandSpec
@@ -5418,7 +5418,7 @@ public class CommandLine {
              * (class methods annotated with {@code @Command}) as subcommands.
              *
              * @return this {@link CommandSpec} object for method chaining
-             * @see #addMethodSubcommands(IFactory)
+             * @see #addMethodSubcommands(CommandLine.IFactory)
              * @see #addSubcommand(String, CommandLine)
              * @since 3.6.0
              */
@@ -5716,7 +5716,7 @@ public class CommandLine {
 
             /** Returns a map of the mixin names to mixin {@code IAnnotatedElement} objects for this command.
              * @return an immutable map of `{@literal @}Mixin`-annotated elements added to this command.
-             * @see #addMixin(String, CommandSpec, IAnnotatedElement)
+             * @see #addMixin(String, CommandLine.Model.CommandSpec, CommandLine.Model.IAnnotatedElement)
              * @since 4.1 */
             public Map<String, IAnnotatedElement> mixinAnnotatedElements() { return Collections.unmodifiableMap(mixinAnnotatedElements); }
 
@@ -7251,7 +7251,7 @@ public class CommandLine {
              * including the {@code ${DEFAULT-VALUE}} and {@code ${COMPLETION-CANDIDATES}} variables.
              * Use {@link CommandSpec#interpolateVariables(Boolean)} to switch off variable expansion if needed.
              * <p>
-             * If a resource bundle has been {@linkplain ArgSpec#messages(Messages) set}, this method will first try to find a value in the resource bundle:
+             * If a resource bundle has been {@linkplain ArgSpec#messages(CommandLine.Model.Messages) set}, this method will first try to find a value in the resource bundle:
              * If the resource bundle has no entry for the {@code fully qualified commandName + "." + descriptionKey} or for the unqualified {@code descriptionKey},
              * an attempt is made to find the option or positional parameter description using any of the
              * {@linkplain #getAdditionalDescriptionKeys() additional description keys}, first with the {@code fully qualified commandName + "."} prefix, then without.
@@ -10249,7 +10249,7 @@ public class CommandLine {
          * If the user input was a valid combination of group arguments, the returned list should contain a single
          * {@linkplain GroupMatch match}. Details of the {@linkplain GroupMatchContainer matched groups} encountered
          * on the command line can be obtained via its {@link GroupMatch#matchedSubgroups() matchedSubgroups()} method.
-         * The top-level match returned by this method contains no {@linkplain GroupMatch#matchedValues(ArgSpec) matched arguments}.
+         * The top-level match returned by this method contains no {@linkplain GroupMatch#matchedValues(CommandLine.Model.ArgSpec) matched arguments}.
          * </p><p>
          * If the returned list contains more than one {@linkplain GroupMatch match}, the user input was invalid:
          * the maximum {@linkplain ArgGroup#multiplicity() multiplicity} of a group was exceeded, and the parser created an extra
@@ -12733,21 +12733,21 @@ public class CommandLine {
 
         private IParamLabelRenderer parameterLabelRenderer;
 
-        /** Constructs a new {@code Help} instance with a default color scheme, initialized from annotatations
+        /** Constructs a new {@code Help} instance with a default color scheme, initialized from annotations
          * on the specified class and superclasses.
          * @param command the annotated object to create usage help for */
         public Help(Object command) {
             this(command, Ansi.AUTO);
         }
 
-        /** Constructs a new {@code Help} instance with a default color scheme, initialized from annotatations
+        /** Constructs a new {@code Help} instance with a default color scheme, initialized from annotations
          * on the specified class and superclasses.
          * @param command the annotated object to create usage help for
          * @param ansi whether to emit ANSI escape codes or not */
         public Help(Object command, Ansi ansi) {
             this(command, defaultColorScheme(ansi));
         }
-        /** Constructs a new {@code Help} instance with the specified color scheme, initialized from annotatations
+        /** Constructs a new {@code Help} instance with the specified color scheme, initialized from annotations
          * on the specified class and superclasses.
          * @param command the annotated object to create usage help for
          * @param colorScheme the color scheme to use
@@ -12755,7 +12755,7 @@ public class CommandLine {
         @Deprecated public Help(Object command, ColorScheme colorScheme) {
             this(CommandSpec.forAnnotatedObject(command, new DefaultFactory()), colorScheme);
         }
-        /** Constructs a new {@code Help} instance with the specified color scheme, initialized from annotatations
+        /** Constructs a new {@code Help} instance with the specified color scheme, initialized from annotations
          * on the specified class and superclasses.
          * @param commandSpec the command model to create usage help for
          * @param colorScheme the color scheme to use */
@@ -14898,7 +14898,7 @@ public class CommandLine {
                 }
                 /** @deprecated use {@link #concat(String)} instead */
                 @Deprecated public Text append(String string) { return concat(string); }
-                /** @deprecated use {@link #concat(Text)} instead */
+                /** @deprecated use {@link #concat(CommandLine.Help.Ansi.Text)} instead */
                 @Deprecated public Text append(Text text) { return concat(text); }
 
                 /** Returns a copy of this {@code Text} instance with the specified text concatenated to the end. Does not modify this instance!
