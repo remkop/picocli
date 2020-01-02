@@ -192,7 +192,7 @@ or placed in a `META-INF/native-image/` subdirectory of the JAR.
 
 This allows picocli-based applications to be compiled to a native image.
 
-See https://github.com/remkop/picocli/wiki/Picocli-on-GraalVM:-Blazingly-Fast-Command-Line-Apps[Picocli on GraalVM: Blazingly Fast Command Line Apps] for details.
+See https://picocli.info/picocli-on-graalvm.html[Picocli on GraalVM: Blazingly Fast Command Line Apps] for details.
 
 ==== Generating Reflection Configuration During the Build
 
