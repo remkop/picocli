@@ -19,6 +19,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.2.0-fixes"></a> Fixed issues
+[#914] DOC: Added Java and Kotlin examples for using `ResourceBundle` to internationalize and localize your CLI app. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 [#915] DOC: Ensure Kotlin examples compile correctly. Thanks to [Andreas Deininger](https://github.com/deining) for the suggestion.
 [#913] DOC: Added more Java and Kotlin examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 [#912] DOC: Fixed broken links in javadoc. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
