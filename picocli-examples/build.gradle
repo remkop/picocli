@@ -1,6 +1,17 @@
-description 'Java and Groovy examples for the picocli project.'
+description 'Java, Groovy and Kotlin examples for the picocli project.'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.60"
+    }
+}
 
 apply plugin: 'groovy'
+apply plugin: 'kotlin'
 
 sourceCompatibility = 1.8 // for the JSR-380 BeanValidation example
 targetCompatibility = 1.8
@@ -11,6 +22,7 @@ configurations {
 dependencies {
     compile rootProject
     compile project(':picocli-groovy')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
     ivy     "org.apache.ivy:ivy:$ivyVersion" // for Intelli/J
     compile "org.codehaus.groovy:groovy-all:$groovyVersion",
             "org.apache.ivy:ivy:$ivyVersion", // for Intelli/J
