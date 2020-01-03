@@ -4131,8 +4131,10 @@ Command attributes may be defined multiple times, but only one value is preserve
 
 == Internationalization
 
-From version 3.6, usage help message sections and the description for options and positional parameters can be specified in a resource bundle.
+As of version 3.6, usage help message sections and the description for options and positional parameters can be specified in a resource bundle.
 A resource bundle can be set via annotations and programmatically.
+
+In order to get you started quickly, the https://github.com/remkop/picocli/blob/master/picocli-examples[`picocli-examples`] module has a minimal i18n example, coded both in https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/i18n/I18NDemo.java[Java] and https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/i18n/I18NDemo.kt[Kotlin].
 
 === Configuration
 
