@@ -19,6 +19,9 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.2.0-fixes"></a> Fixed issues
+[#913] DOC: Added more Java and Kotlin examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+[#912] DOC: Fixed broken links in javadoc. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+[#911] DOC: Fixed syntax error in javadoc. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 [#909] DOC: User manual: minor fixes. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 [#908] DOC: Fix typo in user manual: Add missing closing curly bracket. Thanks to [Piotrek Żygieło](https://github.com/pzygielo) for the pull request.
 [#907] DOC: Updated and added Kotlin examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
