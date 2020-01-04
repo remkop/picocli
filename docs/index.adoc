@@ -3602,7 +3602,7 @@ status, st    Show the working tree status.
 === Subcommands as Methods
 As of picocli 3.6 it is possible to register subcommands in a very compact manner by having a `@Command` class with `@Command`-annotated methods. The methods are automatically <<Subcommand Methods, registered as subcommands>> of the `@Command` class.
 
-The https://github.com/remkop/picocli/blob/master/picocli-examples[`picocli-examples`] module has an  minimal example application, demonstrating the definition of subcommands via methods. This example was coded both in https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubCmdsViaMethods.java[Java] and https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/subcommands/SubCmdsViaMethods.kt[Kotlin].
+The https://github.com/remkop/picocli/blob/master/picocli-examples[`picocli-examples`] module has an  minimal example application, demonstrating the definition of subcommands via methods. This example was coded in https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubCmdsViaMethods.java[Java], https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/subcommands/SubCmdsViaMethods.kt[Kotlin] and https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/scala/picocli/examples/scala/subcommands/SubCmdsViaMethods.scala[Scala].
 
 === Executing Subcommands
 
@@ -5343,11 +5343,13 @@ class MyApp extends Callable[Int] {
     }
 }
 object MyApp {
-    def main(args: Array[String]) {
+    def main(args: Array[String]): Unit = {
         System.exit(new CommandLine(new MyApp()).execute(args: _*))
     }
 }
 ----
+
+In order to get you started quickly, you may have a look at the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/scala/picocli/examples/scala[Scala examples] folder of the picocli code repository.
 
 == API Javadoc
 Picocli API Javadoc can be found link:apidocs/[here].

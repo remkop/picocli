@@ -13,7 +13,7 @@ class SubCmdsViaMethods : Runnable  {
     val spec: CommandLine.Model.CommandSpec? = null
 
     @Command(description = ["Resolve ISO country code (ISO-3166-1, Alpha-2 code)"])
-    fun country( @CommandLine.Parameters( arity = "1..*n", paramLabel = "<country1> <country2>",
+    fun country( @CommandLine.Parameters( arity = "1..*n", paramLabel = "<country code1> <country code2>",
         description = ["country code(s) to be resolved"] ) vararg countryCodes : String)
     {
         for (code in countryCodes) {
@@ -22,7 +22,7 @@ class SubCmdsViaMethods : Runnable  {
     }
 
     @Command(description = ["Resolve ISO language code (ISO 639-1 or -2, two/three letters)"])
-    fun language( @CommandLine.Parameters( arity = "1..*n", paramLabel = "<code> <code2>",
+    fun language( @CommandLine.Parameters( arity = "1..*n", paramLabel = "<language code1> <language code2>",
         description = ["language code(s) to be resolved"] ) vararg languageCodes : String)
     {
         for (code in languageCodes) {
