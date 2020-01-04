@@ -19,7 +19,7 @@ import kotlin.system.exitProcess
 class Checksum : Callable<Int> {
 
     @Parameters(index = "0..*", description = ["The file(s) whose checksum to calculate."],
-            paramLabel = "<file 1> <file 2>")
+                arity = "1..*", paramLabel = "<file 1> <file 2>")
     val files: ArrayList<File> = arrayListOf()
 
     @Option(names = ["-a", "--algorithm"], description = ["MD5, SHA-1, SHA-256, ..."])

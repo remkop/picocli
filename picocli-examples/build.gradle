@@ -6,12 +6,14 @@ buildscript {
     }
 
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.60"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.61"
     }
 }
 
 apply plugin: 'groovy'
 apply plugin: 'kotlin'
+apply plugin: 'scala'
+apply plugin: 'java-library'
 
 sourceCompatibility = 1.8 // for the JSR-380 BeanValidation example
 targetCompatibility = 1.8
@@ -23,6 +25,7 @@ dependencies {
     compile rootProject
     compile project(':picocli-groovy')
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation 'org.scala-lang:scala-library:2.13.1'
     ivy     "org.apache.ivy:ivy:$ivyVersion" // for Intelli/J
     compile "org.codehaus.groovy:groovy-all:$groovyVersion",
             "org.apache.ivy:ivy:$ivyVersion", // for Intelli/J
