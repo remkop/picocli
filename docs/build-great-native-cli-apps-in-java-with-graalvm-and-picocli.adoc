@@ -1,0 +1,523 @@
+= Build great native CLI apps in Java with GraalVM and Picocli
+:source-highlighter: coderay
+//:source-highlighter: highlightjs
+//:highlightjs-theme: darkula
+:icons: font
+//:toc: left
+//:toclevels: 3
+//:imagesdir: https://picocli.info/images/
+:imagesdir: images/
+// create variables for some link text used in article to prevent link mangling in PDF
+:ms-cpp-2015-redist: Microsoft Visual C++ 2015 Redistributable Update 3 RC
+:ms-cpp-2010-redist: Microsoft Visual C++ 2010 SP1 Redistributable Package (x64)
+
+
+_Let's Put Java Back on the CLI Map_
+
+Takeaways:
+
+* As developers, we want to *distribute* our command line applications as a *single native executable*. (This may be why Go is popular for CLI apps).
+* *GraalVM* can compile your Java application to a single native image, but it has some limitations.
+* *Picocli* is a modern library for writing CLI apps on the JVM with *colors, autocompletion, subcommands*, and more, and it can help tackle GraalVM's limitations. Picocli even offers special support for native Windows command line applications.
+* Setting up the compiler toolchain for creating native images on Windows is largely undocumented; this article shows details and highlights some gotchas related to GraalVM native images on Windows.
+
+image::fight-for-cli-apps.png[]
+
+== The Dream: Java Executables
+
+The https://golang.org/[Go] programming language has become popular for writing command line applications. There may be many reasons for this, but one aspect where Go shines is the ability to compile a program to a single native executable file. This makes the program much easier to distribute.
+
+Java programs have traditionally been hard to distribute because they require a Java Virtual Machine to be installed on the target machine. It is possible to bundle a JVM with the application but that adds some 200MB to the package size.
+Things are moving in the right direction: the Java Module System (JPMS), introduced in Java 9, includes the https://docs.oracle.com/javase/9/tools/jlink.htm#JSWOR-GUID-CECAC52B-CFEE-46CB-8166-F17A8E9280E9[jlink] utility that allows an application to create a custom, minimized, JRE, which can be as small as 30-40MB, and Java 14 will include an https://jdk.java.net/jpackage/[early access build] of the https://openjdk.java.net/jeps/343[jpackage] utility, which can create an installer that includes this minimum JRE with your application.
+
+Still, for command line applications an installer is not ideal. Ideally, we https://dev.to/uilicious/why-we-migrated-our-cli-from-nodejs-to-golang-1ol8[want to distribute] our CLI utility as a "real" native executable without a packaged runtime. GraalVM allows us to do this with programs written in Java.
+
+== GraalVM
+
+https://www.graalvm.org/[GraalVM] is a universal virtual machine that can run applications written in JavaScript, Python, Ruby, R, JVM-based languages like Java, Scala, Clojure, Kotlin, and LLVM-based languages such as C and C++. One of its aims is to run Java faster. Another interesting aspect is that GraalVM allows you to mix programming languages: programs partially written in JavaScript, R, Python, or Ruby can be called from Java and can share data with each other. A final feature is the ability to create a native image, and this is what we will explore in this article.
+
+=== GraalVM Native Images
+
+https://www.graalvm.org/docs/reference-manual/native-image/[GraalVM Native Image] allows you to ahead-of-time compile Java code to a standalone executable, called a native image. This executable includes the application, the libraries, the JDK and does not run on the Java VM, but includes necessary components like memory management and thread scheduling from a different virtual machine, called “Substrate VM”. Substrate VM is the name for the runtime components (like the deoptimizer, garbage collector, thread scheduling etc.). The resulting program has faster startup time and lower runtime memory overhead compared to a Java VM.
+
+//Native Image Generator or `native-image` is a utility that processes all the classes of your application and their dependencies, including those from the JDK. It statically analyses these classes to determine which classes and methods are reachable and used during application execution. Then it passes all this reachable code as the input to the GraalVM compiler which ahead-of-time compiles it to the native binary.
+
+=== Native Image Limitations
+
+To keep the implementation small and concise, and also to allow aggressive ahead-of-time optimizations, Native Image does not support all features of Java. The full set of https://github.com/oracle/graal/blob/master/substratevm/LIMITATIONS.md[limitations] is documented on the GitHub project.
+
+Two limitations are especially of interest:
+
+* https://github.com/oracle/graal/blob/master/substratevm/LIMITATIONS.md#reflection[reflection]
+* https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md[resources]
+
+Basically, to create a self-contained binary, the native image compiler needs to know up-front all the classes of your application, their dependencies, and the resources they use. Reflection and resource bundles often require configuration. We will see an example of this below.
+
+== Picocli
+
+https://github.com/remkop/picocli[Picocli] is a modern library and framework for building command line applications on the JVM. It supports Java, Groovy, Kotlin and Scala. It is less than 3 years old but has become quite popular with over 500,000 downloads per month.
+The Groovy language uses picocli to implement its `CliBuilder` DSL.
+
+Picocli aims to be “the easiest way to create rich command line applications that can run on and off the JVM”. It offers colored output, TAB autocompletion, subcommands, and some advanced features that have no parallel in other JVM CLI libraries like negatable options, repeating composite argument groups, and sophisticated handling of quoted arguments.
+Its source code is in a single file so it can optionally be included as source to avoid adding a dependency.
+A final feature that sets picocli apart is its meticulous https://picocli.info/[documentation].
+
+image::picocli.Demo.png[]
+
+Picocli uses reflection, so it is vulnerable to GraalVM's Java native image limitations, but it offers an annotation processor that generates the configuration files that address this limitation at compile time.
+
+
+== A Concrete Use Case
+
+Let’s take a concrete example of a command line utility that we will write in Java and compile to a single native executable.
+Along the way we will look at some features of the picocli library that help make our utility easy to use.
+
+We will build a `checksum` CLI utility, that takes a named option `-a` or `--algorithm`, and a positional parameter, which is the file whose checksum to compute.
+
+We want our users to be able to use our Java `checksum` utility just like they use applications written in C++ or other languages. Something like this:
+
+----
+$ echo hi > hi.txt
+
+$ checksum -a md5 hi.txt
+764efa883dda1e11db47671c4a3bbd9e
+
+$ checksum -a sha1 hi.txt
+55ca6286e3e4f4fba5d0448333fa99fc5a404a73
+----
+
+This is the minimum we expect from a command line application, but we are not going to be satisfied with a lowest common denominator app, we want to create a great CLI application that delights our users. What does that mean and how do we do it?
+
+=== Great CLI Apps are Helpful
+
+We made a trade-off: by choosing a command line interface (CLI)
+instead of a graphical user interface (GUI), our application is less easy to learn to use for new users. We can partially make up for that by providing good online help.
+
+Our application should show a usage help message when the user requests help with the `-h` or `--help` option, or when invalid user input is specified. It should also show version information when requested with `-V` or `--version`. We will see how picocli makes it easy to do this.
+
+==== User Experience
+
+We can make our application more user-friendly by using colors on supported platforms. This doesn’t just look good, it also reduces the cognitive load on the user: the contrast make the important information like commands, options, and parameters stand out from the surrounding text.
+
+The usage help message generated by a picocli-based application uses colors by default. Our `checksum` example looks something like this:
+
+image::checksum-usage-help.png[]
+
+//image::checksum-help-ja.png[width=100%]
+
+In general, applications should only output colors when they are used interactively; when executing a script we don’t want the log file cluttered with ANSI escape codes. Fortunately, picocli takes care of this automatically. This brings us to the next topic: good CLI apps are designed to be combined with other commands.
+
+=== Great CLI Apps Work Well with Others
+
+==== Stdout vs stderr
+
+Many CLI utilities use the standard streams so they can be combined with other utilities. The devil is often in the details. When the user _requested_ help, the application should print the usage help message to standard output. This allows users to pipe the output to another tool like `grep` or `less`.
+
+On the other hand, on invalid input, the error message and usage help message should be printed to the standard error stream: in case the output of our program is used as input for another program, we don’t want our error message to disrupt things.
+
+Picocli automatically uses the correct stream by default.
+
+==== Exit Code
+When your program ends, it returns an exit status code. An exit code of zero is often used to indicate success, and a non-zero exit code often indicates a failure of some kind.
+
+This allows users to chain together a number of commands using `&&`, knowing that if any command in the sequence fails, the whole sequence will stop.
+
+By default, picocli returns `2` for invalid user input, `1` when an exception occurred in the business logic of the application, and zero otherwise (when everything went well). Of course it is easy to configure other exit codes in your application, but for our `checksum` example the default values are fine.
+
+Note that the picocli library will not call `System.exit`; it just returns an integer and it is up to the application to call `System.exit` or not.
+
+
+=== Compact Code
+
+The above describes quite a bit of functionality. You would think that this would require a lot of code to accomplish, but most of the "standard CLI behavior" is provided by the picocli library. In our application, all we need to do is define our options and positional parameters, and implement the business logic by making our class `Callable` or `Runnable`. We can bootstrap the application in our `main` method in one line of code:
+
+
+//[source,java,linenums,options="nowrap"]
+[source,java,options="linenums,nowrap"]
+----
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+
+import java.io.File;
+import java.math.BigInteger;
+import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.util.concurrent.Callable;
+
+@Command(name = "checksum", mixinStandardHelpOptions = true,
+      version = "checksum 4.0",
+  description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
+class CheckSum implements Callable<Integer> {
+
+  @Parameters(index = "0", arity = "1",
+        description = "The file whose checksum to calculate.")
+  private File file;
+
+  @Option(names = {"-a", "--algorithm"},
+    description = "MD5, SHA-1, SHA-256, ...")
+  private String algorithm = "MD5";
+
+  // this example implements Callable, so parsing, error handling
+  // and handling user requests for usage help or version help
+  // can be done with one line of code.
+  public static void main(String... args) {
+    int exitCode = new CommandLine(new CheckSum()).execute(args);
+    System.exit(exitCode);
+  }
+
+  @Override
+  public Integer call() throws Exception { // the business logic...
+    byte[] data = Files.readAllBytes(file.toPath());
+    byte[] digest = MessageDigest.getInstance(algorithm).digest(data);
+    String format = "%0" + (digest.length*2) + "x%n";
+    System.out.printf(format, new BigInteger(1, digest));
+    return 0;
+  }
+}
+----
+
+We now have a realistic example Java utility. Let’s take a look at turning it into a native executable next.
+
+== Native Image
+
+=== Reflection Configuration
+
+We mentioned that the native image compiler has some limitations: reflection is supported but https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[requires configuration].
+
+This impacts picocli-based applications: at runtime, picocli uses reflection to discover any `@Command`-annotated subcommands, and the `@Option` and `@Parameters`-annotated command options and positional parameters.
+
+Therefore, we need to provide GraalVM with a configuration file specifying all annotated classes, methods and fields. Such a configuration file looks something like this:
+
+[source,json]
+----
+[
+  {
+    "name" : "CheckSum",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "algorithm" },
+      { "name" : "file" }
+    ]
+  },
+  {
+    "name" : "picocli.CommandLine$AutoHelpMixin",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "helpRequested" },
+      { "name" : "versionRequested" }
+    ]
+  }
+]
+----
+
+This quickly becomes quite cumbersome for utilities with many options, but fortunately we don’t need to do this by hand.
+
+=== Picocli Annotation Processor
+
+The `picocli-codegen` module includes an annotation processor that can build a model from the picocli annotations at compile time rather than at runtime.
+
+The annotation processor generates Graal configuration
+files under `META-INF/native-image/picocli-generated/$project` during compilation,
+to be included in the application jar.
+This includes configuration files for https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md[resources] and https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md[dynamic proxies].
+By embedding these configuration files, your jar is instantly Graal-enabled.
+In most cases no further configuration is needed when generating a native image.
+
+As a bonus, the annotation processor shows errors for invalid annotations or attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
+
+So, all we need to do is compile our `CheckSum.java` source file with the `picocli-codegen` jar on the classpath:
+
+.Compiling `CheckSum.java` and creating a `checksum.jar` on Linux. Replace the `:` path separator with `;` for these commands to work on Windows.
+----
+mkdir classes
+javac -cp .:picocli-4.1.4.jar:picocli-codegen-4.1.4.jar -d classes CheckSum.java
+cd classes && jar -cvef CheckSum ../checksum.jar * && cd ..
+----
+
+// CAUTION: Note the unusual syntax of the `jar` tool: the options `-e` (for the `Main-Class` entry-point) and `-f` (for the resulting jar file name) must be clustered together with the `-c` (create) option, and their parameters must be specified together, following the options, in the same order as the options. Surprisingly, the standard way to specify these options (`jar -cv -e CheckSum -f ../checksum.jar *`) does not work. Avoid such surprises in your own CLI applications!
+
+
+You can see the generated configuration files are in the `META-INF/native-image/picocli-generated/` directory inside the jar:
+----
+jar -tf checksum.jar
+
+META-INF/
+META-INF/MANIFEST.MF
+CheckSum.class
+META-INF/native-image/
+META-INF/native-image/picocli-generated/
+META-INF/native-image/picocli-generated/proxy-config.json
+META-INF/native-image/picocli-generated/reflect-config.json
+META-INF/native-image/picocli-generated/resource-config.json
+----
+
+We are done with our application. Let's make a native image already!
+
+
+=== GraalVM Native Image Toolchain
+
+To create a native image, we need to install GraalVM, ensure the `native-image` utility is installed, and install the C/C++ compiler toolchain for the OS we are building on. I had some trouble doing this, so hopefully my notes below are useful to other developers.
+
+[quote, Unknown developer]
+____
+
+Development is 10% inspiration and 90% getting your environment set up.
+____
+
+==== Install GraalVM
+
+First, install the latest version of GraalVM, 19.3.0.2 as of this writing. The GraalVM https://www.graalvm.org/docs/getting-started/[Getting Started] page is the best place to get the most up-to-date instructions for installing GraalVM in various operating systems and containers.
+
+==== Install the Native Image Utility
+
+GraalVM comes with a `native-image` generator utility. In recent versions of GraalVM, this needs to be downloaded first and installed separately with the https://www.graalvm.org/docs/reference-manual/install-components/[Graal Updater] tool:
+
+.Installing the `native-image` generator utility for Java 11 on Linux
+----
+gu install -L /path/to/native-image-installable-svm-java11-linux-amd64-19.3.0.2.jar
+----
+
+With the Windows version of GraalVM this step is not necessary, it contains a `native-image.cmd` batch script that works out of the box.
+
+
+For more details, see the https://www.graalvm.org/docs/reference-manual/native-image/[Native Image] section of the GraalVM https://www.graalvm.org/docs/reference-manual/[Reference Manual].
+
+
+==== Install Compiler Toolchain
+
+===== Linux and MacOS Compiler Toolchain
+
+For compilation `native-image` depends on the local toolchain, so on Linux and MacOS we need `glibc-devel`, `zlib-devel` (header files for the C library and zlib) and `gcc` to be available on our system.
+
+To accomplish this on Linux: `sudo dnf install gcc glibc-devel zlib-devel` or `sudo apt-get install build-essential libz-dev`.
+
+On macOS, execute `xcode-select --install`.
+
+===== Windows Compiler Toolchain for Java 8
+
+GraalVM started to offer experimental support for Windows native images since release 19.2.0.
+
+Windows support is still experimental, and the official documentation is sparse on details regarding native images on Windows. From version 19.3, GraalVM supports both Java 8 and Java 11, and on Windows these require different tool chains.
+
+To build native images using the Java 8 version of GraalVM, you need the https://www.microsoft.com/en-us/download/details.aspx?id=8442[Microsoft Windows SDK for Windows 7 and .NET Framework 4] as well as the https://stackoverflow.com/a/45784634/873282[C compilers from KB2519277].
+You can install these using https://chocolatey.org/docs/installation[chocolatey]:
+
+----
+choco install windows-sdk-7.1 kb2519277
+----
+
+Then (from the `cmd` prompt), activate the sdk-7.1 environment:
+
+----
+call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd"
+----
+
+This starts a new Command Prompt, with the sdk-7.1 environment enabled. Run all subsequent commands in this Command Prompt window. This works for all Java 8 versions of GraalVM from 19.2.0 to 19.3.0.2.
+
+===== Windows Compiler Toolchain for Java 11
+
+To build native images using the Java 11 version of GraalVM (19.3.0 and greater),
+you can either install the Visual Studio 2017 IDE (making sure to include Visual C++ tools for CMake),
+or you can install the Visual C++ Build Tools Workload for Visual Studio 2017 Build Tools
+using https://chocolatey.org/docs/installation[chocolatey]:
+
+```
+choco install visualstudio2017-workload-vctools
+```
+
+After installation, set up the environment from the `cmd` prompt with this command:
+
+```
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+```
+
+TIP: If you installed the Visual Studio 2017 IDE, replace `BuildTools` in the above command with either `Community` or `Enterprise`, depending on your version of Visual Studio.
+
+Then run `native-image` in that Command Prompt window.
+
+=== Creating a Native Image
+
+The `native-image` utility can take a Java application and compile it to a native image that can run as a native executable on the platform that it is compiled on. On Linux this can look like this:
+
+.Creating a native image on Linux
+[width=100%]
+----
+$ /usr/lib/jvm/graalvm/bin/native-image \
+    -cp classes:picocli-4.1.4.jar --no-server \
+    --static -H:Name=checksum  CheckSum
+----
+
+The `native-image` utility will take about a minute to complete on my laptop, and produces output like this:
+
+----
+[checksum:2930]    classlist:   4,185.10 ms
+[checksum:2930]        (cap):   2,493.34 ms
+[checksum:2930]        setup:   4,614.04 ms
+[checksum:2930]   (typeflow):  12,216.14 ms
+[checksum:2930]    (objects):   6,730.32 ms
+[checksum:2930]   (features):     474.57 ms
+[checksum:2930]     analysis:  19,754.61 ms
+[checksum:2930]     (clinit):     361.47 ms
+[checksum:2930]     universe:   1,378.38 ms
+[checksum:2930]      (parse):   1,904.45 ms
+[checksum:2930]     (inline):   3,513.48 ms
+[checksum:2930]    (compile):  23,991.69 ms
+[checksum:2930]      compile:  30,412.09 ms
+[checksum:2930]        image:   1,837.68 ms
+[checksum:2930]        write:     718.43 ms
+[checksum:2930]      [total]:  63,523.65 ms
+----
+
+At the end, we have a native Linux executable. Interestingly, the native binary created with the Java 11 version of GraalVM is a bit bigger than the one created with the Java 8 version of GraalVM:
+
+```bash
+-rwxrwxrwx 1 remko remko 14637304 Jan  5 09:23 java11-19.3.0.2/checksum*
+-rwxrwxrwx 1 remko remko 12671688 Jan  5 09:30 java8-19.3.0.2/checksum*
+```
+
+We can see the binary is 12.6 - 14.6 MB in size. We can consider that big or small, depending on what we compare it with. For me it is an acceptable size.
+
+Let's can run the application to verify that it works. While we are at it we may as well compare the startup times of running the application on a normal JIT-based JVM to that of the native image:
+
+----
+$ time java -cp classes:picocli-4.1.4.jar CheckSum hi.txt
+764efa883dda1e11db47671c4a3bbd9e
+
+real    0m0.415s   ← startup is 415 millis with normal Java
+user    0m0.609s
+sys     0m0.313s
+----
+
+----
+$ time ./checksum hi.txt
+764efa883dda1e11db47671c4a3bbd9e
+
+real    0m0.004s   ← native image starts up in 4 millis
+user    0m0.002s
+sys     0m0.002s
+----
+
+So, on Linux at least, we can now distribute our Java application as a single native executable. What is the story on Windows?
+
+=== Native Image on Windows
+Native image support on Windows has some gotchas, so we will look at this in more detail.
+
+==== Creating Native Images on Windows
+Creating the native image itself is not a problem. For example:
+
+.Creating a native image on Windows
+[width=100%]
+----
+C:\apps\graalvm-ce-java8-19.3.0.2\bin\native-image ^
+    -cp picocli-4.1.4.jar --static -jar checksum.jar
+----
+
+We get similar output from the `native-image.cmd` utility on Windows as what we saw on Linux, taking a comparable amount of time, and resulting in a slightly smaller executable of 10 MB for the Java 8 version of GraalVM, and 12.8 MB for a binary created with the Java 11 version of GraalVM.
+
+The binaries work fine, with one difference: we don't see ANSI colors on the console.
+Let's look at fixing that.
+
+==== Windows Native Images with Colored Output
+
+To get ANSI colors in the Windows command prompt, we need to use the https://github.com/fusesource/jansi[Jansi library].
+Unfortunately, Jansi (as of version 1.18) has https://github.com/fusesource/jansi/issues/162[some problems] that mean it fails to produce colored output in a GraalVM native image.
+To work around this, picocli offers a https://github.com/remkop/picocli-jansi-graalvm[Jansi companion library], `picocli-jansi-graalvm`, that allows the Jansi library to work correctly in GraalVM native images on Windows.
+
+
+We change the `main` method to tell Jansi to enable rendering ANSI escape codes on Windows, like this:
+
+[source,java,nowrap]
+----
+//...
+import picocli.jansi.graalvm.AnsiConsole;
+//...
+public class CheckSum implements Callable<Integer> {
+
+  // ...
+
+  public static void main(String[] args) {
+    int exitCode = 0;
+    // enable colors on Windows
+    try (AnsiConsole ansi = AnsiConsole.windowsInstall()) {
+      exitCode = new CommandLine(new CheckSum()).execute(args);
+    }
+    System.exit(exitCode);
+  }
+}
+----
+
+
+And build a new native image with this command (note that from GraalVM 19.3, it became necessary to quote the jars on the classpath):
+
+```
+set GRAALVM_HOME=C:\apps\graalvm-ce-java11-19.3.0.2
+
+%GRAALVM_HOME%\bin\native-image ^
+  -cp "picocli-4.1.4.jar;jansi-1.18.jar;picocli-jansi-graalvm-1.1.0.jar;checksum.jar" ^
+  picocli.nativecli.demo.CheckSum checksum
+```
+
+And we have colors in our DOS console application:
+
+image::checksum-usage-help-dos-console.png[]
+
+It takes a little extra effort, but now our native Windows CLI app can use color contrast to provide a similar user experience as on Linux.
+
+The resulting binaries are about 1 MB larger with the addition of the Jansi libraries: building with Java 11 GraalVM gave a 13.8 MB binary, building with Java 8 GraalVM gave a 10.9 MB binary.
+
+==== Running Native Images on Windows
+
+We are almost done, but there is one more gotcha that is not immediately apparent.
+
+The native binary we just created works fine on the machine where we just built it, but when you run it on a different Windows machine, you may see the following error:
+
+image::msvcr100.dll-not-found-dialog-en.png[]
+
+It turns out that our native image https://github.com/oracle/graal/issues/1407[needs] the `msvcr100.dll` from VS C++ Redistributable 2010.
+This dll can be placed in the same directory as the `exe`, or in `C:\Windows\System32`. There is https://github.com/oracle/graal/issues/1762[work in progress] to try to improve on this.
+
+With GraalVM for Java 11, we get a similar error, except that it reports a different missing DLL, the `VCRUNTIME140.dll`:
+
+image::system-error-vcruntime140.dll-is-missing-from-your-computer-en.png[]
+
+
+For now, we will have to distribute these DLLs with our application, or tell our users to download and install the link:https://www.microsoft.com/en-us/download/details.aspx?id=52685[{ms-cpp-2015-redist}] to get the `VCRUNTIME140.dll` for Java 11-based native images, or link:https://www.microsoft.com/en-hk/download/details.aspx?id=13523[{ms-cpp-2010-redist}] to get the `msvcr100.dll` for Java 8-based native images.
+
+
+== Cross-Compilation
+
+GraalVM does not support cross-compilation, although it https://github.com/oracle/graal/issues/407[may in the future].
+For now, we need to compile on Linux to get a Linux executable,
+compile on MacOS to get a MacOS executable, and compile on Windows to get a Windows executable.
+
+We can simulate this by setting up a Continuous Integration/Continuous Deployment tool chain.
+The https://github.com/remkop/picocli-native-image-demo[picocli-native-image-demo]
+is an example Gradle project that uses some popular CI/CD tools to build and test native images for multiple platforms. That project also contains some experimental work with using HTTPS in native images.
+
+The https://github.com/remkop/picocli-native-image-maven-demo[picocli-native-image-maven-demo] is a similar example Maven project.
+
+//== Other Considerations
+//
+//* Not all libraries are ready to be used in a native image. If the library uses dynamic class loading, the `invokedynamic` bytecode, the method handle classes introduced with Java 7, attempts to install a SecurityManager, or relies on finalizers, the library will not work as a native image. If the library uses reflection, jni or resources then it may work but configuration is required - your application may be able to work around that by providing such configuration, like `picocli-jansi-graalvm` does for jansi.
+//* On Windows, as of GraalVM 19.2.1, the `--enable-all-security-services` option (necessary to enable HTTPS) results in a "host C compiler or linker does not seem to work" https://github.com/oracle/graal/issues/1663[error].
+//* If your library uses https, the native image needs to be created with the `--enable-https` option, and the `libsunec.so` library needs to be distributed with your native image.
+
+
+
+== Conclusion
+
+Command line applications are the canonical use case for GraalVM native images: we can now develop in Java (or another JVM language) and distribute our CLI applications as a *single, relatively small, native executable*. (Except on Windows, where we may need to distribute an additional runtime DLL.) The fast startup and reduced memory footprint are nice bonuses.
+
+GraalVM native images have some limitations, and applications may need to do some work before they can be turned into a native image.
+
+https://github.com/remkop/picocli/[Picocli] makes it easy to write command line applications in many JVM-based languages, and provides several extras to painlessly turn your CLI applications into native images.
+
+Give Picocli and GraalVM a try for your next command line application!
