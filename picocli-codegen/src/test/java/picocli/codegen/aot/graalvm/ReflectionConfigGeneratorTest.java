@@ -47,6 +47,22 @@ public class ReflectionConfigGeneratorTest {
     }
 
     @Test
+    public void testMainLocalOutputFile() throws IOException {
+        File file = File.createTempFile("picocli-codegen-example-interface-reflect", ".json");
+
+        ReflectionConfigGenerator.main("--output", file.getAbsolutePath(), ExampleInterface.class.getName());
+
+        String expected = read("/example-interface-reflect.json");
+        expected = expected.replace("\r\n", "\n");
+        expected = expected.replace("\n", System.getProperty("line.separator"));
+
+        String actual = readAndClose(new FileInputStream(file));
+        file.delete();
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testIssue622FieldsFromAbstractSuperclass() throws IOException {
         File file = File.createTempFile("picocli-codegen", ".json");
 

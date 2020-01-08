@@ -3,8 +3,6 @@ package picocli.examples.kotlin.subcommands
 import picocli.CommandLine
 import picocli.CommandLine.*
 import picocli.CommandLine.Model.CommandSpec
-import picocli.examples.kotlin.MyApp
-
 
 @Command(name = "top", version = ["Kotlin picocli demo v3.8.1"],
         mixinStandardHelpOptions = true,
@@ -17,9 +15,5 @@ class TopCmd : Runnable {
     override fun run() {
         throw ParameterException(spec?.commandLine(), "Specify a subcommand")
     }
-    companion object {
-        @JvmStatic fun main(args: Array<String>) {
-            CommandLine.run(TopCmd(), *args)
-        }
-    }
 }
+fun main(args: Array<String>) = System.exit(CommandLine(TopCmd()).execute(*args))

@@ -1,0 +1,107 @@
+plugins {
+    id 'java'
+    id 'groovy'
+    id 'distribution'
+    id 'maven-publish'
+    id 'com.jfrog.bintray'
+}
+
+group 'info.picocli'
+description 'Picocli Groovy - easily use picocli in Groovy scripts.'
+version "$projectVersion"
+
+configurations {
+    ivy
+}
+dependencies {
+    compile rootProject
+    compileOnly "org.codehaus.groovy:groovy-all:$groovyVersion"
+    ivy         "org.apache.ivy:ivy:$ivyVersion" // for Gradle
+    testCompile "junit:junit:$junitVersion"
+}
+tasks.withType(GroovyCompile) {
+    // this, and the `configurations {ivy}` section, are a workaround for the dreaded
+    // java.lang.NoClassDefFoundError: org/apache/ivy/core/report/ResolveReport
+    // that occurs when trying to compile a groovy script containing a @Grab annotation in gradle.
+    // see https://stackoverflow.com/questions/18173908/error-compiling-a-groovy-project-using-grab-annotation
+    groovyClasspath += configurations.ivy
+}
+
+javadoc.options.links += [
+        'http://docs.groovy-lang.org/2.4.9/html/gapi'
+]
+//javadoc.options.linksOffline 'http://docs.groovy-lang.org/2.4.9/html/gapi', 'gradle/javadocs/jdk/9/'
+
+jar {
+    manifest {
+        attributes  'Specification-Title'   : 'Picocli Groovy',
+                    'Specification-Vendor'  : 'Remko Popma',
+                    'Specification-Version' : version,
+                    'Implementation-Title'  : 'Picocli Groovy',
+                    'Implementation-Vendor' : 'Remko Popma',
+                    'Implementation-Version': version,
+                    'Automatic-Module-Name' : 'info.picocli.groovy'
+    }
+}
+
+ext {
+    bintrayPackage    = 'picocli-groovy'
+    bintrayWebsiteUrl = 'https://github.com/remkop/picocli/tree/master/picocli-groovy'
+    bintrayLabels     = ['cli', 'script', 'commandline', 'picocli', 'groovy']
+}
+bintray {
+    user = bintrayUsername
+    key  = bintrayApiKey
+    publications = ['MyPublication']
+    dryRun   = bintrayDryRun //[Default: false] Whether to run this as dry-run, without deploying
+    publish  = bintrayPublish //[Default: false] Whether version should be auto published after an upload    
+    override = bintrayOverride //[Default: false] Whether to override version artifacts already published    
+    //Package configuration. The plugin will use the repo and name properties to check if the package already exists. In that case, there's no need to configure the other package properties (like userOrg, desc, etc).
+    pkg {
+        repo     = 'picocli'
+        name     = bintrayPackage
+        userOrg  = 'remkop'
+        licenses = ['Apache-2.0']
+        desc = description
+        websiteUrl = bintrayWebsiteUrl
+        issueTrackerUrl = 'https://github.com/remkop/picocli/issues'
+        vcsUrl   = 'https://github.com/remkop/picocli.git'
+        labels = bintrayLabels
+        publicDownloadNumbers = false
+        version {
+            name     = "$projectVersion"
+            desc     = description
+            released = new Date()
+            vcsTag   = "v$projectVersion"
+            mavenCentralSync {
+                sync = mavenOssSync //[Default: true] Determines whether to sync the version to Maven Central.
+                user = mavenOssUser //OSS user token: mandatory
+                password = mavenOssPassword //OSS user password: mandatory
+                close = '1' //Optional property. By default the staging repository is closed and artifacts are released to Maven Central. You can optionally turn this behaviour off (by puting 0 as value) and release the version manually.
+            }
+        }
+    }
+}
+publishing {
+    publications {
+        MyPublication(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact testJar
+            artifact testSourcesJar
+            artifact javadocJar
+            groupId 'info.picocli'
+            artifactId bintrayPackage
+            version "$projectVersion"
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('packaging',     'jar')
+                root.appendNode('name',          bintrayPackage)
+                root.appendNode('description',   description)
+                root.appendNode('url',           'http://picocli.info')
+                root.appendNode('inceptionYear', '2018')
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}

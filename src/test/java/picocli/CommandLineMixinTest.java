@@ -15,7 +15,9 @@
  */
 package picocli;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import picocli.CommandLine.*;
 import picocli.CommandLine.Model.*;
 
@@ -23,13 +25,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.util.concurrent.Callable;
 
 import static org.junit.Assert.*;
-import static picocli.HelpTestUtil.setTraceLevel;
-import static picocli.HelpTestUtil.usageString;
+import static picocli.TestUtil.usageString;
 
 public class CommandLineMixinTest {
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
     @Test
     public void testMixinAnnotationMustBeValidCommand_CommandAnnotation() {
@@ -605,7 +607,7 @@ public class CommandLineMixinTest {
             InjectsOptionsAndParameters.MixMeIn mixMeIn;
         }
         CommandLine commandLine = new CommandLine(new Receiver());
-        commandLine.parse("-a", "111", "-b", "222", "a", "b");
+        commandLine.parseArgs("-a", "111", "-b", "222", "a", "b");
         Receiver receiver = commandLine.getCommand();
         assertEquals(222, receiver.beta);
         assertEquals(111, receiver.mixMeIn.alpha);
@@ -627,7 +629,7 @@ public class CommandLineMixinTest {
         InjectsOptionsAndParameters.MixMeIn mixin = new InjectsOptionsAndParameters.MixMeIn();
         commandLine.addMixin("mixin", mixin);
 
-        commandLine.parse("-a", "111", "-b", "222", "a", "b");
+        commandLine.parseArgs("-a", "111", "-b", "222", "a", "b");
         Receiver receiver = commandLine.getCommand();
         assertEquals(222, receiver.beta);
         assertEquals(111, mixin.alpha);
@@ -853,13 +855,13 @@ public class CommandLineMixinTest {
 
     private void assertExceptionThrownFromSetter(CommandLine cmd) {
         try {
-            cmd.parse("--trex", "abc");
+            cmd.parseArgs("--trex", "abc");
             fail("expected ParameterException");
         } catch (ParameterException ex) {
             assertEquals("TREX error", ex.getMessage());
         }
         try {
-            cmd.parse("--raptor", "xyz");
+            cmd.parseArgs("--raptor", "xyz");
             fail("expected ParameterException");
         } catch (ParameterException ex) {
             assertEquals("RAPTOR error", ex.getMessage());

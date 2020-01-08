@@ -34,6 +34,6 @@ public class UserManualExamples {
     }
 
     public static void main(String[] args) {
-        CommandLine.run(new AutoHelpDemo(), "help");
+        new CommandLine(new AutoHelpDemo()).execute("help");
     }
 }

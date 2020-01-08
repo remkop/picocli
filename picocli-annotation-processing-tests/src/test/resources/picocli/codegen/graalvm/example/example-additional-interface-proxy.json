@@ -1,0 +1,5 @@
+[
+  ["picocli.codegen.graalvm.example.ExampleInterface"],
+  ["com.abc.Interface1"],
+  ["com.xyz.Interface2"]
+]

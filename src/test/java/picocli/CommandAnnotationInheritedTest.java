@@ -1,17 +1,25 @@
 package picocli;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+import static org.junit.Assert.*;
+
 public class CommandAnnotationInheritedTest {
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
+
     static class Example {
 
-        @Command(name = "mycommand", footer = "Top-level footer")
+        @Command(footer = "Top-level footer")
         abstract static class CommonCommand {
             abstract String getContext();
         }
 
+        @Command(name = "mycommand")
         static class FooSubcommand extends CommonCommand {
             @Option(names = "-x") int x;
 
@@ -19,6 +27,7 @@ public class CommandAnnotationInheritedTest {
             String getContext() { return "foo"; }
         }
 
+        @Command(name = "mycommand")
         static class BarSubcommand extends CommonCommand {
             @Override
             String getContext() { return "bar"; }
@@ -47,5 +56,15 @@ public class CommandAnnotationInheritedTest {
     @Test
     public void testNoInitializationException3() {
         new CommandLine(new Example.TopLevel());
+    }
+
+    @Test
+    public void testFooterPreserved() {
+        String expected = String.format("" +
+                "Usage: mycommand [-x=<x>]%n" +
+                "  -x=<x>%n" +
+                "Top-level footer%n");
+        String actual = new CommandLine(new Example.FooSubcommand()).getUsageMessage();
+        assertEquals(expected, actual);
     }
 }

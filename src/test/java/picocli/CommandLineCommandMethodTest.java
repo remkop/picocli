@@ -34,13 +34,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 import static picocli.CommandLine.Command;
@@ -51,11 +49,12 @@ import static picocli.CommandLine.Option;
 import static picocli.CommandLine.Parameters;
 import static picocli.CommandLine.UnmatchedArgumentException;
 import static picocli.CommandLineTest.verifyCompact;
-import static picocli.HelpTestUtil.setTraceLevel;
+import static picocli.TestUtil.setTraceLevel;
 
 /**
  * Tests for {@code @Command} methods.
  */
+@SuppressWarnings("deprecation")
 public class CommandLineCommandMethodTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
@@ -503,7 +502,7 @@ public class CommandLineCommandMethodTest {
             CommandLine.populateCommand(m, "-oout -r -vp1 p2".split(" "));
             fail("should fail: -v does not take an argument");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unknown option: -p1 (while processing option: '-vp1')", ex.getMessage());
+            assertEquals("Unknown option: '-p1' (while processing option: '-vp1')", ex.getMessage());
         }
     }
 
@@ -818,7 +817,7 @@ public class CommandLineCommandMethodTest {
     @Test
     public void testSubcommandMethodInvalidInputHandling() {
         String expected = String.format("" +
-                "Unknown option: -y%n" +
+                "Unknown option: '-y'%n" +
                 "Usage: maincommand subcommand [-x=<arg0>]%n" +
                 "  -x=<arg0>%n");
 
@@ -959,6 +958,7 @@ public class CommandLineCommandMethodTest {
         public void cannotBeCalled() { }
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testCommandMethodsWhereConstructorThrowsException() {
         try {
@@ -974,7 +974,7 @@ public class CommandLineCommandMethodTest {
         Method method = CommandMethod1.class.getDeclaredMethod("times", int.class, int.class);
         CommandLine cmd = new CommandLine(method);
 
-        Method execute = CommandLine.class.getDeclaredMethod("execute", CommandLine.class, List.class);
+        Method execute = CommandLine.class.getDeclaredMethod("executeUserObject", CommandLine.class, List.class);
         execute.setAccessible(true);
         try {
             execute.invoke(null, cmd, null);
@@ -990,6 +990,7 @@ public class CommandLineCommandMethodTest {
         @Command int mycommand(String[] args) { return 2;}
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testDuplicateCommandMethodNames() {
         try {

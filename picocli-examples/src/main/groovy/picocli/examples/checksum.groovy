@@ -1,6 +1,6 @@
 package picocli.examples
 
-@Grab('info.picocli:picocli:2.0.2')
+@Grab('info.picocli:picocli-groovy:4.1.1')
 @GrabExclude('org.codehaus.groovy:groovy-all')
 @picocli.groovy.PicocliScript
 import groovy.transform.Field

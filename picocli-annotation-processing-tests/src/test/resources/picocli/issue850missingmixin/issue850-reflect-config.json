@@ -1,0 +1,54 @@
+[
+  {
+    "name" : "java.util.Collections$UnmodifiableRandomAccessList",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "picocli.issue850missingmixin.App",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "commandMethod", "parameterTypes" : ["int", "picocli.issue850missingmixin.ProviderMixin"] }
+    ]
+  },
+  {
+    "name" : "picocli.issue850missingmixin.InitCommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "cloneDir" },
+      { "name" : "description" },
+      { "name" : "language" },
+      { "name" : "name" },
+      { "name" : "providerMixin" },
+      { "name" : "travisBadge" }
+    ]
+  },
+  {
+    "name" : "picocli.issue850missingmixin.ProviderMixin",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "owner" },
+      { "name" : "password" },
+      { "name" : "provider" },
+      { "name" : "username" }
+    ]
+  },
+  {
+    "name" : "picocli.issue850missingmixin.ProviderMixin$GitProvider",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  }
+]

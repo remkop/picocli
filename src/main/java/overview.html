@@ -3,28 +3,29 @@
 <p>
     Picocli is a one-file framework for creating Java command line applications with almost zero code.
     It supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more.
-    Generates highly customizable usage help messages with <a href="http://picocli.info/#_ansi_colors_and_styles">ANSI colors and styles</a>.
-    Picocli-based applications can have <a href="http://picocli.info/autocomplete.html">command line TAB completion</a>
+    Generates highly customizable usage help messages with <a href="https://picocli.info/#_ansi_colors_and_styles">ANSI colors and styles</a>.
+    Picocli-based applications can have <a href="https://picocli.info/autocomplete.html">command line TAB completion</a>
     showing available options, option parameters and subcommands, for any level of nested subcommands.
 </p>
 <p>
-    How it works: annotate your class and picocli initializes it from the command line arguments,
-    converting the input to strongly typed values in the fields of your class.
-    Then invoke <code>CommandLine.parse</code> or <code>CommandLine.populateCommand</code> with the command line parameters and an object you want to initialize.
+    How it works: annotate your class and pass it to the <code>CommandLine</code> constructor.
+    Then invoke <code>CommandLine.parseArgs</code> or <code>CommandLine.execute</code> with
+    the command line parameters, and picocli parses the command line arguments and converts them
+    to strongly typed values, which are then injected in the annotated fields and methods of your class.
 </p>
 <p>
-    Picocli provides a number of <a href="http://picocli.info/#_less_boilerplate">convenience methods</a>
-    that allow you to omit error handling and other boilerplate code for common use cases.
-    Here is a small example application that uses the <code>CommandLine.call</code> convenience method
+    Picocli provides an <a href="https://picocli.info/#execute">execute method</a>
+    that allows applications to omit error handling and other boilerplate code for common use cases.
+    Here is a small example application that uses the <code>CommandLine.execute</code> method
     to do parsing and error handling in one line of code.
 </p>
 <p>
-    The full user manual is hosted at <a href="http://picocli.info/">http://picocli.info</a>.
+    The full user manual is hosted at <a href="https://picocli.info/">http://picocli.info</a>.
 </p>
 <pre>
-&#064;Command(name = "checksum", mixinStandardHelpOptions = true, version = "Checksum 2.0",
-    description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
-class CheckSum implements Callable&lt;Void&gt; {
+&#064;Command(name = "checksum", mixinStandardHelpOptions = true, version = "Checksum 4.0",
+         description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
+class CheckSum implements Callable&lt;Integer&gt; {
 
     &#064;Parameters(index = "0", description = "The file whose checksum to calculate.")
     private File file;
@@ -32,19 +33,19 @@ class CheckSum implements Callable&lt;Void&gt; {
     &#064;Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
     private String algorithm = "MD5";
 
+    // CheckSum implements Callable, so parsing, error handling and handling user
+    // requests for usage help or version help can be done with one line of code.
     public static void main(String[] args) throws Exception {
-        // CheckSum implements Callable, so parsing, error handling and handling user
-        // requests for usage help or version help can be done with one line of code.
-        CommandLine.call(new CheckSum(), args);
+        int exitCode = new CommandLine(new CheckSum()).execute(args);
+        System.exit(exitCode);
     }
 
     &#064;Override
-    public Void call() throws Exception {
-        // your business logic goes here
+    public Integer call() throws Exception { // your business logic goes here
         byte[] fileContents = Files.readAllBytes(file.toPath());
         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
-        System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(digest));
-        return null;
+        System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1, digest));
+        return 0;
     }
 }
 </pre>

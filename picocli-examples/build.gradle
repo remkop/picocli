@@ -1,18 +1,47 @@
-description 'Java and Groovy examples for the picocli project.'
+description 'Java, Groovy and Kotlin examples for the picocli project.'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.61"
+    }
+}
+
+apply plugin: 'groovy'
+apply plugin: 'kotlin'
+apply plugin: 'scala'
+apply plugin: 'java-library'
 
 sourceCompatibility = 1.8 // for the JSR-380 BeanValidation example
 targetCompatibility = 1.8
+
+configurations {
+    ivy
+}
 dependencies {
     compile rootProject
-    compile "org.apache.ivy:ivy:$ivyVersion", // for Intelli/J
-            "org.codehaus.groovy:groovy-all:$groovyVersion",
-
+    compile project(':picocli-groovy')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation 'org.scala-lang:scala-library:2.13.1'
+    ivy     "org.apache.ivy:ivy:$ivyVersion" // for Intelli/J
+    compile "org.codehaus.groovy:groovy-all:$groovyVersion",
+            "org.apache.ivy:ivy:$ivyVersion", // for Intelli/J
             // for the JSR-380 BeanValidation example
             "javax.validation:validation-api:2.0.0.Final",
             "org.hibernate.validator:hibernate-validator:6.0.2.Final",
             "org.hibernate.validator:hibernate-validator-annotation-processor:6.0.2.Final",
             "javax.el:javax.el-api:3.0.0",
             "org.glassfish.web:javax.el:2.2.6"
+}
+tasks.withType(GroovyCompile) {
+    // this, and the `configurations {ivy}` section, are a workaround for the dreaded
+    // java.lang.NoClassDefFoundError: org/apache/ivy/core/report/ResolveReport
+    // that occurs when trying to compile a groovy script containing a @Grab annotation in gradle.
+    // see https://stackoverflow.com/questions/18173908/error-compiling-a-groovy-project-using-grab-annotation
+    groovyClasspath += configurations.ivy
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
@@ -38,6 +67,10 @@ Application-name: $rootProject.name $project.name
     }
 }
 
+tasks.withType(Javadoc).all { enabled = false }
+//tasks.withType(Javadoc) {
+//    options.addBooleanOption('Xdoclint:none', true)
+//}
 //tasks.withType(JavaCompile) {
 //    options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation' <<
 //            '-processorpath' << 'C:\\Users\\remko\\IdeaProjects\\picocli3\\picocli-codegen\\build\\libs\\picocli-codegen-4.0.0-SNAPSHOT.jar;C:\\Users\\remko\\IdeaProjects\\picocli3\\build\\libs\\picocli-4.0.0-SNAPSHOT.jar' <<

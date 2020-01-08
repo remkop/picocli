@@ -26,8 +26,9 @@ public class AutoCompleteHyphenatedCommandTest {
 class HyphenatedCommand {
 
     public static void main(String... args) {
-        CommandLine command = new CommandLine(new HyphenatedCommand());
-        command.parseWithHandler(new RunAll(), args);
+        int exitCode = new CommandLine(new HyphenatedCommand())
+                .setExecutionStrategy(new RunAll())
+                .execute(args);
     }
 
     @Command(name = "sub-1", mixinStandardHelpOptions = true)

@@ -1,8 +1,8 @@
 = Autocomplete for Java Command Line Applications
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.0.0-alpha-2-SNAPSHOT
-:revdate: 2019-03-30
+:revnumber: 4.2.0-SNAPSHOT
+:revdate: 2019-12-22
 :toc: left
 :numbered:
 :toclevels: 3
@@ -64,7 +64,7 @@ To generate the completion script, run the `picocli.AutoComplete` class as a jav
 java -cp "picocli-1.0.0.jar;myproject.jar" picocli.AutoComplete -n jchecksum com.myproject.CheckSum
 ----
 
-This generated a `jchecksum_completion` script in the current directory. To verify:
+This generates a `jchecksum_completion` script in the current directory. To verify:
 
 [source,bash]
 ----
@@ -75,18 +75,10 @@ jchecksum_completion  myproject.jar  picocli-1.0.0.jar
 === Install Completion Script
 Finally, http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html[source] the completion script:
 
-.Bash
+.Bash or ZSH
 [source,bash]
 ----
 . jchecksum_completion
-----
-
-.ZSH
-[source,bash]
-----
-autoload -U +X compinit && compinit
-autoload -U +X bashcompinit && bashcompinit
-. ./jchecksum_completion
 ----
 
 ...and you are done. The `jchecksum` command now has autocompletion:
@@ -110,7 +102,64 @@ Make sure to use `>>` (append), using a single `>` would overwrite the file.
 
 `~/.bashrc` indicates `.bashrc` is in your home directory.
 
-(See <<Installing Completion Scripts Permanently in Bash,detailed Bash installation>>, <<Installing Completion Scripts Permanently in ZSH>>.)
+(See <<Installing Completion Scripts Permanently in Bash/ZSH>>.)
+
+=== Distribution
+
+TIP: Have a subcommand that generates a completion script.
+
+You could generate completion scripts for your commands <<Generating Completion Scripts During the Build,during the build>> and distribute them with your application,
+but an alternative is to give your application the ability to generate its own completion script on demand.
+
+That allows end users to install completion for your application with a single command.
+For example, if your utility is called `mycommand`, users can install completion for it by running the following command:
+
+.Bash
+[source,bash]
+----
+$ source <(mycommand generate-completion)
+----
+
+This can be accomplished by registering the built-in `picocli.AutoComplete.GenerateCompletion` class as a subcommand of the top-level command.
+
+For example:
+
+
+[source,java]
+----
+import picocli.AutoComplete.GenerateCompletion;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+
+@Command(name = "mycommand", subcommands = GenerateCompletion.class)
+public class MyApp implements Runnable {
+
+    @Override
+    public void run() { // top-level command business logic here
+    }
+
+    public static void main(String[] args) {
+        new CommandLine(new MyApp()).execute(args);
+    }
+}
+----
+
+By default, the `generate-completion` command shows up as a subcommand in the usage help message of it parent command.
+Applications that want the completion subcommand to be hidden in the usage help message, can do the following:
+
+[source,java]
+----
+public static void main(String... args) {
+    CommandLine cmd = new CommandLine(new MyApp());
+    CommandLine gen = cmd.getSubcommands().get("generate-completion");
+    gen.getCommandSpec().usageMessage().hidden(true);
+    int exitCode = cmd.execute(args);
+    // ...
+}
+----
+
+
+
 
 == Designing for Completion
 
@@ -279,42 +328,33 @@ CommandLine hierarchy = new CommandLine(new TopLevel())
 * Pass this `CommandLine` instance and the name of the script to the `picocli.AutoComplete::bash` method. The method will return the source code of a completion script. Save the source code to a file and install it.
 
 
-== Installing Completion Scripts Permanently in Bash
+== Installing Completion Scripts Permanently in Bash/ZSH
 This section describes installing completion scripts in more depth than the <<Quick Start Tutorial>>.
 
-Make sure bash completion is installed.
 
-http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html[Source] the generated completion script to install it in your current bash session.
+http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html[Source] the generated completion script to install it in your current bash or zsh session.
 
-To install it more permanently, place the completion script file in `/etc/bash_completion.d` (or `/usr/local/etc/bash_completion.d` on a Mac). If `bash-completion` is installed, placing the completion script in either of these directories should be sufficient. (Source your `~/.bash_profile` or launch a new terminal to start using this completion script.)
+=== ZSH
+Zsh can handle bash completions functions. The latest development version of zsh has a function `bashcompinit`, that when run will allow zsh to read bash completion specifications and functions. The zshcompsys man page has details.
 
-Alternatively, make a directory `mkdir ~/bash_completion.d`, and place the completion script in this directory. Edit your `~/.bashrc` file and add the following:
-
-[source,bash]
-----
-for bcfile in ~/bash_completion.d/* ; do
-  . $bcfile
-done
-----
-
-All completion scripts in the `~/bash_completion.d` directory will now be available every time you launch a new shell.
-
-Source your `~/.bash_profile` or launch a new terminal to start using this completion script.
-
-
-== Installing Completion Scripts Permanently in ZSH
-This section describes installing completion scripts in more depth than the <<Quick Start Tutorial>>.
-
-Zsh can handle bash completions functions. The latest development version of zsh has a function bashcompinit, that when run will allow zsh to read bash completion specifications and functions. The zshcompsys man page has details. To use it, run bashcompinit at any time after compinit. It will define complete and compgen functions corresponding to the bash builtins.
-
-http://tldp.org/HOWTO/Bash-Prompt-HOWTO/x237.html[Source] the generated completion script to install it in your current shell session.
-
-To install it more permanently, make a directory `mkdir ~/bash_completion.d`, and place the completion script in this directory. Edit your `~/.zshrc` file and add the following:
+Since picocli 4.1, the generated completion script contains the following code to run `bashcompinit` after `compinit`; this will define `complete` and `compgen` functions corresponding to the bash builtins.
+It is no longer necessary to manually run the below commands.
 
 [source,bash]
 ----
 autoload -U +X compinit && compinit
 autoload -U +X bashcompinit && bashcompinit
+----
+
+
+=== If https://github.com/scop/bash-completion[`bash-completion`] is Installed
+To install it more permanently, place the completion script file in `/etc/bash_completion.d` (or `/usr/local/etc/bash_completion.d` on a Mac). If `bash-completion` is installed, placing the completion script in either of these directories should be sufficient. (Source your `~/.bash_profile` or launch a new terminal to start using this completion script.)
+
+=== Without `bash-completion` Installed
+Alternatively, make a directory `mkdir ~/bash_completion.d`, and place the completion script in this directory. Edit your `~/.bashrc` file (or `~/.zshrc` file on ZSH) and add the following:
+
+[source,bash]
+----
 for bcfile in ~/bash_completion.d/* ; do
   . $bcfile
 done
@@ -322,12 +362,9 @@ done
 
 All completion scripts in the `~/bash_completion.d` directory will now be available every time you launch a new shell.
 
-Then reload your shell:
+Source the generated completion script or launch a new terminal to start using this completion script.
 
-[source,bash]
-----
-exec $SHELL -l
-----
+
 
 == Generating Completion Scripts During the Build
 

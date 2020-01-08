@@ -27,7 +27,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
-import static picocli.HelpTestUtil.setTraceLevel;
+import static picocli.TestUtil.setTraceLevel;
 
 public class CommandLineArityTest {
     @Before public void setUp() { System.clearProperty("picocli.trace"); }
@@ -39,16 +39,16 @@ public class CommandLineArityTest {
     @Test
     public void testArityConstructor_fixedRange() {
         Range arity = new Range(1, 23, false, false, null);
-        assertEquals("min", 1, arity.min);
-        assertEquals("max", 23, arity.max);
+        assertEquals("min", 1, arity.min());
+        assertEquals("max", 23, arity.max());
         assertEquals("1..23", arity.toString());
         assertEquals(Range.valueOf("1..23"), arity);
     }
     @Test
     public void testArityConstructor_variableRange() {
         Range arity = new Range(1, Integer.MAX_VALUE, true, false, null);
-        assertEquals("min", 1, arity.min);
-        assertEquals("max", Integer.MAX_VALUE, arity.max);
+        assertEquals("min", 1, arity.min());
+        assertEquals("max", Integer.MAX_VALUE, arity.max());
         assertEquals("1..*", arity.toString());
         assertEquals(Range.valueOf("1..*"), arity);
     }
@@ -127,9 +127,9 @@ public class CommandLineArityTest {
     @Test
     public void testOptionArity_forNonAnnotatedField() throws Exception {
         Range arity = Range.optionArity(SupportedTypes2.class.getDeclaredField("nonOptionField"));
-        assertEquals(0, arity.max);
-        assertEquals(0, arity.min);
-        assertEquals(false, arity.isVariable);
+        assertEquals(0, arity.max());
+        assertEquals(0, arity.min());
+        assertEquals(false, arity.isVariable());
         assertEquals("0", arity.toString());
     }
     @Test
@@ -172,9 +172,9 @@ public class CommandLineArityTest {
     public void testParameterArityWithOptionMember() throws Exception {
         class ImplicitBoolField { @Option(names = "-x") boolean boolSingleValue; }
         Range arity = Range.parameterArity(ImplicitBoolField.class.getDeclaredField("boolSingleValue"));
-        assertEquals(0, arity.max);
-        assertEquals(0, arity.min);
-        assertEquals(false, arity.isVariable);
+        assertEquals(0, arity.max());
+        assertEquals(0, arity.min());
+        assertEquals(false, arity.isVariable());
         assertEquals("0", arity.toString());
     }
 
@@ -182,9 +182,9 @@ public class CommandLineArityTest {
     public void testParameterIndex_WhenUndefined() throws Exception {
         class ImplicitBoolField { @Parameters boolean boolSingleValue; }
         Range arity = Range.parameterIndex(ImplicitBoolField.class.getDeclaredField("boolSingleValue"));
-        assertEquals(Integer.MAX_VALUE, arity.max);
-        assertEquals(0, arity.min);
-        assertEquals(true, arity.isVariable);
+        assertEquals(Integer.MAX_VALUE, arity.max());
+        assertEquals(0, arity.min());
+        assertEquals(true, arity.isVariable());
         assertEquals("0..*", arity.toString());
     }
 
@@ -192,9 +192,9 @@ public class CommandLineArityTest {
     public void testParameterIndex_WhenDefined() throws Exception {
         class ImplicitBoolField { @Parameters(index = "2..3") boolean boolSingleValue; }
         Range arity = Range.parameterIndex(ImplicitBoolField.class.getDeclaredField("boolSingleValue"));
-        assertEquals(3, arity.max);
-        assertEquals(2, arity.min);
-        assertEquals(false, arity.isVariable);
+        assertEquals(3, arity.max());
+        assertEquals(2, arity.min());
+        assertEquals(false, arity.isVariable());
         assertEquals("2..3", arity.toString());
     }
 
@@ -650,14 +650,14 @@ public class CommandLineArityTest {
             CommandLine.populateCommand(new BooleanOptionsArity0_nAndParameters(), "-rv234 -bool".split(" "));
             fail("Expected exception");
         } catch (UnmatchedArgumentException ok) {
-            assertEquals("Unknown option: -234 (while processing option: '-rv234')", ok.getMessage());
+            assertEquals("Unknown option: '-234' (while processing option: '-rv234')", ok.getMessage());
         }
     }
     @Test
     public void testBooleanOptionsArity0_nShortFormFailsIfAttachedParamNotABooleanWithUnmatchedArgsAllowed() { // ignores varargs
         setTraceLevel("OFF");
         CommandLine cmd = new CommandLine(new BooleanOptionsArity0_nAndParameters()).setUnmatchedArgumentsAllowed(true);
-        cmd.parse("-rv234 -bool".split(" "));
+        cmd.parseArgs("-rv234 -bool".split(" "));
         assertEquals(Arrays.asList("-234"), cmd.getUnmatchedArguments());
     }
     @Test
@@ -763,6 +763,124 @@ public class CommandLineArityTest {
 
         Sample sample3 = CommandLine.populateCommand(new Sample(), "--foo", "value"); // no arguments
         assertEquals("optional option has value when specified", "value", sample3.foo);
+    }
+    /** see <a href="https://github.com/remkop/picocli/issues/280">issue #280</a>  */
+    @Test
+    public void testSingleValueFieldWithOptionalParameter_280() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names="--foo", arity="0..1", fallbackValue = "213") String foo;
+        }
+        Sample sample1 = CommandLine.populateCommand(new Sample()); // not specified
+        assertNull("optional option is null when option not specified", sample1.foo);
+
+        Sample sample2 = CommandLine.populateCommand(new Sample(), "--foo"); // no arguments
+        assertEquals("optional option is empty string when specified without args", "213", sample2.foo);
+
+        Sample sample3 = CommandLine.populateCommand(new Sample(), "--foo", "value"); // no arguments
+        assertEquals("optional option has value when specified", "value", sample3.foo);
+    }
+    @Test
+    public void testSingleValueFieldWithTypedOptionalParameter_280() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names="--unit", arity="0..1", fallbackValue = "SECONDS") TimeUnit unit;
+        }
+        Sample sample1 = CommandLine.populateCommand(new Sample()); // not specified
+        assertNull("optional option is null when option not specified", sample1.unit);
+
+        Sample sample2 = CommandLine.populateCommand(new Sample(), "--unit"); // no arguments
+        assertEquals("optional option is empty string when specified without args", TimeUnit.SECONDS, sample2.unit);
+
+        Sample sample3 = CommandLine.populateCommand(new Sample(), "--unit", "MINUTES"); // no arguments
+        assertEquals("optional option has value when specified", TimeUnit.MINUTES, sample3.unit);
+    }
+    @Test
+    public void testListFieldOptionalParamWithFallback_280() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names="--foo", arity="0..*", fallbackValue = "213", defaultValue = "567") List<String> foo;
+
+            @Option(names = "-x") boolean x;
+        }
+        Sample sample1 = CommandLine.populateCommand(new Sample()); // not specified
+        assertEquals("option gets default when option not specified", Arrays.asList("567"), sample1.foo);
+
+        Sample sample2 = CommandLine.populateCommand(new Sample(), "--foo"); // no arguments
+        assertEquals("optional option is fallback list when specified without args",
+                Arrays.asList("213"), sample2.foo);
+
+        Sample sample2a = CommandLine.populateCommand(new Sample(), "--foo", "--foo"); // no arguments, twice
+        assertEquals("optional option is fallback list for each specified without args",
+                Arrays.asList("213", "213"), sample2a.foo);
+
+        Sample sample2b = CommandLine.populateCommand(new Sample(), "--foo", "-x"); // no arguments
+        assertEquals("optional option is fallback list for each specified without args",
+                Arrays.asList("213"), sample2b.foo);
+
+        Sample sample3 = CommandLine.populateCommand(new Sample(), "--foo", "value"); // no arguments
+        assertEquals("optional option has value when specified", Arrays.asList("value"), sample3.foo);
+    }
+    @Test
+    public void testArrayFieldOptionalParamWithFallback_280() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names="--foo", arity="0..*", fallbackValue = "213", defaultValue = "567")
+            String[] foo;
+
+            @Option(names = "-x") boolean x;
+        }
+        Sample sample1 = CommandLine.populateCommand(new Sample()); // not specified
+        assertArrayEquals("option gets default when option not specified", new String[]{"567"}, sample1.foo);
+
+        Sample sample2 = CommandLine.populateCommand(new Sample(), "--foo"); // no arguments
+        assertArrayEquals("optional option is fallback list when specified without args",
+                new String[]{"213"}, sample2.foo);
+
+        Sample sample2a = CommandLine.populateCommand(new Sample(), "--foo", "--foo"); // no arguments, twice
+        assertArrayEquals("optional option is fallback list for each specified without args",
+                new String[]{"213", "213"}, sample2a.foo);
+
+        Sample sample2b = CommandLine.populateCommand(new Sample(), "--foo", "-x"); // no arguments
+        assertArrayEquals("optional option is fallback list for each specified without args",
+                new String[]{"213"}, sample2b.foo);
+
+        Sample sample3 = CommandLine.populateCommand(new Sample(), "--foo", "value"); // no arguments
+        assertArrayEquals("optional option has value when specified", new String[]{"value"}, sample3.foo);
+    }
+    @Test
+    public void testMapFieldOptionalParamWithFallback_280() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names="--foo", arity="0..*", fallbackValue = "a=b", defaultValue = "x=z")
+            Map<String,String> foo;
+
+            @Option(names = "-x") boolean x;
+        }
+        Map<String, String> expected = new LinkedHashMap<String, String>();
+        expected.put("x", "z");
+        Sample sample1 = CommandLine.populateCommand(new Sample()); // not specified
+        assertEquals("default when option not specified", expected, sample1.foo);
+
+        expected.clear();
+        expected.put("a", "b");
+        Sample sample2 = CommandLine.populateCommand(new Sample(), "--foo"); // no arguments
+        assertEquals("fallback when specified without args", expected, sample2.foo);
+
+        expected.clear();
+        expected.put("a", "b");
+        Sample sample2a = CommandLine.populateCommand(new Sample(), "--foo", "--foo"); // no arguments, twice
+        assertEquals("fallback when specified without args twice", expected, sample2a.foo);
+
+        expected.clear();
+        expected.put("a", "b");
+        Sample sample2b = CommandLine.populateCommand(new Sample(), "--foo", "-x"); // no arguments, followed by other option
+        assertEquals("fallback when specified without args followed by other option", expected, sample2b.foo);
+
+        expected.clear();
+        expected.put("aa", "bb");
+        Sample sample3 = CommandLine.populateCommand(new Sample(), "--foo", "aa=bb"); // no arguments
+        assertEquals("optional option has value when specified", expected, sample3.foo);
     }
 
     @Test
@@ -947,6 +1065,44 @@ public class CommandLineArityTest {
     }
 
     @Test
+    public void testMapOptionArity1_n() {
+        class MapParamsArity1_n {
+            @Option(names = {"-D", "--def"}, arity = "1..*", split = ",")
+            Map<String, Integer> params;
+        }
+        // most verbose
+        MapParamsArity1_n params = CommandLine.populateCommand(new MapParamsArity1_n(), "--def", "a=1", "--def", "b=2", "--def", "c=3");
+        Map<String, Integer> expected = new LinkedHashMap<String, Integer>();
+        expected.put("a", 1);
+        expected.put("b", 2);
+        expected.put("c", 3);
+        assertEquals(expected, params.params);
+
+        // option name once, followed by values
+        params = CommandLine.populateCommand(new MapParamsArity1_n(), "--def", "aa=11", "bb=22", "cc=33");
+        expected.clear();
+        expected.put("aa", 11);
+        expected.put("bb", 22);
+        expected.put("cc", 33);
+        assertEquals(expected, params.params);
+
+        // most compact
+        params = CommandLine.populateCommand(new MapParamsArity1_n(), "-Dx=4,y=5,z=6");
+        expected.clear();
+        expected.put("x", 4);
+        expected.put("y", 5);
+        expected.put("z", 6);
+        assertEquals(expected, params.params);
+
+        try {
+            params = CommandLine.populateCommand(new MapParamsArity1_n(), "--def");
+            fail("Should not accept input with missing parameter");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required parameter for option '--def' at index 0 (<String=Integer>)", ex.getMessage());
+        }
+    }
+
+    @Test
     public void testMissingPositionalParameters() {
         class App {
             @Parameters(index = "0", paramLabel = "PARAM1") String p1;
@@ -995,13 +1151,13 @@ public class CommandLineArityTest {
             CommandLine.populateCommand(new NonVarArgArrayParamsZeroArity(), "a", "b", "c");
             fail("Expected UnmatchedArgumentException");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments: a, b, c", ex.getMessage());
+            assertEquals("Unmatched arguments from index 0: 'a', 'b', 'c'", ex.getMessage());
         }
         try {
             CommandLine.populateCommand(new NonVarArgArrayParamsZeroArity(), "a");
             fail("Expected UnmatchedArgumentException");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched argument: a", ex.getMessage());
+            assertEquals("Unmatched argument at index 0: 'a'", ex.getMessage());
         }
         NonVarArgArrayParamsZeroArity params = CommandLine.populateCommand(new NonVarArgArrayParamsZeroArity());
         assertEquals(null, params.params);
@@ -1249,7 +1405,7 @@ public class CommandLineArityTest {
         }
         Cmd cmd = new Cmd();
         System.setProperty("picocli.trace", "DEBUG");
-        new CommandLine(cmd).setStopAtPositional(true).parse("foo", "xx", "--alpha", "--beta");
+        new CommandLine(cmd).setStopAtPositional(true).parseArgs("foo", "xx", "--alpha", "--beta");
         assertEquals("foo", cmd.foo);
         assertEquals(null, cmd.alpha);
         assertEquals(Arrays.asList("xx", "--alpha", "--beta"), cmd.params);
@@ -1264,7 +1420,7 @@ public class CommandLineArityTest {
             @Parameters(index = "1..*") List<String> params;
         }
         Cmd cmd = new Cmd();
-        new CommandLine(cmd).setStopAtPositional(true).parse("foo", "xx", "--alpha", "--beta");
+        new CommandLine(cmd).setStopAtPositional(true).parseArgs("foo", "xx", "--alpha", "--beta");
         assertEquals("foo", cmd.foo);
         assertEquals(null, cmd.alpha);
         assertEquals(Arrays.asList("xx", "--alpha", "--beta"), cmd.params);
@@ -1277,7 +1433,7 @@ public class CommandLineArityTest {
             @Option(names = "-b", arity="2", split=",") String[] b;
             @Option(names = "-c", arity="*", split=",") String[] c;
             @Option(names = "-d") boolean d;
-            @Option(names = "-e", arity="1", split=",") boolean e;
+            @Option(names = "-e", arity="1", split=",") boolean[] e;
             @Unmatched String[] remaining;
         }
         ValSepC val1 = parseCommonsCliCompatible(new ValSepC(), "-a 1 2 3 4".split(" "));
@@ -1302,11 +1458,11 @@ public class CommandLineArityTest {
 
         ValSepC val7 = parseCommonsCliCompatible(new ValSepC(), "-d".split(" "));
         assertTrue(val7.d);
-        assertFalse(val7.e);
+        assertNull(val7.e);
 
         ValSepC val8 = parseCommonsCliCompatible(new ValSepC(), "-e true".split(" "));
         assertFalse(val8.d);
-        assertTrue(val8.e);
+        assertTrue(val8.e[0]);
     }
 
     @Test
@@ -1605,5 +1761,51 @@ public class CommandLineArityTest {
         assertTrue(r1.overlaps(Range.valueOf("0..*")));
         assertFalse(r1.overlaps(Range.valueOf("6")));
         assertFalse(r1.overlaps(Range.valueOf("0")));
+    }
+
+    @Test
+    public void testCustomEndOfOptionsDelimiter() {
+        class App {
+            @Option(names = "-x", arity = "*")
+            List<String> option;
+
+            @Unmatched
+            List<String> unmatched;
+        }
+
+        App app = new App();
+        new CommandLine(app).setEndOfOptionsDelimiter(";").parseArgs("-x", "a", "b", ";", "x", "y");
+        assertEquals(Arrays.asList("a", "b"), app.option);
+        assertEquals(Arrays.asList("x", "y"), app.unmatched);
+
+        app = new App();
+        new CommandLine(app).parseArgs("-x", "a", "b", "--", "x", "y");
+        assertEquals(Arrays.asList("a", "b"), app.option);
+        assertEquals(Arrays.asList("x", "y"), app.unmatched);
+
+        app = new App();
+        new CommandLine(app).parseArgs("-x", "a", "b", ";", "x", "y");
+        assertEquals(Arrays.asList("a", "b", ";", "x", "y"), app.option);
+    }
+
+    @Test
+    public void testUnmatchedListCleared() {
+        class App {
+            @Unmatched
+            List<String> unmatchedList;
+
+            @Unmatched
+            String[] unmatchedArray;
+        }
+
+        App app = new App();
+        CommandLine cmd = new CommandLine(app);
+        cmd.parseArgs("--", "a", "b");
+        assertEquals(Arrays.asList("a", "b"), app.unmatchedList);
+        assertArrayEquals(new String[]{"a", "b"}, app.unmatchedArray);
+
+        cmd.parseArgs("--", "x", "y");
+        assertEquals(Arrays.asList("x", "y"), app.unmatchedList);
+        assertArrayEquals(new String[]{"x", "y"}, app.unmatchedArray);
     }
 }

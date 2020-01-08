@@ -16,10 +16,15 @@
 package picocli;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.*;
+import org.junit.contrib.java.lang.system.Assertion;
+import org.junit.contrib.java.lang.system.ExpectedSystemExit;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.contrib.java.lang.system.SystemErrRule;
+import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
@@ -34,6 +39,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
@@ -45,7 +52,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.String.*;
+import static java.lang.String.format;
 import static org.junit.Assert.*;
 
 /**
@@ -75,7 +82,7 @@ public class AutoCompleteTest {
         public void run() {
             System.out.printf("BasicExample was invoked with %d %s.%n", timeout, timeUnit);
         }
-        public static void main(String[] args) { CommandLine.run(new BasicExample(), System.out, args); }
+        public static void main(String[] args) { new CommandLine(new BasicExample()).execute(args); }
     }
     @Test
     public void basic() throws Exception {
@@ -88,6 +95,8 @@ public class AutoCompleteTest {
     public static class TopLevel {
         @Option(names = {"-V", "--version"}, help = true) boolean versionRequested;
         @Option(names = {"-h", "--help"}, help = true) boolean helpRequested;
+
+        @SuppressWarnings("deprecation")
         public static void main(String[] args) {
             CommandLine hierarchy = new CommandLine(new TopLevel())
                     .addSubcommand("sub1", new Sub1())
@@ -110,23 +119,30 @@ public class AutoCompleteTest {
     public static class Sub1 {
         @Option(names = "--num", description = "a number") double number;
         @Option(names = "--str", description = "a String") String str;
-        @Option(names = "--candidates", completionCandidates = Candidates.class, description = "with candidates") String str2;
+        @Option(names = "--candidates", completionCandidates = Candidates.class, description = "with candidates") String[] str2;
     }
     @Command(description = "First level subcommand 2")
     public static class Sub2 {
         @Option(names = "--num2", description = "another number") int number2;
-        @Option(names = {"--directory", "-d"}, description = "a directory") File directory;
+        @Option(names = {"--directory", "-d"}, description = "a directory") File[] directory;
         @Parameters(arity = "0..1") Possibilities possibilities;
     }
     @Command(description = "Second level sub-subcommand 1")
     public static class Sub2Child1 {
-        @Option(names = {"-h", "--host"}, description = "a host") InetAddress host;
+        @Option(names = {"-h", "--host"}, description = "a host") List<InetAddress> host;
     }
     @Command(description = "Second level sub-subcommand 2")
     public static class Sub2Child2 {
         @Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
         @Option(names = {"-t", "--timeout"}) private long timeout;
         @Parameters(completionCandidates = Candidates.class, description = "with candidates") String str2;
+    }
+
+    @Command(description = "Second level sub-subcommand 3")
+    public static class Sub2Child3 {
+        @Parameters(index = "1..2") File[] files;
+        @Parameters(index = "3..*") List<InetAddress> other;
+        @Parameters(completionCandidates = Candidates.class, index = "0") String[] cands;
     }
 
     @Test
@@ -136,6 +152,7 @@ public class AutoCompleteTest {
                 .addSubcommand("sub2", new CommandLine(new Sub2())
                         .addSubcommand("subsub1", new Sub2Child1())
                         .addSubcommand("subsub2", new Sub2Child2())
+                        .addSubcommand("subsub3", new Sub2Child3())
                 );
         String script = AutoComplete.bash("picocompletion-demo", hierarchy);
         String expected = format(loadTextFromClasspath("/picocompletion-demo_completion.bash"),
@@ -187,32 +204,42 @@ public class AutoCompleteTest {
     }
 
     private static final String AUTO_COMPLETE_APP_USAGE = String.format("" +
-            "Usage: picocli.AutoComplete [-fhw] [-c=<factoryClass>] [-n=<commandName>]%n" +
+            "Usage: picocli.AutoComplete [-fhVw] [-c=<factoryClass>] [-n=<commandName>]%n" +
             "                            [-o=<autoCompleteScript>] <commandLineFQCN>%n" +
             "Generates a bash completion script for the specified command class.%n" +
-            "      <commandLineFQCN>      Fully qualified class name of the annotated @Command%n" +
-            "                               class to generate a completion script for.%n" +
+            "      <commandLineFQCN>      Fully qualified class name of the annotated%n" +
+            "                               @Command class to generate a completion script%n" +
+            "                               for.%n" +
             "  -c, --factory=<factoryClass>%n" +
-            "                             Optionally specify the fully qualified class name of%n" +
-            "                               the custom factory to use to instantiate the command%n" +
-            "                               class. When omitted, the default picocli factory is%n" +
-            "                               used.%n" +
-            "  -n, --name=<commandName>   Optionally specify the name of the command to create a%n" +
-            "                               completion script for. When omitted, the annotated%n" +
-            "                               class @Command 'name' attribute is used. If no%n" +
-            "                               @Command 'name' attribute exists,%n" +
+            "                             Optionally specify the fully qualified class name%n" +
+            "                               of the custom factory to use to instantiate the%n" +
+            "                               command class. When omitted, the default picocli%n" +
+            "                               factory is used.%n" +
+            "  -n, --name=<commandName>   Optionally specify the name of the command to%n" +
+            "                               create a completion script for. When omitted,%n" +
+            "                               the annotated class @Command 'name' attribute is%n" +
+            "                               used. If no @Command 'name' attribute exists,%n" +
             "                               '<CLASS-SIMPLE-NAME>' (in lower-case) is used.%n" +
             "  -o, --completionScript=<autoCompleteScript>%n" +
-            "                             Optionally specify the path of the completion script%n" +
-            "                               file to generate. When omitted, a file named%n" +
-            "                               '<commandName>_completion' is generated in the%n" +
-            "                               current directory.%n" +
-            "  -w, --writeCommandScript   Write a '<commandName>' sample command script to the%n" +
-            "                               same directory as the completion script.%n" +
+            "                             Optionally specify the path of the completion%n" +
+            "                               script file to generate. When omitted, a file%n" +
+            "                               named '<commandName>_completion' is generated in%n" +
+            "                               the current directory.%n" +
+            "  -w, --writeCommandScript   Write a '<commandName>' sample command script to%n" +
+            "                               the same directory as the completion script.%n" +
             "  -f, --force                Overwrite existing script files.%n" +
-            "  -h, --help                 Display this help message and quit.%n" +
+            "  -h, --help                 Show this help message and exit.%n" +
+            "  -V, --version              Print version information and exit.%n" +
             "%n" +
-            "Exit Code%n" +
+            "Exit Codes:%n" +
+            "  0   Successful program execution%n" +
+            "  1   Usage error: user input for the command was incorrect, e.g., the wrong%n" +
+            "        number of arguments, a bad flag, a bad syntax in a parameter, etc.%n" +
+            "  2   The specified command script exists (Specify --force to overwrite).%n" +
+            "  3   The specified completion script exists (Specify --force to overwrite).%n" +
+            "  4   An exception occurred while generating the completion script.%n" +
+            "%n" +
+            "System Properties:%n" +
             "Set the following system properties to control the exit code of this program:%n" +
             " \"picocli.autocomplete.systemExitOnSuccess\" - call `System.exit(0)` when%n" +
             "                                              execution completes normally%n" +
@@ -550,14 +577,14 @@ public class AutoCompleteTest {
     }
 
     private String expectedCompletionScriptForAutoCompleteApp() {
-        return "" +
+        return String.format("" +
                     "#!/usr/bin/env bash\n" +
                 "#\n" +
                 "# picocli.AutoComplete Bash Completion\n" +
                 "# =======================\n" +
                 "#\n" +
                 "# Bash completion support for the `picocli.AutoComplete` command,\n" +
-                "# generated by [picocli](http://picocli.info/) version 4.0.0-alpha-2-SNAPSHOT.\n" +
+                "# generated by [picocli](http://picocli.info/) version %s.\n" +
                 "#\n" +
                 "# Installation\n" +
                 "# ------------\n" +
@@ -592,6 +619,7 @@ public class AutoCompleteTest {
                 "# [4] http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETE_005fALIASES\n" +
                 "# [5] https://stackoverflow.com/questions/17042057/bash-check-element-in-array-for-elements-in-another-array/17042655#17042655\n" +
                 "# [6] https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion.html#Programmable-Completion\n" +
+                "# [7] https://stackoverflow.com/questions/3249432/can-a-bash-tab-completion-script-be-used-in-zsh/27853970#27853970\n" +
                 "#\n" +
                 "\n" +
                 "if [ -n \"$BASH_VERSION\" ]; then\n" +
@@ -601,6 +629,10 @@ public class AutoCompleteTest {
                 "  # Make alias a distinct command for completion purposes when using zsh (see [4])\n" +
                 "  setopt COMPLETE_ALIASES\n" +
                 "  alias compopt=complete\n" +
+                "\n" +
+                "  # Enable bash completion in zsh (see [7])\n" +
+                "  autoload -U +X compinit && compinit\n" +
+                "  autoload -U +X bashcompinit && bashcompinit\n" +
                 "fi\n" +
                 "\n" +
                 "# ArrContains takes two arguments, both of which are the name of arrays.\n" +
@@ -645,7 +677,7 @@ public class AutoCompleteTest {
                 "  local prev_word=${COMP_WORDS[COMP_CWORD-1]}\n" +
                 "\n" +
                 "  local commands=\"\"\n" +
-                "  local flag_opts=\"-w --writeCommandScript -f --force -h --help\"\n" +
+                "  local flag_opts=\"-w --writeCommandScript -f --force -h --help -V --version\"\n" +
                 "  local arg_opts=\"-c --factory -n --name -o --completionScript\"\n" +
                 "\n" +
                 "  compopt +o default\n" +
@@ -678,7 +710,8 @@ public class AutoCompleteTest {
                 "# current word on the command line.\n" +
                 "# The `-o default` option means that if the function generated no matches, the\n" +
                 "# default Bash completions and the Readline default filename completions are performed.\n" +
-                "complete -F _complete_picocli.AutoComplete -o default picocli.AutoComplete picocli.AutoComplete.sh picocli.AutoComplete.bash\n";
+                "complete -F _complete_picocli.AutoComplete -o default picocli.AutoComplete picocli.AutoComplete.sh picocli.AutoComplete.bash\n",
+                CommandLine.VERSION);
     }
 
     public static byte[] readBytes(File f) throws IOException {
@@ -722,14 +755,14 @@ public class AutoCompleteTest {
     }
 
     private String expectedCompletionScriptForNonDefault() {
-        return "" +
+        return String.format("" +
                 "#!/usr/bin/env bash\n" +
                 "#\n" +
                 "# nondefault Bash Completion\n" +
                 "# =======================\n" +
                 "#\n" +
                 "# Bash completion support for the `nondefault` command,\n" +
-                "# generated by [picocli](http://picocli.info/) version 4.0.0-alpha-2-SNAPSHOT.\n" +
+                "# generated by [picocli](http://picocli.info/) version %s.\n" +
                 "#\n" +
                 "# Installation\n" +
                 "# ------------\n" +
@@ -764,6 +797,7 @@ public class AutoCompleteTest {
                 "# [4] http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETE_005fALIASES\n" +
                 "# [5] https://stackoverflow.com/questions/17042057/bash-check-element-in-array-for-elements-in-another-array/17042655#17042655\n" +
                 "# [6] https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion.html#Programmable-Completion\n" +
+                "# [7] https://stackoverflow.com/questions/3249432/can-a-bash-tab-completion-script-be-used-in-zsh/27853970#27853970\n" +
                 "#\n" +
                 "\n" +
                 "if [ -n \"$BASH_VERSION\" ]; then\n" +
@@ -773,6 +807,10 @@ public class AutoCompleteTest {
                 "  # Make alias a distinct command for completion purposes when using zsh (see [4])\n" +
                 "  setopt COMPLETE_ALIASES\n" +
                 "  alias compopt=complete\n" +
+                "\n" +
+                "  # Enable bash completion in zsh (see [7])\n" +
+                "  autoload -U +X compinit && compinit\n" +
+                "  autoload -U +X bashcompinit && bashcompinit\n" +
                 "fi\n" +
                 "\n" +
                 "# ArrContains takes two arguments, both of which are the name of arrays.\n" +
@@ -842,7 +880,8 @@ public class AutoCompleteTest {
                 "# current word on the command line.\n" +
                 "# The `-o default` option means that if the function generated no matches, the\n" +
                 "# default Bash completions and the Readline default filename completions are performed.\n" +
-                "complete -F _complete_nondefault -o default nondefault nondefault.sh nondefault.bash\n";
+                "complete -F _complete_nondefault -o default nondefault nondefault.sh nondefault.bash\n",
+                CommandLine.VERSION);
     }
 
     @Test
@@ -1187,4 +1226,388 @@ public class AutoCompleteTest {
         m.invoke(null, null, candidates);
         assertTrue("null PositionalParamSpec adds no candidates", candidates.isEmpty());
     }
+
+    @Command(name = "myapp", mixinStandardHelpOptions = true,
+            subcommands = AutoComplete.GenerateCompletion.class)
+    static class MyApp implements Runnable {
+
+        @Parameters(index = "0", description = "Required positional param")
+        String value;
+
+        public void run() { }
+    }
+
+    @Test
+    public void testGenerateCompletionParentUsageMessage() {
+        CommandLine cmd = new CommandLine(new MyApp());
+        String expected = String.format("" +
+                "Usage: myapp [-hV] <value> [COMMAND]%n" +
+                "      <value>     Required positional param%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "Commands:%n" +
+                "  generate-completion  Generate bash/zsh completion script for myapp.%n");
+        assertEquals(expected, cmd.getUsageMessage(CommandLine.Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testGenerateCompletionCanBeHiddenFromParentUsageMessage() {
+        CommandLine cmd = new CommandLine(new MyApp());
+        CommandLine gen = cmd.getSubcommands().get("generate-completion");
+        gen.getCommandSpec().usageMessage().hidden(true);
+        String expected = String.format("" +
+                "Usage: myapp [-hV] <value> [COMMAND]%n" +
+                "      <value>     Required positional param%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n");
+        assertEquals(expected, cmd.getUsageMessage(CommandLine.Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testGenerateCompletionUsageMessage() {
+        CommandLine cmd = new CommandLine(new MyApp());
+        String expected = String.format("" +
+                "Usage: myapp generate-completion [-hV]%n" +
+                "Generate bash/zsh completion script for myapp.%n" +
+                "Run the following command to give `myapp` TAB completion in the current shell:%n" +
+                "%n" +
+                "source <(myapp generate-completion)%n" +
+                "%n" +
+                "Options:%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n");
+        CommandLine gen = cmd.getSubcommands().get("generate-completion");
+        assertEquals(expected, gen.getUsageMessage(CommandLine.Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testGenerateCompletionScriptCustomOut() {
+        CommandLine cmd = new CommandLine(new MyApp());
+        StringWriter sw = new StringWriter();
+        cmd.setOut(new PrintWriter(sw));
+        String expected = getCompletionScriptText("myapp");
+        cmd.execute("generate-completion");
+        assertEquals(expected, sw.toString());
+    }
+
+    @Test
+    public void testGenerateCompletionScriptStandardOut() {
+        int exitCode = new CommandLine(new MyApp()).execute("generate-completion");
+        assertEquals(CommandLine.ExitCode.OK, exitCode);
+        assertEquals("", systemErrRule.getLog());
+        assertEquals(getCompletionScriptText("myapp"), systemOutRule.getLog());
+    }
+
+    private String getCompletionScriptText(String cmdName) {
+        return String.format("" +
+                    "#!/usr/bin/env bash\n" +
+                    "#\n" +
+                    "# %1$s Bash Completion\n" +
+                    "# =======================\n" +
+                    "#\n" +
+                    "# Bash completion support for the `%1$s` command,\n" +
+                    "# generated by [picocli](http://picocli.info/) version %2$s.\n" +
+                    "#\n" +
+                    "# Installation\n" +
+                    "# ------------\n" +
+                    "#\n" +
+                    "# 1. Source all completion scripts in your .bash_profile\n" +
+                    "#\n" +
+                    "#   cd $YOUR_APP_HOME/bin\n" +
+                    "#   for f in $(find . -name \"*_completion\"); do line=\". $(pwd)/$f\"; grep \"$line\" ~/.bash_profile || echo \"$line\" >> ~/.bash_profile; done\n" +
+                    "#\n" +
+                    "# 2. Open a new bash console, and type `%1$s [TAB][TAB]`\n" +
+                    "#\n" +
+                    "# 1a. Alternatively, if you have [bash-completion](https://github.com/scop/bash-completion) installed:\n" +
+                    "#     Place this file in a `bash-completion.d` folder:\n" +
+                    "#\n" +
+                    "#   * /etc/bash-completion.d\n" +
+                    "#   * /usr/local/etc/bash-completion.d\n" +
+                    "#   * ~/bash-completion.d\n" +
+                    "#\n" +
+                    "# Documentation\n" +
+                    "# -------------\n" +
+                    "# The script is called by bash whenever [TAB] or [TAB][TAB] is pressed after\n" +
+                    "# '%1$s (..)'. By reading entered command line parameters,\n" +
+                    "# it determines possible bash completions and writes them to the COMPREPLY variable.\n" +
+                    "# Bash then completes the user input if only one entry is listed in the variable or\n" +
+                    "# shows the options if more than one is listed in COMPREPLY.\n" +
+                    "#\n" +
+                    "# References\n" +
+                    "# ----------\n" +
+                    "# [1] http://stackoverflow.com/a/12495480/1440785\n" +
+                    "# [2] http://tiswww.case.edu/php/chet/bash/FAQ\n" +
+                    "# [3] https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html\n" +
+                    "# [4] http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETE_005fALIASES\n" +
+                    "# [5] https://stackoverflow.com/questions/17042057/bash-check-element-in-array-for-elements-in-another-array/17042655#17042655\n" +
+                    "# [6] https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion.html#Programmable-Completion\n" +
+                    "# [7] https://stackoverflow.com/questions/3249432/can-a-bash-tab-completion-script-be-used-in-zsh/27853970#27853970\n" +
+                    "#\n" +
+                    "\n" +
+                    "if [ -n \"$BASH_VERSION\" ]; then\n" +
+                    "  # Enable programmable completion facilities when using bash (see [3])\n" +
+                    "  shopt -s progcomp\n" +
+                    "elif [ -n \"$ZSH_VERSION\" ]; then\n" +
+                    "  # Make alias a distinct command for completion purposes when using zsh (see [4])\n" +
+                    "  setopt COMPLETE_ALIASES\n" +
+                    "  alias compopt=complete\n" +
+                    "\n" +
+                    "  # Enable bash completion in zsh (see [7])\n" +
+                    "  autoload -U +X compinit && compinit\n" +
+                    "  autoload -U +X bashcompinit && bashcompinit\n" +
+                    "fi\n" +
+                    "\n" +
+                    "# ArrContains takes two arguments, both of which are the name of arrays.\n" +
+                    "# It creates a temporary hash from lArr1 and then checks if all elements of lArr2\n" +
+                    "# are in the hashtable.\n" +
+                    "#\n" +
+                    "# Returns zero (no error) if all elements of the 2nd array are in the 1st array,\n" +
+                    "# otherwise returns 1 (error).\n" +
+                    "#\n" +
+                    "# Modified from [5]\n" +
+                    "function ArrContains() {\n" +
+                    "  local lArr1 lArr2\n" +
+                    "  declare -A tmp\n" +
+                    "  eval lArr1=(\"\\\"\\${$1[@]}\\\"\")\n" +
+                    "  eval lArr2=(\"\\\"\\${$2[@]}\\\"\")\n" +
+                    "  for i in \"${lArr1[@]}\";{ [ -n \"$i\" ] && ((++tmp[$i]));}\n" +
+                    "  for i in \"${lArr2[@]}\";{ [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] && return 1;}\n" +
+                    "  return 0\n" +
+                    "}\n" +
+                    "\n" +
+                    "# Bash completion entry point function.\n" +
+                    "# _complete_%1$s finds which commands and subcommands have been specified\n" +
+                    "# on the command line and delegates to the appropriate function\n" +
+                    "# to generate possible options and subcommands for the last specified subcommand.\n" +
+                    "function _complete_%1$s() {\n" +
+                    "  CMDS0=(generate-completion)\n" +
+                    "\n" +
+                    "  ArrContains COMP_WORDS CMDS0 && { _picocli_%1$s_generatecompletion; return $?; }\n" +
+                    "\n" +
+                    "  # No subcommands were specified; generate completions for the top-level command.\n" +
+                    "  _picocli_%1$s; return $?;\n" +
+                    "}\n" +
+                    "\n" +
+                    "# Generates completions for the options and subcommands of the `%1$s` command.\n" +
+                    "function _picocli_%1$s() {\n" +
+                    "  # Get completion data\n" +
+                    "  CURR_WORD=${COMP_WORDS[COMP_CWORD]}\n" +
+                    "  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}\n" +
+                    "\n" +
+                    "  COMMANDS=\"generate-completion\"\n" +
+                    "  FLAG_OPTS=\"-h --help -V --version\"\n" +
+                    "  ARG_OPTS=\"\"\n" +
+                    "\n" +
+                    "  if [[ \"${CURR_WORD}\" == -* ]]; then\n" +
+                    "    COMPREPLY=( $(compgen -W \"${FLAG_OPTS} ${ARG_OPTS}\" -- ${CURR_WORD}) )\n" +
+                    "  else\n" +
+                    "    COMPREPLY=( $(compgen -W \"${COMMANDS}\" -- ${CURR_WORD}) )\n" +
+                    "  fi\n" +
+                    "}\n" +
+                    "\n" +
+                    "# Generates completions for the options and subcommands of the `generate-completion` subcommand.\n" +
+                    "function _picocli_%1$s_generatecompletion() {\n" +
+                    "  # Get completion data\n" +
+                    "  CURR_WORD=${COMP_WORDS[COMP_CWORD]}\n" +
+                    "  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}\n" +
+                    "\n" +
+                    "  COMMANDS=\"\"\n" +
+                    "  FLAG_OPTS=\"-h --help -V --version\"\n" +
+                    "  ARG_OPTS=\"\"\n" +
+                    "\n" +
+                    "  if [[ \"${CURR_WORD}\" == -* ]]; then\n" +
+                    "    COMPREPLY=( $(compgen -W \"${FLAG_OPTS} ${ARG_OPTS}\" -- ${CURR_WORD}) )\n" +
+                    "  else\n" +
+                    "    COMPREPLY=( $(compgen -W \"${COMMANDS}\" -- ${CURR_WORD}) )\n" +
+                    "  fi\n" +
+                    "}\n" +
+                    "\n" +
+                    "# Define a completion specification (a compspec) for the\n" +
+                    "# `%1$s`, `%1$s.sh`, and `%1$s.bash` commands.\n" +
+                    "# Uses the bash `complete` builtin (see [6]) to specify that shell function\n" +
+                    "# `_complete_%1$s` is responsible for generating possible completions for the\n" +
+                    "# current word on the command line.\n" +
+                    "# The `-o default` option means that if the function generated no matches, the\n" +
+                    "# default Bash completions and the Readline default filename completions are performed.\n" +
+                    "complete -F _complete_%1$s -o default %1$s %1$s.sh %1$s.bash\n" +
+                    "\n", cmdName, CommandLine.VERSION);
+    }
+
+    //https://github.com/remkop/picocli/issues/887
+    @Test
+    public void testHiddenOptionsAndSubcommandsNotSuggested() {
+
+        @Command(name="CompletionDemo", subcommands = { picocli.AutoComplete.GenerateCompletion.class, CommandLine.HelpCommand.class } )
+        class CompletionSubcommandDemo implements Runnable {
+            @Option(names = "--aaa", hidden = true) int a;
+            @Option(names = "--apples", hidden = false) int apples;
+            @Option(names = "--bbb", hidden = false) int b;
+
+            public void run() { }
+        }
+        CommandLine cmd = new CommandLine(new CompletionSubcommandDemo());
+        CommandLine gen = cmd.getSubcommands().get("generate-completion");
+        gen.getCommandSpec().usageMessage().hidden(true);
+
+        String expectedUsage = String.format("" +
+                "Usage: CompletionDemo [--apples=<apples>] [--bbb=<b>] [COMMAND]%n" +
+                "      --apples=<apples>%n" +
+                "      --bbb=<b>%n" +
+                "Commands:%n" +
+                "  help  Displays help information about the specified command%n");
+        assertEquals(expectedUsage, cmd.getUsageMessage(CommandLine.Help.Ansi.OFF));
+
+        StringWriter sw = new StringWriter();
+        cmd.setOut(new PrintWriter(sw));
+        String expected = getCompletionScriptTextWithHidden("CompletionDemo");
+        cmd.execute("generate-completion");
+        assertEquals(expected, sw.toString());
+    }
+
+    private String getCompletionScriptTextWithHidden(String commandName) {
+        return String.format("" +
+                "#!/usr/bin/env bash\n" +
+                "#\n" +
+                "# %1$s Bash Completion\n" +
+                "# =======================\n" +
+                "#\n" +
+                "# Bash completion support for the `%1$s` command,\n" +
+                "# generated by [picocli](http://picocli.info/) version %2$s.\n" +
+                "#\n" +
+                "# Installation\n" +
+                "# ------------\n" +
+                "#\n" +
+                "# 1. Source all completion scripts in your .bash_profile\n" +
+                "#\n" +
+                "#   cd $YOUR_APP_HOME/bin\n" +
+                "#   for f in $(find . -name \"*_completion\"); do line=\". $(pwd)/$f\"; grep \"$line\" ~/.bash_profile || echo \"$line\" >> ~/.bash_profile; done\n" +
+                "#\n" +
+                "# 2. Open a new bash console, and type `%1$s [TAB][TAB]`\n" +
+                "#\n" +
+                "# 1a. Alternatively, if you have [bash-completion](https://github.com/scop/bash-completion) installed:\n" +
+                "#     Place this file in a `bash-completion.d` folder:\n" +
+                "#\n" +
+                "#   * /etc/bash-completion.d\n" +
+                "#   * /usr/local/etc/bash-completion.d\n" +
+                "#   * ~/bash-completion.d\n" +
+                "#\n" +
+                "# Documentation\n" +
+                "# -------------\n" +
+                "# The script is called by bash whenever [TAB] or [TAB][TAB] is pressed after\n" +
+                "# '%1$s (..)'. By reading entered command line parameters,\n" +
+                "# it determines possible bash completions and writes them to the COMPREPLY variable.\n" +
+                "# Bash then completes the user input if only one entry is listed in the variable or\n" +
+                "# shows the options if more than one is listed in COMPREPLY.\n" +
+                "#\n" +
+                "# References\n" +
+                "# ----------\n" +
+                "# [1] http://stackoverflow.com/a/12495480/1440785\n" +
+                "# [2] http://tiswww.case.edu/php/chet/bash/FAQ\n" +
+                "# [3] https://www.gnu.org/software/bash/manual/html_node/The-Shopt-Builtin.html\n" +
+                "# [4] http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETE_005fALIASES\n" +
+                "# [5] https://stackoverflow.com/questions/17042057/bash-check-element-in-array-for-elements-in-another-array/17042655#17042655\n" +
+                "# [6] https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion.html#Programmable-Completion\n" +
+                "# [7] https://stackoverflow.com/questions/3249432/can-a-bash-tab-completion-script-be-used-in-zsh/27853970#27853970\n" +
+                "#\n" +
+                "\n" +
+                "if [ -n \"$BASH_VERSION\" ]; then\n" +
+                "  # Enable programmable completion facilities when using bash (see [3])\n" +
+                "  shopt -s progcomp\n" +
+                "elif [ -n \"$ZSH_VERSION\" ]; then\n" +
+                "  # Make alias a distinct command for completion purposes when using zsh (see [4])\n" +
+                "  setopt COMPLETE_ALIASES\n" +
+                "  alias compopt=complete\n" +
+                "\n" +
+                "  # Enable bash completion in zsh (see [7])\n" +
+                "  autoload -U +X compinit && compinit\n" +
+                "  autoload -U +X bashcompinit && bashcompinit\n" +
+                "fi\n" +
+                "\n" +
+                "# ArrContains takes two arguments, both of which are the name of arrays.\n" +
+                "# It creates a temporary hash from lArr1 and then checks if all elements of lArr2\n" +
+                "# are in the hashtable.\n" +
+                "#\n" +
+                "# Returns zero (no error) if all elements of the 2nd array are in the 1st array,\n" +
+                "# otherwise returns 1 (error).\n" +
+                "#\n" +
+                "# Modified from [5]\n" +
+                "function ArrContains() {\n" +
+                "  local lArr1 lArr2\n" +
+                "  declare -A tmp\n" +
+                "  eval lArr1=(\"\\\"\\${$1[@]}\\\"\")\n" +
+                "  eval lArr2=(\"\\\"\\${$2[@]}\\\"\")\n" +
+                "  for i in \"${lArr1[@]}\";{ [ -n \"$i\" ] && ((++tmp[$i]));}\n" +
+                "  for i in \"${lArr2[@]}\";{ [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] && return 1;}\n" +
+                "  return 0\n" +
+                "}\n" +
+                "\n" +
+                "# Bash completion entry point function.\n" +
+                "# _complete_%1$s finds which commands and subcommands have been specified\n" +
+                "# on the command line and delegates to the appropriate function\n" +
+                "# to generate possible options and subcommands for the last specified subcommand.\n" +
+                "function _complete_%1$s() {\n" +
+                "  CMDS0=(help)\n" +
+                "\n" +
+                "  ArrContains COMP_WORDS CMDS0 && { _picocli_%1$s_help; return $?; }\n" +
+                "\n" +
+                "  # No subcommands were specified; generate completions for the top-level command.\n" +
+                "  _picocli_%1$s; return $?;\n" +
+                "}\n" +
+                "\n" +
+                "# Generates completions for the options and subcommands of the `%1$s` command.\n" +
+                "function _picocli_%1$s() {\n" +
+                "  # Get completion data\n" +
+                "  CURR_WORD=${COMP_WORDS[COMP_CWORD]}\n" +
+                "  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}\n" +
+                "\n" +
+                "  COMMANDS=\"generate-completion help\"\n" +
+                "  FLAG_OPTS=\"\"\n" +
+                "  ARG_OPTS=\"--apples --bbb\"\n" +
+                "\n" +
+                "  compopt +o default\n" +
+                "\n" +
+                "  case ${PREV_WORD} in\n" +
+                "    --apples)\n" +
+                "      return\n" +
+                "      ;;\n" +
+                "    --bbb)\n" +
+                "      return\n" +
+                "      ;;\n" +
+                "  esac\n" +
+                "\n" +
+                "  if [[ \"${CURR_WORD}\" == -* ]]; then\n" +
+                "    COMPREPLY=( $(compgen -W \"${FLAG_OPTS} ${ARG_OPTS}\" -- ${CURR_WORD}) )\n" +
+                "  else\n" +
+                "    COMPREPLY=( $(compgen -W \"${COMMANDS}\" -- ${CURR_WORD}) )\n" +
+                "  fi\n" +
+                "}\n" +
+                "\n" +
+                "# Generates completions for the options and subcommands of the `help` subcommand.\n" +
+                "function _picocli_%1$s_help() {\n" +
+                "  # Get completion data\n" +
+                "  CURR_WORD=${COMP_WORDS[COMP_CWORD]}\n" +
+                "  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}\n" +
+                "\n" +
+                "  COMMANDS=\"\"\n" +
+                "  FLAG_OPTS=\"-h --help\"\n" +
+                "  ARG_OPTS=\"\"\n" +
+                "\n" +
+                "  if [[ \"${CURR_WORD}\" == -* ]]; then\n" +
+                "    COMPREPLY=( $(compgen -W \"${FLAG_OPTS} ${ARG_OPTS}\" -- ${CURR_WORD}) )\n" +
+                "  else\n" +
+                "    COMPREPLY=( $(compgen -W \"${COMMANDS}\" -- ${CURR_WORD}) )\n" +
+                "  fi\n" +
+                "}\n" +
+                "\n" +
+                "# Define a completion specification (a compspec) for the\n" +
+                "# `%1$s`, `%1$s.sh`, and `%1$s.bash` commands.\n" +
+                "# Uses the bash `complete` builtin (see [6]) to specify that shell function\n" +
+                "# `_complete_%1$s` is responsible for generating possible completions for the\n" +
+                "# current word on the command line.\n" +
+                "# The `-o default` option means that if the function generated no matches, the\n" +
+                "# default Bash completions and the Readline default filename completions are performed.\n" +
+                "complete -F _complete_%1$s -o default %1$s %1$s.sh %1$s.bash\n" +
+                "\n", commandName, CommandLine.VERSION);
+    }
+
 }

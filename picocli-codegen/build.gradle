@@ -10,13 +10,28 @@ description 'Picocli Code Generation - Tools to generate documentation, configur
 version "$projectVersion"
 
 // Java 13 cannot compile to target Java 6
-//sourceCompatibility = 1.6
-//targetCompatibility = 1.6
-
+if (org.gradle.api.JavaVersion.current().isJava8Compatible() && !org.gradle.api.JavaVersion.current().isJava11Compatible()) {
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+}
 dependencies {
     compile rootProject
     testCompile "junit:junit:$junitVersion"
 }
+
+//task generateGraalReflectionConfig(type: JavaExec) {
+//    main = 'picocli.codegen.aot.graalvm.ReflectionConfigGenerator'
+//    classpath = sourceSets.main.runtimeClasspath
+//    def outputFile = "${rootProject.projectDir}/src/main/resources/META-INF/native-image/info.picocli/picocli/reflect-config.json"
+//    args = ["--output=$outputFile", 'picocli.AutoComplete$App']
+//
+//    doLast {
+//        logger.info(":picocli-codegen:generateGraalReflectionConfig Generating $outputFile")
+//    }
+//}
+//generateGraalReflectionConfig.dependsOn(compileJava)
+//jar.dependsOn(generateGraalReflectionConfig)
+
 jar {
     manifest {
         attributes 'Specification-Title'   : 'Picocli Code Generation',

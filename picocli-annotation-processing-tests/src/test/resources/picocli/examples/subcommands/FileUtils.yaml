@@ -7,6 +7,7 @@ CommandSpec:
   defaultValueProvider: null
   versionProvider: null
   version: []
+  ArgGroups: []
   Options:
   - names: [-d, --directory]
     usageHelp: false
@@ -65,7 +66,7 @@ CommandSpec:
     caseInsensitiveEnumValuesAllowed: false
     collectErrors: false
     limitSplit: false
-    toggleBooleanFlags: true
+    toggleBooleanFlags: false
   Subcommands:
   # list
   - name: 'list'
@@ -75,6 +76,7 @@ CommandSpec:
     defaultValueProvider: null
     versionProvider: null
     version: []
+    ArgGroups: []
     Options:
     - names: [-r, --recursive]
       usageHelp: false
@@ -133,5 +135,5 @@ CommandSpec:
       caseInsensitiveEnumValuesAllowed: false
       collectErrors: false
       limitSplit: false
-      toggleBooleanFlags: true
+      toggleBooleanFlags: false
     Subcommands: []

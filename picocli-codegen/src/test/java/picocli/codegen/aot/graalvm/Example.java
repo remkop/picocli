@@ -12,24 +12,35 @@ import picocli.CommandLine.Unmatched;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 
-@Command(name = "example", version = "3.7.0",
-        mixinStandardHelpOptions = true, subcommands = CommandLine.HelpCommand.class)
+/**
+ * This command's `run` method uses an extra ResourceBundle with base="some.extra.bundle".
+ * Make sure to add this to the native image with the ResourceConfigGenerator tool.
+ */
+@Command(name = "example",
+        mixinStandardHelpOptions = true,
+        subcommands = CommandLine.HelpCommand.class,
+        resourceBundle = "picocli.codegen.aot.graalvm.exampleResources",
+        version = {
+                "Example " + CommandLine.VERSION,
+                "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
+                "OS: ${os.name} ${os.version} ${os.arch}"
+        })
 public class Example implements Runnable {
 
     @Command public static class ExampleMixin {
 
-        @Option(names = "-l")
+        @Option(names = "-l", description = "This option is the length option. It is not actually used anywhere. This option is mixed in to other commands.")
         int length;
     }
 
-    @Option(names = "-t")
+    @Option(names = "-t", description = "This is a timeUnit option. Its default value is ${DEFAULT-VALUE}, valid values are ${COMPLETION-CANDIDATES}.")
     final TimeUnit timeUnit = TimeUnit.SECONDS;
 
-    @Parameters(index = "0")
+    @Parameters(index = "0", description = "This is a positional parameter at index 0. The value will be converted to a java.io.File.")
     File file;
 
     @Spec
@@ -44,14 +55,14 @@ public class Example implements Runnable {
     private int minimum;
     private List<File> otherFiles;
 
-    @Command
+    @Command(resourceBundle = "picocli.codegen.aot.graalvm.exampleMultiplyResources")
     int multiply(@Option(names = "--count") int count,
                  @Parameters int multiplier) {
         System.out.println("Result is " + count * multiplier);
         return count * multiplier;
     }
 
-    @Option(names = "--minimum")
+    @Option(names = "--minimum", description = "This option demonstrates an @Option-annotated method. It can be used to validate the option value.")
     public void setMinimum(int min) {
         if (min < 0) {
             throw new ParameterException(spec.commandLine(), "Minimum must be a positive integer");
@@ -59,7 +70,7 @@ public class Example implements Runnable {
         minimum = min;
     }
 
-    @Parameters(index = "1..*")
+    @Parameters(index = "1..*", description = "Positional parameters from index 1..* are captured in this annotated @Parameters method. It can be used to validate the values. Any specified value must be an existing file.")
     public void setOtherFiles(List<File> otherFiles) {
         for (File f : otherFiles) {
             if (!f.exists()) {
@@ -72,9 +83,12 @@ public class Example implements Runnable {
     public void run() {
         System.out.printf("timeUnit=%s, length=%s, file=%s, unmatched=%s, minimum=%s, otherFiles=%s%n",
                 timeUnit, mixin.length, file, unmatched, minimum, otherFiles);
+        System.out.println("Getting value from some.extra.bundle:");
+        ResourceBundle bundle = ResourceBundle.getBundle("some.extra.bundle");
+        System.out.println("Found bundle. Its value for 'key' is: " + bundle.getString("key"));
     }
 
     public static void main(String[] args) {
-        CommandLine.run(new Example(), args);
+        new CommandLine(new Example()).execute(args);
     }
 }

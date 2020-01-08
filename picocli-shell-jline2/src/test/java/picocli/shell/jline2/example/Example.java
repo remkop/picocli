@@ -10,8 +10,11 @@ import jline.console.completer.ArgumentCompleter.ArgumentList;
 import jline.console.completer.ArgumentCompleter.WhitespaceArgumentDelimiter;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.IFactory;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
+import picocli.CommandLine.Spec;
 import picocli.shell.jline2.PicocliJLineCompleter;
 
 /**
@@ -25,10 +28,13 @@ public class Example {
      */
     @Command(name = "", description = "Example interactive shell with completion",
             footer = {"", "Press Ctl-D to exit."},
-            subcommands = {MyCommand.class, ClearScreen.class})
+            subcommands = {MyCommand.class, ClearScreen.class, ReadInteractive.class})
     static class CliCommands implements Runnable {
         final ConsoleReader reader;
         final PrintWriter out;
+        
+        @Spec
+        private CommandSpec spec;
 
         CliCommands(ConsoleReader reader) {
             this.reader = reader;
@@ -36,7 +42,7 @@ public class Example {
         }
 
         public void run() {
-            out.println(new CommandLine(this).getUsageMessage());
+            out.println(spec.commandLine().getUsageMessage());
         }
     }
 
@@ -81,23 +87,46 @@ public class Example {
             return null;
         }
     }
+    
+    /**
+     * Command that optionally reads and password interactively.
+     */
+    @Command(name = "pwd", mixinStandardHelpOptions = true,
+    		description = "Interactivly reads a password", version = "1.0")
+    static class ReadInteractive implements Callable<Void> {
+    	
+    	@Option(names = {"-p"}, parameterConsumer = InteractiveParameterConsumer.class)
+    	private String password;
 
+        @ParentCommand CliCommands parent;
+
+        public Void call() throws Exception {
+            if(password == null) {
+                parent.out.println("No password prompted");
+            } else {
+                parent.out.println("Password is '" + password + "'");
+            }
+            return null;
+        }
+    }
+    
     public static void main(String[] args) {
         try {
             ConsoleReader reader = new ConsoleReader();
-            reader.setPrompt("prompt> ");
-
+            IFactory factory = new CustomFactory(new InteractiveParameterConsumer(reader));
+            
             // set up the completion
             CliCommands commands = new CliCommands(reader);
-            CommandLine cmd = new CommandLine(commands);
+            CommandLine cmd = new CommandLine(commands, factory);
             reader.addCompleter(new PicocliJLineCompleter(cmd.getCommandSpec()));
 
             // start the shell and process input until the user quits with Ctl-D
             String line;
-            while ((line = reader.readLine()) != null) {
-                ArgumentList list =
-                        new WhitespaceArgumentDelimiter().delimit(line, line.length());
-                CommandLine.run(commands, list.getArguments());
+            while ((line = reader.readLine("prompt> ")) != null) {
+                ArgumentList list = new WhitespaceArgumentDelimiter()
+                    .delimit(line, line.length());
+                new CommandLine(commands, factory)
+                    .execute(list.getArguments());
             }
         } catch (Throwable t) {
             t.printStackTrace();

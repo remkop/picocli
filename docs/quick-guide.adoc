@@ -1,8 +1,8 @@
 = Quick Guide
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.0.0-alpha-2-SNAPSHOT
-:revdate: 2019-03-30
+:revnumber: 4.2.0-SNAPSHOT
+:revdate: 2019-12-22
 :toc: left
 :numbered:
 :toclevels: 1
@@ -24,24 +24,21 @@ Picocli-based applications can have link:autocomplete.html[command line TAB comp
 image:ExampleUsageANSI.png[Screenshot of usage help with Ansi codes enabled]
 
 == How to Use it
-Create a class and annotate its fields or methods with `@Option` or `@Parameters` to declare what options and positional parameters your application expects.
-While parsing the command line, picocli will initialize these fields based on the command line arguments.
+Create a class that represents your command and annotate this class with `@Command`. Then, annotate the fields or methods of the command class with `@Option` or `@Parameters` to declare what options and positional parameters your application expects. While parsing the command line, picocli will initialize these fields based on the command line arguments.
 If your class implements `Runnable` or `Callable`, you can let picocli kick off your application after parsing is successfully completed.
 
 NOTE: For applications that cannot use the annotations, there is also a link:picocli-3.0-programmatic-api.html[programmatic API] for defining what options and positional parameters to expect, and a programmatic API for handling parse results. The programmatic API is not covered in this Quick Guide.
 
 === Example
-Here is a small example application that uses the `CommandLine.call` <<Runnable and Callable,convenience method>>
-to do parsing and error handling in one line of code. The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute
-adds usage help and version help options your application.
+Here is a small example application that performs parsing and error handling in one line of code, leveraging the <<Executing Commands,execute API>> which was newly introduced with `picocli 4.0`. The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute adds usage help and version help options your application.
 
-.Example `Callable` application
+.Picocli-based example command line application
 [[CheckSum-application]]
 [source,java]
 ----
 @Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
          name = "checksum", mixinStandardHelpOptions = true, version = "checksum 3.0")
-class CheckSum implements Callable<Void> {
+class CheckSum implements Callable<Integer> {
 
     @Parameters(index = "0", description = "The file whose checksum to calculate.")
     private File file;
@@ -49,16 +46,17 @@ class CheckSum implements Callable<Void> {
     @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
     private String algorithm = "SHA-1";
 
-    public static void main(String[] args) throws Exception {
-        CommandLine.call(new CheckSum(), args);
+    public static void main(String... args) throws Exception {
+        int exitCode = new CommandLine(new CheckSum()).execute(args);
+        System.exit(exitCode);
     }
 
     @Override
-    public Void call() throws Exception {
+    public Integer call() throws Exception {
         byte[] fileContents = Files.readAllBytes(file.toPath());
         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
         System.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(digest));
-        return null;
+        return 0;
     }
 }
 ----
@@ -99,7 +97,7 @@ Picocli matches the option names to set the field values.
 ----
 String[] args = { "-c", "--file", "result.tar", "file1.txt", "file2.txt" };
 Tar tar = new Tar();
-new CommandLine(tar).parse(args);
+new CommandLine(tar).parseArgs(args);
 
 assert !tar.helpRequested;
 assert  tar.create;
@@ -326,7 +324,7 @@ usage help or version information was requested (without inspecting the annotate
 [source,java]
 ----
 CommandLine commandLine = new CommandLine(new App());
-commandLine.parse(args);
+commandLine.parseArgs(args);
 if (commandLine.isUsageHelpRequested()) {
    commandLine.usage(System.out);
    return;
@@ -336,7 +334,7 @@ if (commandLine.isUsageHelpRequested()) {
 }
 // ... run App's business logic
 ----
-See also <<Parsing>> and <<Runnable and Callable>> for how picocli can help reduce boilerplate code.
+See also the chapter link:http://picocli.info/#_printing_help_automatically[Printing Help Automatically] of the user manual.
 
 == Version Help
 === Static Version Information
@@ -402,13 +400,13 @@ Concatenate FILE(s), or standard input, to standard output.
   -v, --show-nonprinting   use ^ and M- notation, except for LDF and TAB
       --help               display this help and exit
       --version            output version information and exit
-Copyright(c) 2017
+Copyright(c) 2019
 ----
 
 The usage help message is generated from annotation attributes, like below:
 [source,java]
 ----
-@Command(name = "cat", footer = "Copyright(c) 2017",
+@Command(name = "cat", footer = "Copyright(c) 2019",
          description = "Concatenate FILE(s), or standard input, to standard output.")
 class Cat {
 
@@ -861,104 +859,136 @@ public class MyCommand {
 The https://picocli.info/#_reuse[Reuse] section of the user manual has more extensive examples.
 
 
-== Parsing
-When parsing the command line, an application needs to take care of the following:
+== Executing Commands
+When executing a command, parsing the command line is the first step. A robust real-world application needs to handle a number of scenarios:
 
-* If usage help was requested - show help message and exit
-* If version help was requested - show version information and exit
-* If the user input was invalid - show an error describing the problem and show the usage help
-* Execute the business logic
+* User input was invalid: show an error describing the problem and show the usage help
+* User requested usage help: show help message and exit
+* User requested version help: show version information and exit
+* None of the above: run the business logic (potentially for a subcommand)
+* Business logic may throw an exception: handle or rethrow exception
 
-In Java code, that roughly looks like the below:
-
-TIP: In the next section we will show how to do the same in a single line of code, so keep reading...
-
-.Before
+As of Picocli 4.0, you may make use of the `Commandline.execute` method which handles all of the above scenarios in a single line of code:
 
 [source,java]
 ----
-Callable<Object> callable = new MyCallable();
-CommandLine cmd = new CommandLine(callable);
-try {
-    cmd.parse(args);
-    if (cmd.isUsageHelpRequested()) {
-        cmd.usage(System.out);
-        return null;
-    } else if (cmd.isVersionHelpRequested()) {
-        cmd.printVersionHelp(System.out);
-        return null;
+new CommandLine(new MyApp()).execute(args);
+----
+
+With the `execute` method, application code can be *extremely compact*:
+
+[source,java,linenumbers]
+----
+@Command(name = "myapp", mixinStandardHelpOptions = true, version = "1.0")
+class MyApp implements Callable<Integer> {
+
+    @Option(names = "-x") int x;
+
+    @Override
+    public Integer call() { // business logic
+        System.out.printf("x=%s%n", x);
+        return 123; // exit code
     }
-    return callable.call();
-} catch (ParameterException ex) {
-    System.err.println(ex.getMessage());
-    if (!UnmatchedArgumentException.printSuggestions(ex, System.err)) {
-        ex.getCommandLine().usage(System.err);
+
+    public static void main(String... args) { // bootstrap the application
+        System.exit(new CommandLine(new MyApp()).execute(args));
     }
-    return null;
-} catch (Exception ex) {
-    throw new ExecutionException(cmd, "Error while calling " + callable, ex);
 }
 ----
 
-=== Runnable and Callable
-You can omit some of the boilerplate code from your application when the annotated object implements `Runnable` or `Callable`:
+Despite being only 15 lines long, this is a full-fledged application, with <<Mixin Standard Help Options,`--help` and `--version`>> options in addition to the `-x` option.
+The `execute` method will show the usage help or version information if requested by the user, and invalid user input will result
+in a helpful <<Handling Errors,error message>>. If the user input was valid, the business logic is invoked.
+Finally, the `execute` method returns an <<Exit Code,exit status code>> that can be used to call `System.exit` if desired.
 
+IMPORTANT: A command is executable if its user object implements `Runnable` or `Callable`, or is a `@Command`-annotated `Method`. Examples follow below.
 
-.After
+NOTE: The `execute` method replaces the older `run`, `call`, `invoke` and `parseWithHandlers` methods.
 
-[source,java]
-----
-Object result = CommandLine.call(new MyCallable(), args);
-----
-The `CommandLine.call` method returns the result of the `Callable`, or `null` if the command line options were invalid. An error message and a usage help message are printed when the command line options were invalid. Exceptions thrown from the `Callable.call` method are caught, wrapped in an `ExecutionException` and rethrown.
+The link:https://picocli.info/#_diy_command_execution[DIY Command Execution] section of the user manual shows an example of the boilerplate code that can be omitted with the `execute` method.
 
+=== Exit Code
+Many command line applications return an https://en.wikipedia.org/wiki/Exit_status[exit code] to signify success or failure. Zero often means success, a non-zero exit code is often used for errors, but other than that, meanings differ per application.
 
-When the annotated object implements `Runnable`, use the `run` method. For example:
-[source,java]
-----
-CommandLine.run(new MyRunnable(), args);
-----
+The `CommandLine.execute` method introduced in picocli 4.0 returns an `int`, and applications can use this return value to call `System.exit` if desired. For example:
 
-=== Convenience Methods for Subcommands
+```java
+public static void main(String... args) {
+  int exitCode = new CommandLine(new MyApp()).execute(args);
+  System.exit(exitCode);
+}
+```
 
-If the command class has subcommands, the `CommandLine::call` and `CommandLine::run` convenience methods will execute the most specific subcommand on the command line. For example:
+CAUTION: Older versions of picocli had some limited exit code support where picocli would call `System.exit`, but this is now deprecated.
 
-----
-<command> -g global_option subcommand -x -y -z subsubcommand param1 param2
-----
-In the above example, the `subsubcommand` is the most specific subcommand, and only the `Runnable` or `Callable` associated with that subcommand will be executed by the `CommandLine::call` and `CommandLine::run` convenience methods.
+=== Generating an Exit Code
 
-The `CommandLine::parseWithHandler` and `CommandLine::parseWithHandlers` convenience methods are intended to offer the same ease of use as the `run` and `call` methods, but with more flexibility and better support for nested subcommands.
+`@Command`-annotated classes that implement `Callable` and `@Command`-<<command-methods,annotated methods>> can simply return an `int` or `Integer`, and this value will be returned from `CommandLine.execute`. For example:
 
-For example:
-[source,java]
-----
-CommandLine cmd = new CommandLine(MyTopLevelCommand())
-        .addSubcommand("status",   new GitStatus())
-        .addSubcommand("commit",   new GitCommit())
-        .addSubcommand("add",      new GitAdd());
-List<Object> result = cmd.parseWithHandler(new RunAll(), args);
-----
+```java
+@Command(name = "greet")
+class Greet implements Callable<Integer> {
+    public Integer call() {
+        System.out.println("hi");
+        return 1;
+    }
 
-The `CommandLine::parseWithHandler` method will take care of the following:
+    // define a "shout" subcommand with a @Command-annotated method
+    @Command
+    int shout() {
+        System.out.println("HI!");
+        return 2;
+    }
+}
 
-* parse the specified command line arguments
-* if the input was invalid, delegate to `DefaultExceptionHandler`, which will print the error message followed by the usage help message
-* otherwise, if the command line arguments were parsed successfully, let the specified `IParseResultHandler2` handle the parse result
+assert 1 == new CommandLine(new Greet()).execute();
+assert 2 == new CommandLine(new Greet()).execute("shout");
+```
 
-Picocli provides some default `IParseResultHandler2` implementations for common tasks:
+Commands with a user object that implements `Runnable` can implement the `IExitCodeGenerator` interface to generate an exit code.
 
-* the `RunLast` handler prints help if requested, and otherwise gets the last specified command or subcommand and tries to execute it as a `Runnable` or `Callable`
-* the `RunFirst` handler prints help if requested, and otherwise executes the top-level command as a `Runnable` or `Callable`
-* the `RunAll` handler prints help if requested, and otherwise executes all commands and subcommands that the user specified on the command line as `Runnable` or `Callable` tasks
+=== Exception Exit Codes
 
-=== Parser Configuration
-The picocli parser can be configured to be more strict or lenient.
-You can instruct the parser to allow unknown options and other unmatched arguments, disallow POSIX clustered short options, and stop looking for options once a positional parameter or unmatched argument is found.
-See the https://picocli.info/#_parser_configuration[Parser Configuration] section of the user manual for details.
+By default, the `execute` method returns `CommandLine.ExitCode.OK` (`0`) on success, `CommandLine.ExitCode.SOFTWARE` (`1`) when an exception occurred in the Runnable, Callable or command method, and `CommandLine.ExitCode.USAGE` (`2`) for invalid input. (These are common values according to https://stackoverflow.com/questions/1101957/are-there-any-standard-exit-status-codes-in-linux/40484670#40484670[this StackOverflow answer]). This can be customized with the `@Command` annotation. For example:
 
+```java 
+@Command(exitCodeOnInvalidInput = 123,
+   exitCodeOnExecutionException = 456)
+```
 
+Additionally, applications can configure a `IExitCodeExceptionMapper` to map a specific exception to an exit code.
 
+=== Execution Configuration
+
+While the `execute` method allows to run the CLI app in one single line of code, the various steps of the command execution are highly configurable.
+The following methods can be used to configure the behaviour of the `execute` method, you may make use of them to adapt the command execution to your needs:
+
+* get/setOut
+* get/setErr
+* get/setColorScheme
+* get/setExecutionStrategy
+* get/setParameterExceptionHandler
+* get/setExecutionExceptionHandler
+* get/setExitCodeExceptionMapper
+
+CAUTION: The above methods are not applicable with (and ignored by) other entry points like `parse`, `parseArgs`, `populateCommand`, `run`, `call`, `invoke`, `parseWithHandler` and `parseWithHandlers`.
+
+=== Handling Errors
+
+Internally, the `execute` method parses the specified user input and populates the options and positional parameters defined by the annotations.
+When the user specified invalid input, this is handled by the `IParameterExceptionHandler`.
+
+After parsing the user input, the business logic of the command is invoked: the `run`, `call` or `@Command`-annotated method.
+When an exception is thrown by the business logic, this is handled by the `IExecutionExceptionHandler`.
+
+In most cases, the default handlers are sufficient. Customization of the default handlers in explained in depth in the link:https://picocli.info/#_handling_errors[handling errors] section of the user manual.
+
+=== Migration
+
+Older versions of picocli supported `run`, `call`, `invoke` and `parseWithHandlers` convenience methods that were similar to `execute` but had limited support for parser configuration and and limited support for exit codes.
+These methods are deprecated as of picocli 4.0.
+
+The link:https://picocli.info/#_migration[migration] section of the user manual assists you in migrating existing code to the newly introduced `execute` API.
 
 == Tracing
 Picocli supports parser tracing to facilitate troubleshooting.

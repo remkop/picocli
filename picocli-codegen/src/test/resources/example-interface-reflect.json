@@ -1,0 +1,52 @@
+[
+  {
+    "name" : "java.util.Collections$UnmodifiableRandomAccessList",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "java.util.concurrent.TimeUnit",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "picocli.CommandLine$AutoHelpMixin",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "helpRequested" },
+      { "name" : "versionRequested" }
+    ]
+  },
+  {
+    "name" : "picocli.CommandLine$HelpCommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "commands" },
+      { "name" : "helpRequested" }
+    ]
+  },
+  {
+    "name" : "picocli.codegen.aot.graalvm.ExampleInterface",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "methods" : [
+      { "name" : "file", "parameterTypes" : [] },
+      { "name" : "minimum", "parameterTypes" : [] },
+      { "name" : "otherFiles", "parameterTypes" : [] },
+      { "name" : "spec", "parameterTypes" : [] },
+      { "name" : "timeUnit", "parameterTypes" : [] }
+    ]
+  }
+]

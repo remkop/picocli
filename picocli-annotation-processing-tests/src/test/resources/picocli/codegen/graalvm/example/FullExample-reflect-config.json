@@ -1,0 +1,57 @@
+[
+  {
+    "name" : "picocli.CommandLine$AutoHelpMixin",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "helpRequested" },
+      { "name" : "versionRequested" }
+    ]
+  },
+  {
+    "name" : "picocli.CommandLine$HelpCommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "commands" },
+      { "name" : "helpRequested" }
+    ]
+  },
+  {
+    "name" : "picocli.codegen.graalvm.example.ExampleFull",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "duration" },
+      { "name" : "instant" },
+      { "name" : "localDate" },
+      { "name" : "localDateTime" },
+      { "name" : "localTime" },
+      { "name" : "monthDay" },
+      { "name" : "offsetDateTime" },
+      { "name" : "offsetTime" },
+      { "name" : "password" },
+      { "name" : "path" },
+      { "name" : "period" },
+      { "name" : "spec" },
+      { "name" : "time" },
+      { "name" : "year" },
+      { "name" : "yearMonth" },
+      { "name" : "zoneId" },
+      { "name" : "zoneOffset" },
+      { "name" : "zonedDateTime" }
+    ],
+    "methods" : [
+      { "name" : "generateReflectConfig", "parameterTypes" : [] },
+      { "name" : "multiply", "parameterTypes" : ["int", "int"] },
+      { "name" : "setExitCode", "parameterTypes" : ["int"] },
+      { "name" : "setFiles", "parameterTypes" : ["java.util.List"] }
+    ]
+  }
+]

@@ -1,0 +1,494 @@
+= Programmatic API
+//:author: Remko Popma
+//:email: rpopma@apache.org
+:revnumber: 4.2.0-SNAPSHOT
+:revdate: 2019-11-29
+:toc: left
+:numbered:
+:toclevels: 2
+:source-highlighter: coderay
+:icons: font
+:imagesdir: images
+
+TIP: For most applications the annotations API is a better fit than the programmatic API: the annotation syntax is more compact, easier to read, and easier to maintain. See this https://picocli.info/quick-guide.html[quick guide] and for more details, the http://picocli.info[user manual].
+
+TIP: This document covers the programmatic API for picocli 4.0 and higher. For older versions, check link:https://picocli.info/man/3.x/picocli-3.0-programmatic-api.html[picocli-3.0-programmatic-api.html].
+
+== Introduction
+Picocli offers a programmatic API for creating command line applications, in addition to annotations. The programmatic API allows applications to dynamically create command line options on the fly, and also makes it possible to create idiomatic domain-specific languages for processing command line arguments, using picocli, in other JVM languages.
+
+CAUTION: This document does not cover all of picocli's features. If you find yourself wondering "Can picocli do X?", please refer to the http://picocli.info[user manual]. The examples in the user manual use the annotations API, but *everything that can be done with the annotations API can also be done via the programmatic API*.
+
+To create an application using the programmatic API,
+use the `CommandSpec`, `OptionSpec` and `PositionalParamSpec` classes to define one or more commands and their options and positional parameters.
+Then, create a `CommandLine` instance with the top-level command's `CommandSpec`,
+and use this object to parse the command line arguments and process the results.
+The rest of this document goes into more detail.
+
+Picocli can be used as a library or as a framework.
+When used as a framework, the application needs to
+designate a method that will be called when the user input was valid, and call the `CommandLine.execute` method.
+When used as a library, the application calls the `CommandLine.parseArgs` method to obtain a `ParseResult` object, and is then responsible for handling the result. See the <<Parsing and Result Processing>> section for details. The example below uses the (more compact) `execute` method.
+
+
+== Example
+
+[source,java]
+----
+public class ProgrammaticCommand {
+
+    public static void main(String[] args) {
+        CommandSpec spec = CommandSpec.create();
+        spec.mixinStandardHelpOptions(true); // usageHelp and versionHelp options
+        spec.addOption(OptionSpec.builder("-c", "--count")
+                .paramLabel("COUNT")
+                .type(int.class)
+                .description("number of times to execute").build());
+        spec.addPositional(PositionalParamSpec.builder()
+                .paramLabel("FILES")
+                .type(List.class).auxiliaryTypes(File.class) // List<File>
+                .description("The files to process").build());
+        CommandLine commandLine = new CommandLine(spec);
+
+        // set an execution strategy (the run(ParseResult) method) that will be called
+        // by CommandLine.execute(args) when user input was valid
+        commandLine.setExecutionStrategy(ProgrammaticCommand::run);
+        int exitCode = commandLine.execute(args);
+        System.exit(exitCode);
+    }
+
+    static int run(ParseResult pr) {
+        // handle requests for help or version information
+        Integer helpExitCode = CommandLine.executeHelpRequest(pr);
+        if (helpExitCode != null) { return helpExitCode; }
+
+        // implement the business logic
+        int count = pr.matchedOptionValue('c', 1);
+        List<File> files = pr.matchedPositionalValue(0, Collections.<File>emptyList());
+        for (File f : files) {
+            for (int i = 0; i < count; i++) {
+                System.out.println(i + " " + f.getName());
+            }
+        }
+        return files.size();
+    }
+}
+----
+
+== Configuration
+The following classes are the main model classes used to configure the parser:
+
+* `CommandSpec`
+* `OptionSpec`
+* `PositionalParamSpec`
+
+
+=== `CommandSpec`
+
+==== Command Name and Version
+`CommandSpec` models a command. It has a name and a version, both of which may be empty.  For example:
+
+[source,java]
+----
+CommandSpec cmd = CommandSpec.create()
+    .name("mycommand")
+    .version("My Command v1.0");
+----
+
+It also has a `UsageMessageSpec` to configure aspects of the usage help message.
+
+==== Usage Help
+[source,java]
+----
+cmd.usageMessage()
+        .headerHeading("Header heading%n")
+        .header("header line 1", "header line 2")
+        .descriptionHeading("Description heading%n")
+        .description("description line 1", "description line 2")
+        .optionListHeading("Options%n")
+        .parameterListHeading("Positional Parameters%n");
+        .footerHeading("Footer heading%n")
+        .footer("footer line 1", "footer line 2");
+----
+The `ParserSpec` can be used to control the behaviour of the parser to some extent.
+
+==== Parser Options
+[source,java]
+----
+cmd.parser()
+        .unmatchedArgumentsAllowed(true)
+        .overwrittenOptionsAllowed(true);
+----
+
+==== Reusing Options with Mixins
+`CommandSpec` has methods to add options (`OptionSpec` objects) and positional parameters (`PositionalParamSpec` objects). A `CommandSpec` can be mixed in with another `CommandSpec`, so its options, positional parameters and usage help attributes are merged into the other `CommandSpec`.
+
+This allows application to define some common options in one class and reuse them in many other commands. For example:
+
+[source,java]
+----
+CommandSpec standardHelpOptions = CommandSpec.create()
+    .addOption(OptionSpec.builder("-h", "--help")
+        .usageHelp(true)
+        .description("Show this help message and exit.").build())
+    .addOption(OptionSpec.builder("-V", "--version")
+        .versionHelp(true)
+        .description("Print version information and exit.").build());
+
+CommandSpec cmd = CommandSpec.create()
+    .name("mycommand")
+    .addMixin("standardHelpOptions", standardHelpOptions);
+----
+Actually, since these options are extremely common, `CommandSpec` provides a convenience method to quickly add these standard help options:
+[source,java]
+----
+CommandSpec spec = CommandSpec.create();
+spec.mixinStandardHelpOptions(true); // usageHelp and versionHelp options
+----
+
+==== Subcommands
+It is common for complex applications to break up functionality into "verbs" or "subcommands".
+For example, the `git` application has many subcommands like `commit`, `push`, `status`, etc.
+Picocli makes it easy to build applications with subcommands (and sub-subcommands).
+
+`CommandSpec` objects can be subcommands of other `CommandSpecs`. There is no limit to the depth of a hierarchy of command and subcommands.
+
+[source,java]
+----
+CommandSpec helpSubcommand = CommandSpec.forAnnotatedObject(
+        new picocli.CommandLine.HelpCommand());
+
+CommandSpec cmd = CommandSpec.create()
+    .name("mycommand")
+    .addSubcommand("help", helpSubcommand);
+----
+
+=== `OptionSpec`
+`OptionSpec` models a command option. An `OptionSpec` must have at least one name, which is used during parsing to match command line arguments. Other attributes can be left empty and picocli will give them a reasonable default value. This defaulting is why `OptionSpec` objects are created with a builder: this allows you to specify only some attributes and let picocli initialise the other attributes. For example, if only the option’s name is specified, picocli assumes the option takes no parameters (arity = 0), and is of type `boolean`. Another example, if arity is larger than `1`, picocli sets the type to `List` and the `auxiliary type` to `String`.
+
+Once an `OptionSpec` is constructed, its configuration becomes immutable, but its `value` can still be modified. Usually the value is set during command line parsing when a command line argument matches one of the option names.
+
+The value is set via the getter and setter _bindings_. We’ll come back to bindings later in this document.
+
+Similar to the annotation API, `OptionSpec` objects have `help`, `usageHelp` and `versionHelp` attributes. When the parser matches an option that was marked with any of these attributes, it will no longer validate that all required arguments exist. See the section below on the `parseWithHandler(s)` methods that automatically print help when requested.
+
+=== `PositionalParamSpec`
+
+`PositionalParamSpec` objects don’t have names, but have an index range instead. A single `PositionalParamSpec` object can capture multiple positional parameters. The default index range is set to `0..*` (all indices). A command may have multiple `PositionalParamSpec` objects to capture positional parameters at different index ranges. This can be useful if positional parameters at different index ranges have different data types.
+
+Similar to `OptionSpec` objects, Once a `PositionalParamSpec` is constructed, its configuration becomes immutable, but its `value` can still be modified. Usually the value is set during command line parsing when a non-option command line argument is encountered at a position in its index range.
+
+The value is set via getter and setter _bindings_. We’ll look at bindings next.
+
+=== Bindings
+
+==== Bindings Overview
+When an option or positional parameter is matched on the command line,
+the parser will create a https://picocli.info/#_strongly_typed_everything[strongly typed] value for the text value
+that was matched on the command line. Picocli stores this value in the `ArgSpec` by using its `IGetter` or `ISetter`.
+
+Most applications don't need to know the details of getter and setter bindings, and can just call
+https://picocli.info/apidocs/picocli/CommandLine.Model.ArgSpec.html#getValue--[getValue] or
+https://picocli.info/apidocs/picocli/CommandLine.Model.ArgSpec.html#setValue-T-[setValue].
+The below may be of interest for applications or libraries that use picocli to design a domain-specific language, or implement some other dynamic behaviour.
+
+Picocli internally uses bindings to allow `@Option` and `@Parameters`-annotated fields and setter methods on implementation classes, and annotated getter methods on interfaces.
+
+==== Bindings Details
+
+Bindings decouple the option and positional parameter specification from the place where their value is held.
+
+Option specifications and positional parameter specifications created from annotated fields have a `FieldBinding`, and annotated methods have a `MethodBinding`, so when the value is set on an option specification, the field's value is set (or the setter method is invoked).
+
+Option specifications and positional parameter specifications created programmatically without annotated object by default have an `ObjectBinding` that simply stores the value in a field of the `ObjectBinding`.
+
+You may create a custom binding that delegates to some other data structure to retrieve and store the value.
+
+A binding is either a getter or a setter:
+[source,java]
+----
+public static interface IGetter {
+    /** Returns the current value of the binding. For multi-value options and positional
+     * parameters, this method returns an array, collection or map to add values to.
+     * @throws PicocliException if a problem occurred while obtaining the current value
+     * @throws Exception internally, picocli call sites will catch any exceptions
+     *         thrown from here and rethrow them wrapped in a PicocliException */
+    <T> T get() throws Exception;
+}
+----
+
+[source,java]
+----
+public static interface ISetter {
+    /** Sets the new value of the option or positional parameter.
+     *
+     * @param value the new value of the option or positional parameter
+     * @param <T> type of the value
+     * @return the previous value of the binding (if supported by this binding)
+     * @throws PicocliException if a problem occurred while setting the new value
+     * @throws Exception internally, picocli call sites will catch any exceptions
+     *         thrown from here and rethrow them wrapped in a PicocliException */
+    <T> T set(T value) throws Exception;
+}
+----
+
+For single-value options, picocli will simply invoke the setter when an option or positional parameter is matched on the command line.
+
+For multi-value options or positional parameters, picocli will call the getter to get the current value, add the newly matched value, and call the setter with the result.
+For arrays, this means the existing elements are copied into a new array that is one element larger, and this new array is then set.
+For collections and maps, the new value is added to the collection returned by the getter.
+If the getter returns `null`, a new array, collection, or map is created.
+
+== Parse Result
+For the below examples, we use the following parser configuration:
+[source,java]
+----
+CommandSpec spec = CommandSpec.create();
+spec.addOption(OptionSpec.builder("-V", "--verbose").build());
+spec.addOption(OptionSpec.builder("-f", "--file")
+        .paramLabel("FILES")
+        .type(List.class)
+        .auxiliaryTypes(File.class) // this option is of type List<File>
+        .description("The files to process").build());
+spec.addOption(OptionSpec.builder("-n", "--num")
+        .paramLabel("COUNT")
+        .type(int[].class)
+        .splitRegex(",")
+        .description("Comma-separated list of integers").build());
+CommandLine commandLine = new CommandLine(spec);
+----
+
+=== Querying for Options
+
+The `CommandLine::parseArgs` method returns a `ParseResult` object that allows client code to query which options and positional parameters were matched for a given command.
+
+[source,java]
+----
+String[] args = { "--verbose", "-f", "file1", "--file=file2", "-n1,2,3" };
+ParseResult pr = commandLine.parseArgs(args);
+
+List<String> originalArgs = pr.originalArgs(); // lists all command line args
+assert Arrays.asList(args).equals(originalArgs);
+
+assert pr.hasMatchedOption("--verbose"); // as specified on command line
+assert pr.hasMatchedOption("-V");        // other aliases work also
+assert pr.hasMatchedOption('V');         // single-character alias works too
+assert pr.hasMatchedOption("verbose");   // and, command name without hyphens
+----
+
+=== Matched Option Values
+
+The `matchedOptionValue` method returns the command line value or values, converted to the option's type. This method requires a default value, which will be returned in case the option was not matched on the command line. In the above example, we defined the `--file` option to be of type `List<File>`, so we pass in an empty list as the default value:
+
+[source,java]
+----
+ParseResult pr = commandLine.parseArgs("-f", "file1", "--file=file2", "-n1,2,3");
+
+List<File> defaultValue = Collections.emptyList();
+List<File> expected     = Arrays.asList(new File("file1"), new File("file2"));
+
+assert expected.equals(pr.matchedOptionValue('f', defaultValue));
+assert expected.equals(pr.matchedOptionValue("--file", defaultValue));
+
+assert Arrays.equals(new int[]{1,2,3}, pr.matchedOptionValue('n', new int[0]));
+----
+
+=== Original Option Values
+
+Use the `OptionSpec.stringValues()` or `OptionSpec.originalStringValues()` method to get a list of all values specified on the command line for an option.
+The `stringValues()` method returns the arguments after splitting but before type conversion, while
+the `originalStringValues()` method returns the matched arguments as specified on the command line (before splitting).
+
+[source,java]
+----
+ParseResult pr = commandLine.parseArgs("-f", "file1", "--file=file2", "-n1,2,3");
+
+// Command line arguments after splitting but before type conversion
+assert "1".equals(pr.matchedOption('n').stringValues().get(0));
+assert "2".equals(pr.matchedOption('n').stringValues().get(1));
+assert "3".equals(pr.matchedOption('n').stringValues().get(2));
+
+// Command line arguments as found on the command line
+assert "1,2,3".equals(pr.matchedOption("--num").originalStringValues().get(0));
+----
+
+
+=== Subcommands
+
+Use the `hasSubcommand` method to determine whether the command line contained subcommands. The `subcommand` method returns a different `ParseResult` object that can be used to query which options and positional parameters were matched for the subcommand.
+[source,java]
+----
+class App {
+    @Option(names = "-x") String x;
+}
+class Sub {
+    @Parameters String[] all;
+}
+CommandLine cmd = new CommandLine(new App());
+cmd.addSubcommand("sub", new Sub());
+ParseResult parseResult = cmd.parseArgs("-x", "xval", "sub", "1", "2", "3");
+
+assert parseResult.hasMatchedOption("-x");
+assert "xval".equals(parseResult.matchedOptionValue("-x", "default"));
+
+assert parseResult.hasSubcommand();
+ParseResult subResult = parseResult.subcommand();
+
+assert  subResult.hasMatchedPositional(0);
+assert  subResult.hasMatchedPositional(1);
+assert  subResult.hasMatchedPositional(2);
+assert !subResult.hasMatchedPositional(3);
+----
+
+
+== Parsing and Result Processing
+
+=== Basic Processing
+The most basic way to parse the command line is to call the `CommandLine::parseArgs` method and inspect the resulting `ParseResult` object.
+
+The `parseArgs` method allows applications to use picocli _as a library_. See the <<Execute,Execute Framework>> section below on how to use picocli _as a framework_.
+
+Using picocli as a library via the `parseArgs` method is straightforward and leaves the application in control, but doing this correctly means that the application need to take care of many things:
+
+* check if usage help or version help was requested
+* handle invalid user input
+* if user input was valid, invoke the business logic
+* handle runtime errors in the business logic
+* optionally return an exit code for all of the above
+
+
+An application that handles all of these cases could look something like this:
+[source,java]
+----
+public static void main(String... args) {
+    int exitCode = myParse(args);
+    System.exit(exitCode);
+}
+
+int myParse(String... args) {
+    CommandSpec spec = CommandSpec.create();
+    // add options and positional parameters
+
+    CommandLine cmd = new CommandLine(spec);
+    try {
+        ParseResult parseResult = cmd.parseArgs(args);
+
+        // Did user request usage help (--help)?
+        if (cmd.isUsageHelpRequested()) {
+            cmd.usage(cmd.getOut());
+            return cmd.getCommandSpec().exitCodeOnUsageHelp();
+
+        // Did user request version help (--version)?
+        } else if (cmd.isVersionHelpRequested()) {
+            cmd.printVersionHelp(cmd.getOut());
+            return cmd.getCommandSpec().exitCodeOnVersionHelp();
+        }
+        // invoke the business logic
+        myBusinessLogic(parseResult);
+        return cmd.getCommandSpec().exitCodeOnSuccess();
+
+    // invalid user input: print error message and usage help
+    } catch (ParameterException ex) {
+        cmd.getErr().println(ex.getMessage());
+        if (!UnmatchedArgumentException.printSuggestions(ex, cmd.getErr())) {
+            ex.getCommandLine().usage(cmd.getErr());
+        }
+        return cmd.getCommandSpec().exitCodeOnInvalidInput();
+
+    // exception occurred in business logic
+    } catch (Exception ex) {
+        ex.printStackTrace(cmd.getErr());
+        return cmd.getCommandSpec().exitCodeOnExecutionException();
+    }
+}
+
+void myBusinessLogic(ParseResult pr) throws java.io.IOException {
+    int count = pr.matchedOptionValue('c', 1);
+    List<File> files = pr.matchedPositionalValue(0, Collections.<File>emptyList());
+    for (File f : files) {
+        for (int i = 0; i < count; i++) {
+            System.out.printf("%d: %s%n", i, f.getCanonicalFile());
+        }
+    }
+}
+----
+
+[[Execute]]
+=== `Execute` Framework [[_execute_convenience_method]]
+
+The `CommandLine` class has an `execute` method which allows applications to reduce some boilerplate when executing the command.
+
+It takes care of requests for usage or version help, printing errors if the user input was invalid, invoking the business logic, handling any runtime exceptions in the business logic, and finally returning an exit code. The framework has reasonable defaults for each of these tasks, but they can all be configured.
+
+The example below demonstrates how to customize and invoke the command:
+
+[source,java]
+----
+public class MyApp {
+
+    public static void main(String[] args) {
+        CommandSpec spec = CommandSpec.create();
+        spec.mixinStandardHelpOptions(true); // usageHelp and versionHelp options
+        spec.addOption(OptionSpec.builder("-c", "--count")
+                .paramLabel("COUNT")
+                .type(int.class)
+                .description("number of times to execute").build());
+        spec.addPositional(PositionalParamSpec.builder()
+                .paramLabel("FILES")
+                .type(List.class).auxiliaryTypes(File.class) // List<File>
+                .description("The files to process").build());
+        CommandLine commandLine = new CommandLine(spec);
+
+        // optionally configure streams and handlers to be used
+        commandLine.setCaseInsensitiveEnumValuesAllowed(true) //configure a parser option
+            .setOut(myOutWriter()) // configure an alternative to System.out
+            .setErr(myErrWriter()) // configure an alternative to System.err
+            .setColorScheme(myColorScheme()) // configure a custom color scheme
+            .setExitCodeExceptionMapper(myMapper()) //  map exception to exit code
+            .setParameterExceptionHandler(MyApp::invalidUserInput) // configure a custom handler
+            .setExecutionExceptionHandler(MyApp::runtimeException) // configure a custom handler
+        ;
+        // set an execution strategy (the run(ParseResult) method) that will be called
+        // by CommandLine.execute(args) when user input was valid
+        commandLine.setExecutionStrategy(MyApp::run);
+        int exitCode = commandLine.execute(args);
+        System.exit(exitCode);
+    }
+
+    static int run(ParseResult pr) {
+        // handle requests for help or version information
+        Integer helpExitCode = CommandLine.executeHelpRequest(pr);
+        if (helpExitCode != null) { return helpExitCode; }
+
+        // implement the business logic
+        int count = pr.matchedOptionValue('c', 1);
+        List<File> files = pr.matchedPositionalValue(0, Collections.<File>emptyList());
+        for (File f : files) {
+            for (int i = 0; i < count; i++) {
+                System.out.println(i + " " + f.getName());
+            }
+        }
+        return files.size();
+    }
+
+    // custom handler for runtime errors that does not print a stack trace
+    static int runtimeException(Exception e,
+                                CommandLine commandLine,
+                                ParseResult parseResult) {
+        commandLine.getErr().println("INTERNAL ERROR: " + e.getMessage());
+        return CommandLine.ExitCode.SOFTWARE;
+    }
+
+    // custom handler for invalid input that does not print usage help
+    static int invalidUserInput(ParameterException e, String[] strings) {
+        CommandLine commandLine = e.getCommandLine();
+        commandLine.getErr().println("ERROR: " + e.getMessage());
+        commandLine.getErr().println("Try '"
+                + commandLine.getCommandSpec().qualifiedName()
+                + " --help' for more information.");
+        return CommandLine.ExitCode.USAGE;
+    }
+}
+----
+
+For more detail, see the https://picocli.info/#execute[Executing Commands] section of the user manual.

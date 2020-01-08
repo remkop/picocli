@@ -79,11 +79,12 @@ public class ModelParseResultTest {
         ParseResult result = new CommandLine(new App()).parseArgs(args);
         assertEquals(Arrays.asList(args), result.originalArgs());
 
-        assertSame(result.commandSpec().positionalParameters().get(0), result.tentativeMatch.get(0));
-        assertSame(result.commandSpec().positionalParameters().get(0), result.tentativeMatch.get(1));
-        assertSame(result.commandSpec().positionalParameters().get(1), result.tentativeMatch.get(2));
-        assertSame(result.commandSpec().positionalParameters().get(1), result.tentativeMatch.get(3));
-        assertSame(result.commandSpec().positionalParameters().get(1), result.tentativeMatch.get(4));
+        List<PositionalParamSpec> positionals = result.commandSpec().positionalParameters();
+        assertSame(positionals.get(0), result.tentativeMatch.get(0));
+        assertSame(positionals.get(0), result.tentativeMatch.get(1));
+        assertSame(positionals.get(1), result.tentativeMatch.get(2));
+        assertSame(positionals.get(1), result.tentativeMatch.get(3));
+        assertSame(positionals.get(1), result.tentativeMatch.get(4));
 
         assertTrue(result.unmatched().isEmpty());
         assertFalse(result.hasSubcommand());
@@ -91,14 +92,25 @@ public class ModelParseResultTest {
         assertFalse(result.isVersionHelpRequested());
 
         assertEquals(Collections.emptyList(), result.matchedOptions());
-        assertEquals(3, result.matchedPositionals().size());
+        assertEquals(3, result.matchedPositionalsSet().size());
+        assertEquals(new LinkedHashSet<PositionalParamSpec>(positionals), result.matchedPositionalsSet());
+
+        assertEquals(5 + 2 + 4, result.matchedPositionals().size());
         assertEquals(Range.valueOf("0..1"), result.matchedPositionals().get(0).index());
         assertEquals(Range.valueOf("0..*"), result.matchedPositionals().get(1).index());
-        assertEquals(Range.valueOf("1..*"), result.matchedPositionals().get(2).index());
+        assertEquals(Range.valueOf("0..1"), result.matchedPositionals().get(2).index());
+        assertEquals(Range.valueOf("0..*"), result.matchedPositionals().get(3).index());
+        assertEquals(Range.valueOf("1..*"), result.matchedPositionals().get(4).index());
+        assertEquals(Range.valueOf("0..*"), result.matchedPositionals().get(5).index());
+        assertEquals(Range.valueOf("1..*"), result.matchedPositionals().get(6).index());
+        assertEquals(Range.valueOf("0..*"), result.matchedPositionals().get(7).index());
+        assertEquals(Range.valueOf("1..*"), result.matchedPositionals().get(8).index());
+        assertEquals(Range.valueOf("0..*"), result.matchedPositionals().get(9).index());
+        assertEquals(Range.valueOf("1..*"), result.matchedPositionals().get(10).index());
 
         assertArrayEquals(args, (String[]) result.matchedPositionals().get(1).getValue());
         assertArrayEquals(new String[]{"a", "b"}, (String[]) result.matchedPositionals().get(0).getValue());
-        assertArrayEquals(new String[]{"b", "c", "d", "e"}, (String[]) result.matchedPositionals().get(2).getValue());
+        assertArrayEquals(new String[]{"b", "c", "d", "e"}, (String[]) result.matchedPositionals().get(4).getValue());
 
         for (int i = 0; i < args.length; i++) {
             assertTrue(result.hasMatchedPositional(i));

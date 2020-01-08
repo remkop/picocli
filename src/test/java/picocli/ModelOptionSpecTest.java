@@ -1,9 +1,12 @@
 package picocli;
 
 import org.junit.Test;
+
+import picocli.CommandLine.Command;
 import picocli.CommandLine.Help.Visibility;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.InitializationException;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.IGetter;
 import picocli.CommandLine.Model.ISetter;
 import picocli.CommandLine.Model.OptionSpec;
@@ -11,6 +14,8 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Range;
 
 import java.io.StringWriter;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertFalse;
@@ -158,7 +163,7 @@ public class ModelOptionSpecTest {
     @Test()
     public void testOptionSpecRequiresNonNullNameArray() {
         try {
-            OptionSpec.builder(null).build();
+            OptionSpec.builder((String[]) null).build();
             fail("Expected exception");
         } catch (InitializationException ex) {
             assertEquals("OptionSpec names cannot be null. Specify at least one option name.", ex.getMessage());
@@ -316,6 +321,25 @@ public class ModelOptionSpecTest {
     }
 
     @Test
+    public void testOptionHasCommand() {
+        class App {
+            @Option(names = "-x") int x;
+        }
+
+        CommandSpec cmd = new CommandLine(new App()).getCommandSpec();
+        CommandSpec cmd2 = new CommandLine(new App()).getCommandSpec();
+        OptionSpec optx = cmd.findOption('x');
+        assertEquals(cmd, optx.command());
+        OptionSpec opty = OptionSpec.builder("-y").arity("1").build();
+        assertEquals(null, opty.command());
+        cmd.add(opty);
+        assertEquals(cmd, opty.command());
+        cmd2.add(opty);
+        assertEquals(cmd2, opty.command());
+        assertEquals(opty, cmd.findOption('y'));
+    }
+
+    @Test
     public void testOptionSpecEquals() {
         OptionSpec.Builder option = OptionSpec.builder("-x")
                 .arity("1")
@@ -324,6 +348,7 @@ public class ModelOptionSpecTest {
                 .splitRegex(";")
                 .description("desc")
                 .descriptionKey("key")
+                .type(Map.class)
                 .auxiliaryTypes(Integer.class, Double.class)
                 .help(true)
                 .usageHelp(true)
@@ -339,7 +364,8 @@ public class ModelOptionSpecTest {
         assertNotEquals(p1, option.required(true).splitRegex(",").build());
         assertNotEquals(p1, option.splitRegex(";").description("xyz").build());
         assertNotEquals(p1, option.description("desc").descriptionKey("XX").build());
-        assertNotEquals(p1, option.descriptionKey("key").auxiliaryTypes(Short.class).build());
+        assertNotEquals(p1, option.descriptionKey("key").type(List.class).build());
+        assertNotEquals(p1, option.type(Map.class).auxiliaryTypes(Short.class).build());
         assertEquals(p1, option.auxiliaryTypes(Integer.class, Double.class).build());
 
         assertNotEquals(p1, option.help(false).build());

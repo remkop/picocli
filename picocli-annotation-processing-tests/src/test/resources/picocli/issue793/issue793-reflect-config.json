@@ -1,0 +1,60 @@
+[
+  {
+    "name" : "picocli.issue793.Issue793",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "composite" },
+      { "name" : "mode" }
+    ],
+    "methods" : [
+      { "name" : "method", "parameterTypes" : ["picocli.issue793.Issue793$Composite"] }
+    ]
+  },
+  {
+    "name" : "picocli.issue793.Issue793$Composite",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "dependent" },
+      { "name" : "exclusive" }
+    ]
+  },
+  {
+    "name" : "picocli.issue793.Issue793$Dependent",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "f" },
+      { "name" : "g" }
+    ]
+  },
+  {
+    "name" : "picocli.issue793.Issue793$Exclusive",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "a" },
+      { "name" : "b" }
+    ]
+  },
+  {
+    "name" : "picocli.issue793.Issue793$Mode",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "decrypt" },
+      { "name" : "encrypt" }
+    ]
+  }
+]

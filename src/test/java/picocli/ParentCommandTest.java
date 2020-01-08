@@ -49,6 +49,7 @@ public class ParentCommandTest {
             parent.result = result;
         }
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testParentInjectedOnParseWhenConfiguredAsSubcommand() {
         List<CommandLine> result = new CommandLine(new Top()).parse("-d/tmp/blah", "sub", "3");
@@ -61,10 +62,11 @@ public class ParentCommandTest {
     @Test
     public void testParentInjectedOnRunWhenConfiguredAsSubcommand() {
         Top top = new Top();
-        CommandLine.run(top, System.out, "-d/tmp/blah", "sub", "3");
+        new CommandLine(top).execute("-d/tmp/blah", "sub", "3");
         assertEquals(new File("/tmp/blah"), top.baseDirectory);
         assertEquals(3 * "/tmp/blah".length(), top.result);
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testParentNotInjectedWhenConfiguredAsTopLevelCommand() {
         List<CommandLine> result = new CommandLine(new Sub()).parse("3");
@@ -73,6 +75,7 @@ public class ParentCommandTest {
         assertEquals(3, sub.count);
         assertEquals(0, sub.result);
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testParentInjectedWhenAddedAsSubcommand() {
         class Top1 {
@@ -108,9 +111,9 @@ public class ParentCommandTest {
             new CommandLine(top1).addSubcommand("sub1", sub1);
             fail("expected failure");
         } catch (InitializationException ex) {
-            String prefix = "Unable to initialize @ParentCommand field: java.lang.IllegalArgumentException";
+            String prefix = "Unable to initialize @ParentCommand field: picocli.CommandLine$PicocliException";
             if (prefix.equals(ex.getMessage())) { return; }
-            String expected = prefix + ": Can not set java.lang.String field " + sub1.getClass().getName() + ".parent to " + top1.getClass().getName();
+            String expected = prefix + ": Could not set value for field private java.lang.String " + sub1.getClass().getName() + ".parent to " + top1;
             assertEquals(expected, ex.getMessage());
         }
     }

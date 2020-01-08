@@ -15,8 +15,24 @@
  */
 package picocli;
 
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.contrib.java.lang.system.SystemErrRule;
+import org.junit.rules.TestRule;
+import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.TypeConversionException;
+import picocli.CommandLine.UnmatchedArgumentException;
+
 import java.io.File;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
@@ -32,20 +48,22 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Currency;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.contrib.java.lang.system.SystemErrRule;
-import org.junit.rules.TestRule;
-import picocli.CommandLine.*;
-
-import static java.util.concurrent.TimeUnit.*;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.*;
 import static picocli.CommandLineTypeConversionTest.ResultTypes.COMPLETE;
 import static picocli.CommandLineTypeConversionTest.ResultTypes.PARTIAL;
@@ -139,6 +157,7 @@ public class CommandLineTypeConversionTest {
         assertEquals("Driver", null, bean.aDriver);
         assertEquals("Timestamp", null, bean.aTimestamp);
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testTypeConversionSucceedsForValidInput() throws Exception {
         //Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
@@ -242,15 +261,15 @@ public class CommandLineTypeConversionTest {
         };
         commandLine.registerConverter(Byte.class, converter);
         commandLine.registerConverter(Byte.TYPE, converter);
-        commandLine.parse("-byte", "0x1F", "-Byte", "0x0F");
+        commandLine.parseArgs("-byte", "0x1F", "-Byte", "0x0F");
         assertEquals(0x1F, bean.byteField);
         assertEquals(Byte.valueOf((byte) 0x0F), bean.aByteField);
 
-        commandLine.parse("-byte", "010", "-Byte", "010");
+        commandLine.parseArgs("-byte", "010", "-Byte", "010");
         assertEquals(8, bean.byteField);
         assertEquals(Byte.valueOf((byte) 8), bean.aByteField);
 
-        commandLine.parse("-byte", "34", "-Byte", "34");
+        commandLine.parseArgs("-byte", "34", "-Byte", "34");
         assertEquals(34, bean.byteField);
         assertEquals(Byte.valueOf((byte) 34), bean.aByteField);
     }
@@ -274,15 +293,15 @@ public class CommandLineTypeConversionTest {
         };
         commandLine.registerConverter(Short.class, shortConverter);
         commandLine.registerConverter(Short.TYPE, shortConverter);
-        commandLine.parse("-short", "0xFF", "-Short", "0x6FFE");
+        commandLine.parseArgs("-short", "0xFF", "-Short", "0x6FFE");
         assertEquals(0xFF, bean.shortField);
         assertEquals(Short.valueOf((short) 0x6FFE), bean.aShortField);
 
-        commandLine.parse("-short", "010", "-Short", "010");
+        commandLine.parseArgs("-short", "010", "-Short", "010");
         assertEquals(8, bean.shortField);
         assertEquals(Short.valueOf((short) 8), bean.aShortField);
 
-        commandLine.parse("-short", "34", "-Short", "34");
+        commandLine.parseArgs("-short", "34", "-Short", "34");
         assertEquals(34, bean.shortField);
         assertEquals(Short.valueOf((short) 34), bean.aShortField);
     }
@@ -306,15 +325,15 @@ public class CommandLineTypeConversionTest {
         };
         commandLine.registerConverter(Integer.class, intConverter);
         commandLine.registerConverter(Integer.TYPE, intConverter);
-        commandLine.parse("-int", "0xFF", "-Integer", "0xFFFF");
+        commandLine.parseArgs("-int", "0xFF", "-Integer", "0xFFFF");
         assertEquals(255, bean.intField);
         assertEquals(Integer.valueOf(0xFFFF), bean.anIntegerField);
 
-        commandLine.parse("-int", "010", "-Integer", "010");
+        commandLine.parseArgs("-int", "010", "-Integer", "010");
         assertEquals(8, bean.intField);
         assertEquals(Integer.valueOf(8), bean.anIntegerField);
 
-        commandLine.parse("-int", "34", "-Integer", "34");
+        commandLine.parseArgs("-int", "34", "-Integer", "34");
         assertEquals(34, bean.intField);
         assertEquals(Integer.valueOf(34), bean.anIntegerField);
     }
@@ -338,33 +357,37 @@ public class CommandLineTypeConversionTest {
         };
         commandLine.registerConverter(Long.class, longConverter);
         commandLine.registerConverter(Long.TYPE, longConverter);
-        commandLine.parse("-long", "0xAABBCC", "-Long", "0xAABBCCDD");
+        commandLine.parseArgs("-long", "0xAABBCC", "-Long", "0xAABBCCDD");
         assertEquals(0xAABBCC, bean.longField);
         assertEquals(Long.valueOf(0xAABBCCDDL), bean.aLongField);
 
-        commandLine.parse("-long", "010", "-Long", "010");
+        commandLine.parseArgs("-long", "010", "-Long", "010");
         assertEquals(8, bean.longField);
         assertEquals(Long.valueOf(8), bean.aLongField);
 
-        commandLine.parse("-long", "34", "-Long", "34");
+        commandLine.parseArgs("-long", "34", "-Long", "34");
         assertEquals(34, bean.longField);
         assertEquals(Long.valueOf(34), bean.aLongField);
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testTimeFormatHHmmSupported() throws ParseException {
         SupportedTypes bean = CommandLine.populateCommand(new SupportedTypes(), "-Time", "23:59");
         assertEquals("Time", new Time(new SimpleDateFormat("HH:mm").parse("23:59").getTime()), bean.aTimeField);
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testTimeFormatHHmmssSupported() throws ParseException {
         SupportedTypes bean = CommandLine.populateCommand(new SupportedTypes(), "-Time", "23:59:58");
         assertEquals("Time", new Time(new SimpleDateFormat("HH:mm:ss").parse("23:59:58").getTime()), bean.aTimeField);
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testTimeFormatHHmmssDotSSSSupported() throws ParseException {
         SupportedTypes bean = CommandLine.populateCommand(new SupportedTypes(), "-Time", "23:59:58.123");
         assertEquals("Time", new Time(new SimpleDateFormat("HH:mm:ss.SSS").parse("23:59:58.123").getTime()), bean.aTimeField);
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testTimeFormatHHmmssCommaSSSSupported() throws ParseException {
         SupportedTypes bean = CommandLine.populateCommand(new SupportedTypes(), "-Time", "23:59:58,123");
@@ -409,57 +432,14 @@ public class CommandLineTypeConversionTest {
     @Test
     public void testISO8601TimeConverterWhenJavaSqlModuleAvailable() throws Exception {
         Class<?> c = Class.forName("picocli.CommandLine$BuiltIn$ISO8601TimeConverter");
-        Object converter = c.newInstance();
+        Constructor<?> converterConstructor = c.getDeclaredConstructor(Constructor.class);
+        Object converter = converterConstructor.newInstance(java.sql.Time.class.getDeclaredConstructor(long.class));
+
         Method createTime = c.getDeclaredMethod("createTime", long.class);
         createTime.setAccessible(true);
         long now = System.currentTimeMillis();
         Time actual = (Time) createTime.invoke(converter, now);
         assertEquals("ISO8601TimeConverter works if java.sql module is available", new Time(now), actual);
-    }
-    @Test
-    public void testISO8601TimeConverterExceptionHandling() throws Exception {
-        Class<?> c = Class.forName("picocli.CommandLine$BuiltIn$ISO8601TimeConverter");
-        Object converter = c.newInstance();
-        Method createTime = c.getDeclaredMethod("createTime", long.class);
-        createTime.setAccessible(true);
-        long now = System.currentTimeMillis();
-
-        // simulate the absence of the java.sql module
-        Field fqcn = c.getDeclaredField("FQCN");
-        fqcn.setAccessible(true);
-
-        Object original = fqcn.get(null);
-        fqcn.set(null, "a.b.c"); // change FQCN to an unknown class
-        assertEquals("a.b.c", fqcn.get(null));
-
-        try {
-            createTime.invoke(converter, now);
-            fail("Expect exception");
-        } catch (InvocationTargetException outer) {
-            TypeConversionException ex = (TypeConversionException) outer.getTargetException();
-            assertTrue(ex.getMessage().startsWith("Unable to create new java.sql.Time with long value " + now));
-        } finally {
-            fqcn.set(null, original); // change FQCN back to java.sql.Time for other tests
-        }
-    }
-    @Test
-    public void testISO8601TimeConverterRegisterIfAvailableExceptionHandling() throws Exception {
-        Class<?> c = Class.forName("picocli.CommandLine$BuiltIn$ISO8601TimeConverter");
-        Object converter = c.newInstance();
-
-        Method registerIfAvailable = c.getDeclaredMethod("registerIfAvailable", Map.class, CommandLine.Tracer.class);
-
-        System.setProperty("picocli.trace", "DEBUG");
-        CommandLine.Tracer tracer = new CommandLine.Tracer();
-
-        registerIfAvailable.invoke(converter, null, tracer);
-
-        String expected = String.format("[picocli DEBUG] Could not register converter for java.sql.Time: java.lang.NullPointerException%n");
-        assertEquals(expected, systemErrRule.getLog());
-
-        systemErrRule.clearLog();
-        registerIfAvailable.invoke(null, null, tracer);
-        assertEquals("logged only once", "", systemErrRule.getLog());
     }
 
     @Test
@@ -593,6 +573,7 @@ public class CommandLineTypeConversionTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testRegisterCustomConverter() {
         class Glob {
@@ -624,6 +605,7 @@ public class CommandLineTypeConversionTest {
         public final String glob;
         public MyGlob(String glob) { this.glob = glob; }
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testAnnotateCustomConverter() {
         class App {
@@ -672,7 +654,7 @@ public class CommandLineTypeConversionTest {
         CommandLine commandLine = new CommandLine(app);
 
         String[] args = {"-x", "1234", "-t", "BLOB", "CLOB", "5678"};
-        commandLine.parse(args);
+        commandLine.parseArgs(args);
         assertEquals(1234, app.normalIntOption);
         assertEquals(Types.BLOB, app.sqlTypeOption);
         assertEquals(Types.CLOB, app.sqlTypeParam);
@@ -692,7 +674,7 @@ public class CommandLineTypeConversionTest {
         }
         CommandLine commandLine = new CommandLine(new App());
         try {
-            commandLine.parse("anything");
+            commandLine.parseArgs("anything");
         } catch (CommandLine.ParameterException ex) {
             assertEquals("Invalid value for positional parameter at index 0..* (<sqlTypeParam>): cannot convert 'anything' to int (java.lang.IllegalStateException: bad converter)", ex.getMessage());
         }
@@ -714,7 +696,7 @@ public class CommandLineTypeConversionTest {
         }
         App app = new App();
         CommandLine commandLine = new CommandLine(app, new Plus23ConverterFactory());
-        commandLine.parse("100");
+        commandLine.parseArgs("100");
         assertEquals(123, app.converted);
     }
     static class EnumParams {
@@ -748,7 +730,7 @@ public class CommandLineTypeConversionTest {
     @Test
     public void testEnumTypeConversionIsCaseInsensitiveIfConfigured() {
         EnumParams params = new EnumParams();
-        new CommandLine(params).setCaseInsensitiveEnumValuesAllowed(true).parse(
+        new CommandLine(params).setCaseInsensitiveEnumValuesAllowed(true).parseArgs(
                 "-timeUnit sEcONds -timeUnitArray milliSeconds miCroSeConds -timeUnitList SEConds MiCROsEconds nanoSEConds".split(" "));
         assertEquals(SECONDS, params.timeUnit);
         assertArrayEquals(new TimeUnit[]{MILLISECONDS, TimeUnit.MICROSECONDS}, params.timeUnitArray);
@@ -761,29 +743,134 @@ public class CommandLineTypeConversionTest {
         public String toString() { return name().toLowerCase(); }
     }
     @Test
-    public void testEnumTypeConversionErrorMessageUsesConstantValuesNotToString() {
+    public void testEnumTypeConversionErrorMessage() {
+        Object[][] io = new Object[][] {
+                {"bxg", null},
+                {"BXG", null},
+                {"big", MyTestEnum.BIG},
+                {"BIG", MyTestEnum.BIG},
+        };
         class App {
             @Option(names = "-e") MyTestEnum myEnum;
         }
-        App params = new App();
-        try {
-            new CommandLine(params).parse("-e big".split(" "));
-        } catch (ParameterException ex) {
-            assertEquals("Invalid value for option '-e': expected one of [BIG, SMALL, TINY] (case-sensitive) but was 'big'", ex.getMessage());
+        for (Object[] inOut : io) {
+            App params = new App();
+            String param = inOut[0].toString();
+            if (inOut[1] == null) { // invalid
+                try {
+                    new CommandLine(params).parseArgs("-e", param);
+                    fail("Expected exception for " + param);
+                } catch (ParameterException ex) {
+                    assertEquals("Invalid value for option '-e': expected one of [BIG, big, SMALL, small, TINY, tiny] (case-sensitive) but was '" + param + "'", ex.getMessage());
+                }
+            } else {
+                new CommandLine(params).parseArgs("-e", param);
+                assertSame(inOut[1], params.myEnum);
+            }
         }
     }
     @Test
-    public void testEnumCaseInsensitiveTypeConversionErrorMessageUsesConstantValuesNotToString() {
+    public void testEnumCaseInsensitiveTypeConversionErrorMessage() {
+        Object[][] io = new Object[][] {
+                {"bxg", null},
+                {"BXG", null},
+                {"big", MyTestEnum.BIG},
+                {"BIG", MyTestEnum.BIG},
+        };
         class App {
             @Option(names = "-e") MyTestEnum myEnum;
         }
-        App params = new App();
-        try {
-            new CommandLine(params).setCaseInsensitiveEnumValuesAllowed(true).parse("-e big".split(" "));
-        } catch (ParameterException ex) {
-            assertEquals("Invalid value for option '-e': expected one of [BIG, SMALL, TINY] (case-insensitive) but was 'big'", ex.getMessage());
+        for (Object[] inOut : io) {
+            App params = new App();
+            String param = inOut[0].toString();
+            if (inOut[1] == null) { // invalid
+                try {
+                    new CommandLine(params)
+                            .setCaseInsensitiveEnumValuesAllowed(true).parseArgs("-e", param);
+                    fail("Expected exception for " + param);
+                } catch (ParameterException ex) {
+                    assertEquals("Invalid value for option '-e': expected one of [BIG, SMALL, TINY] (case-insensitive) but was '" + param + "'", ex.getMessage());
+                }
+            } else {
+                new CommandLine(params)
+                        .setCaseInsensitiveEnumValuesAllowed(true).parseArgs("-e", param);
+                assertSame(inOut[1], params.myEnum);
+            }
         }
     }
+    enum Digits {
+        ONE("1"), TWO("two"), THREE("3three");
+        String str;
+        Digits(String s) {str = s;}
+        @Override
+        public String toString() { return str; }
+    }
+    @Test
+    public void testEnumTypeConversionErrorMessage2() {
+        Object[][] io = new Object[][] {
+                {"one",   null},
+                {"1ONE",  null},
+                {"ONE",   Digits.ONE},
+                {"1",     Digits.ONE},
+                {"TWO",   Digits.TWO},
+                {"two",   Digits.TWO},
+                {"2",     null},
+                {"THREE", Digits.THREE},
+                {"three", null},
+        };
+        class App {
+            @Option(names = "-e") Digits myEnum;
+        }
+        for (Object[] inOut : io) {
+            App params = new App();
+            String param = inOut[0].toString();
+            if (inOut[1] == null) { // invalid
+                try {
+                    new CommandLine(params).parseArgs("-e", param);
+                    fail("Expected exception for " + param);
+                } catch (ParameterException ex) {
+                    assertEquals("Invalid value for option '-e': expected one of [ONE, 1, TWO, two, THREE, 3three] (case-sensitive) but was '" + param + "'", ex.getMessage());
+                }
+            } else {
+                new CommandLine(params).parseArgs("-e", param);
+                assertSame(inOut[1], params.myEnum);
+            }
+        }
+    }
+    @Test
+    public void testEnumCaseInsensitiveTypeConversionErrorMessage2() {
+        Object[][] io = new Object[][] {
+                {"one",   Digits.ONE},
+                {"1ONE",  null},
+                {"ONE",   Digits.ONE},
+                {"1",     Digits.ONE},
+                {"TWO",   Digits.TWO},
+                {"two",   Digits.TWO},
+                {"THREE", Digits.THREE},
+                {"three", Digits.THREE},
+        };
+        class App {
+            @Option(names = "-e") Digits myEnum;
+        }
+        for (Object[] inOut : io) {
+            App params = new App();
+            String param = inOut[0].toString();
+            if (inOut[1] == null) { // invalid
+                try {
+                    new CommandLine(params)
+                            .setCaseInsensitiveEnumValuesAllowed(true).parseArgs("-e", param);
+                    fail("Expected exception for " + param);
+                } catch (ParameterException ex) {
+                    assertEquals("Invalid value for option '-e': expected one of [ONE, 1, TWO, THREE, 3three] (case-insensitive) but was '" + param + "'", ex.getMessage());
+                }
+            } else {
+                new CommandLine(params)
+                        .setCaseInsensitiveEnumValuesAllowed(true).parseArgs("-e", param);
+                assertSame(inOut[1], params.myEnum);
+            }
+        }
+    }
+
     @Test
     public void testEnumArrayTypeConversionFailsForInvalidInput() {
         try {
@@ -813,14 +900,14 @@ public class CommandLineTypeConversionTest {
     public void testArrayOptionParametersAreAlwaysInstantiated() {
         EnumParams params = new EnumParams();
         TimeUnit[] array = params.timeUnitArray;
-        new CommandLine(params).parse("-timeUnitArray", "SECONDS", "MILLISECONDS");
+        new CommandLine(params).parseArgs("-timeUnitArray", "SECONDS", "MILLISECONDS");
         assertNotSame(array, params.timeUnitArray);
     }
     @Test
     public void testListOptionParametersAreInstantiatedIfNull() {
         EnumParams params = new EnumParams();
         assertNull(params.timeUnitList);
-        new CommandLine(params).parse("-timeUnitList", "SECONDS", "MICROSECONDS", "MILLISECONDS");
+        new CommandLine(params).parseArgs("-timeUnitList", "SECONDS", "MICROSECONDS", "MILLISECONDS");
         assertEquals(Arrays.asList(SECONDS, MICROSECONDS, MILLISECONDS), params.timeUnitList);
     }
     @Test
@@ -828,7 +915,7 @@ public class CommandLineTypeConversionTest {
         EnumParams params = new EnumParams();
         List<TimeUnit> list = new ArrayList<TimeUnit>();
         params.timeUnitList = list;
-        new CommandLine(params).parse("-timeUnitList", "SECONDS", "MICROSECONDS", "SECONDS");
+        new CommandLine(params).parseArgs("-timeUnitList", "SECONDS", "MICROSECONDS", "SECONDS");
         assertEquals(Arrays.asList(SECONDS, MICROSECONDS, SECONDS), params.timeUnitList);
         assertSame(list, params.timeUnitList);
     }
@@ -842,7 +929,7 @@ public class CommandLineTypeConversionTest {
             ArrayList<String> list;
         }
         App params = new App();
-        new CommandLine(params).parse("-list", "a", "-list", "b", "-map", "a=b");
+        new CommandLine(params).parseArgs("-list", "a", "-list", "b", "-map", "a=b");
         assertEquals(Arrays.asList("a", "b"), params.list);
 
         HashMap<String, String> expected = new HashMap<String, String>();
@@ -1011,24 +1098,6 @@ public class CommandLineTypeConversionTest {
         }
     }
 
-    @Test
-    public void testRegisterIfAvailableExceptionHandling() throws Exception {
-        Class<?> c = Class.forName("picocli.CommandLine$BuiltIn");
-        Method registerIfAvailable = c.getDeclaredMethod("registerIfAvailable", Map.class, CommandLine.Tracer.class,
-                String.class, String.class, String.class, Class[].class);
-
-        System.setProperty("picocli.trace", "DEBUG");
-        CommandLine.Tracer tracer = new CommandLine.Tracer();
-
-        registerIfAvailable.invoke(null, null, tracer, "a.b.c", null, null, null);
-        String expected = String.format("[picocli DEBUG] Could not register converter for a.b.c: java.lang.ClassNotFoundException: a.b.c%n");
-        assertEquals(expected, systemErrRule.getLog());
-
-        systemErrRule.clearLog();
-        registerIfAvailable.invoke(null, null, tracer, "a.b.c", null, null, null);
-        assertEquals("logged only once", "", systemErrRule.getLog());
-    }
-
     @Ignore("NetworkInterface.getByName returns null - does not throw an exception")
     @Test
     public void testNetworkInterfaceConverterExceptionHandling() {
@@ -1074,7 +1143,7 @@ public class CommandLineTypeConversionTest {
         try {
             CommandLine.populateCommand(new App(), "a:c", "1:3");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments: a:c, 1:3", ex.getMessage());
+            assertEquals("Unmatched arguments from index 0: 'a:c', '1:3'", ex.getMessage());
         }
     }
 
@@ -1086,7 +1155,7 @@ public class CommandLineTypeConversionTest {
         try {
             CommandLine.populateCommand(new App(), "a:c", "1:3");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments: a:c, 1:3", ex.getMessage());
+            assertEquals("Unmatched arguments from index 0: 'a:c', '1:3'", ex.getMessage());
         }
     }
     enum ResultTypes {

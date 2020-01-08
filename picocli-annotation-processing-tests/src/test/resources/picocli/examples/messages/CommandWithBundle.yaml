@@ -7,6 +7,7 @@ CommandSpec:
   defaultValueProvider: null
   versionProvider: null
   version: []
+  ArgGroups: []
   Options: []
   PositionalParams: []
   UnmatchedArgsBindings: []
@@ -44,22 +45,22 @@ CommandSpec:
     caseInsensitiveEnumValuesAllowed: false
     collectErrors: false
     limitSplit: false
-    toggleBooleanFlags: true
+    toggleBooleanFlags: false
   ResourceBundle:
-    usage.header.0: 'header0'
-    usage.header.1: 'header1'
-    usage.headerHeading: 'the headerHeading'
-    usage.descriptionHeading: 'the descriptionHeading'
-    usage.header.2: 'header2'
-    usage.header.3: 'header3'
-    usage.footerHeading: 'the footerHeading'
-    usage.description.3: 'description3'
-    usage.footer.1: 'footer1'
-    usage.footer.0: 'footer0'
     usage.description: 'Version control system'
-    usage.footer.3: 'footer3'
     usage.description.0: 'description0'
-    usage.footer.2: 'footer2'
     usage.description.1: 'description1'
     usage.description.2: 'description2'
+    usage.description.3: 'description3'
+    usage.descriptionHeading: 'the descriptionHeading'
+    usage.footer.0: 'footer0'
+    usage.footer.1: 'footer1'
+    usage.footer.2: 'footer2'
+    usage.footer.3: 'footer3'
+    usage.footerHeading: 'the footerHeading'
+    usage.header.0: 'header0'
+    usage.header.1: 'header1'
+    usage.header.2: 'header2'
+    usage.header.3: 'header3'
+    usage.headerHeading: 'the headerHeading'
   Subcommands: []

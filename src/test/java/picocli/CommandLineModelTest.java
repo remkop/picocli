@@ -17,6 +17,7 @@ package picocli;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import picocli.CommandLine.*;
@@ -24,14 +25,12 @@ import picocli.CommandLine.Help.Ansi;
 import picocli.CommandLine.Model.*;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.sql.Types;
 import java.util.*;
 
 import static org.junit.Assert.*;
-import static picocli.HelpTestUtil.*;
-import static picocli.HelpTestUtil.versionString;
+import static picocli.TestUtil.*;
+import static picocli.TestUtil.versionString;
 
 
 public class CommandLineModelTest {
@@ -40,6 +39,9 @@ public class CommandLineModelTest {
 
     @Rule
     public final SystemOutRule systemOutRule = new SystemOutRule().enableLog().muteForSuccessfulTests();
+
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
     @Test
     public void testEmptyModelUsageHelp() {
@@ -55,7 +57,7 @@ public class CommandLineModelTest {
         CommandSpec spec = CommandSpec.create();
         CommandLine commandLine = new CommandLine(spec);
         commandLine.setUnmatchedArgumentsAllowed(true);
-        commandLine.parse("-p", "123", "abc");
+        commandLine.parseArgs("-p", "123", "abc");
         assertEquals(Arrays.asList("-p", "123", "abc"), commandLine.getUnmatchedArguments());
     }
     
@@ -275,10 +277,10 @@ public class CommandLineModelTest {
         parent.addSubcommand("help", helpCommand);
 
         CommandLine commandLine = new CommandLine(parent);
-        commandLine.parse("help"); // no missing param exception
+        commandLine.parseArgs("help"); // no missing param exception
 
         try {
-            commandLine.parse();
+            commandLine.parseArgs();
         } catch (MissingParameterException ex) {
             assertEquals("Missing required option '-x=PARAM'", ex.getMessage());
             assertEquals(1, ex.getMissing().size());
@@ -293,7 +295,7 @@ public class CommandLineModelTest {
         spec.addOption(OptionSpec.builder("-V", "--version").versionHelp(true).description("show help and exit").build());
         spec.addOption(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("-c", "33");
+        commandLine.parseArgs("-c", "33");
         assertEquals(Integer.valueOf(33), spec.optionsMap().get("-c").getValue());
     } // TODO parse method should return an object offering only the options/positionals that were matched
 
@@ -306,10 +308,10 @@ public class CommandLineModelTest {
         spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
         try {
-            commandLine.parse("-c", "1", "2", "3");
+            commandLine.parseArgs("-c", "1", "2", "3");
             fail("Expected exception");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments: 2, 3", ex.getMessage());
+            assertEquals("Unmatched arguments from index 2: '2', '3'", ex.getMessage());
         }
     }
 
@@ -322,10 +324,10 @@ public class CommandLineModelTest {
         spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
         try {
-            commandLine.parse("1", "2", "3");
+            commandLine.parseArgs("1", "2", "3");
             fail("Expected exception");
         } catch (UnmatchedArgumentException ex) {
-            assertEquals("Unmatched arguments: 2, 3", ex.getMessage());
+            assertEquals("Unmatched arguments from index 1: '2', '3'", ex.getMessage());
         }
     }
 
@@ -337,7 +339,7 @@ public class CommandLineModelTest {
 
         spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("-c", "1", "2", "3");
+        commandLine.parseArgs("-c", "1", "2", "3");
         assertArrayEquals(new int[] {1, 2, 3}, (int[]) spec.optionsMap().get("-c").getValue());
     }
 
@@ -349,7 +351,7 @@ public class CommandLineModelTest {
 
         spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("1", "2", "3");
+        commandLine.parseArgs("1", "2", "3");
         assertArrayEquals(new int[] {1, 2, 3}, (int[]) spec.positionalParameters().get(0).getValue());
     }
 
@@ -361,7 +363,7 @@ public class CommandLineModelTest {
 
         spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("-c", "1", "2", "3");
+        commandLine.parseArgs("-c", "1", "2", "3");
         assertEquals(Arrays.asList(1, 2, 3), spec.optionsMap().get("-c").getValue());
     }
 
@@ -373,7 +375,7 @@ public class CommandLineModelTest {
 
         spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("1", "2", "3");
+        commandLine.parseArgs("1", "2", "3");
         assertEquals(Arrays.asList(1, 2, 3), spec.positionalParameters().get(0).getValue());
     }
 
@@ -385,7 +387,7 @@ public class CommandLineModelTest {
 
         spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("-c", "1", "2", "3");
+        commandLine.parseArgs("-c", "1", "2", "3");
         assertEquals(Arrays.asList("1", "2", "3"), spec.optionsMap().get("-c").getValue());
     }
 
@@ -397,7 +399,7 @@ public class CommandLineModelTest {
 
         spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("1", "2", "3");
+        commandLine.parseArgs("1", "2", "3");
         assertEquals(Arrays.asList("1", "2", "3"), spec.positionalParameters().get(0).getValue());
     }
 
@@ -409,7 +411,7 @@ public class CommandLineModelTest {
 
         spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("-c", "1=1.0", "2=2.0", "3=3.0");
+        commandLine.parseArgs("-c", "1=1.0", "2=2.0", "3=3.0");
         Map<Integer, Double> expected = new LinkedHashMap<Integer, Double>();
         expected.put(1, 1.0);
         expected.put(2, 2.0);
@@ -425,7 +427,7 @@ public class CommandLineModelTest {
 
         spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("1=1.0", "2=2.0", "3=3.0");
+        commandLine.parseArgs("1=1.0", "2=2.0", "3=3.0");
         Map<Integer, Double> expected = new LinkedHashMap<Integer, Double>();
         expected.put(1, 1.0);
         expected.put(2, 2.0);
@@ -441,7 +443,7 @@ public class CommandLineModelTest {
 
         spec.addOption(option);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("-c", "1=1.0", "2=2.0", "3=3.0");
+        commandLine.parseArgs("-c", "1=1.0", "2=2.0", "3=3.0");
         Map<String, String> expected = new LinkedHashMap<String, String>();
         expected.put("1", "1.0");
         expected.put("2", "2.0");
@@ -457,7 +459,7 @@ public class CommandLineModelTest {
 
         spec.addPositional(positional);
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("1=1.0", "2=2.0", "3=3.0");
+        commandLine.parseArgs("1=1.0", "2=2.0", "3=3.0");
         Map<String, String> expected = new LinkedHashMap<String, String>();
         expected.put("1", "1.0");
         expected.put("2", "2.0");
@@ -472,7 +474,7 @@ public class CommandLineModelTest {
         spec.addOption(OptionSpec.builder("-s", "--sql").paramLabel("SQLTYPE").type(int.class).converters(
                 new CommandLineTypeConversionTest.SqlTypeConverter()).description("sql type converter").build());
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("-c", "33", "-s", "BLOB");
+        commandLine.parseArgs("-c", "33", "-s", "BLOB");
         assertEquals(Integer.valueOf(33), spec.optionsMap().get("-c").getValue());
         assertEquals(Integer.valueOf(Types.BLOB), spec.optionsMap().get("-s").getValue());
     }
@@ -483,7 +485,7 @@ public class CommandLineModelTest {
         spec.addPositional(PositionalParamSpec.builder().paramLabel("SQLTYPE").index("1").type(int.class).converters(
                 new CommandLineTypeConversionTest.SqlTypeConverter()).description("sql type converter").build());
         CommandLine commandLine = new CommandLine(spec);
-        commandLine.parse("33", "BLOB");
+        commandLine.parseArgs("33", "BLOB");
         assertEquals(Integer.valueOf(33), spec.positionalParameters().get(0).getValue());
         assertEquals(Integer.valueOf(Types.BLOB), spec.positionalParameters().get(1).getValue());
     }
@@ -516,6 +518,7 @@ public class CommandLineModelTest {
     }
 
     /** see <a href="https://github.com/remkop/picocli/issues/279">issue #279</a>  */
+    @SuppressWarnings("deprecation")
     @Test
     public void testSingleValueFieldWithOptionalParameter_279() {
         @Command(name="sample")
@@ -536,12 +539,40 @@ public class CommandLineModelTest {
 
         List<CommandLine> parsed3 = new CommandLine(new Sample()).parse("--foo", "value");// specified with value
         OptionSpec option3 = parsed3.get(0).getCommandSpec().optionsMap().get("--foo");
-        assertEquals("optional option is empty string when specified without args", "value", option3.getValue());
-        assertEquals("optional option string value when specified without args", "value", option3.stringValues().get(0));
-        assertEquals("optional option typed value when specified without args", "value", option3.typedValues().get(0));
+        assertEquals("optional option is empty string when specified with args", "value", option3.getValue());
+        assertEquals("optional option string value when specified with args", "value", option3.stringValues().get(0));
+        assertEquals("optional option typed value when specified with args", "value", option3.typedValues().get(0));
+    }
+
+    /** see <a href="https://github.com/remkop/picocli/issues/280">issue #280</a>  */
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testSingleValueFieldWithOptionalParameter_280() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names="--foo", arity="0..1", fallbackValue = "123") Integer foo;
+        }
+        List<CommandLine> parsed1 = new CommandLine(new Sample()).parse();// not specified
+        OptionSpec option1 = parsed1.get(0).getCommandSpec().optionsMap().get("--foo");
+        assertNull("optional option is null when option not specified", option1.getValue());
+        assertTrue("optional option has no string value when option not specified", option1.stringValues().isEmpty());
+        assertTrue("optional option has no typed value when option not specified", option1.typedValues().isEmpty());
+
+        List<CommandLine> parsed2 = new CommandLine(new Sample()).parse("--foo");// specified without value
+        OptionSpec option2 = parsed2.get(0).getCommandSpec().optionsMap().get("--foo");
+        assertEquals("optional option is fallback when specified without args", 123, option2.getValue());
+        assertEquals("optional option string fallback value when specified without args", "123", option2.stringValues().get(0));
+        assertEquals("optional option typed value when specified without args", 123, option2.typedValues().get(0));
+
+        List<CommandLine> parsed3 = new CommandLine(new Sample()).parse("--foo", "999");// specified with value
+        OptionSpec option3 = parsed3.get(0).getCommandSpec().optionsMap().get("--foo");
+        assertEquals("optional option is empty string when specified with args", 999, option3.getValue());
+        assertEquals("optional option string value when specified with args", "999", option3.stringValues().get(0));
+        assertEquals("optional option typed value when specified with args", 999, option3.typedValues().get(0));
     }
 
     /** see <a href="https://github.com/remkop/picocli/issues/279">issue #279</a>  */
+    @SuppressWarnings("deprecation")
     @Test
     public void testSingleValueFieldWithOptionalParameterFollowedByOption_279() {
         @Command(name="sample")
@@ -557,6 +588,26 @@ public class CommandLineModelTest {
         assertEquals("optional option string value when specified without args", "", option3.stringValues().get(0));
         assertEquals("optional option typed value when specified without args", "", option3.typedValues().get(0));
         assertEquals("", sample.foo);
+        assertEquals(true, sample.x);
+    }
+
+    /** see <a href="https://github.com/remkop/picocli/issues/280">issue #280</a>  */
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testSingleValueFieldWithOptionalParameterFollowedByOption_280() {
+        @Command(name="sample")
+        class Sample {
+            @Option(names = "-x") boolean x;
+            @Option(names="--foo", arity="0..1", fallbackValue = "-1") Long foo;
+        }
+
+        Sample sample = new Sample();
+        List<CommandLine> parsed3 = new CommandLine(sample).parse("--foo", "-x");// specified without value
+        OptionSpec option3 = parsed3.get(0).getCommandSpec().optionsMap().get("--foo");
+        assertEquals("optional option is fallback typed value when specified without args", -1L, option3.getValue());
+        assertEquals("optional option fallback string value when specified without args", "-1", option3.stringValues().get(0));
+        assertEquals("optional option fallback typed value when specified without args", -1L, option3.typedValues().get(0));
+        assertEquals(Long.valueOf(-1L), sample.foo);
         assertEquals(true, sample.x);
     }
 
@@ -1524,5 +1575,36 @@ public class CommandLineModelTest {
 
         spec.setAddMethodSubcommands(null);
         assertTrue(spec.isAddMethodSubcommands());
+    }
+
+    @Test
+    public void testRemoveArg() {
+        class MyApp {
+            // hide this option on all OS's other than Darwin (OSX)
+            @Option(names = {"-o", "--open"},
+                    description = "On OSX open the finder to the data dir that was downloaded.")
+            boolean open = false;
+        }
+        MyApp myApp = new MyApp();
+        CommandLine cmd = new CommandLine(myApp);
+
+        String expectBefore = String.format("" +
+                "Usage: <main class> [-o]%n" +
+                "  -o, --open   On OSX open the finder to the data dir that was downloaded.%n");
+        assertEquals(expectBefore, cmd.getUsageMessage(Ansi.OFF));
+
+        // replace the old "--open" option with a different one that is hidden
+        CommandSpec spec = cmd.getCommandSpec();
+        OptionSpec old = spec.findOption("--open");
+        OptionSpec newOpenOption = OptionSpec.builder(old).hidden(true).build();
+        spec.remove(old);
+        spec.add(newOpenOption);
+
+        String expectAfter = String.format("" +
+                "Usage: <main class>%n");
+        assertEquals(expectAfter, cmd.getUsageMessage(Ansi.OFF));
+        assertFalse(myApp.open);
+        cmd.parseArgs("--open");
+        assertTrue(myApp.open);
     }
 }

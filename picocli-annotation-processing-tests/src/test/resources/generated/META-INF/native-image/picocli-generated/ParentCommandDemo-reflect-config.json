@@ -1,0 +1,23 @@
+[
+  {
+    "name" : "picocli.examples.subcommands.ParentCommandDemo$FileUtils",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "baseDirectory" }
+    ]
+  },
+  {
+    "name" : "picocli.examples.subcommands.ParentCommandDemo$List",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "parent" },
+      { "name" : "recursive" }
+    ]
+  }
+]

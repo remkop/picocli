@@ -16,7 +16,10 @@ import picocli.CommandLine.Parameters;
         footerHeading = "super footer heading%n",
         commandListHeading = "super command list heading%n",
         optionListHeading = "super option list heading%n",
-        parameterListHeading = "super param list heading%n")
+        parameterListHeading = "super param list heading%n",
+        exitCodeListHeading = "super exit code list heading%n",
+        exitCodeList = {"000:super exit code 1", "111:super exit code 2"}
+)
 public class I18nSuperclass {
     @Option(names = {"-x", "--xxx"})
     String x;

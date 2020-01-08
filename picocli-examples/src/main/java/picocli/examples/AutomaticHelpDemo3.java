@@ -17,7 +17,8 @@ package picocli.examples;
 
 import picocli.CommandLine;
 
-import static picocli.CommandLine.*;
+import static picocli.CommandLine.Command;
+import static picocli.CommandLine.Option;
 
 @Command(version = "Help demo for picocli v3.0", header = "%nFully Automatic Help Demo%n",
         description = "Prints usage help and version help when requested.%n",
@@ -36,6 +37,6 @@ public class AutomaticHelpDemo3 implements Runnable {
     // to run, execute:
     // java picocli.examples.AutomaticHelpDemo3 help
     public static void main(String... args) {
-        CommandLine.run(new AutomaticHelpDemo3(), args);
+        new CommandLine(new AutomaticHelpDemo3()).execute(args);
     }
 }

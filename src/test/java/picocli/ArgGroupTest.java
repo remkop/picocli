@@ -213,7 +213,7 @@ public class ArgGroupTest {
         try {
             ArgGroupSpec.builder().build();
         } catch (InitializationException ok) {
-            assertEquals("ArgGroup has no options or positional parameters, and no subgroups", ok.getMessage());
+            assertEquals("ArgGroup has no options or positional parameters, and no subgroups: null null", ok.getMessage());
         }
     }
 
@@ -230,7 +230,7 @@ public class ArgGroupTest {
             spec.addArgGroup(group);
             fail("Expected exception");
         } catch (CommandLine.DuplicateNameException ex) {
-            assertEquals("An option cannot be in multiple groups but -x is in (-x)... and [-x]. " +
+            assertEquals("An option cannot be in multiple groups but -x is in (-x) and [-x]. " +
                     "Refactor to avoid this. For example, (-a | (-a -b)) can be rewritten " +
                     "as (-a [-b]), and (-a -b | -a -c) can be rewritten as (-a (-b | -c)).", ex.getMessage());
         }
@@ -442,11 +442,14 @@ public class ArgGroupTest {
         class App {
             @ArgGroup Invalid invalid;
         }
+        App app = new App();
         try {
-            new CommandLine(new App(), new InnerClassFactory(this));
+            new CommandLine(app, new InnerClassFactory(this));
             fail("Expected exception");
         } catch (InitializationException ex) {
-            assertEquals("ArgGroup has no options or positional parameters, and no subgroups", ex.getMessage());
+            assertEquals("ArgGroup has no options or positional parameters, and no subgroups: " +
+                    "Scope(value=" + app.toString() +
+                    ") FieldBinding(" + Invalid.class.getName() + " " + app.getClass().getName() + ".invalid)", ex.getMessage());
         }
     }
 
@@ -1076,16 +1079,16 @@ public class ArgGroupTest {
                 .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG2").required(true).build())
                 .addArg(PositionalParamSpec.builder().index("0").paramLabel("ARG3").required(true).build());
 
-        assertEquals("[ARG1 | ARG2 | ARG3 | [-a | [-b] | -c] | ([-e] | -f)]", composite.build().synopsis());
+        assertEquals("[ARG1 | ARG2 | ARG3 | [-a | -b | -c] | (-e | -f)]", composite.build().synopsis());
 
         composite.multiplicity("1");
-        assertEquals("(ARG1 | ARG2 | ARG3 | [-a | [-b] | -c] | ([-e] | -f))", composite.build().synopsis());
+        assertEquals("(ARG1 | ARG2 | ARG3 | [-a | -b | -c] | (-e | -f))", composite.build().synopsis());
 
         composite.exclusive(false);
-        assertEquals("(ARG1 ARG2 ARG3 [-a | [-b] | -c] ([-e] | -f))", composite.build().synopsis());
+        assertEquals("(ARG1 ARG2 ARG3 [-a | -b | -c] (-e | -f))", composite.build().synopsis());
 
         composite.multiplicity("0..1");
-        assertEquals("[ARG1 ARG2 ARG3 [-a | [-b] | -c] ([-e] | -f)]", composite.build().synopsis());
+        assertEquals("[ARG1 ARG2 ARG3 [-a | -b | -c] (-e | -f)]", composite.build().synopsis());
     }
 
     @Test
@@ -1397,7 +1400,7 @@ public class ArgGroupTest {
                 "      <f1>%n" +
                 "  -a=<a>%n");
 
-        //HelpTestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel("DEBUG");
         CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
         String actual = cmd.getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
@@ -1431,7 +1434,7 @@ public class ArgGroupTest {
                 "      <f1>%n" +
                 "  -a=<a>%n");
 
-        HelpTestUtil.setTraceLevel("DEBUG");
+        TestUtil.setTraceLevel("DEBUG");
         CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
         String actual = cmd.getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
@@ -1464,7 +1467,7 @@ public class ArgGroupTest {
                 "      <f1>%n" +
                 "  -a=<a>%n");
 
-        //HelpTestUtil.setTraceLevel("INFO");
+        //TestUtil.setTraceLevel("INFO");
         CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
         String actual = cmd.getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
@@ -1514,7 +1517,7 @@ public class ArgGroupTest {
             @ArgGroup(exclusive = true, multiplicity = "0..3")
             Composite[] composite;
         }
-        //HelpTestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel("DEBUG");
         App app = new App();
         CommandLine cmd = new CommandLine(app, new InnerClassFactory(this));
         String synopsis = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF)).synopsis(0);
@@ -1529,7 +1532,7 @@ public class ArgGroupTest {
             cmd.parseArgs("-x=1", "-a=1", "file0", "file1", "-y=2", "-x=3");
             fail("Expected exception");
         } catch (MutuallyExclusiveArgsException ex) {
-            assertEquals("Error: [-a=<a> <f0> <f1>] [-a=<a> <f0> <f1>] and (-x=<x> | -y=<y>) are mutually exclusive (specify only one)", ex.getMessage());
+            assertEquals("Error: [-a=<a> <f0> <f1>] and (-x=<x> | -y=<y>) are mutually exclusive (specify only one)", ex.getMessage());
         }
         try {
             cmd.parseArgs("-x=1", "-a=1", "file0", "file1", "-x=2", "-x=3");
@@ -1537,13 +1540,13 @@ public class ArgGroupTest {
         //} catch (CommandLine.MaxValuesExceededException ex) {
             //assertEquals("Error: Group: (-x=<x> | -y=<y>) can only be specified 1 times but was matched 3 times.", ex.getMessage());
         } catch (MutuallyExclusiveArgsException ex) {
-            assertEquals("Error: [-a=<a> <f0> <f1>] [-a=<a> <f0> <f1>] and (-x=<x> | -y=<y>) are mutually exclusive (specify only one)", ex.getMessage());
+            assertEquals("Error: [-a=<a> <f0> <f1>] and (-x=<x> | -y=<y>) are mutually exclusive (specify only one)", ex.getMessage());
         }
         try {
             cmd.parseArgs("-x=1", "-a=1", "file0", "file1");
             fail("Expected exception");
         } catch (CommandLine.MutuallyExclusiveArgsException ex) {
-            assertEquals("Error: [-a=<a> <f0> <f1>] [-a=<a> <f0> <f1>] and (-x=<x> | -y=<y>) are mutually exclusive (specify only one)", ex.getMessage());
+            assertEquals("Error: [-a=<a> <f0> <f1>] and (-x=<x> | -y=<y>) are mutually exclusive (specify only one)", ex.getMessage());
         }
 
         ArgGroupSpec topLevelGroup = cmd.getCommandSpec().argGroups().get(0);
@@ -1714,7 +1717,7 @@ public class ArgGroupTest {
 
     @Test
     public void testRepeatingGroupsValidation() {
-        //HelpTestUtil.setTraceLevel("DEBUG");
+        //TestUtil.setTraceLevel("DEBUG");
 
         RepeatingApp app = new RepeatingApp();
         CommandLine cmd = new CommandLine(app);
@@ -1722,7 +1725,7 @@ public class ArgGroupTest {
             cmd.parseArgs("-a", "1");
             fail("Expected exception");
         } catch (CommandLine.ParameterException ex) {
-            assertEquals("Error: Group: (-a=<a>) (-a=<a>) must be specified 2 times but was matched 1 times", ex.getMessage());
+            assertEquals("Error: Group: (-a=<a>) must be specified 2 times but was matched 1 times", ex.getMessage());
         }
     }
 
@@ -2125,9 +2128,697 @@ public class ArgGroupTest {
     public void testIssue661StackOverflow() {
         CommandLine cmd = new CommandLine(new TestCommand());
         cmd.parseArgs("-a=Foo");
-        cmd.parseWithHandler(new CommandLine.RunAll(), new String[0]);
+        cmd.setExecutionStrategy(new CommandLine.RunAll()).execute();
     }
 
     // TODO add tests with positional interactive params in group
     // TODO add tests with positional params in multiple groups
+
+    static class Issue722 {
+        static class Level1Argument {
+            @Option(names = "--level-1", required = true)
+            private String l1;
+
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            private Level2aArgument level2a;
+
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            private Level2bArgument level2b;
+        }
+
+        static class Level2aArgument {
+            @Option(names = "--level-2a", required = true)
+            private String l2a;
+        }
+
+        static class Level2bArgument {
+            @Option(names = "--level-2b", required = true)
+            private String l2b;
+
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            private Level3aArgument level3a;
+
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            private Level3bArgument level3b;
+        }
+
+        static class Level3aArgument {
+            @Option(names = "--level-3a", required = true)
+            private String l3a;
+        }
+
+        static class Level3bArgument {
+            @Option(names = { "--level-3b"}, required = true)
+            private String l3b;
+        }
+
+        @Command(name = "arg-group-test", separator = " ", subcommands = {CreateCommand.class, CommandLine.HelpCommand.class})
+        public static class ArgGroupCommand implements Runnable {
+            public void run() {
+            }
+        }
+
+        @Command(name = "create", separator = " ", helpCommand = true)
+        public static class CreateCommand implements Runnable {
+            @Option(names = "--level-0", required = true)
+            private String l0;
+            
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            private Level1Argument level1 = new Level1Argument();
+
+            public void run() {
+            }
+        }
+    }
+    // https://github.com/remkop/picocli/issues/722
+    @Test
+    public void testIssue722() {
+        String expected = String.format("" +
+                "create (--level-1 <l1> (--level-2a <l2a>) (--level-2b <l2b> (--level-3a <l3a>)%n" +
+                "       (--level-3b <l3b>))) --level-0 <l0>%n");
+
+        CommandLine cmd = new CommandLine(new Issue722.CreateCommand());
+        Help help = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF));
+        String actual = help.synopsis(0);
+
+        assertEquals(expected, actual);
+    }
+
+    @Command(name = "ArgGroupsTest")
+    static class CommandWithSplitGroup {
+
+        @ArgGroup(exclusive = false)
+        DataSource datasource;
+
+        static class DataSource {
+            @Option(names = "-single", split = ",")
+            int single;
+
+            @Option(names = "-array", split = ",")
+            int[] array;
+        }
+    }
+
+    @Test
+    // https://github.com/remkop/picocli/issues/745
+    public void testIssue745SplitErrorMessageIfValidationDisabled() {
+        CommandWithSplitGroup bean = new CommandWithSplitGroup();
+        System.setProperty("picocli.ignore.invalid.split", "");
+        CommandLine cmd = new CommandLine(bean);
+
+        // split attribute is honoured if option type is multi-value (array, Collection, Map)
+        cmd.parseArgs("-array=1,2");
+        assertArrayEquals(new int[] {1, 2}, bean.datasource.array);
+
+        // split attribute is ignored if option type is single value
+        // error because value cannot be assigned to type `int`
+        try {
+            cmd.parseArgs("-single=1,2");
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertEquals("Invalid value for option '-single': '1,2' is not an int", ex.getMessage());
+        }
+
+        // split attribute ignored for simple commands without argument groups
+        try {
+            new CommandLine(new CommandWithSplitGroup.DataSource()).parseArgs("-single=1,2");
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertEquals("Invalid value for option '-single': '1,2' is not an int", ex.getMessage());
+        }
+    }
+
+    @Test
+    // https://github.com/remkop/picocli/issues/745
+    public void testIssue745SplitDisallowedForSingleValuedOption() {
+        CommandWithSplitGroup bean = new CommandWithSplitGroup();
+        try {
+            new CommandLine(bean);
+            fail("Expected exception");
+        } catch (InitializationException ex) {
+            assertEquals("Only multi-value options and positional parameters should have a split regex (this check can be disabled by setting system property 'picocli.ignore.invalid.split')", ex.getMessage());
+        }
+        try {
+            new CommandLine(new CommandWithSplitGroup.DataSource());
+            fail("Expected initialization exception");
+        } catch (InitializationException ex) {
+            assertEquals("Only multi-value options and positional parameters should have a split regex (this check can be disabled by setting system property 'picocli.ignore.invalid.split')", ex.getMessage());
+        }
+    }
+
+    @Command(name = "ArgGroupsTest")
+    static class CommandWithDefaultValue {
+
+        @ArgGroup(exclusive = false)
+        InitializedGroup initializedGroup = new InitializedGroup();
+
+        @ArgGroup(exclusive = false)
+        DeclaredGroup declaredGroup;
+
+        static class InitializedGroup {
+            @Option(names = "-staticX", arity = "0..1", defaultValue = "999", fallbackValue = "-88" )
+            static int staticX;
+
+            @Option(names = "-instanceX", arity = "0..1", defaultValue = "999", fallbackValue = "-88" )
+            int instanceX;
+        }
+
+        static class DeclaredGroup {
+            @Option(names = "-staticY", arity = "0..1", defaultValue = "999", fallbackValue = "-88" )
+            static Integer staticY;
+
+            @Option(names = "-instanceY", arity = "0..1", defaultValue = "999", fallbackValue = "-88" )
+            Integer instanceY;
+        }
+    }
+
+    @Test
+    // https://github.com/remkop/picocli/issues/746
+    public void test746DefaultValue() {
+        //TestUtil.setTraceLevel("DEBUG");
+        CommandWithDefaultValue bean = new CommandWithDefaultValue();
+        CommandLine cmd = new CommandLine(bean);
+
+        cmd.parseArgs();
+        assertEquals(999, bean.initializedGroup.instanceX);
+        assertEquals(999, CommandWithDefaultValue.InitializedGroup.staticX);
+
+        assertNull(bean.declaredGroup);
+        assertNull(CommandWithDefaultValue.DeclaredGroup.staticY);
+    }
+
+    static class Issue746 {
+        static class Level1Argument {
+            @Option(names = "--l1a", required = true, defaultValue = "l1a")
+            private String l1a;
+
+            @Option(names = "--l1b", required = true)
+            private String l1b;
+
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            private Level2Argument level2;
+        }
+
+        static class Level2Argument {
+            @Option(names = "--l2a", required = true, defaultValue = "l2a")
+            private String l2a;
+            @Option(names = "--l2b", required = true)
+            private String l2b;
+
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            private Level3Argument level3;
+        }
+
+        static class Level3Argument {
+            @Option(names = "--l3a", required = true)
+            private String l3a;
+
+            @Option(names = { "--l3b"}, required = true, defaultValue = "l3b")
+            private String l3b;
+        }
+
+        @Command(name = "arg-group-test", subcommands = {CreateCommand.class, CommandLine.HelpCommand.class})
+        public static class ArgGroupCommand implements Runnable {
+            public void run() { }
+        }
+
+        @Command(name = "create", helpCommand = true)
+        public static class CreateCommand implements Runnable {
+            @Option(names = "--l0", required = true, defaultValue = "l0")
+            private String l0;
+
+            @ArgGroup(exclusive = false, multiplicity = "0..1")
+            private Level1Argument level1 = new Level1Argument();
+
+            public void run() { }
+        }
+    }
+
+    @Test
+    // https://github.com/remkop/picocli/issues/746
+    public void testIssue746DefaultValueWithNestedArgGroups() {
+        Issue746.CreateCommand bean = new Issue746.CreateCommand();
+        CommandLine cmd = new CommandLine(bean);
+        cmd.parseArgs();
+        assertEquals("l0", bean.l0);
+        assertEquals("l1a", bean.level1.l1a);
+        assertNull(bean.level1.l1b);
+        assertNull(bean.level1.level2);
+    }
+
+    @Test
+    // https://github.com/remkop/picocli/issues/746
+    public void testIssue746ArgGroupWithDefaultValuesSynopsis() {
+        String expected = String.format("" +
+                "create [[--l1a=<l1a>] --l1b=<l1b> ([--l2a=<l2a>] --l2b=<l2b> (--l3a=<l3a>%n" +
+                "       [--l3b=<l3b>]))] [--l0=<l0>]%n");
+
+        CommandLine cmd = new CommandLine(new Issue746.CreateCommand());
+        Help help = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF));
+        String actual = help.synopsis(0);
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    // https://github.com/remkop/picocli/issues/746
+    public void testIssue746ArgGroupWithDefaultValuesParsing() {
+        Issue746.CreateCommand bean = new Issue746.CreateCommand();
+        CommandLine cmd = new CommandLine(bean);
+
+        cmd.parseArgs("--l1b=L1B --l2b=L2B --l3a=L3A".split(" "));
+        assertEquals("default value", "l0", bean.l0);
+        assertNotNull(bean.level1);
+        assertEquals("default value", "l1a", bean.level1.l1a);
+        assertEquals("specified value", "L1B", bean.level1.l1b);
+        assertNotNull(bean.level1.level2);
+        assertEquals("default value", "l2a", bean.level1.level2.l2a);
+        assertEquals("specified value", "L2B", bean.level1.level2.l2b);
+        assertNotNull(bean.level1.level2.level3);
+        assertEquals("default value", "l3b", bean.level1.level2.level3.l3b);
+        assertEquals("specified value", "L3A", bean.level1.level2.level3.l3a);
+    }
+
+    @Command(name = "Issue742")
+    static class Issue742 {
+
+        @ArgGroup(exclusive = false, multiplicity = "2")
+        List<DataSource> datasource;
+
+        static class DataSource {
+            @Option(names = "-g", required = true, defaultValue = "e")
+            String aString;
+        }
+    }
+
+    @Test
+    // https://github.com/remkop/picocli/issues/742
+    public void testIssue742FalseErrorMessage() {
+        //TestUtil.setTraceLevel("DEBUG");
+        CommandLine cmd = new CommandLine(new Issue742());
+        ParseResult parseResult = cmd.parseArgs("-g=2", "-g=3");
+        List<ParseResult.GroupMatch> multiples = parseResult.getGroupMatches();
+        assertEquals(1, multiples.size());
+        GroupMatch groupMatch = multiples.get(0);
+
+        assertEquals(1, groupMatch.matchedSubgroups().size());
+        ArgGroupSpec dsGroup = cmd.getCommandSpec().argGroups().get(0);
+        @SuppressWarnings("unchecked")
+        List<Issue742.DataSource> datasources = (List<Issue742.DataSource>) dsGroup.userObject();
+        assertEquals(2, datasources.size());
+
+        Issue742.DataSource ds1 = datasources.get(0);
+        assertEquals("2", ds1.aString);
+
+        Issue742.DataSource ds2 = datasources.get(1);
+        assertEquals("3", ds2.aString);
+
+        GroupMatchContainer modeGroupMatchContainer = groupMatch.matchedSubgroups().get(dsGroup);
+        assertEquals(2, modeGroupMatchContainer.matches().size());
+
+        GroupMatch dsGroupMatch1 = modeGroupMatchContainer.matches().get(0);
+        assertEquals(0, dsGroupMatch1.matchedSubgroups().size());
+        assertEquals(Arrays.asList("2"), dsGroupMatch1.matchedValues(dsGroup.args().iterator().next()));
+
+        GroupMatch dsGroupMatch2 = modeGroupMatchContainer.matches().get(1);
+        assertEquals(0, dsGroupMatch2.matchedSubgroups().size());
+        assertEquals(Arrays.asList("3"), dsGroupMatch2.matchedValues(dsGroup.args().iterator().next()));
+    }
+    @Command(name = "ExecuteTest")
+    static class Issue758 {
+
+        @ArgGroup(exclusive = false)
+        static D d;
+
+        static class D {
+
+            @Option(names = "p")
+            static int p1;
+
+            @Option(names = "p")
+            static int p2;
+        }
+    }
+    @Test
+    public void testIssue758() {
+        Issue758 app = new Issue758();
+        try {
+            new CommandLine(app);
+        } catch (DuplicateOptionAnnotationsException ex) {
+            String name = Issue758.D.class.getName();
+            String msg = "Option name 'p' is used by both field static int " + name + ".p2 and field static int " + name + ".p1";
+            assertEquals(msg, ex.getMessage());
+        }
+    }
+
+    static class Issue807Command {
+        @ArgGroup(validate = false, heading = "%nGlobal options:%n")
+        protected GlobalOptions globalOptions = new GlobalOptions();
+
+        static class GlobalOptions {
+            @Option(names = "-s", description = "ssss")
+            boolean slowClock = false;
+
+            @Option(names = "-v", description = "vvvv")
+            boolean verbose = false;
+        }
+    }
+
+    @Test
+    public void testIssue807Validation() {
+        // should not throw MutuallyExclusiveArgsException
+        new CommandLine(new Issue807Command()).parseArgs("-s", "-v");
+    }
+
+    static class Issue807SiblingCommand {
+        @ArgGroup(validate = true, heading = "%nValidating subgroup options:%n")
+        protected ValidatingOptions validatingOptions = new ValidatingOptions();
+
+        @ArgGroup(validate = false, heading = "%nGlobal options:%n")
+        protected Issue807Command globalOptions = new Issue807Command();
+
+        static class ValidatingOptions {
+            @Option(names = "-x", description = "xxx")
+            boolean x = false;
+
+            @Option(names = "-y", description = "yyy")
+            boolean y = false;
+        }
+    }
+
+    @Test
+    public void testIssue807SiblingValidation() {
+        try {
+            new CommandLine(new Issue807SiblingCommand()).parseArgs("-s", "-v", "-x", "-y");
+            fail("Expected mutually exclusive args exception");
+        } catch (MutuallyExclusiveArgsException ex) {
+            assertEquals("Error: -x, -y are mutually exclusive (specify only one)", ex.getMessage());
+        }
+    }
+
+    static class Issue807NestedCommand {
+
+        @ArgGroup(validate = false, heading = "%nNon-validating over-arching group:%n")
+        protected Combo nonValidating = new Combo();
+
+        static class Combo {
+            @ArgGroup(validate = true, heading = "%nValidating subgroup options:%n")
+            protected ValidatingOptions validatingOptions = new ValidatingOptions();
+
+            @ArgGroup(validate = true, heading = "%nGlobal options:%n")
+            protected Issue807Command globalOptions = new Issue807Command();
+        }
+
+        static class ValidatingOptions {
+            @Option(names = "-x", description = "xxx")
+            boolean x = false;
+
+            @Option(names = "-y", description = "yyy")
+            boolean y = false;
+        }
+    }
+    @Test
+    public void testIssue807NestedValidation() {
+        // should not throw MutuallyExclusiveArgsException
+        new CommandLine(new Issue807NestedCommand()).parseArgs("-s", "-v", "-x", "-y");
+    }
+
+    static class Issue829Group {
+        int x;
+        int y;
+        @Option(names = "-x") void x(int x) {this.x = x;}
+        @Option(names = "-y") void y(int y) {this.y = y;}
+    }
+    @Command(subcommands = Issue829Subcommand.class)
+    static class Issue829TopCommand {
+        @ArgGroup Issue829Group group;
+
+        @Command
+        void sub2(@ArgGroup Issue829Group group) {
+            assertEquals(0, group.x);
+            assertEquals(3, group.y);
+        }
+    }
+    @Command(name = "sub")
+    static class Issue829Subcommand {
+        @ArgGroup List<Issue829Group> group;
+    }
+
+    @Test
+    public void testIssue829NPE_inSubcommandWithArgGroup() {
+        //TestUtil.setTraceLevel("DEBUG");
+        ParseResult parseResult = new CommandLine(new Issue829TopCommand()).parseArgs("-x=1", "sub", "-y=2");
+        assertEquals(1, ((Issue829TopCommand)parseResult.commandSpec().userObject()).group.x);
+
+        Issue829Subcommand sub = (Issue829Subcommand) parseResult.subcommand().commandSpec().userObject();
+        assertEquals(0, sub.group.get(0).x);
+        assertEquals(2, sub.group.get(0).y);
+
+        new CommandLine(new Issue829TopCommand()).parseArgs("sub2", "-y=3");
+    }
+
+    static class Issue815Group {
+        @Option(names = {"--age"})
+        Integer age;
+
+        @Option(names = {"--id"})
+        List<String> id;
+    }
+    static class Issue815 {
+        @ArgGroup(exclusive = false, multiplicity = "1")
+        Issue815Group group;
+    }
+    @Test
+    public void testIssue815() {
+        //TestUtil.setTraceLevel("DEBUG");
+        Issue815 userObject = new Issue815();
+        new CommandLine(userObject).parseArgs("--id=123", "--id=456");
+        assertNotNull(userObject.group);
+        assertNull(userObject.group.age);
+        assertNotNull(userObject.group.id);
+        assertEquals(Arrays.asList("123", "456"), userObject.group.id);
+    }
+
+    static class Issue810Command {
+        @ArgGroup(validate = false, heading = "%nGrouped options:%n")
+        MyGroup myGroup = new MyGroup();
+
+        static class MyGroup {
+            @Option(names = "-s", description = "ssss", required = true, defaultValue = "false")
+            boolean s = false;
+
+            @Option(names = "-v", description = "vvvv", required = true, defaultValue = "false")
+            boolean v = false;
+        }
+    }
+    @Test
+    public void testIssue810Validation() {
+        // should not throw MutuallyExclusiveArgsException
+        Issue810Command app = new Issue810Command();
+        new CommandLine(app).parseArgs("-s", "-v");
+        assertTrue(app.myGroup.s);
+        assertTrue(app.myGroup.v);
+
+//        app = new Issue810Command();
+        new CommandLine(app).parseArgs("-s");
+        assertTrue(app.myGroup.s);
+        assertFalse(app.myGroup.v);
+
+        new CommandLine(app).parseArgs("-v");
+        assertFalse(app.myGroup.s);
+        assertTrue(app.myGroup.v);
+    }
+
+
+    static class Issue810WithExplicitExclusiveGroup {
+        @ArgGroup(exclusive = true, validate = false, heading = "%nGrouped options:%n")
+        MyGroup myGroup = new MyGroup();
+
+        static class MyGroup {
+            @Option(names = "-s", required = true)
+            boolean s = false;
+
+            @Option(names = "-v", required = true)
+            boolean v = false;
+        }
+    }
+    @Test
+    public void testNonValidatingOptionsAreNotExclusive() {
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new Issue810Command());
+        assertFalse(spec.argGroups().get(0).exclusive());
+
+        CommandSpec spec2 = CommandSpec.forAnnotatedObject(new Issue810WithExplicitExclusiveGroup());
+        assertFalse(spec2.argGroups().get(0).exclusive());
+    }
+
+    static class Issue839Defaults {
+        @ArgGroup(validate = false)
+        Group group;
+
+        static class Group {
+            @Option(names = "-a", description = "a. Default-${DEFAULT-VALUE}")
+            String a = "aaa";
+
+            @Option(names = "-b", defaultValue = "bbb", description = "b. Default-${DEFAULT-VALUE}")
+            String b;
+        }
+    }
+
+    @Ignore
+    @Test
+    public void testIssue839Defaults() {
+        Issue839Defaults app = new Issue839Defaults();
+        String actual = new CommandLine(app).getUsageMessage(Help.Ansi.OFF);
+
+        String expected = String.format("" +
+                "Usage: <main class> [-a=<a>] [-b=<b>]%n" +
+                "  -a=<a>    a. Default-aaa%n" +
+                "  -b=<b>    b. Default-bbb%n");
+        assertEquals(expected, actual);
+    }
+    static class Issue870Group {
+        @Option(names = {"--group"}, required = true) String name;
+        @Option(names = {"--opt1"}) int opt1;
+        @Option(names = {"--opt2"}) String opt2;
+    }
+    static class Issue870App {
+        @ArgGroup(exclusive = false, multiplicity = "0..*")
+        List<Issue870Group> groups;
+    }
+
+    @Test
+    public void testIssue870RequiredOptionValidation() {
+        try {
+            new CommandLine(new Issue870App()).parseArgs("--opt1=1");
+            fail("Expected MissingParameterException");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): --group=<name>", ex.getMessage());
+        }
+    }
+
+    static class ExclusiveBooleanGroup871 {
+        @Option(names = "-a", required = true) boolean a;
+        @Option(names = "-b", required = true) boolean b;
+        //@Option(names = "--opt") String opt;
+    }
+
+    @Test
+    public void testMultivalueExclusiveBooleanGroup() {
+        class MyApp {
+            @ArgGroup(exclusive = true, multiplicity = "0..*")
+            List<ExclusiveBooleanGroup871> groups;
+        }
+
+        MyApp myApp = CommandLine.populateCommand(new MyApp(), "-a", "-b");
+        assertEquals(2, myApp.groups.size());
+
+        MyApp myApp2 = CommandLine.populateCommand(new MyApp(), "-b", "-a");
+        assertEquals(2, myApp2.groups.size());
+    }
+
+    static class ExclusiveStringOptionGroup871 {
+        @Option(names = "-a", required = false) String a;
+        @Option(names = "-b", required = true) String b;
+        @Option(names = "--opt") String opt;
+    }
+
+    @Test
+    public void testAllOptionsRequiredInExclusiveGroup() {
+        class MyApp {
+            @ArgGroup(exclusive = true)
+            ExclusiveStringOptionGroup871 group;
+        }
+        CommandLine cmd = new CommandLine(new MyApp());
+        List<ArgGroupSpec> argGroupSpecs = cmd.getCommandSpec().argGroups();
+        assertEquals(1, argGroupSpecs.size());
+
+        for (ArgSpec arg : argGroupSpecs.get(0).args()) {
+            assertTrue(arg.required());
+        }
+    }
+
+    @Test
+    public void testMultivalueExclusiveStringOptionGroup() {
+        class MyApp {
+            @ArgGroup(exclusive = true, multiplicity = "0..*")
+            List<ExclusiveStringOptionGroup871> groups;
+        }
+
+        MyApp myApp = CommandLine.populateCommand(new MyApp(), "-a=1", "-b=2");
+        assertEquals(2, myApp.groups.size());
+
+        MyApp myApp2 = CommandLine.populateCommand(new MyApp(), "-b=1", "-a=2");
+        assertEquals(2, myApp2.groups.size());
+    }
+
+    static class NonExclusiveGroup871 {
+        @Option(names = "-a", required = false) String a;
+        @Option(names = "-b", required = false) String b;
+        @Option(names = "-c") String c; // default is not required
+        public String toString() {
+            return String.format("a=%s, b=%s, c=%s", a, b, c);
+        }
+    }
+
+    @Ignore //https://github.com/remkop/picocli/issues/871
+    @Test
+    public void testNonExclusiveGroupMustHaveOneRequiredOption() {
+        class MyApp {
+            @ArgGroup(exclusive = false)
+            NonExclusiveGroup871 group;
+        }
+        CommandLine cmd = new CommandLine(new MyApp());
+        List<ArgGroupSpec> argGroupSpecs = cmd.getCommandSpec().argGroups();
+        assertEquals(1, argGroupSpecs.size());
+
+        int requiredCount = 0;
+        for (ArgSpec arg : argGroupSpecs.get(0).args()) {
+            if (arg.required()) {
+                requiredCount++;
+            }
+        }
+        assertTrue(requiredCount > 0);
+    }
+
+    @Test
+    public void testNonExclusiveGroupWithoutRequiredOption() {
+        class MyApp {
+            @ArgGroup(exclusive = false)
+            NonExclusiveGroup871 group;
+        }
+        CommandLine cmd = new CommandLine(new MyApp());
+        MyApp myApp1 = CommandLine.populateCommand(new MyApp(), "-a=1");
+        //System.out.println(myApp1.group);
+        assertEquals("1", myApp1.group.a);
+        assertNull(myApp1.group.b);
+        assertNull(myApp1.group.c);
+
+        MyApp myApp2 = CommandLine.populateCommand(new MyApp(), "-b=1", "-a=2");
+        //System.out.println(myApp2.group);
+        assertEquals("2", myApp2.group.a);
+        assertEquals("1", myApp2.group.b);
+        assertNull(myApp2.group.c);
+
+        MyApp myApp3 = CommandLine.populateCommand(new MyApp(), "-c=1", "-a=2");
+        //System.out.println(myApp3.group);
+        assertEquals("2", myApp3.group.a);
+        assertEquals("1", myApp3.group.c);
+        assertNull(myApp3.group.b);
+
+        MyApp myApp4 = CommandLine.populateCommand(new MyApp(), "-c=1", "-b=2");
+        //System.out.println(myApp4.group);
+        assertEquals("2", myApp4.group.b);
+        assertEquals("1", myApp4.group.c);
+        assertNull(myApp4.group.a);
+
+        MyApp myApp5 = CommandLine.populateCommand(new MyApp(), "-c=1");
+        //System.out.println(myApp5.group);
+        assertNull(myApp5.group.b);
+        assertEquals("1", myApp5.group.c);
+        assertNull(myApp5.group.a);
+
+        MyApp myApp6 = CommandLine.populateCommand(new MyApp());
+        //System.out.println(myApp6.group);
+        assertNull(myApp6.group);
+    }
 }

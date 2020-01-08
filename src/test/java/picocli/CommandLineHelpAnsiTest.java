@@ -18,7 +18,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import static org.junit.Assert.*;
-import static picocli.HelpTestUtil.usageString;
+import static picocli.TestUtil.usageString;
 
 public class CommandLineHelpAnsiTest {
     private static final String LINESEP = System.getProperty("line.separator");
@@ -97,6 +97,10 @@ public class CommandLineHelpAnsiTest {
         assertTrue(Ansi.ON.enabled());
         assertFalse(Ansi.OFF.enabled());
 
+        System.setProperty("picocli.ansi", "tty");
+        boolean hasConsole = Ansi.calcTTY() || Ansi.isPseudoTTY();
+        assertEquals(hasConsole, Ansi.AUTO.enabled());
+
         System.setProperty("picocli.ansi", "true");
         assertEquals(true, Ansi.AUTO.enabled());
 
@@ -165,11 +169,11 @@ public class CommandLineHelpAnsiTest {
             @CommandLine.Parameters(paramLabel = "FILE", arity = "1..*") File[] files;
         }
         Ansi ansi = Ansi.ON;
-        CommandLine.Help.ColorScheme explicit = new CommandLine.Help.ColorScheme(ansi)
+        CommandLine.Help.ColorScheme explicit = new CommandLine.Help.ColorScheme.Builder(ansi)
                 .commands(Ansi.Style.faint, Ansi.Style.bg_magenta)
                 .options(Ansi.Style.bg_red)
                 .parameters(Ansi.Style.reverse)
-                .optionParams(Ansi.Style.bg_green);
+                .optionParams(Ansi.Style.bg_green).build();
         // default color scheme
         assertEquals(ansi.new Text("@|faint,bg(magenta) <main class>|@ [@|bg(red) -v|@] [@|bg(red) -c|@=@|bg(green) <count>|@] @|reverse FILE|@..." + LINESEP),
                 new CommandLine.Help(CommandLine.Model.CommandSpec.forAnnotatedObject(new App(), CommandLine.defaultFactory()), explicit).synopsis(0));
@@ -183,8 +187,8 @@ public class CommandLineHelpAnsiTest {
     }
     @Test
     public void testUsageWithCustomColorScheme() throws UnsupportedEncodingException {
-        CommandLine.Help.ColorScheme scheme = new CommandLine.Help.ColorScheme(Ansi.ON)
-                .options(Ansi.Style.bg_magenta).parameters(Ansi.Style.bg_cyan).optionParams(Ansi.Style.bg_yellow).commands(Ansi.Style.reverse);
+        CommandLine.Help.ColorScheme scheme = new CommandLine.Help.ColorScheme.Builder(Ansi.ON)
+                .options(Ansi.Style.bg_magenta).parameters(Ansi.Style.bg_cyan).optionParams(Ansi.Style.bg_yellow).commands(Ansi.Style.reverse).build();
         class Args {
             @CommandLine.Parameters(description = "param desc") String[] params;
             @CommandLine.Option(names = "-x", description = "option desc") String[] options;
@@ -419,9 +423,9 @@ public class CommandLineHelpAnsiTest {
         CommandLine.Help help = new CommandLine.Help(new App(), Ansi.ON);
         assertEquals(Ansi.ON.new Text(String.format(
                 "@|bold <best-app-ever>|@ [@|yellow --another-long-option-name|@=@|italic ^[<another-long-option-value>]|@]%n" +
-                        "                [@|yellow --fourth-long-option-name|@=@|italic <fourth-long-option-value>|@]%n" +
-                        "                [@|yellow --long-option@-name|@=@|italic <long-option-valu@@e>|@]%n" +
-                        "                [@|yellow --third-long-option-name|@=@|italic <third-long-option-value>|@]%n")),
+                        "@|italic               |@  [@|yellow --fourth-long-option-name|@=@|italic <fourth-long-option-value>|@]%n" +
+                        "@|italic               |@  [@|yellow --long-option@-name|@=@|italic <long-option-valu@@e>|@]%n" +
+                        "@|italic               |@  [@|yellow --third-long-option-name|@=@|italic <third-long-option-value>|@]%n")),
                 help.synopsis(0));
     }
 
@@ -638,7 +642,7 @@ public class CommandLineHelpAnsiTest {
 
     @Test
     public void testColorSchemeDefaultConstructorHasAnsiAuto() {
-        CommandLine.Help.ColorScheme colorScheme = new CommandLine.Help.ColorScheme();
+        CommandLine.Help.ColorScheme colorScheme = new CommandLine.Help.ColorScheme.Builder().build();
         assertEquals(Ansi.AUTO, colorScheme.ansi());
     }
 

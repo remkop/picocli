@@ -33,6 +33,7 @@ import static java.lang.String.format;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
 
+@SuppressWarnings("deprecation")
 public class CommandLineParseWithHandlersTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
@@ -56,7 +57,7 @@ public class CommandLineParseWithHandlersTest {
             public Object create() {return new App();}
         };
         String[] args = { "abc" };
-        verifyAllFail(factory, "Parsed command (picocli.CommandLineParseWithHandlersTest$", ") is not Method, Runnable or Callable", args);
+        verifyAllFail(factory, "Parsed command (picocli.CommandLineParseWithHandlersTest$", ") is not a Method, Runnable or Callable", args);
     }
 
     @Test
@@ -398,12 +399,14 @@ public class CommandLineParseWithHandlersTest {
     }
     static class CustomNoThrowExceptionHandler<R> extends DefaultExceptionHandler<R> {
         int exitCode;
+        ExecutionException caught;
 
         @Override
         protected R throwOrExit(ExecutionException ex) {
             try {
                 super.throwOrExit(ex);
             } catch (ExecutionException caught) {
+                this.caught = caught;
             }
             return null;
         }
@@ -412,6 +415,19 @@ public class CommandLineParseWithHandlersTest {
         protected void exit(int exitCode) {
             this.exitCode = exitCode;
         }
+    }
+
+    @Test
+    public void testWithoutSystemExitForOtherExceptions() {
+        @Command class App implements Runnable {
+            public void run() {
+                throw new RuntimeException("blah");
+            }
+        }
+        CustomNoThrowExceptionHandler<List<Object>> handler = new CustomNoThrowExceptionHandler<List<Object>>();
+        new CommandLine(new App()).parseWithHandlers(new RunFirst().andExit(23), handler);
+        assertTrue(handler.caught.getCause() instanceof RuntimeException);
+        assertEquals("blah", handler.caught.getCause().getMessage());
     }
 
     @Test
@@ -464,7 +480,7 @@ public class CommandLineParseWithHandlersTest {
             "  -x=<option>     this is an option%n");
 
     private static final String INVALID_INPUT = format("" +
-            "Unmatched argument: invalid input%n");
+            "Unmatched argument at index 0: 'invalid input'%n");
 
     private static final String MYCALLABLE_INVALID_INPUT = INVALID_INPUT + MYCALLABLE_USAGE;
 
@@ -513,6 +529,7 @@ public class CommandLineParseWithHandlersTest {
     public void testCall1DefaultExceptionHandlerRethrows() {
         try {
             CommandLine.call(new MyCallable(), "-x abc");
+            fail("Expected exception");
         } catch (ExecutionException ex) {
             String cmd = ex.getCommandLine().getCommand().toString();
             String msg = "Error while calling command (" + cmd + "): java.lang.IllegalStateException: this is a test";
@@ -690,6 +707,7 @@ public class CommandLineParseWithHandlersTest {
         for (Runnable r : variations) {
             try {
                 r.run();
+                fail("Expected exception");
             } catch (ExecutionException ex) {
                 assertTrue(ex.getMessage().startsWith("Error while calling command (picocli.CommandLineParseWithHandlersTest$MyCallable"));
                 assertTrue(ex.getCause() instanceof IllegalStateException);
@@ -767,6 +785,7 @@ public class CommandLineParseWithHandlersTest {
         for (Runnable r : variations) {
             try {
                 r.run();
+                fail("Expected exception");
             } catch (ExecutionException ex) {
                 assertTrue(ex.getMessage(), ex.getMessage().startsWith("Error while running command (picocli.CommandLineParseWithHandlersTest$MyRunnable"));
                 assertTrue(ex.getCause() instanceof IllegalStateException);
@@ -844,6 +863,7 @@ public class CommandLineParseWithHandlersTest {
         }
         try {
             CommandLine.run(new App());
+            fail("Expected exception");
         } catch (ExecutionException ex) {
             assertEquals("abc", ex.getMessage());
         }
@@ -860,13 +880,30 @@ public class CommandLineParseWithHandlersTest {
         }
         try {
             CommandLine.call(new App());
+            fail("Expected exception");
         } catch (ExecutionException ex) {
             assertEquals("abc", ex.getMessage());
         }
     }
 
     @Test
-    public void testParameterExceptionIfCallableThrowsParameterException() {
+    public void testParameterExceptionIfRunnablePrintsUsageHelp() {
+        @Command
+        class App implements Runnable {
+            @Spec CommandSpec spec;
+            public void run() {
+                throw new ParameterException(spec.commandLine(), "xxx");
+            }
+        }
+        CommandLine.run(new App());
+        String expected = String.format("" +
+                "xxx%n" +
+                "Usage: <main class>%n");
+        assertEquals(expected, systemErrRule.getLog());
+    }
+
+    @Test
+    public void testParameterExceptionIfCallablePrintsUsageHelp() {
         @Command
         class App implements Callable<Void> {
             @Spec CommandSpec spec;
@@ -874,11 +911,11 @@ public class CommandLineParseWithHandlersTest {
                 throw new ParameterException(spec.commandLine(), "xxx");
             }
         }
-        try {
-            CommandLine.call(new App());
-        } catch (ParameterException ex) {
-            assertEquals("xxx", ex.getMessage());
-        }
+        CommandLine.call(new App());
+        String expected = String.format("" +
+                "xxx%n" +
+                "Usage: <main class>%n");
+        assertEquals(expected, systemErrRule.getLog());
     }
 
     @Test
@@ -898,6 +935,7 @@ public class CommandLineParseWithHandlersTest {
                     throw new IllegalArgumentException("abc");
                 }
             }, new String[0]);
+            fail("Expected exception");
         } catch (IllegalArgumentException ex) {
             assertEquals("abc", ex.getMessage());
         }
@@ -914,6 +952,7 @@ public class CommandLineParseWithHandlersTest {
                     throw new ExecutionException(new CommandLine(new App()), "xyz");
                 }
             }, new String[0]);
+            fail("Expected exception");
         } catch (ExecutionException ex) {
             assertEquals("xyz", ex.getMessage());
         }
@@ -934,11 +973,12 @@ public class CommandLineParseWithHandlersTest {
                 return null;
             }
             public Void handleExecutionException(ExecutionException ex, ParseResult parseResult) {
-                return null;
+                throw ex;
             }
         };
         try {
             new CommandLine(new App()).parseWithHandlers(handler, exceptionHandler, new String[0]);
+            fail("Expected exception");
         } catch (ExecutionException ex) {
             assertEquals("xyz", ex.getMessage());
         }
@@ -966,5 +1006,25 @@ public class CommandLineParseWithHandlersTest {
     public void testCallableClassNullResult() {
         Object result = CommandLine.call(Executable.class, CommandLine.defaultFactory(), "-x");
         assertNull(result);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testDefaultExceptionHandler_handleExecutionException() {
+        final int[] outerExitCode = {-1};
+        DefaultExceptionHandler h = new DefaultExceptionHandler() {
+            @Override
+            protected void exit(int exitCode) {
+                outerExitCode[0] = exitCode;
+            }
+        };
+        h.andExit(9876);
+
+        @Command class App {}
+        CommandLine cmd = new CommandLine(new App());
+        ExecutionException ex = new ExecutionException(cmd, "boo");
+        Object result = h.handleExecutionException(ex, null);
+        assertNull(result);
+        assertEquals(9876, outerExitCode[0]);
     }
 }

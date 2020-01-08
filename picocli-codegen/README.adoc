@@ -1,0 +1,486 @@
+= Picocli Code Generation
+:revnumber: 4.1.4
+:revdate: 2019-12-22
+:toc: left
+:numbered:
+:toclevels: 4
+:source-highlighter: coderay
+//:source-highlighter: highlightjs
+//:highlightjs-theme: darkula
+:icons: font
+
+image::https://picocli.info/images/logo/horizontal-400x150.png[picocli,height="150px"]
+
+Picocli Code Generation contains tools for generating source code, documentation and configuration files 
+for picocli-based applications.
+
+== Annotation Processor
+The `picocli-codegen` module includes an annotation processor that can build a model from the picocli annotations at compile time rather than at runtime.
+
+Use this if you’re interested in:
+
+* **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
+* **Graal native images**. The annotation processor generates and updates https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[Graal configuration]
+files under `META-INF/native-image/picocli-generated/$project` during compilation,
+to be included in the application jar.
+This includes configuration files for https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md[resources] and https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md[dynamic proxies].
+By embedding these configuration files, your jar is instantly Graal-enabled.
+The `$project` location is configurable, see <<Picocli Processor Options,processor options>> below.
+In most cases no further configuration is needed when generating a native image.
+
+=== Enabling the Annotation Processor
+
+Since Java 6, annotation processing is part of the standard `javac` compiler, but many IDEs and build tools require something extra to enable annotation processing.
+
+==== IDE
+https://immutables.github.io/apt.html[This page] shows the steps to configure Eclipse and IntelliJ IDEA to enable annotation processing.
+
+==== Maven
+In Maven, use `annotationProcessorPaths` in the `configuration` of the `maven-compiler-plugin`.
+This requires `maven-compiler-plugin` plugin version 3.5 or higher.
+
+```xml
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-compiler-plugin</artifactId>
+  <!-- annotationProcessorPaths requires maven-compiler-plugin version 3.5 or higher -->
+  <version>${maven-compiler-plugin-version}</version>
+  <configuration>
+    <annotationProcessorPaths>
+      <path>
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli-codegen</artifactId>
+        <version>4.1.4</version>
+      </path>
+    </annotationProcessorPaths>
+  </configuration>
+</plugin>
+```
+
+An alternative that works with older versions of the `maven-compiler-plugin` is to specify the `picocli-codegen` module on the classpath as a `provided` dependency. This also prevents the `picocli-codegen` module from being included in the artifact the module produces as a transitive dependency.
+
+```xml
+<dependency>
+  <groupId>info.picocli</groupId>
+  <artifactId>picocli</artifactId>
+  <version>4.1.4</version>
+</dependency>
+
+<dependency>
+  <groupId>info.picocli</groupId>
+  <artifactId>picocli-codegen</artifactId>
+  <version>4.1.4</version>
+  <scope>provided</scope>
+</dependency>
+```
+
+
+See Processor Options below.
+
+
+==== Gradle
+Use the `annotationProcessor` path in Gradle https://docs.gradle.org/4.6/release-notes.html#convenient-declaration-of-annotation-processor-dependencies[4.6 and higher]:
+```groovy
+dependencies {
+    compile 'info.picocli:picocli:4.1.4'
+    annotationProcessor 'info.picocli:picocli-codegen:4.1.4'
+}
+```
+
+For Gradle versions prior to 4.6, use `compileOnly`, to prevent the `picocli-codegen` jar from being a transitive dependency included in the artifact the module produces.
+```groovy
+dependencies {
+    compile 'info.picocli:picocli:4.1.4'
+    compileOnly 'info.picocli:picocli-codegen:4.1.4'
+}
+```
+
+=== Picocli Processor Options
+
+The picocli annotation processor supports the options below.
+
+==== Recommended Options
+* `project` - output subdirectory
+
+The generated files are written to `META-INF/native-image/picocli-generated/${project}`.
+
+The `project` option can be omitted, but it is a good idea to specify the `project` option with a unique value for your project (e.g. `${groupId}/${artifactId}`) if your jar may be https://stackoverflow.com/a/49811665[shaded] with other jars into an uberjar.
+
+
+==== Other Options
+* `other.resource.patterns` - comma-separated list of regular expressions matching additional resources to include in the image
+* `other.resource.bundles` - comma-separated list of the base names of additional resource bundles to include in the image
+* `other.proxy.interfaces` - comma-separated list of the fully qualified class names of additional interfaces for which to generate proxy classes when building the image
+* `disable.proxy.config` - don’t generate `proxy-config.json`
+* `disable.reflect.config` - don’t generate `reflect-config.json`
+* `disable.resources.config` - don’t generate `resources-config.json`
+
+
+==== Javac
+To pass an annotation processor option with `javac`, specify the `-A` command line option:
+
+```
+javac -Aproject=org.myorg.myproject/myapp -cp ...
+```
+The `-A` option lets you pass options to annotation processors. See the https://docs.oracle.com/javase/8/docs/technotes/tools/unix/javac.html[javac documentation] for details.
+
+==== Maven
+
+To set an annotation processor option in Maven, you need to use the `maven-compiler-plugin` and configure the `compilerArgs` section.
+
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <!-- annotationProcessorPaths requires maven-compiler-plugin version 3.5 or higher -->
+      <version>${maven-compiler-plugin-version}</version>
+      <configuration>
+        <compilerArgs>
+          <arg>-Aproject=${groupId}/${artifactId}</arg>
+        </compilerArgs>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
+```
+
+See https://maven.apache.org/plugins/maven-compiler-plugin/compile-mojo.html for details.
+
+=== Gradle Example
+To set an annotation processor option in Gradle, add these options to the `options.compilerArgs` list in the `compileJava` block.
+
+```groovy
+compileJava {
+    // minimum 1.6
+    sourceCompatibility = ${java-version}
+    targetCompatibility = ${java-version}
+    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+}
+```
+
+See the https://docs.gradle.org/current/dsl/org.gradle.api.tasks.compile.CompileOptions.html[Gradle documentation] for details.
+
+== Manually Running the Tools for Configuring GraalVM Native Image Builds
+
+The annotation processor is the recommended way to generate configuration files for GraalVM native images, but there may be cases where you want to generate these configuration files manually. The sections below give details on how to do this.
+
+The `picocli-codegen` module contains the following tools to assist with AOT compilation to GraalVM native image builds:
+
+* ReflectionConfigGenerator
+* ResourceConfigGenerator
+* DynamicProxyConfigGenerator
+
+The generated configuration files can be supplied to the `native-image` tool via command line options like `-H:ReflectionConfigurationFiles=/path/to/reflect-config.json`,
+or alternatively by placing them in a `META-INF/native-image/` directory on the class path, for example, in a JAR file used in the image build.
+This directory (or any of its subdirectories) is searched for files with the names `reflect-config.json`, `proxy-config.json` and `resource-config.json`,
+which are then automatically included in the build. Not all of those files must be present.
+When multiple files with the same name are found, all of them are included.
+
+See also the SubstrateVM https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[configuration documentation].
+
+=== ReflectionConfigGenerator
+
+GraalVM has https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md[limited support for Java reflection]
+and it needs to know ahead of time the reflectively accessed program elements.
+
+`ReflectionConfigGenerator` generates a JSON String with the program elements that will be accessed reflectively in a picocli-based application, in order to compile this application ahead-of-time into a native executable with GraalVM.
+
+The output of `ReflectionConfigGenerator` is intended to be passed to the `-H:ReflectionConfigurationFiles=/path/to/reflect-config.json` option of the `native-image` GraalVM utility,
+or placed in a `META-INF/native-image/` subdirectory of the JAR. 
+
+This allows picocli-based applications to be compiled to a native image.
+
+See https://picocli.info/picocli-on-graalvm.html[Picocli on GraalVM: Blazingly Fast Command Line Apps] for details.
+
+==== Generating Reflection Configuration During the Build
+
+_Note that the <<Annotation Processor,annotation processor>> does this automatically. The below is only of interest if you cannot use the annotation processor for some reason._
+
+The `--output` option can be used to specify the path of the file to write the configuration to.
+When this option is omitted, the output is sent to standard out.
+ 
+The `ReflectionConfigGenerator` tool accepts any number of fully qualified class names of command classes
+(classes with picocli annotations like `@Command`, `@Option` and `@Parameters`).
+The resulting configuration file will contain entries for the reflected elements of all specified classes.
+
+===== Maven
+
+For Maven, add an `exec:java` goal to generate a Graal reflection configuration file with the `ReflectionConfigGenerator` tool.
+This example uses the `process-classes` phase of the build, there are http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html[alternatives].
+
+Note that the `picocli-codegen` module is only added as a dependency for the `exec` plugin, so it does not need to be added to the project dependencies.
+
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>exec-maven-plugin</artifactId>
+      <version>1.6.0</version>
+      <executions>
+        <execution>
+          <id>generateGraalReflectionConfig</id>
+          <phase>process-classes</phase>
+          <goals>
+            <goal>java</goal>
+          </goals>
+        </execution>
+      </executions>
+      <configuration>
+        <includeProjectDependencies>true</includeProjectDependencies>
+        <includePluginDependencies>true</includePluginDependencies>
+        <mainClass>picocli.codegen.aot.graalvm.ReflectionConfigGenerator</mainClass>
+        <arguments>
+          <argument>--output=target/classes/META-INF/native-image/${project.groupId}/${project.artifactId}/reflect-config.json</argument>
+          <argument>com.your.package.YourCommand1</argument>
+          <argument>com.your.package.YourCommand2</argument>
+        </arguments>
+      </configuration>
+      <dependencies>
+        <dependency>
+          <groupId>info.picocli</groupId>
+          <artifactId>picocli-codegen</artifactId>
+          <version>4.1.4</version>
+          <type>jar</type>
+        </dependency>
+      </dependencies>
+    </plugin>
+  </plugins>
+</build>
+```
+
+===== Gradle
+
+For Gradle, add a custom configuration for the `picocli-codegen` module to your `gradle.build`.
+This allows us to add this module to the classpath of our custom task without adding it as a dependency to the "standard" build.
+
+```groovy
+configurations {
+    generateConfig
+}
+dependencies {
+    compile 'info.picocli:picocli:4.1.4'
+    generateConfig 'info.picocli:picocli-codegen:4.1.4'
+}
+```
+
+Then, add a custom task to run the `ReflectionConfigGenerator` tool.
+This example generates the file during the `assemble` lifecycle task, there are https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_tasks[alternatives].
+
+```groovy
+task(generateGraalReflectionConfig, dependsOn: 'classes', type: JavaExec) {
+    main = 'picocli.codegen.aot.graalvm.ReflectionConfigGenerator'
+    classpath = configurations.generateConfig + sourceSets.main.runtimeClasspath
+    def outputFile = "${buildDir}/resources/main/META-INF/native-image/${project.group}/${project.name}/reflect-config.json"
+    args = ["--output=$outputFile", 'com.your.package.YourCommand1', 'com.your.package.YourCommand2']
+}
+assemble.dependsOn generateGraalReflectionConfig
+```
+
+
+=== ResourceConfigGenerator
+
+The GraalVM native-image builder by default will not integrate any of the
+https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md[classpath resources] into the image it creates.
+
+`ResourceConfigGenerator` generates a JSON String with the resource bundles and other classpath resources
+that should be included in the Substrate VM native image.
+
+The output of `ResourceConfigGenerator` is intended to be passed to the `-H:ResourceConfigurationFiles=/path/to/reflect-config.json` option of the `native-image` GraalVM utility,
+or placed in a `META-INF/native-image/` subdirectory of the JAR. 
+
+This allows picocli-based native image applications to access these resources.
+
+==== Generating Resource Configuration During the Build
+
+_Note that the <<Annotation Processor,annotation processor>> does this automatically. The below is only of interest if you cannot use the annotation processor for some reason._
+
+The `--output` option can be used to specify the path of the file to write the configuration to.
+When this option is omitted, the output is sent to standard out.
+ 
+The `ResourceConfigGenerator` tool accepts any number of fully qualified class names of command classes
+(classes with picocli annotations like `@Command`, `@Option` and `@Parameters`).
+The resulting configuration file will contain entries for the resource bundles used in any of the specified commands or their subcommands.
+
+The `--bundle` option can be used to specify the base name of additional resource bundle(s) to be included in the image.
+
+The `--pattern` option can be used to specify Java regular expressions that match additional resource(s) to be included in the image.
+
+
+===== Maven
+
+For Maven, add an `exec:java` goal to generate a Graal resource configuration file with the `ResourceConfigGenerator` tool.
+This example uses the `process-classes` phase of the build, there are http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html[alternatives].
+
+Note that the `picocli-codegen` module is only added as a dependency for the `exec` plugin, so it does not need to be added to the project dependencies.
+
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>exec-maven-plugin</artifactId>
+      <version>1.6.0</version>
+      <executions>
+        <execution>
+          <id>generateGraalResourceConfig</id>
+          <phase>process-classes</phase>
+          <goals>
+            <goal>java</goal>
+          </goals>
+        </execution>
+      </executions>
+      <configuration>
+        <includeProjectDependencies>true</includeProjectDependencies>
+        <includePluginDependencies>true</includePluginDependencies>
+        <mainClass>picocli.codegen.aot.graalvm.ResourceConfigGenerator</mainClass>
+        <arguments>
+          <argument>--output=target/classes/META-INF/native-image/${project.groupId}/${project.artifactId}/resource-config.json</argument>
+          <argument>com.your.package.YourCommand1</argument>
+          <argument>com.your.package.YourCommand2</argument>
+        </arguments>
+      </configuration>
+      <dependencies>
+        <dependency>
+          <groupId>info.picocli</groupId>
+          <artifactId>picocli-codegen</artifactId>
+          <version>4.1.4</version>
+          <type>jar</type>
+        </dependency>
+      </dependencies>
+    </plugin>
+  </plugins>
+</build>
+```
+
+===== Gradle
+
+For Gradle, add a custom configuration for the `picocli-codegen` module to your `gradle.build`.
+This allows us to add this module to the classpath of our custom task without adding it as a dependency to the "standard" build.
+
+```groovy
+configurations {
+    generateConfig
+}
+dependencies {
+    compile 'info.picocli:picocli:4.1.4'
+    generateConfig 'info.picocli:picocli-codegen:4.1.4'
+}
+```
+
+Then, add a custom task to run the `ResourceConfigGenerator` tool.
+This example generates the file during the `assemble` lifecycle task, there are https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_tasks[alternatives].
+
+```groovy
+task(generateGraalResourceConfig, dependsOn: 'classes', type: JavaExec) {
+    main = 'picocli.codegen.aot.graalvm.ResourceConfigGenerator'
+    classpath = configurations.generateConfig + sourceSets.main.runtimeClasspath
+    def outputFile = "${buildDir}/resources/main/META-INF/native-image/${project.group}/${project.name}/resource-config.json"
+    args = ["--output=$outputFile", 'com.your.package.YourCommand1', 'com.your.package.YourCommand2']
+}
+assemble.dependsOn generateGraalResourceConfig
+```
+
+=== DynamicProxyConfigGenerator
+
+Substrate VM doesn't provide machinery for generating and interpreting bytecodes at run time. Therefore all dynamic proxy classes 
+https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md[need to be generated] at native image build time.
+
+`DynamicProxyConfigGenerator` generates a JSON String with the fully qualified interface names for which
+dynamic proxy classes should be generated at native image build time.
+
+The output of `DynamicProxyConfigGenerator` is intended to be passed to the `-H:DynamicProxyConfigurationFiles=/path/to/proxy-config.json` option of the `native-image` GraalVM utility,
+or placed in a `META-INF/native-image/` subdirectory of the JAR.
+
+This allows picocli-based native image applications that use `@Command`-annotated interfaces with
+`@Option` and `@Parameters`-annotated methods.
+
+==== Generating Dynamic Proxy Configuration During the Build
+
+_Note that the <<Annotation Processor,annotation processor>> does this automatically. The below is only of interest if you cannot use the annotation processor for some reason._
+
+The `--output` option can be used to specify the path of the file to write the configuration to.
+When this option is omitted, the output is sent to standard out.
+ 
+The `DynamicProxyConfigGenerator` tool accepts any number of fully qualified class names of command classes
+(classes with picocli annotations like `@Command`, `@Option` and `@Parameters`).
+The resulting configuration file will contain entries for the resource bundles used in any of the specified commands or their subcommands.
+
+The `--interface` option can be used to specify the fully qualified class names of additional interfaces to generate dynamic proxy classes for in the native image.
+
+
+===== Maven
+
+For Maven, add an `exec:java` goal to generate a Graal proxy configuration file with the `DynamicProxyConfigGenerator` tool.
+This example uses the `process-classes` phase of the build, there are http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html[alternatives].
+
+Note that the `picocli-codegen` module is only added as a dependency for the `exec` plugin, so it does not need to be added to the project dependencies.
+
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>exec-maven-plugin</artifactId>
+      <version>1.6.0</version>
+      <executions>
+        <execution>
+          <id>generateGraalDynamicProxyConfig</id>
+          <phase>process-classes</phase>
+          <goals>
+            <goal>java</goal>
+          </goals>
+        </execution>
+      </executions>
+      <configuration>
+        <includeProjectDependencies>true</includeProjectDependencies>
+        <includePluginDependencies>true</includePluginDependencies>
+        <mainClass>picocli.codegen.aot.graalvm.DynamicProxyConfigGenerator</mainClass>
+        <arguments>
+          <argument>--output=target/classes/META-INF/native-image/${project.groupId}/${project.artifactId}/proxy-config.json</argument>
+          <argument>com.your.package.YourCommand1</argument>
+          <argument>com.your.package.YourCommand2</argument>
+        </arguments>
+      </configuration>
+      <dependencies>
+        <dependency>
+          <groupId>info.picocli</groupId>
+          <artifactId>picocli-codegen</artifactId>
+          <version>4.1.4</version>
+          <type>jar</type>
+        </dependency>
+      </dependencies>
+    </plugin>
+  </plugins>
+</build>
+```
+
+===== Gradle
+
+For Gradle, add a custom configuration for the `picocli-codegen` module to your `gradle.build`.
+This allows us to add this module to the classpath of our custom task without adding it as a dependency to the "standard" build.
+
+```groovy
+configurations {
+    generateConfig
+}
+dependencies {
+    compile 'info.picocli:picocli:4.1.4'
+    generateConfig 'info.picocli:picocli-codegen:4.1.4'
+}
+```
+
+Then, add a custom task to run the `DynamicProxyConfigGenerator` tool.
+This example generates the file during the `assemble` lifecycle task, there are https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_tasks[alternatives].
+
+```groovy
+task(generateGraalDynamicProxyConfig, dependsOn: 'classes', type: JavaExec) {
+    main = 'picocli.codegen.aot.graalvm.DynamicProxyConfigGenerator'
+    classpath = configurations.generateConfig + sourceSets.main.runtimeClasspath
+    def outputFile = "${buildDir}/resources/main/META-INF/native-image/${project.group}/${project.name}/proxy-config.json"
+    args = ["--output=$outputFile", 'com.your.package.YourCommand1', 'com.your.package.YourCommand2']
+}
+assemble.dependsOn generateGraalDynamicProxyConfig
+```

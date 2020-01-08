@@ -39,6 +39,7 @@
 # [4] http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETE_005fALIASES
 # [5] https://stackoverflow.com/questions/17042057/bash-check-element-in-array-for-elements-in-another-array/17042655#17042655
 # [6] https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion.html#Programmable-Completion
+# [7] https://stackoverflow.com/questions/3249432/can-a-bash-tab-completion-script-be-used-in-zsh/27853970#27853970
 #
 
 if [ -n "$BASH_VERSION" ]; then
@@ -48,6 +49,10 @@ elif [ -n "$ZSH_VERSION" ]; then
   # Make alias a distinct command for completion purposes when using zsh (see [4])
   setopt COMPLETE_ALIASES
   alias compopt=complete
+
+  # Enable bash completion in zsh (see [7])
+  autoload -U +X compinit && compinit
+  autoload -U +X bashcompinit && bashcompinit
 fi
 
 # ArrContains takes two arguments, both of which are the name of arrays.
@@ -83,7 +88,9 @@ function _complete_picocompletion-demo() {
   local cmds1=(sub2)
   local cmds2=(sub2 subsub1)
   local cmds3=(sub2 subsub2)
+  local cmds4=(sub2 subsub3)
 
+  if ArrContains COMP_WORDS cmds4; then _picocli_picocompletion-demo_sub2_subsub3; return $?; fi
   if ArrContains COMP_WORDS cmds3; then _picocli_picocompletion-demo_sub2_subsub2; return $?; fi
   if ArrContains COMP_WORDS cmds2; then _picocli_picocompletion-demo_sub2_subsub1; return $?; fi
   if ArrContains COMP_WORDS cmds1; then _picocli_picocompletion-demo_sub2; return $?; fi
@@ -148,7 +155,7 @@ function _picocli_picocompletion-demo_sub2() {
   local curr_word=${COMP_WORDS[COMP_CWORD]}
   local prev_word=${COMP_WORDS[COMP_CWORD-1]}
 
-  local commands="subsub1 subsub2"
+  local commands="subsub1 subsub2 subsub3"
   local flag_opts=""
   local arg_opts="--num2 --directory -d"
 
@@ -164,11 +171,29 @@ function _picocli_picocompletion-demo_sub2() {
       return $?
       ;;
   esac
+  possibilities_POS_PARAM_ARGS="Aaa Bbb Ccc" # 0-2147483647 values
 
   if [[ "${curr_word}" == -* ]]; then
     read -d ' ' -a COMPREPLY < <(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}")
   else
-    read -d ' ' -a COMPREPLY < <(compgen -W "${commands}" -- "${curr_word}")
+    currIndex=0
+    for i in $(seq $(($COMP_CWORD-2)) -1 0); do
+      if [ "${prev_word}" = "sub2" ]; then
+        break
+      fi
+      if [[ "${ARG_OPTS}" =~ "${PREV_WORD}" ]]; then
+        ((currIndex-=2)) # Arg option and its value not counted as positional param
+      elif [[ "${FLAG_OPTS}" =~ "${PREV_WORD}" ]]; then
+        ((currIndex-=1)) # Flag option itself not counted as positional param
+      fi
+      prev_word=${COMP_WORDS[i]}
+      ((currIndex++))
+    done
+    if ((${currIndex} >= 0 && ${currIndex} <= 2147483647)); then
+      COMPREPLY=( $( compgen -W "$possibilities_POS_PARAM_ARGS" -- "${curr_word}" ) )
+      return $?
+    fi
+    COMPREPLY=( $(compgen -W "${commands}" -- "${curr_word}") )
   fi
 }
 
@@ -221,11 +246,72 @@ function _picocli_picocompletion-demo_sub2_subsub2() {
       return
       ;;
   esac
+  str2_POS_PARAM_ARGS="aaa bbb ccc" # 0-2147483647 values
 
   if [[ "${curr_word}" == -* ]]; then
     read -d ' ' -a COMPREPLY < <(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}")
   else
-    read -d ' ' -a COMPREPLY < <(compgen -W "${commands}" -- "${curr_word}")
+    currIndex=0
+    for i in $(seq $(($COMP_CWORD-2)) -1 0); do
+      if [ "${prev_word}" = "subsub2" ]; then
+        break
+      fi
+      if [[ "${arg_opts}" =~ "${prev_word}" ]]; then
+        ((currIndex-=2)) # Arg option and its value not counted as positional param
+      elif [[ "${flag_opts}" =~ "${prev_word}" ]]; then
+        ((currIndex-=1)) # Flag option itself not counted as positional param
+      fi
+      prev_word=${COMP_WORDS[i]}
+      ((currIndex++))
+    done
+    if ((${currIndex} >= 0 && ${currIndex} <= 2147483647)); then
+      COMPREPLY=( $( compgen -W "$str2_POS_PARAM_ARGS" -- "${curr_word}" ) )
+      return $?
+    fi
+    COMPREPLY=( $(compgen -W "${commands}" -- "${curr_word}") )
+  fi
+}
+
+# Generates completions for the options and subcommands of the `subsub3` subcommand.
+function _picocli_picocompletion-demo_sub2_subsub3() {
+  # Get completion data
+  CURR_WORD=${COMP_WORDS[COMP_CWORD]}
+  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}
+
+  COMMANDS=""
+  FLAG_OPTS=""
+  ARG_OPTS=""
+  cands_POS_PARAM_ARGS="aaa bbb ccc" # 0-0 values
+
+  if [[ "${CURR_WORD}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  else
+    currIndex=0
+    for i in $(seq $(($COMP_CWORD-2)) -1 0); do
+      if [ "${PREV_WORD}" = "subsub3" ]; then
+        break
+      fi
+      if [[ "${ARG_OPTS}" =~ "${PREV_WORD}" ]]; then
+        ((currIndex-=2)) # Arg option and its value not counted as positional param
+      elif [[ "${FLAG_OPTS}" =~ "${PREV_WORD}" ]]; then
+        ((currIndex-=1)) # Flag option itself not counted as positional param
+      fi
+      PREV_WORD=${COMP_WORDS[i]}
+      ((currIndex++))
+    done
+    if ((${currIndex} >= 0 && ${currIndex} <= 0)); then
+      COMPREPLY=( $( compgen -W "$cands_POS_PARAM_ARGS" -- ${CURR_WORD} ) )
+      return $?
+    elif ((${currIndex} >= 1 && ${currIndex} <= 2)); then
+      compopt -o filenames
+      COMPREPLY=( $( compgen -f -- ${CURR_WORD} ) ) # files
+      return $?
+    elif ((${currIndex} >= 3 && ${currIndex} <= 2147483647)); then
+      compopt -o filenames
+      COMPREPLY=( $( compgen -A hostname -- ${CURR_WORD} ) )
+      return $?
+    fi
+    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
   fi
 }
 

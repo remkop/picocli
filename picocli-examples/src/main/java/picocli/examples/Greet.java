@@ -16,7 +16,9 @@
 package picocli.examples;
 
 import picocli.CommandLine;
-import static picocli.CommandLine.*;
+
+import static picocli.CommandLine.Command;
+import static picocli.CommandLine.Option;
 
 @Command(name = "Greet", header = "%n@|green Hello world demo|@")
 public class Greet implements Runnable {
@@ -29,6 +31,6 @@ public class Greet implements Runnable {
     }
 
     public static void main(String... args) {
-        CommandLine.run(new Greet(), args);
+        new CommandLine(new Greet()).execute(args);
     }
 }

@@ -16,6 +16,7 @@
 package picocli;
 
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -61,19 +62,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.Help.Visibility.ALWAYS;
 import static picocli.CommandLine.Help.Visibility.NEVER;
 import static picocli.CommandLine.Help.Visibility.ON_DEMAND;
-import static picocli.HelpTestUtil.textArray;
-import static picocli.HelpTestUtil.usageString;
-import static picocli.ModelTestUtil.options;
+import static picocli.TestUtil.textArray;
+import static picocli.TestUtil.usageString;
+import static picocli.TestUtil.options;
 
 /**
  * Tests for picocli's "Usage" help functionality.
@@ -81,6 +85,8 @@ import static picocli.ModelTestUtil.options;
 public class CommandLineHelpTest {
     private static final String LINESEP = System.getProperty("line.separator");
 
+    @Rule
+    public final ProvideSystemProperty autoWidthOff = new ProvideSystemProperty("picocli.usage.width", null);
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
     @Rule
@@ -2049,8 +2055,8 @@ public class CommandLineHelpTest {
                 "--create, --create2, --create3, --create4, --create5, --create6, --create7, --create8",
                 "description");
         assertEquals(String.format("" +
-                        "* -c, --create, --create2, --create3, --create4, --create5, --create6, --create7,%n" +
-                        "        --create8%n" +
+                        "* -c, --create, --create2, --create3, --create4, --create5, --create6,%n" +
+                        "        --create7, --create8%n" +
                         "                              description%n"
                 ,""), table.toString(new StringBuilder()).toString());
 
@@ -2059,8 +2065,8 @@ public class CommandLineHelpTest {
                 "--create, --create2, --create3, --create4, --create5, --create6, --createAA7, --create8",
                 "description");
         assertEquals(String.format("" +
-                        "  -c, --create, --create2, --create3, --create4, --create5, --create6, --createAA7,%n" +
-                        "        --create8%n" +
+                        "  -c, --create, --create2, --create3, --create4, --create5, --create6,%n" +
+                        "        --createAA7, --create8%n" +
                         "                              description%n"
                 ,""), table.toString(new StringBuilder()).toString());
     }
@@ -2451,7 +2457,7 @@ public class CommandLineHelpTest {
 
     @Test
     public void testLayoutConstructorCreatesDefaultColumns() {
-        ColorScheme colorScheme = new ColorScheme();
+        ColorScheme colorScheme = new ColorScheme.Builder().build();
         Help.Layout layout = new Help.Layout(colorScheme, 99);
 
         TextTable expected = TextTable.forDefaultColumns(Help.Ansi.OFF, 99);
@@ -2465,14 +2471,15 @@ public class CommandLineHelpTest {
 
     @Test
     public void testHelpCreateLayout_CreatesDefaultColumns() {
-        Help help = new Help(CommandSpec.create(), new ColorScheme(Help.Ansi.OFF));
+        Help help = new Help(CommandSpec.create(), new ColorScheme.Builder(Help.Ansi.OFF).build());
         Help.Layout layout = help.createDefaultLayout();
 
+        int[] widthsForNoOptions = {2, 2, 1, 3, 72};
         TextTable expected = TextTable.forDefaultColumns(Help.Ansi.OFF, 80);
         assertEquals(expected.columns().length, layout.table.columns().length);
         for (int i = 0; i < expected.columns().length; i++) {
             assertEquals(expected.columns()[i].indent, layout.table.columns()[i].indent);
-            assertEquals(expected.columns()[i].width, layout.table.columns()[i].width);
+            assertEquals(widthsForNoOptions[i], layout.table.columns()[i].width);
             assertEquals(expected.columns()[i].overflow, layout.table.columns()[i].overflow);
         }
     }
@@ -2487,7 +2494,7 @@ public class CommandLineHelpTest {
     public void testMinimalOptionRenderer() {
         Help.MinimalOptionRenderer renderer = new Help.MinimalOptionRenderer();
         Text[][] texts = renderer.render(OptionSpec.builder("-x").build(),
-                Help.createMinimalParamLabelRenderer(), new ColorScheme());
+                Help.createMinimalParamLabelRenderer(), new ColorScheme.Builder().build());
         assertEquals("", texts[0][1].plainString());
     }
 
@@ -2495,7 +2502,7 @@ public class CommandLineHelpTest {
     public void testMinimalParameterRenderer() {
         Help.MinimalParameterRenderer renderer = new Help.MinimalParameterRenderer();
         Text[][] texts = renderer.render(PositionalParamSpec.builder().build(),
-                Help.createMinimalParamLabelRenderer(), new ColorScheme());
+                Help.createMinimalParamLabelRenderer(), new ColorScheme.Builder().build());
         assertEquals("", texts[0][1].plainString());
     }
 
@@ -2611,21 +2618,21 @@ public class CommandLineHelpTest {
     @Test
     public void testHelpCreateDetailedSynopsisOptionsText() {
         Help help = new Help(CommandSpec.create().addOption(OptionSpec.builder("xx").build()),
-                new ColorScheme(Help.Ansi.OFF));
+                new ColorScheme.Builder(Help.Ansi.OFF).build());
         Text text = help.createDetailedSynopsisOptionsText(new ArrayList<ArgSpec>(), null, true);
         assertEquals(" [xx]", text.toString());
     }
 
     @Test
     public void testAddAllSubcommands() {
-        Help help = new Help(CommandSpec.create(), new Help.ColorScheme(Help.Ansi.OFF));
+        Help help = new Help(CommandSpec.create(), new ColorScheme.Builder(Help.Ansi.OFF).build());
         help.addAllSubcommands(null);
         assertTrue(help.subcommands().isEmpty());
     }
     @SuppressWarnings("deprecation")
     @Test
     public void testDetailedSynopsis() {
-        Help help = new Help(CommandSpec.create(), new Help.ColorScheme(Help.Ansi.OFF));
+        Help help = new Help(CommandSpec.create(), new ColorScheme.Builder(Help.Ansi.OFF).build());
         String str = help.detailedSynopsis(new Help.SortByShortestOptionNameAlphabetically(), true);
         assertEquals(String.format("<main class>%n"), str);
     }
@@ -2648,7 +2655,7 @@ public class CommandLineHelpTest {
         };
         for (int i = 0; i < input.length; i++) {
             String[] description = input[i];
-            Help.Ansi.Text[] result = (Help.Ansi.Text[]) m.invoke(null, new Help.ColorScheme(Help.Ansi.OFF), null, description, new boolean[3]);
+            Help.Ansi.Text[] result = (Help.Ansi.Text[]) m.invoke(null, new ColorScheme.Builder(Help.Ansi.OFF).build(), null, description, new boolean[3]);
             Help.Ansi.Text[] expected = expectedOutput[i];
 
             for (int j = 0; j < result.length; j++) {
@@ -2662,7 +2669,7 @@ public class CommandLineHelpTest {
         CommandSpec spec = CommandSpec.create();
         spec.addPositional(PositionalParamSpec.builder().paramLabel("a").hidden(true).build());
         spec.addPositional(PositionalParamSpec.builder().paramLabel("b").build());
-        Help help = new Help(spec, new Help.ColorScheme(Help.Ansi.OFF));
+        Help help = new Help(spec, new ColorScheme.Builder(Help.Ansi.OFF).build());
         String actual = help.abbreviatedSynopsis();
         assertEquals(String.format("<main class> b...%n"), actual);
     }
@@ -2670,7 +2677,7 @@ public class CommandLineHelpTest {
     @SuppressWarnings("deprecation")
     @Test
     public void testSynopsis() {
-        Help help = new Help(CommandSpec.create(), new Help.ColorScheme(Help.Ansi.OFF));
+        Help help = new Help(CommandSpec.create(), new ColorScheme.Builder(Help.Ansi.OFF).build());
         String actual = help.synopsis();
         assertEquals(String.format("<main class>%n"), actual);
     }
@@ -2680,7 +2687,7 @@ public class CommandLineHelpTest {
     public void testAddSubcommand() {
         @Command(name = "app", mixinStandardHelpOptions = true)
         class App { }
-        Help help = new Help(new CommandLine(CommandSpec.create()).getCommandSpec(), new Help.ColorScheme(Help.Ansi.OFF));
+        Help help = new Help(new CommandLine(CommandSpec.create()).getCommandSpec(), new ColorScheme.Builder(Help.Ansi.OFF).build());
         help.addSubcommand("boo", new App());
         assertEquals(1, help.subcommands().size());
         assertEquals("app", help.subcommands().get("boo").commandSpec().name());
@@ -2795,8 +2802,8 @@ public class CommandLineHelpTest {
                 "Usage: <main class> [-P=TIMEUNIT=VALUE[,TIMEUNIT=VALUE...]]... (FIXTAG=VALUE%n" +
                 "                    [\\|FIXTAG=VALUE...] FIXTAG=VALUE[\\|FIXTAG=VALUE...])...%n" +
                 "      (FIXTAG=VALUE[\\|FIXTAG=VALUE...] FIXTAG=VALUE[\\|FIXTAG=VALUE...])...%n" +
-                "         Repeating group of two lists of vertical bar '|'-separated FIXTAG=VALUE%n" +
-                "           pairs.%n" +
+                "         Repeating group of two lists of vertical bar '|'-separated%n" +
+                "           FIXTAG=VALUE pairs.%n" +
                 "  -P, -map=TIMEUNIT=VALUE[,TIMEUNIT=VALUE...]%n" +
                 "         Any number of TIMEUNIT=VALUE pairs. These may be specified separately%n" +
                 "           (-PTIMEUNIT=VALUE) or as a comma-separated list.%n");
@@ -2867,19 +2874,20 @@ public class CommandLineHelpTest {
                 "                    [--lib=<path>[,<path>[,<path>]]]... [--y=<y>,<y>,<y>]... [-P%n" +
                 "                    [=<key=ppp>...]]... [-S[=<key=sss>[,<key=sss>]...]]...%n" +
                 "                    [-D=<key=ddd>...]... [-T=<key=ttt>[,<key=ttt>]...]...%n" +
+                "  -D=<key=ddd>...        use value for given property%n" +
                 "      --help             print this message%n" +
                 "      --lib=<path>[,<path>[,<path>]]%n" +
-                "                         comma-separated list of up to 3 paths to search for jars%n" +
-                "                           and classes%n" +
+                "                         comma-separated list of up to 3 paths to search for%n" +
+                "                           jars and classes%n" +
                 "      --logfile=<file>   use given file for log%n" +
-                "      --x[=<x>[,<x>]]    comma-separated list of up to 2 xxx's%n" +
-                "      --y=<y>,<y>,<y>    exactly 3 y's%n" +
-                "  -D=<key=ddd>...        use value for given property%n" +
                 "  -P=[<key=ppp>...]      use value for project key%n" +
                 "  -S=[<key=sss>[,<key=sss>]...]%n" +
                 "                         use value for project key%n" +
                 "  -T=<key=ttt>[,<key=ttt>]...%n" +
-                "                         use value for given property%n");
+                "                         use value for given property%n" +
+                "      --x[=<x>[,<x>]]    comma-separated list of up to 2 xxx's%n" +
+                "      --y=<y>,<y>,<y>    exactly 3 y's%n"
+        );
         assertEquals(expected, actual);
     }
 
@@ -2952,6 +2960,7 @@ public class CommandLineHelpTest {
         assertEquals(expected, systemOutRule.getLog());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testPrintHelpIfRequested2ReturnsTrueForUsageHelp() throws IOException {
         class App {
@@ -2968,13 +2977,14 @@ public class CommandLineHelpTest {
         assertEquals(expected, baos.toString());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testPrintHelpIfRequestedWithCustomColorScheme() {
-        ColorScheme customColorScheme = new Help.ColorScheme(Help.Ansi.ON)
+        ColorScheme customColorScheme = new ColorScheme.Builder(Help.Ansi.ON)
                 .optionParams(Style.fg_magenta)
                 .commands(Style.bg_cyan)
                 .options(Style.fg_green)
-                .parameters(Style.bg_white);
+                .parameters(Style.bg_white).build();
     
         @Command(mixinStandardHelpOptions = true)
         class App {
@@ -2995,6 +3005,7 @@ public class CommandLineHelpTest {
         assertEquals(expected, baos.toString());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testPrintHelpIfRequestedReturnsTrueForVersionHelp() throws IOException {
         @Command(version = "abc 1.2.3 myversion")
@@ -3010,6 +3021,29 @@ public class CommandLineHelpTest {
         assertEquals(expected, baos.toString());
     }
 
+    @Test
+    public void testPrintVersionHelp() {
+        @Command(version = "abc 1.2.3 myversion")
+        class App {
+            @Option(names = "-V", versionHelp = true) boolean versionRequested;
+        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        new CommandLine(new App()).printVersionHelp(new PrintStream(baos));
+        assertEquals(String.format("abc 1.2.3 myversion%n"), baos.toString());
+    }
+
+    @Test
+    public void testPrintVersionHelpPrintWriter() {
+        @Command(version = "abc 1.2.3 myversion")
+        class App {
+            @Option(names = "-V", versionHelp = true) boolean versionRequested;
+        }
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App()).printVersionHelp(new PrintWriter(sw));
+        assertEquals(String.format("abc 1.2.3 myversion%n"), sw.toString());
+    }
+
+    @SuppressWarnings("deprecation")
     @Test
     public void testPrintHelpIfRequestedReturnsFalseForNoHelp() throws IOException {
         class App {
@@ -3048,6 +3082,7 @@ public class CommandLineHelpTest {
     }
     @Command(name = "sub", description = "This is a subcommand") static class Sub {}
 
+    @SuppressWarnings("deprecation")
     @Test
     public void test244SubcommandsNotParsed() {
         List<CommandLine> list = new CommandLine(new Top()).parse("-h", "sub");
@@ -3109,6 +3144,7 @@ public class CommandLineHelpTest {
             assertEquals("picocli.CommandLine$Help is not a valid subcommand. Did you mean picocli.CommandLine$HelpCommand?", ex.getMessage());
         }
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testAutoHelpMixinUsageHelpOption() {
         @Command(mixinStandardHelpOptions = true) class App {}
@@ -3130,6 +3166,7 @@ public class CommandLineHelpTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testAutoHelpMixinVersionHelpOption() {
         @Command(mixinStandardHelpOptions = true, version = "1.2.3") class App {}
@@ -3148,6 +3185,7 @@ public class CommandLineHelpTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testAutoHelpMixinUsageHelpSubcommandOnAppWithoutSubcommands() {
         @Command(mixinStandardHelpOptions = true, subcommands = HelpCommand.class) class App {}
@@ -3172,8 +3210,11 @@ public class CommandLineHelpTest {
         @Command(mixinStandardHelpOptions = true, subcommands = HelpCommand.class)
         class App implements Runnable{ public void run(){}}
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help");
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setOut(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute("help");
 
         String expected = String.format("" +
                 "Usage: <main class> [-hV] [COMMAND]%n" +
@@ -3181,19 +3222,22 @@ public class CommandLineHelpTest {
                 "  -V, --version   Print version information and exit.%n" +
                 "Commands:%n" +
                 "  help  Displays help information about the specified command%n");
-        assertEquals(expected, baos.toString());
+        assertEquals(expected, sw.toString());
     }
     @Test
     public void testHelpSubcommandWithValidCommand() {
         @Command(subcommands = {Sub.class, HelpCommand.class}) class App implements Runnable{ public void run(){}}
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help", "sub");
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setOut(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute("help", "sub");
 
         String expected = String.format("" +
                 "Usage: <main class> sub%n" +
                 "This is a subcommand%n");
-        assertEquals(expected, baos.toString());
+        assertEquals(expected, sw.toString());
     }
 
     @Test
@@ -3201,8 +3245,11 @@ public class CommandLineHelpTest {
         @Command(mixinStandardHelpOptions = true, subcommands = {Sub.class, HelpCommand.class})
         class App implements Runnable{ public void run(){}}
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), System.out, new PrintStream(baos), Help.Ansi.OFF, "help", "abcd");
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setErr(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute("help", "abcd");
 
         String expected = String.format("" +
                 "Unknown subcommand 'abcd'.%n" +
@@ -3212,7 +3259,7 @@ public class CommandLineHelpTest {
                 "Commands:%n" +
                 "  sub   This is a subcommand%n" +
                 "  help  Displays help information about the specified command%n");
-        assertEquals(expected, baos.toString());
+        assertEquals(expected, sw.toString());
     }
 
     @Test
@@ -3220,8 +3267,11 @@ public class CommandLineHelpTest {
         @Command(subcommands = {Sub.class, HelpCommand.class})
         class App implements Runnable{ public void run(){}}
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help", "-h");
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setOut(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute("help", "-h");
 
         String expected = String.format("" +
                 "Displays help information about the specified command%n" +
@@ -3233,9 +3283,9 @@ public class CommandLineHelpTest {
                 "%n" +
                 "      [COMMAND...]   The COMMAND to display the usage help message for.%n" +
                 "  -h, --help         Show usage help for the help command and exit.%n");
-        assertEquals(expected, baos.toString());
+        assertEquals(expected, sw.toString());
 
-        StringWriter sw = new StringWriter();
+        sw = new StringWriter();
         new CommandLine(new App()).getSubcommands().get("help").usage(new PrintWriter(sw));
         assertEquals(expected, sw.toString());
     }
@@ -3245,8 +3295,11 @@ public class CommandLineHelpTest {
         @Command(mixinStandardHelpOptions = true, subcommands = {Sub.class, HelpCommand.class})
         class App implements Runnable{ public void run(){}}
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), new PrintStream(baos), Help.Ansi.OFF, "help");
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setOut(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute("help");
 
         String expected = String.format("" +
                 "Usage: <main class> [-hV] [COMMAND]%n" +
@@ -3255,10 +3308,10 @@ public class CommandLineHelpTest {
                 "Commands:%n" +
                 "  sub   This is a subcommand%n" +
                 "  help  Displays help information about the specified command%n");
-        assertEquals(expected, baos.toString());
+        assertEquals(expected, sw.toString());
 
-        StringWriter sw = new StringWriter();
-        new CommandLine(new App()).usage(new PrintWriter(sw));
+        sw = new StringWriter();
+        new CommandLine(new App()).usage(new PrintWriter(sw), Help.Ansi.OFF);
         assertEquals(expected, sw.toString());
     }
 
@@ -3269,6 +3322,7 @@ public class CommandLineHelpTest {
         assertEquals("", this.systemOutRule.getLog());
     }
 
+    @SuppressWarnings({"deprecation"})
     @Test
     public void testHelpSubcommandRunPrintsParentUsageIfParentSet() {
         HelpCommand cmd = new HelpCommand();
@@ -3279,6 +3333,25 @@ public class CommandLineHelpTest {
         new CommandLine(spec); // make sure parent spec has a CommandLine
 
         cmd.init(help, Help.Ansi.OFF, System.out, System.err);
+        cmd.run();
+        String expected = String.format("" +
+                "Usage: parent [COMMAND]%n" +
+                "the parent command%n" +
+                "Commands:%n" +
+                "  parent  Displays help information about the specified command%n");
+        assertEquals(expected, this.systemOutRule.getLog());
+    }
+
+    @Test
+    public void testHelpSubcommand2RunPrintsParentUsageIfParentSet() {
+        HelpCommand cmd = new HelpCommand();
+        CommandLine help = new CommandLine(cmd);
+        CommandSpec spec = CommandSpec.create().name("parent");
+        spec.usageMessage().description("the parent command");
+        spec.addSubcommand("parent", help);
+        new CommandLine(spec); // make sure parent spec has a CommandLine
+
+        cmd.init(help, Help.defaultColorScheme(Help.Ansi.OFF), new PrintWriter(System.out), new PrintWriter(System.err));
         cmd.run();
         String expected = String.format("" +
                 "Usage: parent [COMMAND]%n" +
@@ -3353,14 +3426,17 @@ public class CommandLineHelpTest {
             public void run() { }
         }
         String[] args = new String[] {"-unknown"};
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), System.out, new PrintStream(baos), Help.Ansi.OFF, args);
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setErr(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute(args);
 
         String expected = format("" +
                 "Missing required parameter: FILES%n" +
                 "Usage: <main class> FILES...%n" +
                 "      FILES...   List of files%n");
-        assertEquals(expected, baos.toString());
+        assertEquals(expected, sw.toString());
     }
 
     @Test
@@ -3375,15 +3451,18 @@ public class CommandLineHelpTest {
             public void run() { }
         }
         String[] args = new String[] {"-unknown"};
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CommandLine.run(new App(), System.out, new PrintStream(baos), Help.Ansi.OFF, args);
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setErr(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute(args);
 
         String expected = format("" +
                 "Missing required parameter: FILES%n" +
                 "Usage: <main class> [-v] FILES...%n" +
                 "      FILES...   List of files%n" +
                 "  -v             Print output%n");
-        assertEquals(expected, baos.toString());
+        assertEquals(expected, sw.toString());
     }
 
     @Test
@@ -3506,21 +3585,22 @@ public class CommandLineHelpTest {
 
     @Command(description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
     static class WideDescriptionApp {
-        @Option(names = "-s", description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
+        @Option(names = "-s", description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The a quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
         String shortOption;
 
         @Option(names = "--very-very-very-looooooooooooooooong-option-name", description = "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.")
         String lengthyOption;
 
-        static final String expected = format("Usage: <main class> [--very-very-very-looooooooooooooooong-option-name=<lengthyOption>] [-s=<shortOption>]%n" +
+        static final String expected = format("Usage: <main class> [-s=<shortOption>] [--very-very-very-looooooooooooooooong-option-name=<lengthyOption>]%n" +
                 "The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped%n" +
                 "over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The%n" +
                 "quick brown fox jumped over the lazy dog.%n" +
+                "  -s=<shortOption>    The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The a%n" +
+                "                        quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.%n" +
                 "      --very-very-very-looooooooooooooooong-option-name=<lengthyOption>%n" +
-                "                      The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick%n" +
-                "                        brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.%n" +
-                "  -s=<shortOption>    The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick%n" +
-                "                        brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.%n");
+                "                      The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The%n" +
+                "                        quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.%n"
+        );
     }
 
     @Test
@@ -3540,6 +3620,86 @@ public class CommandLineHelpTest {
         cmd.setUsageHelpWidth(120);
         String actual = usageString(cmd, Help.Ansi.OFF);
         assertEquals(WideDescriptionApp.expected, actual);
+    }
+
+    @Test
+    public void testUsageHelpAutoWidthViaSystemProperty() {
+        CommandLine cmd = new CommandLine(new WideDescriptionApp());
+        assertFalse(cmd.isUsageHelpAutoWidth());
+        assertFalse(cmd.getCommandSpec().usageMessage().autoWidth());
+
+        System.setProperty("picocli.usage.width", "AUTO");
+        assertTrue(cmd.isUsageHelpAutoWidth());
+        assertTrue(cmd.getCommandSpec().usageMessage().autoWidth());
+
+        System.setProperty("picocli.usage.width", "TERM");
+        assertTrue(cmd.isUsageHelpAutoWidth());
+        assertTrue(cmd.getCommandSpec().usageMessage().autoWidth());
+
+        System.setProperty("picocli.usage.width", "TERMINAL");
+        assertTrue(cmd.isUsageHelpAutoWidth());
+        assertTrue(cmd.getCommandSpec().usageMessage().autoWidth());
+
+        System.setProperty("picocli.usage.width", "X");
+        assertFalse(cmd.isUsageHelpAutoWidth());
+        assertFalse(cmd.getCommandSpec().usageMessage().autoWidth());
+    }
+
+    @Test
+    public void testGetTerminalWidthLinux() {
+        String sttyResult = "speed 38400 baud; rows 50; columns 123; line = 0;\n" +
+                "intr = ^C; quit = ^\\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>; eol2 = <undef>; swtch = ^Z; start = ^Q; stop = ^S;\n" +
+                "susp = ^Z; rprnt = ^R; werase = ^W; lnext = ^V; discard = ^O; min = 1; time = 0;\n" +
+                "-parenb -parodd cs8 -hupcl -cstopb cread -clocal -crtscts\n" +
+                "-ignbrk brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff -iuclc ixany imaxbel iutf8\n" +
+                "opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0\n" +
+                "isig icanon iexten echo echoe echok -echonl -noflsh -tostop echoctl echoke -flusho\n";
+        Pattern pattern = Pattern.compile(".*olumns(:)?\\s+(\\d+)\\D.*", Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(sttyResult);
+        assertTrue(matcher.matches());
+        assertEquals(123, Integer.parseInt(matcher.group(2)));
+    }
+
+    @Test
+    public void testGetTerminalWidthWindows() {
+        String sttyResult = "\n" +
+                "Status for device CON:\n" +
+                "----------------------\n" +
+                "    Lines:          9001\n" +
+                "    Columns:        113\n" +
+                "    Keyboard rate:  31\n" +
+                "    Keyboard delay: 1\n" +
+                "    Code page:      932\n" +
+                "\n";
+        Pattern pattern = Pattern.compile(".*olumns(:)?\\s+(\\d+)\\D.*", Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(sttyResult);
+        assertTrue(matcher.matches());
+        assertEquals(113, Integer.parseInt(matcher.group(2)));
+    }
+
+    @Test
+    public void testAutoWidthDisabledBySystemProperty() {
+        @Command(usageHelpAutoWidth = true)
+        class App {}
+
+        System.setProperty("picocli.usage.width", "123");
+        CommandLine cmd = new CommandLine(new App());
+        assertFalse(cmd.isUsageHelpAutoWidth());
+        assertFalse(cmd.getCommandSpec().usageMessage().autoWidth());
+        assertEquals(123, cmd.getCommandSpec().usageMessage().width());
+    }
+
+    @Test
+    public void testAutoWidthEnabledProgrammatically() {
+        @Command(usageHelpAutoWidth = true)
+        class App {}
+
+        CommandLine cmd = new CommandLine(new App());
+        assertTrue(cmd.isUsageHelpAutoWidth());
+        assertTrue(cmd.getCommandSpec().usageMessage().autoWidth());
+
+        // the below may fail when this test is running on Cygwin or MINGW
+        assertEquals(80, cmd.getCommandSpec().usageMessage().width());
     }
 
     @Test
@@ -3665,8 +3825,8 @@ public class CommandLineHelpTest {
                 "Usage: <main class> <c>...%n" +
                 "      <c>...   description%n" +
                 "                 Default:%n" +
-                "                 /long/value/length/equals/columnValue/maxlength/and/non/null/offset/%n" +
-                "                 xxx%n");
+                "                 /long/value/length/equals/columnValue/maxlength/and/non/null/of%n" +
+                "                 fset/xxx%n");
         assertEquals(expected, usageString(new Args(), Help.Ansi.OFF));
     }
 
@@ -3764,8 +3924,8 @@ public class CommandLineHelpTest {
         String expected = String.format("" +
                 "Usage: <main class> [--excludebase=<excludeBase>...]...%n" +
                 "      --excludebase=<excludeBase>...%n" +
-                "         exclude child files of cTree (only works with --ctree).%%nCurrently must be%n" +
-                "           explicit or with trailing %% for truncated glob.%n");
+                "         exclude child files of cTree (only works with --ctree).%%nCurrently%n" +
+                "           must be explicit or with trailing %% for truncated glob.%n");
         String actual = new CommandLine(new App()).getUsageMessage();
         assertEquals(expected, actual);
 
@@ -3803,6 +3963,23 @@ public class CommandLineHelpTest {
     }
 
     @Test
+    public void testDescriptionWithFallbackValueContainingPercentChar() {
+        class App {
+            @Option(names = {"-f"},
+                    fallbackValue = "%s - page %d of %d",
+                    description = "format string. Fallback: ${FALLBACK-VALUE}")
+            public String formatString;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [-f=<formatString>]%n" +
+                "  -f=<formatString>    format string. Fallback: %%s - page %%d of %%d%n");
+        String actual = new CommandLine(new App()).getUsageMessage();
+        assertEquals(expected, actual);
+
+        assertFalse(systemErrRule.getLog().contains( "picocli WARN"));
+    }
+
+    @Test
     public void testCharCJKDoubleWidthTextByDefault() {
         @Command(name = "cjk", mixinStandardHelpOptions = true, description = {
                 "12345678901234567890123456789012345678901234567890123456789012345678901234567890",
@@ -3831,13 +4008,13 @@ public class CommandLineHelpTest {
                 "\u30eb\u7aef\u672b\u5411\u3051OS\u306b\u306f\u6a19\u6e96\u3067\u7528\u610f\u3055\u308c\u3066\u304a\u3089\u305a\u3001GUI\u304c\u4e3b\u6d41\u3068\u306a\u3063\u3066\u3044\u308b\u3002%n" +
                 "  -h, --help       Show this help message and exit.%n" +
                 "  -V, --version    Print version information and exit.%n" +
-                "  -x, --long=<x>   \u3057\u304b\u3057\u3001GUI\u74b0\u5883\u3067\u3042\u308c\u3070\u30dd\u30a4\u30f3\u30c6\u30a3\u30f3\u30b0\u30c7\u30d0\u30a4\u30b9\u306b\u3088\u308b\u64cd\u4f5c\u3092\u7e70\u308a\u8fd4\u3057%n" +
-                "                     \u884c\u308f\u306a\u3051\u308c\u3070\u306a\u3089\u306a\u3044\u3088\u3046\u306a\u7169\u96d1\u306a\u4f5c\u696d\u3092\u3001CUI\u74b0\u5883\u3067\u3042\u308c\u3070\u7c21\u5358\u306a\u30b3%n" +
-                "                     \u30de\u30f3\u30c9\u306e\u7d44\u307f\u5408\u308f\u305b\u3067\u5b9f\u884c\u3067\u304d\u308b\u5834\u5408\u3082\u3042\u308b\u306a\u3069\u3001CUI\u306b\u3082\u4f9d\u7136\u3068\u3057\u3066%n" +
-                "                     \u5229\u70b9\u306f\u3042\u308b\u3002\u7279\u306b\u30a8\u30f3\u30c9\u30e6\u30fc\u30b6\u30fc\u3060\u3051\u3067\u306a\u304f\u30cd\u30c3\u30c8\u30ef\u30fc\u30af\u7ba1\u7406\u8005\u3084\u30bd\u30d5%n" +
-                "                     \u30c8\u30a6\u30a7\u30a2\u958b\u767a\u8005\u3082\u5229\u7528\u3059\u308bPC\u3084\u30b5\u30fc\u30d0\u30fc\u306b\u304a\u3044\u3066\u306f\u3001GUI\u3068CUI\u306f\u7528\u9014\u306b%n" +
-                "                     \u3088\u3063\u3066\u4f4f\u307f\u5206\u3051\u3066\u4f75\u5b58\u3057\u3066\u3044\u308b\u3082\u306e\u3067\u3042\u308a\u3001CUI\u306f\u5b8c\u5168\u306b\u5ec3\u308c\u305f\u308f\u3051\u3067%n" +
-                "                     \u306f\u306a\u3044\u3002%n");
+                "  -x, --long=<x>   \u3057\u304b\u3057\u3001GUI\u74b0\u5883\u3067\u3042\u308c\u3070\u30dd\u30a4\u30f3\u30c6\u30a3\u30f3\u30b0\u30c7\u30d0\u30a4\u30b9\u306b\u3088\u308b\u64cd\u4f5c\u3092\u7e70\u308a%n" +
+                "                     \u8fd4\u3057\u884c\u308f\u306a\u3051\u308c\u3070\u306a\u3089\u306a\u3044\u3088\u3046\u306a\u7169\u96d1\u306a\u4f5c\u696d\u3092\u3001CUI\u74b0\u5883\u3067\u3042\u308c\u3070%n" +
+                "                     \u7c21\u5358\u306a\u30b3\u30de\u30f3\u30c9\u306e\u7d44\u307f\u5408\u308f\u305b\u3067\u5b9f\u884c\u3067\u304d\u308b\u5834\u5408\u3082\u3042\u308b\u306a\u3069\u3001CUI\u306b%n" +
+                "                     \u3082\u4f9d\u7136\u3068\u3057\u3066\u5229\u70b9\u306f\u3042\u308b\u3002\u7279\u306b\u30a8\u30f3\u30c9\u30e6\u30fc\u30b6\u30fc\u3060\u3051\u3067\u306a\u304f\u30cd\u30c3\u30c8%n" +
+                "                     \u30ef\u30fc\u30af\u7ba1\u7406\u8005\u3084\u30bd\u30d5\u30c8\u30a6\u30a7\u30a2\u958b\u767a\u8005\u3082\u5229\u7528\u3059\u308bPC\u3084\u30b5\u30fc\u30d0\u30fc\u306b\u304a%n" +
+                "                     \u3044\u3066\u306f\u3001GUI\u3068CUI\u306f\u7528\u9014\u306b\u3088\u3063\u3066\u4f4f\u307f\u5206\u3051\u3066\u4f75\u5b58\u3057\u3066\u3044\u308b\u3082\u306e\u3067%n" +
+                "                     \u3042\u308a\u3001CUI\u306f\u5b8c\u5168\u306b\u5ec3\u308c\u305f\u308f\u3051\u3067\u306f\u306a\u3044\u3002%n");
         assertEquals(expected, usageMessage);
     }
 
@@ -3863,15 +4040,320 @@ public class CommandLineHelpTest {
                 "12345678901234567890123456789012345678901234567890123456789012345678901234567890%n" +
                 "CUI\u306fGUI\u3068\u6bd4\u3079\u3066\u76f4\u611f\u7684\u306a\u64cd\u4f5c\u304c\u3067\u304d\u306a\u3044\u306a\u3069\u306e\u6b20\u70b9\u304c\u3042\u308b\u3082\u306e\u306e\u3001\u30e1\u30a4\u30f3\u30e1\u30e2\u30ea\u304a\u3088\u3073\u30d3\u30c7\u30aa\u30e1\u30e2\u30ea\u306a\u3069\u306e\u30b3\u30f3\u30d4\u30e5\u30fc\u30bf\u8cc7\u6e90\u306e\u6d88\u8cbb\u304c\u5c11\u306a\u3044\u3053\u3068\u304b\u3089\u3001\u6027\u80fd\u306e\u4f4e\u3044\u521d\u671f\u306e%n" +
                 "\u30b3\u30f3\u30d4\u30e5\u30fc\u30bf\u3067\u306fCUI\u306b\u3088\u308b\u5bfe\u8a71\u74b0\u5883\u304c\u4e3b\u6d41\u3060\u3063\u305f\u3002\u305d\u306e\u5f8c\u3001\u30b3\u30f3\u30d4\u30e5\u30fc\u30bf\u306e\u6027\u80fd\u304c\u5411\u4e0a\u3057\u3001\u30de\u30a6\u30b9\u306a\u3069\u306e\u30dd\u30a4\u30f3\u30c6\u30a3\u30f3\u30b0\u30c7\u30d0\u30a4\u30b9\u306b\u3088\u3063\u3066\u76f4\u611f\u7684\u306a\u64cd\u4f5c\u306e\u3067\u304d\u308bGUI\u74b0\u5883\u304c%n" +
-                "Macintosh\u3084Windows 95\u306a\u3069\u306b\u3088\u3063\u3066\u30aa\u30d5\u30a3\u30b9\u3084\u4e00\u822c\u5bb6\u5ead\u306b\u3082\u666e\u53ca\u3057\u3001CUI\u306f\u65e2\u5b9a\u306e\u30a4\u30f3\u30bf\u30fc\u30d5\u30a7\u30a4\u30b9\u3067\u306f\u306a\u304f\u306a\u3063\u3066\u3044\u3063\u305f\u3002\u30d1\u30fc\u30bd\u30ca\u30eb\u30b3\u30f3\u30d4\u30e5\u30fc\u30bf%n" +
-                "(PC) \u5411\u3051\u3084\u30b5\u30fc\u30d0\u30fc\u5411\u3051\u306e\u30aa\u30da\u30ec\u30fc\u30c6\u30a3\u30f3\u30b0\u30b7\u30b9\u30c6\u30e0 (OS) \u306b\u306f\u3001\u65e2\u5b9a\u306e\u30a4\u30f3\u30bf\u30fc\u30d5\u30a7\u30a4\u30b9\u304cGUI\u3067\u3042\u3063\u3066\u3082\u30b3\u30de\u30f3\u30c9\u30e9\u30a4\u30f3\u30bf\u30fc\u30df\u30ca\u30eb\u306a\u3069\u306eCUI\u74b0\u5883\u304c\u4f9d\u7136\u3068%n" +
-                "\u3057\u3066\u7528\u610f\u3055\u308c\u3066\u3044\u308b\u304c\u3001\u30b9\u30de\u30fc\u30c8\u30d5\u30a9\u30f3\u306a\u3069\u306e\u30e2\u30d0\u30a4\u30eb\u7aef\u672b\u5411\u3051OS\u306b\u306f\u6a19\u6e96\u3067\u7528\u610f\u3055\u308c\u3066\u304a\u3089\u305a\u3001GUI\u304c\u4e3b\u6d41\u3068\u306a\u3063\u3066\u3044\u308b\u3002%n" +
+                "Macintosh\u3084Windows 95\u306a\u3069\u306b\u3088\u3063\u3066\u30aa\u30d5\u30a3\u30b9\u3084\u4e00\u822c\u5bb6\u5ead\u306b\u3082\u666e\u53ca\u3057\u3001CUI\u306f\u65e2\u5b9a\u306e\u30a4\u30f3\u30bf\u30fc\u30d5\u30a7\u30a4\u30b9\u3067\u306f\u306a\u304f\u306a\u3063\u3066\u3044\u3063\u305f\u3002\u30d1\u30fc\u30bd\u30ca\u30eb\u30b3\u30f3\u30d4\u30e5\u30fc\u30bf (%n" +
+                "PC) \u5411\u3051\u3084\u30b5\u30fc\u30d0\u30fc\u5411\u3051\u306e\u30aa\u30da\u30ec\u30fc\u30c6\u30a3\u30f3\u30b0\u30b7\u30b9\u30c6\u30e0 (OS) \u306b\u306f\u3001\u65e2\u5b9a\u306e\u30a4\u30f3\u30bf\u30fc\u30d5\u30a7\u30a4\u30b9\u304cGUI\u3067\u3042\u3063\u3066\u3082\u30b3\u30de\u30f3\u30c9\u30e9\u30a4\u30f3\u30bf\u30fc\u30df\u30ca\u30eb\u306a\u3069\u306eCUI\u74b0\u5883\u304c\u4f9d\u7136\u3068\u3057%n" +
+                "\u3066\u7528\u610f\u3055\u308c\u3066\u3044\u308b\u304c\u3001\u30b9\u30de\u30fc\u30c8\u30d5\u30a9\u30f3\u306a\u3069\u306e\u30e2\u30d0\u30a4\u30eb\u7aef\u672b\u5411\u3051OS\u306b\u306f\u6a19\u6e96\u3067\u7528\u610f\u3055\u308c\u3066\u304a\u3089\u305a\u3001GUI\u304c\u4e3b\u6d41\u3068\u306a\u3063\u3066\u3044\u308b\u3002%n" +
                 "  -h, --help       Show this help message and exit.%n" +
                 "  -V, --version    Print version information and exit.%n" +
-                "  -x, --long=<x>   \u3057\u304b\u3057\u3001GUI\u74b0\u5883\u3067\u3042\u308c\u3070\u30dd\u30a4\u30f3\u30c6\u30a3\u30f3\u30b0\u30c7\u30d0\u30a4\u30b9\u306b\u3088\u308b\u64cd\u4f5c\u3092\u7e70\u308a\u8fd4\u3057\u884c\u308f\u306a\u3051\u308c\u3070\u306a\u3089\u306a\u3044\u3088\u3046\u306a\u7169\u96d1\u306a\u4f5c\u696d\u3092\u3001CUI\u74b0\u5883\u3067\u3042\u308c\u3070\u7c21\u5358\u306a%n" +
-                "                     \u30b3\u30de\u30f3\u30c9\u306e\u7d44\u307f\u5408\u308f\u305b\u3067\u5b9f\u884c\u3067\u304d\u308b\u5834\u5408\u3082\u3042\u308b\u306a\u3069\u3001CUI\u306b\u3082\u4f9d\u7136\u3068\u3057\u3066\u5229\u70b9\u306f\u3042\u308b\u3002\u7279\u306b\u30a8\u30f3\u30c9\u30e6\u30fc\u30b6\u30fc\u3060\u3051\u3067\u306a\u304f\u30cd\u30c3\u30c8\u30ef\u30fc\u30af\u7ba1\u7406\u8005\u3084%n" +
-                "                     \u30bd\u30d5\u30c8\u30a6\u30a7\u30a2\u958b\u767a\u8005\u3082\u5229\u7528\u3059\u308bPC\u3084\u30b5\u30fc\u30d0\u30fc\u306b\u304a\u3044\u3066\u306f\u3001GUI\u3068CUI\u306f\u7528\u9014\u306b\u3088\u3063\u3066\u4f4f\u307f\u5206\u3051\u3066\u4f75\u5b58\u3057\u3066\u3044\u308b\u3082\u306e\u3067\u3042\u308a\u3001CUI\u306f\u5b8c\u5168%n" +
-                "                     \u306b\u5ec3\u308c\u305f\u308f\u3051\u3067\u306f\u306a\u3044\u3002%n");
+                "  -x, --long=<x>   \u3057\u304b\u3057\u3001GUI\u74b0\u5883\u3067\u3042\u308c\u3070\u30dd\u30a4\u30f3\u30c6\u30a3\u30f3\u30b0\u30c7\u30d0\u30a4\u30b9\u306b\u3088\u308b\u64cd\u4f5c\u3092\u7e70\u308a\u8fd4\u3057\u884c\u308f\u306a\u3051\u308c\u3070\u306a\u3089\u306a\u3044\u3088\u3046\u306a\u7169\u96d1\u306a\u4f5c\u696d\u3092\u3001CUI\u74b0\u5883\u3067\u3042%n" +
+                "                     \u308c\u3070\u7c21\u5358\u306a\u30b3\u30de\u30f3\u30c9\u306e\u7d44\u307f\u5408\u308f\u305b\u3067\u5b9f\u884c\u3067\u304d\u308b\u5834\u5408\u3082\u3042\u308b\u306a\u3069\u3001CUI\u306b\u3082\u4f9d\u7136\u3068\u3057\u3066\u5229\u70b9\u306f\u3042\u308b\u3002\u7279\u306b\u30a8\u30f3\u30c9\u30e6\u30fc\u30b6\u30fc\u3060\u3051\u3067\u306a\u304f%n" +
+                "                     \u30cd\u30c3\u30c8\u30ef\u30fc\u30af\u7ba1\u7406\u8005\u3084\u30bd\u30d5\u30c8\u30a6\u30a7\u30a2\u958b\u767a\u8005\u3082\u5229\u7528\u3059\u308bPC\u3084\u30b5\u30fc\u30d0\u30fc\u306b\u304a\u3044\u3066\u306f\u3001GUI\u3068CUI\u306f\u7528\u9014\u306b\u3088\u3063\u3066\u4f4f\u307f\u5206\u3051\u3066\u4f75\u5b58\u3057%n" +
+                "                     \u3066\u3044\u308b\u3082\u306e\u3067\u3042\u308a\u3001CUI\u306f\u5b8c\u5168\u306b\u5ec3\u308c\u305f\u308f\u3051\u3067\u306f\u306a\u3044\u3002%n");
         assertEquals(expected, usageMessage);
+    }
+
+    @Test
+    public void testTextTableAjustForWideCJKCharsByDefault() {
+        assertTrue(TextTable.forDefaultColumns(Help.Ansi.OFF, 80).isAdjustLineBreaksForWideCJKCharacters());
+        assertTrue(TextTable.forColumnWidths(Help.Ansi.OFF, 3, 4, 6, 30).isAdjustLineBreaksForWideCJKCharacters());
+        assertTrue(TextTable.forDefaultColumns(Help.Ansi.OFF, 20, 80).isAdjustLineBreaksForWideCJKCharacters());
+    }
+
+    @Test
+    public void testTextTableAjustForWideCJKCharsByDefaultIsMutable() {
+        TextTable textTable = TextTable.forDefaultColumns(Help.Ansi.OFF, 80);
+
+        assertTrue(textTable.isAdjustLineBreaksForWideCJKCharacters());
+        textTable.setAdjustLineBreaksForWideCJKCharacters(false);
+        assertFalse(textTable.isAdjustLineBreaksForWideCJKCharacters());
+    }
+
+    @Command(name = "top", subcommands = {
+            SubcommandWithStandardHelpOptions.class,
+            CommandLine.HelpCommand.class
+    })
+    static class ParentCommandWithRequiredOption implements Runnable {
+        @Option(names = "--required", required = true)
+        String required;
+        public void run() { }
+    }
+    @Command(name = "sub", mixinStandardHelpOptions = true)
+    static class SubcommandWithStandardHelpOptions implements Runnable {
+        public void run() { }
+    }
+
+    @Ignore
+    @Test
+    // https://github.com/remkop/picocli/issues/743
+    public void testSubcommandHelpWhenParentCommandHasRequiredOption_743() {
+        CommandLine cmd = new CommandLine(new ParentCommandWithRequiredOption());
+
+        cmd.execute("help", "sub");
+        String expected = String.format("" +
+                "Usage: top sub [-hV]%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n");
+        assertEquals(expected, this.systemOutRule.getLog());
+        assertEquals("", this.systemErrRule.getLog());
+
+        systemErrRule.clearLog();
+        systemOutRule.clearLog();
+        cmd.execute("sub", "--help");
+        assertEquals("", this.systemErrRule.getLog());
+        assertEquals(expected, this.systemOutRule.getLog());
+    }
+
+    @Test
+    //https://github.com/remkop/picocli/issues/739
+    public void testIssue739CommandName72Chars() {
+        @Command(name = "123456789012345678901234567890123456789012345678901234567890123456789012",
+                mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = "-a") String aaaaaa;
+            @Option(names = "-b", arity = "2") String[] bbbbbbb;
+            @Option(names = "-c", split = ",") String[] cccccccc;
+        }
+
+        String expected = String.format("" +
+                "Usage: 123456789012345678901234567890123456789012345678901234567890123456789012%n" +
+                "       [-hV] [-a=<aaaaaa>] [-c=<cccccccc>[,<cccccccc>...]]... [-b=<bbbbbbb>%n" +
+                "       <bbbbbbb>]...%n" +
+                "  -a=<aaaaaa>%n" +
+                "  -b=<bbbbbbb> <bbbbbbb>%n" +
+                "  -c=<cccccccc>[,<cccccccc>...]%n" +
+                "%n" +
+                "  -h, --help                Show this help message and exit.%n" +
+                "  -V, --version             Print version information and exit.%n");
+        String actual = new CommandLine(new App()).getUsageMessage();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    //https://github.com/remkop/picocli/issues/739
+    public void testIssue739CommandName73Chars() {
+        @Command(name = "1234567890123456789012345678901234567890123456789012345678901234567890123",
+                mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = "-a") String aaaaaa;
+            @Option(names = "-b", arity = "2") String[] bbbbbbb;
+            @Option(names = "-c", split = ",") String[] cccccccc;
+        }
+
+        String expected = String.format("" +
+                "Usage: 1234567890123456789012345678901234567890123456789012345678901234567890123%n" +
+                "        [-hV] [-a=<aaaaaa>] [-c=<cccccccc>[,<cccccccc>...]]... [-b=<bbbbbbb>%n" +
+                "       <bbbbbbb>]...%n" +
+                "  -a=<aaaaaa>%n" +
+                "  -b=<bbbbbbb> <bbbbbbb>%n" +
+                "  -c=<cccccccc>[,<cccccccc>...]%n" +
+                "%n" +
+                "  -h, --help                Show this help message and exit.%n" +
+                "  -V, --version             Print version information and exit.%n");
+        String actual = new CommandLine(new App()).getUsageMessage();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    //https://github.com/remkop/picocli/issues/739
+    public void testIssue739CommandName80Chars() {
+        @Command(name = "12345678901234567890123456789012345678901234567890123456789012345678901234567890",
+                mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = "-a") String aaaaaa;
+            @Option(names = "-b", arity = "2") String[] bbbbbbb;
+            @Option(names = "-c", split = ",") String[] cccccccc;
+        }
+
+        String expected = String.format("" +
+                "Usage: 1234567890123456789012345678901234567890123456789012345678901234567890123%n" +
+                "       4567890 [-hV] [-a=<aaaaaa>] [-c=<cccccccc>[,<cccccccc>...]]...%n" +
+                "       [-b=<bbbbbbb> <bbbbbbb>]...%n" +
+                "  -a=<aaaaaa>%n" +
+                "  -b=<bbbbbbb> <bbbbbbb>%n" +
+                "  -c=<cccccccc>[,<cccccccc>...]%n" +
+                "%n" +
+                "  -h, --help                Show this help message and exit.%n" +
+                "  -V, --version             Print version information and exit.%n");
+        String actual = new CommandLine(new App()).getUsageMessage();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    //https://github.com/remkop/picocli/issues/739
+    public void testIssue739CommandName40Chars_customSynopsisMaxIndent() {
+        @Command(name = "1234567890123456789012345678901234567890",
+                mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = "-a") String aaaaaa;
+            @Option(names = "-b", arity = "2") String[] bbbbbbb;
+            @Option(names = "-c", split = ",") String[] cccccccc;
+        }
+
+        String expected = String.format("" +
+                "Usage: 1234567890123456789012345678901234567890 [-hV] [-a=<aaaaaa>]%n" +
+                "                                        [-c=<cccccccc>[,<cccccccc>...]]...%n" +
+                "                                        [-b=<bbbbbbb> <bbbbbbb>]...%n" +
+                "  -a=<aaaaaa>%n" +
+                "  -b=<bbbbbbb> <bbbbbbb>%n" +
+                "  -c=<cccccccc>[,<cccccccc>...]%n" +
+                "%n" +
+                "  -h, --help                Show this help message and exit.%n" +
+                "  -V, --version             Print version information and exit.%n");
+        CommandLine cmd = new CommandLine(new App());
+        cmd.getCommandSpec().usageMessage().synopsisAutoIndentThreshold(47.0 / 80);
+        cmd.getCommandSpec().usageMessage().synopsisIndent(40);
+        String actual = cmd.getUsageMessage();
+        assertEquals(expected, actual);
+
+        cmd.getCommandSpec().usageMessage().synopsisIndent(20);
+        assertEquals(String.format("" +
+                "Usage: 1234567890123456789012345678901234567890 [-hV] [-a=<aaaaaa>]%n" +
+                "                    [-c=<cccccccc>[,<cccccccc>...]]... [-b=<bbbbbbb>%n" +
+                "                    <bbbbbbb>]...%n" +
+                "  -a=<aaaaaa>%n" +
+                "  -b=<bbbbbbb> <bbbbbbb>%n" +
+                "  -c=<cccccccc>[,<cccccccc>...]%n" +
+                "%n" +
+                "  -h, --help                Show this help message and exit.%n" +
+                "  -V, --version             Print version information and exit.%n"), cmd.getUsageMessage());
+
+        cmd.getCommandSpec().usageMessage().synopsisIndent(-1);
+        assertEquals(String.format("" +
+                "Usage: 1234567890123456789012345678901234567890 [-hV] [-a=<aaaaaa>]%n" +
+                "       [-c=<cccccccc>[,<cccccccc>...]]... [-b=<bbbbbbb> <bbbbbbb>]...%n" +
+                "  -a=<aaaaaa>%n" +
+                "  -b=<bbbbbbb> <bbbbbbb>%n" +
+                "  -c=<cccccccc>[,<cccccccc>...]%n" +
+                "%n" +
+                "  -h, --help                Show this help message and exit.%n" +
+                "  -V, --version             Print version information and exit.%n"), cmd.getUsageMessage());
+    }
+
+    @Test
+    public void testSynopsisAutoIndentThresholdDefault() {
+        assertEquals(0.5, new UsageMessageSpec().synopsisAutoIndentThreshold(), 0.00001);
+    }
+
+    @Test
+    public void testSynopsisAutoIndentThresholdDisallowsNegativeValue() {
+        try {
+            new UsageMessageSpec().synopsisAutoIndentThreshold(-0.1);
+            fail("Expected exception");
+        } catch (IllegalArgumentException ex) {
+            assertEquals("synopsisAutoIndentThreshold must be between 0.0 and 0.9 (inclusive), but was -0.1", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testSynopsisAutoIndentThresholdDisallowsValueLargerThan0_9() {
+        try {
+            new UsageMessageSpec().synopsisAutoIndentThreshold(0.90001);
+            fail("Expected exception");
+        } catch (IllegalArgumentException ex) {
+            assertEquals("synopsisAutoIndentThreshold must be between 0.0 and 0.9 (inclusive), but was 0.90001", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testSynopsisAutoIndentThresholdAcceptsValueZero() {
+        assertEquals(0.0, new UsageMessageSpec().synopsisAutoIndentThreshold(0.0).synopsisAutoIndentThreshold(), 0.0001);
+    }
+
+    @Test
+    public void testSynopsisAutoIndentThresholdAcceptsValue0_9() {
+        assertEquals(0.9, new UsageMessageSpec().synopsisAutoIndentThreshold(0.9).synopsisAutoIndentThreshold(), 0.0001);
+    }
+
+    @Test
+    public void testSynopsisIndentDefault() {
+        assertEquals(-1, new UsageMessageSpec().synopsisIndent());
+    }
+
+    @Test
+    //https://github.com/remkop/picocli/issues/739
+    public void testIssue739CommandName32Chars() {
+        @Command(name = "12345678901234567890123456789012",
+                mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = "-a") String aaaaaa;
+            @Option(names = "-b", arity = "2") String[] bbbbbbb;
+            @Option(names = "-c", split = ",") String[] cccccccc;
+        }
+
+        String expected = String.format("" +
+                "Usage: 12345678901234567890123456789012 [-hV] [-a=<aaaaaa>] [-c=<cccccccc>[,%n" +
+                "                                        <cccccccc>...]]... [-b=<bbbbbbb>%n" +
+                "                                        <bbbbbbb>]...%n" +
+                "  -a=<aaaaaa>%n" +
+                "  -b=<bbbbbbb> <bbbbbbb>%n" +
+                "  -c=<cccccccc>[,<cccccccc>...]%n" +
+                "%n" +
+                "  -h, --help                Show this help message and exit.%n" +
+                "  -V, --version             Print version information and exit.%n");
+        String actual = new CommandLine(new App()).getUsageMessage();
+        assertEquals(expected, actual);
+    }
+
+    @Command(name = "showenv", mixinStandardHelpOptions = true,
+            version = "showenv 1.0",
+            description = "Demonstrates a usage help message with " +
+                    "an additional section for environment variables.",
+            exitCodeListHeading = "Exit Codes:%n",
+            exitCodeList = {
+                    " 0:Successful program execution",
+                    "64:Usage error: user input for the command was incorrect, " +
+                            "e.g., the wrong number of arguments, a bad flag, " +
+                            "a bad syntax in a parameter, etc.",
+                    "70:Internal software error: an exception occurred when invoking " +
+                            "the business logic of this command."
+            }
+    )
+    public class EnvironmentVariablesSection { }
+
+    @Test
+    public void testCustomTabularSection() {
+        String SECTION_KEY_ENV_HEADING = "environmentVariablesHeading";
+        String SECTION_KEY_ENV_DETAILS = "environmentVariables";
+
+        // the data to display
+        final Map<String, String> env = new LinkedHashMap<String, String>();
+        env.put("FOO", "explanation of foo. If very long, then the line is wrapped and the wrapped line is indented with two spaces.");
+        env.put("BAR", "explanation of bar");
+        env.put("XYZ", "xxxx yyyy zzz");
+
+        // register the custom section renderers
+        CommandLine cmd = new CommandLine(new EnvironmentVariablesSection());
+        cmd.getHelpSectionMap().put(SECTION_KEY_ENV_HEADING, new IHelpSectionRenderer() {
+            public String render(Help help) { return help.createHeading("Environment Variables:%n"); }
+        });
+        cmd.getHelpSectionMap().put(SECTION_KEY_ENV_DETAILS, new IHelpSectionRenderer() {
+            public String render(Help help) { return help.createTextTable(env).toString(); }
+        });
+
+        // specify the location of the new sections
+        List<String> keys = new ArrayList<String>(cmd.getHelpSectionKeys());
+        int index = keys.indexOf(CommandLine.Model.UsageMessageSpec.SECTION_KEY_FOOTER_HEADING);
+        keys.add(index, SECTION_KEY_ENV_HEADING);
+        keys.add(index + 1, SECTION_KEY_ENV_DETAILS);
+        cmd.setHelpSectionKeys(keys);
+
+        String expected = String.format("" +
+                "Usage: showenv [-hV]%n" +
+                "Demonstrates a usage help message with an additional section for environment%n" +
+                "variables.%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "Exit Codes:%n" +
+                "   0   Successful program execution%n" +
+                "  64   Usage error: user input for the command was incorrect, e.g., the wrong%n" +
+                "         number of arguments, a bad flag, a bad syntax in a parameter, etc.%n" +
+                "  70   Internal software error: an exception occurred when invoking the%n" +
+                "         business logic of this command.%n" +
+                "Environment Variables:%n" +
+                "  FOO   explanation of foo. If very long, then the line is wrapped and the%n" +
+                "          wrapped line is indented with two spaces.%n" +
+                "  BAR   explanation of bar%n" +
+                "  XYZ   xxxx yyyy zzz%n");
+        assertEquals(expected, cmd.getUsageMessage(Help.Ansi.OFF));
     }
 }

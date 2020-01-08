@@ -17,7 +17,6 @@ package picocli;
 
 import org.fusesource.jansi.AnsiConsole;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Help.Ansi;
 
 /**
  * Demonstrates usage help with ansi colors on Windows DOS (without Cygwin or MSYS(2)).
@@ -30,7 +29,7 @@ public class WindowsJansiDemo extends Demo {
         // Since https://github.com/remkop/picocli/issues/491 was fixed in picocli 3.6.0,
         // Ansi.AUTO is automatically enabled if the AnsiConsole is installed.
         AnsiConsole.systemInstall(); // Jansi magic
-        CommandLine.run(new WindowsJansiDemo(), System.out, Ansi.AUTO, args);
+        new CommandLine(new WindowsJansiDemo()).execute(args);
         AnsiConsole.systemUninstall();
     }
 }

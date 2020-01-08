@@ -32,7 +32,7 @@ public class SimpleDemo implements Runnable { // ...
     }
 
     public static void main(String[] args) {
-        CommandLine.run(new SimpleDemo(), args);
+        new CommandLine(new SimpleDemo()).execute(args);
     }
 }
 

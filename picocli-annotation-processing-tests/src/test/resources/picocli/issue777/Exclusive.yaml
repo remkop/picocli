@@ -1,0 +1,112 @@
+---
+CommandSpec:
+  name: '<main class>'
+  aliases: []
+  userObject: picocli.issue777.CompositeGroupDemo.Exclusive
+  helpCommand: false
+  defaultValueProvider: null
+  versionProvider: null
+  version: []
+  ArgGroups: []
+  Options:
+  - names: [-x]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: CompileTimeTypeInfo(boolean, aux=[boolean], collection=false, map=false)
+    arity: 0
+    splitRegex: ''
+    interactive: false
+    required: true
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<x>'
+    converters: []
+    completionCandidates: null
+    getter: AnnotatedElementHolder(FIELD x in picocli.issue777.CompositeGroupDemo.Exclusive)
+    setter: AnnotatedElementHolder(FIELD x in picocli.issue777.CompositeGroupDemo.Exclusive)
+  - names: [-y]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: CompileTimeTypeInfo(boolean, aux=[boolean], collection=false, map=false)
+    arity: 0
+    splitRegex: ''
+    interactive: false
+    required: true
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<y>'
+    converters: []
+    completionCandidates: null
+    getter: AnnotatedElementHolder(FIELD y in picocli.issue777.CompositeGroupDemo.Exclusive)
+    setter: AnnotatedElementHolder(FIELD y in picocli.issue777.CompositeGroupDemo.Exclusive)
+  - names: [-z]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: CompileTimeTypeInfo(boolean, aux=[boolean], collection=false, map=false)
+    arity: 0
+    splitRegex: ''
+    interactive: false
+    required: true
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<z>'
+    converters: []
+    completionCandidates: null
+    getter: AnnotatedElementHolder(FIELD z in picocli.issue777.CompositeGroupDemo.Exclusive)
+    setter: AnnotatedElementHolder(FIELD z in picocli.issue777.CompositeGroupDemo.Exclusive)
+  PositionalParams: []
+  UnmatchedArgsBindings: []
+  Mixins: []
+  UsageMessageSpec:
+    width: 80
+    abbreviateSynopsis: false
+    hidden: false
+    showDefaultValues: false
+    sortOptions: true
+    requiredOptionMarker: ' '
+    headerHeading: ''
+    header: []
+    synopsisHeading: 'Usage: '
+    customSynopsis: []
+    descriptionHeading: ''
+    description: []
+    parameterListHeading: ''
+    optionListHeading: ''
+    commandListHeading: 'Commands:%n'
+    footerHeading: ''
+    footer: []
+  ParserSpec:
+    separator: '='
+    endOfOptionsDelimiter: '--'
+    expandAtFiles: true
+    atFileCommentChar: '#'
+    overwrittenOptionsAllowed: false
+    unmatchedArgumentsAllowed: false
+    unmatchedOptionsArePositionalParams: false
+    stopAtUnmatched: false
+    stopAtPositional: false
+    posixClusteredShortOptionsAllowed: true
+    aritySatisfiedByAttachedOptionParam: false
+    caseInsensitiveEnumValuesAllowed: false
+    collectErrors: false
+    limitSplit: false
+    toggleBooleanFlags: false
+  Subcommands: []

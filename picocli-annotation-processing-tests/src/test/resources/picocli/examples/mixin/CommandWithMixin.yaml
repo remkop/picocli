@@ -7,6 +7,7 @@ CommandSpec:
   defaultValueProvider: null
   versionProvider: null
   version: []
+  ArgGroups: []
   Options:
   - names: [-x]
     usageHelp: false
@@ -61,6 +62,7 @@ CommandSpec:
     defaultValueProvider: null
     versionProvider: null
     version: []
+    ArgGroups: []
     Options:
     - names: [-x]
       usageHelp: false
@@ -119,7 +121,7 @@ CommandSpec:
       caseInsensitiveEnumValuesAllowed: false
       collectErrors: false
       limitSplit: false
-      toggleBooleanFlags: true
+      toggleBooleanFlags: false
     Subcommands: []
   UsageMessageSpec:
     width: 80
@@ -154,7 +156,7 @@ CommandSpec:
     caseInsensitiveEnumValuesAllowed: false
     collectErrors: false
     limitSplit: false
-    toggleBooleanFlags: true
+    toggleBooleanFlags: false
   Subcommands:
   # doit
   - name: 'doit'
@@ -164,6 +166,7 @@ CommandSpec:
     defaultValueProvider: null
     versionProvider: null
     version: []
+    ArgGroups: []
     Options:
     - names: [-x]
       usageHelp: false
@@ -256,6 +259,7 @@ CommandSpec:
       defaultValueProvider: null
       versionProvider: null
       version: []
+      ArgGroups: []
       Options:
       - names: [-x]
         usageHelp: false
@@ -314,7 +318,7 @@ CommandSpec:
         caseInsensitiveEnumValuesAllowed: false
         collectErrors: false
         limitSplit: false
-        toggleBooleanFlags: true
+        toggleBooleanFlags: false
       Subcommands: []
     UsageMessageSpec:
       width: 80
@@ -349,5 +353,5 @@ CommandSpec:
       caseInsensitiveEnumValuesAllowed: false
       collectErrors: false
       limitSplit: false
-      toggleBooleanFlags: true
+      toggleBooleanFlags: false
     Subcommands: []

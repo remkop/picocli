@@ -18,6 +18,7 @@ package picocli.examples;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+
 import java.io.File;
 
 /**
@@ -47,6 +48,6 @@ public class Example implements Runnable {
     }
 
     public static void main(String[] args) {
-        CommandLine.run(new Example(), args);
+        new CommandLine(new Example()).execute(args);
     }
 }

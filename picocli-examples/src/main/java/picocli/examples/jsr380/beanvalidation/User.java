@@ -10,7 +10,14 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import javax.validation.constraints.*;
+import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -72,7 +79,7 @@ public class User implements Runnable {
 
     public static void main(String... args) {
         args = "-d 2019-03-01 -n Remko -p \"\" -p a -w -e me@mail@com --aboutMe about".split(" ");
-        CommandLine.run(new User(), args);
+        new CommandLine(new User()).execute(args);
     }
 
     @Override

@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -147,6 +148,7 @@ public class ModelArgSpecTest {
                 .splitRegex(";")
                 .description("desc")
                 .descriptionKey("key")
+                .type(Map.class)
                 .auxiliaryTypes(Integer.class, Double.class);
 
         PositionalParamSpec p1 = positional.build();
@@ -158,7 +160,8 @@ public class ModelArgSpecTest {
         assertNotEquals(p1, positional.required(true).splitRegex(",").build());
         assertNotEquals(p1, positional.splitRegex(";").description("xyz").build());
         assertNotEquals(p1, positional.description("desc").descriptionKey("XX").build());
-        assertNotEquals(p1, positional.descriptionKey("key").auxiliaryTypes(Short.class).build());
+        assertNotEquals(p1, positional.descriptionKey("key").type(List.class).build());
+        assertNotEquals(p1, positional.type(Map.class).auxiliaryTypes(Short.class).build());
         assertEquals(p1, positional.auxiliaryTypes(Integer.class, Double.class).build());
     }
 

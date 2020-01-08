@@ -1,12 +1,16 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Model.Interpolator;
-import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.MissingParameterException;
+import picocli.CommandLine.ParseResult;
+import picocli.CommandLine.Mixin;
+import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Option;
 
 import static org.junit.Assert.*;
@@ -16,6 +20,9 @@ public class InterpolatedModelTest {
     // allows tests to set any kind of properties they like, without having to individually roll them back
     @Rule
     public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
     @Test
     public void testVariablesInUsageHelp() {
@@ -153,7 +160,7 @@ public class InterpolatedModelTest {
                     split = "${sys:xsplit}",
                     descriptionKey = "${sys:xdescriptionKey}",
                     paramLabel = "${sys:paramLabel}"
-            ) int x;
+            ) int[] x;
         }
 
         System.setProperty("xname1", "-NAME1");
@@ -170,7 +177,7 @@ public class InterpolatedModelTest {
         String expected = String.format("" +
                 "Usage: cmd [-NAME1=PARAMLABEL[;;;PARAMLABEL...] PARAMLABEL[;;;PARAMLABEL...]%n" +
                 "           PARAMLABEL[;;;PARAMLABEL...] PARAMLABEL[;;;PARAMLABEL...]%n" +
-                "           [PARAMLABEL [PARAMLABEL]]]%n" +
+                "           [PARAMLABEL [PARAMLABEL]]]...%n" +
                 "      -NAME1, --NAME2=PARAMLABEL[;;;PARAMLABEL...] PARAMLABEL[;;;PARAMLABEL...]%n" +
                 "        PARAMLABEL[;;;PARAMLABEL...] PARAMLABEL[;;;PARAMLABEL...] [PARAMLABEL%n" +
                 "        [PARAMLABEL]]%n" +
@@ -261,5 +268,123 @@ public class InterpolatedModelTest {
         assertEquals(expected, actual);
 
         assertEquals(CommandLine.Range.valueOf("2..3"), status.getCommandSpec().findOption("x").arity());
+    }
+
+    // https://github.com/remkop/picocli/issues/676
+    @Test
+    public void testIssue676() {
+        class Issue676 {
+            @Option(names="--mypath", defaultValue = "${sys:MYPATH}", required = true)
+            private String path;
+        }
+        System.clearProperty("MYPATH");
+        Issue676 bean = new Issue676();
+        CommandLine cmd = new CommandLine(bean);
+        try {
+            cmd.parseArgs();
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Missing required option '--mypath=<path>'", ex.getMessage());
+        }
+
+        System.setProperty("MYPATH", "abc");
+        cmd.parseArgs();
+        assertEquals("abc", bean.path);
+    }
+
+    @Test
+    public void testInterpolateFallbackValue() {
+        @Command(mixinStandardHelpOptions = false)
+        class AppWithFallback {
+            @Option(names="--mypath", fallbackValue = "${sys:user.home}",
+                    description = "Path. Fallback=${FALLBACK-VALUE}.")
+            private String path;
+        }
+        String expected = String.format("" +
+                        "Usage: <main class> [--mypath=<path>]%n" +
+                        "      --mypath=<path>   Path. Fallback=%1$s.%n",
+                System.getProperty("user.home"));
+
+        String actual = new CommandLine(new AppWithFallback()).getUsageMessage(CommandLine.Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testIssue723() {
+        @Command(mixinStandardHelpOptions = false, showDefaultValues = true)
+        class Issue723 {
+            @Option(names="--mypath", defaultValue = "${sys:user.home}",
+                    description = "Path. Default=${DEFAULT-VALUE}.")
+            private String path;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [--mypath=<path>]%n" +
+                "      --mypath=<path>   Path. Default=%1$s.%n" +
+                "                          Default: %1$s%n",
+                System.getProperty("user.home"));
+
+        String actual = new CommandLine(new Issue723()).getUsageMessage(CommandLine.Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testIssue723_withStandardHelpOptions() {
+        @Command(mixinStandardHelpOptions = true, showDefaultValues = true)
+        class Issue723 {
+            @Option(names="--mypath", defaultValue = "${sys:user.home}",
+                    description = "Path. Default=${DEFAULT-VALUE}.")
+            private String path;
+        }
+        String expected = String.format("" +
+                        "Usage: <main class> [-hV] [--mypath=<path>]%n" +
+                        "  -h, --help            Show this help message and exit.%n" +
+                        "      --mypath=<path>   Path. Default=%1$s.%n" +
+                        "                          Default: %1$s%n" +
+                        "  -V, --version         Print version information and exit.%n",
+                System.getProperty("user.home"));
+
+        String actual = new CommandLine(new Issue723()).getUsageMessage(CommandLine.Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+
+    static class CommonMixinOne {
+        @Parameters(index = "${sys:commonParam1}", paramLabel = "COMMON-PARAM-ONE")
+        private String commonMixinOneParam;
+    }
+
+    static class CommonMixinTwo {
+        @Parameters(index = "${sys:commonParam2}", paramLabel = "COMMON-PARAM-TWO")
+        private String commonMixinTwoParam;
+    }
+
+    @Ignore
+    @Test
+    // test for https://github.com/remkop/picocli/issues/564
+    public void testMixinsWithVariableIndex() {
+        @Command(name = "testCommand", description = "Example for issue 564")
+        class TestCommand {
+
+            @Mixin
+            private CommonMixinTwo myCommonMixinTwo;
+
+            @Parameters(index = "1", paramLabel = "TEST-COMMAND-PARAM")
+            private String testCommandParam;
+
+            @Mixin
+            private CommonMixinOne myCommonMixinOne;
+        }
+
+        // re-order the indices of the mixin parameters for this application:
+        System.setProperty("commonParam2", "0");
+        System.setProperty("commonParam1", "2");
+
+        CommandLine cmd = new CommandLine(new TestCommand());
+        //ParseResult result = cmd.parseArgs(args);
+        // ...
+
+        String expected = String.format("" +
+                "");
+        String actual = cmd.getUsageMessage();
+        assertEquals(expected, actual);
     }
 }

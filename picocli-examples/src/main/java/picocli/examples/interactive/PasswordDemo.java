@@ -41,6 +41,6 @@ public class PasswordDemo implements Runnable {
     }
 
     public static void main(String[] args) {
-        CommandLine.run(new PasswordDemo(), args);
+        new CommandLine(new PasswordDemo()).execute(args);
     }
 }

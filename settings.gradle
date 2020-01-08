@@ -1,12 +1,14 @@
 rootProject.name = 'picocli'
+include 'picocli-groovy'
 include 'picocli-examples'
 include 'picocli-shell-jline2'
-include 'picocli-shell-jline3'
 include 'picocli-codegen'
-include 'picocli-core-module'
 
-if (org.gradle.api.JavaVersion.current().isJava8Compatible() && !org.gradle.api.JavaVersion.current().isJava9Compatible()) {
+if (org.gradle.api.JavaVersion.current().isJava8Compatible()) {
     include 'picocli-annotation-processing-tests'
+    include 'picocli-spring-boot-starter'
+    include 'picocli-shell-jline3'
 } else {
-    println("Excluding module picocli-annotation-processing-tests from the build: it requires Java 8 but we have Java version ${org.gradle.api.JavaVersion.current()}")
+    println("Excluding module picocli-annotation-processing-tests from the build: they require Java 8 but we have Java version ${org.gradle.api.JavaVersion.current()}")
 }
+

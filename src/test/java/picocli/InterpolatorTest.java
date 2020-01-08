@@ -1,7 +1,10 @@
 package picocli;
 
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.rules.TestRule;
 import picocli.CommandLine.Model.Interpolator;
 import picocli.CommandLine.Model.CommandSpec;
 
@@ -17,6 +20,11 @@ import java.util.Vector;
 import static org.junit.Assert.*;
 
 public class InterpolatorTest {
+
+    @Rule
+    // allows tests to set any kind of properties they like, without having to individually roll them back
+    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+
     @Test
     public void interpolateCommandName() {
         CommandSpec hierarchy = createTestSpec();
@@ -27,7 +35,6 @@ public class InterpolatorTest {
         assertEquals(expected, interpolator.interpolate(original));
     }
 
-    @Ignore
     @Test
     public void notInterpolateIfEscaped() {
         CommandSpec hierarchy = createTestSpec();
@@ -59,6 +66,14 @@ public class InterpolatorTest {
 
         System.clearProperty("myProp");
         assertEquals(expected, interpolator.interpolate(original));
+    }
+    
+    @Test
+    public void issue676interpolateReturnsNullIfNotFound() {
+        CommandSpec hierarchy = createTestSpec();
+        Interpolator interpolator = new Interpolator(hierarchy);
+        String original = "${sys:notfound}";
+        assertEquals(null, interpolator.interpolate(original));
     }
 
     @Test
@@ -174,6 +189,18 @@ public class InterpolatorTest {
         System.setProperty("second", "222");
         assertEquals(expected, interpolator.interpolate(original));
         System.clearProperty("second");
+    }
+
+    @Test
+    public void interpolateMultipleOccurrences() {
+        CommandSpec hierarchy = createTestSpec();
+        Interpolator interpolator = new Interpolator(hierarchy);
+        String original = "abc ${sys:key} def ${sys:key}.";
+        String expected = "abc 111 def 111.";
+
+        System.setProperty("key", "111");
+        assertEquals(expected, interpolator.interpolate(original));
+        System.clearProperty("key");
     }
 
     private CommandSpec createTestSpec() {

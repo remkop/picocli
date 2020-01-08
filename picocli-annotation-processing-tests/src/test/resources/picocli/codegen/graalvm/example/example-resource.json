@@ -1,0 +1,10 @@
+{
+  "bundles" : [
+    {"name" : "some.extra.bundle"},
+    {"name" : "picocli.codegen.aot.graalvm.exampleResources"},
+    {"name" : "picocli.codegen.aot.graalvm.exampleMultiplyResources"}
+  ],
+  "resources" : [
+    {"pattern" : "^ExtraPattern$"}
+  ]
+}

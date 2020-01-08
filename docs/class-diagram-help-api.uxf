@@ -5,24 +5,25 @@
     <id>UMLClass</id>
     <coordinates>
       <x>20</x>
-      <y>20</y>
+      <y>280</y>
       <w>770</w>
-      <h>400</h>
+      <h>380</h>
     </coordinates>
     <panel_attributes>&lt;&lt;api&gt;&gt;
-CommandLine.Help</panel_attributes>
+CommandLine.Help
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>640</x>
+      <x>650</x>
       <y>30</y>
       <w>140</w>
       <h>50</h>
     </coordinates>
-    <panel_attributes>picocli 3.6.0
-2018-09-12
+    <panel_attributes>picocli 4.0
+2019-07-17
 bg=#FFFF66</panel_attributes>
     <additional_attributes/>
   </element>
@@ -30,223 +31,237 @@ bg=#FFFF66</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>60</x>
-      <y>90</y>
+      <y>330</y>
       <w>140</w>
       <h>30</h>
     </coordinates>
     <panel_attributes>lt=.
 /IOptionRenderer/
-bg=#99FF99</panel_attributes>
+bg=#99FF99
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>40</x>
-      <y>150</y>
+      <y>390</y>
       <w>80</w>
       <h>60</h>
     </coordinates>
     <panel_attributes>Default
 Option
 Renderer
-bg=#99FF99</panel_attributes>
+bg=#99FF99
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>140</x>
-      <y>150</y>
+      <y>390</y>
       <w>80</w>
       <h>60</h>
     </coordinates>
     <panel_attributes>Minimal
 Option
 Renderer
-bg=#99FF99</panel_attributes>
+bg=#99FF99
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>80</x>
-      <y>110</y>
+      <y>350</y>
       <w>30</w>
       <h>60</h>
     </coordinates>
-    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <panel_attributes>lt=&lt;&lt;.
+group=6</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>160</x>
-      <y>110</y>
+      <y>350</y>
       <w>30</w>
       <h>60</h>
     </coordinates>
-    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <panel_attributes>lt=&lt;&lt;.
+group=6</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>440</x>
-      <y>90</y>
+      <y>330</y>
       <w>150</w>
       <h>30</h>
     </coordinates>
     <panel_attributes>lt=.
 /IParameterRenderer/
-bg=#99FF99</panel_attributes>
+bg=#99FF99
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>420</x>
-      <y>150</y>
+      <y>390</y>
       <w>80</w>
       <h>60</h>
     </coordinates>
     <panel_attributes>Default
 Parameter
 Renderer
-bg=#99FF99</panel_attributes>
+bg=#99FF99
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>540</x>
-      <y>150</y>
+      <y>390</y>
       <w>80</w>
       <h>60</h>
     </coordinates>
     <panel_attributes>Minimal
 Parameter
 Renderer
-bg=#99FF99</panel_attributes>
+bg=#99FF99
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>560</x>
-      <y>110</y>
+      <y>350</y>
       <w>30</w>
       <h>60</h>
     </coordinates>
-    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <panel_attributes>lt=&lt;&lt;.
+group=6</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>450</x>
-      <y>110</y>
+      <y>350</y>
       <w>30</w>
       <h>60</h>
     </coordinates>
-    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <panel_attributes>lt=&lt;&lt;.
+group=6</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>230</x>
-      <y>90</y>
+      <y>330</y>
       <w>180</w>
       <h>30</h>
     </coordinates>
     <panel_attributes>lt=.
 /IParameterLabelRenderer/
-bg=#99FF99</panel_attributes>
+bg=#99FF99
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>260</x>
-      <y>150</y>
+      <y>390</y>
       <w>120</w>
       <h>60</h>
     </coordinates>
     <panel_attributes>Default
 ParameterLabel
 Renderer
-bg=#99FF99</panel_attributes>
+bg=#99FF99
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>300</x>
-      <y>110</y>
+      <y>350</y>
       <w>30</w>
       <h>60</h>
     </coordinates>
-    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <panel_attributes>lt=&lt;&lt;.
+group=6</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>480</x>
-      <y>240</y>
+      <y>480</y>
       <w>140</w>
       <h>40</h>
     </coordinates>
     <panel_attributes>Layout
-bg=#99FF99</panel_attributes>
+bg=#99FF99
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>520</x>
-      <y>320</y>
+      <y>560</y>
       <w>100</w>
       <h>80</h>
     </coordinates>
     <panel_attributes>TextTable
 bg=#99FF99
-group=5</panel_attributes>
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>530</x>
-      <y>350</y>
+      <y>590</y>
       <w>80</w>
       <h>40</h>
     </coordinates>
     <panel_attributes>bg=white
 layer=3
 Cell
-group=5</panel_attributes>
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>660</x>
-      <y>320</y>
+      <y>560</y>
       <w>100</w>
       <h>80</h>
     </coordinates>
     <panel_attributes>Column
-group=2
-bg=#99FF99</panel_attributes>
+bg=#99FF99
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>670</x>
-      <y>350</y>
+      <y>590</y>
       <w>80</w>
       <h>40</h>
     </coordinates>
@@ -254,233 +269,398 @@ bg=#99FF99</panel_attributes>
 layer=3
 &lt;&lt;enum&gt;&gt;
 Overflow
-group=2</panel_attributes>
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>40</x>
-      <y>250</y>
+      <y>490</y>
       <w>250</w>
       <h>150</h>
     </coordinates>
     <panel_attributes>&lt;&lt;enum&gt;&gt;
 Ansi
-bg=#99FF99</panel_attributes>
+bg=#99FF99
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>200</x>
-      <y>300</y>
+      <y>540</y>
       <w>70</w>
       <h>40</h>
     </coordinates>
     <panel_attributes>bg=white
 layer=3
 lt=.
-/IStyle/</panel_attributes>
+/IStyle/
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>50</x>
-      <y>300</y>
+      <y>540</y>
       <w>100</w>
       <h>40</h>
     </coordinates>
     <panel_attributes>bg=white
 layer=3
 &lt;&lt;enum&gt;&gt;
-Style</panel_attributes>
+Style
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>140</x>
-      <y>310</y>
+      <y>550</y>
       <w>80</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <panel_attributes>lt=&lt;&lt;.
+group=6</panel_attributes>
     <additional_attributes>60.0;10.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>200</x>
-      <y>350</y>
+      <y>590</y>
       <w>70</w>
       <h>40</h>
     </coordinates>
     <panel_attributes>bg=white
 layer=3
-Text</panel_attributes>
+Text
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>50</x>
-      <y>350</y>
+      <y>590</y>
       <w>100</w>
       <h>40</h>
     </coordinates>
     <panel_attributes>bg=light_gray
 layer=3
 &lt;&lt;internal&gt;&gt;
-StyledSection</panel_attributes>
+StyledSection
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>140</x>
-      <y>360</y>
+      <y>600</y>
       <w>80</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;</panel_attributes>
+    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;
+group=6</panel_attributes>
     <additional_attributes>10.0;10.0;60.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>350</x>
-      <y>300</y>
+      <y>540</y>
       <w>100</w>
       <h>40</h>
     </coordinates>
     <panel_attributes>ColorScheme
-bg=#99FF99</panel_attributes>
+bg=#99FF99
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>660</x>
-      <y>170</y>
+      <y>410</y>
       <w>80</w>
       <h>40</h>
     </coordinates>
     <panel_attributes>bg=#99FF99
 layer=3
 &lt;&lt;enum&gt;&gt;
-Visibility</panel_attributes>
+Visibility
+group=6</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>610</x>
-      <y>320</y>
+      <y>560</y>
       <w>70</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;</panel_attributes>
+    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;
+group=6</panel_attributes>
     <additional_attributes>50.0;10.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>550</x>
-      <y>270</y>
+      <y>510</y>
       <w>30</w>
       <h>70</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;</panel_attributes>
+    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;
+group=6</panel_attributes>
     <additional_attributes>10.0;50.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>440</x>
-      <y>270</y>
+      <y>510</y>
       <w>70</w>
       <h>70</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;</panel_attributes>
+    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;
+group=6</panel_attributes>
     <additional_attributes>10.0;50.0;50.0;50.0;50.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>260</x>
-      <y>310</y>
+      <y>550</y>
       <w>110</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;</panel_attributes>
+    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;
+group=6</panel_attributes>
     <additional_attributes>10.0;10.0;90.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>400</x>
-      <y>90</y>
+      <y>330</y>
       <w>60</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
+    <panel_attributes>lt=&lt;-
+group=6</panel_attributes>
     <additional_attributes>10.0;10.0;40.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>190</x>
-      <y>90</y>
+      <y>330</y>
       <w>60</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
+    <panel_attributes>lt=&lt;-
+group=6</panel_attributes>
     <additional_attributes>40.0;10.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>510</x>
-      <y>110</y>
+      <y>350</y>
       <w>30</w>
       <h>150</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;</panel_attributes>
+    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;
+group=6</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;130.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>180</x>
-      <y>110</y>
+      <y>350</y>
       <w>320</w>
       <h>170</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;</panel_attributes>
+    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;
+group=6</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;30.0;60.0;30.0;60.0;120.0;270.0;120.0;270.0;150.0;300.0;150.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>280</x>
-      <y>260</y>
+      <y>500</y>
       <w>120</w>
       <h>60</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;</panel_attributes>
+    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;
+group=6</panel_attributes>
     <additional_attributes>10.0;10.0;100.0;10.0;100.0;40.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
       <x>260</x>
-      <y>360</y>
+      <y>600</y>
       <w>280</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;</panel_attributes>
+    <panel_attributes>lt=&lt;-&gt;&gt;&gt;&gt;&gt;
+group=6</panel_attributes>
     <additional_attributes>10.0;10.0;260.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>40</x>
+      <y>160</y>
+      <w>170</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=.
+/IHelpSectionRenderer/
+bg=#99FF99</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>40</x>
+      <y>40</y>
+      <w>170</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=.
+/IHelpFactory/
+bg=#99FF99</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>50</x>
+      <y>90</y>
+      <w>210</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>Create custom Help instances.
+bg=#FFFF66</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>50</x>
+      <y>210</y>
+      <w>200</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>Reorder, add or remove
+sections from the usage help.
+bg=#FFFF66</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>120</x>
+      <y>60</y>
+      <w>50</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.</panel_attributes>
+    <additional_attributes>10.0;10.0;30.0;30.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>120</x>
+      <y>180</y>
+      <w>60</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.</panel_attributes>
+    <additional_attributes>10.0;10.0;40.0;30.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>310</x>
+      <y>40</y>
+      <w>200</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>HelpCommand
+bg=#99FF99</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>310</x>
+      <y>160</y>
+      <w>200</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=.
+/IHelpCommandInitializable2/
+bg=#99FF99</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>320</x>
+      <y>90</y>
+      <w>210</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>Applications can easily use
+the built-in `help` subcommand.
+bg=#FFFF66</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>400</x>
+      <y>60</y>
+      <w>70</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.</panel_attributes>
+    <additional_attributes>10.0;10.0;50.0;30.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>320</x>
+      <y>210</y>
+      <w>210</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>Custom `help` commands
+should implement this interface.
+bg=#FFFF66</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>400</x>
+      <y>180</y>
+      <w>50</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=.</panel_attributes>
+    <additional_attributes>10.0;10.0;30.0;30.0</additional_attributes>
   </element>
 </diagram>

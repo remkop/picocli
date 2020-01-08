@@ -28,8 +28,10 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import java.io.File;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import static org.junit.Assert.*;
@@ -75,6 +77,11 @@ public class I18nTest {
                 "%n" +
                 "Commands from bundle:%n" +
                 "  help  header first line from bundle%n" +
+                "Exit Codes:%n" +
+                "This exit code description comes from top bundle%n" +
+                "   0   (top bundle) Normal termination (notice leading space)%n" +
+                "  64   (top bundle) Invalid input%n" +
+                "  70   (top bundle) internal error%n" +
                 "Powered by picocli from bundle%n" +
                 "footer from bundle%n");
         assertEquals(expected, new CommandLine(new I18nSuperclass()).getUsageMessage());
@@ -116,6 +123,11 @@ public class I18nTest {
                 "%n" +
                 "Commands from bundle:%n" +
                 "  help  header first line from bundle%n" +
+                "Exit Codes:%n" +
+                "This exit code description comes from top bundle%n" +
+                "   0   (top bundle) Normal termination (notice leading space)%n" +
+                "  64   (top bundle) Invalid input%n" +
+                "  70   (top bundle) internal error%n" +
                 "Powered by picocli from bundle%n" +
                 "footer from bundle%n");
         assertEquals(expected, new CommandLine(new I18nSubclass()).getUsageMessage());
@@ -155,6 +167,9 @@ public class I18nTest {
                 // not "header line from subbundle":
                 // help command is inherited from superclass, initialized with resource bundle from superclass
                 "  help  header first line from bundle%n" +
+                "super exit code list heading%n" +
+                "  000   super exit code 1%n" +
+                "  111   super exit code 2%n" +
                 "sub footer heading from subbundle%n" +
                 "sub footer from subbundle%n");
         System.setProperty("picocli.trace", "DEBUG");
@@ -187,6 +202,13 @@ public class I18nTest {
                 "top command list heading%n" +
                 "  help      i18n-top HELP command header%n" +
                 "  i18n-sub  i18n-sub header (only one line)%n" +
+                "Shared Exit Codes Heading%n" +
+                "These exit codes are blah blah etc.%n" +
+                "  00   (From shared bundle) Normal termination%n" +
+                "  64   (From shared bundle)%n" +
+                "       Multiline!%n" +
+                "       Invalid input%n" +
+                "  70   (From shared bundle) Internal error%n" +
                 "Shared footer heading%n" +
                 "footer for i18n-top%n");
         Locale original = Locale.getDefault();
@@ -223,6 +245,13 @@ public class I18nTest {
                 "top command list heading%n" +
                 "  help      i18n-top\u7528 HELP \u30b3\u30de\u30f3\u30c9\u30d8\u30c3\u30c0\u30fc%n" +
                 "  i18n-sub  i18n-sub \u30d8\u30c3\u30c0\u30fc\uff08\u4e00\u884c\u306e\u307f\uff09%n" +
+                "\u7d42\u4e86\u30b9\u30c6\u30fc\u30bf\u30b9%n" +
+                "\u3053\u308c\u3089\u306e\u7d42\u4e86\u30b9\u30c6\u30fc\u30bf\u30b9\u306f\u7b49\u3005%n" +
+                "  00   (\u5171\u901a\u30d0\u30f3\u30c9\u30eb\u304b\u3089) \u6b63\u5e38\u7d42\u4e86%n" +
+                "  64   (\u5171\u901a\u30d0\u30f3\u30c9\u30eb\u304b\u3089)%n" +
+                "       \u8907\u6570\u884c!%n" +
+                "       \u7121\u52b9\u306e\u5165\u529b%n" +
+                "  70   (\u5171\u901a\u30d0\u30f3\u30c9\u30eb\u304b\u3089) \u5185\u90e8\u30a8\u30e9\u30fc%n" +
                 "\u5171\u901a\u30d5\u30c3\u30bf\u30fc\u898b\u51fa\u3057%n" +
                 "i18n-top\u7528\u30d5\u30c3\u30bf\u30fc%n");
         Locale original = Locale.getDefault();
@@ -258,6 +287,13 @@ public class I18nTest {
                 "  -z, --zzz=<z>   subcmd zzz description%n" +
                 "subcmd command list heading%n" +
                 "  help  i18n-sub HELP command header%n" +
+                "Shared Exit Codes Heading%n" +
+                "These exit codes are blah blah etc.%n" +
+                "  00   (From shared bundle) Normal termination%n" +
+                "  64   (From shared bundle)%n" +
+                "       Multiline!%n" +
+                "       Invalid input%n" +
+                "  70   (From shared bundle) Internal error%n" +
                 "Shared footer heading%n" +
                 "footer for i18n-sub%n");
         Locale original = Locale.getDefault();
@@ -316,6 +352,29 @@ public class I18nTest {
             ResourceBundle rb = ResourceBundle.getBundle("picocli.SharedMessages");
             cmd.setResourceBundle(rb);
             assertArrayEquals(new String[]{"Shared header first line", "Shared header second line"}, cmd.getCommandSpec().usageMessage().header());
+        } finally {
+            Locale.setDefault(original);
+        }
+    }
+
+    @Test
+    public void testExitCodeMapFromResourceBundle() {
+        @Command class Noop {}
+        CommandLine cmd = new CommandLine(new Noop());
+        Locale original = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+        try {
+            ResourceBundle rb = ResourceBundle.getBundle("picocli.SharedMessages");
+            cmd.setResourceBundle(rb);
+            CommandLine.Model.UsageMessageSpec usageMessageSpec = cmd.getCommandSpec().usageMessage();
+
+            assertEquals("Shared Exit Codes Heading%nThese exit codes are blah blah etc.%n", usageMessageSpec.exitCodeListHeading());
+
+            Map<String, String> exitCodes = new LinkedHashMap<String, String>();
+            exitCodes.put("00", "(From shared bundle) Normal termination");
+            exitCodes.put("64", "(From shared bundle)%nMultiline!%nInvalid input");
+            exitCodes.put("70", "(From shared bundle) Internal error");
+            assertEquals(exitCodes, usageMessageSpec.exitCodeList());
         } finally {
             Locale.setDefault(original);
         }
@@ -463,17 +522,17 @@ public class I18nTest {
         assertEquals(cloneUsage, git.getSubcommands().get("clone").getUsageMessage());
 
         String commitUsage = String.format("" +
-                "Usage: git commit [--squash=<commit>] [-m=<arg0>] [<file>...]%n" +
+                "Usage: git commit [-m=<arg0>] [--squash=<commit>] [<file>...]%n" +
                 "      [<file>...]%n" +
-                "      --squash=<commit>%n" +
-                "  -m, --message=<arg0>%n");
+                        "  -m, --message=<arg0>%n" +
+                "      --squash=<commit>%n");
         assertEquals(commitUsage, git.getSubcommands().get("commit").getUsageMessage());
 
         String pushUsage = String.format("" +
                 "Usage: git push [-f] [--tags] <repository>%n" +
                 "      <repository>%n" +
-                "      --tags%n" +
-                "  -f, --force%n");
+                "  -f, --force%n" +
+                "      --tags%n");
         assertEquals(pushUsage, git.getSubcommands().get("push").getUsageMessage());
     }
 
@@ -506,20 +565,21 @@ public class I18nTest {
         assertEquals(cloneUsage, git.getSubcommands().get("clone").getUsageMessage());
 
         String commitUsage = String.format("" +
-                "Usage: git commit [--squash=<commit>] [-m=<arg0>] [<file>...]%n" +
+                "Usage: git commit [-m=<arg0>] [--squash=<commit>] [<file>...]%n" +
                 "Record changes to the repository%n" +
                 "      [<file>...]         The files to commit.%n" +
+                "  -m, --message=<arg0>    Use the given <msg> as the commit message.%n" +
                 "      --squash=<commit>   Construct a commit message for use with rebase%n" +
-                "                            --autosquash.%n" +
-                "  -m, --message=<arg0>    Use the given <msg> as the commit message.%n");
+                "                            --autosquash.%n");
         assertEquals(commitUsage, git.getSubcommands().get("commit").getUsageMessage());
 
         String pushUsage = String.format("" +
                 "Usage: git push [-f] [--tags] <repository>%n" +
                 "Update remote refs along with associated objects%n" +
-                "      <repository>   The \"remote\" repository that is destination of a push operation.%n" +
-                "      --tags         All refs under refs/tags are pushed.%n" +
-                "  -f, --force        Disable checks.%n");
+                "      <repository>   The \"remote\" repository that is destination of a push%n" +
+                "                       operation.%n" +
+                "  -f, --force        Disable checks.%n" +
+                "      --tags         All refs under refs/tags are pushed.%n");
         assertEquals(pushUsage, git.getSubcommands().get("push").getUsageMessage());
     }
 
@@ -535,7 +595,15 @@ public class I18nTest {
                 "Shared description 2%n" +
                 "      [COMMAND...]   Shared description of COMMAND parameter of built-in help%n" +
                 "                       subcommand%n" +
-                "  -h, --help         Shared description of --help option of built-in help subcommand%n" +
+                "  -h, --help         Shared description of --help option of built-in help%n" +
+                "                       subcommand%n" +
+                "Shared Exit Codes Heading%n" +
+                "These exit codes are blah blah etc.%n" +
+                "  00   (From shared bundle) Normal termination%n" +
+                "  64   (From shared bundle)%n" +
+                "       Multiline!%n" +
+                "       Invalid input%n" +
+                "  70   (From shared bundle) Internal error%n" +
                 "Shared footer heading%n" +
                 "Shared footer%n");
 
@@ -560,10 +628,17 @@ public class I18nTest {
                 "Shared description 0%n" +
                 "Shared description 1%n" +
                 "Shared description 2%n" +
-                "      [COMMAND...]   Specialized description of COMMAND parameter of i18-top help%n" +
-                "                       subcommand%n" +
+                "      [COMMAND...]   Specialized description of COMMAND parameter of i18-top%n" +
+                "                       help subcommand%n" +
                 "  -h, --help         Specialized description of --help option of i18-top help%n" +
                 "                       subcommand%n" +
+                "Shared Exit Codes Heading%n" +
+                "These exit codes are blah blah etc.%n" +
+                "  00   (From shared bundle) Normal termination%n" +
+                "  64   (From shared bundle)%n" +
+                "       Multiline!%n" +
+                "       Invalid input%n" +
+                "  70   (From shared bundle) Internal error%n" +
                 "Shared footer heading%n" +
                 "Shared footer%n");
 
@@ -589,17 +664,35 @@ public class I18nTest {
             @Option(names = {"-u", "--upload"}, descriptionKey = "upload.desc") String upload;
         }
 
-        String expected = String.format("" +
-                "Usage: tests [-a] [-u=<upload>]%n" +
-                "  -a, --auth              Vérifie si l'utilisateur est connecte%n" +
-                "  -u, --upload=<upload>   Tester le téléversement de fichiers.%n" +
-                "                          Attend un chemin complet de fichier.%n");
         Locale original = Locale.getDefault();
         Locale.setDefault(Locale.FRENCH);
+        String expected = String.format(Locale.FRENCH, "" +
+                "Usage: tests [-a] [-u=<upload>]%n" +
+                "  -a, --auth              V\u00e9rifie si l'utilisateur est connecte%n" +
+                "  -u, --upload=<upload>   Tester le t\u00e9l\u00e9versement de fichiers.%n" +
+                "                          Attend un chemin complet de fichier.%n");
         try {
-            assertEquals(expected, new CommandLine(new App()).getUsageMessage());
+            assertEquals(new CommandLine(new App()).getUsageMessage(), expected, new CommandLine(new App()).getUsageMessage());
         } finally {
             Locale.setDefault(original);
         }
+    }
+
+    @Test
+    public void testResourceBundleBaseNameGetter() {
+        @Command(resourceBundle = "picocli.i18n.SG_cli")
+        class App { }
+        assertEquals("picocli.i18n.SG_cli", new CommandLine(new App()).getCommandSpec().resourceBundleBaseName());
+    }
+
+    @Test
+    public void testResourceBundleBaseNameSetter() {
+        @Command
+        class App {}
+
+        CommandLine cmd = new CommandLine(new App());
+        cmd.getCommandSpec().resourceBundleBaseName("picocli.i18n.SG_cli");
+
+        assertEquals("picocli.i18n.SG_cli", cmd.getCommandSpec().resourceBundleBaseName());
     }
 }
