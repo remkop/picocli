@@ -17,7 +17,7 @@ public class DateFormatExample implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        System.out.printf(Locale.CHINESE, "date=%s%n", date);
+        System.out.printf("date=%s%n", date);
         return null;
     }
 
