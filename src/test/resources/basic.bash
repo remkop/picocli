@@ -68,8 +68,14 @@ function ArrContains() {
   declare -A tmp
   eval lArr1=("\"\${$1[@]}\"")
   eval lArr2=("\"\${$2[@]}\"")
-  for i in "${lArr1[@]}";{ [ -n "$i" ] && ((++tmp[$i]));}
-  for i in "${lArr2[@]}";{ [ -n "$i" ] && [ -z "${tmp[$i]}" ] && return 1;}
+  for i in "${lArr1[@]}";
+  do
+    if [ -n "$i" ] ; then ((++tmp[$i])); fi
+  done
+  for i in "${lArr2[@]}";
+  do
+    if [ -n "$i" ] && [ -z "${tmp[$i]}" ] ; then return 1; fi
+  done
   return 0
 }
 
@@ -87,19 +93,19 @@ function _complete_basicExample() {
 # Generates completions for the options and subcommands of the `basicExample` command.
 function _picocli_basicExample() {
   # Get completion data
-  CURR_WORD=${COMP_WORDS[COMP_CWORD]}
-  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
+  local prev_word=${COMP_WORDS[COMP_CWORD-1]}
 
-  COMMANDS=""
-  FLAG_OPTS=""
-  ARG_OPTS="-u --timeUnit -t --timeout"
-  timeUnit_OPTION_ARGS="%2$s" # --timeUnit values
+  local commands=""
+  local flag_opts=""
+  local arg_opts="-u --timeUnit -t --timeout"
+  local timeUnit_option_args="%2$s" # --timeUnit values
 
   compopt +o default
 
-  case ${PREV_WORD} in
+  case ${prev_word} in
     -u|--timeUnit)
-      COMPREPLY=( $( compgen -W "${timeUnit_OPTION_ARGS}" -- ${CURR_WORD} ) )
+      read -d ' ' -a COMPREPLY < <(compgen -W "${timeUnit_option_args}" -- "${curr_word}")
       return $?
       ;;
     -t|--timeout)
@@ -107,10 +113,10 @@ function _picocli_basicExample() {
       ;;
   esac
 
-  if [[ "${CURR_WORD}" == -* ]]; then
-    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  if [[ "${curr_word}" == -* ]]; then
+    read -d ' ' -a COMPREPLY < <(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}")
   else
-    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+    read -d ' ' -a COMPREPLY < <(compgen -W "${commands}" -- "${curr_word}")
   fi
 }
 

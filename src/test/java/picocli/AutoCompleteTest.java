@@ -648,8 +648,14 @@ public class AutoCompleteTest {
                 "  declare -A tmp\n" +
                 "  eval lArr1=(\"\\\"\\${$1[@]}\\\"\")\n" +
                 "  eval lArr2=(\"\\\"\\${$2[@]}\\\"\")\n" +
-                "  for i in \"${lArr1[@]}\";{ [ -n \"$i\" ] && ((++tmp[$i]));}\n" +
-                "  for i in \"${lArr2[@]}\";{ [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] && return 1;}\n" +
+                "  for i in \"${lArr1[@]}\";\n" +
+                "  do\n" +
+                "    if [ -n \"$i\" ] ; then ((++tmp[$i])); fi\n" +
+                "  done\n" +
+                "  for i in \"${lArr2[@]}\";\n" +
+                "  do\n" +
+                "    if [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] ; then return 1; fi\n" +
+                "  done\n" +
                 "  return 0\n" +
                 "}\n" +
                 "\n" +
@@ -667,16 +673,16 @@ public class AutoCompleteTest {
                 "# Generates completions for the options and subcommands of the `picocli.AutoComplete` command.\n" +
                 "function _picocli_picocli.AutoComplete() {\n" +
                 "  # Get completion data\n" +
-                "  CURR_WORD=${COMP_WORDS[COMP_CWORD]}\n" +
-                "  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}\n" +
+                "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
+                "  local prev_word=${COMP_WORDS[COMP_CWORD-1]}\n" +
                 "\n" +
-                "  COMMANDS=\"\"\n" +
-                "  FLAG_OPTS=\"-w --writeCommandScript -f --force -h --help -V --version\"\n" +
-                "  ARG_OPTS=\"-c --factory -n --name -o --completionScript\"\n" +
+                "  local commands=\"\"\n" +
+                "  local flag_opts=\"-w --writeCommandScript -f --force -h --help -V --version\"\n" +
+                "  local arg_opts=\"-c --factory -n --name -o --completionScript\"\n" +
                 "\n" +
                 "  compopt +o default\n" +
                 "\n" +
-                "  case ${PREV_WORD} in\n" +
+                "  case ${prev_word} in\n" +
                 "    -c|--factory)\n" +
                 "      return\n" +
                 "      ;;\n" +
@@ -685,15 +691,15 @@ public class AutoCompleteTest {
                 "      ;;\n" +
                 "    -o|--completionScript)\n" +
                 "      compopt -o filenames\n" +
-                "      COMPREPLY=( $( compgen -f -- ${CURR_WORD} ) ) # files\n" +
+                "      read -d ' ' -a COMPREPLY < <(compgen -f -- \"${curr_word}\") # files\n" +
                 "      return $?\n" +
                 "      ;;\n" +
                 "  esac\n" +
                 "\n" +
-                "  if [[ \"${CURR_WORD}\" == -* ]]; then\n" +
-                "    COMPREPLY=( $(compgen -W \"${FLAG_OPTS} ${ARG_OPTS}\" -- ${CURR_WORD}) )\n" +
+                "  if [[ \"${curr_word}\" == -* ]]; then\n" +
+                "    read -d ' ' -a COMPREPLY < <(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\")\n" +
                 "  else\n" +
-                "    COMPREPLY=( $(compgen -W \"${COMMANDS}\" -- ${CURR_WORD}) )\n" +
+                "    read -d ' ' -a COMPREPLY < <(compgen -W \"${commands}\" -- \"${curr_word}\")\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
@@ -820,8 +826,14 @@ public class AutoCompleteTest {
                 "  declare -A tmp\n" +
                 "  eval lArr1=(\"\\\"\\${$1[@]}\\\"\")\n" +
                 "  eval lArr2=(\"\\\"\\${$2[@]}\\\"\")\n" +
-                "  for i in \"${lArr1[@]}\";{ [ -n \"$i\" ] && ((++tmp[$i]));}\n" +
-                "  for i in \"${lArr2[@]}\";{ [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] && return 1;}\n" +
+                "  for i in \"${lArr1[@]}\";\n" +
+                "  do\n" +
+                "    if [ -n \"$i\" ] ; then ((++tmp[$i])); fi\n" +
+                "  done\n" +
+                "  for i in \"${lArr2[@]}\";\n" +
+                "  do\n" +
+                "    if [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] ; then return 1; fi\n" +
+                "  done\n" +
                 "  return 0\n" +
                 "}\n" +
                 "\n" +
@@ -839,25 +851,25 @@ public class AutoCompleteTest {
                 "# Generates completions for the options and subcommands of the `nondefault` command.\n" +
                 "function _picocli_nondefault() {\n" +
                 "  # Get completion data\n" +
-                "  CURR_WORD=${COMP_WORDS[COMP_CWORD]}\n" +
-                "  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}\n" +
+                "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
+                "  local prev_word=${COMP_WORDS[COMP_CWORD-1]}\n" +
                 "\n" +
-                "  COMMANDS=\"\"\n" +
-                "  FLAG_OPTS=\"\"\n" +
-                "  ARG_OPTS=\"-t --timeout\"\n" +
+                "  local commands=\"\"\n" +
+                "  local flag_opts=\"\"\n" +
+                "  local arg_opts=\"-t --timeout\"\n" +
                 "\n" +
                 "  compopt +o default\n" +
                 "\n" +
-                "  case ${PREV_WORD} in\n" +
+                "  case ${prev_word} in\n" +
                 "    -t|--timeout)\n" +
                 "      return\n" +
                 "      ;;\n" +
                 "  esac\n" +
                 "\n" +
-                "  if [[ \"${CURR_WORD}\" == -* ]]; then\n" +
-                "    COMPREPLY=( $(compgen -W \"${FLAG_OPTS} ${ARG_OPTS}\" -- ${CURR_WORD}) )\n" +
+                "  if [[ \"${curr_word}\" == -* ]]; then\n" +
+                "    read -d ' ' -a COMPREPLY < <(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\")\n" +
                 "  else\n" +
-                "    COMPREPLY=( $(compgen -W \"${COMMANDS}\" -- ${CURR_WORD}) )\n" +
+                "    read -d ' ' -a COMPREPLY < <(compgen -W \"${commands}\" -- \"${curr_word}\")\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
@@ -1142,7 +1154,7 @@ public class AutoCompleteTest {
             @Option(names = "-B") Boolean object;
         }
         String actual = AutoComplete.bash("booltest", new CommandLine(new App()));
-        assertThat(actual, CoreMatchers.containsString("FLAG_OPTS=\"-b -B\""));
+        assertThat(actual, CoreMatchers.containsString("local flag_opts=\"-b -B\""));
     }
 
     @Test
