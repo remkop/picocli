@@ -18,8 +18,20 @@ import java.util.concurrent.Callable;
 /**
  * This class demonstrates how to use a custom IParameterConsumer
  * to handle complex situations where the default picocli parser is insufficient.
+ * <p>
+ * We want to handle cases like this:
+ * </p><pre>
+ *  myapp --debug 8080 a.txt b.txt # debug port=8080
+ *  myapp --debug a.txt b.txt      # debug port=12345 (the fallback value)
+ *  myapp a.txt b.txt              # no debugging
+ * </pre>
+ * <p>
+ * A custom IParamaterConsumer is needed so that input like
+ * {@code myapp --debug a.txt} does not result in an error like this:
+ * {@code "Invalid value for option '--debug': 'a.txt' is not an int"}.
+ * </p>
  */
-@Command
+@Command(name = "myapp")
 public class OptionalOptionParamDemo implements Callable<Integer> {
     @Option(names = "--debug", arity = "0..1", fallbackValue = "12345",
             parameterConsumer = CustomConsumer.class,
