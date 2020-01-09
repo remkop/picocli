@@ -63,17 +63,14 @@ fi
 function CompWordsContainsArray() {
   declare -a localArray
   localArray=("$@")
-  for findme in "${localArray[@]}";
-  do
+  for findme in "${localArray[@]}"; do
     if ElementNotInCompWords "$findme"; then return 1; fi
   done
   return 0
 }
 function ElementNotInCompWords() {
   local findme="$1"
-
-  for element in "${COMP_WORDS[@]}"
-  do
+  for element in "${COMP_WORDS[@]}"; do
     if [[ "$findme" = "$element" ]]; then return 1; fi
   done
   return 0

@@ -358,17 +358,14 @@ public class AutoComplete {
             "function CompWordsContainsArray() {\n" +
             "  declare -a localArray\n" +
             "  localArray=(\"$@\")\n" +
-            "  for findme in \"${localArray[@]}\";\n" +
-            "  do\n" +
+            "  for findme in \"${localArray[@]}\"; do\n" +
             "    if ElementNotInCompWords \"$findme\"; then return 1; fi\n" +
             "  done\n" +
             "  return 0\n" +
             "}\n" +
             "function ElementNotInCompWords() {\n" +
             "  local findme=\"$1\"\n" +
-            "\n" +
-            "  for element in \"${COMP_WORDS[@]}\"\n" +
-            "  do\n" +
+            "  for element in \"${COMP_WORDS[@]}\"; do\n" +
             "    if [[ \"$findme\" = \"$element\" ]]; then return 1; fi\n" +
             "  done\n" +
             "  return 0\n" +
