@@ -350,26 +350,26 @@ public class AutoComplete {
             "  autoload -U +X bashcompinit && bashcompinit\n" +
             "fi\n" +
             "\n" +
-            "# ArrContains takes two arguments, both of which are the name of arrays.\n" +
-            "# It creates a temporary hash from lArr1 and then checks if all elements of lArr2\n" +
-            "# are in the hashtable.\n" +
+            "# CompWordsContainsArray takes an array and then checks\n" +
+            "# if all elements of this array are in the global COMP_WORDS array.\n" +
             "#\n" +
-            "# Returns zero (no error) if all elements of the 2nd array are in the 1st array,\n" +
+            "# Returns zero (no error) if all elements of the array are in the COMP_WORDS array,\n" +
             "# otherwise returns 1 (error).\n" +
-            "#\n" +
-            "# Modified from [5]\n" +
-            "function ArrContains() {\n" +
-            "  local lArr1 lArr2\n" +
-            "  declare -A tmp\n" +
-            "  eval lArr1=(\"\\\"\\${$1[@]}\\\"\")\n" +
-            "  eval lArr2=(\"\\\"\\${$2[@]}\\\"\")\n" +
-            "  for i in \"${lArr1[@]}\";\n" +
+            "function CompWordsContainsArray() {\n" +
+            "  declare -a localArray\n" +
+            "  localArray=(\"$@\")\n" +
+            "  for findme in \"${localArray[@]}\";\n" +
             "  do\n" +
-            "    if [ -n \"$i\" ] ; then ((++tmp[$i])); fi\n" +
+            "    if ElementNotInCompWords \"$findme\"; then return 1; fi\n" +
             "  done\n" +
-            "  for i in \"${lArr2[@]}\";\n" +
+            "  return 0\n" +
+            "}\n" +
+            "function ElementNotInCompWords() {\n" +
+            "  local findme=\"$1\"\n" +
+            "\n" +
+            "  for element in \"${COMP_WORDS[@]}\"\n" +
             "  do\n" +
-            "    if [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] ; then return 1; fi\n" +
+            "    if [[ \"$findme\" = \"$element\" ]]; then return 1; fi\n" +
             "  done\n" +
             "  return 0\n" +
             "}\n" +
@@ -391,20 +391,21 @@ public class AutoComplete {
             "  local previousWord\n" +
             "  local result=0\n" +
             "\n" +
-            "  for i in $(seq $(($COMP_CWORD - 1)) -1 0); do\n" +
+            "  for i in $(seq $((COMP_CWORD - 1)) -1 0); do\n" +
             "    previousWord=${COMP_WORDS[i]}\n" +
             "    if [ \"${previousWord}\" = \"$commandName\" ]; then\n" +
             "      break\n" +
             "    fi\n" +
-            "    if [[ \"${optionsWithArgs}\" =~ \"${previousWord}\" ]]; then\n" +
+            "    if [[ \"${optionsWithArgs}\" =~ ${previousWord} ]]; then\n" +
             "      ((result-=2)) # Arg option and its value not counted as positional param\n" +
-            "    elif [[ \"${booleanOptions}\" =~ \"${previousWord}\" ]]; then\n" +
+            "    elif [[ \"${booleanOptions}\" =~ ${previousWord} ]]; then\n" +
             "      ((result-=1)) # Flag option itself not counted as positional param\n" +
             "    fi\n" +
             "    ((result++))\n" +
             "  done\n" +
             "  echo \"$result\"\n" +
-            "}\n";
+            "}\n" +
+            "\n";
 
     private static final String SCRIPT_FOOTER = "" +
             "\n" +
@@ -488,10 +489,10 @@ public class AutoComplete {
 //                "  CMDS3=(%1$s tool sub1)\n" +
 //                "  CMDS4=(%1$s tool sub2)\n" +
 //                "\n" +
-//                "  if ArrContains COMP_WORDS CMDS4 ; then _picocli_basic_tool_sub2; return $?; fi\n" +
-//                "  if ArrContains COMP_WORDS CMDS3 ; then _picocli_basic_tool_sub1; return $?; fi\n" +
-//                "  if ArrContains COMP_WORDS CMDS2 ; then _picocli_basic_tool; return $?; fi\n" +
-//                "  if ArrContains COMP_WORDS CMDS1 ; then _picocli_basic_gettingstarted; return $?; fi\n" +
+//                "  if CompWordsContainsArray "${cmds4[@]}" ; then _picocli_basic_tool_sub2; return $?; fi\n" +
+//                "  if CompWordsContainsArray "${cmds3[@]}" ; then _picocli_basic_tool_sub1; return $?; fi\n" +
+//                "  if CompWordsContainsArray "${cmds2[@]}" ; then _picocli_basic_tool; return $?; fi\n" +
+//                "  if CompWordsContainsArray "${cmds1[@]}" ; then _picocli_basic_gettingstarted; return $?; fi\n" +
 //                "  _picocli_%1$s; return $?;\n" +
 //                "}\n" +
 //                "\n" +
@@ -533,7 +534,7 @@ public class AutoComplete {
             if (entry.getValue().getCommandSpec().usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
             int count = functionCalls.size();
             String functionName = "_picocli_" + scriptName + "_" + concat("_", predecessors, entry.getKey(), new Bashify());
-            functionCalls.add(format("  if ArrContains COMP_WORDS cmds%2$d; then %1$s; return $?; fi\n", functionName, count));
+            functionCalls.add(format("  if CompWordsContainsArray \"${cmds%2$d[@]}\"; then %1$s; return $?; fi\n", functionName, count));
             buff.append(      format("  local cmds%2$d=(%1$s)\n", concat(" ", predecessors, entry.getKey(), new NullFunction()), count));
 
             // remember the function name and associated subcommand so we can easily generate a function later
@@ -630,7 +631,8 @@ public class AutoComplete {
         String posParamsFooter = "";
         if (paramsCases.length() > 0) {
             String POSITIONAL_PARAMS_FOOTER = "" +
-                    "    local currIndex=$(currentPositionalIndex \"%s\" \"${arg_opts}\" \"${flag_opts}\")\n" +
+                    "    local currIndex\n" +
+                    "    currIndex=$(currentPositionalIndex \"%s\" \"${arg_opts}\" \"${flag_opts}\")\n" +
                     "%s";
             posParamsFooter = format(POSITIONAL_PARAMS_FOOTER, commandName, paramsCases);
         }
@@ -674,16 +676,16 @@ public class AutoComplete {
             int min = param.index().min();
             int max = param.index().max();
             if (param.completionCandidates() != null) {
-                buff.append(format("%s    %s ((${currIndex} >= %d && ${currIndex} <= %d)); then\n", indent, ifOrElif, min, max));
-                buff.append(format("%s      positionals=$( compgen -W \"$%s_pos_param_args\" -- %s )\n", indent, paramName, currWord));
+                buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
+                buff.append(format("%s      positionals=$( compgen -W \"$%s_pos_param_args\" -- \"%s\" )\n", indent, paramName, currWord));
             } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
-                buff.append(format("%s    %s ((${currIndex} >= %d && ${currIndex} <= %d)); then\n", indent, ifOrElif, min, max));
+                buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
                 buff.append(format("%s      compopt -o filenames\n", indent));
-                buff.append(format("%s      positionals=$( compgen -f -- %s ) # files\n", indent, currWord));
+                buff.append(format("%s      positionals=$( compgen -f -- \"%s\" ) # files\n", indent, currWord));
             } else if (type.equals(InetAddress.class)) {
-                buff.append(format("%s    %s ((${currIndex} >= %d && ${currIndex} <= %d)); then\n", indent, ifOrElif, min, max));
+                buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
                 buff.append(format("%s      compopt -o filenames\n", indent));
-                buff.append(format("%s      positionals=$( compgen -A hostname -- %s )\n", indent, currWord));
+                buff.append(format("%s      positionals=$( compgen -A hostname -- \"%s\" )\n", indent, currWord));
             }
         }
         if (buff.length() > 0) {

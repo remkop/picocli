@@ -55,26 +55,26 @@ elif [ -n "$ZSH_VERSION" ]; then
   autoload -U +X bashcompinit && bashcompinit
 fi
 
-# ArrContains takes two arguments, both of which are the name of arrays.
-# It creates a temporary hash from lArr1 and then checks if all elements of lArr2
-# are in the hashtable.
+# CompWordsContainsArray takes an array and then checks
+# if all elements of this array are in the global COMP_WORDS array.
 #
-# Returns zero (no error) if all elements of the 2nd array are in the 1st array,
+# Returns zero (no error) if all elements of the array are in the COMP_WORDS array,
 # otherwise returns 1 (error).
-#
-# Modified from [5]
-function ArrContains() {
-  local lArr1 lArr2
-  declare -A tmp
-  eval lArr1=("\"\${$1[@]}\"")
-  eval lArr2=("\"\${$2[@]}\"")
-  for i in "${lArr1[@]}";
+function CompWordsContainsArray() {
+  declare -a localArray
+  localArray=("$@")
+  for findme in "${localArray[@]}";
   do
-    if [ -n "$i" ] ; then ((++tmp[$i])); fi
+    if ElementNotInCompWords "$findme"; then return 1; fi
   done
-  for i in "${lArr2[@]}";
+  return 0
+}
+function ElementNotInCompWords() {
+  local findme="$1"
+
+  for element in "${COMP_WORDS[@]}"
   do
-    if [ -n "$i" ] && [ -z "${tmp[$i]}" ] ; then return 1; fi
+    if [[ "$findme" = "$element" ]]; then return 1; fi
   done
   return 0
 }
@@ -96,20 +96,21 @@ function currentPositionalIndex() {
   local previousWord
   local result=0
 
-  for i in $(seq $(($COMP_CWORD - 1)) -1 0); do
+  for i in $(seq $((COMP_CWORD - 1)) -1 0); do
     previousWord=${COMP_WORDS[i]}
     if [ "${previousWord}" = "$commandName" ]; then
       break
     fi
-    if [[ "${optionsWithArgs}" =~ "${previousWord}" ]]; then
+    if [[ "${optionsWithArgs}" =~ ${previousWord} ]]; then
       ((result-=2)) # Arg option and its value not counted as positional param
-    elif [[ "${booleanOptions}" =~ "${previousWord}" ]]; then
+    elif [[ "${booleanOptions}" =~ ${previousWord} ]]; then
       ((result-=1)) # Flag option itself not counted as positional param
     fi
     ((result++))
   done
   echo "$result"
 }
+
 # Bash completion entry point function.
 # _complete_picocompletion-demo finds which commands and subcommands have been specified
 # on the command line and delegates to the appropriate function
@@ -121,11 +122,11 @@ function _complete_picocompletion-demo() {
   local cmds3=(sub2 subsub2)
   local cmds4=(sub2 subsub3)
 
-  if ArrContains COMP_WORDS cmds4; then _picocli_picocompletion-demo_sub2_subsub3; return $?; fi
-  if ArrContains COMP_WORDS cmds3; then _picocli_picocompletion-demo_sub2_subsub2; return $?; fi
-  if ArrContains COMP_WORDS cmds2; then _picocli_picocompletion-demo_sub2_subsub1; return $?; fi
-  if ArrContains COMP_WORDS cmds1; then _picocli_picocompletion-demo_sub2; return $?; fi
-  if ArrContains COMP_WORDS cmds0; then _picocli_picocompletion-demo_sub1; return $?; fi
+  if CompWordsContainsArray "${cmds4[@]}"; then _picocli_picocompletion-demo_sub2_subsub3; return $?; fi
+  if CompWordsContainsArray "${cmds3[@]}"; then _picocli_picocompletion-demo_sub2_subsub2; return $?; fi
+  if CompWordsContainsArray "${cmds2[@]}"; then _picocli_picocompletion-demo_sub2_subsub1; return $?; fi
+  if CompWordsContainsArray "${cmds1[@]}"; then _picocli_picocompletion-demo_sub2; return $?; fi
+  if CompWordsContainsArray "${cmds0[@]}"; then _picocli_picocompletion-demo_sub1; return $?; fi
 
   # No subcommands were specified; generate completions for the top-level command.
   _picocli_picocompletion-demo; return $?;
@@ -210,9 +211,10 @@ function _picocli_picocompletion-demo_sub2() {
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
     local positionals=""
-    local currIndex=$(currentPositionalIndex "sub2" "${arg_opts}" "${flag_opts}")
-    if ((${currIndex} >= 0 && ${currIndex} <= 2147483647)); then
-      positionals=$( compgen -W "$possibilities_pos_param_args" -- ${curr_word} )
+    local currIndex
+    currIndex=$(currentPositionalIndex "sub2" "${arg_opts}" "${flag_opts}")
+    if (( currIndex >= 0 && currIndex <= 2147483647 )); then
+      positionals=$( compgen -W "$possibilities_pos_param_args" -- "${curr_word}" )
     fi
     COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
   fi
@@ -274,9 +276,10 @@ function _picocli_picocompletion-demo_sub2_subsub2() {
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
     local positionals=""
-    local currIndex=$(currentPositionalIndex "subsub2" "${arg_opts}" "${flag_opts}")
-    if ((${currIndex} >= 0 && ${currIndex} <= 2147483647)); then
-      positionals=$( compgen -W "$str2_pos_param_args" -- ${curr_word} )
+    local currIndex
+    currIndex=$(currentPositionalIndex "subsub2" "${arg_opts}" "${flag_opts}")
+    if (( currIndex >= 0 && currIndex <= 2147483647 )); then
+      positionals=$( compgen -W "$str2_pos_param_args" -- "${curr_word}" )
     fi
     COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
   fi
@@ -296,15 +299,16 @@ function _picocli_picocompletion-demo_sub2_subsub3() {
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
     local positionals=""
-    local currIndex=$(currentPositionalIndex "subsub3" "${arg_opts}" "${flag_opts}")
-    if ((${currIndex} >= 0 && ${currIndex} <= 0)); then
-      positionals=$( compgen -W "$cands_pos_param_args" -- ${curr_word} )
-    elif ((${currIndex} >= 1 && ${currIndex} <= 2)); then
+    local currIndex
+    currIndex=$(currentPositionalIndex "subsub3" "${arg_opts}" "${flag_opts}")
+    if (( currIndex >= 0 && currIndex <= 0 )); then
+      positionals=$( compgen -W "$cands_pos_param_args" -- "${curr_word}" )
+    elif (( currIndex >= 1 && currIndex <= 2 )); then
       compopt -o filenames
-      positionals=$( compgen -f -- ${curr_word} ) # files
-    elif ((${currIndex} >= 3 && ${currIndex} <= 2147483647)); then
+      positionals=$( compgen -f -- "${curr_word}" ) # files
+    elif (( currIndex >= 3 && currIndex <= 2147483647 )); then
       compopt -o filenames
-      positionals=$( compgen -A hostname -- ${curr_word} )
+      positionals=$( compgen -A hostname -- "${curr_word}" )
     fi
     COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
   fi
