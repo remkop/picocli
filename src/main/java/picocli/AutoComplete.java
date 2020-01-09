@@ -36,7 +36,6 @@ import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 
 import static java.lang.String.*;
-import static picocli.CommandLine.Model.UsageMessageSpec.keyValuesMap;
 
 /**
  * Stand-alone tool that generates bash auto-complete scripts for picocli-based command line applications.
@@ -293,7 +292,7 @@ public class AutoComplete {
         }
     }
 
-    private static final String HEADER = "" +
+    private static final String SCRIPT_HEADER = "" +
             "#!/usr/bin/env bash\n" +
             "#\n" +
             "# %1$s Bash Completion\n" +
@@ -374,9 +373,40 @@ public class AutoComplete {
             "  done\n" +
             "  return 0\n" +
             "}\n" +
-            "\n";
+            "\n" +
+            "# The `currentPositionalIndex` function calculates the index of the current positional parameter.\n" +
+            "#\n" +
+            "# currentPositionalIndex takes three parameters:\n" +
+            "# the command name,\n" +
+            "# a space-separated string with the names of options that take a parameter, and\n" +
+            "# a space-separated string with the names of boolean options (that don't take any params).\n" +
+            "# When done, this function echos the current positional index to std_out.\n" +
+            "#\n" +
+            "# Example usage:\n" +
+            "# local currIndex=$(currentPositionalIndex \"mysubcommand\" \"$ARG_OPTS\" \"$FLAG_OPTS\")\n" +
+            "function currentPositionalIndex() {\n" +
+            "  local commandName=\"$1\"\n" +
+            "  local optionsWithArgs=\"$2\"\n" +
+            "  local booleanOptions=\"$3\"\n" +
+            "  local previousWord\n" +
+            "  local result=0\n" +
+            "\n" +
+            "  for i in $(seq $(($COMP_CWORD - 1)) -1 0); do\n" +
+            "    previousWord=${COMP_WORDS[i]}\n" +
+            "    if [ \"${previousWord}\" = \"$commandName\" ]; then\n" +
+            "      break\n" +
+            "    fi\n" +
+            "    if [[ \"${optionsWithArgs}\" =~ \"${previousWord}\" ]]; then\n" +
+            "      ((result-=2)) # Arg option and its value not counted as positional param\n" +
+            "    elif [[ \"${booleanOptions}\" =~ \"${previousWord}\" ]]; then\n" +
+            "      ((result-=1)) # Flag option itself not counted as positional param\n" +
+            "    fi\n" +
+            "    ((result++))\n" +
+            "  done\n" +
+            "  echo \"$result\"\n" +
+            "}\n";
 
-    private static final String FOOTER = "" +
+    private static final String SCRIPT_FOOTER = "" +
             "\n" +
             "# Define a completion specification (a compspec) for the\n" +
             "# `%1$s`, `%1$s.sh`, and `%1$s.bash` commands.\n" +
@@ -430,7 +460,7 @@ public class AutoComplete {
         if (scriptName == null)  { throw new NullPointerException("scriptName"); }
         if (commandLine == null) { throw new NullPointerException("commandLine"); }
         StringBuilder result = new StringBuilder();
-        result.append(format(HEADER, scriptName, CommandLine.VERSION));
+        result.append(format(SCRIPT_HEADER, scriptName, CommandLine.VERSION));
 
         Map<CommandDescriptor, CommandLine> function2command = new LinkedHashMap<CommandDescriptor, CommandLine>();
         result.append(generateEntryPointFunction(scriptName, commandLine, function2command));
@@ -440,14 +470,14 @@ public class AutoComplete {
             CommandDescriptor descriptor = functionSpec.getKey();
             result.append(generateFunctionForCommand(descriptor.functionName, descriptor.commandName, functionSpec.getValue()));
         }
-        result.append(format(FOOTER, scriptName));
+        result.append(format(SCRIPT_FOOTER, scriptName));
         return result.toString();
     }
 
     private static String generateEntryPointFunction(String scriptName,
                                                      CommandLine commandLine,
                                                      Map<CommandDescriptor, CommandLine> function2command) {
-        String HEADER = "" +
+        String FUNCTION_HEADER = "" +
                 "# Bash completion entry point function.\n" +
                 "# _complete_%1$s finds which commands and subcommands have been specified\n" +
                 "# on the command line and delegates to the appropriate function\n" +
@@ -468,13 +498,13 @@ public class AutoComplete {
 //                "complete -F _complete_%1$s %1$s\n" +
 //                "\n";
                 "";
-            String FOOTER = "\n" +
+            String FUNCTION_FOOTER = "\n" +
                 "  # No subcommands were specified; generate completions for the top-level command.\n" +
                 "  _picocli_%1$s; return $?;\n" +
                 "}\n";
 
         StringBuilder buff = new StringBuilder(1024);
-        buff.append(format(HEADER, scriptName));
+        buff.append(format(FUNCTION_HEADER, scriptName));
 
         List<String> predecessors = new ArrayList<String>();
         List<String> functionCallsToArrContains = new ArrayList<String>();
@@ -487,7 +517,7 @@ public class AutoComplete {
         for (String func : functionCallsToArrContains) {
             buff.append(func);
         }
-        buff.append(format(FOOTER, scriptName));
+        buff.append(format(FUNCTION_FOOTER, scriptName));
         return buff.toString();
     }
 
@@ -536,7 +566,7 @@ public class AutoComplete {
     }
 
     private static String generateFunctionForCommand(String functionName, String commandName, CommandLine commandLine) {
-        String HEADER = "" +
+        String FUNCTION_HEADER = "" +
                 "\n" +
                 "# Generates completions for the options and subcommands of the `%s` %scommand.\n" +
                 "function %s() {\n" +
@@ -547,31 +577,16 @@ public class AutoComplete {
                 "  local commands=\"%s\"\n" +  // local commands="gettingstarted tool"
                 "  local flag_opts=\"%s\"\n" + // local flag_opts="--verbose -V -x --extract -t --list"
                 "  local arg_opts=\"%s\"\n";   // local arg_opts="--host --option --file -f -u --timeUnit"
-        String FOOTER = "" +
+        String FUNCTION_FOOTER = "" +
                 "\n" +
                 "  if [[ \"${curr_word}\" == -* ]]; then\n" +
                 "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                 "  else\n" +
+                "    local positionals=\"\"\n" +
                 "%s" +
-                "    COMPREPLY=( $(compgen -W \"${commands}\" -- \"${curr_word}\") )\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n";
-
-        String POSITIONAL_PARAMS_FOOTER = "" +
-                "    currIndex=0\n" +
-                "    for i in $(seq $(($COMP_CWORD-2)) -1 0); do\n" +
-                "      if [ \"${PREV_WORD}\" = \"%s\" ]; then\n" +
-                "        break\n" +
-                "      fi\n" +
-                "      if [[ \"${ARG_OPTS}\" =~ \"${PREV_WORD}\" ]]; then\n" +
-                "        ((currIndex-=2)) # Arg option and its value not counted as positional param\n" +
-                "      elif [[ \"${FLAG_OPTS}\" =~ \"${PREV_WORD}\" ]]; then\n" +
-                "        ((currIndex-=1)) # Flag option itself not counted as positional param\n" +
-                "      fi\n" +
-                "      PREV_WORD=${COMP_WORDS[i]}\n" +
-                "      ((currIndex++))\n" +
-                "    done\n" +
-                "%s";
 
         // Get the fields annotated with @Option and @Parameters for the specified CommandLine.
         CommandSpec commandSpec = commandLine.getCommandSpec();
@@ -586,7 +601,7 @@ public class AutoComplete {
         StringBuilder buff = new StringBuilder(1024);
         String sub = functionName.equals("_picocli_" + commandName) ? "" : "sub";
         String previous_word = argOptionFields.isEmpty() ? "" : "  local prev_word=${COMP_WORDS[COMP_CWORD-1]}\n";
-        buff.append(format(HEADER, commandName, sub, functionName, previous_word, commands, flagOptionNames, argOptionNames));
+        buff.append(format(FUNCTION_HEADER, commandName, sub, functionName, previous_word, commands, flagOptionNames, argOptionNames));
 
         // Generate completion lists for options with a known set of valid values (including java enums)
         for (OptionSpec f : commandSpec.options()) {
@@ -611,19 +626,22 @@ public class AutoComplete {
             }
         }
 
-        String paramsCases = generateParamsCases(commandSpec.positionalParameters(), "", "${CURR_WORD}");
+        String paramsCases = generatePositionalParamsCases(commandSpec.positionalParameters(), "", "${curr_word}");
         String posParamsFooter = "";
-        if (!paramsCases.isEmpty()) {
+        if (paramsCases.length() > 0) {
+            String POSITIONAL_PARAMS_FOOTER = "" +
+                    "    local currIndex=$(currentPositionalIndex \"%s\" \"${arg_opts}\" \"${flag_opts}\")\n" +
+                    "%s";
             posParamsFooter = format(POSITIONAL_PARAMS_FOOTER, commandName, paramsCases);
         }
         // Generate the footer: a default COMPREPLY to fall back to, and the function closing brace.
-        buff.append(format(FOOTER, posParamsFooter));
+        buff.append(format(FUNCTION_FOOTER, posParamsFooter));
         return buff.toString();
     }
 
     private static void generatePositionParamCompletionCandidates(StringBuilder buff, PositionalParamSpec f) {
         String paramName = bashify(f.paramLabel());
-        buff.append(format("  %s_POS_PARAM_ARGS=\"%s\" # %d-%d values\n",
+        buff.append(format("  local %s_pos_param_args=\"%s\" # %d-%d values\n",
                 paramName,
                 concat(" ", extract(f.completionCandidates())).trim(),
                 f.index().min(), f.index().max()));
@@ -643,38 +661,30 @@ public class AutoComplete {
         return result;
     }
 
-    private static void appendCodeBlock(StringBuilder buff, String[] parts, PositionalParamSpec param, String indent) {
-        buff.append(format("%s    %s ((${currIndex} >= %d && ${currIndex} <= %d)); then\n", indent, buff.length() > 0 ? "elif" : "if", param.index().min(), param.index().max()));
-        for (String part : parts) {
-            buff.append(part);
-        }
-        buff.append(format("%s      return $?\n", indent));
-    }
-
-    private static void generateParamCase(StringBuilder buff, PositionalParamSpec param, String indent, String currWord) {
-        Class<?> type = param.type();
-        if (param.typeInfo().isMultiValue()) {
-            type = param.typeInfo().getAuxiliaryTypes()[0];
-        }
-        String paramName = bashify(param.paramLabel());
-        if (param.completionCandidates() != null) {
-            appendCodeBlock(buff, new String[]{"",
-                            format("%s      COMPREPLY=( $( compgen -W \"$%s_POS_PARAM_ARGS\" -- %s ) )\n", indent, paramName, currWord)},
-                    param, indent);
-        } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
-            appendCodeBlock(buff, new String[]{format("%s      compopt -o filenames\n", indent),
-                    format("%s      COMPREPLY=( $( compgen -f -- %s ) ) # files\n", indent, currWord)}, param, indent);
-        } else if (type.equals(InetAddress.class)) {
-            appendCodeBlock(buff, new String[]{format("%s      compopt -o filenames\n", indent),
-                    format("%s      COMPREPLY=( $( compgen -A hostname -- %s ) )\n", indent, currWord)}, param, indent);
-        }
-    }
-
-    private static String generateParamsCases(List<PositionalParamSpec> posParams, String indent, String currWord) {
+    private static String generatePositionalParamsCases(List<PositionalParamSpec> posParams, String indent, String currWord) {
         StringBuilder buff = new StringBuilder(1024);
         for (PositionalParamSpec param : posParams) {
             if (param.hidden()) { continue; } // #887 skip hidden params
-            generateParamCase(buff, param, indent, currWord);
+            Class<?> type = param.type();
+            if (param.typeInfo().isMultiValue()) {
+                type = param.typeInfo().getAuxiliaryTypes()[0];
+            }
+            String paramName = bashify(param.paramLabel());
+            String ifOrElif = buff.length() > 0 ? "elif" : "if";
+            int min = param.index().min();
+            int max = param.index().max();
+            if (param.completionCandidates() != null) {
+                buff.append(format("%s    %s ((${currIndex} >= %d && ${currIndex} <= %d)); then\n", indent, ifOrElif, min, max));
+                buff.append(format("%s      positionals=$( compgen -W \"$%s_pos_param_args\" -- %s )\n", indent, paramName, currWord));
+            } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
+                buff.append(format("%s    %s ((${currIndex} >= %d && ${currIndex} <= %d)); then\n", indent, ifOrElif, min, max));
+                buff.append(format("%s      compopt -o filenames\n", indent));
+                buff.append(format("%s      positionals=$( compgen -f -- %s ) # files\n", indent, currWord));
+            } else if (type.equals(InetAddress.class)) {
+                buff.append(format("%s    %s ((${currIndex} >= %d && ${currIndex} <= %d)); then\n", indent, ifOrElif, min, max));
+                buff.append(format("%s      compopt -o filenames\n", indent));
+                buff.append(format("%s      positionals=$( compgen -A hostname -- %s )\n", indent, currWord));
+            }
         }
         if (buff.length() > 0) {
             buff.append(format("%s    fi\n", indent));
@@ -709,19 +719,19 @@ public class AutoComplete {
             }
             if (option.completionCandidates() != null) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -u|--timeUnit)\n"
-                buff.append(format("%s      read -d ' ' -a COMPREPLY < <(compgen -W \"${%s_option_args}\" -- \"%s\")\n", indent, bashify(option.paramLabel()), currWord));
+                buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_option_args}\" -- \"%s\" ) )\n", indent, bashify(option.paramLabel()), currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -f|--file)\n"
                 buff.append(format("%s      compopt -o filenames\n", indent));
-                buff.append(format("%s      read -d ' ' -a COMPREPLY < <(compgen -f -- \"%s\") # files\n", indent, currWord));
+                buff.append(format("%s      COMPREPLY=( $( compgen -f -- \"%s\" ) ) # files\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else if (type.equals(InetAddress.class)) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -h|--host)\n"
                 buff.append(format("%s      compopt -o filenames\n", indent));
-                buff.append(format("%s      read -d ' ' -a COMPREPLY < <(compgen -A hostname -- \"%s\")\n", indent, currWord));
+                buff.append(format("%s      COMPREPLY=( $( compgen -A hostname -- \"%s\" ) )\n", indent, currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
             } else {

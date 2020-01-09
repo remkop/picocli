@@ -79,6 +79,37 @@ function ArrContains() {
   return 0
 }
 
+# The `currentPositionalIndex` function calculates the index of the current positional parameter.
+#
+# currentPositionalIndex takes three parameters:
+# the command name,
+# a space-separated string with the names of options that take a parameter, and
+# a space-separated string with the names of boolean options (that don't take any params).
+# When done, this function echos the current positional index to std_out.
+#
+# Example usage:
+# local currIndex=$(currentPositionalIndex "mysubcommand" "$ARG_OPTS" "$FLAG_OPTS")
+function currentPositionalIndex() {
+  local commandName="$1"
+  local optionsWithArgs="$2"
+  local booleanOptions="$3"
+  local previousWord
+  local result=0
+
+  for i in $(seq $(($COMP_CWORD - 1)) -1 0); do
+    previousWord=${COMP_WORDS[i]}
+    if [ "${previousWord}" = "$commandName" ]; then
+      break
+    fi
+    if [[ "${optionsWithArgs}" =~ "${previousWord}" ]]; then
+      ((result-=2)) # Arg option and its value not counted as positional param
+    elif [[ "${booleanOptions}" =~ "${previousWord}" ]]; then
+      ((result-=1)) # Flag option itself not counted as positional param
+    fi
+    ((result++))
+  done
+  echo "$result"
+}
 # Bash completion entry point function.
 # _complete_rcmd finds which commands and subcommands have been specified
 # on the command line and delegates to the appropriate function

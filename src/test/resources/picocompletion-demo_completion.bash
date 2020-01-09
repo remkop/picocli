@@ -79,6 +79,37 @@ function ArrContains() {
   return 0
 }
 
+# The `currentPositionalIndex` function calculates the index of the current positional parameter.
+#
+# currentPositionalIndex takes three parameters:
+# the command name,
+# a space-separated string with the names of options that take a parameter, and
+# a space-separated string with the names of boolean options (that don't take any params).
+# When done, this function echos the current positional index to std_out.
+#
+# Example usage:
+# local currIndex=$(currentPositionalIndex "mysubcommand" "$ARG_OPTS" "$FLAG_OPTS")
+function currentPositionalIndex() {
+  local commandName="$1"
+  local optionsWithArgs="$2"
+  local booleanOptions="$3"
+  local previousWord
+  local result=0
+
+  for i in $(seq $(($COMP_CWORD - 1)) -1 0); do
+    previousWord=${COMP_WORDS[i]}
+    if [ "${previousWord}" = "$commandName" ]; then
+      break
+    fi
+    if [[ "${optionsWithArgs}" =~ "${previousWord}" ]]; then
+      ((result-=2)) # Arg option and its value not counted as positional param
+    elif [[ "${booleanOptions}" =~ "${previousWord}" ]]; then
+      ((result-=1)) # Flag option itself not counted as positional param
+    fi
+    ((result++))
+  done
+  echo "$result"
+}
 # Bash completion entry point function.
 # _complete_picocompletion-demo finds which commands and subcommands have been specified
 # on the command line and delegates to the appropriate function
@@ -110,9 +141,10 @@ function _picocli_picocompletion-demo() {
   local arg_opts=""
 
   if [[ "${curr_word}" == -* ]]; then
-    read -d ' ' -a COMPREPLY < <(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}")
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
-    read -d ' ' -a COMPREPLY < <(compgen -W "${commands}" -- "${curr_word}")
+    local positionals=""
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
   fi
 }
 
@@ -137,15 +169,16 @@ function _picocli_picocompletion-demo_sub1() {
       return
       ;;
     --candidates)
-      read -d ' ' -a COMPREPLY < <(compgen -W "${str2_option_args}" -- "${curr_word}")
+      COMPREPLY=( $( compgen -W "${str2_option_args}" -- "${curr_word}" ) )
       return $?
       ;;
   esac
 
   if [[ "${curr_word}" == -* ]]; then
-    read -d ' ' -a COMPREPLY < <(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}")
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
-    read -d ' ' -a COMPREPLY < <(compgen -W "${commands}" -- "${curr_word}")
+    local positionals=""
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
   fi
 }
 
@@ -167,33 +200,21 @@ function _picocli_picocompletion-demo_sub2() {
       ;;
     --directory|-d)
       compopt -o filenames
-      read -d ' ' -a COMPREPLY < <(compgen -f -- "${curr_word}") # files
+      COMPREPLY=( $( compgen -f -- "${curr_word}" ) ) # files
       return $?
       ;;
   esac
-  possibilities_POS_PARAM_ARGS="Aaa Bbb Ccc" # 0-2147483647 values
+  local possibilities_pos_param_args="Aaa Bbb Ccc" # 0-2147483647 values
 
   if [[ "${curr_word}" == -* ]]; then
-    read -d ' ' -a COMPREPLY < <(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}")
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
-    currIndex=0
-    for i in $(seq $(($COMP_CWORD-2)) -1 0); do
-      if [ "${prev_word}" = "sub2" ]; then
-        break
-      fi
-      if [[ "${ARG_OPTS}" =~ "${PREV_WORD}" ]]; then
-        ((currIndex-=2)) # Arg option and its value not counted as positional param
-      elif [[ "${FLAG_OPTS}" =~ "${PREV_WORD}" ]]; then
-        ((currIndex-=1)) # Flag option itself not counted as positional param
-      fi
-      prev_word=${COMP_WORDS[i]}
-      ((currIndex++))
-    done
+    local positionals=""
+    local currIndex=$(currentPositionalIndex "sub2" "${arg_opts}" "${flag_opts}")
     if ((${currIndex} >= 0 && ${currIndex} <= 2147483647)); then
-      COMPREPLY=( $( compgen -W "$possibilities_POS_PARAM_ARGS" -- "${curr_word}" ) )
-      return $?
+      positionals=$( compgen -W "$possibilities_pos_param_args" -- ${curr_word} )
     fi
-    COMPREPLY=( $(compgen -W "${commands}" -- "${curr_word}") )
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
   fi
 }
 
@@ -212,15 +233,16 @@ function _picocli_picocompletion-demo_sub2_subsub1() {
   case ${prev_word} in
     -h|--host)
       compopt -o filenames
-      read -d ' ' -a COMPREPLY < <(compgen -A hostname -- "${curr_word}")
+      COMPREPLY=( $( compgen -A hostname -- "${curr_word}" ) )
       return $?
       ;;
   esac
 
   if [[ "${curr_word}" == -* ]]; then
-    read -d ' ' -a COMPREPLY < <(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}")
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
-    read -d ' ' -a COMPREPLY < <(compgen -W "${commands}" -- "${curr_word}")
+    local positionals=""
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
   fi
 }
 
@@ -239,79 +261,52 @@ function _picocli_picocompletion-demo_sub2_subsub2() {
 
   case ${prev_word} in
     -u|--timeUnit)
-      read -d ' ' -a COMPREPLY < <(compgen -W "${timeUnit_option_args}" -- "${curr_word}")
+      COMPREPLY=( $( compgen -W "${timeUnit_option_args}" -- "${curr_word}" ) )
       return $?
       ;;
     -t|--timeout)
       return
       ;;
   esac
-  str2_POS_PARAM_ARGS="aaa bbb ccc" # 0-2147483647 values
+  local str2_pos_param_args="aaa bbb ccc" # 0-2147483647 values
 
   if [[ "${curr_word}" == -* ]]; then
-    read -d ' ' -a COMPREPLY < <(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}")
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
-    currIndex=0
-    for i in $(seq $(($COMP_CWORD-2)) -1 0); do
-      if [ "${prev_word}" = "subsub2" ]; then
-        break
-      fi
-      if [[ "${arg_opts}" =~ "${prev_word}" ]]; then
-        ((currIndex-=2)) # Arg option and its value not counted as positional param
-      elif [[ "${flag_opts}" =~ "${prev_word}" ]]; then
-        ((currIndex-=1)) # Flag option itself not counted as positional param
-      fi
-      prev_word=${COMP_WORDS[i]}
-      ((currIndex++))
-    done
+    local positionals=""
+    local currIndex=$(currentPositionalIndex "subsub2" "${arg_opts}" "${flag_opts}")
     if ((${currIndex} >= 0 && ${currIndex} <= 2147483647)); then
-      COMPREPLY=( $( compgen -W "$str2_POS_PARAM_ARGS" -- "${curr_word}" ) )
-      return $?
+      positionals=$( compgen -W "$str2_pos_param_args" -- ${curr_word} )
     fi
-    COMPREPLY=( $(compgen -W "${commands}" -- "${curr_word}") )
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
   fi
 }
 
 # Generates completions for the options and subcommands of the `subsub3` subcommand.
 function _picocli_picocompletion-demo_sub2_subsub3() {
   # Get completion data
-  CURR_WORD=${COMP_WORDS[COMP_CWORD]}
-  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}
+  local curr_word=${COMP_WORDS[COMP_CWORD]}
 
-  COMMANDS=""
-  FLAG_OPTS=""
-  ARG_OPTS=""
-  cands_POS_PARAM_ARGS="aaa bbb ccc" # 0-0 values
+  local commands=""
+  local flag_opts=""
+  local arg_opts=""
+  local cands_pos_param_args="aaa bbb ccc" # 0-0 values
 
-  if [[ "${CURR_WORD}" == -* ]]; then
-    COMPREPLY=( $(compgen -W "${FLAG_OPTS} ${ARG_OPTS}" -- ${CURR_WORD}) )
+  if [[ "${curr_word}" == -* ]]; then
+    COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
   else
-    currIndex=0
-    for i in $(seq $(($COMP_CWORD-2)) -1 0); do
-      if [ "${PREV_WORD}" = "subsub3" ]; then
-        break
-      fi
-      if [[ "${ARG_OPTS}" =~ "${PREV_WORD}" ]]; then
-        ((currIndex-=2)) # Arg option and its value not counted as positional param
-      elif [[ "${FLAG_OPTS}" =~ "${PREV_WORD}" ]]; then
-        ((currIndex-=1)) # Flag option itself not counted as positional param
-      fi
-      PREV_WORD=${COMP_WORDS[i]}
-      ((currIndex++))
-    done
+    local positionals=""
+    local currIndex=$(currentPositionalIndex "subsub3" "${arg_opts}" "${flag_opts}")
     if ((${currIndex} >= 0 && ${currIndex} <= 0)); then
-      COMPREPLY=( $( compgen -W "$cands_POS_PARAM_ARGS" -- ${CURR_WORD} ) )
-      return $?
+      positionals=$( compgen -W "$cands_pos_param_args" -- ${curr_word} )
     elif ((${currIndex} >= 1 && ${currIndex} <= 2)); then
       compopt -o filenames
-      COMPREPLY=( $( compgen -f -- ${CURR_WORD} ) ) # files
-      return $?
+      positionals=$( compgen -f -- ${curr_word} ) # files
     elif ((${currIndex} >= 3 && ${currIndex} <= 2147483647)); then
       compopt -o filenames
-      COMPREPLY=( $( compgen -A hostname -- ${CURR_WORD} ) )
-      return $?
+      positionals=$( compgen -A hostname -- ${curr_word} )
     fi
-    COMPREPLY=( $(compgen -W "${COMMANDS}" -- ${CURR_WORD}) )
+    COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
   fi
 }
 

@@ -145,6 +145,33 @@ public class AutoCompleteTest {
         @Parameters(completionCandidates = Candidates.class, index = "0") String[] cands;
     }
 
+    // TopLevel
+    //    @Option(names = {"-V", "--version"}, help = true) boolean versionRequested;
+    //    @Option(names = {"-h", "--help"}, help = true) boolean helpRequested;
+    //    Sub1 {
+    //      @Option(names = "--num") double number;
+    //      @Option(names = "--str") String str;
+    //      @Option(names = "--candidates", completionCandidates = Candidates.class) String[] str2;//"aaa", "bbb", "ccc"
+    //    }
+    //    Sub2 {
+    //      @Option(names = "--num2") int number2;
+    //      @Option(names = {"--directory", "-d"}) File[] directory;
+    //      @Parameters(arity = "0..1") Possibilities possibilities; // Aaa, Bbb, Ccc
+    //    -----
+    //      Sub2Child1 {
+    //        @Option(names = {"-h", "--host"}) List<InetAddress> host;
+    //      }
+    //      Sub2Child2 {
+    //        @Option(names = {"-u", "--timeUnit"}) private TimeUnit timeUnit;
+    //        @Option(names = {"-t", "--timeout"}) private long timeout;
+    //        @Parameters(completionCandidates = Candidates.class) String str2;//"aaa", "bbb", "ccc"
+    //      }
+    //      Sub2Child3 {
+    //        @Parameters(completionCandidates = Candidates.class, index = "0") String[] cands;//"aaa", "bbb", "ccc"
+    //        @Parameters(index = "1..2") File[] files;
+    //        @Parameters(index = "3..*") List<InetAddress> other;
+    //      }
+    //    }
     @Test
     public void nestedSubcommands() throws Exception {
         CommandLine hierarchy = new CommandLine(new TopLevel())
@@ -659,6 +686,37 @@ public class AutoCompleteTest {
                 "  return 0\n" +
                 "}\n" +
                 "\n" +
+                "# The `currentPositionalIndex` function calculates the index of the current positional parameter.\n" +
+                "#\n" +
+                "# currentPositionalIndex takes three parameters:\n" +
+                "# the command name,\n" +
+                "# a space-separated string with the names of options that take a parameter, and\n" +
+                "# a space-separated string with the names of boolean options (that don't take any params).\n" +
+                "# When done, this function echos the current positional index to std_out.\n" +
+                "#\n" +
+                "# Example usage:\n" +
+                "# local currIndex=$(currentPositionalIndex \"mysubcommand\" \"$ARG_OPTS\" \"$FLAG_OPTS\")\n" +
+                "function currentPositionalIndex() {\n" +
+                "  local commandName=\"$1\"\n" +
+                "  local optionsWithArgs=\"$2\"\n" +
+                "  local booleanOptions=\"$3\"\n" +
+                "  local previousWord\n" +
+                "  local result=0\n" +
+                "\n" +
+                "  for i in $(seq $(($COMP_CWORD - 1)) -1 0); do\n" +
+                "    previousWord=${COMP_WORDS[i]}\n" +
+                "    if [ \"${previousWord}\" = \"$commandName\" ]; then\n" +
+                "      break\n" +
+                "    fi\n" +
+                "    if [[ \"${optionsWithArgs}\" =~ \"${previousWord}\" ]]; then\n" +
+                "      ((result-=2)) # Arg option and its value not counted as positional param\n" +
+                "    elif [[ \"${booleanOptions}\" =~ \"${previousWord}\" ]]; then\n" +
+                "      ((result-=1)) # Flag option itself not counted as positional param\n" +
+                "    fi\n" +
+                "    ((result++))\n" +
+                "  done\n" +
+                "  echo \"$result\"\n" +
+                "}\n" +
                 "# Bash completion entry point function.\n" +
                 "# _complete_picocli.AutoComplete finds which commands and subcommands have been specified\n" +
                 "# on the command line and delegates to the appropriate function\n" +
@@ -691,15 +749,16 @@ public class AutoCompleteTest {
                 "      ;;\n" +
                 "    -o|--completionScript)\n" +
                 "      compopt -o filenames\n" +
-                "      read -d ' ' -a COMPREPLY < <(compgen -f -- \"${curr_word}\") # files\n" +
+                "      COMPREPLY=( $( compgen -f -- \"${curr_word}\" ) ) # files\n" +
                 "      return $?\n" +
                 "      ;;\n" +
                 "  esac\n" +
                 "\n" +
                 "  if [[ \"${curr_word}\" == -* ]]; then\n" +
-                "    read -d ' ' -a COMPREPLY < <(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\")\n" +
+                "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                 "  else\n" +
-                "    read -d ' ' -a COMPREPLY < <(compgen -W \"${commands}\" -- \"${curr_word}\")\n" +
+                "    local positionals=\"\"\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
@@ -837,6 +896,37 @@ public class AutoCompleteTest {
                 "  return 0\n" +
                 "}\n" +
                 "\n" +
+                "# The `currentPositionalIndex` function calculates the index of the current positional parameter.\n" +
+                "#\n" +
+                "# currentPositionalIndex takes three parameters:\n" +
+                "# the command name,\n" +
+                "# a space-separated string with the names of options that take a parameter, and\n" +
+                "# a space-separated string with the names of boolean options (that don't take any params).\n" +
+                "# When done, this function echos the current positional index to std_out.\n" +
+                "#\n" +
+                "# Example usage:\n" +
+                "# local currIndex=$(currentPositionalIndex \"mysubcommand\" \"$ARG_OPTS\" \"$FLAG_OPTS\")\n" +
+                "function currentPositionalIndex() {\n" +
+                "  local commandName=\"$1\"\n" +
+                "  local optionsWithArgs=\"$2\"\n" +
+                "  local booleanOptions=\"$3\"\n" +
+                "  local previousWord\n" +
+                "  local result=0\n" +
+                "\n" +
+                "  for i in $(seq $(($COMP_CWORD - 1)) -1 0); do\n" +
+                "    previousWord=${COMP_WORDS[i]}\n" +
+                "    if [ \"${previousWord}\" = \"$commandName\" ]; then\n" +
+                "      break\n" +
+                "    fi\n" +
+                "    if [[ \"${optionsWithArgs}\" =~ \"${previousWord}\" ]]; then\n" +
+                "      ((result-=2)) # Arg option and its value not counted as positional param\n" +
+                "    elif [[ \"${booleanOptions}\" =~ \"${previousWord}\" ]]; then\n" +
+                "      ((result-=1)) # Flag option itself not counted as positional param\n" +
+                "    fi\n" +
+                "    ((result++))\n" +
+                "  done\n" +
+                "  echo \"$result\"\n" +
+                "}\n" +
                 "# Bash completion entry point function.\n" +
                 "# _complete_nondefault finds which commands and subcommands have been specified\n" +
                 "# on the command line and delegates to the appropriate function\n" +
@@ -867,9 +957,10 @@ public class AutoCompleteTest {
                 "  esac\n" +
                 "\n" +
                 "  if [[ \"${curr_word}\" == -* ]]; then\n" +
-                "    read -d ' ' -a COMPREPLY < <(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\")\n" +
+                "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                 "  else\n" +
-                "    read -d ' ' -a COMPREPLY < <(compgen -W \"${commands}\" -- \"${curr_word}\")\n" +
+                "    local positionals=\"\"\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
@@ -1370,19 +1461,56 @@ public class AutoCompleteTest {
                     "  declare -A tmp\n" +
                     "  eval lArr1=(\"\\\"\\${$1[@]}\\\"\")\n" +
                     "  eval lArr2=(\"\\\"\\${$2[@]}\\\"\")\n" +
-                    "  for i in \"${lArr1[@]}\";{ [ -n \"$i\" ] && ((++tmp[$i]));}\n" +
-                    "  for i in \"${lArr2[@]}\";{ [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] && return 1;}\n" +
+                    "  for i in \"${lArr1[@]}\";\n" +
+                    "  do\n" +
+                    "    if [ -n \"$i\" ] ; then ((++tmp[$i])); fi\n" +
+                    "  done\n" +
+                    "  for i in \"${lArr2[@]}\";\n" +
+                    "  do\n" +
+                    "    if [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] ; then return 1; fi\n" +
+                    "  done\n" +
                     "  return 0\n" +
                     "}\n" +
                     "\n" +
+                    "# The `currentPositionalIndex` function calculates the index of the current positional parameter.\n" +
+                    "#\n" +
+                    "# currentPositionalIndex takes three parameters:\n" +
+                    "# the command name,\n" +
+                    "# a space-separated string with the names of options that take a parameter, and\n" +
+                    "# a space-separated string with the names of boolean options (that don't take any params).\n" +
+                    "# When done, this function echos the current positional index to std_out.\n" +
+                    "#\n" +
+                    "# Example usage:\n" +
+                    "# local currIndex=$(currentPositionalIndex \"mysubcommand\" \"$ARG_OPTS\" \"$FLAG_OPTS\")\n" +
+                    "function currentPositionalIndex() {\n" +
+                    "  local commandName=\"$1\"\n" +
+                    "  local optionsWithArgs=\"$2\"\n" +
+                    "  local booleanOptions=\"$3\"\n" +
+                    "  local previousWord\n" +
+                    "  local result=0\n" +
+                    "\n" +
+                    "  for i in $(seq $(($COMP_CWORD - 1)) -1 0); do\n" +
+                    "    previousWord=${COMP_WORDS[i]}\n" +
+                    "    if [ \"${previousWord}\" = \"$commandName\" ]; then\n" +
+                    "      break\n" +
+                    "    fi\n" +
+                    "    if [[ \"${optionsWithArgs}\" =~ \"${previousWord}\" ]]; then\n" +
+                    "      ((result-=2)) # Arg option and its value not counted as positional param\n" +
+                    "    elif [[ \"${booleanOptions}\" =~ \"${previousWord}\" ]]; then\n" +
+                    "      ((result-=1)) # Flag option itself not counted as positional param\n" +
+                    "    fi\n" +
+                    "    ((result++))\n" +
+                    "  done\n" +
+                    "  echo \"$result\"\n" +
+                    "}\n" +
                     "# Bash completion entry point function.\n" +
                     "# _complete_%1$s finds which commands and subcommands have been specified\n" +
                     "# on the command line and delegates to the appropriate function\n" +
                     "# to generate possible options and subcommands for the last specified subcommand.\n" +
                     "function _complete_%1$s() {\n" +
-                    "  CMDS0=(generate-completion)\n" +
+                    "  local cmds0=(generate-completion)\n" +
                     "\n" +
-                    "  ArrContains COMP_WORDS CMDS0 && { _picocli_%1$s_generatecompletion; return $?; }\n" +
+                    "  if ArrContains COMP_WORDS cmds0; then _picocli_myapp_generatecompletion; return $?; fi\n" +
                     "\n" +
                     "  # No subcommands were specified; generate completions for the top-level command.\n" +
                     "  _picocli_%1$s; return $?;\n" +
@@ -1391,34 +1519,34 @@ public class AutoCompleteTest {
                     "# Generates completions for the options and subcommands of the `%1$s` command.\n" +
                     "function _picocli_%1$s() {\n" +
                     "  # Get completion data\n" +
-                    "  CURR_WORD=${COMP_WORDS[COMP_CWORD]}\n" +
-                    "  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}\n" +
+                    "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
                     "\n" +
-                    "  COMMANDS=\"generate-completion\"\n" +
-                    "  FLAG_OPTS=\"-h --help -V --version\"\n" +
-                    "  ARG_OPTS=\"\"\n" +
+                    "  local commands=\"generate-completion\"\n" +
+                    "  local flag_opts=\"-h --help -V --version\"\n" +
+                    "  local arg_opts=\"\"\n" +
                     "\n" +
-                    "  if [[ \"${CURR_WORD}\" == -* ]]; then\n" +
-                    "    COMPREPLY=( $(compgen -W \"${FLAG_OPTS} ${ARG_OPTS}\" -- ${CURR_WORD}) )\n" +
+                    "  if [[ \"${curr_word}\" == -* ]]; then\n" +
+                    "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                     "  else\n" +
-                    "    COMPREPLY=( $(compgen -W \"${COMMANDS}\" -- ${CURR_WORD}) )\n" +
+                    "    local positionals=\"\"\n" +
+                    "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
                     "  fi\n" +
                     "}\n" +
                     "\n" +
                     "# Generates completions for the options and subcommands of the `generate-completion` subcommand.\n" +
                     "function _picocli_%1$s_generatecompletion() {\n" +
                     "  # Get completion data\n" +
-                    "  CURR_WORD=${COMP_WORDS[COMP_CWORD]}\n" +
-                    "  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}\n" +
+                    "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
                     "\n" +
-                    "  COMMANDS=\"\"\n" +
-                    "  FLAG_OPTS=\"-h --help -V --version\"\n" +
-                    "  ARG_OPTS=\"\"\n" +
+                    "  local commands=\"\"\n" +
+                    "  local flag_opts=\"-h --help -V --version\"\n" +
+                    "  local arg_opts=\"\"\n" +
                     "\n" +
-                    "  if [[ \"${CURR_WORD}\" == -* ]]; then\n" +
-                    "    COMPREPLY=( $(compgen -W \"${FLAG_OPTS} ${ARG_OPTS}\" -- ${CURR_WORD}) )\n" +
+                    "  if [[ \"${curr_word}\" == -* ]]; then\n" +
+                    "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                     "  else\n" +
-                    "    COMPREPLY=( $(compgen -W \"${COMMANDS}\" -- ${CURR_WORD}) )\n" +
+                    "    local positionals=\"\"\n" +
+                    "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
                     "  fi\n" +
                     "}\n" +
                     "\n" +
@@ -1536,19 +1664,56 @@ public class AutoCompleteTest {
                 "  declare -A tmp\n" +
                 "  eval lArr1=(\"\\\"\\${$1[@]}\\\"\")\n" +
                 "  eval lArr2=(\"\\\"\\${$2[@]}\\\"\")\n" +
-                "  for i in \"${lArr1[@]}\";{ [ -n \"$i\" ] && ((++tmp[$i]));}\n" +
-                "  for i in \"${lArr2[@]}\";{ [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] && return 1;}\n" +
+                "  for i in \"${lArr1[@]}\";\n" +
+                "  do\n" +
+                "    if [ -n \"$i\" ] ; then ((++tmp[$i])); fi\n" +
+                "  done\n" +
+                "  for i in \"${lArr2[@]}\";\n" +
+                "  do\n" +
+                "    if [ -n \"$i\" ] && [ -z \"${tmp[$i]}\" ] ; then return 1; fi\n" +
+                "  done\n" +
                 "  return 0\n" +
                 "}\n" +
                 "\n" +
+                "# The `currentPositionalIndex` function calculates the index of the current positional parameter.\n" +
+                "#\n" +
+                "# currentPositionalIndex takes three parameters:\n" +
+                "# the command name,\n" +
+                "# a space-separated string with the names of options that take a parameter, and\n" +
+                "# a space-separated string with the names of boolean options (that don't take any params).\n" +
+                "# When done, this function echos the current positional index to std_out.\n" +
+                "#\n" +
+                "# Example usage:\n" +
+                "# local currIndex=$(currentPositionalIndex \"mysubcommand\" \"$ARG_OPTS\" \"$FLAG_OPTS\")\n" +
+                "function currentPositionalIndex() {\n" +
+                "  local commandName=\"$1\"\n" +
+                "  local optionsWithArgs=\"$2\"\n" +
+                "  local booleanOptions=\"$3\"\n" +
+                "  local previousWord\n" +
+                "  local result=0\n" +
+                "\n" +
+                "  for i in $(seq $(($COMP_CWORD - 1)) -1 0); do\n" +
+                "    previousWord=${COMP_WORDS[i]}\n" +
+                "    if [ \"${previousWord}\" = \"$commandName\" ]; then\n" +
+                "      break\n" +
+                "    fi\n" +
+                "    if [[ \"${optionsWithArgs}\" =~ \"${previousWord}\" ]]; then\n" +
+                "      ((result-=2)) # Arg option and its value not counted as positional param\n" +
+                "    elif [[ \"${booleanOptions}\" =~ \"${previousWord}\" ]]; then\n" +
+                "      ((result-=1)) # Flag option itself not counted as positional param\n" +
+                "    fi\n" +
+                "    ((result++))\n" +
+                "  done\n" +
+                "  echo \"$result\"\n" +
+                "}\n" +
                 "# Bash completion entry point function.\n" +
                 "# _complete_%1$s finds which commands and subcommands have been specified\n" +
                 "# on the command line and delegates to the appropriate function\n" +
                 "# to generate possible options and subcommands for the last specified subcommand.\n" +
                 "function _complete_%1$s() {\n" +
-                "  CMDS0=(help)\n" +
+                "  local cmds0=(help)\n" +
                 "\n" +
-                "  ArrContains COMP_WORDS CMDS0 && { _picocli_%1$s_help; return $?; }\n" +
+                "  if ArrContains COMP_WORDS cmds0; then _picocli_CompletionDemo_help; return $?; fi\n" +
                 "\n" +
                 "  # No subcommands were specified; generate completions for the top-level command.\n" +
                 "  _picocli_%1$s; return $?;\n" +
@@ -1557,16 +1722,16 @@ public class AutoCompleteTest {
                 "# Generates completions for the options and subcommands of the `%1$s` command.\n" +
                 "function _picocli_%1$s() {\n" +
                 "  # Get completion data\n" +
-                "  CURR_WORD=${COMP_WORDS[COMP_CWORD]}\n" +
-                "  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}\n" +
+                "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
+                "  local prev_word=${COMP_WORDS[COMP_CWORD-1]}\n" +
                 "\n" +
-                "  COMMANDS=\"generate-completion help\"\n" +
-                "  FLAG_OPTS=\"\"\n" +
-                "  ARG_OPTS=\"--apples --bbb\"\n" +
+                "  local commands=\"generate-completion help\"\n" +
+                "  local flag_opts=\"\"\n" +
+                "  local arg_opts=\"--apples --bbb\"\n" +
                 "\n" +
                 "  compopt +o default\n" +
                 "\n" +
-                "  case ${PREV_WORD} in\n" +
+                "  case ${prev_word} in\n" +
                 "    --apples)\n" +
                 "      return\n" +
                 "      ;;\n" +
@@ -1575,27 +1740,28 @@ public class AutoCompleteTest {
                 "      ;;\n" +
                 "  esac\n" +
                 "\n" +
-                "  if [[ \"${CURR_WORD}\" == -* ]]; then\n" +
-                "    COMPREPLY=( $(compgen -W \"${FLAG_OPTS} ${ARG_OPTS}\" -- ${CURR_WORD}) )\n" +
+                "  if [[ \"${curr_word}\" == -* ]]; then\n" +
+                "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                 "  else\n" +
-                "    COMPREPLY=( $(compgen -W \"${COMMANDS}\" -- ${CURR_WORD}) )\n" +
+                "    local positionals=\"\"\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
                 "# Generates completions for the options and subcommands of the `help` subcommand.\n" +
                 "function _picocli_%1$s_help() {\n" +
                 "  # Get completion data\n" +
-                "  CURR_WORD=${COMP_WORDS[COMP_CWORD]}\n" +
-                "  PREV_WORD=${COMP_WORDS[COMP_CWORD-1]}\n" +
+                "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
                 "\n" +
-                "  COMMANDS=\"\"\n" +
-                "  FLAG_OPTS=\"-h --help\"\n" +
-                "  ARG_OPTS=\"\"\n" +
+                "  local commands=\"\"\n" +
+                "  local flag_opts=\"-h --help\"\n" +
+                "  local arg_opts=\"\"\n" +
                 "\n" +
-                "  if [[ \"${CURR_WORD}\" == -* ]]; then\n" +
-                "    COMPREPLY=( $(compgen -W \"${FLAG_OPTS} ${ARG_OPTS}\" -- ${CURR_WORD}) )\n" +
+                "  if [[ \"${curr_word}\" == -* ]]; then\n" +
+                "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
                 "  else\n" +
-                "    COMPREPLY=( $(compgen -W \"${COMMANDS}\" -- ${CURR_WORD}) )\n" +
+                "    local positionals=\"\"\n" +
+                "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
                 "  fi\n" +
                 "}\n" +
                 "\n" +
