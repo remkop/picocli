@@ -22,6 +22,11 @@
 gradlew         text eol=lf
 *.sh            text eol=lf
 *.bash          text eol=lf
+run             text eol=lf
+runCompletion   text eol=lf
+bashrc          text eol=lf
+inputrc         text eol=lf
+
 
 # These files are text and must be normalized to crlf
 *.bat           text eol=crlf
