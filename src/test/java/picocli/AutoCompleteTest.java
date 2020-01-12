@@ -670,6 +670,7 @@ public class AutoCompleteTest {
                 "function CompWordsContainsArray() {\n" +
                 "  declare -a localArray\n" +
                 "  localArray=(\"$@\")\n" +
+                "  local findme\n" +
                 "  for findme in \"${localArray[@]}\"; do\n" +
                 "    if ElementNotInCompWords \"$findme\"; then return 1; fi\n" +
                 "  done\n" +
@@ -677,6 +678,7 @@ public class AutoCompleteTest {
                 "}\n" +
                 "function ElementNotInCompWords() {\n" +
                 "  local findme=\"$1\"\n" +
+                "  local element\n" +
                 "  for element in \"${COMP_WORDS[@]}\"; do\n" +
                 "    if [[ \"$findme\" = \"$element\" ]]; then return 1; fi\n" +
                 "  done\n" +
@@ -878,6 +880,7 @@ public class AutoCompleteTest {
                 "function CompWordsContainsArray() {\n" +
                 "  declare -a localArray\n" +
                 "  localArray=(\"$@\")\n" +
+                "  local findme\n" +
                 "  for findme in \"${localArray[@]}\"; do\n" +
                 "    if ElementNotInCompWords \"$findme\"; then return 1; fi\n" +
                 "  done\n" +
@@ -885,6 +888,7 @@ public class AutoCompleteTest {
                 "}\n" +
                 "function ElementNotInCompWords() {\n" +
                 "  local findme=\"$1\"\n" +
+                "  local element\n" +
                 "  for element in \"${COMP_WORDS[@]}\"; do\n" +
                 "    if [[ \"$findme\" = \"$element\" ]]; then return 1; fi\n" +
                 "  done\n" +
@@ -1452,6 +1456,7 @@ public class AutoCompleteTest {
                     "function CompWordsContainsArray() {\n" +
                     "  declare -a localArray\n" +
                     "  localArray=(\"$@\")\n" +
+                    "  local findme\n" +
                     "  for findme in \"${localArray[@]}\"; do\n" +
                     "    if ElementNotInCompWords \"$findme\"; then return 1; fi\n" +
                     "  done\n" +
@@ -1459,6 +1464,7 @@ public class AutoCompleteTest {
                     "}\n" +
                     "function ElementNotInCompWords() {\n" +
                     "  local findme=\"$1\"\n" +
+                    "  local element\n" +
                     "  for element in \"${COMP_WORDS[@]}\"; do\n" +
                     "    if [[ \"$findme\" = \"$element\" ]]; then return 1; fi\n" +
                     "  done\n" +
@@ -1653,6 +1659,7 @@ public class AutoCompleteTest {
                 "function CompWordsContainsArray() {\n" +
                 "  declare -a localArray\n" +
                 "  localArray=(\"$@\")\n" +
+                "  local findme\n" +
                 "  for findme in \"${localArray[@]}\"; do\n" +
                 "    if ElementNotInCompWords \"$findme\"; then return 1; fi\n" +
                 "  done\n" +
@@ -1660,6 +1667,7 @@ public class AutoCompleteTest {
                 "}\n" +
                 "function ElementNotInCompWords() {\n" +
                 "  local findme=\"$1\"\n" +
+                "  local element\n" +
                 "  for element in \"${COMP_WORDS[@]}\"; do\n" +
                 "    if [[ \"$findme\" = \"$element\" ]]; then return 1; fi\n" +
                 "  done\n" +
