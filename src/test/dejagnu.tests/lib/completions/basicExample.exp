@@ -1,0 +1,38 @@
+proc setup {} {
+    save_env
+}
+
+proc teardown {} {
+    assert_env_unmodified {/OLDPWD=/d}
+}
+
+setup
+
+
+    # Try completion with one hyphen
+set cmd "basicExample -"
+set test "Tab should complete '$cmd'"
+verbose "Sending $cmd\t..."
+send "$cmd\t"
+#exp_internal 1 # tell Expect to print diagnostics on its internal operations
+expect {
+    -re "--timeUnit\\s*--timeout\\s*-t\\s*-u\r\n/@$cmd" { pass "'$cmd' COMPLETED OK"}
+    -re /@ { unresolved "$test at prompt" }
+    default { unresolved "$test" }
+}
+sync_after_int
+
+    # Try completion with two hyphens
+set cmd "basicExample --"
+set test "Tab should complete '$cmd'"
+verbose "Sending ${cmd}\t..."
+send "$cmd\t"
+expect {
+    -re "--timeUnit\\s*--timeout\r\n/@${cmd}time" { pass "'$cmd' COMPLETED OK"}
+    -re /@ { unresolved "$test at prompt" }
+    default { unresolved "$test" }
+}
+sync_after_int
+
+
+teardown

@@ -1,0 +1,873 @@
+# Source `init.tcl' again to restore the `unknown' procedure
+# NOTE: DejaGnu has an old `unknown' procedure which unfortunately disables
+#       tcl auto-loading.
+source [file join [info library] init.tcl]
+package require cmdline
+package require textutil::string
+
+
+
+# Execute a bash command and make sure the exit status is successful.
+# If not, output the error message.
+# @param string $cmd  Bash command line to execute.  If empty string (""), the
+#                     exit status of the previously executed bash command will be
+#                     checked; specify `title' to adorn the error message.
+# @param string $title  (optional) Command title.  If empty, `cmd' is used.
+# @param string $prompt  (optional) Bash prompt.  Default is "/@"
+# @param mixed $out  (optional) Reference to (tcl) variable to hold output.
+#                    If variable equals -1 (default) the bash command is expected
+#                    to return no output.  If variable equals 0, any output
+#                    from the bash command is disregarded.
+proc assert_bash_exec {{aCmd ""} {title ""} {prompt /@} {out -1}} {
+    if {$out != 0 && $out != -1} {upvar $out results}
+    if {[string length $aCmd] != 0} {
+        send "$aCmd\r"
+        expect -ex "$aCmd\r\n"
+    }
+    if {[string length $title] == 0} {set title $aCmd}
+    expect -ex $prompt
+    set results $expect_out(buffer);  # Catch output
+        # Remove $prompt suffix from output
+    set results [
+        string range $results 0 [
+            expr [string length $results] - [string length $prompt] - 1
+        ]
+    ]
+    if {$out == -1 && [string length $results] > 0} {
+        fail "ERROR Unexpected output from bash command \"$title\""
+    }
+
+    set cmd "echo $?"
+    send "$cmd\r"
+    expect {
+        -ex "$cmd\r\n0\r\n$prompt" {}
+        $prompt {fail "ERROR executing bash command \"$title\""}
+    }
+}
+
+
+# Test `type ...' in bash
+# Indicate "unsupported" if `type' exits with error status.
+# @param string $command  Command to locate
+proc assert_bash_type {command} {
+    set test "$command should be available in bash"
+    set cmd "type $command &>/dev/null && echo -n 0 || echo -n 1"
+    send "$cmd\r"
+    expect "$cmd\r\n"
+    expect {
+        -ex 0 { set result true }
+        -ex 1 { set result false; unsupported "$test" }
+    }
+    expect "/@"
+    return $result
+}
+
+
+# Make sure the expected list matches the real list, as returned by executing
+# the specified bash command.
+# Specify `-sort' if the real list is sorted.
+# @param list $expected  Expected list items
+# @param string $cmd  Bash command to execute in order to generate real list
+#                     items
+# @param string $test  Test title.  Becomes "$cmd should show expected output"
+#                      if empty string.
+# @param list $args  Options:
+#                    -sort           Compare list sorted.  Default is unsorted
+#                    -prompt         Bash prompt.  Default is `/@'
+#                    -chunk-size N   Compare list N items at a time.  Default
+#                                    is 20.
+proc assert_bash_list {expected cmd test {args {}}} {
+    array set arg [::cmdline::getoptions args {
+        {sort                "compare list sorted"}
+        {prompt.arg     /@   "bash prompt"}
+        {chunk-size.arg 20   "compare N list items at a time"}
+    }]
+    set prompt $arg(prompt)
+    if {$test == ""} {set test "$cmd should show expected output"}
+    if {[llength $expected] == 0} {
+        assert_no_output $cmd $test $prompt
+    } else {
+        send "$cmd\r"
+        expect -ex "$cmd\r\n"
+        if {$arg(sort)} {set bash_sort "-bash-sort"} {set bash_sort ""}
+        if {[
+            eval match_items \$expected $bash_sort -chunk-size \
+                \$arg(chunk-size) -end-newline -end-prompt \
+                -prompt \$prompt
+        ]} {
+            pass "$test"
+        } else {
+            fail "$test"
+        }
+    }
+}
+
+
+# Make sure the expected items are returned by TAB-completing the specified
+# command.  If the number of expected items is one, expected is:
+#
+#     $cmd<TAB>$expected[<SPACE>]
+#
+# SPACE is not expected if -nospace is specified.
+#
+# If the number of expected items is greater than one, expected is:
+#
+#     $cmd<TAB>\n
+#     $expected\n
+#     $prompt + ($cmd - AUTO) + longest-common-prefix-of-$expected
+#
+# AUTO is calculated like this: If $cmd ends with non-whitespace, and
+# the last argument of $cmd equals the longest-common-prefix of
+# $expected, $cmd minus this argument will be expected.
+#
+# If the algorithm above fails, you can manually specify the CWORD to be
+# subtracted from $cmd specifying `-expect-cmd-minus CWORD'.  Known cases where
+# this is useful are when:
+# - the last whitespace is escaped, e.g. "finger foo\ " or "finger
+#   'foo "
+#
+# @param list $expected  Expected completions.
+# @param string $cmd  Command given to generate items
+# @param string $test  Test title
+# @param list $args  Options:
+#     -prompt PROMPT   Bash prompt.  Default is `/@'
+#     -chunk-size CHUNK-SIZE   Compare list CHUNK-SIZE items at
+#         a time.  Default is 20.
+#     -nospace   Don't expect space character to be output after completion match.
+#         Valid only if a single completion is expected.
+#     -expect-cmd-minus DWORD   Expect $cmd minus DWORD to be echoed.
+#         Expected is:
+#
+#             $cmd<TAB>\n
+#             $expected\n
+#             $prompt + ($cmd - DWORD) + longest-common-prefix-of-$expected
+#
+proc assert_complete {expected cmd {test ""} {args {}}} {
+    set args_orig $args
+    array set arg [::cmdline::getoptions args {
+        {prompt.arg     "/@" "bash prompt"}
+        {chunk-size.arg 20   "compare N list items at a time"}
+        {nospace             "don't expect space after completion"}
+        {expect-cmd-minus.arg ""  "Expect cmd minus DWORD after prompt"}
+    }]
+    if {[llength $expected] == 0} {
+        assert_no_complete $cmd $test
+    } elseif {[llength $expected] == 1} {
+        eval assert_complete_one \$expected \$cmd \$test $args_orig
+    } else {
+        eval assert_complete_many \$expected \$cmd \$test $args_orig
+    }
+}
+
+
+# Make sure the expected multiple items are returned by TAB-completing the
+# specified command.
+# @see assert_complete()
+proc assert_complete_many {expected cmd {test ""} {args {}}} {
+    array set arg [::cmdline::getoptions args {
+        {prompt.arg     "/@" "bash prompt"}
+        {chunk-size.arg 20   "compare N list items at a time"}
+        {nospace             "don't expect space after completion"}
+        {expect-cmd-minus.arg ""  "Expect cmd minus CWORD after prompt"}
+    }]
+    if {$test == ""} {set test "$cmd should show completions"}
+    set prompt $arg(prompt)
+    set dword ""
+    if {$arg(expect-cmd-minus) != ""} {set dword $arg(expect-cmd-minus)}
+
+    send "$cmd\t"
+    expect -ex "$cmd\r\n"
+
+    # Make sure expected items are unique
+    set expected [lsort -unique $expected]
+
+    # Determine common prefix of completions
+    set common [::textutil::string::longestCommonPrefixList $expected]
+
+    set cmd2 [_remove_cword_from_cmd $cmd $dword $common]
+
+    set prompt "$prompt$cmd2$common"
+    if {$arg(nospace)} {set endspace ""} else {set endspace "-end-space"}
+    set endprompt "-end-prompt"
+    if {[
+        eval match_items \$expected -bash-sort -chunk-size \
+            \$arg(chunk-size) $endprompt $endspace -prompt \$prompt
+    ]} {
+        pass "$test"
+    } else {
+        fail "$test"
+    }
+}
+
+
+# Make sure the expected single item is returned by TAB-completing the
+# specified command.
+# @see assert_complete()
+proc assert_complete_one {expected cmd {test ""} {args {}}} {
+    array set arg [::cmdline::getoptions args {
+        {prompt.arg     "/@" "bash prompt"}
+        {chunk-size.arg 20   "compare N list items at a time"}
+        {nospace             "don't expect space after completion"}
+        {expect-cmd-minus.arg ""  "Expect cmd minus CWORD after prompt"}
+    }]
+    set prompt $arg(prompt)
+
+    if {$test == ""} {set test "$cmd should show completion"}
+    send "$cmd\t"
+    expect -ex "$cmd"
+    set cur "";  # Default to empty word to complete on
+    set words [split_words_bash $cmd]
+    if {[llength $words] > 1} {
+        # Assume last word of `$cmd' is word to complete on.
+        set index [expr [llength $words] - 1]
+        set cur [lindex $words $index]
+    }
+    # Remove second word from beginning of $expected
+    if {[string first $cur $expected] == 0} {
+        set expected [list [string range $expected [string length $cur] end]]
+    }
+
+    if {$arg(nospace)} {set endspace ""} else {set endspace "-end-space"}
+    if {[
+        eval match_items \$expected -bash-sort -chunk-size \
+            \$arg(chunk-size) $endspace -prompt \$prompt
+    ]} {
+        pass "$test"
+    } else {
+        fail "$test"
+    }
+}
+
+
+# @param string $cmd  Command to remove current-word-to-complete from.
+# @param string $dword  (optional) Manually specify current-word-to-complete,
+#     i.e. word to remove from $cmd.  If empty string (default),
+#     `_remove_cword_from_cmd' autodetects if the last argument is the
+#     current-word-to-complete by checking if $cmd doesn't end with whitespace.
+#     Specifying `dword' is only necessary if this autodetection fails, e.g.
+#     when the last whitespace is escaped or quoted, e.g. "finger foo\ " or
+#     "finger 'foo "
+# @param string $common  (optional) Common prefix of expected completions.
+# @return string  Command with current-word-to-complete removed
+proc _remove_cword_from_cmd {cmd {dword ""} {common ""}} {
+    set cmd2 $cmd
+    # Is $dword specified?
+    if {[string length $dword] > 0} {
+        # Remove $dword from end of $cmd
+        if {[string last $dword $cmd] == [string length $cmd] - [string length $dword]} {
+            set cmd2 [string range $cmd 0 [expr [string last $dword $cmd] - 1]]
+        }
+    } else {
+        # No, $dword not specified;
+        # Check if last argument is really a word-to-complete, i.e.
+        # doesn't end with whitespace.
+        # NOTE: This check fails if trailing whitespace is escaped or quoted,
+        #       e.g. "finger foo\ " or "finger 'foo ".  Specify parameter
+        #       $dword in those cases.
+        # Is last char whitespace?
+        if {! [string is space [string range $cmd end end]]} {
+            # No, last char isn't whitespace;
+            set cmds [split $cmd]
+            # Does word-to-complete start with $common?
+            if {[string first $common [lrange $cmds end end]] == 0} {
+                # Remove word-to-complete from end of $cmd
+                set cmd2 [lrange $cmds 0 end-1]
+                append cmd2 " "
+            }
+        }
+    }
+    return $cmd2
+}
+
+
+# Escape regexp special characters
+proc _escape_regexp_chars {var} {
+    upvar $var str
+    regsub -all {([\^$+*?.|(){}[\]\\])} $str {\\\1} str
+}
+
+
+# Make sure the expected files are returned by TAB-completing the specified
+# command in the specified subdirectory.  Be prepared to filter out OLDPWD
+# changes when calling assert_env_unmodified() after using this procedure.
+# @param list $expected
+# @param string $cmd  Command given to generate items
+# @param string $dir  Subdirectory to attempt completion in.  The directory must be relative from the $TESTDIR and without a trailing slash.  E.g. `fixtures/evince'
+# @param string $test  Test title
+# @param list $args  See: assert_complete()
+# @result boolean  True if successful, False if not
+proc assert_complete_dir {expected cmd dir {test ""} {args {}}} {
+    set prompt "/@"
+    assert_bash_exec "cd $dir" "" $prompt
+    eval assert_complete \$expected \$cmd \$test $args
+    sync_after_int $prompt
+    assert_bash_exec {cd "$TESTDIR"}
+}
+
+
+
+# Make sure the bash environment hasn't changed between now and the last call
+# to `save_env()'.
+# @param string $sed  Sed commands to preprocess diff output.
+#                     Example calls:
+#
+#                         # Replace `COMP_PATH=.*' with `COMP_PATH=PATH'
+#                         assert_env_unmodified {s/COMP_PATH=.*/COMP_PATH=PATH/}
+#
+#                         # Remove lines containing `OLDPWD='
+#                         assert_env_unmodified {/OLDPWD=/d}
+#
+# @param string $file  Filename to generate environment save file from.  See
+#                      `gen_env_filename()'.
+# @param string $diff  Expected diff output (after being processed by $sed)
+# @see save_env()
+proc assert_env_unmodified {{sed ""} {file ""} {diff ""}} {
+    set test "Environment should not be modified"
+    _save_env [gen_env_filename $file 2]
+
+        # Prepare sed script
+
+        # Escape special bash characters ("\)
+    regsub -all {([\"\\])} $sed {\\\1} sed;  #"# (fix Vim syntax highlighting)
+        # Escape newlines
+    regsub -all {\n} [string trim $sed] "\r\n" sed
+
+        # Prepare diff script
+
+        # If diff is filled, escape newlines and make sure it ends with a newline
+    if {[string length [string trim $diff]]} {
+        regsub -all {\n} [string trim $diff] "\r\n" diff
+        append diff "\r\n"
+    } else {
+        set diff ""
+    }
+
+        # Execute diff
+
+    # NOTE: The dummy argument 'LAST-ARG' sets bash variable $_ (last argument) to
+    #       'LAST-ARG' so that $_ doesn't mess up the diff (as it would if $_
+    #       was the (possibly multi-lined) sed script).
+    set cmd "diff_env \"[gen_env_filename $file 1]\" \"[gen_env_filename $file 2]\" \"$sed\" LAST-ARG"
+    send "$cmd\r"
+    expect "LAST-ARG\r\n"
+
+    expect {
+        -re "^$diff[wd]@$" { pass "$test" }
+        -re [wd]@ {
+            fail "$test"
+
+            # Show diff to user
+
+            set diff $expect_out(buffer)
+            # Remove possible `\r\n[wd]@' from end of diff
+            if {[string last "\r\n[wd]@" $diff] == [string length $diff] - [string length "\r\n[wd]@"]} {
+                set diff [string range $diff 0 [expr [string last "\r\n[wd]@" $diff] - 1]]
+            }
+            send_user $diff;
+        }
+    }
+}
+
+
+# Check that no completion is attempted on a certain command.
+# Params:
+# @cmd The command to attempt to complete.
+# @test Optional parameter with test name.
+proc assert_no_complete {{cmd} {test ""}} {
+    if {[string length $test] == 0} {
+        set test "$cmd shouldn't complete"
+    }
+
+    send "$cmd\t"
+    expect -ex "$cmd"
+
+    # We can't anchor on $, simulate typing a magical string instead.
+    set endguard "Magic End Guard"
+    send "$endguard"
+    expect {
+        -re "^$endguard$" { pass "$test" }
+        default { fail "$test" }
+        timeout { fail "$test" }
+    }
+}
+
+
+# Check that no output is generated on a certain command.
+# @param string $cmd  The command to attempt to complete.
+# @param string $test  Optional parameter with test name.
+# @param string $prompt  (optional) Bash prompt.  Default is "/@"
+proc assert_no_output {{cmd} {test ""} {prompt /@}} {
+    if {[string length $test] == 0} {
+        set test "$cmd shouldn't generate output"
+    }
+
+    send "$cmd\r"
+    expect -ex "$cmd"
+
+    expect {
+        -re "^\r\n$prompt$" { pass "$test" }
+        default { fail "$test" }
+        timeout { fail "$test" }
+    }
+}
+
+
+# Source/run file with additional tests if completion for the specified command
+# is installed in bash, and the command is available.
+# @param string $command  Command to check completion availability for.
+# @param string $file  (optional) File to source/run.  Default is
+#                      "lib/completions/$cmd.exp".
+proc assert_source_completions {command {file ""}} {
+#    if {[assert_bash_type $command] # we will test custom commands
+#        && [assert_install_completion_for $command]} { ... }
+     if {[assert_completions_installed_for $command]} {
+        if {[string length $file] == 0} {
+            set file "$::srcdir/lib/completions/$command.exp"
+        }
+        source $file
+    } else {
+        untested $command
+    }
+}
+
+
+# Sort list.
+# `exec sort' is used instead of `lsort' to achieve exactly the
+#  same sort order as in bash.
+# @param list $items
+# @return list  Sort list
+proc bash_sort {items} {
+    return [split [exec sort << [join $items "\n"]] "\n"]
+}
+
+
+# Get hostnames
+# @param list $args  Options:
+#                    -unsorted  Do not sort unique.  Default is sort unique.
+# @return list  Hostnames
+proc get_hosts {{args {}}} {
+    array set arg [::cmdline::getoptions args {
+        {unsorted   "do not sort unique"}
+    }]
+    set sort "| sort -u"
+    if {$arg(unsorted)} {set sort ""}
+    set hosts [exec bash -c "compgen -A hostname $sort"]
+    # NOTE: Circumventing var `avahi_hosts' and appending directly to `hosts'
+    #       causes an empty element to be inserted in `hosts'.
+    #       -- FVu, Fri Jul 17 23:11:46 CEST 2009
+    set avahi_hosts [get_hosts_avahi]
+    if {[llength $avahi_hosts] > 0} {
+        lappend hosts $avahi_hosts
+    }
+    return $hosts
+}
+
+
+# Get hostnames according to avahi
+# @return list  Hostnames
+proc get_hosts_avahi {} {
+        # Retrieving hosts is successful?
+    if { [catch {exec bash -c {
+        type avahi-browse >&/dev/null \
+            && avahi-browse -cpr _workstation._tcp 2>/dev/null | command grep ^= | cut -d\; -f7 | sort -u
+    }} hosts] } {
+        # No, retrieving hosts yields error;
+            # Reset hosts
+        set hosts {}
+    }
+    return $hosts
+}
+
+
+# Initialize tcl globals with bash variables
+proc init_tcl_bash_globals {} {
+    global BASH_VERSINFO BASH_VERSION COMP_WORDBREAKS LC_CTYPE
+    assert_bash_exec {printf "%s" "$COMP_WORDBREAKS"} {} /@ COMP_WORDBREAKS
+    assert_bash_exec {printf "%s " "${BASH_VERSINFO[@]}"} "" /@ BASH_VERSINFO
+    set BASH_VERSINFO [eval list $BASH_VERSINFO]
+    assert_bash_exec {printf "%s" "$BASH_VERSION"} "" /@ BASH_VERSION
+    assert_bash_exec {printf "%s" "$TESTDIR"} "" /@ TESTDIR
+    assert_bash_exec {eval $(locale); printf "%s" "$LC_CTYPE"} "" /@ LC_CTYPE
+}
+
+
+# DEPRECATED
+# TODO REMOVE THIS PROCEDURE
+# Try installing completion for the specified command.
+# @param string $command  Command to install completion for.
+# @return boolean  True (1) if completion is installed, False (0) if not.
+proc _install_completion_for {command} {
+    set test "$command should have completion installed in bash"
+    set cmd "__load_completion $command && echo -n 0 || echo -n 1"
+    send "$cmd\r"
+    expect "$cmd\r\n"
+    expect {
+        -ex 0 { set result true }
+        -ex 1 { set result false }
+    }
+    expect "/@"
+    return $result
+}
+
+# Tests whether completions are installed for the specified command.
+# @param string $command  Command to verify that completions are installed.
+# @return boolean  True (1) if completion is installed, False (0) if not.
+proc assert_completions_installed_for {command} {
+    set test "$command should have completion installed in bash"
+    set cmd "complete -p $command &>/dev/null && echo -n 0 || echo -n 1"
+    send "$cmd\r"
+    expect "$cmd\r\n"
+    expect {
+        -ex 0 { set result true }
+        -ex 1 { set result false }
+    }
+    expect "/@"
+    return $result
+}
+
+
+# Detect if test suite is running under Cygwin/Windows
+proc is_cygwin {} {
+    expr {[string first [string tolower [exec uname -s]] cygwin] >= 0}
+}
+
+
+# Expect items, a limited number (20) at a time.
+# Break items into chunks because `expect' seems to have a limited buffer size
+# @param list $items  Expected list items
+# @param list $args  Options:
+#                    -bash-sort      Compare list bash-sorted.  Default is
+#                                    unsorted
+#                    -prompt PROMPT  Bash prompt.  Default is `/@'
+#                    -chunk-size CHUNK-SIZE   Compare list CHUNK-SIZE items at
+#                                             a time.  Default is 20.
+#                    -end-newline  Expect newline after last item.
+#                                  Default is not.
+#                    -end-prompt   Expect prompt after last item.
+#                                  Default is not.
+#                    -end-space    Expect single space after last item.
+#                                  Default is not.  Valid only if
+#                                  `end-newline' not set.
+# @result boolean  True if successful, False if not
+proc match_items {items {args {}}} {
+    array set arg [::cmdline::getoptions args {
+        {bash-sort      "compare list sorted"}
+        {prompt.arg     "/@" "bash prompt"}
+        {chunk-size.arg 20   "compare N list items at a time"}
+        {end-newline   "expect newline after last item"}
+        {end-prompt    "expect prompt after last item"}
+        {end-space     "expect space ater last item"}
+    }]
+    set prompt $arg(prompt)
+    set size $arg(chunk-size)
+    if {$arg(bash-sort)} {set items [bash_sort $items]}
+    set result false
+    for {set i 0} {$i < [llength $items]} {set i [expr {$i + $size}]} {
+            # For chunks > 1, allow leading whitespace
+        if {$i > $size} { set expected "\\s*" } else { set expected "" }
+        for {set j 0} {$j < $size && $i + $j < [llength $items]} {incr j} {
+            set item "[lindex $items [expr {$i + $j}]]"
+            _escape_regexp_chars item
+            append expected $item
+            if {[llength $items] > 1} {append expected {\s+}}
+        }
+        if {[llength $items] == 1} {
+            if {$arg(end-prompt)} {set end $prompt} {set end ""}
+            # Both trailing space and newline are specified?
+            if {$arg(end-newline) && $arg(end-space)} {
+                # Indicate both trailing space or newline are ok
+                set expected2 "|^$expected $end$";  # Include space
+                append expected "\r\n$end";      # Include newline
+            } else {
+                if {$arg(end-newline)} {append expected "\r\n$end"}
+                if {$arg(end-space)}   {append expected " $end"}
+                set expected2 ""
+            }
+            expect {
+                -re "^$expected$$expected2" { set result true }
+                -re "^$prompt$" {set result false; break }
+                default { set result false; break }
+                timeout { set result false; break }
+            }
+        } else {
+            set end ""
+            if {$arg(end-prompt) && $i + $j == [llength $items]} {
+                set end "$prompt"
+                _escape_regexp_chars end
+                # \$ matches real end of expect_out buffer
+                set end "$end\$"
+            }
+            expect {
+                -re "^$expected$end" { set result true }
+                default { set result false; break }
+                timeout { set result false; break }
+            }
+        }
+    }
+    return $result
+}
+
+
+# Generate filename to save environment to.
+# @param string $file  File-basename to save environment to.  If the file has a
+#                      `.exp' suffix, it is removed.  E.g.:
+#                      - "file.exp" becomes "file.env1~"
+#                      - "" becomes "env.env1~"
+#                      - "filename" becomes "filename.env1~"
+#                      The file will be stored in the $TESTDIR/tmp directory.
+# @param integer $seq  Sequence number.  Must be either 1 or 2.
+proc gen_env_filename {{file ""} {seq 1}} {
+    if {[string length $file] == 0} {
+        set file "env"
+    } else {
+            # Remove possible directories
+        set file [file tail $file]
+            # Remove possible '.exp' suffix from filename
+        if {[string last ".exp" $file] == [string length $file] - [string length ".exp"]} {
+            set file [string range $file 0 [expr [string last ".exp" $file] - 1]]
+        }
+    }
+    return "\$TESTDIR/tmp/$file.env$seq~"
+}
+
+
+# Save the environment for later comparison
+# @param string $file  Filename to generate environment save file from.  See
+#                      `gen_env_filename()'.
+proc save_env {{file ""}} {
+    _save_env [gen_env_filename $file 1]
+}
+
+
+# Save the environment for later comparison
+# @param string  File to save the environment to.  Default is "$TESTDIR/tmp/env1~".
+# @see assert_env_unmodified()
+proc _save_env {{file ""}} {
+    assert_bash_exec "{ (set -o posix ; set); declare -F; shopt -p; set -o; } > \"$file\""
+}
+
+
+# Source bash_completion package
+# TODO REMOVE THIS PROCEDURE
+proc source_bash_completion {} {
+    assert_bash_exec {source $(cd "$SRCDIR/.."; pwd)/bash_completion}
+}
+
+
+# Split line into words, disregarding backslash escapes (e.g. \b (backspace),
+# \g (bell)), but taking backslashed spaces into account.
+# Aimed for simulating bash word splitting.
+# Example usage:
+#
+#     % set a {f cd\ \be}
+#     % split_words $a
+#     f {cd\ \be}
+#
+# @param string  Line to split
+# @return list  Words
+proc split_words_bash {line} {
+    set words {}
+    set glue false
+    foreach part [split $line] {
+        set glue_next false
+        # Does `part' end with a backslash (\)?
+        if {[string last "\\" $part] == [string length $part] - [string length "\\"]} {
+            # Remove end backslash
+            set part [string range $part 0 [expr [string length $part] - [string length "\\"] - 1]]
+            # Indicate glue on next run
+            set glue_next true
+        }
+        # Must `part' be appended to latest word (= glue)?
+        if {[llength $words] > 0 && [string is true $glue]} {
+            # Yes, join `part' to latest word;
+            set zz [lindex $words [expr [llength $words] - 1]]
+            # Separate glue with backslash-space (\ );
+            lset words [expr [llength $words] - 1] "$zz\\ $part"
+        } else {
+            # No, don't append word to latest word;
+            # Append `part' as separate word
+            lappend words $part
+        }
+        set glue $glue_next
+    }
+    return $words
+}
+
+
+# Given a list of items this proc finds a (part, full) pair so that when
+# completing from $part $full will be the only option.
+#
+# Arguments:
+#       list        The list of full completions.
+#       partName    Output parameter for the partial string.
+#       fullName    Output parameter for the full string, member of item.
+#
+# Results:
+#       1, or 0 if no suitable result was found.
+proc find_unique_completion_pair {{list} {partName} {fullName}} {
+    upvar $partName part
+    upvar $fullName full
+    set bestscore 0
+    # Uniquify the list, that's what completion does too.
+    set list [lsort -unique $list]
+    set n [llength $list]
+    for {set i 0} {$i < $n} {incr i} {
+        set cur [lindex $list $i]
+        set curlen [string length $cur]
+
+        set prev [lindex $list [expr {$i - 1}]]
+        set next [lindex $list [expr {$i + 1}]]
+        set diffprev [expr {$prev == ""}]
+        set diffnext [expr {$next == ""}]
+
+        # Analyse each item of the list and look for the minimum length of the
+        # partial prefix which is distinct from both $next and $prev. The list
+        # is sorted so the prefix will be unique in the entire list.
+        #
+        # In the worst case we analyse every character in the list 3 times.
+        # That's actually very fast, sorting could take more.
+        for {set j 0} {$j < $curlen} {incr j} {
+            set curchar [string index $cur $j]
+            if {!$diffprev && [string index $prev $j] != $curchar} {
+                set diffprev 1
+            }
+            if {!$diffnext && [string index $next $j] != $curchar} {
+                set diffnext 1
+            }
+            if {$diffnext && $diffprev} {
+                break
+            }
+        }
+
+        # At the end of the loop $j is the index of last character of
+        # the unique partial prefix. The length is one plus that.
+        set parlen [expr {$j + 1}]
+        if {$parlen >= $curlen} {
+            continue
+        }
+
+        # Try to find the most "readable pair"; look for a long pair where
+        # $part is about half of $full.
+        if {$parlen < $curlen / 2} {
+            set parlen [expr {$curlen / 2}]
+        }
+        set score [expr {$curlen - $parlen}]
+        if {$score > $bestscore} {
+            set bestscore $score
+            set part [string range $cur 0 [expr {$parlen - 1}]]
+            set full $cur
+        }
+    }
+    return [expr {$bestscore != 0}]
+}
+
+
+# Start bash running as test environment.
+proc start_bash {} {
+    global TESTDIR TOOL_EXECUTABLE spawn_id env srcdirabs
+    set TESTDIR [pwd]
+    set srcdirabs [file normalize $::srcdir];  # Absolute srcdir
+    # If `--tool_exec' option not specified, use "bash"
+    if {! [info exists TOOL_EXECUTABLE]} {set TOOL_EXECUTABLE bash}
+    set env(SRCDIR) $::srcdir
+    set env(SRCDIRABS) $::srcdirabs
+
+    # PS1, INPUTRC, TERM and stty columns must be initialized
+    # *before* starting bash to take proper effect.
+
+    # Set fixed prompt `/@'
+    set env(PS1) "/@"
+    # Configure readline
+    set env(INPUTRC) "$::srcdir/config/inputrc"
+    # Avoid escape junk at beginning of line from readline,
+    # see e.g.  http://bugs.gentoo.org/246091
+    set env(TERM) "dumb"
+    # Ensure enough columns so expect doesn't have to care about line breaks
+    set stty_init "columns 150"
+
+    exp_spawn $TOOL_EXECUTABLE --norc
+    assert_bash_exec {} "$TOOL_EXECUTABLE --norc"
+    assert_bash_exec "source $::srcdir/config/bashrc"
+}
+
+
+# Redirect xtrace output to a file.
+#
+# 'set -x' can be very useful for debugging but by default it writes to
+# stderr.
+#
+# This function uses file descriptor 6. This will break if any completion
+# tries to use the same descriptor.
+proc init_bash_xtrace {{fname xtrace.log}} {
+    verbose "Enabling bash xtrace output to '$fname'"
+    assert_bash_exec "exec 6>'$fname'"
+    assert_bash_exec "BASH_XTRACEFD=6"
+    assert_bash_exec "set -o xtrace"
+}
+
+
+# Setup test environment
+#
+# Common initialization for unit and completion tests.
+proc start_interactive_test {} {
+    start_bash
+    #source_bash_completion
+    init_tcl_bash_globals
+
+    global OPT_BASH_XTRACE
+    if {[info exists OPT_BASH_XTRACE]} {
+        init_bash_xtrace
+    }
+    global OPT_BUFFER_SIZE
+    if {![info exists OPT_BUFFER_SIZE]} {
+        set OPT_BUFFER_SIZE 20000
+    }
+    verbose "Changing default expect match buffer size to $OPT_BUFFER_SIZE"
+    match_max $OPT_BUFFER_SIZE
+    global OPT_TIMEOUT
+    if {[info exists OPT_TIMEOUT]} {
+        global timeout
+        verbose "Changing default expect timeout from $timeout to $OPT_TIMEOUT"
+        set timeout $OPT_TIMEOUT
+    }
+}
+
+
+# Interrupt completion and sync with prompt.
+# Send signals QUIT & INT.
+# @param string $prompt  (optional) Bash prompt.  Default is "/@"
+proc sync_after_int {{prompt /@}} {
+#    verbose "Entered sync_after_int..."
+    set test "Sync after INT"
+    sleep .1
+#    send \031\003;  # QUIT/INT # OLD: this seemed to cause the issue mentioned in the below link where the first char of the next command is stripped off...
+    send \x03;  # ^C (SIGINT)
+    # Wait to allow bash to become ready
+    # See also: http://lists.alioth.debian.org/pipermail/bash-completion-devel/
+    #           2010-February/002566.html
+    sleep .1
+    # NOTE: Regexp `.*' causes `expect' to discard previous unknown output.
+    #       This is necessary if a completion doesn't match expectations.
+    #       For instance with `filetype_xspec' completion (e.g. `kdvi') if
+    #       one expects `.txt' as a completion (wrong, because it isn't
+    #       there), the unmatched completions need to be cleaned up.
+    expect -re ".*\\^C.*$prompt$"
+#    verbose "Returning from sync_after_int"
+}
+
+
+proc sync_after_tab {} {
+        # NOTE: Wait in case completion returns nothing - because `units' isn't
+        #       installed, so that "^$cdm.*$" doesn't match too early - before
+        #       comp_install has finished
+    sleep .4
+}
+
+
+# Return current working directory with `TESTDIR' stripped
+# @return string  Working directory.  E.g. /, or /fixtures/
+proc wd {} {
+    global TESTDIR
+        # Remove `$TESTDIR' prefix from current working directory
+    set wd [string replace [pwd] 0 [expr [string length $TESTDIR] - 1]]/
+}

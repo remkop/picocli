@@ -1,0 +1,47 @@
+= Testing Completion with Expect and DejaGNU
+
+The files in this directory allow testing bash TAB completion.
+The tests use the https://www.gnu.org/software/dejagnu/[DejaGNU] framework,
+which is written in https://www.nist.gov/services-resources/software/expect[Expect].
+Expect in turn uses http://tcl.sourceforge.net/[Tcl] -- Tool command language.
+
+The tests work by starting a bash session with a predictable configuration,
+then sourcing some of the completion scripts in `src/test/resources`,
+and sending strings to the shell that trigger the shell to print completion candidates.
+The testing framework then asserts that these completion candidates are the expected ones.
+
+== Setup
+First, install DejaGNU:
+
+[source,bash]
+----
+sudo apt-get install dejagnu
+----
+
+That will install the following packages:
+dejagnu expect libtcl8.6 tcl-expect tcl8.6.
+
+To get the `cmdline` and `textutil` packages used in `dejagnu.tests/lib/library.exp`, get `tcllib`:
+
+[source,bash]
+----
+sudo apt-get install tcllib
+----
+
+== Running the Tests
+
+I have not yet investigated how to automate this.
+For now, just `cd` into the `dejagnu.tests` directory and run the `./runCompletions` script:
+
+[source,bash]
+----
+cd src/tests/dejagnu.tests
+./runCompletion -v # -v gives verbose output into the log directory
+----
+
+== TODO
+
+* Ensure these tests are run automatically as part of the Gradle build
+* Log files should be created in the `build` directory, not in `src/tests/dejagnu.tests/log`
+* Figure out how the tests can be started from any directory
+

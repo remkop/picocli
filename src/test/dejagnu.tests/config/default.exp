@@ -1,0 +1,24 @@
+# Set default expect fallback routines
+expect_after {
+    eof {
+        if {[info exists test]} {
+            fail "$test at eof"
+        } elseif {[info level] > 0} {
+            fail "[info level 1] at eof"
+        } else {
+            fail "eof"
+        }
+    }
+    timeout {
+        if {[info exists test]} {
+            fail "$test at timeout"
+        } elseif {[info level] > 0} {
+            fail "[info level 1] at timeout"
+        } else {
+            fail "timeout"
+        }
+    }
+}
+
+verbose "config/default.exp just got loaded..."
+

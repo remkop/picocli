@@ -1,0 +1,18 @@
+# Readline init file for DejaGnu testsuite
+# See: info readline
+
+	# Press TAB once (instead of twice) to auto-complete
+set show-all-if-ambiguous on
+	# No bell.  No ^G in output
+set bell-style none
+	# Don't query user about viewing the number of possible completions
+set completion-query-items -1
+	# Display completions sorted horizontally, not vertically
+set print-completions-horizontally on
+	# Don't use pager when showing completions
+set page-completions off
+
+# Local variables:
+# mode: shell-script
+# End:
+# ex: filetype=sh

@@ -1,0 +1,7 @@
+# Unsure why this file is necessary; without it we get this warning:
+#   WARNING: Couldn't find tool config file for unix, using default.
+#   Loading /usr/share/dejagnu/config/default.exp
+proc completion_exit {} {}
+proc completion_version {} {}
+
+verbose "config/unix.exp just got loaded..."

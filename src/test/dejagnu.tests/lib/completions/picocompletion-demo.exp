@@ -1,0 +1,55 @@
+proc setup {} {
+    save_env
+}
+
+proc teardown {} {
+    assert_env_unmodified {/OLDPWD=/d}
+}
+
+setup
+
+
+    # Try completion without args
+set cmd "picocompletion-demo "
+set test "Tab should complete '${cmd}'"
+verbose "Sending ${cmd}\t..."
+send "${cmd}\t"
+
+expect "${cmd}\r\n"
+expect {
+    -re "sub1\\s*sub2\r\n/@${cmd}sub" { pass "$test: we got sub1 and sub2" }
+    -re /@ { unresolved "$test at prompt" }
+    default { unresolved "$test" }
+}
+sync_after_int
+
+    # Try completion for sub1 without options
+set cmd " picocompletion-demo sub1 "
+set test "Tab should not show completions for '${cmd}'"
+verbose "Sending ${cmd}\t..."
+send "${cmd}\t"
+
+set timeout 1
+expect "${cmd}\r\n"
+expect {
+    -re "${cmd}\t\[^\\s]*" { fail "$test: we got $expect_out(0,string)" }
+    default { pass "$test" }
+}
+sync_after_int
+
+    # Try completion for sub1
+set cmd " picocompletion-demo sub1 -"
+set test "Tab should complete '${cmd}'"
+verbose "Sending ${cmd}\t..."
+send "${cmd}\t"
+
+set timeout 10
+expect "${cmd}\r\n"
+expect {
+    -re "--candidates\\s*--num\\s*--str\r\n/@${cmd}-" { pass "$test: we got options for sub1" }
+    -re /@ { unresolved "$test at prompt" }
+    default { unresolved "$test" }
+}
+sync_after_int
+
+teardown

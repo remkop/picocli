@@ -1,0 +1,54 @@
+# bashrc file for bash-completion test suite
+
+# Note that we do some initialization that would be too late to do here in
+# library.exp's start_bash() and conftest.py.
+
+# Use emacs key bindings
+set -o emacs
+
+# Use bash strict mode
+#set -o posix
+
+# Unset `command_not_found_handle' as defined on Debian/Ubuntu, because this
+# troubles and slows down testing
+unset -f command_not_found_handle
+
+export TESTDIR=$(pwd)
+mkdir -p $TESTDIR/tmp
+
+export PS2='> '
+
+# Also test completions of system administrator commands, which are
+# installed via the same PATH expansion in `bash_completion.have()'
+export PATH=$PATH:/sbin:/usr/sbin:/usr/local/sbin
+
+# ...as well as games on some systems not in PATH by default:
+export PATH=$PATH:/usr/games:/usr/local/games
+
+# For clean test state, avoid sourcing user's ~/.bash_completion
+export BASH_COMPLETION_USER_FILE=/dev/null
+
+# ...and avoid stuff in BASH_COMPLETION_USER_DIR and system install locations
+# overriding in-tree completions. Setting the user dir would otherwise suffice,
+# but simple xspec completions are only installed if a separate one is not
+# found in any completion dirs. Therefore we also point the "system" dirs to
+# locations that should not yield valid completions and helpers paths either.
+export BASH_COMPLETION_USER_DIR=$(cd "$SRCDIR/.."; pwd)
+# /var/empty isn't necessarily actually always empty :P
+export BASH_COMPLETION_COMPAT_DIR=/var/empty/bash_completion.d
+export XDG_DATA_DIRS=/var/empty
+
+# Make sure default settings are in effect
+unset -v \
+    COMP_CONFIGURE_HINTS \
+    COMP_CVS_REMOTE \
+    COMP_KNOWN_HOSTS_WITH_HOSTFILE \
+    COMP_TAR_INTERNAL_PATHS
+
+# Load bash testsuite helper functions
+. $SRCDIR/lib/library.sh
+
+# Local variables:
+# mode: shell-script
+# End:
+# ex: filetype=sh

@@ -1,0 +1,26 @@
+source $::srcdir/lib/library.exp
+
+
+proc completion_exit {} {
+    send "\rexit\r"
+}
+
+
+proc completion_init {test_file_name} {
+    verbose "Entered completion_init..."
+    # Call completion_start() only once
+    if {! [info exists ::BASH_VERSINFO]} {
+        verbose "Calling completion_start..."
+        completion_start
+    }
+}
+
+
+proc completion_start {} {
+    start_interactive_test
+}
+
+
+proc completion_version {} {
+    puts "$::TESTDIR, bash-$::BASH_VERSION"
+}

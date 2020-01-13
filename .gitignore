@@ -13,3 +13,11 @@ picocli.iml
 /picocli-shell-jline2/out/
 /picocli-shell-jline3/out/
 /picocli-spring-boot-starter/out/
+/src/test/dejagnu.tests/xtrace.log
+/src/test/dejagnu.tests/log/completion.sum
+/src/test/dejagnu.tests/log/completion.log
+/src/test/dejagnu.tests/completion.log
+/src/test/dejagnu.tests/completion.sum
+/src/test/dejagnu.tests/testrun.log
+/src/test/dejagnu.tests/testrun.sum
+/src/test/dejagnu.tests/tmp/

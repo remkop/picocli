@@ -1,0 +1,25 @@
+# By calling the ./runCompletion script (or runtest --tool=completion),
+# we ensure the tests are driven by the dejagnu framework:
+#
+# Before this script is invoked:
+# * proc completion_init in dejagnu.tests/lib/completion.exp is called;
+# * the first time completion_init is called, completion_start is called;
+# * this in turn starts a bash session and initializes it to give predictable behaviour:
+#   (see dejagnu.tests/config/bashrc and dejagnu.tests/config/inputrc for details)
+#
+# Next, this script is called:
+# 1. source the completion script
+# 2. call proc assert_source_completions in dejagnu.tests/lib/library.exp (line 420)
+#    This verifies that _some_ completion for the specified command is defined, and then
+# 3. executes the dejagnu.tests/lib/completions/$cmd.exp script.
+#    This lib/completions/$cmd.exp script is where the completions are verified.
+
+set test "TAB completion"
+set script "$srcdir/../resources/picocompletion-demo_completion.bash"
+#set script "/mnt/c/Users/remko/IdeaProjects/picocli3/src/test/resources/picocompletion-demo_completion.bash"
+
+verbose "sending 'source $script\r' to the shell..."
+send "source $script\r"
+
+set cmd "picocompletion-demo"
+assert_source_completions "$cmd"
