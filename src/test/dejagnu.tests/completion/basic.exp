@@ -18,7 +18,8 @@ set script "$srcdir/../resources/basic.bash"
 #set script "/mnt/c/Users/remko/IdeaProjects/picocli3/src/test/resources/basic.bash"
 
 verbose "sending 'source $script\r' to the shell..."
-send "source $script\r"
+#send "source $script\r"
+send "source <(cat $script | sed s/%2\\\$s/NANOSECONDS\\ MICROSECONDS\\ MILLISECONDS\\ SECONDS\\ MINUTES\\ HOURS\\ DAYS/g)\r"
 
 set cmd "basicExample"
 assert_source_completions "$cmd"

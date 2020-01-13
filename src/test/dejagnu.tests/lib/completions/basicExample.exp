@@ -6,33 +6,42 @@ proc teardown {} {
     assert_env_unmodified {/OLDPWD=/d}
 }
 
+proc run_completion_test {cmd test candidates} {
+    verbose "Sending ${cmd}\t..."
+    send "${cmd}\t"
+
+    expect "${cmd}\r\n"
+    expect {
+        -re $candidates { pass "$test" }
+        -re /@ { unresolved "$test at prompt" }
+        default { unresolved "$test" }
+    }
+    sync_after_int
+}
+
 setup
 
 
     # Try completion with one hyphen
 set cmd "basicExample -"
-set test "Tab should complete '$cmd'"
-verbose "Sending $cmd\t..."
-send "$cmd\t"
-#exp_internal 1 # tell Expect to print diagnostics on its internal operations
-expect {
-    -re "--timeUnit\\s*--timeout\\s*-t\\s*-u\r\n/@$cmd" { pass "'$cmd' COMPLETED OK"}
-    -re /@ { unresolved "$test at prompt" }
-    default { unresolved "$test" }
-}
-sync_after_int
+set test "Tab should show options for '$cmd'"
+set candidates "--timeUnit\\s*--timeout\\s*-t\\s*-u\r\n/@$cmd"
+run_completion_test $cmd $test $candidates
+
 
     # Try completion with two hyphens
 set cmd "basicExample --"
-set test "Tab should complete '$cmd'"
-verbose "Sending ${cmd}\t..."
-send "$cmd\t"
-expect {
-    -re "--timeUnit\\s*--timeout\r\n/@${cmd}time" { pass "'$cmd' COMPLETED OK"}
-    -re /@ { unresolved "$test at prompt" }
-    default { unresolved "$test" }
-}
-sync_after_int
+set test "Tab should show options for '$cmd' and add shared prefix 'time' after command"
+set candidates "--timeUnit\\s*--timeout\r\n/@${cmd}time"
+run_completion_test $cmd $test $candidates
+
+
+#exp_internal 1 # tell Expect to print diagnostics on its internal operations
+    # Try completion with --timeUnit
+set cmd "basicExample --timeUnit "
+set test "Tab should show time unit enum values for '$cmd'"
+set candidates "DAYS\\s*HOURS\\s*MICROSECONDS\\s*MILLISECONDS\\s*MINUTES\\s*NANOSECONDS\\s*SECONDS\r\n/@${cmd}"
+run_completion_test $cmd $test $candidates
 
 
 teardown
