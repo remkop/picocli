@@ -1,0 +1,96 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.61'
+    id 'application'
+    id "com.palantir.graal" version "0.6.0-61-g0ca328e"
+}
+
+def mainCommandClass = "picocli.examples.kotlin.Checksum"
+group 'picocli.examples.kotlin'
+version '1.0-SNAPSHOT'
+
+//com.palantir.graal supports only jdk 1.8 so far
+sourceCompatibility = 1.8
+
+application{
+    mainClassName = mainCommandClass
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+run{
+    standardInput = System.in
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar{
+    manifest {
+        attributes "Main-Class": mainCommandClass
+    }
+}
+
+task uberJar(type: Jar) {
+    manifest {
+        attributes "Main-Class": mainCommandClass
+    }
+    archiveClassifier = 'uberJar'
+    from sourceSets.main.output
+    dependsOn configurations.runtimeClasspath
+    from {
+        configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    testCompile 'org.jetbrains.kotlin:kotlin-test-junit5:1.3.61'
+
+    testImplementation "org.junit.jupiter:junit-jupiter:5.4.2"
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.4.2")
+}
+
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "$sourceCompatibility"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "$sourceCompatibility"
+}
+
+graal {
+    //see https://github.com/palantir/gradle-graal
+    mainClass mainCommandClass
+    outputName 'checksum'
+    //    option "--no-fallback"
+}
+
+
+configurations {
+    generateConfig
+}
+dependencies {
+    compile 'info.picocli:picocli:4.1.4'
+    generateConfig 'info.picocli:picocli-codegen:4.1.4'
+}
+
+task(generateGraalReflectionConfig, dependsOn: 'classes', type: JavaExec) {
+    main = 'picocli.codegen.aot.graalvm.ReflectionConfigGenerator'
+    classpath = configurations.generateConfig + sourceSets.main.runtimeClasspath
+    def outputFile = "${buildDir}/resources/main/META-INF/native-image/${project.group}/${project.name}/reflect-config.json"
+    args = ["--output=$outputFile", mainCommandClass]
+}
+tasks.nativeImage.dependsOn(generateGraalReflectionConfig)
+
+task(generateGraalDynamicProxyConfig, dependsOn: 'classes', type: JavaExec) {
+    main = 'picocli.codegen.aot.graalvm.DynamicProxyConfigGenerator'
+    classpath = configurations.generateConfig + sourceSets.main.runtimeClasspath
+    def outputFile = "${buildDir}/resources/main/META-INF/native-image/${project.group}/${project.name}/proxy-config.json"
+    args = ["--output=$outputFile", mainCommandClass]
+}
+tasks.nativeImage.dependsOn(generateGraalDynamicProxyConfig)
