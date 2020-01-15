@@ -48,6 +48,11 @@ unset -v \
 # Load bash testsuite helper functions
 . $SRCDIR/lib/library.sh
 
+__a__=$(cat /etc/hosts | grep -v ^# |sed s/\ /\\n/g |sed s/\\t/\\n/g |sort -u|grep -v -E '([0-9]{1,3}[\.]){3}[0-9]{1,3}')
+export __MY_HOSTS__=$(echo $__a__ |sed s/\ /\\\\\\\\s*/g)
+export __MY_HOSTS__=$(echo $__a__ |sed s/\ /*/g)
+unset __a__
+
 # Local variables:
 # mode: shell-script
 # End:

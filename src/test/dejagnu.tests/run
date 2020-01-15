@@ -34,6 +34,7 @@ set_tool() {
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
+log_dir="log"
 
 # Loop over the arguments.
 args=()
@@ -42,6 +43,8 @@ while [[ $# > 0 ]]; do
         --help|--usage) usage; exit 1;;
         --buffer-size) shift; buffer_size=$1;;
         --buffer-size=*) buffer_size=${1/--buffer-size=};;
+        --log-dir) shift; log_dir=$1;;
+        --log-dir=*) log_dir=${1/--log-dir=};;
         --debug-xtrace) args+=(OPT_BASH_XTRACE=1);;
         --timeout) shift; timeout=$1;;
         --timeout=*) timeout=${1/--timeout=};;
@@ -61,7 +64,8 @@ done
 [[ -n $timeout ]] && args+=("OPT_TIMEOUT=$timeout")
 [[ -z $tool ]] && { echo "Must specify tool somehow"; exit 1; }
 
-runtest --outdir log --tool $tool "${args[@]}"
+mkdir -p "$log_dir"
+runtest --outdir "$log_dir" --tool "$tool" "${args[@]}"
 rc=$?
-[[ $rc -ne 0 && -n "$CI" ]] && cat log/$tool.log
+[[ $rc -ne 0 && -n "$CI" ]] && cat "$log_dir/$tool.log"
 exit $rc

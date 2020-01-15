@@ -20,6 +20,19 @@ proc run_completion_test {cmd test candidates} {
     sync_after_int
 }
 
+proc run_completion_test_glob {cmd test candidates} {
+    verbose "Sending ${cmd}\t..."
+    send "${cmd}\t"
+
+    expect "${cmd}\r\n"
+    expect {
+        -gl $candidates { pass "$test" }
+        -re /@ { unresolved "$test at prompt" }
+        default { unresolved "$test" }
+    }
+    sync_after_int
+}
+
 setup
 
 
@@ -66,7 +79,7 @@ run_completion_test $cmd $test $candidates
     # Try completion for sub2 -
 set cmd "picocompletion-demo sub2 -"
 set test "Tab should show options for '${cmd}'"
-set candidates "--directory\\s*--num2\\s*-d\r\n/@${cmd}"
+set candidates "--directory\\s*--num2\\s*-d\r\n/@${cmd}|-d\\s*--directory\\s*--num2\r\n/@${cmd}"
 run_completion_test $cmd $test $candidates
 
     # Try completion for sub2 Aaa
@@ -84,7 +97,7 @@ run_completion_test $cmd $test $candidates
     # Try completion for sub2 Aaa subsub1 -
 set cmd "picocompletion-demo sub2 Aaa subsub1 -"
 set test "Tab should show options for '${cmd}'"
-set candidates "--host\\s*-h\r\n/@${cmd}"
+set candidates "--host\\s*-h\r\n/@${cmd}|-h\\s*--host\r\n/@${cmd}"
 run_completion_test $cmd $test $candidates
 
     # Try completion for sub2 Aaa subsub2
@@ -93,11 +106,13 @@ set test "Tab should show enum values for positional0'${cmd}'"
 set candidates "aaa\\s*bbb\\s*ccc\r\n/@${cmd}"
 run_completion_test $cmd $test $candidates
 
+#exp_internal 1 # tell Expect to print diagnostics on its internal operations
     # Try completion for sub2 Aaa subsub2 -
 set cmd "picocompletion-demo sub2 Aaa subsub2 -"
 set test "Tab should show options for '${cmd}'"
-set candidates "--timeUnit\\s*--timeout\\s*-t\\s*-u\r\n/@${cmd}"
+set candidates "--timeUnit\\s*--timeout\\s*-t\\s*-u\r\n/@${cmd}|-t\\s*--timeout\\s*--timeUnit\\s*-u\r\n/@${cmd}"
 run_completion_test $cmd $test $candidates
+#exp_internal 0
 
 #exp_internal 1 # tell Expect to print diagnostics on its internal operations
     # Try completion for sub2 Aaa subsub2 --timeUnit
@@ -116,21 +131,25 @@ run_completion_test $cmd $test $candidates
     # Try completion for sub2 Aaa subsub3 aaa
 set cmd "picocompletion-demo sub2 Aaa subsub3 aaa "
 set test "Tab should show directories for positional1'${cmd}'"
-set candidates "README.adoc\\s*completion/\\s*config/\\s*lib/.*run\\s*runCompletion.*\r\n/@${cmd}"
+set candidates "README.adoc\\s*completion/\\s*config/\\s*lib/.*run\\s*runCompletion.*\r\n/@${cmd}|completion/\\s*config/\\s*lib/.*README.adoc.*run\\s*runCompletion.*\r\n/@${cmd}"
 run_completion_test $cmd $test $candidates
 
     # Try completion for sub2 Aaa subsub3 aaa xxx
 set cmd "picocompletion-demo sub2 Aaa subsub3 aaa xxx "
 set test "Tab should show directories for positional2'${cmd}'"
-set candidates "README.adoc\\s*completion/\\s*config/\\s*lib/.*run\\s*runCompletion.*\r\n/@${cmd}"
+set candidates "README.adoc\\s*completion/\\s*config/\\s*lib/.*run\\s*runCompletion.*\r\n/@${cmd}|completion/\\s*config/\\s*lib/.*README.adoc.*run\\s*runCompletion.*\r\n/@${cmd}"
 run_completion_test $cmd $test $candidates
 
 #exp_internal 1 # tell Expect to print diagnostics on its internal operations
-    # Try completion for sub2 Aaa subsub3 aaa xxx yyy # TODO make more robust with fixtures in setup
+    # Try completion for sub2 Aaa subsub3 aaa xxx yyy
+# The environment variable __MY_HOSTS__ is initialized in src/test/dejagnu.tests/config/bashrc
+assert_bash_exec {printf "%s" "$__MY_HOSTS__"} {} /@ myhosts
+verbose myhosts=$myhosts
+
 set cmd "picocompletion-demo sub2 Aaa subsub3 aaa xxx yyy "
 set test "Tab should show hosts for positional3'${cmd}'"
-set candidates "::1.*localhost\r\n/@${cmd}"
-run_completion_test $cmd $test $candidates
+set candidates "${myhosts}\r\n/@${cmd}"
+run_completion_test_glob $cmd $test $candidates
 
 
 teardown

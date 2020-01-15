@@ -25,14 +25,14 @@ setup
     # Try completion with one hyphen
 set cmd "basicExample -"
 set test "Tab should show options for '$cmd'"
-set candidates "--timeUnit\\s*--timeout\\s*-t\\s*-u\r\n/@$cmd"
+set candidates "--timeUnit\\s*--timeout\\s*-t\\s*-u\r\n/@$cmd|-t\\s*--timeout\\s*--timeUnit\\s*-u\r\n/@$cmd"
 run_completion_test $cmd $test $candidates
 
 
     # Try completion with two hyphens
 set cmd "basicExample --"
 set test "Tab should show options for '$cmd' and add shared prefix 'time' after command"
-set candidates "--timeUnit\\s*--timeout\r\n/@${cmd}time"
+set candidates "--timeUnit\\s*--timeout\r\n/@${cmd}time|--timeout\\s*--timeUnit\r\n/@${cmd}time"
 run_completion_test $cmd $test $candidates
 
 
