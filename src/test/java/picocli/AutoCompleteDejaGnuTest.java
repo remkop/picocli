@@ -21,11 +21,11 @@ import static org.junit.Assert.assertTrue;
  * </p>
  * <ul>
  *     <li>dejagnu</li>
+ *     <li>tcllib</li>
  *     <li>expect</li>
  *     <li>libtcl8.6</li>
  *     <li>tcl-expect</li>
  *     <li>tcl8.6</li>
- *     <li>tcllib</li>
  * </ul>
  * <p>
  * This test will only run on unix-based systems where the above packages are installed.
@@ -40,7 +40,24 @@ import static org.junit.Assert.assertTrue;
  * the *.exp scripts in that directory source the completion scripts, and then delegate to
  * an accompanying *.exp script in the {@code dejagnu.tests/lib/completions} directory
  * where the various completion scenarios are verified.
+ * </p><p>
+ * You can run the DejaGnu completion tests manually as follows:
  * </p>
+ * <pre>
+ * cd src/test/dejagnu.tests
+ * ./runCompletion
+ * </pre>
+ * <p>
+ * To get more verbose output, add the {@code -v} option. Adding this option multiple times
+ * increases the verbosity.
+ * Log files by default are written to a directory named {@code log} in the current directory.
+ * This can be changed with the {@code --log-dir} option. For example:
+ * </p>
+ * <pre>
+ * # create completion.log and completion.sum log files in the build/dejagnu-logs directory
+ * cd src/test/dejagnu.tests
+ * ./runCompletion -v --log-dir ../../../build/dejagnu-logs
+ * </pre>
  */
 public class AutoCompleteDejaGnuTest {
 
