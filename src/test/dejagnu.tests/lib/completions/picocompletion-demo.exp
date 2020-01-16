@@ -8,27 +8,29 @@ proc teardown {} {
 }
 
 proc run_completion_test {cmd test candidates} {
+    send_log "\nTESTING: $test\n";
     verbose "Sending ${cmd}\t..."
     send "${cmd}\t"
 
     expect "${cmd}\r\n"
     expect {
-        -re $candidates { pass "$test" }
-        -re /@ { unresolved "$test at prompt" }
-        default { unresolved "$test" }
+        -re $candidates { send_log "\n"; pass "$test" }
+        -re /@ { send_log "\n"; unresolved "$test at prompt" }
+        default { send_log "\n"; unresolved "$test" }
     }
     sync_after_int
 }
 
 proc run_completion_test_glob {cmd test candidates} {
+    send_log "\nTESTING: $test\n";
     verbose "Sending ${cmd}\t..."
     send "${cmd}\t"
 
     expect "${cmd}\r\n"
     expect {
-        -gl $candidates { pass "$test" }
-        -re /@ { unresolved "$test at prompt" }
-        default { unresolved "$test" }
+        -gl $candidates { send_log "\n"; pass "$test" }
+        -re /@ { send_log "\n"; unresolved "$test at prompt" }
+        default { send_log "\n"; unresolved "$test" }
     }
     sync_after_int
 }
