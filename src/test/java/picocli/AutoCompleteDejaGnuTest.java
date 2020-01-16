@@ -11,17 +11,54 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * This JUnit test kicks off the autocompletion tests written in Tcl and Except
+ * using the DejaGnu test framework, and passes if these tests all pass
+ * (evidenced by the last line of output from the DejaGnu tests
+ * to start with "# of expected passes").
+ * <p>
+ * In order for this test to run, the following packages must be installed:
+ * </p>
+ * <ul>
+ *     <li>dejagnu</li>
+ *     <li>expect</li>
+ *     <li>libtcl8.6</li>
+ *     <li>tcl-expect</li>
+ *     <li>tcl8.6</li>
+ *     <li>tcllib</li>
+ * </ul>
+ * <p>
+ * This test will only run on unix-based systems where the above packages are installed.
+ * (For example, the tests will run on WSL - Windows Subsystem for Linux - if the above
+ * packages are installed.)
+ * If dejagnu is not installed, this test is ignored.
+ * </p><p>
+ * The starting point of the completion tests is the {@code dejagnu.tests/runCompletion} script.
+ * This is a wrapper script that starts the dejagnu {@code runtest} with option {@code --tool completion}.
+ * </p><p>
+ * The dejagnu tests themselves live in {@code dejagnu.tests/completion};
+ * the *.exp scripts in that directory source the completion scripts, and then delegate to
+ * an accompanying *.exp script in the {@code dejagnu.tests/lib/completions} directory
+ * where the various completion scenarios are verified.
+ * </p>
+ */
 public class AutoCompleteDejaGnuTest {
 
     @Test
     public void tryRunDejaGnuCompletionTests() throws Exception {
         //System.out.println(System.getProperty("user.dir"));
-        if (isDejaGnuInstalled()) {
-            runDejaGnuCompletionTests();
-        }
+
+        // ignores test if dejagnu not installed
+        org.junit.Assume.assumeTrue("dejagnu must be installed to run this test", isDejaGnuInstalled());
+        runDejaGnuCompletionTests();
     }
 
     private void runDejaGnuCompletionTests() throws Exception {
+        final File testDir = new File("src/test/dejagnu.tests");
+        assertTrue(testDir.getAbsolutePath() + " should exist", testDir.exists());
+        File runCompletionScript = new File(testDir, "runCompletion");
+        assertTrue(runCompletionScript.getAbsolutePath() + " should exist", runCompletionScript.exists());
+
         final int TIMEOUT_RUNTEST_COMPLETION = 15; // how many seconds to wait for the `./runCompletion` process to complete
         final AtomicInteger runtestExitStatus = new AtomicInteger(Integer.MIN_VALUE);
         final AtomicReference<Process> process = new AtomicReference<Process>();
@@ -32,9 +69,6 @@ public class AutoCompleteDejaGnuTest {
         Thread thread = new Thread(new Runnable() {
             public void run() {
                 try {
-                    File testDir = new File("src/test/dejagnu.tests");
-                    assertTrue(testDir.getAbsolutePath() + " should exist", testDir.exists());
-
                     ProcessBuilder pb = new ProcessBuilder("./runCompletion");
                     pb.directory(testDir);
                     process.set(pb.start());
