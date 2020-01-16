@@ -19,21 +19,21 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.2.0-fixes"></a> Fixed issues
-[#468][#505][#852] Auto-completion: added support for positional parameter completion. Thanks to [Serhii Avsheniuk](https://github.com/avshenuk) for the pull request.
-[#644][#671] Auto-completion: fix [shellcheck](https://github.com/koalaman/shellcheck) warnings in generated autocompletion scripts. Thanks to [Dylan Cali](https://github.com/calid) for raising this, and thanks to [AlcaYezz](https://github.com/AlcaYezz) for the pull request.
-[#396] Auto-completion: completion scripts no longer use associative arrays, and should now work on OSX.
-[#919] DOC: Added example Gradle project with Kotlin and Graal Native Image. Thanks to [OndrejMalek](https://github.com/OndrejMalek) for the pull request.
-[#918] DOC: Added more Scala examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-[#916] DOC: Added Scala examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-[#914] DOC: Added Java and Kotlin examples for using `ResourceBundle` to internationalize and localize your CLI app. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-[#915] DOC: Ensure Kotlin examples compile correctly. Thanks to [Andreas Deininger](https://github.com/deining) for the suggestion.
-[#913] DOC: Added more Java and Kotlin examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-[#912] DOC: Fixed broken links in javadoc. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-[#911] DOC: Fixed syntax error in javadoc. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-[#909] DOC: User manual: minor fixes. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-[#908] DOC: Fix typo in user manual: Add missing closing curly bracket. Thanks to [Piotrek Żygieło](https://github.com/pzygielo) for the pull request.
-[#907] DOC: Updated and added Kotlin examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-[#910] Dependency Upgrade: Bump Spring Boot dependency to 2.2.2 to allow it to work under Java 13. Thanks to [Stéphane Vanacker](https://github.com/svanacker) for raising this.
+* [#468][#505][#852] Auto-completion: added support for positional parameter completion. Thanks to [Serhii Avsheniuk](https://github.com/avshenuk) for the pull request.
+* [#644][#671] Auto-completion: fix [shellcheck](https://github.com/koalaman/shellcheck) warnings in generated autocompletion scripts. Thanks to [Dylan Cali](https://github.com/calid) for raising this, and thanks to [AlcaYezz](https://github.com/AlcaYezz) for the pull request.
+* [#396] Auto-completion: completion scripts no longer use associative arrays, and should now work on OSX.
+* [#919] DOC: Added example Gradle project with Kotlin and Graal Native Image. Thanks to [OndrejMalek](https://github.com/OndrejMalek) for the pull request.
+* [#918] DOC: Added more Scala examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#916] DOC: Added Scala examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#914] DOC: Added Java and Kotlin examples for using `ResourceBundle` to internationalize and localize your CLI app. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#915] DOC: Ensure Kotlin examples compile correctly. Thanks to [Andreas Deininger](https://github.com/deining) for the suggestion.
+* [#913] DOC: Added more Java and Kotlin examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#912] DOC: Fixed broken links in javadoc. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#911] DOC: Fixed syntax error in javadoc. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#909] DOC: User manual: minor fixes. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#908] DOC: Fix typo in user manual: Add missing closing curly bracket. Thanks to [Piotrek Żygieło](https://github.com/pzygielo) for the pull request.
+* [#907] DOC: Updated and added Kotlin examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#910] Dependency Upgrade: Bump Spring Boot dependency to 2.2.2 to allow it to work under Java 13. Thanks to [Stéphane Vanacker](https://github.com/svanacker) for raising this.
 
 ## <a name="4.2.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
@@ -98,7 +98,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.1.3-fixes"></a> Fixed issues
-[#901] Bugfix: `picocli-codegen` generated invalid reflect-config.json for inner classes.
+* [#901] Bugfix: `picocli-codegen` generated invalid reflect-config.json for inner classes.
 
 ## <a name="4.1.3-deprecated"></a> Deprecations
 No features were deprecated in this release.
@@ -149,14 +149,14 @@ Also, "hidden" subcommands and options are no longer shown as suggestions in unm
 
 
 ## <a name="4.1.2-fixes"></a> Fixed issues
-[#888] (API) Added new `PicocliCommands` class to `picocli-shell-jline3` module; bumped `JLine` to 3.13.2. Thanks to [mattirn](https://github.com/mattirn) for the pull request.
-[#884] (Bugfix) Built-in `picocli.AutoComplete.GenerateCompletion` (`generate-completion`) subcommand now omits validation of mandatory options in the parent command. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
-[#887] (Bugfix) "Hidden" subcommands and options are no longer shown as suggestions in unmatched argument usage help or autocompletion scripts. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
-[#871] (Bugfix) All options in an exclusive group are now automatically considered `required`, to prevent unexpected results when mixing required and non-required options in exclusive ArgGroups. Thanks to [W Scott Johnson](https://github.com/wjohnson5) for raising this.
-[#883] (DOC) Update of Quick Guide. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-[#889][#885] (DOC) Update of Picocli Programmatic API documentation. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-[#891] (DOC) Fixed broken links in README. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-[#892] (DOC) Minor improvements to example app in `picocli-shell-jline3`.
+* [#888] (API) Added new `PicocliCommands` class to `picocli-shell-jline3` module; bumped `JLine` to 3.13.2. Thanks to [mattirn](https://github.com/mattirn) for the pull request.
+* [#884] (Bugfix) Built-in `picocli.AutoComplete.GenerateCompletion` (`generate-completion`) subcommand now omits validation of mandatory options in the parent command. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+* [#887] (Bugfix) "Hidden" subcommands and options are no longer shown as suggestions in unmatched argument usage help or autocompletion scripts. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+* [#871] (Bugfix) All options in an exclusive group are now automatically considered `required`, to prevent unexpected results when mixing required and non-required options in exclusive ArgGroups. Thanks to [W Scott Johnson](https://github.com/wjohnson5) for raising this.
+* [#883] (DOC) Update of Quick Guide. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#889][#885] (DOC) Update of Picocli Programmatic API documentation. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#891] (DOC) Fixed broken links in README. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#892] (DOC) Minor improvements to example app in `picocli-shell-jline3`.
 
 ## <a name="4.1.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
@@ -186,10 +186,10 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.1.1-fixes"></a> Fixed issues
-[#880] (Bugfix) Built-in `picocli.AutoComplete.GenerateCompletion` (`generate-completion`) subcommand does not flush, resulting in no output. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
-[#875] (DOC) Fix broken internal links in RELEASE-NOTES for 4.1. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
-[#881] (DOC) Update of Quick Guide to the latest `execute` API. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-[#874] (DOC) Fix Javadoc issues. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#880] (Bugfix) Built-in `picocli.AutoComplete.GenerateCompletion` (`generate-completion`) subcommand does not flush, resulting in no output. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+* [#875] (DOC) Fix broken internal links in RELEASE-NOTES for 4.1. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+* [#881] (DOC) Update of Quick Guide to the latest `execute` API. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#874] (DOC) Fix Javadoc issues. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
    
 
 ## <a name="4.1.1-deprecated"></a> Deprecations
