@@ -9,6 +9,8 @@ usage() {
     echo "Unrecognized options are passed through to dejagnu by default."
     echo
     echo "Interesting options:"
+    echo "  --log-dir=      Directory where to write the <tool>.log and <tool>.sum log files to."
+    echo "  --tool=         Name for the set of dejagnu tests. Only 'completion' is supported."
     echo "  --tool_exec=    Test against a different bash executable."
     echo "  --buffer-size   Change expect match buffer size from our default of 20000 bytes."
     echo "  --debug         Create a dbg.log in the test directory with detailed expect match information."
