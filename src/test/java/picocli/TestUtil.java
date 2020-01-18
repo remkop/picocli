@@ -31,6 +31,10 @@ import static org.junit.Assert.assertEquals;
 
 public class TestUtil {
 
+    /**
+     * Set the trace level to one of "DEBUG", "INFO", "WARN", "OFF".
+     * @param level one of "DEBUG", "INFO", "WARN", "OFF".
+     */
     public static void setTraceLevel(String level) {
         System.setProperty("picocli.trace", level);
     }
