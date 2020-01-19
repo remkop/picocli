@@ -41,7 +41,7 @@ public class ProcessExecution extends Execution {
         return process.exitValue();
     }
 
-    protected String getSystemOutString() {
+    public String getSystemOutString() {
         try {
             return readFully(process.getInputStream());
         } catch (IOException e) {
@@ -49,7 +49,7 @@ public class ProcessExecution extends Execution {
         }
     }
 
-    protected String getSystemErrString() {
+    public String getSystemErrString() {
         try {
             return readFully(process.getErrorStream());
         } catch (IOException e) {

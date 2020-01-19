@@ -63,11 +63,11 @@ public class CommandLineExecution extends Execution {
         return alive;
     }
 
-    protected String getSystemOutString() {
+    public String getSystemOutString() {
         return this.out.toString();
     }
 
-    protected String getSystemErrString() {
+    public String getSystemErrString() {
         return this.err.toString();
     }
 

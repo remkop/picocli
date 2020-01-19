@@ -63,8 +63,8 @@ public abstract class Execution {
     protected abstract void execute();
     protected abstract boolean isAlive();
     protected abstract int getExitCode();
-    protected abstract String getSystemOutString();
-    protected abstract String getSystemErrString();
+    public abstract String getSystemOutString();
+    public abstract String getSystemErrString();
 
     public static Builder builder(CommandLine commandLine) {
         return new Builder(commandLine);
