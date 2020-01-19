@@ -709,7 +709,7 @@ public class I18nTest {
 
         String expected = String.format("" +
                 "[picocli DEBUG] Creating CommandSpec for object of class picocli.I18nCommand with factory picocli.CommandLine$DefaultFactory%n" +
-                "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'i18n-top' (picocli.I18nCommand@2db0f6b2)%n" +
+                "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'i18n-top' (picocli.I18nCommand)%n" +
                 "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLine$HelpCommand with factory picocli.CommandLine$DefaultFactory%n" +
                 "[picocli DEBUG] Adding subcommand 'help' to 'i18n-top'%n" +
                 "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'help' (picocli.CommandLine$HelpCommand)%n" +
