@@ -15,19 +15,18 @@
  */
 package picocli;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.ArgSpec;
-import picocli.CommandLine.Model.OptionSpec;
-import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -694,5 +693,35 @@ public class I18nTest {
         cmd.getCommandSpec().resourceBundleBaseName("picocli.i18n.SG_cli");
 
         assertEquals("picocli.i18n.SG_cli", cmd.getCommandSpec().resourceBundleBaseName());
+    }
+
+    @Test
+    public void testTracingWithResourceBundle() {
+        TestUtil.setTraceLevel("DEBUG");
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        PrintStream oldErr = System.err;
+        try {
+            System.setErr(new PrintStream(err));
+            CommandLine cl = new CommandLine(new I18nCommand());
+        } finally {
+            System.setOut(oldErr);
+        }
+
+        String expected = String.format("" +
+                "[picocli DEBUG] Creating CommandSpec for object of class picocli.I18nCommand with factory picocli.CommandLine$DefaultFactory%n" +
+                "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'i18n-top' (picocli.I18nCommand@2db0f6b2)%n" +
+                "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLine$HelpCommand with factory picocli.CommandLine$DefaultFactory%n" +
+                "[picocli DEBUG] Adding subcommand 'help' to 'i18n-top'%n" +
+                "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'help' (picocli.CommandLine$HelpCommand)%n" +
+                "[picocli DEBUG] Creating CommandSpec for object of class picocli.I18nSubcommand with factory picocli.CommandLine$DefaultFactory%n" +
+                "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLine$HelpCommand with factory picocli.CommandLine$DefaultFactory%n" +
+                "[picocli DEBUG] Adding subcommand 'help' to 'i18n-sub'%n" +
+                "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLine$AutoHelpMixin with factory picocli.CommandLine$DefaultFactory%n" +
+                "[picocli DEBUG] Adding subcommand 'i18n-sub' to 'i18n-top'%n" +
+                "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'i18n-sub' (picocli.I18nSubcommand)%n" +
+                "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'help' (picocli.CommandLine$HelpCommand)%n" +
+                "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLine$AutoHelpMixin with factory picocli.CommandLine$DefaultFactory%n" +
+                "");
+        assertEquals(expected, err.toString());
     }
 }

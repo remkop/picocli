@@ -23,6 +23,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#468][#505][#852] Auto-completion: added support for positional parameter completion. Thanks to [Serhii Avsheniuk](https://github.com/avshenuk) for the pull request.
 * [#644][#671] Auto-completion: fix [shellcheck](https://github.com/koalaman/shellcheck) warnings in generated autocompletion scripts. Thanks to [Dylan Cali](https://github.com/calid) for raising this, and thanks to [AlcaYezz](https://github.com/AlcaYezz) for the pull request.
 * [#396] Auto-completion: completion scripts no longer use associative arrays, and should now work on OSX.
+* [#920] Reduce `DEBUG` tracing noise if no resource bundle is set.
 * [#919] DOC: Added example Gradle project with Kotlin and Graal Native Image. Thanks to [OndrejMalek](https://github.com/OndrejMalek) for the pull request.
 * [#918] DOC: Added more Scala examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#916] DOC: Added Scala examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.

@@ -9544,7 +9544,9 @@ public class CommandLine {
                 this.bundleBaseName = baseName;
                 this.rb = rb;
                 this.keys = keys(rb);
-                new Tracer().debug("Created Messages from resourceBundle[base=%s] for command '%s' (%s)%n", baseName, spec.name(), spec);
+                if (rb != null) {
+                    new Tracer().debug("Created Messages from resourceBundle[base=%s] for command '%s' (%s)%n", baseName, spec.name(), spec);
+                }
             }
             private static ResourceBundle createBundle(String baseName) {
                 return ResourceBundle.getBundle(baseName);
@@ -9552,7 +9554,7 @@ public class CommandLine {
             private static String extractName(ResourceBundle rb) {
                 try { // ResourceBundle.getBaseBundleName was introduced in Java 8
                     return (String) ResourceBundle.class.getDeclaredMethod("getBaseBundleName").invoke(rb);
-                } catch (Exception ignored) { return ""; }
+                } catch (Exception ignored) { return "?"; }
             }
             private static Set<String> keys(ResourceBundle rb) {
                 if (rb == null) { return Collections.emptySet(); }
