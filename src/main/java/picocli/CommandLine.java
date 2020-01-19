@@ -9331,14 +9331,13 @@ public class CommandLine {
             }
             private TypedMember(Field field, IScope scope) {
                 this(field);
-                Object obj = ObjectScope.tryGet(scope);
-                if (obj != null && Proxy.isProxyClass(obj.getClass())) {
+                if (ObjectScope.isProxyClass(scope)) {
                     throw new InitializationException("Invalid picocli annotation on interface field");
                 }
                 FieldBinding binding = new FieldBinding(scope, field);
                 getter = binding; setter = binding;
                 this.scope = scope;
-                hasInitialValue &= obj != null ;
+                hasInitialValue &= ObjectScope.hasInstance(scope);
             }
             static TypedMember createIfAnnotated(Method method, IScope scope, CommandSpec spec) {
                 return isAnnotated(method) ? new TypedMember(method, scope, spec) : null;
@@ -9355,8 +9354,8 @@ public class CommandLine {
                 if (isGetter) {
                     hasInitialValue = true;
                     typeInfo = createTypeInfo(method.getReturnType(), method.getGenericReturnType());
-                    Object proxy = ObjectScope.tryGet(scope);
-                    if (Proxy.isProxyClass(proxy.getClass())) {
+                    if (ObjectScope.isProxyClass(scope)) {
+                        Object proxy = ObjectScope.tryGet(scope);
                         PicocliInvocationHandler handler = (PicocliInvocationHandler) Proxy.getInvocationHandler(proxy);
                         PicocliInvocationHandler.ProxyBinding binding = handler.new ProxyBinding(method);
                         getter = binding; setter = binding;
@@ -9941,8 +9940,7 @@ public class CommandLine {
         static class FieldBinding implements IGetter, ISetter {
             private final IScope scope;
             private final Field field;
-            private static IScope asScope(Object scope) { return scope instanceof IScope ? ((IScope) scope) : new ObjectScope(scope); }
-            FieldBinding(Object scope, Field field) { this(asScope(scope), field); }
+            FieldBinding(Object scope, Field field) { this(ObjectScope.asScope(scope), field); }
             FieldBinding(IScope scope, Field field) { this.scope = scope; this.field = field; }
             public <T> T get() throws PicocliException {
                 Object obj = null;
@@ -10038,6 +10036,16 @@ public class CommandLine {
         static class ObjectScope implements IScope {
             private Object value;
             public ObjectScope(Object value) { this.value = value; }
+
+            public static boolean isProxyClass(IScope scope) {
+                Object obj = ObjectScope.tryGet(scope); // TODO
+                return obj != null && Proxy.isProxyClass(obj.getClass());
+            }
+
+            public static boolean hasInstance(IScope scope) {
+                return ObjectScope.tryGet(scope) != null; // TODO
+            }
+
             @SuppressWarnings("unchecked") public <T> T get() { return (T) value; }
             @SuppressWarnings("unchecked") public <T> T set(T value) { T old = (T) this.value; this.value = value; return old; }
             public static Object tryGet(IScope scope) {
@@ -10047,6 +10055,7 @@ public class CommandLine {
                     throw new InitializationException("Could not get scope value", e);
                 }
             }
+            static IScope asScope(Object scope) { return scope instanceof IScope ? ((IScope) scope) : new ObjectScope(scope); }
             public String toString() { return String.format("Scope(value=%s)", value); }
         }
         static class Interpolator {
@@ -10210,15 +10219,15 @@ public class CommandLine {
         private final List<List<PositionalParamSpec>> matchedPositionalParams;
         private final List<Exception> errors;
         private final GroupMatchContainer groupMatchContainer;
+        private final List<ParseResult> subcommands;
         final List<Object> tentativeMatch;
 
-        private final ParseResult subcommand;
         private final boolean usageHelpRequested;
         private final boolean versionHelpRequested;
 
         private ParseResult(ParseResult.Builder builder) {
             commandSpec = builder.commandSpec;
-            subcommand = builder.subcommand;
+            subcommands = builder.subcommands;
             matchedOptions = new ArrayList<OptionSpec>(builder.matchedOptionsList);
             matchedUniqueOptions = new LinkedHashSet<OptionSpec>(builder.options);
             unmatched = new ArrayList<String>(builder.unmatched);
@@ -10364,10 +10373,16 @@ public class CommandLine {
         private <T> T matchedPositionalValue(PositionalParamSpec positional, T defaultValue) { return positional == null ? defaultValue : (T) positional.getValue(); }
 
         /** Returns {@code true} if a subcommand was matched on the command line, {@code false} otherwise. */
-        public boolean hasSubcommand()          { return subcommand != null; }
+        public boolean hasSubcommand()          { return !subcommands.isEmpty(); }
 
-        /** Returns the {@code ParseResult} for the subcommand of this command that was matched on the command line, or {@code null} if no subcommand was matched. */
-        public ParseResult subcommand()         { return subcommand; }
+        /** Returns the {@code ParseResult} for the last subcommand of this command that was matched on the command line, or {@code null} if no subcommand was matched. */
+        public ParseResult subcommand()         { return !hasSubcommand() ? null : subcommands.get(subcommands.size() - 1); }
+
+        /** Returns a list with the {@code ParseResult} objects for each subcommand of this command
+         * that was matched on the command line or an empty list if no subcommands were matched.
+         * The returned list can only contain multiple values if this command's {@link CommandSpec#subcommandsRepeatable() subcommandsRepeatable} attribute is {@code true}.
+         * @since 4.2 */
+        public List<ParseResult> subcommands()  { return Collections.unmodifiableList(subcommands); }
 
         /** Returns {@code true} if one of the options that was matched on the command line is a {@link OptionSpec#usageHelp() usageHelp} option. */
         public boolean isUsageHelpRequested()   { return usageHelpRequested; }
@@ -10402,7 +10417,7 @@ public class CommandLine {
             private final List<String> unmatched = new ArrayList<String>();
             private final List<String> originalArgList = new ArrayList<String>();
             private final List<List<PositionalParamSpec>> positionalParams = new ArrayList<List<PositionalParamSpec>>();
-            private ParseResult subcommand;
+            private final List<ParseResult> subcommands = new ArrayList<ParseResult>();
             private boolean usageHelpRequested;
             private boolean versionHelpRequested;
             boolean isInitializingDefaultValues;
@@ -10463,7 +10478,7 @@ public class CommandLine {
             /** Adds all elements of the specified command line arguments stack to the list of unmatched command line arguments. */
             public Builder addUnmatched(Stack<String> args) { while (!args.isEmpty()) { addUnmatched(args.pop()); } return this; }
             /** Sets the specified {@code ParseResult} for a subcommand that was matched on the command line. */
-            public Builder subcommand(ParseResult subcommand) { this.subcommand = subcommand; return this; }
+            public Builder subcommand(ParseResult subcommand) { subcommands.add(subcommand); return this; }
             /** Sets the specified command line arguments that were parsed. */
             public Builder originalArgs(String[] originalArgs) { originalArgList.addAll(Arrays.asList(originalArgs)); return this;}
 
@@ -11301,16 +11316,15 @@ public class CommandLine {
                 // if we find another command, we are done with the current command
                 if (commandSpec.subcommands().containsKey(arg)) {
                     CommandLine subcommand = commandSpec.subcommands().get(arg);
-                    nowProcessing.add(subcommand.commandSpec);
-                    updateHelpRequested(subcommand.commandSpec);
-                    if (!isAnyHelpRequested() && !required.isEmpty()) { // ensure current command portion is valid
-                        throw MissingParameterException.create(CommandLine.this, required, separator);
-                    }
-                    if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, subcommand.commandSpec.toString());}
-                    subcommand.interpreter.parse(parsedCommands, args, originalArgs, nowProcessing);
-                    parseResultBuilder.subcommand(subcommand.interpreter.parseResultBuilder.build());
+                    processSubcommand(subcommand, parsedCommands, args, required, originalArgs, nowProcessing, separator, arg);
                     return; // remainder done by the command
                 }
+                // #454 repeatable subcommands
+//                if (commandSpec.parent() != null && commandSpec.parent().subcommands().containsKey(arg)) {
+//                    CommandLine subcommand = commandSpec.parent().subcommands().get(arg);
+//                    processSubcommand(subcommand, parsedCommands, args, required, originalArgs, nowProcessing, separator, arg);
+//                    continue;
+//                }
 
                 // First try to interpret the argument as a single option (as opposed to a compact group of options).
                 // A single option may be without option parameters, like "-v" or "--verbose" (a boolean value),
@@ -11353,6 +11367,17 @@ public class CommandLine {
                     processPositionalParameter(required, initialized, actuallyUnquoted, args);
                 }
             }
+        }
+
+        private void processSubcommand(CommandLine subcommand, List<CommandLine> parsedCommands, Stack<String> args, Collection<ArgSpec> required, String[] originalArgs, List<Object> nowProcessing, String separator, String arg) {
+            nowProcessing.add(subcommand.commandSpec);
+            updateHelpRequested(subcommand.commandSpec);
+            if (!isAnyHelpRequested() && !required.isEmpty()) { // ensure current command portion is valid
+                throw MissingParameterException.create(CommandLine.this, required, separator);
+            }
+            if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, subcommand.commandSpec.toString());}
+            subcommand.interpreter.parse(parsedCommands, args, originalArgs, nowProcessing);
+            parseResultBuilder.subcommand(subcommand.interpreter.parseResultBuilder.build());
         }
 
         private boolean isStandaloneOption(String arg) {
