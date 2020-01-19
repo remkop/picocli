@@ -32,4 +32,9 @@ public class I18nCommand {
 
     @Parameters(index = "1", description = "top param1 description")
     String param1;
+
+    @Override
+    public String toString() {
+        return getClass().getName();
+    }
 }
