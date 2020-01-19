@@ -3226,7 +3226,8 @@ public class CommandLineHelpTest {
     }
     @Test
     public void testHelpSubcommandWithValidCommand() {
-        @Command(subcommands = {Sub.class, HelpCommand.class}) class App implements Runnable{ public void run(){}}
+        @Command(subcommands = {Sub.class, HelpCommand.class})
+        class App implements Runnable{ public void run(){}}
 
         StringWriter sw = new StringWriter();
         new CommandLine(new App())
