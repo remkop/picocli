@@ -26,11 +26,11 @@ public class ModelCommandReflectionTest {
             }
         };
 
+        CommandSpec spec = (CommandSpec) extractCommandSpec.invoke(null, Object.class, myFactory, false);
         try {
-            extractCommandSpec.invoke(null, Object.class, myFactory, false);
+            spec.userObject();
             fail("expected Exception");
-        } catch (InvocationTargetException ite) {
-            InitializationException ex = (InitializationException) ite.getCause();
+        } catch (InitializationException ex) {
             assertEquals("Could not instantiate class java.lang.Object: picocli.CommandLine$InitializationException: boom", ex.getMessage());
         }
     }

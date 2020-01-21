@@ -255,7 +255,7 @@ public class CommandLine {
     public Map<String, Object> getMixins() {
         Map<String, CommandSpec> mixins = getCommandSpec().mixins();
         Map<String, Object> result = new LinkedHashMap<String, Object>();
-        for (String name : mixins.keySet()) { result.put(name, mixins.get(name).userObject); }
+        for (String name : mixins.keySet()) { result.put(name, mixins.get(name).userObject.getInstance()); }
         return result;
     }
 
@@ -4036,6 +4036,11 @@ public class CommandLine {
          */
         Class<?>[] subcommands() default {};
 
+        /** Returns whether the subcommands of this command are repeatable, that is, whether such subcommands can
+         * occur multiple times and may be followed by sibling commands instead of only by child commands of the subcommand.
+         * @since 4.2 */
+        boolean subcommandsRepeatable() default false;
+
         /** Specify whether methods annotated with {@code @Command} should be registered as subcommands of their
          * enclosing {@code @Command} class.
          * The default is {@code true}. For example:
@@ -5146,6 +5151,8 @@ public class CommandLine {
             /** Constant Boolean holding the default setting for whether variables should be interpolated in String values: <code>{@value}</code>.*/
             static final Boolean DEFAULT_INTERPOLATE_VARIABLES = true;
 
+            static final Boolean DEFAULT_SUBCOMMANDS_REPEATABLE = false;
+
             private final Map<String, CommandLine> commands = new LinkedHashMap<String, CommandLine>();
             private final Map<String, OptionSpec> optionsByNameMap = new LinkedHashMap<String, OptionSpec>();
             private final Map<String, OptionSpec> negatedOptionsByNameMap = new LinkedHashMap<String, OptionSpec>();
@@ -5164,7 +5171,7 @@ public class CommandLine {
             private final Interpolator interpolator = new Interpolator(this);
             private final UsageMessageSpec usageMessage = new UsageMessageSpec(interpolator);
 
-            private final Object userObject;
+            private final CommandUserObject userObject;
             private CommandLine commandLine;
             private CommandSpec parent;
             private Boolean isAddMethodSubcommands;
@@ -5176,6 +5183,7 @@ public class CommandLine {
             private IVersionProvider versionProvider;
             private IDefaultValueProvider defaultValueProvider;
             private INegatableOptionTransformer negatableOptionTransformer = RegexTransformer.createDefault();
+            private Boolean subcommandsRepeatable;
             private String[] version;
             private String toString;
 
@@ -5185,7 +5193,7 @@ public class CommandLine {
             private Integer exitCodeOnInvalidInput;
             private Integer exitCodeOnExecutionException;
 
-            private CommandSpec(Object userObject) { this.userObject = userObject; }
+            private CommandSpec(CommandUserObject userObject) { this.userObject = userObject; }
 
             /** Creates and returns a new {@code CommandSpec} without any associated user object. */
             public static CommandSpec create() { return wrapWithoutInspection(null); }
@@ -5194,7 +5202,15 @@ public class CommandLine {
              * The specified user object is <em>not</em> inspected for annotations.
              * @param userObject the associated user object. May be any object, may be {@code null}.
              */
-            public static CommandSpec wrapWithoutInspection(Object userObject) { return new CommandSpec(userObject); }
+            public static CommandSpec wrapWithoutInspection(Object userObject) { return new CommandSpec(CommandUserObject.create(userObject, defaultFactory())); }
+
+            /** Creates and returns a new {@code CommandSpec} with the specified associated user object.
+             * The specified user object is <em>not</em> inspected for annotations.
+             * @param userObject the associated user object. May be any object, may be {@code null}.
+             * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands}, {@linkplain Option#converter() converters}, etc., that are registered declaratively with annotation attributes
+             * @since 4.2
+             */
+            public static CommandSpec wrapWithoutInspection(Object userObject, IFactory factory) { return new CommandSpec(CommandUserObject.create(userObject, factory)); }
 
             /** Creates and returns a new {@code CommandSpec} initialized from the specified associated user object. The specified
              * user object must have at least one {@link Command}, {@link Option} or {@link Parameters} annotation.
@@ -5258,7 +5274,7 @@ public class CommandLine {
 
             /** Returns the user object associated with this command.
              * @see CommandLine#getCommand() */
-            public Object userObject() { return userObject; }
+            public Object userObject() { return userObject.getInstance(); }
 
             /** Returns the CommandLine constructed with this {@code CommandSpec} model. */
             public CommandLine commandLine() { return commandLine;}
@@ -5432,10 +5448,10 @@ public class CommandLine {
              * @since 3.7.0
              */
             public CommandSpec addMethodSubcommands(IFactory factory) {
-                if (userObject() instanceof Method) {
-                    throw new InitializationException("Cannot discover subcommand methods of this Command Method: " + userObject());
+                if (userObject.isMethod()) {
+                    throw new InitializationException("Cannot discover subcommand methods of this Command Method: " + userObject);
                 }
-                for (CommandLine sub : createMethodSubcommands(userObject().getClass(), factory)) {
+                for (CommandLine sub : createMethodSubcommands(userObject.getType(), factory)) {
                     addSubcommand(sub.getCommandName(), sub);
                 }
                 isAddMethodSubcommands = true;
@@ -5669,6 +5685,7 @@ public class CommandLine {
                 initVersionProvider(mixin.versionProvider());
                 initDefaultValueProvider(mixin.defaultValueProvider());
                 usageMessage.initFromMixin(mixin.usageMessage, this);
+                initSubcommandsRepeatable(mixin.subcommandsRepeatable());
 
                 for (Map.Entry<String, CommandLine> entry : mixin.subcommands().entrySet()) {
                     addSubcommand(entry.getKey(), entry.getValue());
@@ -5799,7 +5816,7 @@ public class CommandLine {
                     if (allMixins == null) {
                         allMixins = new IdentityHashMap<Class<?>, CommandSpec>(mixins.size());
                     }
-                    allMixins.put(mixin.userObject.getClass(), mixin);
+                    allMixins.put(mixin.userObject.getType(), mixin);
                 }
 
                 Object[] values = new Object[argsLength];
@@ -5807,14 +5824,14 @@ public class CommandLine {
                     for (int i = 0; i < values.length; i++) { values[i] = args.get(i + shift).getValue(); }
                 } else {
                     int argIndex = shift;
-                    Class<?>[] methodParams = ((Method) userObject).getParameterTypes();
+                    Class<?>[] methodParams = ((Method) userObject.getInstance()).getParameterTypes();
                     for (int i = 0; i < methodParams.length; i++) {
                         final Class<?> param = methodParams[i];
                         CommandSpec mixin = allMixins.remove(param);
                         if (mixin == null) {
                             values[i] = args.get(argIndex++).getValue();
                         } else {
-                            values[i] = mixin.userObject;
+                            values[i] = mixin.userObject.getInstance();
                             argIndex += mixin.args.size();
                         }
                     }
@@ -5892,8 +5909,14 @@ public class CommandLine {
             /** Returns {@code true} if the standard help options have been mixed in with this command, {@code false} otherwise. */
             public boolean mixinStandardHelpOptions() { return mixins.containsKey(AutoHelpMixin.KEY); }
 
+            /** Returns whether the subcommands of this command are repeatable, that is, whether such subcommands can
+             * occur multiple times and may be followed by sibling commands instead of just child commands.
+             * @see Command#subcommandsRepeatable()
+             * @since 4.2 */
+            public boolean subcommandsRepeatable() { return (subcommandsRepeatable == null) ? DEFAULT_SUBCOMMANDS_REPEATABLE : subcommandsRepeatable; }
+
             /** Returns a string representation of this command, used in error messages and trace messages. */
-            public String toString() { return toString == null ? String.valueOf(userObject) : toString; }
+            public String toString() { return toString == null ? userObject.toString() : toString; }
 
             /** Sets the String to use as the program name in the synopsis line of the help message.
              * @return this CommandSpec for method chaining */
@@ -5986,6 +6009,11 @@ public class CommandLine {
                 }
                 return this;
             }
+            /** Sets whether the subcommands of this command are repeatable, that is, whether such subcommands can
+             * occur multiple times and may be followed by sibling commands instead of just child commands.
+             * @see Command#subcommandsRepeatable()
+             * @since 4.2 */
+            public CommandSpec subcommandsRepeatable(boolean subcommandsRepeatable) { this.subcommandsRepeatable = subcommandsRepeatable; return this; }
 
             /** Sets the string representation of this command, used in error messages and trace messages.
              * @param newValue the string representation
@@ -6013,6 +6041,7 @@ public class CommandLine {
                 updateName(cmd.name());
                 updateVersion(cmd.version());
                 updateHelpCommand(cmd.helpCommand());
+                updateSubcommandsRepeatable(cmd.subcommandsRepeatable());
                 updateAddMethodSubcommands(cmd.addMethodSubcommands());
                 usageMessage().updateFromCommand(cmd, this, factory != null);
 
@@ -6030,15 +6059,17 @@ public class CommandLine {
             void initDefaultValueProvider(Class<? extends IDefaultValueProvider> value, IFactory factory) {
                 if (initializable(defaultValueProvider, value, NoDefaultProvider.class)) { defaultValueProvider = (DefaultFactory.createDefaultValueProvider(factory, value)); }
             }
+            void initSubcommandsRepeatable(boolean value)       { if (initializable(subcommandsRepeatable, value, DEFAULT_SUBCOMMANDS_REPEATABLE)) {subcommandsRepeatable = value;} }
             void initExitCodeOnSuccess(int exitCode)            { if (initializable(exitCodeOnSuccess, exitCode, ExitCode.OK)) { exitCodeOnSuccess = exitCode; } }
             void initExitCodeOnUsageHelp(int exitCode)          { if (initializable(exitCodeOnUsageHelp, exitCode, ExitCode.OK)) { exitCodeOnUsageHelp = exitCode; } }
             void initExitCodeOnVersionHelp(int exitCode)        { if (initializable(exitCodeOnVersionHelp, exitCode, ExitCode.OK)) { exitCodeOnVersionHelp = exitCode; } }
             void initExitCodeOnInvalidInput(int exitCode)       { if (initializable(exitCodeOnInvalidInput, exitCode, ExitCode.USAGE)) { exitCodeOnInvalidInput = exitCode; } }
             void initExitCodeOnExecutionException(int exitCode) { if (initializable(exitCodeOnExecutionException, exitCode, ExitCode.SOFTWARE)) { exitCodeOnExecutionException = exitCode; } }
-            void updateName(String value)               { if (isNonDefault(value, DEFAULT_COMMAND_NAME))                 {name = value;} }
-            void updateHelpCommand(boolean value)       { if (isNonDefault(value, DEFAULT_IS_HELP_COMMAND))              {isHelpCommand = value;} }
-            void updateAddMethodSubcommands(boolean value) { if (isNonDefault(value, DEFAULT_IS_ADD_METHOD_SUBCOMMANDS)) {isAddMethodSubcommands = value;} }
-            void updateVersion(String[] value)          { if (isNonDefault(value, UsageMessageSpec.DEFAULT_MULTI_LINE))  {version = value.clone();} }
+            void updateName(String value)                   { if (isNonDefault(value, DEFAULT_COMMAND_NAME))                {name = value;} }
+            void updateHelpCommand(boolean value)           { if (isNonDefault(value, DEFAULT_IS_HELP_COMMAND))             {isHelpCommand = value;} }
+            void updateSubcommandsRepeatable(boolean value) { if (isNonDefault(value, DEFAULT_SUBCOMMANDS_REPEATABLE))      {subcommandsRepeatable = value;} }
+            void updateAddMethodSubcommands(boolean value)  { if (isNonDefault(value, DEFAULT_IS_ADD_METHOD_SUBCOMMANDS))   {isAddMethodSubcommands = value;} }
+            void updateVersion(String[] value)              { if (isNonDefault(value, UsageMessageSpec.DEFAULT_MULTI_LINE)) {version = value.clone();} }
             void updateVersionProvider(Class<? extends IVersionProvider> value, IFactory factory) {
                 if (isNonDefault(value, NoVersionProvider.class)) { versionProvider = (DefaultFactory.createVersionProvider(factory, value)); }
             }
@@ -9659,89 +9690,59 @@ public class CommandLine {
                 return result;
             }
             static CommandSpec extractCommandSpec(Object command, IFactory factory, boolean annotationsAreMandatory) {
-                Class<?> cls = command.getClass();
                 Tracer t = new Tracer();
-                t.debug("Creating CommandSpec for object of class %s with factory %s%n", cls.getName(), factory.getClass().getName());
+                t.debug("Creating CommandSpec for object of class %s with factory %s%n", command.getClass().getName(), factory.getClass().getName());
                 if (command instanceof CommandSpec) { return (CommandSpec) command; }
 
-                Object[] tmp = getOrCreateInstance(cls, command, factory, t);
-                cls = (Class<?>) tmp[0];
-                Object instance = tmp[1];
-                String commandClassName = (String) tmp[2];
+                CommandUserObject userObject = new CommandUserObject(command, factory);
+                CommandSpec result = CommandSpec.wrapWithoutInspection(userObject);
 
-                CommandSpec result = CommandSpec.wrapWithoutInspection(Assert.notNull(instance, "command"));
-                ObjectScope scope = new ObjectScope(instance);
-
-                Stack<Class<?>> hierarchy = new Stack<Class<?>>();
-                while (cls != null) { hierarchy.add(cls); cls = cls.getSuperclass(); }
-                @SuppressWarnings("unchecked")
-                Stack<Class<?>> originalHierarchy = (Stack<Class<?>>) hierarchy.clone();
                 boolean hasCommandAnnotation = false;
-                boolean mixinStandardHelpOptions = false;
-                while (!hierarchy.isEmpty()) {
-                    cls = hierarchy.pop();
-                    Command cmd = cls.getAnnotation(Command.class);
-                    if (cmd != null) {
-                        result.updateCommandAttributes(cmd, factory);
-                        initSubcommands(cmd, cls, result, factory, originalHierarchy);
-                        hasCommandAnnotation = true;
-                    }
-                    hasCommandAnnotation |= initFromAnnotatedFields(scope, cls, result, null, factory);
-                    if (cls.isAnnotationPresent(Command.class)) {
-                        mixinStandardHelpOptions |= cls.getAnnotation(Command.class).mixinStandardHelpOptions();
-                    }
-                }
-                result.mixinStandardHelpOptions(mixinStandardHelpOptions); //#377 Standard help options should be added last
-                if (command instanceof Method) {
+                if (userObject.isMethod()) {
                     Method method = (Method) command;
                     t.debug("Using method %s as command %n", method);
-                    commandClassName = method.toString();
                     Command cmd = method.getAnnotation(Command.class);
                     result.updateCommandAttributes(cmd, factory);
                     result.setAddMethodSubcommands(false); // method commands don't have method subcommands
-                    initSubcommands(cmd, null, result, factory, originalHierarchy);
+                    initSubcommands(cmd, null, result, factory, new Stack<Class<?>>());
                     hasCommandAnnotation = true;
                     result.mixinStandardHelpOptions(method.getAnnotation(Command.class).mixinStandardHelpOptions());
-                    initFromMethodParameters(scope, method, result, null, factory);
+                    initFromMethodParameters(userObject, method, result, null, factory);
                     // set command name to method name, unless @Command#name is set
                     result.initName(((Method)command).getName());
+                } else {
+                    Stack<Class<?>> hierarchy = new Stack<Class<?>>();
+                    Class<?> cls = userObject.getType();
+                    while (cls != null) {
+                        hierarchy.add(cls);
+                        cls = cls.getSuperclass();
+                    }
+                    @SuppressWarnings("unchecked")
+                    Stack<Class<?>> originalHierarchy = (Stack<Class<?>>) hierarchy.clone();
+                    boolean mixinStandardHelpOptions = false;
+                    while (!hierarchy.isEmpty()) {
+                        cls = hierarchy.pop();
+                        Command cmd = cls.getAnnotation(Command.class);
+                        if (cmd != null) {
+                            result.updateCommandAttributes(cmd, factory);
+                            initSubcommands(cmd, cls, result, factory, originalHierarchy);
+                            hasCommandAnnotation = true;
+                        }
+                        hasCommandAnnotation |= initFromAnnotatedFields(userObject, cls, result, null, factory);
+                        if (cls.isAnnotationPresent(Command.class)) {
+                            mixinStandardHelpOptions |= cls.getAnnotation(Command.class).mixinStandardHelpOptions();
+                        }
+                    }
+                    result.mixinStandardHelpOptions(mixinStandardHelpOptions); //#377 Standard help options should be added last
                 }
+
                 result.updateArgSpecMessages();
 
-                if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, commandClassName); }
-                result.withToString(commandClassName).validate();
+                if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, userObject.toString()); }
+                result.withToString(userObject.toString()).validate();
                 return result;
             }
 
-            private static Object[] getOrCreateInstance(Class<?> cls, Object command, IFactory factory, Tracer t) {
-                Object instance = command;
-                String commandClassName = cls.getName();
-                if (command instanceof Class) {
-                    cls = (Class) command;
-                    commandClassName = cls.getName();
-                    try {
-                        t.debug("Getting a %s instance from the factory%n", cls.getName());
-                        instance = DefaultFactory.create(factory, cls);
-                        cls = instance.getClass();
-                        commandClassName = cls.getName();
-                        t.debug("Factory returned a %s instance%n", commandClassName);
-                    } catch (InitializationException ex) {
-                        if (cls.isInterface()) {
-                            t.debug("%s. Creating Proxy for interface %s%n", ex.getCause(), cls.getName());
-                            instance = Proxy.newProxyInstance(cls.getClassLoader(), new Class<?>[]{cls}, new PicocliInvocationHandler());
-                        } else {
-                            throw ex;
-                        }
-                    }
-                } else if (command instanceof Method) {
-                    cls = null; // don't mix in options/positional params from outer class @Command
-                } else if (instance == null) {
-                    t.debug("Getting a %s instance from the factory%n", cls.getName());
-                    instance = DefaultFactory.create(factory, cls);
-                    t.debug("Factory returned a %s instance%n", instance.getClass().getName());
-                }
-                return new Object[] { cls, instance, commandClassName };
-            }
             private static void initSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory, Stack<Class<?>> hierarchy) {
                 for (Class<?> sub : cmd.subcommands()) {
                     if (sub.equals(cls)) {
@@ -10040,12 +10041,18 @@ public class CommandLine {
             public ObjectScope(Object value) { this.value = value; }
 
             public static boolean isProxyClass(IScope scope) {
-                Object obj = ObjectScope.tryGet(scope); // TODO
+                if (scope instanceof CommandUserObject) {
+                    return ((CommandUserObject) scope).isProxyClass();
+                }
+                Object obj = ObjectScope.tryGet(scope);
                 return obj != null && Proxy.isProxyClass(obj.getClass());
             }
 
             public static boolean hasInstance(IScope scope) {
-                return ObjectScope.tryGet(scope) != null; // TODO
+                if (scope instanceof CommandUserObject) {
+                    return ((CommandUserObject) scope).instance != null;
+                }
+                return ObjectScope.tryGet(scope) != null;
             }
 
             @SuppressWarnings("unchecked") public <T> T get() { return (T) value; }
@@ -10059,6 +10066,73 @@ public class CommandLine {
             }
             static IScope asScope(Object scope) { return scope instanceof IScope ? ((IScope) scope) : new ObjectScope(scope); }
             public String toString() { return String.format("Scope(value=%s)", value); }
+        }
+        static class CommandUserObject implements IScope {
+            private final IFactory factory;
+            private Object instance;
+            private Class<?> type;
+            private String description;
+
+            public CommandUserObject(Object objectOrClass, IFactory factory) {
+                this.factory = Assert.notNull(factory, "factory");
+                type = objectOrClass == null ? null : objectOrClass.getClass();
+                instance = objectOrClass;
+                description = type == null ? "null" : type.getName();
+                if (objectOrClass instanceof Class) {
+                    type = (Class<?>) objectOrClass;
+                    description = type.getName();
+                    instance = null;
+                } else if (objectOrClass instanceof Method) {
+                    type = null; // don't mix in options/positional params from outer class @Command
+                    description = objectOrClass.toString();
+                }
+            }
+
+            public CommandUserObject copy() {
+                // type is only null for @Command-annotated Methods
+                return new CommandUserObject(type == null ? instance : type, factory);
+            }
+
+            public static CommandUserObject create(Object userObject, IFactory factory) {
+                if (userObject instanceof CommandUserObject) { return (CommandUserObject) userObject; }
+                return new CommandUserObject(userObject, factory);
+            }
+
+            public Object getInstance() {
+                if (instance == null) {
+                    Tracer t = new Tracer();
+                    if (type == null) {
+                        t.debug("Returning a null user object instance%n");
+                        return null;
+                    }
+                    try {
+                        t.debug("Getting a %s instance from the factory%n", type.getName());
+                        instance = DefaultFactory.create(factory, type);
+                        type = instance.getClass(); // potentially change interface name to impl type name
+                        description = type.getName();
+                        t.debug("Factory returned a %s instance%n", description);
+                    } catch (InitializationException ex) {
+                        if (type.isInterface()) {
+                            t.debug("%s. Creating Proxy for interface %s%n", ex.getCause(), type.getName());
+                            instance = Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[]{type}, new PicocliInvocationHandler());
+                        } else {
+                            throw ex;
+                        }
+                    }
+                }
+                return instance;
+            }
+            public Class<?> getType() { return type; }
+            public boolean isMethod() { return instance instanceof Method; }
+            @Override public String toString() { return description; }
+
+            @SuppressWarnings("unchecked") public <T> T get() { return (T) getInstance(); }
+            public <T> T set(T value) { throw new UnsupportedOperationException(); }
+
+            public boolean isProxyClass() {
+                if (type == null || !type.isInterface()) { return false; }
+                return Proxy.isProxyClass(getInstance().getClass());
+            }
         }
         static class Interpolator {
             private final CommandSpec commandSpec;
@@ -10480,7 +10554,8 @@ public class CommandLine {
             /** Adds all elements of the specified command line arguments stack to the list of unmatched command line arguments. */
             public Builder addUnmatched(Stack<String> args) { while (!args.isEmpty()) { addUnmatched(args.pop()); } return this; }
             /** Sets the specified {@code ParseResult} for a subcommand that was matched on the command line. */
-            public Builder subcommand(ParseResult subcommand) { subcommands.add(subcommand); return this; }
+            // implementation note: this method gets called with the most recently matched subcommand first, then the subcommand matched before that, etc
+            public Builder subcommand(ParseResult subcommand) { subcommands.add(0, subcommand); return this; }
             /** Sets the specified command line arguments that were parsed. */
             public Builder originalArgs(String[] originalArgs) { originalArgList.addAll(Arrays.asList(originalArgs)); return this;}
 
@@ -11318,15 +11393,22 @@ public class CommandLine {
                 // if we find another command, we are done with the current command
                 if (commandSpec.subcommands().containsKey(arg)) {
                     CommandLine subcommand = commandSpec.subcommands().get(arg);
-                    processSubcommand(subcommand, parsedCommands, args, required, originalArgs, nowProcessing, separator, arg);
+                    processSubcommand(subcommand, parseResultBuilder, parsedCommands, args, required, originalArgs, nowProcessing, separator, arg);
                     return; // remainder done by the command
                 }
-                // #454 repeatable subcommands
-//                if (commandSpec.parent() != null && commandSpec.parent().subcommands().containsKey(arg)) {
-//                    CommandLine subcommand = commandSpec.parent().subcommands().get(arg);
-//                    processSubcommand(subcommand, parsedCommands, args, required, originalArgs, nowProcessing, separator, arg);
-//                    continue;
-//                }
+                if (commandSpec.parent() != null && commandSpec.parent().subcommandsRepeatable() && commandSpec.parent().subcommands().containsKey(arg)) {
+                    tracer.debug("'%s' is a repeatable subcommand of %s%n", arg, commandSpec.parent().qualifiedName());// #454 repeatable subcommands
+                    CommandLine subcommand = commandSpec.parent().subcommands().get(arg);
+                    if (subcommand.interpreter.parseResultBuilder != null) {
+                        tracer.debug("Subcommand '%s' has been matched before. Making a copy...%n", subcommand.getCommandName());
+                        CommandUserObject cuo = subcommand.getCommandSpec().userObject;
+                        Object command = cuo.type == null ? cuo.instance : cuo.type;
+                        subcommand = new CommandLine(command, factory); // create a new sub-hierarchy
+                        subcommand.getCommandSpec().parent(commandSpec.parent()); // hook it up with its parent
+                    }
+                    processSubcommand(subcommand, getParent().interpreter.parseResultBuilder, parsedCommands, args, required, originalArgs, nowProcessing, separator, arg);
+                    continue;
+                }
 
                 // First try to interpret the argument as a single option (as opposed to a compact group of options).
                 // A single option may be without option parameters, like "-v" or "--verbose" (a boolean value),
@@ -11371,7 +11453,7 @@ public class CommandLine {
             }
         }
 
-        private void processSubcommand(CommandLine subcommand, List<CommandLine> parsedCommands, Stack<String> args, Collection<ArgSpec> required, String[] originalArgs, List<Object> nowProcessing, String separator, String arg) {
+        private void processSubcommand(CommandLine subcommand, ParseResult.Builder builder, List<CommandLine> parsedCommands, Stack<String> args, Collection<ArgSpec> required, String[] originalArgs, List<Object> nowProcessing, String separator, String arg) {
             nowProcessing.add(subcommand.commandSpec);
             updateHelpRequested(subcommand.commandSpec);
             if (!isAnyHelpRequested() && !required.isEmpty()) { // ensure current command portion is valid
@@ -11379,7 +11461,7 @@ public class CommandLine {
             }
             if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, subcommand.commandSpec.toString());}
             subcommand.interpreter.parse(parsedCommands, args, originalArgs, nowProcessing);
-            parseResultBuilder.subcommand(subcommand.interpreter.parseResultBuilder.build());
+            builder.subcommand(subcommand.interpreter.parseResultBuilder.build());
         }
 
         private boolean isStandaloneOption(String arg) {

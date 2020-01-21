@@ -448,8 +448,9 @@ public class ArgGroupTest {
             fail("Expected exception");
         } catch (InitializationException ex) {
             assertEquals("ArgGroup has no options or positional parameters, and no subgroups: " +
-                    "Scope(value=" + app.toString() +
-                    ") FieldBinding(" + Invalid.class.getName() + " " + app.getClass().getName() + ".invalid)", ex.getMessage());
+                    //"Scope(value=" + app.toString() + ")" +
+                    app.getClass().getName() +
+                    " FieldBinding(" + Invalid.class.getName() + " " + app.getClass().getName() + ".invalid)", ex.getMessage());
         }
     }
 
