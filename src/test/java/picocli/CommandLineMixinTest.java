@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 import static picocli.TestUtil.usageString;
@@ -895,5 +896,42 @@ public class CommandLineMixinTest {
 
         CommandLine method = sub.getSubcommands().get("method");
         assertEquals(0, method.getSubcommands().size());
+    }
+
+    @Command
+    static class Issue924 {
+        @Mixin Issue924Mixin myMixin;
+
+        Issue924Mixin methodMixin;
+
+        @Command
+        void subcommand(@Mixin(name = "blah") Issue924Mixin myMixin) {
+            methodMixin = myMixin;
+        }
+    }
+    static class Issue924Mixin {
+        @Option(names = "-v") boolean verbose;
+    }
+    @Test
+    public void testIssue924mixinAnnotatedElement() {
+        Issue924 userObject = new Issue924();
+        CommandLine commandLine = new CommandLine(userObject);
+        assertNotNull(userObject.myMixin);
+
+        Map<String, IAnnotatedElement> mixinElements = commandLine.getCommandSpec().mixinAnnotatedElements();
+        assertEquals(1, mixinElements.size());
+        IAnnotatedElement element = mixinElements.get("myMixin");
+        assertNotNull(element);
+        assertEquals("myMixin", element.getName());
+        assertEquals(Issue924Mixin.class, element.getTypeInfo().getType());
+        assertTrue(String.valueOf(element.getter()), element.getter() instanceof FieldBinding);
+
+        CommandLine subcommand = commandLine.getSubcommands().get("subcommand");
+        Map<String, IAnnotatedElement> mixinMethodElements = subcommand.getCommandSpec().mixinAnnotatedElements();
+        assertEquals(1, mixinMethodElements.size());
+        IAnnotatedElement methodElement = mixinMethodElements.get("blah");
+        assertNotNull(methodElement);
+        assertEquals("arg0", methodElement.getName());
+        assertEquals(Issue924Mixin.class, methodElement.getTypeInfo().getType());
     }
 }

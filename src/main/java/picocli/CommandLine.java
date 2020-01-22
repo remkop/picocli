@@ -9802,7 +9802,7 @@ public class CommandLine {
                         throw new InitializationException("@Mixins are not supported on @ArgGroups");
                         // TODO groupBuilder.addMixin(member.getMixinName(), buildMixinForMember(member, factory));
                     } else {
-                        commandSpec.addMixin(member.getMixinName(), buildMixinForMember(member, factory));
+                        commandSpec.addMixin(member.getMixinName(), buildMixinForMember(member, factory), member);
                     }
                     result = true;
                 }
