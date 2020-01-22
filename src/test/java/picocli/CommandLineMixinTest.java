@@ -934,4 +934,65 @@ public class CommandLineMixinTest {
         assertEquals("arg0", methodElement.getName());
         assertEquals(Issue924Mixin.class, methodElement.getTypeInfo().getType());
     }
+
+    @Command(subcommands = Issue925Sub.class)
+    static class Issue925Top {
+        boolean verbose;
+
+        @Option(names = "-v")
+        public void setVerbose(boolean verbose) {
+            this.verbose = verbose;
+        }
+    }
+
+    // Define a mixin that delegates to the parent command.
+    static class Issue925MyMixin {
+        @ParentCommand Issue925Top top;
+
+        @Option(names = "-v")
+        public void setVerbose(boolean verbose) {
+            top.setVerbose(verbose);
+        }
+    }
+
+    // Now subcommands just need to mix in the `MyMixin`
+    // to get a `-v` option that delegates to the parent command.
+    @Command(name = "sub")
+    static class Issue925Sub {
+        @Mixin Issue925MyMixin mymixin;
+
+        // This works for @Command-annotated methods also.
+        // But needs to have the correct parent!
+        @Command(name = "subsub")
+        void subsub(@Mixin(name = "key") Issue925SubMixin mymixin) {
+            // business logic for the subsub command...
+        }
+    }
+    static class Issue925SubMixin {
+        @ParentCommand Issue925Sub sub;
+
+        @Option(names = "-v")
+        public void setVerbose(boolean verbose) {
+            sub.mymixin.setVerbose(verbose);
+        }
+    }
+
+    @Test
+    public void testIssue925ParentCommandAnnotationInMixins() {
+        Issue925Top top = new Issue925Top();
+        CommandLine commandLine = new CommandLine(top);
+
+        Issue925Sub subCmdObject = commandLine.getSubcommands().get("sub").getCommand();
+        assertNotNull(subCmdObject.mymixin);
+        assertNotNull(subCmdObject.mymixin.top);
+        assertSame(top, subCmdObject.mymixin.top);
+
+        CommandSpec subsub = commandLine.getSubcommands().get("sub").getSubcommands().get("subsub").getCommandSpec();
+        assertEquals(1, subsub.mixins().size());
+        CommandSpec mixin = subsub.mixins().get("key");
+        Issue925SubMixin mixinInstance = (Issue925SubMixin) mixin.userObject();
+        assertNotNull(mixinInstance.sub);
+        assertSame(subCmdObject, mixinInstance.sub);
+
+    }
 }

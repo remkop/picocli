@@ -9756,6 +9756,9 @@ public class CommandLine {
                         CommandLine subcommandLine = toCommandLine(factory.create(sub), factory);
                         parent.addSubcommand(subcommandName(sub), subcommandLine);
                         subcommandLine.getCommandSpec().initParentCommand(parent.userObject());
+                        for (CommandSpec mixin : subcommandLine.getCommandSpec().mixins().values()) {
+                            mixin.initParentCommand(parent.userObject());
+                        }
                     }
                     catch (InitializationException ex) { throw ex; }
                     catch (NoSuchMethodException ex) { throw new InitializationException("Cannot instantiate subcommand " +
@@ -9768,6 +9771,9 @@ public class CommandLine {
                 if (cmd.addMethodSubcommands() && cls != null) {
                     for (CommandLine sub : CommandSpec.createMethodSubcommands(cls, factory)) {
                         parent.addSubcommand(sub.getCommandName(), sub);
+                        for (CommandSpec mixin : sub.getCommandSpec().mixins().values()) {
+                            mixin.initParentCommand(parent.userObject());
+                        }
                     }
                 }
             }
