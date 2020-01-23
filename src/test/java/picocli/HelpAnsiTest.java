@@ -20,7 +20,7 @@ import java.util.Arrays;
 import static org.junit.Assert.*;
 import static picocli.TestUtil.usageString;
 
-public class CommandLineHelpAnsiTest {
+public class HelpAnsiTest {
     private static final String LINESEP = System.getProperty("line.separator");
 
     private static final String[] ANSI_ENVIRONMENT_VARIABLES = new String[] {

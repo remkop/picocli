@@ -81,7 +81,7 @@ import static picocli.TestUtil.options;
 /**
  * Tests for picocli's "Usage" help functionality.
  */
-public class CommandLineHelpTest {
+public class HelpTest {
     private static final String LINESEP = System.getProperty("line.separator");
 
     @Rule
