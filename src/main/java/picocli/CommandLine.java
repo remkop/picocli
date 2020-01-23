@@ -14560,6 +14560,14 @@ public class CommandLine {
                 result = result * 37 + optionParamStyles.hashCode();
                 return result;
             }
+            @Override public String toString() {
+                return "ColorScheme[ansi=" + ansi +
+                        ", commands=" + commandStyles +
+                        ", optionStyles=" + optionStyles +
+                        ", parameterStyles=" + parameterStyles +
+                        ", optionParamStyles=" + optionParamStyles +
+                "]";
+            }
 
             /** Builder class to create {@code ColorScheme} instances.
              * @since 4.0 */

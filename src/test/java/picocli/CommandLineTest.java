@@ -18,6 +18,7 @@ package picocli;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -4057,5 +4058,17 @@ public class CommandLineTest {
         assertEquals("-", app.json);
         assertEquals("~/hello.mustache", app.template);
         assertTrue(systemErrRule.getLog().contains("Single-character arguments that don't match known options are considered positional parameters"));
+    }
+
+    @Test
+    public void testClose() {
+        setTraceLevel("WARN");
+        CommandLine.close(new Closeable() {
+            public void close() throws IOException {
+                throw new IllegalStateException("booh!");
+            }
+        });
+        String expected = "[picocli WARN] Could not close picocli.CommandLineTest$2@: java.lang.IllegalStateException: booh!";
+        assertEquals(expected, systemErrRule.getLog().replaceAll("@.*: java", "@: java"));
     }
 }

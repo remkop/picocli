@@ -1211,6 +1211,13 @@ public class HelpTest {
         String[] expected = {"", "1", "12", "123", "1234", "12345", "123456"};
         assertArrayEquals(expected, values);
     }
+    @Test
+    public void testShortestFirstComparator_sortsShortestFirst2() {
+        String[] values = {"12345", "12", "123", "123456", "1", "", "1234"};
+        Arrays.sort(values, Help.shortestFirst());
+        String[] expected = {"", "1", "12", "123", "1234", "12345", "123456"};
+        assertArrayEquals(expected, values);
+    }
 
     @Test
     public void testShortestFirstComparator_sortsDeclarationOrderIfEqualLength() {
@@ -4284,5 +4291,12 @@ public class HelpTest {
                 "  BAR   explanation of bar%n" +
                 "  XYZ   xxxx yyyy zzz%n");
         assertEquals(expected, cmd.getUsageMessage(Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testFullSynopsis() {
+        Help help = new Help(CommandSpec.create(), CommandLine.Help.defaultColorScheme(Help.Ansi.OFF));
+        String syn1 = help.fullSynopsis();
+        assertEquals(syn1, new Help(CommandSpec.create(), CommandLine.Help.defaultColorScheme(Help.Ansi.OFF)).fullSynopsis());
     }
 }
