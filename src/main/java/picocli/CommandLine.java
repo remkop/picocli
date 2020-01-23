@@ -9677,6 +9677,9 @@ public class CommandLine {
             /** Returns the CommandSpec of this object, never {@code null}. */
             public CommandSpec commandSpec() { return spec; }
         }
+        private static interface Predicate<T> {
+            boolean test(T t);
+        }
         private static class CommandReflection {
             static ArgGroupSpec extractArgGroupSpec(IAnnotatedElement member, IFactory factory, CommandSpec commandSpec, boolean annotationsAreMandatory) throws Exception {
                 Object instance = null;
@@ -9700,7 +9703,7 @@ public class CommandLine {
                 boolean hasArgAnnotation = false;
                 while (!hierarchy.isEmpty()) {
                     cls = hierarchy.pop();
-                    hasArgAnnotation |= initFromAnnotatedFields(scope, cls, commandSpec, builder, factory);
+                    hasArgAnnotation |= initFromAnnotatedFields(scope, cls, commandSpec, builder, factory, null);
                 }
                 ArgGroupSpec result = builder.build();
                 if (annotationsAreMandatory) {validateArgGroupSpec(result, hasArgAnnotation, cls.getName()); }
@@ -9721,6 +9724,7 @@ public class CommandLine {
                     t.debug("Using method %s as command %n", method);
                     Command cmd = method.getAnnotation(Command.class);
                     result.updateCommandAttributes(cmd, factory);
+                    injectSpecIntoVersionProvider(result, cmd, factory);
                     result.setAddMethodSubcommands(false); // method commands don't have method subcommands
                     initSubcommands(cmd, null, result, factory, new Stack<Class<?>>());
                     hasCommandAnnotation = true;
@@ -9743,10 +9747,11 @@ public class CommandLine {
                         Command cmd = cls.getAnnotation(Command.class);
                         if (cmd != null) {
                             result.updateCommandAttributes(cmd, factory);
+                            injectSpecIntoVersionProvider(result, cmd, factory);
                             initSubcommands(cmd, cls, result, factory, originalHierarchy);
                             hasCommandAnnotation = true;
                         }
-                        hasCommandAnnotation |= initFromAnnotatedFields(userObject, cls, result, null, factory);
+                        hasCommandAnnotation |= initFromAnnotatedFields(userObject, cls, result, null, factory, null);
                         if (cls.isAnnotationPresent(Command.class)) {
                             mixinStandardHelpOptions |= cls.getAnnotation(Command.class).mixinStandardHelpOptions();
                         }
@@ -9759,6 +9764,15 @@ public class CommandLine {
                 if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, userObject.toString()); }
                 result.withToString(userObject.toString()).validate();
                 return result;
+            }
+
+            private static void injectSpecIntoVersionProvider(CommandSpec result, Command cmd, IFactory factory) {
+                if (result.versionProvider() == null) { return; }
+                CommandReflection.initFromAnnotatedFields(new ObjectScope(result.versionProvider()), cmd.versionProvider(), result, null, factory, new Predicate<TypedMember>() {
+                    public boolean test(TypedMember tm) {
+                        return tm.isSpec() && !(tm.isArgGroup() || tm.isUnmatched() || tm.isMixin() || tm.isOption() || tm.isParameter() || tm.isParentCommand());
+                    }
+                });
             }
 
             private static void initSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory, Stack<Class<?>> hierarchy) {
@@ -9801,23 +9815,24 @@ public class CommandLine {
                 }
                 return subCommand.name();
             }
-            private static boolean initFromAnnotatedFields(IScope scope, Class<?> cls, CommandSpec receiver, ArgGroupSpec.Builder groupBuilder, IFactory factory) {
+            private static boolean initFromAnnotatedFields(IScope scope, Class<?> cls, CommandSpec receiver, ArgGroupSpec.Builder groupBuilder, IFactory factory, Predicate<TypedMember> predicate) {
                 boolean result = false;
                 for (Field field : cls.getDeclaredFields()) {
-                    result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(field, scope), receiver, groupBuilder, factory);
+                    result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(field, scope), predicate, receiver, groupBuilder, factory);
                 }
                 for (Method method : cls.getDeclaredMethods()) {
-                    result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(method, scope, receiver), receiver, groupBuilder, factory);
+                    result |= initFromAnnotatedTypedMembers(TypedMember.createIfAnnotated(method, scope, receiver), predicate, receiver, groupBuilder, factory);
                 }
                 return result;
             }
             @SuppressWarnings("unchecked")
             private static boolean initFromAnnotatedTypedMembers(TypedMember member,
+                                                                 Predicate<TypedMember> predicate,
                                                                  CommandSpec commandSpec,
                                                                  ArgGroupSpec.Builder groupBuilder,
                                                                  IFactory factory) {
                 boolean result = false;
-                if (member == null) { return result; }
+                if (member == null || (predicate != null && !predicate.test(member))) { return result; }
                 if (member.isMixin()) {
                     assertNoDuplicateAnnotations(member, Mixin.class, Option.class, Parameters.class, Unmatched.class, Spec.class, ArgGroup.class);
                     if (groupBuilder != null) {
@@ -9875,7 +9890,7 @@ public class CommandLine {
                     } else {
                         param.position = i - optionCount;
                     }
-                    result |= initFromAnnotatedTypedMembers(new TypedMember(param, scope), receiver, groupBuilder, factory);
+                    result |= initFromAnnotatedTypedMembers(new TypedMember(param, scope), null, receiver, groupBuilder, factory);
                 }
                 return result;
             }

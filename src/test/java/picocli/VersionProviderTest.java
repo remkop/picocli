@@ -1,6 +1,10 @@
 package picocli;
 
 import org.junit.Test;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Spec;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -19,7 +23,7 @@ public class VersionProviderTest {
     }
     @Test
     public void testFailingVersionProvider() {
-        @CommandLine.Command(versionProvider = FailingVersionProvider.class)
+        @Command(versionProvider = FailingVersionProvider.class)
         class App {}
         CommandLine cmd = new CommandLine(new App());
         try {
@@ -63,7 +67,7 @@ public class VersionProviderTest {
 
     @Test
     public void testCommandLine_printVersionInfo_fromAnnotation_withMarkupAndParameterContainingMarkup() {
-        @CommandLine.Command(versionProvider = MarkupVersionProvider.class)
+        @Command(versionProvider = MarkupVersionProvider.class)
         class Versioned {}
 
         CommandLine commandLine = new CommandLine(new Versioned());
@@ -72,7 +76,7 @@ public class VersionProviderTest {
 
     @Test
     public void testCommandLine_printVersionInfo_usesProviderIfBothProviderAndStaticVersionInfoExist() {
-        @CommandLine.Command(versionProvider = MarkupVersionProvider.class, version = "static version is ignored")
+        @Command(versionProvider = MarkupVersionProvider.class, version = "static version is ignored")
         class Versioned {}
 
         CommandLine commandLine = new CommandLine(new Versioned());
@@ -93,7 +97,7 @@ public class VersionProviderTest {
 
     @Test
     public void testCommandLine_printVersionInfo_withMarkupAndParameterContainingMarkup() {
-        @CommandLine.Command(version = {
+        @Command(version = {
                 "@|yellow Versioned Command 1.0|@",
                 "@|blue Build 12345|@%1$s",
                 "@|red,bg(white) (c) 2017|@%2$s" })
@@ -110,7 +114,7 @@ public class VersionProviderTest {
                 return new String[] {"line 1", "line 2"} ;
             }
         }
-        @CommandLine.Command(version = "Mixin 1.0", versionProvider = MyVersionProvider.class)
+        @Command(version = "Mixin 1.0", versionProvider = MyVersionProvider.class)
         class MixMeIn {}
 
         class Receiver {
@@ -119,7 +123,7 @@ public class VersionProviderTest {
         }
 
         CommandLine commandLine = new CommandLine(new Receiver(), new InnerClassFactory(this));
-        CommandLine.Model.CommandSpec commandSpec = commandLine.getCommandSpec();
+        CommandSpec commandSpec = commandLine.getCommandSpec();
         assertTrue(commandSpec.versionProvider() instanceof MyVersionProvider);
         assertArrayEquals(new String[] {"line 1", "line 2"}, commandSpec.version());
     }
@@ -131,13 +135,13 @@ public class VersionProviderTest {
     }
     @Test
     public void testFailingVersionProviderWithDefaultFactory() {
-        @CommandLine.Command(versionProvider = BadVersionProvider.class)
+        @Command(versionProvider = BadVersionProvider.class)
         class App { }
         try {
             new CommandLine(new App());
         } catch (CommandLine.InitializationException ex) {
             assertEquals("Could not instantiate class " +
-                    "picocli.CommandLineTest$BadVersionProvider: java.lang.reflect.InvocationTargetException", ex.getMessage());
+                    "picocli.VersionProviderTest$BadVersionProvider: java.lang.reflect.InvocationTargetException", ex.getMessage());
         }
     }
 
@@ -148,7 +152,7 @@ public class VersionProviderTest {
                 return new String[] {"2.0", "by provider"};
             }
         };
-        CommandLine.Model.CommandSpec spec = CommandLine.Model.CommandSpec.create().versionProvider(provider);
+        CommandSpec spec = CommandSpec.create().versionProvider(provider);
         CommandLine commandLine = new CommandLine(spec);
         String actual = versionString(commandLine, CommandLine.Help.Ansi.OFF);
         String expected = String.format("" +
@@ -166,10 +170,10 @@ public class VersionProviderTest {
             public String[] getVersion() { return new String[0];  }
         };
 
-        CommandLine.Model.CommandSpec spec = CommandLine.Model.CommandSpec.wrapWithoutInspection(null);
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
         spec.versionProvider(versionProvider1);
 
-        CommandLine.Model.CommandSpec mixin = CommandLine.Model.CommandSpec.wrapWithoutInspection(null);
+        CommandSpec mixin = CommandSpec.wrapWithoutInspection(null);
         mixin.versionProvider(versionProvider2);
 
         spec.addMixin("helper", mixin);
@@ -185,10 +189,10 @@ public class VersionProviderTest {
             public String defaultValue(CommandLine.Model.ArgSpec argSpec) { return null; }
         };
 
-        CommandLine.Model.CommandSpec spec = CommandLine.Model.CommandSpec.wrapWithoutInspection(null);
+        CommandSpec spec = CommandSpec.wrapWithoutInspection(null);
         spec.defaultValueProvider(provider1);
 
-        CommandLine.Model.CommandSpec mixin = CommandLine.Model.CommandSpec.wrapWithoutInspection(null);
+        CommandSpec mixin = CommandSpec.wrapWithoutInspection(null);
         mixin.defaultValueProvider(provider2);
 
         spec.addMixin("helper", mixin);
@@ -197,7 +201,7 @@ public class VersionProviderTest {
 
     @Test
     public void testCommandLine_printVersionInfo_printsArrayOfPlainTextStrings() {
-        @CommandLine.Command(version = {"Versioned Command 1.0", "512-bit superdeluxe", "(c) 2017"}) class Versioned {}
+        @Command(version = {"Versioned Command 1.0", "512-bit superdeluxe", "(c) 2017"}) class Versioned {}
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true), CommandLine.Help.Ansi.OFF);
         String result = baos.toString();
@@ -206,7 +210,7 @@ public class VersionProviderTest {
 
     @Test
     public void testCommandLine_printVersionInfo_printsSingleStringWithMarkup() {
-        @CommandLine.Command(version = "@|red 1.0|@") class Versioned {}
+        @Command(version = "@|red 1.0|@") class Versioned {}
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true), CommandLine.Help.Ansi.ON);
         String result = baos.toString();
@@ -215,7 +219,7 @@ public class VersionProviderTest {
 
     @Test
     public void testCommandLine_printVersionInfo_printsArrayOfStringsWithMarkup() {
-        @CommandLine.Command(version = {
+        @Command(version = {
                 "@|yellow Versioned Command 1.0|@",
                 "@|blue Build 12345|@",
                 "@|red,bg(white) (c) 2017|@" })
@@ -230,7 +234,7 @@ public class VersionProviderTest {
     }
     @Test
     public void testCommandLine_printVersionInfo_formatsArguments() {
-        @CommandLine.Command(version = {"First line %1$s", "Second line %2$s", "Third line %s %s"}) class Versioned {}
+        @Command(version = {"First line %1$s", "Second line %2$s", "Third line %s %s"}) class Versioned {}
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos, true);
         new CommandLine(new Versioned()).printVersionHelp(ps, CommandLine.Help.Ansi.OFF, "VALUE1", "VALUE2", "VALUE3");
@@ -240,7 +244,7 @@ public class VersionProviderTest {
 
     @Test
     public void testCommandLine_printVersionInfo_printsSinglePlainTextString() {
-        @CommandLine.Command(version = "1.0") class Versioned {}
+        @Command(version = "1.0") class Versioned {}
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true), CommandLine.Help.Ansi.OFF);
         String result = baos.toString();
@@ -249,9 +253,9 @@ public class VersionProviderTest {
 
     @Test
     public void testPrintVersionHelp() {
-        @CommandLine.Command(version = "abc 1.2.3 myversion")
+        @Command(version = "abc 1.2.3 myversion")
         class App {
-            @CommandLine.Option(names = "-V", versionHelp = true) boolean versionRequested;
+            @Option(names = "-V", versionHelp = true) boolean versionRequested;
         }
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         new CommandLine(new App()).printVersionHelp(new PrintStream(baos));
@@ -260,12 +264,36 @@ public class VersionProviderTest {
 
     @Test
     public void testPrintVersionHelpPrintWriter() {
-        @CommandLine.Command(version = "abc 1.2.3 myversion")
+        @Command(version = "abc 1.2.3 myversion")
         class App {
-            @CommandLine.Option(names = "-V", versionHelp = true) boolean versionRequested;
+            @Option(names = "-V", versionHelp = true) boolean versionRequested;
         }
         StringWriter sw = new StringWriter();
         new CommandLine(new App()).printVersionHelp(new PrintWriter(sw));
         assertEquals(String.format("abc 1.2.3 myversion%n"), sw.toString());
+    }
+    static class SpecInjectedVersionProvider implements CommandLine.IVersionProvider {
+        @Spec CommandSpec spec;
+
+        public String[] getVersion() {
+            return new String[] { "Version info for " + spec.qualifiedName() };
+        }
+    }
+    @Test
+    public void testCommandLine_SpecInjectedVersionProvider() {
+        @Command(name = "versioned", versionProvider = SpecInjectedVersionProvider.class, version = "ignored")
+        class Versioned {
+            @Command(versionProvider = SpecInjectedVersionProvider.class, version = "sub ignored")
+            void sub() {}
+        }
+
+        CommandLine commandLine = new CommandLine(new Versioned());
+        StringWriter sw = new StringWriter();
+        commandLine.printVersionHelp(new PrintWriter(sw), CommandLine.Help.Ansi.OFF);
+        assertEquals(String.format("Version info for versioned%n"), sw.toString());
+
+        sw = new StringWriter();
+        commandLine.getSubcommands().get("sub").printVersionHelp(new PrintWriter(sw), CommandLine.Help.Ansi.OFF);
+        assertEquals(String.format("Version info for versioned sub%n"), sw.toString());
     }
 }
