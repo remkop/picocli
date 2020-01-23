@@ -60,7 +60,6 @@ import static picocli.CommandLine.DuplicateOptionAnnotationsException;
 import static picocli.CommandLine.Help;
 import static picocli.CommandLine.HelpCommand;
 import static picocli.CommandLine.ITypeConverter;
-import static picocli.CommandLine.IVersionProvider;
 import static picocli.CommandLine.InitializationException;
 import static picocli.CommandLine.MissingParameterException;
 import static picocli.CommandLine.MissingTypeConverterException;
@@ -122,23 +121,6 @@ public class CommandLineTest {
         } catch (InitializationException ex) {
             assertEquals("Could not instantiate class " +
                     "picocli.CommandLineTest$BadConverter: java.lang.reflect.InvocationTargetException", ex.getMessage());
-        }
-    }
-    static class BadVersionProvider implements IVersionProvider {
-        public BadVersionProvider() {
-            throw new IllegalStateException("bad class");
-        }
-        public String[] getVersion() throws Exception { return new String[0]; }
-    }
-    @Test
-    public void testFailingVersionProviderWithDefaultFactory() {
-        @Command(versionProvider = BadVersionProvider.class)
-        class App { }
-        try {
-            new CommandLine(new App());
-        } catch (InitializationException ex) {
-            assertEquals("Could not instantiate class " +
-                    "picocli.CommandLineTest$BadVersionProvider: java.lang.reflect.InvocationTargetException", ex.getMessage());
         }
     }
     @Test

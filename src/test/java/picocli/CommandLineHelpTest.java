@@ -33,7 +33,6 @@ import picocli.CommandLine.Help.TextTable;
 import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.IHelpFactory;
 import picocli.CommandLine.IHelpSectionRenderer;
-import picocli.CommandLine.IVersionProvider;
 import picocli.CommandLine.InitializationException;
 import picocli.CommandLine.Model;
 import picocli.CommandLine.Model.ArgSpec;
@@ -2723,55 +2722,6 @@ public class CommandLineHelpTest {
     }
 
     @Test
-    public void testCommandLine_printVersionInfo_printsSinglePlainTextString() {
-        @Command(version = "1.0") class Versioned {}
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        new CommandLine(new Versioned()).printVersionHelp(new PrintStream(baos, true), Help.Ansi.OFF);
-        String result = baos.toString();
-        assertEquals(String.format("1.0%n"), result);
-    }
-
-    static class FailingVersionProvider implements IVersionProvider {
-        public String[] getVersion() {
-            throw new IllegalStateException("sorry can't give you a version");
-        }
-    }
-    @Test
-    public void testFailingVersionProvider() {
-        @Command(versionProvider = FailingVersionProvider.class)
-        class App {}
-        CommandLine cmd = new CommandLine(new App());
-        try {
-            cmd.printVersionHelp(System.out);
-            fail("Expected exception");
-        } catch (ExecutionException ex) {
-            assertEquals("Could not get version info from " + cmd.getCommandSpec().versionProvider() + ": java.lang.IllegalStateException: sorry can't give you a version", ex.getMessage());
-        }
-    }
-
-    @Test
-    public void testNoVersionProvider_errorWhenInvoked() {
-        try {
-            Class<?> cls = Class.forName("picocli.CommandLine$NoVersionProvider");
-            try {
-                Constructor<?> constructor = cls.getDeclaredConstructor(new Class[0]);
-                constructor.setAccessible(true);
-                IVersionProvider provider = (IVersionProvider) constructor.newInstance();
-                try {
-                    provider.getVersion();
-                    fail("expected an exception to be thrown here");
-                } catch (UnsupportedOperationException ex) {
-                    // expected
-                }
-            } catch (Exception e) {
-                fail(e.getMessage());
-            }
-        } catch (ClassNotFoundException e) {
-            fail(e.getMessage());
-        }
-    }
-
-    @Test
     public void testRepeatingGroup() {
         class App {
             @Parameters(arity = "2", description = "description") String[] twoArgs;
@@ -3019,28 +2969,6 @@ public class CommandLineHelpTest {
 
         String expected = String.format("abc 1.2.3 myversion%n");
         assertEquals(expected, baos.toString());
-    }
-
-    @Test
-    public void testPrintVersionHelp() {
-        @Command(version = "abc 1.2.3 myversion")
-        class App {
-            @Option(names = "-V", versionHelp = true) boolean versionRequested;
-        }
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        new CommandLine(new App()).printVersionHelp(new PrintStream(baos));
-        assertEquals(String.format("abc 1.2.3 myversion%n"), baos.toString());
-    }
-
-    @Test
-    public void testPrintVersionHelpPrintWriter() {
-        @Command(version = "abc 1.2.3 myversion")
-        class App {
-            @Option(names = "-V", versionHelp = true) boolean versionRequested;
-        }
-        StringWriter sw = new StringWriter();
-        new CommandLine(new App()).printVersionHelp(new PrintWriter(sw));
-        assertEquals(String.format("abc 1.2.3 myversion%n"), sw.toString());
     }
 
     @SuppressWarnings("deprecation")

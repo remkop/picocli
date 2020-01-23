@@ -718,26 +718,6 @@ public class CommandLineMixinTest {
     }
 
     @Test
-    public void testMixinAnnotationWithVersionProvider() {
-        class MyVersionProvider implements IVersionProvider {
-            public String[] getVersion() {
-                return new String[] {"line 1", "line 2"} ;
-            }
-        }
-        @Command(version = "Mixin 1.0", versionProvider = MyVersionProvider.class)
-        class MixMeIn {}
-
-        class Receiver {
-            @Mixin MixMeIn mixMeIn;
-        }
-
-        CommandLine commandLine = new CommandLine(new Receiver(), new InnerClassFactory(this));
-        CommandSpec commandSpec = commandLine.getCommandSpec();
-        assertTrue(commandSpec.versionProvider() instanceof MyVersionProvider);
-        assertArrayEquals(new String[] {"line 1", "line 2"}, commandSpec.version());
-    }
-
-    @Test
     public void testMixinAnnotationCanBeRetrievedByAnnotationName() {
         @Command class MixMeIn {}
 
