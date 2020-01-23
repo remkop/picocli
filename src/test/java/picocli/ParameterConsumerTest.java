@@ -105,4 +105,13 @@ public class ParameterConsumerTest {
         assertEquals(Arrays.asList("c", "d"), other.remainder);
         assertTrue(other.y);
     }
+    @SuppressWarnings("unchecked")
+    @Test(expected = UnsupportedOperationException.class)
+    public void testNoDefaultProviderThrowsUnsupportedOperation() throws Exception {
+        Class<IParameterConsumer> c = (Class<IParameterConsumer>) Class.forName("picocli.CommandLine$NullParameterConsumer");
+
+        IParameterConsumer provider = CommandLine.defaultFactory().create(c);
+        assertNotNull(provider);
+        provider.consumeParameters(new Stack<String>(), CommandLine.Model.PositionalParamSpec.builder().build(), CommandSpec.create());
+    }
 }

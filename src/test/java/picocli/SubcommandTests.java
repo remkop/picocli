@@ -2009,4 +2009,57 @@ public class SubcommandTests {
                 "  sub%n");
         assertEquals(expected, systemErrRule.getLog());
     }
+    static class CustomNegatableOptionTransformer implements CommandLine.INegatableOptionTransformer {
+        public String makeNegative(String optionName, CommandSpec cmd) { return null; }
+        public String makeSynopsis(String optionName, CommandSpec cmd) { return null;}
+    }
+    @Test
+    public void testSetNegatableOptionTransformer_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals(CommandLine.RegexTransformer.class, commandLine.getNegatableOptionTransformer().getClass());
+        CustomNegatableOptionTransformer newValue = new CustomNegatableOptionTransformer();
+        commandLine.setNegatableOptionTransformer(newValue);
+        assertEquals(newValue, commandLine.getNegatableOptionTransformer());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", CommandLine.RegexTransformer.class, sub.getNegatableOptionTransformer().getClass());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", CommandLine.RegexTransformer.class, subsub.getNegatableOptionTransformer().getClass());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetNegatableOptionTransformer_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertEquals(CommandLine.RegexTransformer.class, commandLine.getNegatableOptionTransformer().getClass());
+        CustomNegatableOptionTransformer newValue = new CustomNegatableOptionTransformer();
+        commandLine.setNegatableOptionTransformer(newValue);
+        assertEquals(newValue, commandLine.getNegatableOptionTransformer());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", newValue, sub.getNegatableOptionTransformer());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", newValue, sub.getNegatableOptionTransformer());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
 }

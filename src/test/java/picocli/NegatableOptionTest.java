@@ -11,6 +11,9 @@ import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Option;
 
+import java.util.Map;
+import java.util.regex.Pattern;
+
 import static org.junit.Assert.*;
 
 public class NegatableOptionTest {
@@ -356,5 +359,59 @@ public class NegatableOptionTest {
         new CommandLine(app).parseArgs("--no-xxx", "--no-yyy");
         assertFalse(app.xxx);
         assertFalse(app.yyy);
+    }
+    @Test
+    public void testDefaultTransformerToString() {
+        CommandLine.INegatableOptionTransformer transformer = CommandLine.RegexTransformer.createDefault();
+        String actual = transformer.toString().substring(0, transformer.toString().lastIndexOf('@'));
+        assertEquals("picocli.CommandLine$RegexTransformer[replacements={" +
+                "^--no-(\\w(-|\\w)*)$=--$1, " +
+                "^--(\\w(-|\\w)*)$=--no-$1, " +
+                "^(-|--)(\\w*:)\\+(\\w(-|\\w)*)$=$1$2-$3, " +
+                "^(-|--)(\\w*:)\\-(\\w(-|\\w)*)$=$1$2+$3}, " +
+                "synopsis={" +
+                "^--no-(\\w(-|\\w)*)$=--[no-]$1, " +
+                "^--(\\w(-|\\w)*)$=--[no-]$1, " +
+                "^(-|--)(\\w*:)\\+(\\w(-|\\w)*)$=$1$2(+|-)$3, " +
+                "^(-|--)(\\w*:)\\-(\\w(-|\\w)*)$=$1$2(+|-)$3}]", actual);
+    }
+
+    @Test
+    public void testDefaultTransformerBuilderRemovePattern() {
+        CommandLine.RegexTransformer.Builder builder = new CommandLine.RegexTransformer.Builder();
+        builder.addPattern("aaa", "-aaa", "!aaa");
+        builder.addPattern("bbb", "-bbb", "!bbb");
+        builder.addPattern("ccc", "-ccc", "!ccc");
+        assertEquals("-aaa", findForKey(builder.replacements, "aaa"));
+        assertEquals("-bbb", findForKey(builder.replacements, "bbb"));
+        assertEquals("-ccc", findForKey(builder.replacements, "ccc"));
+
+        CommandLine.RegexTransformer.Builder builder1 = builder.removePattern("bbb");
+        assertSame(builder1, builder);
+
+        assertEquals(2, builder.replacements.size());
+        assertEquals(2, builder.synopsis.size());
+
+        assertEquals("-aaa", findForKey(builder.replacements, "aaa"));
+        assertEquals("-ccc", findForKey(builder.replacements, "ccc"));
+        assertNull(builder.replacements.get(Pattern.compile("bbb")));
+
+        builder.removePattern("aaa");
+
+        assertEquals(1, builder.replacements.size());
+        assertEquals(1, builder.synopsis.size());
+
+        assertEquals("-ccc", findForKey(builder.replacements, "ccc"));
+        assertNull(builder.replacements.get(Pattern.compile("bbb")));
+        assertNull(builder.replacements.get(Pattern.compile("aaa")));
+    }
+
+    private String findForKey(Map<Pattern, String> map, String pattern) {
+        for (Pattern p : map.keySet()) {
+            if (p.pattern().equals(pattern)) {
+                return map.get(p);
+            }
+        }
+        return null;
     }
 }
