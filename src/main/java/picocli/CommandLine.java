@@ -15743,7 +15743,8 @@ public class CommandLine {
                 String cmd = spec.qualifiedName(".");
                 result = properties.getProperty(cmd + "." + key);
             }
-            return result != null ? result : properties.getProperty(key);
+            if (result != null) { return result; }
+            return key == null ? null : properties.getProperty(key);
         }
         @Override public String toString() {
             return getClass().getSimpleName() + "[" + location + "]";

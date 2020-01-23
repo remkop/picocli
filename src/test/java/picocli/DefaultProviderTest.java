@@ -10,6 +10,9 @@ import picocli.CommandLine.IDefaultValueProvider;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.PropertiesDefaultProvider;
+
+import java.util.Properties;
 
 public class DefaultProviderTest {
     @Rule
@@ -278,5 +281,14 @@ public class DefaultProviderTest {
                 "  -V, --version             Print version information and exit.%n");
         String actual = new CommandLine(new FooCommand()).getUsageMessage();
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testDefaultProvider_PropertiesConstructor() throws Exception {
+        Properties properties = new Properties();
+        properties.setProperty("x", "xvalue");
+        PropertiesDefaultProvider defaultProvider = new PropertiesDefaultProvider(properties);
+        String value = defaultProvider.defaultValue(CommandLine.Model.OptionSpec.builder("-x").build());
+        assertEquals("xvalue", value);
     }
 }
