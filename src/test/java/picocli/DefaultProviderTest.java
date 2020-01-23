@@ -11,7 +11,7 @@ import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-public class CommandLineDefaultProviderTest {
+public class DefaultProviderTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
