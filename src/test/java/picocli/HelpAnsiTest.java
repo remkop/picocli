@@ -1016,4 +1016,16 @@ public class HelpAnsiTest {
         assertTrue(Ansi.isPseudoTTY());
         assertTrue("If have MSYS pseudo-TTY, enabled on Windows", Ansi.AUTO.enabled());
     }
+
+    @Test
+    public void Palette256ColorEquals() {
+        Ansi.Palette256Color palette256Color = new Ansi.Palette256Color(true, "255;255;255");
+        assertEquals(palette256Color, new Ansi.Palette256Color(true, "255;255;255"));
+    }
+
+    @Test
+    public void Palette256ColorEqualHashCode() {
+        Ansi.Palette256Color palette256Color = new Ansi.Palette256Color(true, "255;255;255");
+        assertEquals(palette256Color.hashCode(), new Ansi.Palette256Color(true, "255;255;255").hashCode());
+    }
 }
