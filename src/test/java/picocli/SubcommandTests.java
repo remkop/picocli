@@ -534,8 +534,9 @@ public class SubcommandTests {
     public void testDeclarativelyAddSubcommandsFailsWithoutNoArgConstructor() {
         @Command(name = "sub1") class ABC { public ABC(String constructorParam) {} }
         @Command(subcommands = {ABC.class}) class MainCommand {}
+        CommandLine cmd = new CommandLine(new MainCommand(), new InnerClassFactory(this));
         try {
-            new CommandLine(new MainCommand(), new InnerClassFactory(this));
+            cmd.parseArgs("sub1");
             fail("Expected exception");
         } catch (InitializationException ex) {
             String prefix = String.format("Could not instantiate %s either with or without construction parameter picocli.SubcommandTests@", ABC.class.getName());

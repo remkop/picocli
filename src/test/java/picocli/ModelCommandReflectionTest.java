@@ -31,7 +31,8 @@ public class ModelCommandReflectionTest {
             spec.userObject();
             fail("expected Exception");
         } catch (InitializationException ex) {
-            assertEquals("Could not instantiate class java.lang.Object: picocli.CommandLine$InitializationException: boom", ex.getMessage());
+            //assertEquals("Could not instantiate class java.lang.Object: picocli.CommandLine$InitializationException: boom", ex.getMessage());
+            assertEquals("boom", ex.getMessage());
         }
     }
 

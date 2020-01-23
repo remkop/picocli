@@ -343,7 +343,7 @@ public class CommandLine {
         CommandLine subcommandLine = toCommandLine(command, factory);
         subcommandLine.getCommandSpec().aliases.addAll(Arrays.asList(aliases));
         getCommandSpec().addSubcommand(name, subcommandLine);
-        subcommandLine.getCommandSpec().initParentCommand(getCommandSpec().userObject());
+        subcommandLine.getCommandSpec().initParentCommand(getCommandSpec().userObject);
         return this;
     }
     /** Returns a map with the subcommands {@linkplain #addSubcommand(String, Object) registered} on this instance.
@@ -4844,6 +4844,9 @@ public class CommandLine {
         }
         static <T> T create(IFactory factory, Class<T> cls) {
             try { return factory.create(cls); }
+            catch (NoSuchMethodException ex) { throw new InitializationException("Cannot instantiate " +
+                    cls.getName() + ": the class has no constructor", ex); }
+            catch (InitializationException ex) { throw ex; }
             catch (Exception ex) { throw new InitializationException("Could not instantiate " + cls + ": " + ex, ex); }
         }
     }
@@ -5717,10 +5720,10 @@ public class CommandLine {
              * @return this CommandSpec for method chaining
              * @since 4.0 */
             public CommandSpec addParentCommandElement(IAnnotatedElement spec) { parentCommandElements.add(spec); return this; }
-            void initParentCommand(Object parent) {
+            void initParentCommand(CommandUserObject commandUserObject) {
                 try {
                     for (IAnnotatedElement injectParentCommand : parentCommandElements()) {
-                        injectParentCommand.setter().set(parent);
+                        injectParentCommand.setter().set(commandUserObject.getInstance());
                     }
                 } catch (Exception ex) {
                     throw new InitializationException("Unable to initialize @ParentCommand field: " + ex, ex);
@@ -7185,8 +7188,10 @@ public class CommandLine {
             private final Iterable<String> completionCandidates;
             private final IParameterConsumer parameterConsumer;
             private final String defaultValue;
-            private final Object initialValue;
+            private       Object initialValue;
             private final boolean hasInitialValue;
+            private       boolean isInitialValueCached;
+            private final IAnnotatedElement source;
             private final IGetter getter;
             private final ISetter setter;
             private final IScope scope;
@@ -7212,6 +7217,8 @@ public class CommandLine {
                 interactive = builder.interactive;
                 initialValue = builder.initialValue;
                 hasInitialValue = builder.hasInitialValue;
+                isInitialValueCached = builder.isInitialValueCached;
+                source = builder.source;
                 defaultValue = NO_DEFAULT_VALUE.equals(builder.defaultValue) ? null : builder.defaultValue;
                 required = builder.required;
                 toString = builder.toString;
@@ -7404,7 +7411,13 @@ public class CommandLine {
             /** Returns the initial value this option or positional parameter. If {@link #hasInitialValue()} is true,
              * the option will be reset to the initial value before parsing (regardless of whether a default value exists),
              * to clear values that would otherwise remain from parsing previous input. */
-            public Object initialValue()     { return initialValue; }
+            public Object initialValue()   {
+                if (!isInitialValueCached && source != null) {
+                    try { initialValue = source.getter().get(); } catch (Exception ex) { }
+                    isInitialValueCached = true;
+                }
+                return initialValue;
+            }
             /** Determines whether the option or positional parameter will be reset to the {@link #initialValue()}
              * before parsing new input.*/
             public boolean hasInitialValue() { return hasInitialValue; }
@@ -7547,7 +7560,7 @@ public class CommandLine {
             protected boolean internalShowDefaultValue(boolean usageHelpShowDefaults) {
                 if (showDefaultValue() == Help.Visibility.ALWAYS)   { return true; }  // override global usage help setting
                 if (showDefaultValue() == Help.Visibility.NEVER)    { return false; } // override global usage help setting
-                if (initialValue == null && defaultValue() == null && defaultValueFromProvider() == null) { return false; } // no default value to show
+                if (initialValue() == null && defaultValue() == null && defaultValueFromProvider() == null) { return false; } // no default value to show
                 return usageHelpShowDefaults && !isBoolean(type());
             }
             /** Returns the Messages for this arg specification, or {@code null}.
@@ -7719,6 +7732,7 @@ public class CommandLine {
                 private String defaultValue;
                 private Object initialValue;
                 private boolean hasInitialValue = true;
+                private boolean isInitialValueCached;
                 private Help.Visibility showDefaultValue;
                 private Iterable<String> completionCandidates;
                 private IParameterConsumer parameterConsumer;
@@ -7726,6 +7740,7 @@ public class CommandLine {
                 private IGetter getter = new ObjectBinding();
                 private ISetter setter = (ISetter) getter;
                 private IScope scope = new ObjectScope(null);
+                private IAnnotatedElement source;
 
                 Builder() {}
                 Builder(ArgSpec original) {
@@ -7743,6 +7758,7 @@ public class CommandLine {
                     converters = original.converters;
                     defaultValue = original.defaultValue;
                     initialValue = original.initialValue;
+                    isInitialValueCached = true;
                     hasInitialValue = original.hasInitialValue;
                     showDefaultValue = original.showDefaultValue;
                     completionCandidates = original.completionCandidates;
@@ -7753,6 +7769,7 @@ public class CommandLine {
                     scope = original.scope;
                 }
                 Builder(IAnnotatedElement source) {
+                    this.source = source;
                     userObject = source.userObject();
                     setTypeInfo(source.getTypeInfo());
                     toString = source.getToString();
@@ -7760,7 +7777,7 @@ public class CommandLine {
                     setter = source.setter();
                     scope = source.scope();
                     hasInitialValue = source.hasInitialValue();
-                    try { initialValue = source.getter().get(); } catch (Exception ex) { initialValue = null; hasInitialValue = false; }
+                    isInitialValueCached = false;
                 }
                 Builder(Option option, IAnnotatedElement source, IFactory factory) {
                     this(source);
@@ -7900,7 +7917,7 @@ public class CommandLine {
                 /** Returns the initial value this option or positional parameter. If {@link #hasInitialValue()} is true,
                  * the option will be reset to the initial value before parsing (regardless of whether a default value exists),
                  * to clear values that would otherwise remain from parsing previous input. */
-                public Object initialValue()     { return initialValue; }
+                public Object initialValue()   { return initialValue; }
                 /** Determines whether the option or positional parameter will be reset to the {@link #initialValue()}
                  * before parsing new input.*/
                 public boolean hasInitialValue() { return hasInitialValue; }
@@ -8013,7 +8030,7 @@ public class CommandLine {
                 /** Sets the initial value of this option or positional parameter to the specified value, and returns this builder.
                  * If {@link #hasInitialValue()} is true, the option will be reset to the initial value before parsing (regardless
                  * of whether a default value exists), to clear values that would otherwise remain from parsing previous input. */
-                public T initialValue(Object initialValue)   { this.initialValue = initialValue; return self(); }
+                public T initialValue(Object initialValue)   { this.initialValue = initialValue; isInitialValueCached = true; return self(); }
 
                 /** Determines whether the option or positional parameter will be reset to the {@link #initialValue()}
                  * before parsing new input.*/
@@ -9691,7 +9708,8 @@ public class CommandLine {
             }
             static CommandSpec extractCommandSpec(Object command, IFactory factory, boolean annotationsAreMandatory) {
                 Tracer t = new Tracer();
-                t.debug("Creating CommandSpec for object of class %s with factory %s%n", command.getClass().getName(), factory.getClass().getName());
+                String clsName = (command instanceof Class) ? ((Class<?>) command).getName() : command.getClass().getName();
+                t.debug("Creating CommandSpec for object of class %s with factory %s%n", clsName, factory.getClass().getName());
                 if (command instanceof CommandSpec) { return (CommandSpec) command; }
 
                 CommandUserObject userObject = new CommandUserObject(command, factory);
@@ -9753,16 +9771,14 @@ public class CommandLine {
                     }
                     try {
                         if (Help.class == sub) { throw new InitializationException(Help.class.getName() + " is not a valid subcommand. Did you mean " + HelpCommand.class.getName() + "?"); }
-                        CommandLine subcommandLine = toCommandLine(factory.create(sub), factory);
+                        CommandLine subcommandLine = toCommandLine(sub, factory);
                         parent.addSubcommand(subcommandName(sub), subcommandLine);
-                        subcommandLine.getCommandSpec().initParentCommand(parent.userObject());
+                        subcommandLine.getCommandSpec().initParentCommand(parent.userObject);
                         for (CommandSpec mixin : subcommandLine.getCommandSpec().mixins().values()) {
-                            mixin.initParentCommand(parent.userObject());
+                            mixin.initParentCommand(parent.userObject);
                         }
                     }
                     catch (InitializationException ex) { throw ex; }
-                    catch (NoSuchMethodException ex) { throw new InitializationException("Cannot instantiate subcommand " +
-                            sub.getName() + ": the class has no constructor", ex); }
                     catch (Exception ex) {
                         throw new InitializationException("Could not instantiate and add subcommand " +
                                 sub.getName() + ": " + ex, ex);
@@ -9772,7 +9788,7 @@ public class CommandLine {
                     for (CommandLine sub : CommandSpec.createMethodSubcommands(cls, factory)) {
                         parent.addSubcommand(sub.getCommandName(), sub);
                         for (CommandSpec mixin : sub.getCommandSpec().mixins().values()) {
-                            mixin.initParentCommand(parent.userObject());
+                            mixin.initParentCommand(parent.userObject);
                         }
                     }
                 }
@@ -11227,6 +11243,7 @@ public class CommandLine {
             arguments.addAll(result);
         }
         private void clear() {
+            getCommandSpec().userObject(); // #690 instantiate user object when cmd matched on the command line
             position = 0;
             endOfOptions = false;
             isHelpRequested = false;
@@ -11273,6 +11290,8 @@ public class CommandLine {
                 try {
                     applyDefaultValues(required);
                     processArguments(parsedCommands, argumentStack, required, initialized, originalArgs, nowProcessing);
+                } catch (InitializationException ex) {
+                    maybeThrow(ex);
                 } catch (ParameterException ex) {
                     maybeThrow(ex);
                 } catch (Exception ex) {
@@ -12876,6 +12895,7 @@ public class CommandLine {
          * @param colorScheme the color scheme to use */
         public Help(CommandSpec commandSpec, ColorScheme colorScheme) {
             this.commandSpec = Assert.notNull(commandSpec, "commandSpec");
+            commandSpec.userObject(); // #690 ensure the user object is instantiated
             this.aliases = new ArrayList<String>(Arrays.asList(commandSpec.aliases()));
             this.aliases.add(0, commandSpec.name());
             this.colorScheme = new ColorScheme.Builder(colorScheme).applySystemProperties().build();
