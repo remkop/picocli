@@ -30,6 +30,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#690] Enhancement: Postpone instantiating subcommands until they are matched on the command line. Thanks to [Daniel Breitlauch](https://github.com/danielBreitlauch) for raising this.
 * [#920] Enhancement: Reduce `DEBUG` tracing noise if no resource bundle is set.
 * [#924] Bugfix: `CommandSpec.mixinAnnotatedElements` map should be initialized when discovering `@Mixin`-annotated fields and methods via reflection.
+* [#927] DOC: Show current picocli version in the Spring Boot section of the user manual. Thanks to [Christian Grobmeier](https://github.com/grobmeier) for the pull request.
 * [#919] DOC: Added example Gradle project with Kotlin and Graal Native Image. Thanks to [OndrejMalek](https://github.com/OndrejMalek) for the pull request.
 * [#918] DOC: Added more Scala examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#916] DOC: Added Scala examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
