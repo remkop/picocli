@@ -343,7 +343,6 @@ public class CommandLine {
         CommandLine subcommandLine = toCommandLine(command, factory);
         subcommandLine.getCommandSpec().aliases.addAll(Arrays.asList(aliases));
         getCommandSpec().addSubcommand(name, subcommandLine);
-        subcommandLine.getCommandSpec().initParentCommand(getCommandSpec().userObject);
         return this;
     }
     /** Returns a map with the subcommands {@linkplain #addSubcommand(String, Object) registered} on this instance.
@@ -5473,7 +5472,11 @@ public class CommandLine {
 
             /** Sets the parent command of this subcommand.
              * @return this CommandSpec for method chaining */
-            public CommandSpec parent(CommandSpec parent) { this.parent = parent; return this; }
+            public CommandSpec parent(CommandSpec parent) {
+                this.parent = parent;
+                injectParentCommand(parent.userObject);
+                return this;
+            }
 
             /** Adds the specified option spec or positional parameter spec to the list of configured arguments to expect.
              * @param arg the option spec or positional parameter spec to add
@@ -5720,10 +5723,10 @@ public class CommandLine {
              * @return this CommandSpec for method chaining
              * @since 4.0 */
             public CommandSpec addParentCommandElement(IAnnotatedElement spec) { parentCommandElements.add(spec); return this; }
-            void initParentCommand(CommandUserObject commandUserObject) {
+            void injectParentCommand(CommandUserObject commandUserObject) {
                 try {
-                    for (IAnnotatedElement injectParentCommand : parentCommandElements()) {
-                        injectParentCommand.setter().set(commandUserObject.getInstance());
+                    for (IAnnotatedElement injectionTarget : parentCommandElements()) {
+                        injectionTarget.setter().set(commandUserObject.getInstance());
                     }
                 } catch (Exception ex) {
                     throw new InitializationException("Unable to initialize @ParentCommand field: " + ex, ex);
@@ -9787,9 +9790,9 @@ public class CommandLine {
                         if (Help.class == sub) { throw new InitializationException(Help.class.getName() + " is not a valid subcommand. Did you mean " + HelpCommand.class.getName() + "?"); }
                         CommandLine subcommandLine = toCommandLine(sub, factory);
                         parent.addSubcommand(subcommandName(sub), subcommandLine);
-                        subcommandLine.getCommandSpec().initParentCommand(parent.userObject);
+                        subcommandLine.getCommandSpec().injectParentCommand(parent.userObject);
                         for (CommandSpec mixin : subcommandLine.getCommandSpec().mixins().values()) {
-                            mixin.initParentCommand(parent.userObject);
+                            mixin.injectParentCommand(parent.userObject);
                         }
                     }
                     catch (InitializationException ex) { throw ex; }
@@ -9802,7 +9805,7 @@ public class CommandLine {
                     for (CommandLine sub : CommandSpec.createMethodSubcommands(cls, factory)) {
                         parent.addSubcommand(sub.getCommandName(), sub);
                         for (CommandSpec mixin : sub.getCommandSpec().mixins().values()) {
-                            mixin.initParentCommand(parent.userObject);
+                            mixin.injectParentCommand(parent.userObject);
                         }
                     }
                 }
