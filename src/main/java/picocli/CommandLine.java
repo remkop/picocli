@@ -4207,6 +4207,12 @@ public class CommandLine {
          * @return whether the default values for options and parameters should be shown in the description column */
         boolean showDefaultValues() default false;
 
+        /** Specify {@code true} to show a {@code [@<filename>...]} entry
+         * in the synopsis and parameter list of the usage help message.
+         * (The entry is not shown if {@linkplain CommandLine#isExpandAtFiles() expanding parameter files} is disabled.)
+         * @since 4.2 */
+        boolean showAtFileInUsageHelp() default false;
+
         /** Set the heading preceding the subcommands list. The default heading is {@code "Commands:%n"} (with a line break at the end).
          * <p>May contain embedded {@linkplain java.util.Formatter format specifiers} like {@code %n} line separators. Literal percent {@code '%'} characters must be escaped with another {@code %}.</p>
          * @return the heading preceding the subcommands list
@@ -6326,6 +6332,9 @@ public class CommandLine {
             /** Constant Boolean holding the default setting for whether to sort the options alphabetically: <code>{@value}</code>.*/
             static final Boolean DEFAULT_SORT_OPTIONS = Boolean.TRUE;
 
+            /** Constant Boolean holding the default setting for whether to show an entry for @-files in the usage help message.*/
+            static final Boolean DEFAULT_SHOW_AT_FILE = Boolean.FALSE;
+
             /** Constant Boolean holding the default setting for whether to show default values in the usage help message: <code>{@value}</code>.*/
             static final Boolean DEFAULT_SHOW_DEFAULT_VALUES = Boolean.FALSE;
 
@@ -6367,6 +6376,7 @@ public class CommandLine {
             private Boolean abbreviateSynopsis;
             private Boolean sortOptions;
             private Boolean showDefaultValues;
+            private Boolean showAtFileInUsageHelp;
             private Boolean hidden;
             private Boolean autoWidth;
             private Character requiredOptionMarker;
@@ -6717,6 +6727,11 @@ public class CommandLine {
 
             /** Returns whether the options list in the usage help message should show default values for all non-boolean options. */
             public boolean showDefaultValues() { return (showDefaultValues == null) ? DEFAULT_SHOW_DEFAULT_VALUES : showDefaultValues; }
+            /** Sets whether to show a {@code [@<filename>...]} entry in the synopsis and parameter list of the usage help message.
+             * (The entry is not shown if {@linkplain CommandLine#isExpandAtFiles() expanding parameter files} is disabled.)
+             * @see Command#showAtFileInUsageHelp()
+             * @since 4.2*/
+            public boolean showAtFileInUsageHelp() {return (showAtFileInUsageHelp == null) ? DEFAULT_SHOW_AT_FILE : showAtFileInUsageHelp; }
 
             /**
              * Returns whether this command should be hidden from the usage help message of the parent command.
@@ -6856,6 +6871,12 @@ public class CommandLine {
              * @return this UsageMessageSpec for method chaining */
             public UsageMessageSpec showDefaultValues(boolean newValue) {showDefaultValues = newValue; return this;}
 
+            /** Sets whether to show a {@code [@<filename>...]} entry in the synopsis and parameter list of the usage help message.
+             * (The entry is not shown if {@linkplain CommandLine#isExpandAtFiles() expanding parameter files} is disabled.)
+             * @see Command#showAtFileInUsageHelp()
+             * @return this UsageMessageSpec for method chaining
+             * @since 4.2*/
+            public UsageMessageSpec showAtFileInUsageHelp(boolean newValue) {showAtFileInUsageHelp = newValue; return this;}
             /**
              * Set the hidden flag on this command to control whether to show or hide it in the help usage text of the parent command.
              * @param value enable or disable the hidden flag
@@ -6926,6 +6947,7 @@ public class CommandLine {
                 if (isNonDefault(cmd.abbreviateSynopsis(), DEFAULT_ABBREVIATE_SYNOPSIS))      {abbreviateSynopsis = cmd.abbreviateSynopsis();}
                 if (isNonDefault(cmd.sortOptions(), DEFAULT_SORT_OPTIONS))                    {sortOptions = cmd.sortOptions();}
                 if (isNonDefault(cmd.showDefaultValues(), DEFAULT_SHOW_DEFAULT_VALUES))       {showDefaultValues = cmd.showDefaultValues();}
+                if (isNonDefault(cmd.showAtFileInUsageHelp(), DEFAULT_SHOW_AT_FILE))          {showAtFileInUsageHelp = cmd.showAtFileInUsageHelp();}
                 if (isNonDefault(cmd.hidden(), DEFAULT_HIDDEN))                               {hidden = cmd.hidden();}
                 if (isNonDefault(cmd.customSynopsis(), DEFAULT_MULTI_LINE))                   {customSynopsis = cmd.customSynopsis().clone();}
                 if (isNonDefault(cmd.description(), DEFAULT_MULTI_LINE))                      {description = cmd.description().clone();}
@@ -6949,6 +6971,7 @@ public class CommandLine {
                 if (initializable(abbreviateSynopsis, mixin.abbreviateSynopsis(), DEFAULT_ABBREVIATE_SYNOPSIS))        {abbreviateSynopsis = mixin.abbreviateSynopsis();}
                 if (initializable(sortOptions, mixin.sortOptions(), DEFAULT_SORT_OPTIONS))                             {sortOptions = mixin.sortOptions();}
                 if (initializable(showDefaultValues, mixin.showDefaultValues(), DEFAULT_SHOW_DEFAULT_VALUES))          {showDefaultValues = mixin.showDefaultValues();}
+                if (initializable(showAtFileInUsageHelp, mixin.showAtFileInUsageHelp(), DEFAULT_SHOW_AT_FILE))         {showAtFileInUsageHelp = mixin.showAtFileInUsageHelp();}
                 if (initializable(hidden, mixin.hidden(), DEFAULT_HIDDEN))                                             {hidden = mixin.hidden();}
                 if (initializable(customSynopsis, mixin.customSynopsis(), DEFAULT_MULTI_LINE))                         {customSynopsis = mixin.customSynopsis().clone();}
                 if (initializable(description, mixin.description(), DEFAULT_MULTI_LINE))                               {description = mixin.description().clone();}
@@ -6974,6 +6997,7 @@ public class CommandLine {
                 abbreviateSynopsis = settings.abbreviateSynopsis;
                 sortOptions = settings.sortOptions;
                 showDefaultValues = settings.showDefaultValues;
+                showAtFileInUsageHelp = settings.showAtFileInUsageHelp;
                 hidden = settings.hidden;
                 requiredOptionMarker = settings.requiredOptionMarker;
                 headerHeading = settings.headerHeading;
@@ -12892,6 +12916,10 @@ public class CommandLine {
         protected static final String DEFAULT_SEPARATOR = ParserSpec.DEFAULT_SEPARATOR;
 
         private final static int defaultOptionsColumnWidth = 24;
+        public final PositionalParamSpec AT_FILE_POSITIONAL_PARAM = PositionalParamSpec.builder()
+                .paramLabel("${picocli.atfile.label:-@<filename>}").description("${picocli.atfile.description:-One or more argument files containing options}").arity("0..*")
+                .descriptionKey("picocli.atfile").build();
+
         private final CommandSpec commandSpec;
         private final ColorScheme colorScheme;
         private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
@@ -12934,6 +12962,7 @@ public class CommandLine {
             parameterLabelRenderer = createDefaultParamLabelRenderer(); // uses help separator
 
             this.addAllSubcommands(commandSpec.subcommands());
+            AT_FILE_POSITIONAL_PARAM.commandSpec = commandSpec; // for interpolation
         }
 
         Help withCommandNames(List<String> aliases) { this.aliases = aliases; return this; }
@@ -13196,6 +13225,9 @@ public class CommandLine {
         protected Text createDetailedSynopsisPositionalsText(Collection<ArgSpec> done) {
             Text positionalParamText = ansi().new Text(0);
             List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(commandSpec.positionalParameters()); // iterate in declaration order
+            if (commandSpec.parser.expandAtFiles() && commandSpec.usageMessage.showAtFileInUsageHelp()) {
+                positionals.add(0, AT_FILE_POSITIONAL_PARAM);
+            }
             positionals.removeAll(done);
             for (PositionalParamSpec positionalParam : positionals) {
                 if (!positionalParam.hidden()) {
@@ -13287,12 +13319,18 @@ public class CommandLine {
                 int len = cjk ? values[0][3].getCJKAdjustedLength() : values[0][3].length;
                 if (len < Help.defaultOptionsColumnWidth - 3) { max = Math.max(max, len); }
             }
-            IParameterRenderer paramRenderer = new DefaultParameterRenderer(false, " ");
-            for (PositionalParamSpec positional : commandSpec.positionalParameters()) {
-                Text[][] values = paramRenderer.render(positional, parameterLabelRenderer(), colorScheme);
-                int len = cjk ? values[0][3].getCJKAdjustedLength() : values[0][3].length;
+            List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(commandSpec.positionalParameters()); // iterate in declaration order
+            if (commandSpec.parser.expandAtFiles() && commandSpec.usageMessage.showAtFileInUsageHelp()) {
+                positionals.add(0, AT_FILE_POSITIONAL_PARAM);
+            }
+            //IParameterRenderer paramRenderer = new DefaultParameterRenderer(false, " ");
+            for (PositionalParamSpec positional : positionals) {
+                //Text[][] values = paramRenderer.render(positional, parameterLabelRenderer(), colorScheme); // values[0][3]; //
+                Text label = parameterLabelRenderer().renderParameterLabel(positional, colorScheme.ansi(), colorScheme.parameterStyles);
+                int len = cjk ? label.getCJKAdjustedLength() : label.length;
                 if (len < Help.defaultOptionsColumnWidth - 3) { max = Math.max(max, len); }
             }
+
             return max + 3;
         }
 
@@ -13359,6 +13397,9 @@ public class CommandLine {
          */
         public String parameterList(Layout layout, IParamLabelRenderer paramLabelRenderer) {
             List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(commandSpec.positionalParameters());
+            if (commandSpec.parser.expandAtFiles() && commandSpec.usageMessage.showAtFileInUsageHelp()) {
+                positionals.add(0, AT_FILE_POSITIONAL_PARAM);
+            }
             List<ArgGroupSpec> groups = optionListGroups();
             for (ArgGroupSpec group : groups) { positionals.removeAll(group.positionalParameters()); }
 
