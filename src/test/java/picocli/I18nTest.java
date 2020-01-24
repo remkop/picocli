@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 import static org.junit.Assert.*;
+import static picocli.TestUtil.stripAnsiTrace;
 
 /**
  * Tests internationalization (i18n) and localization (l12n)-related functionality.
@@ -722,6 +723,6 @@ public class I18nTest {
                 "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'help' (picocli.CommandLine$HelpCommand)%n" +
                 "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLine$AutoHelpMixin with factory picocli.CommandLine$DefaultFactory%n" +
                 "");
-        assertEquals(expected, err.toString());
+        assertEquals(stripAnsiTrace(expected), stripAnsiTrace(err.toString()));
     }
 }

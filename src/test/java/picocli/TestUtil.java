@@ -124,17 +124,18 @@ public class TestUtil {
         String result = original;
         do {
             original = result;
-            result = stripAnsiTraceOnce(original);
+            result = stripAnsiTraceOnce(original, "(ANSI is disabled by default:", ")", "(ANSI is disabled ...");
+            result = stripAnsiTraceOnce(result, "Creating CommandSpec for object", " of class", "Creating CommandSpec... for object");
+            result = stripAnsiTraceOnce(result, " on ", System.getProperty("line.separator"), "");
         } while (result != original);
         return result;
     }
 
-    private static String stripAnsiTraceOnce(String original) {
-        String prefix = "(ANSI is disabled by default:";
+    private static String stripAnsiTraceOnce(String original, String prefix, String suffix, String replacement) {
         int pos = original.indexOf(prefix);
         if (pos > 0) {
-            int to = original.indexOf(")", pos);
-            return original.substring(0, pos + 1) + original.substring(to);
+            int to = original.indexOf(suffix, pos);
+            return original.substring(0, pos) + replacement + original.substring(to);
         }
         return original;
     }

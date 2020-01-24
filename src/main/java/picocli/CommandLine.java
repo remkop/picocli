@@ -7579,6 +7579,17 @@ public class CommandLine {
 
             /** Returns a string respresentation of this option or positional parameter. */
             public String toString() { return toString; }
+            private String scopeString() {
+                try {
+                    Object obj = scope.get();
+                    if (obj == null) {
+                        return "<no user object>";
+                    }
+                    return obj.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(obj));
+                } catch (Exception ex) {
+                    return "?: " + ex.toString();
+                }
+            }
 
             String[] splitValue(String value, ParserSpec parser, Range arity, int consumed) {
                 if (splitRegex().length() == 0) { return new String[] {value}; }
@@ -9715,7 +9726,7 @@ public class CommandLine {
             static CommandSpec extractCommandSpec(Object command, IFactory factory, boolean annotationsAreMandatory) {
                 Tracer t = new Tracer();
                 String clsName = (command instanceof Class) ? ((Class<?>) command).getName() : command.getClass().getName();
-                t.debug("Creating CommandSpec for object of class %s with factory %s%n", clsName, factory.getClass().getName());
+                t.debug("Creating CommandSpec for object %s of class %s with factory %s%n", Integer.toHexString(System.identityHashCode(command)), clsName, factory.getClass().getName());
                 if (command instanceof CommandSpec) { return (CommandSpec) command; }
 
                 CommandUserObject userObject = new CommandUserObject(command, factory);
@@ -10150,11 +10161,12 @@ public class CommandLine {
                         instance = DefaultFactory.create(factory, type);
                         type = instance.getClass(); // potentially change interface name to impl type name
                         description = type.getName();
-                        t.debug("Factory returned a %s instance%n", description);
+                        t.debug("Factory returned a %s instance (%s)%n", description, Integer.toHexString(System.identityHashCode(instance)));
                     } catch (InitializationException ex) {
                         if (type.isInterface()) {
                             t.debug("%s. Creating Proxy for interface %s%n", ex.getCause(), type.getName());
                             instance = Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[]{type}, new PicocliInvocationHandler());
+                            t.debug("Created Proxy instance (%s)%n", Integer.toHexString(System.identityHashCode(instance)));
                         } else {
                             throw ex;
                         }
@@ -11384,7 +11396,7 @@ public class CommandLine {
 
             if (defaultValue != null) {
                 String provider = defaultValueProvider == null ? "" : (" from " + defaultValueProvider.toString());
-                if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s)%s to %s%n", defaultValue, provider, arg);}
+                if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s)%s to %s on %s%n", defaultValue, provider, arg, arg.scopeString());}
                 Range arity = arg.arity().min(Math.max(1, arg.arity().min));
                 applyOption(arg, false, LookBehind.SEPARATE, false, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
             }
@@ -11420,8 +11432,9 @@ public class CommandLine {
                 String arg = smartUnquoteIfEnabled(originalArg);
                 boolean actuallyUnquoted = !originalArg.equals(arg);
                 if (tracer.isDebug()) {
-                    if (actuallyUnquoted) { tracer.debug("Processing argument '%s' (trimmed from '%s'). Remainder=%s%n", arg, originalArg, reverse(copy(args))); }
-                    else { tracer.debug("Processing argument '%s'. Remainder=%s%n", arg, reverse(copy(args))); }
+                    int argIndex = originalArgs.length - (args.size() + 1);
+                    if (actuallyUnquoted) { tracer.debug("[%d] Processing argument '%s' (trimmed from '%s'). Remainder=%s%n", argIndex, arg, originalArg, reverse(copy(args))); }
+                    else { tracer.debug("[%d] Processing argument '%s'. Remainder=%s%n", argIndex, arg, reverse(copy(args))); }
                 }
 
                 // Double-dash separates options from positional arguments.
@@ -11527,7 +11540,8 @@ public class CommandLine {
             }
         }
         private void processPositionalParameter(Collection<ArgSpec> required, Set<ArgSpec> initialized, boolean alreadyUnquoted, Stack<String> args) throws Exception {
-            if (tracer.isDebug()) {tracer.debug("Processing next arg as a positional parameter. Command-local position=%d. Remainder=%s%n", position, reverse(copy(args)));}
+            int argIndex = parseResultBuilder.originalArgList.size() - args.size();
+            if (tracer.isDebug()) {tracer.debug("[%d] Processing next arg as a positional parameter. Command-local position=%d. Remainder=%s%n", argIndex, position, reverse(copy(args)));}
             if (config().stopAtPositional()) {
                 if (!endOfOptions && tracer.isDebug()) {tracer.debug("Parser was configured with stopAtPositional=true, treating remaining arguments as positional parameters.%n");}
                 endOfOptions = true;
@@ -11806,16 +11820,16 @@ public class CommandLine {
                 return 0;
             }
             Object newValue = interactiveValue;
-            String initValueMessage = "Setting %s to *** (masked interactive value) for %4$s%n";
-            String overwriteValueMessage = "Overwriting %s value with *** (masked interactive value) for %s%n";
+            String initValueMessage = "Setting %s to *** (masked interactive value) for %4$s on %5$s%n";
+            String overwriteValueMessage = "Overwriting %s value with *** (masked interactive value) for %s on %5$s%n";
             if (!char[].class.equals(cls) && !char[].class.equals(argSpec.type())) {
                 if (interactiveValue != null) {
                     actualValue = new String(interactiveValue);
                 }
                 ITypeConverter<?> converter = getTypeConverter(cls, argSpec, 0);
                 newValue = tryConvert(argSpec, -1, converter, actualValue, cls);
-                initValueMessage = "Setting %s to '%3$s' (was '%2$s') for %4$s%n";
-                overwriteValueMessage = "Overwriting %s value '%s' with '%s' for %s%n";
+                initValueMessage = "Setting %s to '%3$s' (was '%2$s') for %4$s on %5$s%n";
+                overwriteValueMessage = "Overwriting %s value '%s' with '%s' for %s on %s%n";
             } else {
                 if (interactiveValue == null) { // setting command line arg to char[] field
                     newValue = actualValue.toCharArray();
@@ -11833,7 +11847,7 @@ public class CommandLine {
             }
             initialized.add(argSpec);
 
-            if (tracer.isInfo()) { tracer.info(traceMessage, argSpec.toString(), String.valueOf(oldValue), String.valueOf(newValue), argDescription); }
+            if (tracer.isInfo()) { tracer.info(traceMessage, argSpec.toString(), String.valueOf(oldValue), String.valueOf(newValue), argDescription, argSpec.scopeString()); }
             int pos = getPosition(argSpec);
             argSpec.setValue(newValue);
             parseResultBuilder.addOriginalStringValue(argSpec, actualValue);// #279 track empty string value if no command line argument was consumed
@@ -11855,7 +11869,7 @@ public class CommandLine {
             ITypeConverter<?> valueConverter = getTypeConverter(classes[1], argSpec, 1);
             @SuppressWarnings("unchecked") Map<Object, Object> map = (Map<Object, Object>) argSpec.getValue();
             if (map == null || (!map.isEmpty() && !initialized.contains(argSpec))) {
-                tracer.debug("Initializing binding for %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.type().getSimpleName());
+                tracer.debug("Initializing binding for %s on %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.scopeString(), argSpec.type().getSimpleName());
                 map = createMap(argSpec.type()); // map class
                 argSpec.setValue(map);
             }
@@ -11934,8 +11948,8 @@ public class CommandLine {
                 Object mapKey =   tryConvert(argSpec, index, keyConverter,   keyValue[0], classes[0]);
                 Object mapValue = tryConvert(argSpec, index, valueConverter, keyValue[1], classes[1]);
                 result.put(mapKey, mapValue);
-                if (tracer.isInfo()) { tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s%n", String.valueOf(mapKey), String.valueOf(mapValue),
-                        result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), argSpec.toString(), argDescription); }
+                if (tracer.isInfo()) { tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s on %s%n", String.valueOf(mapKey), String.valueOf(mapValue),
+                        result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), argSpec.toString(), argDescription, argSpec.scopeString()); }
                 parseResultBuilder.addStringValue(argSpec, keyValue[0]);
                 parseResultBuilder.addStringValue(argSpec, keyValue[1]);
             }
@@ -12039,7 +12053,7 @@ public class CommandLine {
             int pos = getPosition(argSpec);
             List<Object> converted = consumeArguments(argSpec, negated, lookBehind, alreadyUnquoted, alreadyUnquoted, arity, args, type, argDescription);
             if (collection == null || (!collection.isEmpty() && !initialized.contains(argSpec))) {
-                tracer.debug("Initializing binding for %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.type().getSimpleName());
+                tracer.debug("Initializing binding for %s on %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.scopeString(), argSpec.type().getSimpleName());
                 collection = createCollection(argSpec.type(), type); // collection type, element type
                 argSpec.setValue(collection);
             }
@@ -12140,7 +12154,7 @@ public class CommandLine {
         private int addPasswordToList(ArgSpec argSpec, Class<?> type, List<Object> result, int consumed, String argDescription) {
             char[] password = readPassword(argSpec);
             if (tracer.isInfo()) {
-                tracer.info("Adding *** (masked interactive value) to %s for %s%n", argSpec.toString(), argDescription);
+                tracer.info("Adding *** (masked interactive value) to %s for %s on %s%n", argSpec.toString(), argDescription, argSpec.scopeString());
             }
             parseResultBuilder.addStringValue(argSpec, "***");
             parseResultBuilder.addOriginalStringValue(argSpec, "***");
@@ -12169,7 +12183,7 @@ public class CommandLine {
                 Object stronglyTypedValue = tryConvert(argSpec, index, converter, values[j], type);
                 result.add(stronglyTypedValue);
                 if (tracer.isInfo()) {
-                    tracer.info("Adding [%s] to %s for %s%n", String.valueOf(result.get(result.size() - 1)), argSpec.toString(), argDescription);
+                    tracer.info("Adding [%s] to %s for %s on %s%n", String.valueOf(result.get(result.size() - 1)), argSpec.toString(), argDescription, argSpec.scopeString());
                 }
                 parseResultBuilder.addStringValue(argSpec, values[j]);
             }

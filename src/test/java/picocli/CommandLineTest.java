@@ -847,27 +847,27 @@ public class CommandLineTest {
                         "[picocli DEBUG] Set initial value for field java.io.File picocli.CommandLineTest$CompactFields.outputFile of type class java.io.File to null.%n" +
                         "[picocli DEBUG] Set initial value for field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles of type class [Ljava.io.File; to null.%n" +
                         "[picocli DEBUG] Initializing %1$s$CompactFields: 3 options, 1 positional parameters, 0 required, 0 groups, 0 subcommands.%n" +
-                        "[picocli DEBUG] Processing argument '-oout'. Remainder=[--, -r, -v, p1, p2]%n" +
+                        "[picocli DEBUG] [0] Processing argument '-oout'. Remainder=[--, -r, -v, p1, p2]%n" +
                         "[picocli DEBUG] '-oout' cannot be separated into <option>=<option-parameter>%n" +
                         "[picocli DEBUG] Trying to process '-oout' as clustered short options%n" +
                         "[picocli DEBUG] Found option '-o' in -oout: field java.io.File %1$s$CompactFields.outputFile, arity=1%n" +
                         "[picocli DEBUG] Trying to process 'out' as option parameter%n" +
                         "[picocli INFO] Setting field java.io.File picocli.CommandLineTest$CompactFields.outputFile to 'out' (was 'null') for option -o%n" +
-                        "[picocli DEBUG] Processing argument '--'. Remainder=[-r, -v, p1, p2]%n" +
+                        "[picocli DEBUG] [1] Processing argument '--'. Remainder=[-r, -v, p1, p2]%n" +
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
-                        "[picocli DEBUG] Processing next arg as a positional parameter. Command-local position=0. Remainder=[-r, -v, p1, p2]%n" +
+                        "[picocli DEBUG] [2] Processing next arg as a positional parameter. Command-local position=0. Remainder=[-r, -v, p1, p2]%n" +
                         "[picocli DEBUG] Position 0 (command-local) is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
                         "[picocli INFO] Adding [-r] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 0%n" +
                         "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 1.%n" +
-                        "[picocli DEBUG] Processing next arg as a positional parameter. Command-local position=1. Remainder=[-v, p1, p2]%n" +
+                        "[picocli DEBUG] [3] Processing next arg as a positional parameter. Command-local position=1. Remainder=[-v, p1, p2]%n" +
                         "[picocli DEBUG] Position 1 (command-local) is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
                         "[picocli INFO] Adding [-v] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 1%n" +
                         "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 2.%n" +
-                        "[picocli DEBUG] Processing next arg as a positional parameter. Command-local position=2. Remainder=[p1, p2]%n" +
+                        "[picocli DEBUG] [4] Processing next arg as a positional parameter. Command-local position=2. Remainder=[p1, p2]%n" +
                         "[picocli DEBUG] Position 2 (command-local) is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
                         "[picocli INFO] Adding [p1] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 2%n" +
                         "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 3.%n" +
-                        "[picocli DEBUG] Processing next arg as a positional parameter. Command-local position=3. Remainder=[p2]%n" +
+                        "[picocli DEBUG] [5] Processing next arg as a positional parameter. Command-local position=3. Remainder=[p2]%n" +
                         "[picocli DEBUG] Position 3 (command-local) is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
                         "[picocli INFO] Adding [p2] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 3%n" +
                         "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 4.%n",
@@ -1745,7 +1745,7 @@ public class CommandLineTest {
                 new File("/home/rpopma/picocli"));
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
-        assertEquals(expected, actual);
+        assertEquals(stripAnsiTrace(expected), stripAnsiTrace(actual));
     }
     @Test
     public void testTracingDebugWithSubCommands() throws Exception {
@@ -1816,11 +1816,11 @@ public class CommandLineTest {
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLine$AutoHelpMixin.helpRequested of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLine$AutoHelpMixin.versionRequested of type boolean to false.%n" +
                         "[picocli DEBUG] Initializing %1$s$Git: 3 options, 0 positional parameters, 0 required, 0 groups, 12 subcommands.%n" +
-                        "[picocli DEBUG] Processing argument '--git-dir=/home/rpopma/picocli'. Remainder=[commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
+                        "[picocli DEBUG] [0] Processing argument '--git-dir=/home/rpopma/picocli'. Remainder=[commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Separated '--git-dir' option from '/home/rpopma/picocli' option parameter%n" +
                         "[picocli DEBUG] Found option named '--git-dir': field java.io.File %1$s$Git.gitDir, arity=1%n" +
                         "[picocli INFO] Setting field java.io.File picocli.Demo$Git.gitDir to '%2$s' (was 'null') for option --git-dir%n" +
-                        "[picocli DEBUG] Processing argument 'commit'. Remainder=[-m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
+                        "[picocli DEBUG] [1] Processing argument 'commit'. Remainder=[-m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Found subcommand 'commit' (%1$s$GitCommit)%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.Demo$GitCommit.all of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.Demo$GitCommit.patch of type boolean to false.%n" +
@@ -1832,21 +1832,21 @@ public class CommandLineTest {
                         "[picocli DEBUG] Set initial value for field java.util.List<String> picocli.Demo$GitCommit.message of type interface java.util.List to [].%n" +
                         "[picocli DEBUG] Set initial value for field java.util.List<java.io.File> picocli.Demo$GitCommit.files of type interface java.util.List to [].%n" +
                         "[picocli DEBUG] Initializing %1$s$GitCommit: 8 options, 1 positional parameters, 0 required, 0 groups, 0 subcommands.%n" +
-                        "[picocli DEBUG] Processing argument '-m'. Remainder=[\"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
+                        "[picocli DEBUG] [2] Processing argument '-m'. Remainder=[\"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] '-m' cannot be separated into <option>=<option-parameter>%n" +
                         "[picocli DEBUG] Found option named '-m': field java.util.List<String> %1$s$GitCommit.message, arity=1%n" +
                         "[picocli INFO] Adding [\"Fixed typos\"] to field java.util.List<String> picocli.Demo$GitCommit.message for option -m%n" +
-                        "[picocli DEBUG] Processing argument '--'. Remainder=[src1.java, src2.java, src3.java]%n" +
+                        "[picocli DEBUG] [4] Processing argument '--'. Remainder=[src1.java, src2.java, src3.java]%n" +
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
-                        "[picocli DEBUG] Processing next arg as a positional parameter. Command-local position=0. Remainder=[src1.java, src2.java, src3.java]%n" +
+                        "[picocli DEBUG] [5] Processing next arg as a positional parameter. Command-local position=0. Remainder=[src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Position 0 (command-local) is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
                         "[picocli INFO] Adding [src1.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 0%n" +
                         "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 1.%n" +
-                        "[picocli DEBUG] Processing next arg as a positional parameter. Command-local position=1. Remainder=[src2.java, src3.java]%n" +
+                        "[picocli DEBUG] [6] Processing next arg as a positional parameter. Command-local position=1. Remainder=[src2.java, src3.java]%n" +
                         "[picocli DEBUG] Position 1 (command-local) is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
                         "[picocli INFO] Adding [src2.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 1%n" +
                         "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 2.%n" +
-                        "[picocli DEBUG] Processing next arg as a positional parameter. Command-local position=2. Remainder=[src3.java]%n" +
+                        "[picocli DEBUG] [7] Processing next arg as a positional parameter. Command-local position=2. Remainder=[src3.java]%n" +
                         "[picocli DEBUG] Position 2 (command-local) is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
                         "[picocli INFO] Adding [src3.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 2%n" +
                         "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 3.%n",
@@ -1889,7 +1889,7 @@ public class CommandLineTest {
                 CommandLine.versionString(),
                 App.class.getName());
         String actual = new String(baos.toByteArray(), "UTF8");
-        assertEquals(expected, actual);
+        assertEquals(stripAnsiTrace(expected), stripAnsiTrace(actual));
         setTraceLevel("WARN");
     }
     @SuppressWarnings("deprecation")
@@ -1919,7 +1919,7 @@ public class CommandLineTest {
                 App.class.getName());
         String actual = new String(baos.toByteArray(), "UTF8");
         //System.out.println(actual);
-        assertEquals(expected, actual);
+        assertEquals(stripAnsiTrace(expected), stripAnsiTrace(actual));
         setTraceLevel("WARN");
     }
 
@@ -2549,7 +2549,7 @@ public class CommandLineTest {
                 App.class.getName(),
                 CommandLine.versionString());
         String actual = new String(baos.toByteArray(), "UTF8");
-        assertEquals(expected, actual);
+        assertEquals(stripAnsiTrace(expected), stripAnsiTrace(actual));
         setTraceLevel("WARN");
     }
 
