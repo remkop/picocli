@@ -5178,6 +5178,13 @@ This https://www.infoq.com/news/2019/03/jep-343-jpackage/[InfoQ article] has mor
 Gradle users may like these plugins: https://badass-runtime-plugin.beryx.org/releases/latest/[org.beryx Badass Runtime Plugin]
 and https://badass-jlink-plugin.beryx.org/releases/latest/[org.beryx Badass JLink Plugin].
 
+=== jbang
+
+https://github.com/maxandersen/jbang[jbang] allows you to write scripts in Java that use external dependencies.
+You use it with a `//DEPS` comment, similar to the http://groovy-lang.org/grape.html[`@Grab`] annotation in Groovy.
+
+Use `jbang --init=cli helloworld.java` to create an initial script with a picocli template.
+This https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&speed=2[asciinema presentation] shows what is possible.
 
 == Picocli in Other Languages
 Picocli may be used in other JVM languages that support annotations.
