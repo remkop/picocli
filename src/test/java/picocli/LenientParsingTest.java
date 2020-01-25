@@ -183,7 +183,7 @@ public class LenientParsingTest {
     }
     @Test
     public void testBooleanOptionsArity0_nFailsIfAttachedParamNotABoolean() { // ignores varargs
-        CommandLine cmd = new CommandLine(new CommandLineArityTest.BooleanOptionsArity0_nAndParameters());
+        CommandLine cmd = new CommandLine(new ArityTest.BooleanOptionsArity0_nAndParameters());
         cmd.getCommandSpec().parser().collectErrors(true);
         cmd.parseArgs("-bool=123 -other".split(" "));
         assertEquals(1, cmd.getParseResult().errors().size());
@@ -191,7 +191,7 @@ public class LenientParsingTest {
     }
     @Test
     public void testBooleanOptionsArity0_nShortFormFailsIfAttachedParamNotABoolean() { // ignores varargs
-        CommandLine cmd = new CommandLine(new CommandLineArityTest.BooleanOptionsArity0_nAndParameters());
+        CommandLine cmd = new CommandLine(new ArityTest.BooleanOptionsArity0_nAndParameters());
         cmd.getCommandSpec().parser().collectErrors(true);
         cmd.parseArgs("-rv234 -bool".split(" "));
         assertEquals(1, cmd.getParseResult().errors().size());
@@ -273,7 +273,7 @@ public class LenientParsingTest {
     }
     @Test
     public void testEnumListTypeConversionFailsForInvalidInput() {
-        CommandLine cmd = new CommandLine(new CommandLineTypeConversionTest.EnumParams());
+        CommandLine cmd = new CommandLine(new TypeConversionTest.EnumParams());
         cmd.getCommandSpec().parser().collectErrors(true);
         cmd.parseArgs("-timeUnitList", "SECONDS", "b", "c");
         assertEquals(2, cmd.getParseResult().errors().size());
@@ -287,7 +287,7 @@ public class LenientParsingTest {
     }
     @Test
     public void testTimeFormatHHmmssSSSInvalidError() throws ParseException {
-        CommandLine cmd = new CommandLine(new CommandLineTypeConversionTest.SupportedTypes());
+        CommandLine cmd = new CommandLine(new TypeConversionTest.SupportedTypes());
         cmd.getCommandSpec().parser().collectErrors(true);
         cmd.parseArgs("-Time", "23:59:58;123");
         assertEquals(1, cmd.getParseResult().errors().size());
@@ -295,7 +295,7 @@ public class LenientParsingTest {
     }
     @Test
     public void testByteFieldsAreDecimal() {
-        CommandLine cmd = new CommandLine(new CommandLineTypeConversionTest.SupportedTypes());
+        CommandLine cmd = new CommandLine(new TypeConversionTest.SupportedTypes());
         cmd.getCommandSpec().parser().collectErrors(true);
         cmd.parseArgs("-byte", "0x1F", "-Byte", "0x0F");
         assertEquals(2, cmd.getParseResult().errors().size());

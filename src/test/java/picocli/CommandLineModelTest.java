@@ -456,7 +456,7 @@ public class CommandLineModelTest {
         CommandSpec spec = CommandSpec.create();
         spec.addOption(OptionSpec.builder("-c", "--count").paramLabel("COUNT").arity("1").type(int.class).description("number of times to execute").build());
         spec.addOption(OptionSpec.builder("-s", "--sql").paramLabel("SQLTYPE").type(int.class).converters(
-                new CommandLineTypeConversionTest.SqlTypeConverter()).description("sql type converter").build());
+                new TypeConversionTest.SqlTypeConverter()).description("sql type converter").build());
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parseArgs("-c", "33", "-s", "BLOB");
         assertEquals(Integer.valueOf(33), spec.optionsMap().get("-c").getValue());
@@ -467,7 +467,7 @@ public class CommandLineModelTest {
         CommandSpec spec = CommandSpec.create();
         spec.addPositional(PositionalParamSpec.builder().paramLabel("COUNT").index("0").type(int.class).description("number of times to execute").build());
         spec.addPositional(PositionalParamSpec.builder().paramLabel("SQLTYPE").index("1").type(int.class).converters(
-                new CommandLineTypeConversionTest.SqlTypeConverter()).description("sql type converter").build());
+                new TypeConversionTest.SqlTypeConverter()).description("sql type converter").build());
         CommandLine commandLine = new CommandLine(spec);
         commandLine.parseArgs("33", "BLOB");
         assertEquals(Integer.valueOf(33), spec.positionalParameters().get(0).getValue());

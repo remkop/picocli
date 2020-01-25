@@ -13,7 +13,7 @@ import java.util.*;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.Option;
 
-public class CommandLineAnnotatedMethodImplTest {
+public class OptionMethodImplTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
@@ -234,7 +234,7 @@ public class CommandLineAnnotatedMethodImplTest {
             assertNotNull(ex.getCause());
             assertTrue(ex.getCause() instanceof IllegalArgumentException);
             assertEquals("Boo!", ex.getCause().getMessage());
-            assertEquals("Could not invoke public void picocli.CommandLineAnnotatedMethodImplTest$1App.jvmException(java.lang.String) with abc", ex.getMessage());
+            assertEquals("Could not invoke public void picocli.OptionMethodImplTest$1App.jvmException(java.lang.String) with abc", ex.getMessage());
         }
     }
 

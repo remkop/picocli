@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
 
 @SuppressWarnings("deprecation")
-public class CommandLineParseWithHandlersTest {
+public class ExecuteLegacyTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
     
@@ -57,7 +57,7 @@ public class CommandLineParseWithHandlersTest {
             public Object create() {return new App();}
         };
         String[] args = { "abc" };
-        verifyAllFail(factory, "Parsed command (picocli.CommandLineParseWithHandlersTest$", ") is not a Method, Runnable or Callable", args);
+        verifyAllFail(factory, "Parsed command (picocli.ExecuteLegacyTest$", ") is not a Method, Runnable or Callable", args);
     }
 
     @Test
@@ -69,7 +69,7 @@ public class CommandLineParseWithHandlersTest {
         Factory factory = new Factory() {
             public Object create() {return new App();}
         };
-        verifyAllFail(factory, "Error while running command (picocli.CommandLineParseWithHandlersTest$",
+        verifyAllFail(factory, "Error while running command (picocli.ExecuteLegacyTest$",
                 "): java.lang.IllegalStateException: TEST EXCEPTION", new String[0]);
     }
 
@@ -82,7 +82,7 @@ public class CommandLineParseWithHandlersTest {
         Factory factory = new Factory() {
             public Object create() {return new App();}
         };
-        verifyAllFail(factory, "Error while calling command (picocli.CommandLineParseWithHandlersTest$",
+        verifyAllFail(factory, "Error while calling command (picocli.ExecuteLegacyTest$",
                 "): java.lang.IllegalStateException: TEST EXCEPTION2", new String[0]);
     }
 
@@ -441,7 +441,7 @@ public class CommandLineParseWithHandlersTest {
         exit.checkAssertionAfterwards(new Assertion() {
             public void checkAssertion() {
                 String actual = systemErrRule.getLog();
-                assertTrue(actual.startsWith("picocli.CommandLine$ExecutionException: Error while running command (picocli.CommandLineParseWithHandlersTest"));
+                assertTrue(actual.startsWith("picocli.CommandLine$ExecutionException: Error while running command (picocli.ExecuteLegacyTest"));
                 assertTrue(actual.contains("java.lang.RuntimeException: blah"));
             }
         });
@@ -709,7 +709,7 @@ public class CommandLineParseWithHandlersTest {
                 r.run();
                 fail("Expected exception");
             } catch (ExecutionException ex) {
-                assertTrue(ex.getMessage().startsWith("Error while calling command (picocli.CommandLineParseWithHandlersTest$MyCallable"));
+                assertTrue(ex.getMessage().startsWith("Error while calling command (picocli.ExecuteLegacyTest$MyCallable"));
                 assertTrue(ex.getCause() instanceof IllegalStateException);
                 assertEquals("this is a test", ex.getCause().getMessage());
             }
@@ -787,7 +787,7 @@ public class CommandLineParseWithHandlersTest {
                 r.run();
                 fail("Expected exception");
             } catch (ExecutionException ex) {
-                assertTrue(ex.getMessage(), ex.getMessage().startsWith("Error while running command (picocli.CommandLineParseWithHandlersTest$MyRunnable"));
+                assertTrue(ex.getMessage(), ex.getMessage().startsWith("Error while running command (picocli.ExecuteLegacyTest$MyRunnable"));
                 assertTrue(ex.getCause() instanceof IllegalStateException);
                 assertEquals("this is a test", ex.getCause().getMessage());
             }

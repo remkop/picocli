@@ -17,7 +17,7 @@ import java.util.TreeSet;
 import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
 
-public class CommandLineAnnotatedMethodSpecTest {
+public class OptionMethodSpecTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 

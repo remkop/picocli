@@ -65,10 +65,10 @@ import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.*;
-import static picocli.CommandLineTypeConversionTest.ResultTypes.COMPLETE;
-import static picocli.CommandLineTypeConversionTest.ResultTypes.PARTIAL;
+import static picocli.TypeConversionTest.ResultTypes.COMPLETE;
+import static picocli.TypeConversionTest.ResultTypes.PARTIAL;
 
-public class CommandLineTypeConversionTest {
+public class TypeConversionTest {
     // allows tests to set any kind of properties they like, without having to individually roll them back
     @Rule
     public final TestRule restoreSystemProperties = new RestoreSystemProperties();

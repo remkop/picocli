@@ -30,7 +30,7 @@ import java.util.Map;
 import static org.junit.Assert.*;
 import static picocli.TestUtil.usageString;
 
-public class CommandLineMixinTest {
+public class MixinTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
@@ -691,7 +691,7 @@ public class CommandLineMixinTest {
             new CommandLine(new ReceiverDuplicate(), new InnerClassFactory(this));
             fail("Expected exception");
         } catch (DuplicateOptionAnnotationsException ex) {
-            assertEquals("Option name '-a' is used by both field int picocli.CommandLineMixinTest$1MixMeInDuplicate.alpha and field int picocli.CommandLineMixinTest$1ReceiverDuplicate.beta", ex.getMessage());
+            assertEquals("Option name '-a' is used by both field int picocli.MixinTest$1MixMeInDuplicate.alpha and field int picocli.MixinTest$1ReceiverDuplicate.beta", ex.getMessage());
         }
     }
 

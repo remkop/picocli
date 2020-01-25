@@ -55,7 +55,7 @@ import static picocli.TestUtil.setTraceLevel;
  * Tests for {@code @Command} methods.
  */
 @SuppressWarnings("deprecation")
-public class CommandLineCommandMethodTest {
+public class CommandMethodTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
@@ -560,7 +560,7 @@ public class CommandLineCommandMethodTest {
             new CommandLine(new UnAnnotatedClassWithoutAnnotatedFields());
             fail("expected exception");
         } catch (CommandLine.InitializationException ex) {
-            assertEquals("picocli.CommandLineCommandMethodTest$UnAnnotatedClassWithoutAnnotatedFields " +
+            assertEquals("picocli.CommandMethodTest$UnAnnotatedClassWithoutAnnotatedFields " +
                             "is not a command: it has no @Command, @Option, " +
                             "@Parameters or @Unmatched annotations", ex.getMessage());
         }
@@ -1017,7 +1017,7 @@ public class CommandLineCommandMethodTest {
         try {
             spec.addMethodSubcommands();
         } catch (InitializationException ex) {
-            assertEquals("Cannot discover subcommand methods of this Command Method: int picocli.CommandLineCommandMethodTest$MethodApp.run1(int)", ex.getMessage());
+            assertEquals("Cannot discover subcommand methods of this Command Method: int picocli.CommandMethodTest$MethodApp.run1(int)", ex.getMessage());
         }
     }
 
@@ -1058,14 +1058,14 @@ public class CommandLineCommandMethodTest {
             fail("expect exception");
         } catch (InvocationTargetException ex) {
             InitializationException ex2 = (InitializationException) ex.getCause();
-            assertEquals("Invalid method, must be either getter or setter: void picocli.CommandLineCommandMethodTest$TypedMemberObj.getterNorSetter1()", ex2.getMessage());
+            assertEquals("Invalid method, must be either getter or setter: void picocli.CommandMethodTest$TypedMemberObj.getterNorSetter1()", ex2.getMessage());
         }
         try {
             constructor.newInstance(getterNorSetter2, new ObjectScope(new TypedMemberObj()), CommandSpec.create());
             fail("expect exception");
         } catch (InvocationTargetException ex) {
             InitializationException ex2 = (InitializationException) ex.getCause();
-            assertEquals("Invalid method, must be either getter or setter: java.lang.Void picocli.CommandLineCommandMethodTest$TypedMemberObj.getterNorSetter2()", ex2.getMessage());
+            assertEquals("Invalid method, must be either getter or setter: java.lang.Void picocli.CommandMethodTest$TypedMemberObj.getterNorSetter2()", ex2.getMessage());
         }
     }
 

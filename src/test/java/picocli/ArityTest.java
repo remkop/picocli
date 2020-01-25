@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.*;
 import static picocli.TestUtil.setTraceLevel;
 
-public class CommandLineArityTest {
+public class ArityTest {
     @Before public void setUp() { System.clearProperty("picocli.trace"); }
     @After public void tearDown() { System.clearProperty("picocli.trace"); }
 
@@ -1662,7 +1662,7 @@ public class CommandLineArityTest {
             CommandLine.populateCommand(new InvalidMapTypes(), "-D", "1=a");
             fail("expect exception");
         } catch (ParameterException ex) {
-            assertEquals("field java.util.TreeMap<Integer, String> picocli.CommandLineArityTest$1InvalidMapTypes.map needs two types (one for the map key, one for the value) but only has 1 types configured.", ex.getMessage());
+            assertEquals("field java.util.TreeMap<Integer, String> picocli.ArityTest$1InvalidMapTypes.map needs two types (one for the map key, one for the value) but only has 1 types configured.", ex.getMessage());
         }
     }
 
