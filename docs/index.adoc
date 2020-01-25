@@ -2675,6 +2675,43 @@ https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/pic
 ==== Dynamic Version Info with Variables
 The version strings returned from the `IVersionProvider` may contain <<Variable Interpolation,system properties and environment variables>>.
 
+For example:
+
+[source,java]
+----
+class VersionProviderWithVariables implements IVersionProvider {
+    public String[] getVersion() {
+        return new String[] { "${COMMAND-FULL-NAME} version 1.0" };
+    }
+}
+
+----
+
+The above example version provider will show the fully qualified command name (that is, preceded by its parent fully qualified command name)
+of any command that uses this version provider.
+
+This is one way to create a version provider that can be reused across multiple commands.
+
+==== Injecting `CommandSpec` Into a `IVersionProvider`
+
+From picocli 4.2.0, `IVersionProvider` implementations can have `@Spec`-annotated fields. If such a field
+exists, picocli will inject the `CommandSpec` of the command that uses this version provider.
+This gives the version provider access to the full command hierarchy,
+and may make it easier to implement version providers that can be reused among multiple commands.
+
+For example:
+
+[source,java]
+----
+class MyVersionProvider implements IVersionProvider {
+    @Spec CommandSpec spec;
+
+    public String[] getVersion() {
+        return new String[] { "Version info for " + spec.qualifiedName() };
+    }
+}
+----
+
 
 == Usage Help
 === Compact Example

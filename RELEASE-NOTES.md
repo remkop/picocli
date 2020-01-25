@@ -17,6 +17,25 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.2.0-new"></a> New and Noteworthy
 
+### Injecting `CommandSpec` Into a `IVersionProvider`
+
+From this release, `IVersionProvider` implementations can have `@Spec`-annotated fields. If such a field
+exists, picocli will inject the `CommandSpec` of the command that uses this version provider.
+This gives the version provider access to the full command hierarchy,
+and may make it easier to implement version providers that can be reused among multiple commands.
+
+For example:
+
+```java
+class MyVersionProvider implements IVersionProvider {
+    @Spec CommandSpec spec;
+
+    public String[] getVersion() {
+        return new String[] { "Version info for " + spec.qualifiedName() };
+    }
+}
+```
+
 
 ## <a name="4.2.0-fixes"></a> Fixed issues
 * [#906] Added automated tests for picocli-generated bash/zsh completion scripts.
