@@ -2107,9 +2107,11 @@ public class CommandLine {
     @SuppressWarnings("deprecation")
     public static class RunLast extends AbstractParseResultHandler<List<Object>> implements IParseResultHandler {
         /** Prints help if requested, and otherwise executes the most specific {@code Runnable} or {@code Callable} subcommand.
-         * Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.
-         * If the last (sub)command does not implement either {@code Runnable} or {@code Callable}, an {@code ExecutionException}
-         * is thrown detailing the problem and capturing the offending {@code CommandLine} object.
+         * <p>For {@linkplain Command#subcommandsRepeatable() repeatable subcommands}, this method
+         * may execute multiple subcommands: the most deeply nested subcommands that have the same parent command.</p>
+         * <p>Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.</p>
+         * <p>If the last (sub)command does not implement either {@code Runnable} or {@code Callable}, an {@code ExecutionException}
+         * is thrown detailing the problem and capturing the offending {@code CommandLine} object.</p>
          *
          * @param parsedCommands the {@code CommandLine} objects that resulted from successfully parsing the command line arguments
          * @param out the {@code PrintStream} to print help to if requested
@@ -2123,11 +2125,13 @@ public class CommandLine {
          */
         public List<Object> handleParseResult(List<CommandLine> parsedCommands, PrintStream out, Help.Ansi ansi) {
             if (printHelpIfRequested(parsedCommands, out, err(), ansi)) { return returnResultOrExit(Collections.emptyList()); }
-            return returnResultOrExit(executeUserObject(parsedCommands.get(parsedCommands.size() - 1), new ArrayList<Object>()));
+            return returnResultOrExit(executeUserObjectOfLastSubcommandWithSameParent(parsedCommands));
         }
         /** Executes the most specific {@code Runnable} or {@code Callable} subcommand.
-         * If the last (sub)command does not implement either {@code Runnable} or {@code Callable} and is not a {@code Method}, an {@code ExecutionException}
-         * is thrown detailing the problem and capturing the offending {@code CommandLine} object.
+         * <p>For {@linkplain Command#subcommandsRepeatable() repeatable subcommands}, this method
+         * may execute multiple subcommands: the most deeply nested subcommands that have the same parent command.</p>
+         * <p>If the user object of the executed (sub)command does not implement either {@code Runnable} or {@code Callable} and is not a {@code Method}, an {@code ExecutionException}
+         * is thrown detailing the problem and capturing the offending {@code CommandLine} object.</p>
          *
          * @param parseResult the {@code ParseResult} that resulted from successfully parsing the command line arguments
          * @return an empty list if help was requested, or a list containing a single element: the result of calling the
@@ -2136,9 +2140,23 @@ public class CommandLine {
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          * @since 3.0 */
         protected List<Object> handle(ParseResult parseResult) throws ExecutionException {
-            List<CommandLine> parsedCommands = parseResult.asCommandLineList();
-            return executeUserObject(parsedCommands.get(parsedCommands.size() - 1), new ArrayList<Object>());
+            return executeUserObjectOfLastSubcommandWithSameParent(parseResult.asCommandLineList());
         }
+
+        // find list of most deeply nested sub-(sub*)-commands
+        private List<Object> executeUserObjectOfLastSubcommandWithSameParent(List<CommandLine> parsedCommands) {
+            int start = parsedCommands.size() - 1;
+            for (int i = parsedCommands.size() - 2; i >= 0; i--) {
+                if (parsedCommands.get(i).getParent() != parsedCommands.get(i + 1).getParent()) { break; }
+                start = i;
+            }
+            List<Object> result = new ArrayList<Object>();
+            for (int i = start; i < parsedCommands.size(); i++) {
+                executeUserObject(parsedCommands.get(i), result);
+            }
+            return result;
+        }
+
         protected List<IExitCodeGenerator> extractExitCodeGenerators(ParseResult parseResult) {
             List<CommandLine> parsedCommands = parseResult.asCommandLineList();
             Object userObject = parsedCommands.get(parsedCommands.size() - 1).getCommandSpec().userObject();
@@ -2189,20 +2207,22 @@ public class CommandLine {
          *      {@link ExecutionException#getCommandLine()} to get the command or subcommand where processing failed
          * @since 3.0 */
         protected List<Object> handle(ParseResult parseResult) throws ExecutionException {
-            List<Object> result = new ArrayList<Object>();
+            return returnResultOrExit(recursivelyExecuteUserObject(parseResult, new ArrayList<Object>()));
+        }
+        private List<Object> recursivelyExecuteUserObject(ParseResult parseResult, List<Object> result) throws ExecutionException {
             executeUserObject(parseResult.commandSpec().commandLine(), result);
-            while (parseResult.hasSubcommand()) {
-                parseResult = parseResult.subcommand();
-                executeUserObject(parseResult.commandSpec().commandLine(), result);
+            for (ParseResult pr : parseResult.subcommands()) {
+                recursivelyExecuteUserObject(pr, result);
             }
-            return returnResultOrExit(result);
+            return result;
         }
         protected List<IExitCodeGenerator> extractExitCodeGenerators(ParseResult parseResult) {
-            List<IExitCodeGenerator> result = new ArrayList<IExitCodeGenerator>();
+            return recursivelyExtractExitCodeGenerators(parseResult, new ArrayList<IExitCodeGenerator>());
+        }
+        private List<IExitCodeGenerator> recursivelyExtractExitCodeGenerators(ParseResult parseResult, List<IExitCodeGenerator> result) throws ExecutionException {
             if (parseResult.commandSpec().userObject() instanceof IExitCodeGenerator) { result.add((IExitCodeGenerator) parseResult.commandSpec().userObject()); }
-            while (parseResult.hasSubcommand()) {
-                parseResult = parseResult.subcommand();
-                if (parseResult.commandSpec().userObject() instanceof IExitCodeGenerator) { result.add((IExitCodeGenerator) parseResult.commandSpec().userObject()); }
+            for (ParseResult pr : parseResult.subcommands()) {
+                recursivelyExtractExitCodeGenerators(pr, result);
             }
             return result;
         }
@@ -10543,11 +10563,14 @@ public class CommandLine {
         public boolean isVersionHelpRequested() { return versionHelpRequested; }
 
         /** Returns this {@code ParseResult} as a list of {@code CommandLine} objects, one for each matched command/subcommand.
+         * Note that for repeatable subcommands, there may be multiple commands at each level of the hierarchy in the returned list.
          * @since 3.0 */
         public List<CommandLine> asCommandLineList() {
-            List<CommandLine> result = new ArrayList<CommandLine>();
-            ParseResult pr = this;
-            while (pr != null) { result.add(pr.commandSpec().commandLine()); pr = pr.hasSubcommand() ? pr.subcommand() : null; }
+            return recursivelyAddCommandLineTo(new ArrayList<CommandLine>());
+        }
+        private List<CommandLine> recursivelyAddCommandLineTo(List<CommandLine> result) {
+            result.add(this.commandSpec().commandLine());
+            for (ParseResult sub : subcommands()) { sub.recursivelyAddCommandLineTo(result); }
             return result;
         }
 

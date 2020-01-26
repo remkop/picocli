@@ -5,23 +5,49 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParseResult;
+import picocli.CommandLine.Spec;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
+/**
+ * Tests #454 repeatable subcommands.
+ */
 public class RepeatableSubcommandsTest {
     @Rule
     public final TestRule restoreSystemProperties = new RestoreSystemProperties();
 
+    static class AbstractCommand implements Callable<Integer> {
+        static Map<String, Integer> exitCodes = new HashMap<String, Integer>();
+        boolean executed;
+        public Integer call() {
+            executed = true;
+            return exitCode();
+        }
+        int exitCode() {
+            Integer result = exitCodes.get(getClass().getSimpleName());
+            return result == null ? 0 : result;
+        }
+    }
+
     @Command(name="A",
             subcommandsRepeatable = true,
             subcommands = {B.class, C.class, D.class})
-    static class A {
+    static class A extends AbstractCommand {
         @Option(names = "-x") String x;
         static AtomicInteger total = new AtomicInteger();
         static AtomicInteger count = new AtomicInteger();
@@ -34,7 +60,7 @@ public class RepeatableSubcommandsTest {
     @Command(name="B",
             subcommandsRepeatable = true,
             subcommands = {E.class, F.class, G.class})
-    static class B {
+    static class B extends AbstractCommand {
         @Option(names = "-x") String x;
         static AtomicInteger count = new AtomicInteger();
         public B() {
@@ -44,7 +70,7 @@ public class RepeatableSubcommandsTest {
     }
 
     @Command(name="C")
-    static class C {
+    static class C extends AbstractCommand {
         @Option(names = "-x") String x;
         static AtomicInteger count = new AtomicInteger();
         public C() {
@@ -54,7 +80,7 @@ public class RepeatableSubcommandsTest {
     }
 
     @Command(name="D")
-    static class D {
+    static class D extends AbstractCommand {
         @Option(names = "-x") String x;
         static AtomicInteger count = new AtomicInteger();
         public D() {
@@ -64,7 +90,7 @@ public class RepeatableSubcommandsTest {
     }
 
     @Command(name="E")
-    static class E {
+    static class E extends AbstractCommand {
         @Option(names = "-x") String x;
         static AtomicInteger count = new AtomicInteger();
         public E() {
@@ -74,7 +100,7 @@ public class RepeatableSubcommandsTest {
     }
 
     @Command(name="F")
-    static class F {
+    static class F extends AbstractCommand {
         static AtomicInteger count = new AtomicInteger();
         public F() {
             count.incrementAndGet();
@@ -83,7 +109,7 @@ public class RepeatableSubcommandsTest {
     }
 
     @Command(name="G")
-    static class G {
+    static class G extends AbstractCommand {
         static AtomicInteger count = new AtomicInteger();
         public G() {
             count.incrementAndGet();
@@ -91,12 +117,12 @@ public class RepeatableSubcommandsTest {
         }
     }
 
-    //@Ignore("requires #454 repeatable subcommands")
     @Test
-    public void testSubommandRepeatable() {
+    public void testSubcommandRepeatableParseResult() {
         //TestUtil.setTraceLevel("DEBUG");
         CommandLine cl = new CommandLine(new A());
-        ParseResult parseResult = cl.parseArgs("B B C D B E F G E E F F".split(" "));
+        String[] args = "B B C D B E F G E E F F".split(" ");
+        ParseResult parseResult = cl.parseArgs(args);
         StringWriter sw = new StringWriter();
         print("", parseResult, new PrintWriter(sw));
         String expected = String.format("" +
@@ -114,6 +140,13 @@ public class RepeatableSubcommandsTest {
                 "    F%n" +
                 "    F%n");
         assertEquals(expected, sw.toString());
+
+        List<CommandLine> commandLines = parseResult.asCommandLineList();
+        List<String> expectedNames = new ArrayList<String>(Arrays.asList(args));
+        expectedNames.add(0, "A");
+        for (int i = 0; i < commandLines.size(); i++) {
+            assertEquals("Command name at " + i, expectedNames.get(i), commandLines.get(i).getCommandName());
+        }
     }
 
     private void print(String indent, ParseResult parseResult, PrintWriter pw) {
@@ -243,5 +276,118 @@ public class RepeatableSubcommandsTest {
         assertEquals(0, F.count.get());
         assertEquals(0, G.count.get());
         assertEquals(4, A.total.get());
+    }
+
+    @Test
+    public void testSubcommandRepeatableParseResultAsCommandLineList() {
+        CommandLine cl = new CommandLine(new A());
+        String[] args = "B B C D B E F G E E F F".split(" ");
+        ParseResult parseResult = cl.parseArgs(args);
+        List<CommandLine> commandLines = parseResult.asCommandLineList();
+        List<String> expectedNames = new ArrayList<String>(Arrays.asList(args));
+        expectedNames.add(0, "A");
+        for (int i = 0; i < commandLines.size(); i++) {
+            assertEquals("Command name at " + i, expectedNames.get(i), commandLines.get(i).getCommandName());
+        }
+    }
+
+    @Test
+    public void testSubcommandRepeatableExecution() {
+        CommandLine cl = new CommandLine(new A());
+        int exitCode = cl.execute("B B C D B E F G E E F F".split(" "));
+
+        List<CommandLine> commandLines = cl.getParseResult().asCommandLineList();
+        boolean[] executed = new boolean[] {
+                false, // A
+                false, // B
+                false, // B
+                false, // C
+                false, // D
+                false, // B
+                true, // E
+                true, // F
+                true, // G
+                true, // E
+                true, // E
+                true, // F
+                true, // F
+        };
+        assertEquals(executed.length, commandLines.size());
+        for (int i = 0; i < executed.length; i++) {
+            AbstractCommand ac = commandLines.get(i).getCommand();
+            assertEquals("[" + i + "]: " + ac, executed[i], ac.executed);
+        }
+    }
+
+    @Test
+    public void testExitCodesPositive() {
+        AbstractCommand.exitCodes.put("A", 20);
+        AbstractCommand.exitCodes.put("B", 7);
+        AbstractCommand.exitCodes.put("C", 10);
+        AbstractCommand.exitCodes.put("E", 6);
+        AbstractCommand.exitCodes.put("F", 5);
+        AbstractCommand.exitCodes.put("G", 4);
+
+        CommandLine cl = new CommandLine(new A());
+        int exitCode = cl.execute("B B C D B E F G E E F F".split(" "));
+        assertEquals(6, exitCode);
+    }
+
+    @Command(name = "print", subcommands = FileCommand.class, subcommandsRepeatable = true)
+    static class Print implements Runnable {
+        enum Paper {A1, A2, A3, A4, A5, B1, B2, B3, B4, B5}
+        @Option(names = "--paper") Paper paper;
+
+        public void run() {
+            System.out.println("Print (paper=" + paper + ")");
+        }
+    }
+    @Command(name = "file")
+    static class FileCommand implements Callable<Integer> {
+        @CommandLine.Parameters(index = "0", paramLabel = "FILE")
+        File file;
+
+        @Option(names = "--count") int count = 1;
+
+        enum Rotate {left, right}
+        @Option(names = "--rotate") Rotate rotate;
+
+        public Integer call() {
+            System.out.printf("File (file=%s, count=%d, rotate=%s)%n", file, count, rotate);
+            return count;
+        }
+    }
+
+    @Test
+    public void testSimple() {
+        Print print = new Print();
+        CommandLine cmd = new CommandLine(print);
+        int exitCode = cmd.execute((
+                "--paper A4" +
+                        " file A.pdf" +
+                        " file B.pdf --count 3" +
+                        " file C.pdf --count 2 --rotate left" +
+                        " file D.pdf" +
+                        " file E.pdf --rotate right").split(" "));
+        assertEquals(3, exitCode);
+        assertEquals(Print.Paper.A4, print.paper);
+        CommandLine.ParseResult parseResult = cmd.getParseResult();
+        assertEquals(5, parseResult.subcommands().size());
+
+        Object[][] expecteds = new Object[][] {
+                new Object[] {new File("A.pdf"), 1, null},
+                new Object[] {new File("B.pdf"), 3, null},
+                new Object[] {new File("C.pdf"), 2, FileCommand.Rotate.left},
+                new Object[] {new File("D.pdf"), 1, null},
+                new Object[] {new File("E.pdf"), 1, FileCommand.Rotate.right},
+        };
+        int i = 0;
+        for (Object[] expected : expecteds) {
+            CommandLine.ParseResult pr = parseResult.subcommands().get(i++);
+            FileCommand file = (FileCommand) pr.commandSpec().userObject();
+            assertEquals(expected[0], file.file);
+            assertEquals(expected[1], file.count);
+            assertEquals(expected[2], file.rotate);
+        }
     }
 }
