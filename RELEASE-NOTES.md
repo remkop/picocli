@@ -36,6 +36,11 @@ class MyVersionProvider implements IVersionProvider {
 }
 ```
 
+### Lazily instantiate subcommands
+
+From this release,  subcommands are not instantiated until they are matched on the command line,
+unless the user object has a `@Spec` or `@ParentObject`-annotated field; these are instantiated during initialization.
+
 
 ## <a name="4.2.0-fixes"></a> Fixed issues
 * [#906] Added automated tests for picocli-generated bash/zsh completion scripts.
