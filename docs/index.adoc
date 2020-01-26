@@ -3583,7 +3583,9 @@ From v0.9.8, picocli supports registering subcommands declaratively with the `@C
 public class Git { ... }
 ----
 
-The declared subcommands are automatically instantiated and added when the `new CommandLine(new Git())` instance is constructed. The result is the same as if subcommands were added <<Registering Subcommands Programmatically,programmatically>>.
+Prior to picocli 4,2, the declared subcommands were instantiated immediately when the top-level `CommandLine` (the `new CommandLine(new Git())` object in the above example) was constructed. The result is the same as if subcommands were added <<Registering Subcommands Programmatically,programmatically>>.
+
+From picocli 4.2, the declared subcommands are not instantiated until they are matched on the command line, unless they have a `@Spec` or `@ParentObject`-annotated field; these are injected during initialization.
 
 Subcommands referenced in a `subcommands` attribute _must_ have a `@Command` annotation with a `name` attribute, or an exception is thrown from the `CommandLine` constructor. This name will be used both for generating usage help and for recognizing subcommands when parsing the command line.
 
