@@ -118,7 +118,7 @@ public class RepeatableSubcommandsTest {
     }
 
     @Test
-    public void testSubcommandRepeatableParseResult() {
+    public void testParseResult() {
         //TestUtil.setTraceLevel("DEBUG");
         CommandLine cl = new CommandLine(new A());
         String[] args = "B B C D B E F G E E F F".split(" ");
@@ -279,7 +279,7 @@ public class RepeatableSubcommandsTest {
     }
 
     @Test
-    public void testSubcommandRepeatableParseResultAsCommandLineList() {
+    public void testParseResultAsCommandLineList() {
         CommandLine cl = new CommandLine(new A());
         String[] args = "B B C D B E F G E E F F".split(" ");
         ParseResult parseResult = cl.parseArgs(args);
@@ -292,7 +292,7 @@ public class RepeatableSubcommandsTest {
     }
 
     @Test
-    public void testSubcommandRepeatableExecution() {
+    public void testExecution() {
         CommandLine cl = new CommandLine(new A());
         int exitCode = cl.execute("B B C D B E F G E E F F".split(" "));
 
@@ -333,13 +333,27 @@ public class RepeatableSubcommandsTest {
         assertEquals(6, exitCode);
     }
 
+    @Test
+    public void testExitCodesNegative() {
+        AbstractCommand.exitCodes.put("A", -20);
+        AbstractCommand.exitCodes.put("B", -7);
+        AbstractCommand.exitCodes.put("C", -10);
+        AbstractCommand.exitCodes.put("E", -6);
+        AbstractCommand.exitCodes.put("F", -5);
+        AbstractCommand.exitCodes.put("G", -4);
+
+        CommandLine cl = new CommandLine(new A());
+        int exitCode = cl.execute("B B C D B E F G E E F F".split(" "));
+        assertEquals(-6, exitCode);
+    }
+
     @Command(name = "print", subcommands = FileCommand.class, subcommandsRepeatable = true)
     static class Print implements Runnable {
         enum Paper {A1, A2, A3, A4, A5, B1, B2, B3, B4, B5}
         @Option(names = "--paper") Paper paper;
 
         public void run() {
-            System.out.println("Print (paper=" + paper + ")");
+            //System.out.println("Print (paper=" + paper + ")");
         }
     }
     @Command(name = "file")
@@ -353,13 +367,13 @@ public class RepeatableSubcommandsTest {
         @Option(names = "--rotate") Rotate rotate;
 
         public Integer call() {
-            System.out.printf("File (file=%s, count=%d, rotate=%s)%n", file, count, rotate);
+            //System.out.printf("File (file=%s, count=%d, rotate=%s)%n", file, count, rotate);
             return count;
         }
     }
 
     @Test
-    public void testSimple() {
+    public void testOriginalUseCase() {
         Print print = new Print();
         CommandLine cmd = new CommandLine(print);
         int exitCode = cmd.execute((
@@ -371,6 +385,7 @@ public class RepeatableSubcommandsTest {
                         " file E.pdf --rotate right").split(" "));
         assertEquals(3, exitCode);
         assertEquals(Print.Paper.A4, print.paper);
+
         CommandLine.ParseResult parseResult = cmd.getParseResult();
         assertEquals(5, parseResult.subcommands().size());
 
