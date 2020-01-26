@@ -384,9 +384,11 @@ public class RepeatableSubcommandsTest {
                         " file D.pdf" +
                         " file E.pdf --rotate right").split(" "));
         assertEquals(3, exitCode);
-        assertEquals(Print.Paper.A4, print.paper);
 
-        CommandLine.ParseResult parseResult = cmd.getParseResult();
+        ParseResult parseResult = cmd.getParseResult();
+        assertEquals(Print.Paper.A4, print.paper);
+        assertSame(Print.Paper.A4, parseResult.matchedOptionValue("--paper", null));
+
         assertEquals(5, parseResult.subcommands().size());
 
         Object[][] expecteds = new Object[][] {
@@ -398,7 +400,7 @@ public class RepeatableSubcommandsTest {
         };
         int i = 0;
         for (Object[] expected : expecteds) {
-            CommandLine.ParseResult pr = parseResult.subcommands().get(i++);
+            ParseResult pr = parseResult.subcommands().get(i++);
             FileCommand file = (FileCommand) pr.commandSpec().userObject();
             assertEquals(expected[0], file.file);
             assertEquals(expected[1], file.count);
