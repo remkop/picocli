@@ -3583,15 +3583,15 @@ From v0.9.8, picocli supports registering subcommands declaratively with the `@C
 public class Git { ... }
 ----
 
-Prior to picocli 4,2, the declared subcommands were instantiated immediately when the top-level `CommandLine` (the `new CommandLine(new Git())` object in the above example) was constructed. The result is the same as if subcommands were added <<Registering Subcommands Programmatically,programmatically>>.
-
-From picocli 4.2, the declared subcommands are not instantiated until they are matched on the command line, unless they have a `@Spec` or `@ParentObject`-annotated field; these are injected during initialization.
-
 Subcommands referenced in a `subcommands` attribute _must_ have a `@Command` annotation with a `name` attribute, or an exception is thrown from the `CommandLine` constructor. This name will be used both for generating usage help and for recognizing subcommands when parsing the command line.
 
 Custom type converters registered on a `CommandLine` instance will apply to all subcommands that were declared on the main command with the `subcommands` annotation.
 
 Subcommands referenced in a `subcommands` attribute need to have a public no-argument constructor to be instantiated, unless a <<Custom Factory>> is installed to instantiate classes.
+
+Prior to picocli 4,2, the declared subcommands were instantiated immediately when the top-level `CommandLine` (the `new CommandLine(new Git())` object in the above example) was constructed.
+
+From picocli 4.2, the declared subcommands are not instantiated until they are matched on the command line, unless they have a `@Spec` or `@ParentObject`-annotated field; these are injected during initialization, and in order to inject them the subcommand is instantiated during initialization.
 
 === Registering Subcommands Programmatically
 Subcommands can be registered with the `CommandLine.addSubcommand` method.
@@ -4019,6 +4019,28 @@ class GrandChild3Command3 { }
 By default, the usage help message only shows the subcommands of the specified command,
 and not the nested sub-subcommands. This can be customized by specifying your own <<Reordering Sections,`IHelpSectionRenderer`>> for the command list section.
 The `picocli-examples` module has an https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/customhelp/ShowCommandHierarchy.java[example] that shows how to accomplish this.
+
+=== Repeatable Subcommands
+From picocli 4.2, it is possible to mark a command as `@Command(subcommandsRepeatable = true)`.
+
+Normally (`subcommandsRepeatable` is `false`), only one subcommand is matched, and potentially one sub-subcommand of that subcommand, etc. In mathematical terms, a hierarchy of subcommands can be represented by a _directed rooted tree_, illustrated by the diagram below.
+
+image::subcommands-non-repeatable.png[]
+
+When `subcommandsRepeatable` is set to `true`, the subcommands of this command may appear multiple times.
+This allows users to specify a single subcommand repeatedly, but also to specify a sequence of sibling subcommands. The red arrows in the diagram below illustrate the additional sequences that are allowed when a command is repeatable.
+
+image::subcommands-repeatable.png[]
+
+An example use case is TODO. For example:
+
+[source,java]
+----
+myapp add -x=item1 -w=0.2 \
+      add -x=item2 -w=0.5 \
+      list --where "w>0.2" \
+      send-report --to=recipients@myorg.com
+----
 
 === Required Subcommands
 
