@@ -5,10 +5,8 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParseResult;
-import picocli.CommandLine.Spec;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -16,7 +14,6 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -294,7 +291,65 @@ public class RepeatableSubcommandsTest {
     @Test
     public void testExecution() {
         CommandLine cl = new CommandLine(new A());
-        int exitCode = cl.execute("B B C D B E F G E E F F".split(" "));
+        cl.execute("B B C D B E F G E E F F".split(" "));
+
+        List<CommandLine> commandLines = cl.getParseResult().asCommandLineList();
+        boolean[] executed = new boolean[] {
+                false, // A
+                false, // B
+                false, // B
+                false, // C
+                false, // D
+                false, // B
+                true, // E
+                true, // F
+                true, // G
+                true, // E
+                true, // E
+                true, // F
+                true, // F
+        };
+        assertEquals(executed.length, commandLines.size());
+        for (int i = 0; i < executed.length; i++) {
+            AbstractCommand ac = commandLines.get(i).getCommand();
+            assertEquals("[" + i + "]: " + ac, executed[i], ac.executed);
+        }
+    }
+
+    @Test
+    public void testExecutionRunAll() {
+        CommandLine cl = new CommandLine(new A());
+        cl.setExecutionStrategy(new CommandLine.RunAll());
+        cl.execute("B B C D B E F G E E F F".split(" "));
+
+        List<CommandLine> commandLines = cl.getParseResult().asCommandLineList();
+        boolean[] executed = new boolean[] {
+                true, // A
+                true, // B
+                true, // B
+                true, // C
+                true, // D
+                true, // B
+                true, // E
+                true, // F
+                true, // G
+                true, // E
+                true, // E
+                true, // F
+                true, // F
+        };
+        assertEquals(executed.length, commandLines.size());
+        for (int i = 0; i < executed.length; i++) {
+            AbstractCommand ac = commandLines.get(i).getCommand();
+            assertEquals("[" + i + "]: " + ac, executed[i], ac.executed);
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testLegacyExecution() {
+        CommandLine cl = new CommandLine(new A());
+        cl.parseWithHandler(new CommandLine.RunLast(), "B B C D B E F G E E F F".split(" "));
 
         List<CommandLine> commandLines = cl.getParseResult().asCommandLineList();
         boolean[] executed = new boolean[] {
