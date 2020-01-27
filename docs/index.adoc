@@ -4042,6 +4042,76 @@ myapp add -x=item1 -w=0.2 \
       send-report --to=recipients@myorg.com
 ----
 
+=== Repeatable Subcommands
+From picocli 4.2, it is possible to specify that a command's subcommands can be specified multiple times by marking it with `@Command(subcommandsRepeatable = true)`.
+
+==== Example
+Below is an example where the top-level command `myapp` is marked as `subcommandsRepeatable = true`.
+This command has three subcommands, `add`, `list` and `send-report`:
+
+[source,java]
+----
+@Command(name = "myapp", subcommandsRepeatable = true)
+class MyApp implements Runnable {
+
+    @Command
+    void add(@Option(names = "-x") String x, @Option(names = "-w") double w) { ... }
+
+    @Command
+    void list(@Option(names = "--where") String where) { ... }
+
+    @Command(name = "send-report")
+    void sendReport(@Option(names = "--to", split = ",") String[] recipients) { ... }
+
+    // ...
+}
+----
+
+The above example command allows users to specify one or more of its subcommands multiple time. For example, this would be a valid invocation:
+
+[source,bash]
+----
+myapp add -x=item1 -w=0.2 \
+      add -x=item2 -w=0.5 \
+      add -x=item3 -w=0.7 \
+      list --where "w>0.2" \
+      send-report --to=recipient@myorg.com
+----
+
+In the above command line invocation, the `myapp` top-level command is followed by its subcommand `add`.
+Next, this is followed by another two occurences of `add`, followed by `list` and `send-report`.
+These are all "sibling" commands, that share the same parent command `myapp`.
+This invocation is valid because `myapp` is marked with `subcommandsRepeatable = true`.
+
+==== Repeatable Subcommands Specification
+
+Normally, `subcommandsRepeatable` is `false`, so for each command, only one of its subcommands can be specified, potentially followed by only one sub-subcommand of that subcommand, etc.
+In mathematical terms, a valid sequence of commands and subcommands can be represented by a _directed rooted tree_ that starts at the top-level command, illustrated by the diagram below.
+
+[#sequences-when-subcommands-not-repeatable]
+.By default, valid sequences of commands and subcommands form a directed rooted tree.
+image::subcommands-non-repeatable.png[]
+
+When `subcommandsRepeatable` is set to `true` on a command, the subcommands of this command may appear multiple times.
+Also, a subcommand can be followed by a "sibling" command (another command with the same parent command).
+
+In mathematical terms, when a parent command has this property, the additional valid sequences of its subcommands form a fully connected subgraph (_a complete digraph_).
+
+The blue dotted arrows in the diagram below illustrate the additional sequences that are allowed when a command has repeatable subcommands.
+
+[#sequences-when-subcommands-repeatable]
+.If a command is marked to allow repeatable subcommands, the additional valid sequences of its subcommands form a fully connected subgraph.
+image::subcommands-repeatable.png[]
+
+
+Note that it is not valid to specify a subcommand followed by its parent command:
+
+[source,bash]
+----
+# invalid: cannot move _up_ the hierarchy
+myapp add -x=item1 -w=0.2 myapp
+----
+
 === Required Subcommands
 
 For some command suites, it does not make sense to invoke the top-level command by itself, and the user is required to specify a subcommand.

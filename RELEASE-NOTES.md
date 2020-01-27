@@ -3,21 +3,100 @@
 # <a name="4.2.0"></a> Picocli 4.2.0 (UNRELEASED)
 The picocli community is pleased to announce picocli 4.2.0.
 
-This release contains bugfixes and enhancements. 
+This release adds support for Repeatable Subcommands: it is now possible to specify that a command's subcommands can be specified multiple times by marking it with `@Command(subcommandsRepeatable = true)`. 
 
- 
+From this release, subcommands are not instantiated until they are matched on the command line. This should improve the startup time for applications with subcommands that do a lot of initialization when they are instantiated.
+
+Autocompletion improvements: from this release the generated bash completions scripts support completing positional parameters, and are implemented without the use of associative arrays (so they should work on MacOS or other systems that use older versions of bash).
+Additionally there are now automated tests using Expect to verify that the generated completion scripts work as expected.
+
+Also, from this release it is possible to inject the `CommandSpec` into a `IVersionProvider`, making it easier to write version provider implementations that are reusable across multiple commands or even applications.
+
+Added `@Command(showAtFileInUsageHelp=true)` attribute to show `@filename` in usage help.
+
+Support `@ParentCommand`-annotated fields in mixin classes.
+
 This is the sixty-seventh public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.2.0-toc"></a> Table of Contents
 * [New and noteworthy](#4.2.0-new)
+  * [Repeatable Subcommands](#4.2.0-repeatable-subcommands)
+  * [Inject `CommandSpec` into a `IVersionProvider`](#4.2.0-versionprovider-with-spec)
+  * [Lazily instantiate subcommands](#4.2.0-lazy-instantiation)
+  * [Mixins with `@ParentCommand`-annotated fields](#4.2.0-mixins)
+  * [Showing `@filename` in usage help](#4.2.0-atfiles-usage)
 * [Fixed issues](#4.2.0-fixes)
 * [Deprecations](#4.2.0-deprecated)
 * [Potential breaking changes](#4.2.0-breaking-changes)
 
 ## <a name="4.2.0-new"></a> New and Noteworthy
 
-### Injecting `CommandSpec` Into a `IVersionProvider`
+### <a name="4.2.0-repeatable-subcommands"></a> Repeatable Subcommands
+From picocli 4.2, it is possible to specify that a command's subcommands can be specified multiple times by marking it with `@Command(subcommandsRepeatable = true)`.
+
+#### Example
+Below is an example where the top-level command `myapp` is marked as `subcommandsRepeatable = true`.
+This command has three subcommands, `add`, `list` and `send-report`:
+
+```java
+@Command(name = "myapp", subcommandsRepeatable = true)
+class MyApp implements Runnable {
+
+    @Command
+    void add(@Option(names = "-x") String x, @Option(names = "-w") double w) { ... }
+
+    @Command
+    void list(@Option(names = "--where") String where) { ... }
+
+    @Command(name = "send-report")
+    void sendReport(@Option(names = "--to", split = ",") String[] recipients) { ... }
+
+    // ...
+}
+```
+
+The above example command allows users to specify one or more of its subcommands multiple time. For example, this would be a valid invocation:
+
+```bash
+myapp add -x=item1 -w=0.2 \
+      add -x=item2 -w=0.5 \
+      add -x=item3 -w=0.7 \
+      list --where "w>0.2" \
+      send-report --to=recipient@myorg.com
+```
+
+In the above command line invocation, the `myapp` top-level command is followed by its subcommand `add`.
+Next, this is followed by another two occurences of `add`, followed by `list` and `send-report`.
+These are all "sibling" commands, that share the same parent command `myapp`.
+This invocation is valid because `myapp` is marked with `subcommandsRepeatable = true`.
+
+#### Repeatable Subcommands Specification
+
+Normally, `subcommandsRepeatable` is `false`, so for each command, only one of its subcommands can be specified, potentially followed by only one sub-subcommand of that subcommand, etc.
+In mathematical terms, a valid sequence of commands and subcommands can be represented by a _directed rooted tree_ that starts at the top-level command, illustrated by the diagram below.
+
+![subcommands not repeatable](https://picocli.info/images/subcommands-non-repeatable.png)
+
+When `subcommandsRepeatable` is set to `true` on a command, the subcommands of this command may appear multiple times.
+Also, a subcommand can be followed by a "sibling" command (another command with the same parent command).
+
+In mathematical terms, when a parent command has this property, the additional valid sequences of its subcommands form a fully connected subgraph (_a complete digraph_).
+
+The blue dotted arrows in the diagram below illustrate the additional sequences that are allowed when a command has repeatable subcommands.
+
+![subcommands-repeatable](https://picocli.info/images/subcommands-repeatable.png)
+
+
+Note that it is not valid to specify a subcommand followed by its parent command:
+
+```bash
+# invalid: cannot move _up_ the hierarchy
+myapp add -x=item1 -w=0.2 myapp
+```
+
+
+### <a name="4.2.0-versionprovider-with-spec"></a> Injecting `CommandSpec` Into a `IVersionProvider`
 
 From this release, `IVersionProvider` implementations can have `@Spec`-annotated fields. If such a field
 exists, picocli will inject the `CommandSpec` of the command that uses this version provider.
@@ -36,23 +115,32 @@ class MyVersionProvider implements IVersionProvider {
 }
 ```
 
-### Lazily instantiate subcommands
+### <a name="4.2.0-lazy-instantiation"></a> Lazily instantiate subcommands
 
 From this release,  subcommands are not instantiated until they are matched on the command line,
 unless the user object has a `@Spec` or `@ParentObject`-annotated field; these are instantiated during initialization.
 
+### <a name="4.2.0-mixins"></a> Mixins with `@ParentCommand`-annotated fields
+
+TODO
+
+### <a name="4.2.0-atfiles-usage"></a> Showing `@filename` in usage help
+
+Added `@Command(showAtFileInUsageHelp=true)` attribute to show `@filename` in usage help.
+
 
 ## <a name="4.2.0-fixes"></a> Fixed issues
-* [#906] Added automated tests for picocli-generated bash/zsh completion scripts.
+* [#454] API: Added support for repeatable subcommands. Thanks to [Idan Arye](https://github.com/idanarye), [Miroslav Kravec](https://github.com/kravemir), [Philipp Hanslovsky](https://github.com/hanslovsky) and [Jay](https://github.com/lakemove) for raising this and the subsequent discussion.
+* [#629] API: Support injecting `@Spec CommandSpec spec` into `IVersionProvider` implementations. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
+* [#795] API: Added `@Command(showAtFileInUsageHelp=true)` attribute to show `@filename` in usage help.
+* [#925] API: Support `@ParentCommand`-annotated fields in mixin classes.
+* [#906] Auto-completion: Added automated tests for picocli-generated bash/zsh completion scripts.
 * [#468][#505][#852] Auto-completion: added support for positional parameter completion. Thanks to [Serhii Avsheniuk](https://github.com/avshenuk) for the pull request.
 * [#644][#671] Auto-completion: fix [shellcheck](https://github.com/koalaman/shellcheck) warnings in generated autocompletion scripts. Thanks to [Dylan Cali](https://github.com/calid) for raising this, and thanks to [AlcaYezz](https://github.com/AlcaYezz) for the pull request.
 * [#396] Auto-completion: completion scripts no longer use associative arrays, and should now work on OSX.
-* [#629] Support injecting `@Spec CommandSpec spec` into `IVersionProvider` implementations. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
-* [#795] Enhancement: Added `@Command(showAtFileInUsageHelp=true)` attribute to show `@filename` in usage help.
+* [#690] Enhancement: Postpone instantiating subcommands until they are matched on the command line. Thanks to [Daniel Breitlauch](https://github.com/danielBreitlauch) for raising this.
 * [#926] Enhancement: Clarify debug trace output when adding aliases.
 * [#928] Enhancement: Improve debug tracing: show command user object identity hashcode and prefix "Processing argument..." with argument index.
-* [#925] Enhancement: Support `@ParentCommand`-annotated fields in mixin classes.
-* [#690] Enhancement: Postpone instantiating subcommands until they are matched on the command line. Thanks to [Daniel Breitlauch](https://github.com/danielBreitlauch) for raising this.
 * [#920] Enhancement: Reduce `DEBUG` tracing noise if no resource bundle is set.
 * [#924] Bugfix: `CommandSpec.mixinAnnotatedElements` map should be initialized when discovering `@Mixin`-annotated fields and methods via reflection.
 * [#929] DOC: Add [jbang](https://github.com/maxandersen/jbang) under [packaging](https://picocli.info/#_packaging_your_application) in the user manual.
