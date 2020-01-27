@@ -45,12 +45,25 @@ Command-line [argument files](https://picocli.info/#AtFiles) (@-files) allow app
 Generates polished and easily tailored [usage help](https://picocli.info/#_usage_help)
 and  [version help](https://picocli.info/#_version_help),
 using [ANSI colors](https://picocli.info/#_ansi_colors_and_styles) where possible.
-Requires at minimum Java 5, but is designed to facilitate the use of Java 8 lambdas. Tested on all Java versions between 5 and 14 (inclusive).
+Requires at minimum Java 5, but is designed to facilitate the use of Java 8 lambdas. Tested on all Java versions between 5 and 15-ea (inclusive).
 
 Picocli-based command line applications can have [TAB autocompletion](https://picocli.info/autocomplete.html),
 interactively showing users what options and subcommands are available.
 When an option has [`completionCandidates`](https://picocli.info/#_completion_candidates_variable) or has an `enum` type, autocompletion can also suggest option values.
 Picocli can generate completion scripts for bash and zsh, and offers [`picocli-shell-jline2`](picocli-shell-jline2/README.md) and [`picocli-shell-jline3`](picocli-shell-jline3/README.md) modules with JLine `Completer` implementations for building interactive shell applications.
+
+Unique features in picocli include support for [negatable options](https://picocli.info/#_negatable_options),
+advanced [quoted values](https://picocli.info/#_quoted_values),
+and [argument groups](https://picocli.info/#_argument_groups).
+Argument groups can be used to create mutually [exclusive](https://picocli.info/#_mutually_exclusive_options) options,
+mutually [dependent](https://picocli.info/#_mutually_dependent_options) options,
+option [sections](https://picocli.info/#_option_sections_in_usage_help) in the usage help message
+and [repeating composite arguments](https://picocli.info/#_repeating_composite_argument_groups) like
+`([-a=<a> -b=<b> -c=<c>] (-x | -y | -z))...`.
+For advanced use cases, applications can access the picocli command object model with the
+[`@Spec` annotation](https://picocli.info/#_spec_annotation), and
+implement [custom parameter processing](https://picocli.info/#_custom_parameter_processing) for option parameters if the built-in logic is insufficient.
+
 
 Picocli-based applications can easily [integrate](https://picocli.info/#_dependency_injection) with Dependency Injection containers.
 The [Micronaut](https://micronaut.io/) microservices framework has [built-in support](https://docs.micronaut.io/latest/guide/index.html#commandLineApps) for picocli.
@@ -161,6 +174,8 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 * Picocli is used in Spring IO [nohttp-cli](https://github.com/spring-io/nohttp/tree/master/nohttp-cli).
 * The [MinecraftPicocli](https://github.com/Rubydesic/MinecraftPicocli) library allows the use of picocli in [Minecraft Forge](https://files.minecraftforge.net/).
 * [Simple Java Mail](http://www.simplejavamail.org/) now offers a picocli-based [CLI](http://www.simplejavamail.org/cli.html#navigation).
+* [jbang](https://github.com/maxandersen/jbang) not only uses picocli internally, but also has a CLI template to generate an initial script: use `jbang --init=cli helloworld.java` to generate a sample picocli-enabled jbang script.
+
 
 <img src="https://picocli.info/images/downloads-201911.png">
 
