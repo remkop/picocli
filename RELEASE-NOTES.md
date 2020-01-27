@@ -85,7 +85,7 @@ In mathematical terms, when a parent command has this property, the additional v
 
 The blue and green dotted arrows in the diagram below illustrate the additional sequences that are allowed when a command has repeatable subcommands.
 
-![subcommands-repeatable](https://picocli.info/images/subcommands-repeatable.png)
+![subcommands-repeatable](https://picocli.info/images/subcommands-repeatable2.png)
 
 
 Note that it is not valid to specify a subcommand followed by its parent command:
