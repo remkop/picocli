@@ -23,7 +23,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [New and noteworthy](#4.2.0-new)
   * [Repeatable Subcommands](#4.2.0-repeatable-subcommands)
   * [Inject `CommandSpec` into a `IVersionProvider`](#4.2.0-versionprovider-with-spec)
-  * [Lazily instantiate subcommands](#4.2.0-lazy-instantiation)
+  * [Subcommands are now lazily instantiated](#4.2.0-lazy-instantiation)
   * [Mixins with `@ParentCommand`-annotated fields](#4.2.0-mixins)
   * [Showing `@filename` in usage help](#4.2.0-atfiles-usage)
 * [Fixed issues](#4.2.0-fixes)
@@ -74,7 +74,7 @@ This invocation is valid because `myapp` is marked with `subcommandsRepeatable =
 #### Repeatable Subcommands Specification
 
 Normally, `subcommandsRepeatable` is `false`, so for each command, only one of its subcommands can be specified, potentially followed by only one sub-subcommand of that subcommand, etc.
-In mathematical terms, a valid sequence of commands and subcommands can be represented by a _directed rooted tree_ that starts at the top-level command, illustrated by the diagram below.
+In mathematical terms, a valid sequence of commands and subcommands can be represented by a _directed rooted tree_ that starts at the top-level command. This is illustrated by the diagram below.
 
 ![subcommands not repeatable](https://picocli.info/images/subcommands-non-repeatable.png)
 
@@ -83,7 +83,7 @@ Also, a subcommand can be followed by a "sibling" command (another command with 
 
 In mathematical terms, when a parent command has this property, the additional valid sequences of its subcommands form a fully connected subgraph (_a complete digraph_).
 
-The blue dotted arrows in the diagram below illustrate the additional sequences that are allowed when a command has repeatable subcommands.
+The blue and green dotted arrows in the diagram below illustrate the additional sequences that are allowed when a command has repeatable subcommands.
 
 ![subcommands-repeatable](https://picocli.info/images/subcommands-repeatable.png)
 
@@ -94,6 +94,11 @@ Note that it is not valid to specify a subcommand followed by its parent command
 # invalid: cannot move _up_ the hierarchy
 myapp add -x=item1 -w=0.2 myapp
 ```
+
+### <a name="4.2.0-lazy-instantiation"></a> Subcommands are now lazily instantiated
+
+From this release,  subcommands are not instantiated until they are matched on the command line,
+unless the user object has a `@Spec` or `@ParentObject`-annotated field; these are instantiated during initialization.
 
 
 ### <a name="4.2.0-versionprovider-with-spec"></a> Injecting `CommandSpec` Into a `IVersionProvider`
@@ -114,11 +119,6 @@ class MyVersionProvider implements IVersionProvider {
     }
 }
 ```
-
-### <a name="4.2.0-lazy-instantiation"></a> Lazily instantiate subcommands
-
-From this release,  subcommands are not instantiated until they are matched on the command line,
-unless the user object has a `@Spec` or `@ParentObject`-annotated field; these are instantiated during initialization.
 
 ### <a name="4.2.0-mixins"></a> Mixins with `@ParentCommand`-annotated fields
 

@@ -4086,7 +4086,7 @@ This invocation is valid because `myapp` is marked with `subcommandsRepeatable =
 ==== Repeatable Subcommands Specification
 
 Normally, `subcommandsRepeatable` is `false`, so for each command, only one of its subcommands can be specified, potentially followed by only one sub-subcommand of that subcommand, etc.
-In mathematical terms, a valid sequence of commands and subcommands can be represented by a _directed rooted tree_ that starts at the top-level command, illustrated by the diagram below.
+In mathematical terms, a valid sequence of commands and subcommands can be represented by a _directed rooted tree_ that starts at the top-level command. This is illustrated by the diagram below.
 
 [#sequences-when-subcommands-not-repeatable]
 .By default, valid sequences of commands and subcommands form a directed rooted tree.
@@ -4097,7 +4097,7 @@ Also, a subcommand can be followed by a "sibling" command (another command with 
 
 In mathematical terms, when a parent command has this property, the additional valid sequences of its subcommands form a fully connected subgraph (_a complete digraph_).
 
-The blue dotted arrows in the diagram below illustrate the additional sequences that are allowed when a command has repeatable subcommands.
+The blue and green dotted arrows in the diagram below illustrate the additional sequences that are allowed when a command has repeatable subcommands.
 
 [#sequences-when-subcommands-repeatable]
 .If a command is marked to allow repeatable subcommands, the additional valid sequences of its subcommands form a fully connected subgraph.
