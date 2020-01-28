@@ -12947,7 +12947,7 @@ public class CommandLine {
 
         private final static int defaultOptionsColumnWidth = 24;
         public final PositionalParamSpec AT_FILE_POSITIONAL_PARAM = PositionalParamSpec.builder()
-                .paramLabel("${picocli.atfile.label:-@<filename>}").description("${picocli.atfile.description:-One or more argument files containing options}").arity("0..*")
+                .paramLabel("${picocli.atfile.label:-@<filename>}").description("${picocli.atfile.description:-One or more argument files containing options.}").arity("0..*")
                 .descriptionKey("picocli.atfile").build();
 
         private final CommandSpec commandSpec;

@@ -1,5 +1,6 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -7,6 +8,9 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.rules.TestRule;
 import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -24,8 +28,11 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListResourceBundle;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -51,10 +58,10 @@ public class AtFileTest {
     @Test
     public void testAtFileExpandedAbsolute() {
         class App {
-            @CommandLine.Option(names = "-v")
+            @Option(names = "-v")
             private boolean verbose;
 
-            @CommandLine.Parameters
+            @Parameters
             private List<String> files;
         }
         File file = findFile("/argfile1.txt");
@@ -66,7 +73,7 @@ public class AtFileTest {
     @Test
     public void testAtFileExpansionIgnoresSingleAtCharacter() {
         class App {
-            @CommandLine.Parameters
+            @Parameters
             private List<String> files;
         }
         App app = CommandLine.populateCommand(new App(), "@", "abc");
@@ -113,22 +120,22 @@ public class AtFileTest {
     }
 
     private static class AtFileTestingApp {
-        @CommandLine.Option(names = "--simpleArg")
+        @Option(names = "--simpleArg")
         private boolean simple;
 
-        @CommandLine.Option(names = "--argWithSpaces")
+        @Option(names = "--argWithSpaces")
         private String withSpaces;
 
-        @CommandLine.Option(names = "--quotedArg")
+        @Option(names = "--quotedArg")
         private String quoted;
 
-        @CommandLine.Option(names = "--multiArg", arity = "1..*")
+        @Option(names = "--multiArg", arity = "1..*")
         private List<String> strings;
 
-        @CommandLine.Option(names = "--urlArg")
+        @Option(names = "--urlArg")
         private URL url;
 
-        @CommandLine.Option(names = "--unescapedBackslashArg")
+        @Option(names = "--unescapedBackslashArg")
         private String unescaped;
     }
 
@@ -233,10 +240,10 @@ public class AtFileTest {
     @Test
     public void testAtFileNotExpandedIfDisabled() {
         class App {
-            @CommandLine.Option(names = "-v")
+            @Option(names = "-v")
             private boolean verbose;
 
-            @CommandLine.Parameters
+            @Parameters
             private List<String> files;
         }
         File file = findFile("/argfile1.txt");
@@ -249,7 +256,7 @@ public class AtFileTest {
 
     @Test
     public void testAtFileExpansionEnabledByDefault() {
-        @CommandLine.Command
+        @Command
         class App { }
         assertTrue(new CommandLine(new App()).isExpandAtFiles());
     }
@@ -257,10 +264,10 @@ public class AtFileTest {
     @Test
     public void testAtFileExpandedRelative() {
         class App {
-            @CommandLine.Option(names = "-v")
+            @Option(names = "-v")
             private boolean verbose;
 
-            @CommandLine.Parameters
+            @Parameters
             private List<String> files;
         }
         File file = findFile("/argfile1.txt");
@@ -279,16 +286,16 @@ public class AtFileTest {
     @Test
     public void testAtFileExpandedMixedWithOtherParams() {
         class App {
-            @CommandLine.Option(names = "-x")
+            @Option(names = "-x")
             private boolean xxx;
 
-            @CommandLine.Option(names = "-f")
+            @Option(names = "-f")
             private String[] fff;
 
-            @CommandLine.Option(names = "-v")
+            @Option(names = "-v")
             private boolean verbose;
 
-            @CommandLine.Parameters
+            @Parameters
             private List<String> files;
         }
         File file = findFile("/argfile1.txt");
@@ -302,16 +309,16 @@ public class AtFileTest {
     @Test
     public void testAtFileExpandedWithCommentsOff() {
         class App {
-            @CommandLine.Option(names = "-x")
+            @Option(names = "-x")
             private boolean xxx;
 
-            @CommandLine.Option(names = "-f")
+            @Option(names = "-f")
             private String[] fff;
 
-            @CommandLine.Option(names = "-v")
+            @Option(names = "-v")
             private boolean verbose;
 
-            @CommandLine.Parameters
+            @Parameters
             private List<String> files;
         }
         File file = findFile("/argfile1.txt");
@@ -328,16 +335,16 @@ public class AtFileTest {
     @Test
     public void testAtFileExpandedWithNonDefaultCommentChar() {
         class App {
-            @CommandLine.Option(names = "-x")
+            @Option(names = "-x")
             private boolean xxx;
 
-            @CommandLine.Option(names = "-f")
+            @Option(names = "-f")
             private String[] fff;
 
-            @CommandLine.Option(names = "-v")
+            @Option(names = "-v")
             private boolean verbose;
 
-            @CommandLine.Parameters
+            @Parameters
             private List<String> files;
         }
         File file = findFile("/argfile1.txt");
@@ -354,16 +361,16 @@ public class AtFileTest {
     @Test
     public void testAtFileWithMultipleValuesPerLine() {
         class App {
-            @CommandLine.Option(names = "-x")
+            @Option(names = "-x")
             private boolean xxx;
 
-            @CommandLine.Option(names = "-f")
+            @Option(names = "-f")
             private String[] fff;
 
-            @CommandLine.Option(names = "-v")
+            @Option(names = "-v")
             private boolean verbose;
 
-            @CommandLine.Parameters
+            @Parameters
             private List<String> files;
         }
         File file = findFile("/argfile3-multipleValuesPerLine.txt");
@@ -377,16 +384,16 @@ public class AtFileTest {
     @Test
     public void testAtFileWithQuotedValuesContainingWhitespace() {
         class App {
-            @CommandLine.Option(names = "-x")
+            @Option(names = "-x")
             private boolean xxx;
 
-            @CommandLine.Option(names = "-f")
+            @Option(names = "-f")
             private String[] fff;
 
-            @CommandLine.Option(names = "-v")
+            @Option(names = "-v")
             private boolean verbose;
 
-            @CommandLine.Parameters
+            @Parameters
             private List<String> files;
         }
         setTraceLevel("OFF");
@@ -401,7 +408,7 @@ public class AtFileTest {
     @Test
     public void testAtFileWithExcapedAtValues() {
         class App {
-            @CommandLine.Parameters
+            @Parameters
             private List<String> files;
         }
         setTraceLevel("INFO");
@@ -414,7 +421,7 @@ public class AtFileTest {
     @Test
     public void testEscapedAtFileIsUnescapedButNotExpanded() {
         class App {
-            @CommandLine.Parameters
+            @Parameters
             private List<String> files;
         }
         setTraceLevel("OFF");
@@ -426,16 +433,16 @@ public class AtFileTest {
     @Test
     public void testMultipleAtFilesExpandedMixedWithOtherParams() {
         class App {
-            @CommandLine.Option(names = "-x")
+            @Option(names = "-x")
             private boolean xxx;
 
-            @CommandLine.Option(names = "-f")
+            @Option(names = "-f")
             private String[] fff;
 
-            @CommandLine.Option(names = "-v")
+            @Option(names = "-v")
             private boolean verbose;
 
-            @CommandLine.Parameters
+            @Parameters
             private List<String> files;
         }
         File file = findFile("/argfile1.txt");
@@ -455,16 +462,16 @@ public class AtFileTest {
     @Test
     public void testNestedAtFile() throws IOException {
         class App {
-            @CommandLine.Option(names = "-x")
+            @Option(names = "-x")
             private boolean xxx;
 
-            @CommandLine.Option(names = "-f")
+            @Option(names = "-f")
             private String[] fff;
 
-            @CommandLine.Option(names = "-v")
+            @Option(names = "-v")
             private boolean verbose;
 
-            @CommandLine.Parameters
+            @Parameters
             private List<String> files;
         }
         File file = findFile("/argfile-with-nested-at-file.txt");
@@ -488,16 +495,16 @@ public class AtFileTest {
     @Test
     public void testRecursiveNestedAtFileIgnored() throws IOException {
         class App {
-            @CommandLine.Option(names = "-x")
+            @Option(names = "-x")
             private boolean xxx;
 
-            @CommandLine.Option(names = "-f")
+            @Option(names = "-f")
             private String[] fff;
 
-            @CommandLine.Option(names = "-v")
+            @Option(names = "-v")
             private boolean verbose;
 
-            @CommandLine.Parameters
+            @Parameters
             private List<String> files;
         }
         File file = findFile("/argfile-with-recursive-at-file.txt");
@@ -526,16 +533,16 @@ public class AtFileTest {
     @Test
     public void testNestedAtFileNotFound() throws IOException {
         class App {
-            @CommandLine.Option(names = "-x")
+            @Option(names = "-x")
             private boolean xxx;
 
-            @CommandLine.Option(names = "-f")
+            @Option(names = "-f")
             private String[] fff;
 
-            @CommandLine.Option(names = "-v")
+            @Option(names = "-v")
             private boolean verbose;
 
-            @CommandLine.Parameters
+            @Parameters
             private List<String> files;
         }
         File file = findFile("/argfile-with-nested-at-file.txt");
@@ -577,7 +584,7 @@ public class AtFileTest {
 
     @Test
     public void testGetAtFileCommentChar_SharpByDefault() {
-        @CommandLine.Command
+        @Command
         class A {}
         assertEquals((Character) '#', new CommandLine(new A()).getAtFileCommentChar());
     }
@@ -589,7 +596,7 @@ public class AtFileTest {
         m.setAccessible(true);
 
         class App {
-            @CommandLine.Parameters
+            @Parameters
             private List<String> files;
         }
         App app = new App();
@@ -606,5 +613,82 @@ public class AtFileTest {
             assertEquals("Could not read argument file @fileName", actual.getMessage());
             assertTrue(String.valueOf(actual.getCause()), actual.getCause() instanceof NullPointerException);
         }
+    }
+
+    @Test
+    public void testShowAtFileInUsageHelpBasic() {
+        @Command(name = "A", mixinStandardHelpOptions = true, showAtFileInUsageHelp = true, description = "... description ...")
+        class A { }
+
+        String actual = new CommandLine(new A()).getUsageMessage();
+        String expected = String.format("" +
+                "Usage: A [-hV] [@<filename>...]%n" +
+                "... description ...%n" +
+                "      [@<filename>...]   One or more argument files containing options.%n" +
+                "  -h, --help             Show this help message and exit.%n" +
+                "  -V, --version          Print version information and exit.%n");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testShowAtFileInUsageHelpSystemProperties() {
+        @Command(name = "A", mixinStandardHelpOptions = true, showAtFileInUsageHelp = true, description = "... description ...")
+        class A { }
+        System.setProperty("picocli.atfile.label", "my@@@@file");
+        System.setProperty("picocli.atfile.description", "@files rock!");
+
+        String actual = new CommandLine(new A()).getUsageMessage();
+        String expected = String.format("" +
+                "Usage: A [-hV] [my@@@@file...]%n" +
+                "... description ...%n" +
+                "      [my@@@@file...]   @files rock!%n" +
+                "  -h, --help            Show this help message and exit.%n" +
+                "  -V, --version         Print version information and exit.%n");
+        assertEquals(expected, actual);
+    }
+
+    static class MyResourceBundle extends ListResourceBundle {
+        protected Object[][] getContents() {
+            return new Object[][] {
+                    {"picocli.atfile", "hi! I amd the @file description from a file"},
+                    {"@<filename>", "BUNDLE@FILE"},
+                    {"my@@@@file", "OTHER@@@"},
+            };
+        }
+    }
+    @Ignore
+    @Test
+    public void testShowAtFileInUsageHelpResourceBundleWithSystemProps() {
+        @Command(name = "A", mixinStandardHelpOptions = true, //resourceBundle = "picocli.AtFileTest$MyResourceBundle",
+                showAtFileInUsageHelp = true, description = "... description ...")
+        class A { }
+
+        System.setProperty("picocli.atfile.label", "my@@@@file");
+        System.setProperty("picocli.atfile.description", "@files rock!");
+
+        String actual = new CommandLine(new A()).setResourceBundle(new MyResourceBundle()).getUsageMessage();
+        String expected = String.format("" +
+                "Usage: A [-hV] [@<filename>...]%n" +
+                "... description ...%n" +
+                "      [OTHER@@@...]   hi! I amd the @file description from a file%n" +
+                "  -h, --help          Show this help message and exit.%n" +
+                "  -V, --version       Print version information and exit.%n");
+        assertEquals(expected, actual);
+    }
+    @Ignore
+    @Test
+    public void testShowAtFileInUsageHelpResourceBundleWithoutSystemProps() {
+        @Command(name = "A", mixinStandardHelpOptions = true, resourceBundle = "picocli.AtFileTest.MyResourceBundle",
+                showAtFileInUsageHelp = true, description = "... description ...")
+        class A { }
+
+        String actual = new CommandLine(new A()).getUsageMessage();
+        String expected = String.format("" +
+                "Usage: A [-hV] [@<filename>...]%n" +
+                "... description ...%n" +
+                "      [BUNDLE@FILE...]   hi! I amd the @file description from a file%n" +
+                "  -h, --help             Show this help message and exit.%n" +
+                "  -V, --version          Print version information and exit.%n");
+        assertEquals(expected, actual);
     }
 }
