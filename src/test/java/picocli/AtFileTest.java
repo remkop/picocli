@@ -37,6 +37,9 @@ import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.*;
+import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_AT_FILE_PARAMETER;
+import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_COMMAND_LIST_HEADING;
+import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_OPTION_LIST_HEADING;
 import static picocli.TestUtil.setTraceLevel;
 
 public class AtFileTest {
@@ -694,4 +697,59 @@ public class AtFileTest {
                 "  -V, --version          Print version information and exit.%n");
         assertEquals(expected, actual);
     }
+
+
+    @Test
+    public void testAtFileParameterListSectionLast() {
+        @Command(name = "A", mixinStandardHelpOptions = true,
+                showAtFileInUsageHelp = true, description = "... description ...")
+        class A { }
+
+        CommandLine commandLine = new CommandLine(new A());
+        List<String> helpSectionKeys = commandLine.getHelpSectionKeys();
+        List<String> copy = new ArrayList<String>(helpSectionKeys);
+        copy.remove(SECTION_KEY_AT_FILE_PARAMETER);
+        copy.add(helpSectionKeys.indexOf(SECTION_KEY_COMMAND_LIST_HEADING), SECTION_KEY_AT_FILE_PARAMETER);
+        commandLine.setHelpSectionKeys(copy);
+
+        String actual = commandLine.getUsageMessage();
+        String expected = String.format("" +
+                "Usage: A [-hV] [@<filename>...]%n" +
+                "... description ...%n" +
+                "  -h, --help             Show this help message and exit.%n" +
+                "  -V, --version          Print version information and exit.%n" +
+                "      [@<filename>...]   One or more argument files containing options.%n" +
+                "");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testAtFileParameterListSectionBeforeOptions() {
+        @Command(name = "A", mixinStandardHelpOptions = true,
+                showAtFileInUsageHelp = true, description = "... description ...")
+        class A {
+            @Parameters(index = "0", arity = "1", description = "Some file.") File file;
+            @Parameters(index = "1", description = "Some other file.") File anotherFile;
+        }
+
+        CommandLine commandLine = new CommandLine(new A());
+        List<String> helpSectionKeys = commandLine.getHelpSectionKeys();
+        List<String> copy = new ArrayList<String>(helpSectionKeys);
+        copy.remove(SECTION_KEY_AT_FILE_PARAMETER);
+        copy.add(helpSectionKeys.indexOf(SECTION_KEY_OPTION_LIST_HEADING), SECTION_KEY_AT_FILE_PARAMETER);
+        commandLine.setHelpSectionKeys(copy);
+
+        String actual = commandLine.getUsageMessage();
+        String expected = String.format("" +
+                "Usage: A [-hV] [@<filename>...] <file> <anotherFile>%n" +
+                "... description ...%n" +
+                "      <file>             Some file.%n" +
+                "      <anotherFile>      Some other file.%n" +
+                "      [@<filename>...]   One or more argument files containing options.%n" +
+                "  -h, --help             Show this help message and exit.%n" +
+                "  -V, --version          Print version information and exit.%n" +
+                "");
+        assertEquals(expected, actual);
+    }
+
 }

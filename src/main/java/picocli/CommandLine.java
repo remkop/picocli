@@ -429,6 +429,7 @@ public class CommandLine {
      *   <li>{@link UsageMessageSpec#SECTION_KEY_DESCRIPTION_HEADING SECTION_KEY_DESCRIPTION_HEADING}</li>
      *   <li>{@link UsageMessageSpec#SECTION_KEY_DESCRIPTION SECTION_KEY_DESCRIPTION}</li>
      *   <li>{@link UsageMessageSpec#SECTION_KEY_PARAMETER_LIST_HEADING SECTION_KEY_PARAMETER_LIST_HEADING}</li>
+     *   <li>{@link UsageMessageSpec#SECTION_KEY_AT_FILE_PARAMETER SECTION_KEY_AT_FILE_PARAMETER}</li>
      *   <li>{@link UsageMessageSpec#SECTION_KEY_PARAMETER_LIST SECTION_KEY_PARAMETER_LIST}</li>
      *   <li>{@link UsageMessageSpec#SECTION_KEY_OPTION_LIST_HEADING SECTION_KEY_OPTION_LIST_HEADING}</li>
      *   <li>{@link UsageMessageSpec#SECTION_KEY_OPTION_LIST SECTION_KEY_OPTION_LIST}</li>
@@ -6286,6 +6287,11 @@ public class CommandLine {
              * @since 3.9 */
             public static final String SECTION_KEY_PARAMETER_LIST_HEADING = "parameterListHeading";
 
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the @-file parameter list section.
+             * The default renderer for this section calls {@link Help#atFileParameterList()}.
+             * @since 4.2 */
+            public static final String SECTION_KEY_AT_FILE_PARAMETER = "atFileParameterList";
+
             /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Parameter List section.
              * The default renderer for this section calls {@link Help#parameterList()}.
              * @since 3.9 */
@@ -6384,6 +6390,7 @@ public class CommandLine {
                     SECTION_KEY_DESCRIPTION_HEADING,
                     SECTION_KEY_DESCRIPTION,
                     SECTION_KEY_PARAMETER_LIST_HEADING,
+                    SECTION_KEY_AT_FILE_PARAMETER,
                     SECTION_KEY_PARAMETER_LIST,
                     SECTION_KEY_OPTION_LIST_HEADING,
                     SECTION_KEY_OPTION_LIST,
@@ -6591,6 +6598,8 @@ public class CommandLine {
                 result.put(SECTION_KEY_DESCRIPTION,            new IHelpSectionRenderer() { public String render(Help help) { return help.description(); } });
                 //e.g. %nPositional parameters:%n%n
                 result.put(SECTION_KEY_PARAMETER_LIST_HEADING, new IHelpSectionRenderer() { public String render(Help help) { return help.parameterListHeading(); } });
+                //e.g. [@<filename>...] One or more argument files containing options.
+                result.put(SECTION_KEY_AT_FILE_PARAMETER,      new IHelpSectionRenderer() { public String render(Help help) { return help.atFileParameterList(); } });
                 //e.g. [FILE...] the files to convert
                 result.put(SECTION_KEY_PARAMETER_LIST,         new IHelpSectionRenderer() { public String render(Help help) { return help.parameterList(); } });
                 //e.g. %nOptions:%n%n
@@ -6619,6 +6628,7 @@ public class CommandLine {
              *   <li>{@link UsageMessageSpec#SECTION_KEY_DESCRIPTION_HEADING SECTION_KEY_DESCRIPTION_HEADING}</li>
              *   <li>{@link UsageMessageSpec#SECTION_KEY_DESCRIPTION SECTION_KEY_DESCRIPTION}</li>
              *   <li>{@link UsageMessageSpec#SECTION_KEY_PARAMETER_LIST_HEADING SECTION_KEY_PARAMETER_LIST_HEADING}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_AT_FILE_PARAMETER SECTION_KEY_AT_FILE_PARAMETER}</li>
              *   <li>{@link UsageMessageSpec#SECTION_KEY_PARAMETER_LIST SECTION_KEY_PARAMETER_LIST}</li>
              *   <li>{@link UsageMessageSpec#SECTION_KEY_OPTION_LIST_HEADING SECTION_KEY_OPTION_LIST_HEADING}</li>
              *   <li>{@link UsageMessageSpec#SECTION_KEY_OPTION_LIST SECTION_KEY_OPTION_LIST}</li>
@@ -13429,15 +13439,25 @@ public class CommandLine {
          */
         public String parameterList(Layout layout, IParamLabelRenderer paramLabelRenderer) {
             List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(commandSpec.positionalParameters());
-            if (commandSpec.parser.expandAtFiles() && commandSpec.usageMessage.showAtFileInUsageHelp()) {
-                positionals.add(0, AT_FILE_POSITIONAL_PARAM);
-                AT_FILE_POSITIONAL_PARAM.messages(commandSpec.usageMessage().messages());
-            }
             List<ArgGroupSpec> groups = optionListGroups();
             for (ArgGroupSpec group : groups) { positionals.removeAll(group.positionalParameters()); }
 
             layout.addPositionalParameters(positionals, paramLabelRenderer);
             return layout.toString();
+        }
+
+        /**
+         * Returns the section of the usage help message that lists the @-file and its description.
+         * @return the section of the usage help message that lists the @-file and its description
+         */
+        public String atFileParameterList() {
+            if (commandSpec.parser.expandAtFiles() && commandSpec.usageMessage.showAtFileInUsageHelp()) {
+                AT_FILE_POSITIONAL_PARAM.messages(commandSpec.usageMessage().messages());
+                Layout layout = createDefaultLayout();
+                layout.addPositionalParameter(AT_FILE_POSITIONAL_PARAM, parameterLabelRenderer());
+                return layout.toString();
+            }
+            return "";
         }
 
         private static String heading(Ansi ansi, int usageWidth, boolean adjustCJK, String values, Object... params) {
