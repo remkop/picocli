@@ -617,7 +617,8 @@ public class AtFileTest {
 
     @Test
     public void testShowAtFileInUsageHelpBasic() {
-        @Command(name = "A", mixinStandardHelpOptions = true, showAtFileInUsageHelp = true, description = "... description ...")
+        @Command(name = "A", mixinStandardHelpOptions = true,
+                showAtFileInUsageHelp = true, description = "... description ...")
         class A { }
 
         String actual = new CommandLine(new A()).getUsageMessage();
@@ -632,8 +633,10 @@ public class AtFileTest {
 
     @Test
     public void testShowAtFileInUsageHelpSystemProperties() {
-        @Command(name = "A", mixinStandardHelpOptions = true, showAtFileInUsageHelp = true, description = "... description ...")
+        @Command(name = "A", mixinStandardHelpOptions = true,
+                showAtFileInUsageHelp = true, description = "... description ...")
         class A { }
+
         System.setProperty("picocli.atfile.label", "my@@@@file");
         System.setProperty("picocli.atfile.description", "@files rock!");
 
@@ -647,19 +650,19 @@ public class AtFileTest {
         assertEquals(expected, actual);
     }
 
-    static class MyResourceBundle extends ListResourceBundle {
+    public static class MyResourceBundle extends ListResourceBundle {
         protected Object[][] getContents() {
             return new Object[][] {
                     {"picocli.atfile", "hi! I amd the @file description from a file"},
-                    {"@<filename>", "BUNDLE@FILE"},
-                    {"my@@@@file", "OTHER@@@"},
+                    {"@<filename>", "BUNDLE@FILE"}, // ignored...
+                    {"my@@@@file", "OTHER@@@"},     // ignored...
             };
         }
     }
-    @Ignore
+
     @Test
     public void testShowAtFileInUsageHelpResourceBundleWithSystemProps() {
-        @Command(name = "A", mixinStandardHelpOptions = true, //resourceBundle = "picocli.AtFileTest$MyResourceBundle",
+        @Command(name = "A", mixinStandardHelpOptions = true, resourceBundle = "picocli.AtFileTest$MyResourceBundle",
                 showAtFileInUsageHelp = true, description = "... description ...")
         class A { }
 
@@ -668,17 +671,17 @@ public class AtFileTest {
 
         String actual = new CommandLine(new A()).setResourceBundle(new MyResourceBundle()).getUsageMessage();
         String expected = String.format("" +
-                "Usage: A [-hV] [@<filename>...]%n" +
+                "Usage: A [-hV] [my@@@@file...]%n" +
                 "... description ...%n" +
-                "      [OTHER@@@...]   hi! I amd the @file description from a file%n" +
-                "  -h, --help          Show this help message and exit.%n" +
-                "  -V, --version       Print version information and exit.%n");
+                "      [my@@@@file...]   hi! I amd the @file description from a file%n" +
+                "  -h, --help            Show this help message and exit.%n" +
+                "  -V, --version         Print version information and exit.%n");
         assertEquals(expected, actual);
     }
-    @Ignore
+
     @Test
     public void testShowAtFileInUsageHelpResourceBundleWithoutSystemProps() {
-        @Command(name = "A", mixinStandardHelpOptions = true, resourceBundle = "picocli.AtFileTest.MyResourceBundle",
+        @Command(name = "A", mixinStandardHelpOptions = true, resourceBundle = "picocli.AtFileTest$MyResourceBundle",
                 showAtFileInUsageHelp = true, description = "... description ...")
         class A { }
 
@@ -686,7 +689,7 @@ public class AtFileTest {
         String expected = String.format("" +
                 "Usage: A [-hV] [@<filename>...]%n" +
                 "... description ...%n" +
-                "      [BUNDLE@FILE...]   hi! I amd the @file description from a file%n" +
+                "      [@<filename>...]   hi! I amd the @file description from a file%n" +
                 "  -h, --help             Show this help message and exit.%n" +
                 "  -V, --version          Print version information and exit.%n");
         assertEquals(expected, actual);

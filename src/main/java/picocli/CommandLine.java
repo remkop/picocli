@@ -13257,6 +13257,7 @@ public class CommandLine {
             List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(commandSpec.positionalParameters()); // iterate in declaration order
             if (commandSpec.parser.expandAtFiles() && commandSpec.usageMessage.showAtFileInUsageHelp()) {
                 positionals.add(0, AT_FILE_POSITIONAL_PARAM);
+                AT_FILE_POSITIONAL_PARAM.messages(commandSpec.usageMessage().messages());
             }
             positionals.removeAll(done);
             for (PositionalParamSpec positionalParam : positionals) {
@@ -13352,6 +13353,7 @@ public class CommandLine {
             List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(commandSpec.positionalParameters()); // iterate in declaration order
             if (commandSpec.parser.expandAtFiles() && commandSpec.usageMessage.showAtFileInUsageHelp()) {
                 positionals.add(0, AT_FILE_POSITIONAL_PARAM);
+                AT_FILE_POSITIONAL_PARAM.messages(commandSpec.usageMessage().messages());
             }
             //IParameterRenderer paramRenderer = new DefaultParameterRenderer(false, " ");
             for (PositionalParamSpec positional : positionals) {
@@ -13429,6 +13431,7 @@ public class CommandLine {
             List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(commandSpec.positionalParameters());
             if (commandSpec.parser.expandAtFiles() && commandSpec.usageMessage.showAtFileInUsageHelp()) {
                 positionals.add(0, AT_FILE_POSITIONAL_PARAM);
+                AT_FILE_POSITIONAL_PARAM.messages(commandSpec.usageMessage().messages());
             }
             List<ArgGroupSpec> groups = optionListGroups();
             for (ArgGroupSpec group : groups) { positionals.removeAll(group.positionalParameters()); }
