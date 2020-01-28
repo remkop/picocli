@@ -156,8 +156,7 @@ public class RepeatableSubcommandsTest {
         }
     }
 
-    @Test
-    public void testCommandLazyInstantiation() {
+    private void resetCounters() {
         A.total.set(0);
         A.count.set(0);
         B.count.set(0);
@@ -166,6 +165,11 @@ public class RepeatableSubcommandsTest {
         E.count.set(0);
         F.count.set(0);
         G.count.set(0);
+    }
+
+    @Test
+    public void testCommandLazyInstantiation() {
+        resetCounters();
 
         CommandLine cl = new CommandLine(A.class);
         assertEquals(0, A.count.get());
@@ -177,6 +181,7 @@ public class RepeatableSubcommandsTest {
         assertEquals(0, G.count.get());
         assertEquals(0, A.total.get());
 
+        resetCounters();
         cl.parseArgs();
         assertEquals(1, A.count.get());
         assertEquals(0, B.count.get());
@@ -187,6 +192,134 @@ public class RepeatableSubcommandsTest {
         assertEquals(0, G.count.get());
         assertEquals(1, A.total.get());
 
+        resetCounters();
+        cl.parseArgs("-x=y");
+        assertEquals(0, A.count.get()); // previously created instance is reused
+        assertEquals(0, B.count.get());
+        assertEquals(0, C.count.get());
+        assertEquals(0, D.count.get());
+        assertEquals(0, E.count.get());
+        assertEquals(0, F.count.get());
+        assertEquals(0, G.count.get());
+        assertEquals(0, A.total.get());
+
+        resetCounters();
+        cl.parseArgs("-x=y", "B");
+        assertEquals(0, A.count.get());
+        assertEquals(1, B.count.get());
+        assertEquals(0, C.count.get());
+        assertEquals(0, D.count.get());
+        assertEquals(0, E.count.get());
+        assertEquals(0, F.count.get());
+        assertEquals(0, G.count.get());
+        assertEquals(1, A.total.get());
+
+        resetCounters();
+        cl.parseArgs("-x=y", "B", "-x=y");
+        assertEquals(0, A.count.get());
+        assertEquals(0, B.count.get()); // previously created instance is reused
+        assertEquals(0, C.count.get());
+        assertEquals(0, D.count.get());
+        assertEquals(0, E.count.get());
+        assertEquals(0, F.count.get());
+        assertEquals(0, G.count.get());
+        assertEquals(0, A.total.get());
+
+        resetCounters();
+        cl.parseArgs("C");
+        assertEquals(0, A.count.get());
+        assertEquals(0, B.count.get());
+        assertEquals(1, C.count.get());
+        assertEquals(0, D.count.get());
+        assertEquals(0, E.count.get());
+        assertEquals(0, F.count.get());
+        assertEquals(0, G.count.get());
+        assertEquals(1, A.total.get());
+
+        resetCounters();
+        cl.parseArgs("C", "-x=y");
+        assertEquals(0, A.count.get());
+        assertEquals(0, B.count.get());
+        assertEquals(0, C.count.get()); // previously created instance is reused
+        assertEquals(0, D.count.get());
+        assertEquals(0, E.count.get());
+        assertEquals(0, F.count.get());
+        assertEquals(0, G.count.get());
+        assertEquals(0, A.total.get());
+
+        resetCounters();
+        cl.parseArgs("B", "E");
+        assertEquals(0, A.count.get());
+        assertEquals(0, B.count.get()); // previously created instance is reused
+        assertEquals(0, C.count.get());
+        assertEquals(0, D.count.get());
+        assertEquals(1, E.count.get());
+        assertEquals(0, F.count.get());
+        assertEquals(0, G.count.get());
+        assertEquals(1, A.total.get());
+
+        resetCounters();
+        cl.parseArgs("B", "E", "-x=y");
+        assertEquals(0, A.count.get());
+        assertEquals(0, B.count.get()); // previously created instance is reused
+        assertEquals(0, C.count.get());
+        assertEquals(0, D.count.get());
+        assertEquals(0, E.count.get()); // previously created instance is reused
+        assertEquals(0, F.count.get());
+        assertEquals(0, G.count.get());
+        assertEquals(0, A.total.get());
+
+        resetCounters();
+        cl.parseArgs("B", "-x=y", "E", "-x=y");
+        assertEquals(0, A.count.get());
+        assertEquals(0, B.count.get()); // instance is reused
+        assertEquals(0, C.count.get());
+        assertEquals(0, D.count.get());
+        assertEquals(0, E.count.get()); // instance is reused
+        assertEquals(0, F.count.get());
+        assertEquals(0, G.count.get());
+        assertEquals(0, A.total.get());
+
+        resetCounters();
+        cl.parseArgs("-x=y", "B", "-x=y", "E", "-x=y");
+        assertEquals(0, A.count.get()); // instance is reused
+        assertEquals(0, B.count.get()); // instance is reused
+        assertEquals(0, C.count.get());
+        assertEquals(0, D.count.get());
+        assertEquals(0, E.count.get()); // instance is reused
+        assertEquals(0, F.count.get());
+        assertEquals(0, G.count.get());
+        assertEquals(0, A.total.get());
+    }
+
+    @Test
+    public void testCommandLazyInstantiation2() {
+        resetCounters();
+
+        CommandLine cl = new CommandLine(A.class);
+        assertEquals(0, A.count.get());
+        assertEquals(0, B.count.get());
+        assertEquals(0, C.count.get());
+        assertEquals(0, D.count.get());
+        assertEquals(0, E.count.get());
+        assertEquals(0, F.count.get());
+        assertEquals(0, G.count.get());
+        assertEquals(0, A.total.get());
+
+        resetCounters();
+        cl = new CommandLine(A.class);
+        cl.parseArgs();
+        assertEquals(1, A.count.get());
+        assertEquals(0, B.count.get());
+        assertEquals(0, C.count.get());
+        assertEquals(0, D.count.get());
+        assertEquals(0, E.count.get());
+        assertEquals(0, F.count.get());
+        assertEquals(0, G.count.get());
+        assertEquals(1, A.total.get());
+
+        resetCounters();
+        cl = new CommandLine(A.class);
         cl.parseArgs("-x=y");
         assertEquals(1, A.count.get());
         assertEquals(0, B.count.get());
@@ -197,6 +330,8 @@ public class RepeatableSubcommandsTest {
         assertEquals(0, G.count.get());
         assertEquals(1, A.total.get());
 
+        resetCounters();
+        cl = new CommandLine(A.class);
         cl.parseArgs("-x=y", "B");
         assertEquals(1, A.count.get());
         assertEquals(1, B.count.get());
@@ -207,6 +342,8 @@ public class RepeatableSubcommandsTest {
         assertEquals(0, G.count.get());
         assertEquals(2, A.total.get());
 
+        resetCounters();
+        cl = new CommandLine(A.class);
         cl.parseArgs("-x=y", "B", "-x=y");
         assertEquals(1, A.count.get());
         assertEquals(1, B.count.get());
@@ -217,65 +354,77 @@ public class RepeatableSubcommandsTest {
         assertEquals(0, G.count.get());
         assertEquals(2, A.total.get());
 
+        resetCounters();
+        cl = new CommandLine(A.class);
         cl.parseArgs("C");
         assertEquals(1, A.count.get());
-        assertEquals(1, B.count.get());
+        assertEquals(0, B.count.get());
         assertEquals(1, C.count.get());
         assertEquals(0, D.count.get());
         assertEquals(0, E.count.get());
         assertEquals(0, F.count.get());
         assertEquals(0, G.count.get());
-        assertEquals(3, A.total.get());
+        assertEquals(2, A.total.get());
 
+        resetCounters();
+        cl = new CommandLine(A.class);
         cl.parseArgs("C", "-x=y");
         assertEquals(1, A.count.get());
-        assertEquals(1, B.count.get());
+        assertEquals(0, B.count.get());
         assertEquals(1, C.count.get());
         assertEquals(0, D.count.get());
         assertEquals(0, E.count.get());
         assertEquals(0, F.count.get());
         assertEquals(0, G.count.get());
-        assertEquals(3, A.total.get());
+        assertEquals(2, A.total.get());
 
+        resetCounters();
+        cl = new CommandLine(A.class);
         cl.parseArgs("B", "E");
         assertEquals(1, A.count.get());
         assertEquals(1, B.count.get());
-        assertEquals(1, C.count.get());
+        assertEquals(0, C.count.get());
         assertEquals(0, D.count.get());
         assertEquals(1, E.count.get());
         assertEquals(0, F.count.get());
         assertEquals(0, G.count.get());
-        assertEquals(4, A.total.get());
+        assertEquals(3, A.total.get());
 
+        resetCounters();
+        cl = new CommandLine(A.class);
         cl.parseArgs("B", "E", "-x=y");
         assertEquals(1, A.count.get());
         assertEquals(1, B.count.get());
-        assertEquals(1, C.count.get());
+        assertEquals(0, C.count.get());
         assertEquals(0, D.count.get());
         assertEquals(1, E.count.get());
         assertEquals(0, F.count.get());
         assertEquals(0, G.count.get());
-        assertEquals(4, A.total.get());
+        assertEquals(3, A.total.get());
 
+        resetCounters();
+        cl = new CommandLine(A.class);
         cl.parseArgs("B", "-x=y", "E", "-x=y");
         assertEquals(1, A.count.get());
-        assertEquals(1, B.count.get()); // instance is reused
-        assertEquals(1, C.count.get());
+        assertEquals(1, B.count.get());
+        assertEquals(0, C.count.get());
         assertEquals(0, D.count.get());
-        assertEquals(1, E.count.get()); // instance is reused
+        assertEquals(1, E.count.get());
         assertEquals(0, F.count.get());
         assertEquals(0, G.count.get());
-        assertEquals(4, A.total.get());
+        assertEquals(3, A.total.get());
 
+        resetCounters();
+        cl = new CommandLine(A.class);
         cl.parseArgs("-x=y", "B", "-x=y", "E", "-x=y");
-        assertEquals(1, A.count.get()); // instance is reused
-        assertEquals(1, B.count.get()); // instance is reused
-        assertEquals(1, C.count.get());
+        assertEquals(1, A.count.get());
+        assertEquals(1, B.count.get());
+        assertEquals(0, C.count.get());
         assertEquals(0, D.count.get());
-        assertEquals(1, E.count.get()); // instance is reused
+        assertEquals(1, E.count.get());
         assertEquals(0, F.count.get());
         assertEquals(0, G.count.get());
-        assertEquals(4, A.total.get());
+        assertEquals(3, A.total.get());
     }
 
     @Test
