@@ -4020,27 +4020,6 @@ By default, the usage help message only shows the subcommands of the specified c
 and not the nested sub-subcommands. This can be customized by specifying your own <<Reordering Sections,`IHelpSectionRenderer`>> for the command list section.
 The `picocli-examples` module has an https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/customhelp/ShowCommandHierarchy.java[example] that shows how to accomplish this.
 
-=== Repeatable Subcommands
-From picocli 4.2, it is possible to mark a command as `@Command(subcommandsRepeatable = true)`.
-
-Normally (`subcommandsRepeatable` is `false`), only one subcommand is matched, and potentially one sub-subcommand of that subcommand, etc. In mathematical terms, a hierarchy of subcommands can be represented by a _directed rooted tree_, illustrated by the diagram below.
-
-image::subcommands-non-repeatable.png[]
-
-When `subcommandsRepeatable` is set to `true`, the subcommands of this command may appear multiple times.
-This allows users to specify a single subcommand repeatedly, but also to specify a sequence of sibling subcommands. The red arrows in the diagram below illustrate the additional sequences that are allowed when a command is repeatable.
-
-image::subcommands-repeatable.png[]
-
-An example use case is TODO. For example:
-
-[source,java]
-----
-myapp add -x=item1 -w=0.2 \
-      add -x=item2 -w=0.5 \
-      list --where "w>0.2" \
-      send-report --to=recipients@myorg.com
-----
 
 === Repeatable Subcommands
 From picocli 4.2, it is possible to specify that a command's subcommands can be specified multiple times by marking it with `@Command(subcommandsRepeatable = true)`.
