@@ -2142,26 +2142,33 @@ public class CommandLine {
         protected List<Object> handle(ParseResult parseResult) throws ExecutionException {
             return executeUserObjectOfLastSubcommandWithSameParent(parseResult.asCommandLineList());
         }
-
-        // find list of most deeply nested sub-(sub*)-commands
-        private List<Object> executeUserObjectOfLastSubcommandWithSameParent(List<CommandLine> parsedCommands) {
-            int start = parsedCommands.size() - 1;
-            for (int i = parsedCommands.size() - 2; i >= 0; i--) {
-                if (parsedCommands.get(i).getParent() != parsedCommands.get(i + 1).getParent()) { break; }
-                start = i;
-            }
+        private static List<Object> executeUserObjectOfLastSubcommandWithSameParent(List<CommandLine> parsedCommands) {
+            int start = indexOfLastSubcommandWithSameParent(parsedCommands);
             List<Object> result = new ArrayList<Object>();
             for (int i = start; i < parsedCommands.size(); i++) {
                 executeUserObject(parsedCommands.get(i), result);
             }
             return result;
         }
+        // find list of most deeply nested sub-(sub*)-commands
+        private static int indexOfLastSubcommandWithSameParent(List<CommandLine> parsedCommands) {
+            int start = parsedCommands.size() - 1;
+            for (int i = parsedCommands.size() - 2; i >= 0; i--) {
+                if (parsedCommands.get(i).getParent() != parsedCommands.get(i + 1).getParent()) { break; }
+                start = i;
+            }
+            return start;
+        }
 
         protected List<IExitCodeGenerator> extractExitCodeGenerators(ParseResult parseResult) {
             List<CommandLine> parsedCommands = parseResult.asCommandLineList();
-            Object userObject = parsedCommands.get(parsedCommands.size() - 1).getCommandSpec().userObject();
-            if (userObject instanceof IExitCodeGenerator) { return Arrays.asList((IExitCodeGenerator) userObject); }
-            return Collections.emptyList();
+            int start = indexOfLastSubcommandWithSameParent(parsedCommands);
+            List<IExitCodeGenerator> result = new ArrayList<IExitCodeGenerator>();
+            for (int i = start; i < parsedCommands.size(); i++) {
+                Object userObject = parsedCommands.get(i).getCommandSpec().userObject();
+                if (userObject instanceof IExitCodeGenerator) { result.add((IExitCodeGenerator) userObject); }
+            }
+            return result;
         }
         @Override protected RunLast self() { return this; }
     }

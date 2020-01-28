@@ -5,7 +5,10 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.IExitCodeGenerator;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.ParseResult;
 
 import java.io.File;
@@ -460,6 +463,71 @@ public class RepeatableSubcommandsTest {
             assertEquals(expected[0], file.file);
             assertEquals(expected[1], file.count);
             assertEquals(expected[2], file.rotate);
+        }
+    }
+
+    @Command(name = "parent", subcommands = MixinTestSubCommand.class, subcommandsRepeatable = true)
+    static class MixinTestParentCommand {
+        static int methodSubInvocationCount;
+        @Command
+        int methodSub(@Mixin MyMixin myMixin) {
+            return ++methodSubInvocationCount * 100 + myMixin.x;
+        }
+    }
+
+    @Command(name = "sub")
+    static class MixinTestSubCommand implements Runnable, IExitCodeGenerator {
+        static int invocationCount;
+        @Mixin MyMixin myMixin;
+        @ParentCommand MixinTestParentCommand parent;
+
+        public void run() { ++invocationCount; }
+        public int getExitCode() { return invocationCount * myMixin.x; }
+    }
+
+    static class MyMixin {
+        @ParentCommand MixinTestParentCommand parent;
+        @Option(names = "-x", defaultValue = "26") int x;
+    }
+    @Test
+    public void testMixinsAndExitCodeGenerator() {
+        MixinTestParentCommand.methodSubInvocationCount = 0;
+        MixinTestSubCommand.invocationCount = 0;
+
+        MixinTestParentCommand parent = new MixinTestParentCommand();
+        CommandLine cl = new CommandLine(parent);
+        int exitCode = cl.execute("sub -x3 sub sub".split(" "));
+        assertEquals(3 * 26, exitCode);
+        assertEquals(3, MixinTestSubCommand.invocationCount);
+        assertEquals(0, MixinTestParentCommand.methodSubInvocationCount);
+
+        MixinTestParentCommand.methodSubInvocationCount = 0;
+        MixinTestSubCommand.invocationCount = 0;
+        exitCode = cl.execute("sub -x3 sub -x 4 sub -x5 sub -x=2".split(" "));
+        assertEquals(4 * 5, exitCode);
+        assertEquals(4, MixinTestSubCommand.invocationCount);
+        assertEquals(0, MixinTestParentCommand.methodSubInvocationCount);
+
+        MixinTestParentCommand.methodSubInvocationCount = 0;
+        MixinTestSubCommand.invocationCount = 0;
+        exitCode = cl.execute("sub -x3 sub -x 4 methodSub -x2 sub -x5 methodSub -x3 sub -x=2".split(" "));
+        assertEquals(2 * 100 + 3, exitCode);
+        assertEquals(4, MixinTestSubCommand.invocationCount);
+        assertEquals(2, MixinTestParentCommand.methodSubInvocationCount);
+    }
+
+    @Test
+    public void testParentOrderInRepeatableCommands() {
+        MixinTestParentCommand.methodSubInvocationCount = 0;
+        MixinTestSubCommand.invocationCount = 0;
+
+        MixinTestParentCommand parent = new MixinTestParentCommand();
+        CommandLine cl = new CommandLine(parent);
+        cl.execute("sub -x3 sub sub".split(" "));
+        assertEquals(3, cl.getParseResult().subcommands().size());
+        for (ParseResult subPR : cl.getParseResult().subcommands()) {
+            MixinTestSubCommand sub = subPR.commandSpec().commandLine().getCommand();
+            assertSame(parent, sub.parent);
         }
     }
 }
