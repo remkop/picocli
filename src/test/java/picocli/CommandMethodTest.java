@@ -1117,4 +1117,19 @@ public class CommandMethodTest {
         assertNull(decapitalize.invoke(null, (String) null));
     }
 
+    @Command
+    static class Issue905ParentCommand implements Runnable {
+        public void run() {}
+
+        @Command
+        private int parameterless() {
+            return 23;
+        }
+    }
+
+    @Test
+    public void testIssue905ParameterlessCommandMethodsException() {
+        int actual = new CommandLine(new Issue905ParentCommand()).execute("parameterless");
+        assertEquals(23, actual);
+    }
 }

@@ -9797,6 +9797,7 @@ public class CommandLine {
                 if (userObject.isMethod()) {
                     Method method = (Method) command;
                     t.debug("Using method %s as command %n", method);
+                    method.setAccessible(true);
                     Command cmd = method.getAnnotation(Command.class);
                     result.updateCommandAttributes(cmd, factory);
                     injectSpecIntoVersionProvider(result, cmd, factory);

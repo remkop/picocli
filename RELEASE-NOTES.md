@@ -146,6 +146,7 @@ Added `@Command(showAtFileInUsageHelp=true)` attribute to show `@filename` in us
 * [#926] Enhancement: Clarify debug trace output when adding aliases.
 * [#928] Enhancement: Improve debug tracing: show command user object identity hashcode and prefix "Processing argument..." with argument index.
 * [#920] Enhancement: Reduce `DEBUG` tracing noise if no resource bundle is set.
+* [#905] Bugfix: non-public `@Command`-annotated methods without arguments caused a `IllegalAccessException`. From this release such methods no longer need to be public. Thanks to [David Connelly](https://github.com/dconnelly) for raising this.
 * [#924] Bugfix: `CommandSpec.mixinAnnotatedElements` map should be initialized when discovering `@Mixin`-annotated fields and methods via reflection.
 * [#929] DOC: Add [jbang](https://github.com/maxandersen/jbang) under [packaging](https://picocli.info/#_packaging_your_application) in the user manual.
 * [#927] DOC: Show current picocli version in the Spring Boot section of the user manual. Thanks to [Christian Grobmeier](https://github.com/grobmeier) for the pull request.
