@@ -298,25 +298,26 @@ The default <<Arity,arity>> for interactive options is zero, meaning that the op
 
 For example, if an application has these options:
 
-```java
+[source,java]
+----
 @Option(names = "--user")
 String user;
 
 @Option(names = "--password", arity = "0..1", interactive = true)
 char[] password;
-```
+----
 
 With the following input, the `password` field will be initialized to `"123"` without prompting the user for input:
 
-```
+----
 --password 123 --user Joe
-```
+----
 
 However, if the password is not specified, the user will be prompted to enter a value. In the following example, the password option has no parameter, so the user will be prompted to type in a value on the console:
 
-```
+----
 --password --user Joe
-```
+----
 
 
 [TIP]
@@ -3963,6 +3964,16 @@ Note that it is not valid to specify a subcommand followed by its parent command
 # invalid: cannot move _up_ the hierarchy
 myapp add -x=item1 -w=0.2 myapp
 ----
+
+==== Repeatable Subcommands Execution
+
+The default link:#_executing_commands_with_subcommands[`IExecutionStrategy`] (`picocli.CommandLine.RunLast`) only executes the last subcommands __with the same parent__. For example, if
+
+----
+toplevelcmd subcmd-A subcmd-B subsub-B1 subsub-B2
+----
+
+is invoked, only the last two sub-subcommands `subsub-B1` and `subsub-B2` (who both have parent command `subcmd-B`) are executed by default. You can https://picocli.info/apidocs/picocli/CommandLine.html#setExecutionStrategy-picocli.CommandLine.IExecutionStrategy-[set] a different https://picocli.info/apidocs/picocli/CommandLine.IExecutionStrategy.html[execution strategy] if this does not meet your needs.
 
 
 === Usage Help for Subcommands
