@@ -31,7 +31,7 @@ public class JniConfigGenerator {
         OutputFileMixin outputFile = new OutputFileMixin();
 
         public Integer call() throws Exception {
-            String result = generateReflectionConfig(classes).toString();
+            String result = generateJniConfig(classes).toString();
             outputFile.write(result);
             return 0;
         }
@@ -45,7 +45,7 @@ public class JniConfigGenerator {
         new CommandLine(new App()).execute(args);
     }
 
-    private static StringBuilder generateReflectionConfig(Class<?>[] classes) {
+    private static StringBuilder generateJniConfig(Class<?>[] classes) {
         List<ReflectedClass> visited = visit(classes);
         StringBuilder result = new StringBuilder(1024);
         String prefix = String.format("[%n");
