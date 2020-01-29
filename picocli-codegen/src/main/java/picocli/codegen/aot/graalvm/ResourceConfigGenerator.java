@@ -3,18 +3,15 @@ package picocli.codegen.aot.graalvm;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
-import picocli.CommandLine.Model.*;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Proxy;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 /**
@@ -61,13 +58,14 @@ public class ResourceConfigGenerator {
                 "This option may be specified multiple times with different regular expression patterns.")
         String[] resourceRegex = new String[0];
 
+        @Option(names = {"-c", "--factory"}, description = "Optionally specify the fully qualified class name of the custom factory to use to instantiate the command class. " +
+                "When omitted, the default picocli factory is used.")
+        String factoryClass;
+
         @Mixin OutputFileMixin outputFile = new OutputFileMixin();
 
-        public Integer call() throws IOException {
-            List<CommandSpec> specs = new ArrayList<CommandSpec>();
-            for (Class<?> cls : classes) {
-                specs.add(new CommandLine(cls).getCommandSpec());
-            }
+        public Integer call() throws Exception {
+            List<CommandSpec> specs = Util.getCommandSpecs(factoryClass, classes);
             String result = ResourceConfigGenerator.generateResourceConfig(specs.toArray(new CommandSpec[0]), bundles, resourceRegex);
             outputFile.write(result);
             return 0;

@@ -63,6 +63,31 @@ public class ReflectionConfigGeneratorTest {
     }
 
     @Test
+    public void testIssue930NonDefaultConstructor() {
+        PrintStream old = System.out;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+
+        try {
+            ReflectionConfigGenerator.main("--factory", Issue930Factory.class.getName(), Issue930Example.class.getName());
+        } finally {
+            System.setOut(old);
+        }
+        String expected = String.format("" +
+                "[%n" +
+                "  {%n" +
+                "    \"name\" : \"picocli.codegen.aot.graalvm.Issue930Example\",%n" +
+                "    \"allDeclaredConstructors\" : true,%n" +
+                "    \"allPublicConstructors\" : true,%n" +
+                "    \"allDeclaredMethods\" : true,%n" +
+                "    \"allPublicMethods\" : true%n" +
+                "  }%n" +
+                "]%n");
+
+        assertEquals(expected, baos.toString());
+    }
+
+    @Test
     public void testIssue622FieldsFromAbstractSuperclass() throws IOException {
         File file = File.createTempFile("picocli-codegen", ".json");
 

@@ -3,18 +3,21 @@
 # <a name="4.2.0"></a> Picocli 4.2.0 (UNRELEASED)
 The picocli community is pleased to announce picocli 4.2.0.
 
-This release adds support for Repeatable Subcommands: it is now possible to specify that a command's subcommands can be specified multiple times by marking it with `@Command(subcommandsRepeatable = true)`. 
+This release adds support for Repeatable Subcommands: when a command is marked as `@Command(subcommandsRepeatable = true)` it becomes possible to specify that command's subcommands multiple times on the command line.
 
 From this release, subcommands are not instantiated until they are matched on the command line. This should improve the startup time for applications with subcommands that do a lot of initialization when they are instantiated.
 
 Autocompletion improvements: from this release the generated bash completions scripts support completing positional parameters, and are implemented without the use of associative arrays (so they should work on MacOS or other systems that use older versions of bash).
 Additionally there are now automated tests using Expect to verify that the generated completion scripts work as expected.
 
-Also, from this release it is possible to inject the `CommandSpec` into a `IVersionProvider`, making it easier to write version provider implementations that are reusable across multiple commands or even applications.
+GraalVM configuration generation improvement: added `--factory` option to `ReflectionConfigGenerator`, `ResourceConfigGenerator` and `DynamicProxyConfigGenerator`.
+This makes it possible to generate configurations for command classes without a default no-arg constructor.
 
-Added `@Command(showAtFileInUsageHelp=true)` attribute to show `@filename` in usage help.
+From this release it is possible to inject the `CommandSpec` into a `IVersionProvider`, making it easier to write version provider implementations that are reusable across multiple commands or even applications.
 
-Support `@ParentCommand`-annotated fields in mixin classes.
+Similarly, from this release it is possible to inject the parent command object into mixins via a `@ParentCommand`-annotated field.
+
+Finally, it is now possible let the usage help show that [@-files](https://picocli.info/#AtFiles) are supported by listing a `@<filename>` entry above the list of positional parameters in the usage help.
 
 This is the sixty-seventh public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -138,7 +141,7 @@ Added `@Command(showAtFileInUsageHelp=true)` attribute to show `@filename` in us
 * [#468][#505][#852] Auto-completion: added support for positional parameter completion. Thanks to [Serhii Avsheniuk](https://github.com/avshenuk) for the pull request.
 * [#644][#671] Auto-completion: fix [shellcheck](https://github.com/koalaman/shellcheck) warnings in generated autocompletion scripts. Thanks to [Dylan Cali](https://github.com/calid) for raising this, and thanks to [AlcaYezz](https://github.com/AlcaYezz) for the pull request.
 * [#396] Auto-completion: completion scripts no longer use associative arrays, and should now work on OSX.
-* [#930] Enhancement: Add `--factory` option to `ReflectionConfigGenerator`. 
+* [#930] Enhancement: Add `--factory` option to `ReflectionConfigGenerator`, `ResourceConfigGenerator` and `DynamicProxyConfigGenerator`. Thanks to [Santiago Acosta](https://github.com/hanzo2001) for raising this.
 * [#690] Enhancement: Postpone instantiating subcommands until they are matched on the command line. Thanks to [Daniel Breitlauch](https://github.com/danielBreitlauch) for raising this.
 * [#926] Enhancement: Clarify debug trace output when adding aliases.
 * [#928] Enhancement: Improve debug tracing: show command user object identity hashcode and prefix "Processing argument..." with argument index.

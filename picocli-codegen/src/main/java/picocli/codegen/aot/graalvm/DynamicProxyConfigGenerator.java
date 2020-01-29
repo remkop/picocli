@@ -9,7 +9,6 @@ import picocli.CommandLine.Parameters;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,13 +58,14 @@ public class DynamicProxyConfigGenerator {
                 "Specify multiple comma-separated interface names for dynamic proxies that implement multiple interfaces.")
         String[] interfaces = new String[0];
 
+        @Option(names = {"-c", "--factory"}, description = "Optionally specify the fully qualified class name of the custom factory to use to instantiate the command class. " +
+                "When omitted, the default picocli factory is used.")
+        String factoryClass;
+
         @Mixin OutputFileMixin outputFile = new OutputFileMixin();
 
-        public Integer call() throws IOException {
-            List<CommandSpec> specs = new ArrayList<CommandSpec>();
-            for (Class<?> cls : classes) {
-                specs.add(new CommandLine(cls).getCommandSpec());
-            }
+        public Integer call() throws Exception {
+            List<CommandSpec> specs = Util.getCommandSpecs(factoryClass, classes);
             String result = DynamicProxyConfigGenerator.generateProxyConfig(specs.toArray(new CommandSpec[0]), interfaces);
             outputFile.write(result);
             return 0;

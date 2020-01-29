@@ -2,7 +2,6 @@ package picocli.codegen.aot.graalvm;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.IFactory;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Model.ArgGroupSpec;
 import picocli.CommandLine.Model.ArgSpec;
@@ -14,6 +13,7 @@ import picocli.CommandLine.Model.ISetter;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Model.UnmatchedArgsBinding;
+import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.codegen.annotation.processing.ITypeMetaData;
 import picocli.codegen.annotation.processing.AnnotatedElementHolder;
@@ -91,7 +91,7 @@ public class ReflectionConfigGenerator {
         @Parameters(arity = "1..*", description = "One or more classes to generate a GraalVM ReflectionConfiguration for.")
         Class<?>[] classes = new Class<?>[0];
 
-        @CommandLine.Option(names = {"-c", "--factory"}, description = "Optionally specify the fully qualified class name of the custom factory to use to instantiate the command class. " +
+        @Option(names = {"-c", "--factory"}, description = "Optionally specify the fully qualified class name of the custom factory to use to instantiate the command class. " +
                 "When omitted, the default picocli factory is used.")
         String factoryClass;
 
@@ -99,18 +99,12 @@ public class ReflectionConfigGenerator {
         OutputFileMixin outputFile = new OutputFileMixin();
 
         public Integer call() throws Exception {
-            IFactory factory = CommandLine.defaultFactory();
-            if (factoryClass != null) {
-                factory = (IFactory) factory.create(Class.forName(factoryClass));
-            }
-            List<CommandSpec> specs = new ArrayList<CommandSpec>();
-            for (Class<?> cls : classes) {
-                specs.add(new CommandLine(cls, factory).getCommandSpec());
-            }
+            List<CommandSpec> specs = Util.getCommandSpecs(factoryClass, classes);
             String result = ReflectionConfigGenerator.generateReflectionConfig(specs.toArray(new CommandSpec[0]));
             outputFile.write(result);
             return 0;
         }
+
     }
 
     /**
