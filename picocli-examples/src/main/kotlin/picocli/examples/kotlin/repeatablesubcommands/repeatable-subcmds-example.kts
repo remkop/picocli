@@ -4,6 +4,7 @@
 //@file:DependsOn("info.picocli:picocli:4.2.0-SNAPSHOT")
 //import DependsOn
 
+/*
 import java.util.concurrent.Callable
 
 import picocli.CommandLine
@@ -48,6 +49,7 @@ data class ContainerData(val path: String, val datasets: List<String>?)
 val mainCmd = MainCmd()
 val cl = CommandLine(mainCmd)
 val exitCode = cl.execute(*args)
+*/
 
 // example invocation:
 // ./repeatable-subcmds-example.kts --with-container abc --dataset a --with-container xyz --dataset x
