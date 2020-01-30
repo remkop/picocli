@@ -679,4 +679,23 @@ public class RepeatableSubcommandsTest {
             assertSame(parent, sub.parent);
         }
     }
+
+    @Command(subcommandsRepeatable = true)
+    static class MultivalueTop implements Runnable {
+
+        @Command
+        int sub1(@Option(names = "-x", arity = "*") List<String> x) {
+            return x.size();
+        }
+        @Command
+        int sub2(@Option(names = "-y", arity = "*") List<String> y) {
+            return y.size();
+        }
+        public void run() { }
+    }
+    @Test
+    public void testMultivalueOptions() {
+        int exitCode = new CommandLine(new MultivalueTop()).execute("sub1 -x1 -x2 -x3 sub2 -y1 -y2 -y3 -y4".split(" "));
+        assertEquals(4, exitCode);
+    }
 }

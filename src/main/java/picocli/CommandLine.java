@@ -12302,6 +12302,12 @@ public class CommandLine {
             if (commandSpec.subcommands().containsKey(arg)) {
                 return true;
             }
+            // #454 repeatable subcommands
+            if (commandSpec.parent() != null && commandSpec.parent().subcommandsRepeatable()) {
+                if (commandSpec.parent().subcommands().containsKey(arg)) {
+                    return true;
+                }
+            }
             int separatorIndex = arg.indexOf(config().separator());
             if (separatorIndex > 0) { // -f=FILE or --file==FILE (attached to param via separator)
                 if (commandSpec.optionsMap().containsKey(arg.substring(0, separatorIndex))) {
