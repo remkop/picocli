@@ -2740,7 +2740,7 @@ public class HelpTest {
                 "         description%n");
         assertEquals(expected, actual);
     }
-    
+
     @Test
     public void testMapFieldHelp_with_unlimitedSplit() {
         class App {
@@ -2896,7 +2896,7 @@ public class HelpTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final PrintStream out = new PrintStream(baos);
         assertTrue(CommandLine.printHelpIfRequested(list, out, Help.Ansi.OFF));
-        
+
         String expected = String.format("" +
                 "Usage: <main class> [-h]%n" +
                 "  -h%n");
@@ -2942,7 +2942,7 @@ public class HelpTest {
                 .commands(Style.bg_cyan)
                 .options(Style.fg_green)
                 .parameters(Style.bg_white).build();
-    
+
         @Command(mixinStandardHelpOptions = true)
         class App {
             @Option(names = { "-f" }, paramLabel = "ARCHIVE", description = "the archive file") File archive;
@@ -2952,7 +2952,7 @@ public class HelpTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final PrintStream out = new PrintStream(baos);
         assertTrue(CommandLine.printHelpIfRequested(list, out, out, customColorScheme));
-    
+
         String expected = Help.Ansi.ON.string(String.format("" +
                 "Usage: @|bg_cyan <main class>|@ [@|green -hV|@] [@|green -f|@=@|magenta ARCHIVE|@] @|bg_white POSITIONAL|@%n" +
                 "@|bg_white  |@     @|bg_white POSITIONAL|@   positional arg%n" +
@@ -4298,5 +4298,29 @@ public class HelpTest {
         Help help = new Help(CommandSpec.create(), CommandLine.Help.defaultColorScheme(Help.Ansi.OFF));
         String syn1 = help.fullSynopsis();
         assertEquals(syn1, new Help(CommandSpec.create(), CommandLine.Help.defaultColorScheme(Help.Ansi.OFF)).fullSynopsis());
+    }
+
+    @Ignore("#934")
+    @Test
+    public void testConfigurableLongOptionsColumnLength() {
+        @Command(name = "myapp", mixinStandardHelpOptions = true)
+        class MyApp {
+            @Option(names = {"-o", "--out"}, description = "Output location full path")
+            File outputFolder;
+
+            //public static void main(String[] args) {
+            //    new CommandLine(new MyApp())
+            //            .setUsageHelpLongOptionsMaxWidth(25)
+            //            .execute(args);
+            //}
+        }
+        new CommandLine(new MyApp()).usage(System.out);
+        String expected = String.format("" +
+                "Usage: myapp [-hV] [-o=<outputFolder>]%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -o, --output=<outputFolder>%n" +
+                "                  Output location full path%n" +
+                "  -V, --version   Print version information and exit.%n");
+        assertEquals("", this.systemOutRule.getLog());
     }
 }
