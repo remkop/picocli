@@ -3457,6 +3457,7 @@ public class CommandLine {
          * Also, embedded {@code %n} newline markers are converted to actual newlines.
          * </p>
          * @return the description of this option
+         * @see <a href="https://picocli.info/#_variable_interpolation">Variable Interpolation</a> section of the user manual
          */
         String[] description() default {};
 
@@ -3591,7 +3592,8 @@ public class CommandLine {
          * help message. If not specified, the default value is only shown when the {@link Command#showDefaultValues()}
          * is set {@code true} on the command. Use this attribute to specify whether the default value
          * for this specific option should always be shown or never be shown, regardless of the command setting.
-         * <p>Note that picocli 3.2 allows {@linkplain #description() embedding default values} anywhere in the description that ignores this setting.</p>
+         * <p>Note that picocli 3.2 allows {@linkplain #description() embedding default values} by specifying the variable
+         * {@code ${DEFAULT-VALUE}} anywhere in the description that ignores this setting.</p>
          * @return whether this option's default value should be shown in the usage help message
          */
         Help.Visibility showDefaultValue() default Help.Visibility.ON_DEMAND;
@@ -3730,6 +3732,7 @@ public class CommandLine {
          * Also, embedded {@code %n} newline markers are converted to actual newlines.
          * </p>
          * @return the description of the parameter(s)
+         * @see <a href="https://picocli.info/#_variable_interpolation">Variable Interpolation</a> section of the user manual
          */
         String[] description() default {};
 
@@ -3833,7 +3836,8 @@ public class CommandLine {
          * help message. If not specified, the default value is only shown when the {@link Command#showDefaultValues()}
          * is set {@code true} on the command. Use this attribute to specify whether the default value
          * for this specific positional parameter should always be shown or never be shown, regardless of the command setting.
-         * <p>Note that picocli 3.2 allows {@linkplain #description() embedding default values} anywhere in the description that ignores this setting.</p>
+         * <p>Note that picocli 3.2 allows {@linkplain #description() embedding default values} by specifying the variable
+         * {@code ${DEFAULT-VALUE}} anywhere in the description that ignores this setting.</p>
          * @return whether this positional parameter's default value should be shown in the usage help message
          */
         Help.Visibility showDefaultValue() default Help.Visibility.ON_DEMAND;
