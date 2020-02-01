@@ -3109,7 +3109,7 @@ Example command.
 
 ==== Changing the At File Entry Text
 
-The text of the `@<filename>` entry can be changed with the following <<Custom Variables,custom variables>>:
+Both the label and the description of the `@<filename>` entry have been defined with <<Custom Variables,custom variables>>, to allow applications to change the text. The variables are:
 
 * `picocli.atfile.label`
 * `picocli.atfile.description`

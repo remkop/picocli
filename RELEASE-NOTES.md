@@ -129,8 +129,40 @@ TODO
 
 ### <a name="4.2.0-atfiles-usage"></a> Showing `@filename` in usage help
 
-Added `@Command(showAtFileInUsageHelp=true)` attribute to show `@filename` in usage help.
+From picocli 4.2, an entry for `@<filename>` can be shown in the options and parameters list of the usage help message of a command with the `@Command(showAtFileInUsageHelp = true)` annotation.
 
+Example:
+
+```java
+@Command(name = "myapp", showAtFileInUsageHelp = true,
+        mixinStandardHelpOptions = true, description = "Example command.")
+class MyApp {
+    @Parameters(description = "A file.") File file;
+}
+```
+
+The usage help message for this command looks like this:
+
+```
+Usage: myapp [-hV] [@<filename>...] <file>
+Example command.
+      [@<filename>...]   One or more argument files containing options.
+      <file>             A file.
+  -h, --help             Show this help message and exit.
+  -V, --version          Print version information and exit.
+```
+
+By default, the `@<filename>` entry is shown before the positional parameters in the synopsis as well as in the parameters list.
+This can be changed with the Help API for [reordering sections](https://picocli.info/#_reordering_sections). 
+
+Both the label and the description of the `@<filename>` entry have been defined with [custom variables](https://picocli.info/#_custom_variables), to allow applications to change the text. The variables are:
+
+* `picocli.atfile.label`
+* `picocli.atfile.description`
+
+By setting the above variables in either system properties, environment variables or the [resource bundle](https://picocli.info/#_internationalization) for a command, the text can be customized.
+
+See the [user manual](https://picocli.info/#_show_at_files) for examples.
 
 ## <a name="4.2.0-fixes"></a> Fixed issues
 * [#454] API: Added support for repeatable subcommands. Thanks to [Idan Arye](https://github.com/idanarye), [Miroslav Kravec](https://github.com/kravemir), [Philipp Hanslovsky](https://github.com/hanslovsky) and [Jay](https://github.com/lakemove) for raising this and the subsequent discussion.
