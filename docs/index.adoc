@@ -589,7 +589,7 @@ The documentation for these tools shows further examples.
 
 ==== @-files Usage Help
 
-From picocli 4.2, the @filename can be shown in the usage help of a command via the `@Command(showAtFileInUsageHelp=true)` attribute.
+From picocli 4.2, an entry for `@<filename>` can be shown in the options and parameters list of the usage help message of a command with the `@Command(showAtFileInUsageHelp = true)` annotation. See <<Show At Files>> for details.
 
 
 ==== Simplified Format
@@ -3039,6 +3039,102 @@ Usage: <main class> <host> <port> [<files>...]
       files   files to transfer
 ----
 
+=== Show At Files
+
+From picocli 4.2, an entry for `@<filename>` can be shown in the options and parameters list of the usage help message of a command with the `@Command(showAtFileInUsageHelp = true)` annotation.
+
+==== Example
+
+Example command:
+
+[source,java]
+----
+@Command(name = "myapp", showAtFileInUsageHelp = true,
+        mixinStandardHelpOptions = true, description = "Example command.")
+class MyApp {
+    @Parameters(description = "A file.") File file;
+}
+----
+
+The usage help message for this command looks like this:
+
+----
+Usage: myapp [-hV] [@<filename>...] <file>
+Example command.
+      [@<filename>...]   One or more argument files containing options.
+      <file>             A file.
+  -h, --help             Show this help message and exit.
+  -V, --version          Print version information and exit.
+----
+
+==== Changing the At File Entry Location
+
+By default, the `@<filename>` entry is shown before the positional parameters in the synopsis as well as in the parameters list.
+
+This can be changed with the <<Usage Help API,Help API>> for reordering sections. For example:
+
+[source,java]
+----
+import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_AT_FILE_PARAMETER;
+import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_COMMAND_LIST_HEADING;
+import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_OPTION_LIST_HEADING;
+
+@Command(name = "myapp", showAtFileInUsageHelp = true,
+        mixinStandardHelpOptions = true, description = "Example command.")
+class MyApp {
+    @Parameters(description = "A file.") File file;
+
+    public static void main(String... args) {
+        CommandLine cmd = new CommandLine(new MyApp());
+        List<String> copy = new ArrayList<>(cmd.getHelpSectionKeys());
+        copy.remove(SECTION_KEY_AT_FILE_PARAMETER);
+        copy.add(copy.indexOf(SECTION_KEY_COMMAND_LIST_HEADING), SECTION_KEY_AT_FILE_PARAMETER);
+        cmd.setHelpSectionKeys(copy);
+
+        cmd.usage(System.out);
+    }
+}
+----
+
+The resulting usage help message shows the `@<filename>` entry has moved to the bottom, following the options list:
+
+----
+Usage: myapp [-hV] [@<filename>...] <file>
+Example command.
+      <file>             A file.
+  -h, --help             Show this help message and exit.
+  -V, --version          Print version information and exit.
+      [@<filename>...]   One or more argument files containing options.
+----
+
+==== Changing the At File Entry Text
+
+The text of the `@<filename>` entry can be changed with the following <<Custom Variables,custom variables>>:
+
+* `picocli.atfile.label`
+* `picocli.atfile.description`
+
+By setting the above variables in either system properties, environment variables or the <<Internationalization,resource bundle>> for a command, the text can be customized.
+
+For example, if we define these system properties:
+
+[source,java]
+----
+System.setProperty("picocli.atfile.label", "my@@@@file");
+System.setProperty("picocli.atfile.description", "@files rock!");
+----
+
+then the usage help for our above example changes to this:
+
+----
+Usage: myapp [-hV] [my@@@@file...] <file>
+Example command.
+      [my@@@@file...]   @files rock!
+      <file>            A file.
+  -h, --help            Show this help message and exit.
+  -V, --version         Print version information and exit.
+----
+
 === Show Default Values
 ==== `${DEFAULT-VALUE}` Variable
 From picocli 3.2, it is possible to embed the <<Default Values,default values>> in the description for an option or positional parameter by
@@ -3482,6 +3578,7 @@ Applications can add, remove or replace sections in this map. The `CommandLine::
 . SECTION_KEY_DESCRIPTION_HEADING
 . SECTION_KEY_DESCRIPTION
 . SECTION_KEY_PARAMETER_LIST_HEADING
+. SECTION_KEY_AT_FILE_PARAMETER
 . SECTION_KEY_PARAMETER_LIST
 . SECTION_KEY_OPTION_LIST_HEADING
 . SECTION_KEY_OPTION_LIST

@@ -1,13 +1,11 @@
 package picocli;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.rules.TestRule;
-import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -28,11 +26,9 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListResourceBundle;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -620,15 +616,18 @@ public class AtFileTest {
 
     @Test
     public void testShowAtFileInUsageHelpBasic() {
-        @Command(name = "A", mixinStandardHelpOptions = true,
-                showAtFileInUsageHelp = true, description = "... description ...")
-        class A { }
+        @Command(name = "myapp", mixinStandardHelpOptions = true,
+                showAtFileInUsageHelp = true, description = "Example command.")
+        class MyApp {
+            @Parameters(description = "A file.") File file;
+        }
 
-        String actual = new CommandLine(new A()).getUsageMessage();
+        String actual = new CommandLine(new MyApp()).getUsageMessage();
         String expected = String.format("" +
-                "Usage: A [-hV] [@<filename>...]%n" +
-                "... description ...%n" +
+                "Usage: myapp [-hV] [@<filename>...] <file>%n" +
+                "Example command.%n" +
                 "      [@<filename>...]   One or more argument files containing options.%n" +
+                "      <file>             A file.%n" +
                 "  -h, --help             Show this help message and exit.%n" +
                 "  -V, --version          Print version information and exit.%n");
         assertEquals(expected, actual);
@@ -636,18 +635,21 @@ public class AtFileTest {
 
     @Test
     public void testShowAtFileInUsageHelpSystemProperties() {
-        @Command(name = "A", mixinStandardHelpOptions = true,
-                showAtFileInUsageHelp = true, description = "... description ...")
-        class A { }
+        @Command(name = "myapp", mixinStandardHelpOptions = true,
+                showAtFileInUsageHelp = true, description = "Example command.")
+        class MyApp {
+            @Parameters(description = "A file.") File file;
+        }
 
         System.setProperty("picocli.atfile.label", "my@@@@file");
         System.setProperty("picocli.atfile.description", "@files rock!");
 
-        String actual = new CommandLine(new A()).getUsageMessage();
+        String actual = new CommandLine(new MyApp()).getUsageMessage();
         String expected = String.format("" +
-                "Usage: A [-hV] [my@@@@file...]%n" +
-                "... description ...%n" +
+                "Usage: myapp [-hV] [my@@@@file...] <file>%n" +
+                "Example command.%n" +
                 "      [my@@@@file...]   @files rock!%n" +
+                "      <file>            A file.%n" +
                 "  -h, --help            Show this help message and exit.%n" +
                 "  -V, --version         Print version information and exit.%n");
         assertEquals(expected, actual);
@@ -657,8 +659,8 @@ public class AtFileTest {
         protected Object[][] getContents() {
             return new Object[][] {
                     {"picocli.atfile", "hi! I amd the @file description from a file"},
-                    {"@<filename>", "BUNDLE@FILE"}, // ignored...
-                    {"my@@@@file", "OTHER@@@"},     // ignored...
+                    {"picocli.atfile.label", "BUNDLE@FILE"},
+                    {"picocli.atfile.description", "BUNDLE @FILE DESCRIPTION"},
             };
         }
     }
@@ -690,9 +692,9 @@ public class AtFileTest {
 
         String actual = new CommandLine(new A()).getUsageMessage();
         String expected = String.format("" +
-                "Usage: A [-hV] [@<filename>...]%n" +
+                "Usage: A [-hV] [BUNDLE@FILE...]%n" +
                 "... description ...%n" +
-                "      [@<filename>...]   hi! I amd the @file description from a file%n" +
+                "      [BUNDLE@FILE...]   hi! I amd the @file description from a file%n" +
                 "  -h, --help             Show this help message and exit.%n" +
                 "  -V, --version          Print version information and exit.%n");
         assertEquals(expected, actual);
@@ -709,7 +711,7 @@ public class AtFileTest {
         List<String> helpSectionKeys = commandLine.getHelpSectionKeys();
         List<String> copy = new ArrayList<String>(helpSectionKeys);
         copy.remove(SECTION_KEY_AT_FILE_PARAMETER);
-        copy.add(helpSectionKeys.indexOf(SECTION_KEY_COMMAND_LIST_HEADING), SECTION_KEY_AT_FILE_PARAMETER);
+        copy.add(copy.indexOf(SECTION_KEY_COMMAND_LIST_HEADING), SECTION_KEY_AT_FILE_PARAMETER);
         commandLine.setHelpSectionKeys(copy);
 
         String actual = commandLine.getUsageMessage();
@@ -721,6 +723,7 @@ public class AtFileTest {
                 "      [@<filename>...]   One or more argument files containing options.%n" +
                 "");
         assertEquals(expected, actual);
+        commandLine.usage(System.out);
     }
 
     @Test
