@@ -8932,7 +8932,7 @@ public class CommandLine {
                 missing.removeAll(matchedArgs);
                 intersection.retainAll(found);
                 int presentCount = intersection.size();
-                boolean haveMissing = !missing.isEmpty();
+                boolean haveMissing = !missing.isEmpty() && !exclusive();
                 boolean someButNotAllSpecified = haveMissing && !intersection.isEmpty();
                 String exclusiveElements = ArgSpec.describe(intersection);
                 String requiredElements = ArgSpec.describe(requiredArgs());

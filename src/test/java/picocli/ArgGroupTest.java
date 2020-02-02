@@ -14,6 +14,7 @@ import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.ParseResult.GroupMatchContainer;
 import picocli.CommandLine.ParseResult.GroupMatch;
+import picocli.test.Execution;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -2822,6 +2823,56 @@ public class ArgGroupTest {
         //System.out.println(myApp6.group);
         assertNull(myApp6.group);
     }
+
+    static class Issue933 implements Runnable {
+
+        @ArgGroup(exclusive = true, multiplicity = "1")
+        private ExclusiveOption1 exclusiveOption1;
+
+        static class ExclusiveOption1 {
+
+            @Option(names = { "-a" })
+            private String optionA;
+
+            @Option(names = { "-b" })
+            private String optionB;
+        }
+
+        @ArgGroup(exclusive = true, multiplicity = "1")
+        private ExclusiveOption2 exclusiveOption2;
+
+        static class ExclusiveOption2 {
+            @Option(names = { "-c" })
+            private String optionC;
+
+            @Option(names = { "-d" })
+            private String optionD;
+        }
+
+        public static void main(String[] args) {
+            System.exit(new CommandLine(new Issue933()).execute(args));
+        }
+
+        public void run() {
+            System.out.println("TestBugCLI.run()");
+        }
+    }
+
+    @Test
+    public void testIssue933() {
+        //new CommandLine(new Issue933()).execute("-a A -b B -c C".split(" "));
+        //System.out.println("OK");
+        Execution execution = Execution.builder(new CommandLine(new Issue933())).execute("-a A -c C -d D".split(" "));
+        String expected = String.format("" +
+                "Error: -c=<optionC>, -d=<optionD> are mutually exclusive (specify only one)%n" +
+                "Usage: <main class> (-a=<optionA> | -b=<optionB>) (-c=<optionC> | -d=<optionD>)%n" +
+                "  -a=<optionA>%n" +
+                "  -b=<optionB>%n" +
+                "  -c=<optionC>%n" +
+                "  -d=<optionD>%n");
+        execution.assertSystemErr(expected);
+    }
+
     // TODO GroupMatch.container()
     // TODO GroupMatch.matchedMaxElements()
     // TODO GroupMatch.matchedFully()
