@@ -4337,6 +4337,72 @@ Mixins added with the `@Mixin` annotation can also be accessed via the map retur
 The GitHub project has a https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/mixin[full working example].
 
 
+=== Use Case: Sharing Options
+
+A common use case is sharing options between different levels of the command hierarchy, so that "global" options from the top-level command are also available on subcommands.
+
+Since picocli 4.2, <<_parentcommand_annotation,`@ParentCommand`-annotated>> fields can be used in mixins, which makes this easier. Here is an example implementation:
+
+[source,java]
+----
+// Define a mixin that delegates to the parent command.
+class MyMixin {
+    @ParentCommand Top top;
+
+    @Option(names = "-v")
+    public void setVerbose(boolean[] verbosity) { top.setVerbose(verbosity); }
+}
+
+// An example Top-level command with two subcommands.
+// The `-v` option can be specified on the top-level command as well as the subcommands.
+@Command(subcommands = Sub2.class)
+class Top implements Runnable {
+    private boolean[] verbosity = new boolean[0];
+
+    @Option(names = {"-v", "--verbose"})
+    public void setVerbose(boolean[] verbosity) { this.verbosity = verbosity; }
+
+    public void verbose(String pattern, Object... params) {
+        if (verbosity.length >= 1) {
+            System.out.printf(pattern, params);
+        }
+    }
+
+    public void run() { verbose("Hello from top%n"); }
+
+    public static void main(String[] args) {
+        new CommandLine(new Top()).execute(args);
+    }
+
+    // The @Mixin-annotated parameter adds the `-v` option to this subcommand.
+    @Command
+    void sub1(@Mixin MyMixin mymixin) { verbose("Hello from sub1%n"); }
+}
+
+// Subcommand classes can mix in the `-v` option with a @Mixin-annotated field.
+@Command(name = "sub2")
+class Sub2 implements Runnable{
+    @Mixin MyMixin mymixin;
+
+    @Override
+    public void run() { mymixin.top.verbose("Hello from sub2%n"); }
+}
+----
+
+With this, the `-v` option can be specified on the top-level command as well as the subcommands, so all of the below are valid invocations:
+
+----
+java Top -v
+java Top -v sub1
+java Top sub1 -v
+java Top -v sub2
+java Top sub2 -v
+----
+
+All of these invocations will print some output, since the `-v` option was specified.
+
+For mixins that need to be reusable across more than two levels in the command hierarchy, injecting a <<_spec_annotation,`@Spec`-annotated>> field gives the mixin access to the full command hierarchy.
+
 === Reuse Combinations
 
 The above mechanisms can be combined in any way. Mixins can be nested, and there is no limitation to how deeply mixins can be nested. A mixin may also inherit options, positional parameters and command attributes from a super class.

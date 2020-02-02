@@ -123,10 +123,6 @@ class MyVersionProvider implements IVersionProvider {
 }
 ```
 
-### <a name="4.2.0-mixins"></a> Mixins with `@ParentCommand`-annotated fields
-
-TODO
-
 ### <a name="4.2.0-atfiles-usage"></a> Showing `@filename` in usage help
 
 From picocli 4.2, an entry for `@<filename>` can be shown in the options and parameters list of the usage help message of a command with the `@Command(showAtFileInUsageHelp = true)` annotation.
@@ -163,6 +159,14 @@ Both the label and the description of the `@<filename>` entry have been defined 
 By setting the above variables in either system properties, environment variables or the [resource bundle](https://picocli.info/#_internationalization) for a command, the text can be customized.
 
 See the [user manual](https://picocli.info/#_show_at_files) for examples.
+
+### <a name="4.2.0-mixins"></a> Mixins with `@ParentCommand`-annotated fields
+
+A common use case is sharing options between different levels of the command hierarchy, so that "global" options from the top-level command are also available on subcommands.
+
+Since picocli 4.2, [`@ParentCommand`-annotated](https://picocli.info/#_parentcommand_annotation) fields can be used in mixins, which makes this easier. See the [Use Case: Sharing Options](https://picocli.info/#_use_case_sharing_options) section of the user manual for a full example.
+
+For mixins that need to be reusable across more than two levels in the command hierarchy, injecting a [`@Spec`-annotated](https://picocli.info/#_spec_annotation) field gives the mixin access to the full command hierarchy.
 
 ## <a name="4.2.0-fixes"></a> Fixed issues
 * [#454] API: Added support for repeatable subcommands. Thanks to [Idan Arye](https://github.com/idanarye), [Miroslav Kravec](https://github.com/kravemir), [Philipp Hanslovsky](https://github.com/hanslovsky) and [Jay](https://github.com/lakemove) for raising this and the subsequent discussion.
