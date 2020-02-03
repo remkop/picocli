@@ -174,7 +174,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 * Picocli is used in Spring IO [nohttp-cli](https://github.com/spring-io/nohttp/tree/master/nohttp-cli).
 * The [MinecraftPicocli](https://github.com/Rubydesic/MinecraftPicocli) library allows the use of picocli in [Minecraft Forge](https://files.minecraftforge.net/).
 * [Simple Java Mail](http://www.simplejavamail.org/) now offers a picocli-based [CLI](http://www.simplejavamail.org/cli.html#navigation).
-* [jbang](https://github.com/maxandersen/jbang) not only uses picocli internally, but also has a CLI template to generate an initial script: use `jbang --init=cli helloworld.java` to generate a sample picocli-enabled jbang script.
+* [jbang](https://github.com/maxandersen/jbang) not only uses picocli internally, but also has a CLI template to generate an initial script: use `jbang --init=cli helloworld.java` to generate a sample picocli-enabled jbang script. See [asciinema](https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&speed=2). 
 
 
 <img src="https://picocli.info/images/downloads-201911.png">
