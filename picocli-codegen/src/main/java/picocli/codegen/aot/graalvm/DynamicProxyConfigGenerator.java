@@ -6,6 +6,8 @@ import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.codegen.util.OutputFileMixin;
+import picocli.codegen.util.Util;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -62,7 +64,8 @@ public class DynamicProxyConfigGenerator {
                 "When omitted, the default picocli factory is used.")
         String factoryClass;
 
-        @Mixin OutputFileMixin outputFile = new OutputFileMixin();
+        @Mixin
+        OutputFileMixin outputFile = new OutputFileMixin();
 
         public Integer call() throws Exception {
             List<CommandSpec> specs = Util.getCommandSpecs(factoryClass, classes);

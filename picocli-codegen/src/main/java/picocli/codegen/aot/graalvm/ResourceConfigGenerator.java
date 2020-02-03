@@ -6,6 +6,8 @@ import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.codegen.util.OutputFileMixin;
+import picocli.codegen.util.Util;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -62,7 +64,8 @@ public class ResourceConfigGenerator {
                 "When omitted, the default picocli factory is used.")
         String factoryClass;
 
-        @Mixin OutputFileMixin outputFile = new OutputFileMixin();
+        @Mixin
+        OutputFileMixin outputFile = new OutputFileMixin();
 
         public Integer call() throws Exception {
             List<CommandSpec> specs = Util.getCommandSpecs(factoryClass, classes);

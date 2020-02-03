@@ -1,4 +1,4 @@
-package picocli.codegen.aot.graalvm;
+package picocli.codegen.util;
 
 import picocli.CommandLine.Option;
 
@@ -6,13 +6,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-class OutputFileMixin {
+public class OutputFileMixin {
 
     @Option(names = {"-o", "--output"}, description = "Output file to write the configuration to. " +
             "If not specified, the configuration is written to the standard output stream.")
     File outputFile;
 
-    void write(String text) throws IOException {
+    public void write(String text) throws IOException {
         if (text != null && text.length() > 0) {
             if (outputFile == null) {
                 System.out.print(text); // assume that text ends in line separator

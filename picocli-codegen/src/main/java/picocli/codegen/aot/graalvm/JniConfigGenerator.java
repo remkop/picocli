@@ -5,6 +5,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Parameters;
 import picocli.codegen.aot.graalvm.ReflectionConfigGenerator.ReflectedClass;
+import picocli.codegen.util.OutputFileMixin;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
