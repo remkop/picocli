@@ -3137,6 +3137,34 @@ public class CommandLine {
         return this;
     }
 
+    /** Returns the maximum usage help long options column max width to the specified value.
+     * This value controls the maximum width of the long options column: any positional parameter
+     * labels or long options that are longer than the specified value will overflow into
+     * the description column, and cause the description to be displayed on the next line.
+     * @see UsageMessageSpec#longOptionsMaxWidth()
+     * @since 4.2*/
+    public int getUsageHelpLongOptionsMaxWidth() { return getCommandSpec().usageMessage().longOptionsMaxWidth(); }
+
+    /** Returns the maximum usage help long options column max width to the specified value.
+     * This value controls the maximum width of the long options column: any positional parameter
+     * labels or long options that are longer than the specified value will overflow into
+     * the description column, and cause the description to be displayed on the next line.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param columnWidth the new maximum usage help long options column max width. Must be 20 or greater.
+     * @see UsageMessageSpec#longOptionsMaxWidth(int)
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 4.2 */
+    public CommandLine setUsageHelpLongOptionsMaxWidth(int columnWidth) {
+        getCommandSpec().usageMessage().longOptionsMaxWidth(columnWidth);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setUsageHelpLongOptionsMaxWidth(columnWidth);
+        }
+        return this;
+    }
+
     /** Returns whether picocli should attempt to detect the terminal size and adjust the usage help message width
      * to take the full terminal width. End users may enable this by setting system property {@code "picocli.usage.width"} to {@code AUTO},
      * and may disable this by setting this system property to a {@linkplain UsageMessageSpec#width() numeric value}.
@@ -6342,9 +6370,10 @@ public class CommandLine {
             public static final String SECTION_KEY_FOOTER = "footer";
 
             /** Constant holding the default usage message width: <code>{@value}</code>. */
-            public  final static int    DEFAULT_USAGE_WIDTH         = 80;
-            private final static int    MINIMUM_USAGE_WIDTH         = 55;
-            private final static int    DEFAULT_SYNOPSIS_INDENT     = -1; // by default, fall back to aligning to the synopsis heading
+            public  final static int    DEFAULT_USAGE_WIDTH              = 80;
+            private final static int    MINIMUM_USAGE_WIDTH              = 55;
+                    final static int    DEFAULT_USAGE_LONG_OPTIONS_WIDTH = 20;
+            private final static int    DEFAULT_SYNOPSIS_INDENT          = -1; // by default, fall back to aligning to the synopsis heading
             private final static double DEFAULT_SYNOPSIS_AUTO_INDENT_THRESHOLD = 0.5;
             private final static double MAX_SYNOPSIS_AUTO_INDENT_THRESHOLD     = 0.9;
 
@@ -6432,6 +6461,7 @@ public class CommandLine {
             private String[] exitCodeListStrings;
             private Map<String, String> exitCodeList;
             private int width = DEFAULT_USAGE_WIDTH;
+            private int longOptionsMaxWidth = DEFAULT_USAGE_LONG_OPTIONS_WIDTH;
             private Integer cachedTerminalWidth;
 
             private final Interpolator interpolator;
@@ -6452,6 +6482,21 @@ public class CommandLine {
                     throw new InitializationException("Invalid usage message width " + newValue + ". Minimum value is " + MINIMUM_USAGE_WIDTH);
                 }
                 width = newValue; return this;
+            }
+            /**
+             * Sets the maximum usage help long options column max width to the specified value.
+             * This value controls the maximum width of the long options column: any positional parameter labels or long options that are longer than the specified value will overflow into the description column, and cause the description to be displayed on the next line.
+             * @param newValue the new maximum usage help long options column max width. Must be 20 or greater.
+             * @return this {@code UsageMessageSpec} for method chaining
+             * @throws IllegalArgumentException if the specified long options column max is less than 20
+             * @since 4.2 */
+            public UsageMessageSpec longOptionsMaxWidth(int newValue) {
+                if (newValue < DEFAULT_USAGE_LONG_OPTIONS_WIDTH) {
+                    throw new InitializationException("Invalid usage long options max width " + newValue + ". Minimum value is " + DEFAULT_USAGE_LONG_OPTIONS_WIDTH);
+                } else if (newValue > width() - DEFAULT_USAGE_LONG_OPTIONS_WIDTH) {
+                    throw new InitializationException("Invalid usage long options max width " + newValue + ". Value must not exceed width(" + width() + ") - " + DEFAULT_USAGE_LONG_OPTIONS_WIDTH);
+                }
+                longOptionsMaxWidth = newValue; return this;
             }
 
             private int getSysPropertyWidthOrDefault(int defaultWidth, boolean detectTerminalSize) {
@@ -6542,6 +6587,12 @@ public class CommandLine {
              * if set, otherwise returns the value set via the {@link #width(int)} method, or if not set, the {@linkplain #DEFAULT_USAGE_WIDTH default width}.
              * @return the maximum usage help message width. Never returns less than 55. */
             public int width() { return getSysPropertyWidthOrDefault(width, autoWidth()); }
+
+            /** Returns the maximum usage help long options column max width to the specified value.
+             * This value controls the maximum width of the long options column: any positional parameter labels or long options that are longer than the specified value will overflow into the description column, and cause the description to be displayed on the next line.
+             * @return the new maximum usage help long options column max width. Always 20 or greater.
+             * @since 4.2 */
+            public int longOptionsMaxWidth() { return longOptionsMaxWidth; }
 
             /** Returns whether picocli should attempt to detect the terminal size and adjust the usage help message width
              * to take the full terminal width. End users may enable this by setting system property {@code "picocli.usage.width"} to {@code AUTO},
@@ -12966,7 +13017,6 @@ public class CommandLine {
         /** Constant String holding the default string that separates options from option parameters, value defined in {@link ParserSpec#DEFAULT_SEPARATOR}. */
         protected static final String DEFAULT_SEPARATOR = ParserSpec.DEFAULT_SEPARATOR;
 
-        private final static int defaultOptionsColumnWidth = 24;
         public final PositionalParamSpec AT_FILE_POSITIONAL_PARAM = PositionalParamSpec.builder()
                 .paramLabel("${picocli.atfile.label:-@<filename>}").description("${picocli.atfile.description:-One or more argument files containing options.}").arity("0..*")
                 .descriptionKey("picocli.atfile").build();
@@ -13366,10 +13416,11 @@ public class CommandLine {
             int max = 0;
             IOptionRenderer optionRenderer = new DefaultOptionRenderer(false, " ");
             boolean cjk = commandSpec.usageMessage().adjustLineBreaksForWideCJKCharacters();
+            int longOptionsColWidth = commandSpec.usageMessage().longOptionsMaxWidth() + 1; // add 1 space for indentation
             for (OptionSpec option : commandSpec.options()) {
                 Text[][] values = optionRenderer.render(option, parameterLabelRenderer(), colorScheme);
                 int len = cjk ? values[0][3].getCJKAdjustedLength() : values[0][3].length;
-                if (len < Help.defaultOptionsColumnWidth - 3) { max = Math.max(max, len); }
+                if (len < longOptionsColWidth) { max = Math.max(max, len); }
             }
             List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(commandSpec.positionalParameters()); // iterate in declaration order
             if (commandSpec.parser.expandAtFiles() && commandSpec.usageMessage.showAtFileInUsageHelp()) {
@@ -13381,7 +13432,7 @@ public class CommandLine {
                 //Text[][] values = paramRenderer.render(positional, parameterLabelRenderer(), colorScheme); // values[0][3]; //
                 Text label = parameterLabelRenderer().renderParameterLabel(positional, colorScheme.ansi(), colorScheme.parameterStyles);
                 int len = cjk ? label.getCJKAdjustedLength() : label.length;
-                if (len < Help.defaultOptionsColumnWidth - 3) { max = Math.max(max, len); }
+                if (len < longOptionsColWidth) { max = Math.max(max, len); }
             }
 
             return max + 3;
@@ -14309,9 +14360,11 @@ public class CommandLine {
              * </ol>
              * @param ansi whether to emit ANSI escape codes or not
              * @param usageHelpWidth the total width of the columns combined
+             * @deprecated use {@link #forDefaultColumns(Ansi, int, int)} instead
              */
             public static TextTable forDefaultColumns(Ansi ansi, int usageHelpWidth) {
-                return forDefaultColumns(ansi, defaultOptionsColumnWidth, usageHelpWidth);
+                // TODO split out the 1 (for long column indent) and 3 (should be description indent)
+                return forDefaultColumns(ansi, UsageMessageSpec.DEFAULT_USAGE_LONG_OPTIONS_WIDTH + 4, usageHelpWidth);
             }
 
             /** Constructs a TextTable with five columns as follows:
@@ -14328,12 +14381,13 @@ public class CommandLine {
              */
             public static TextTable forDefaultColumns(Ansi ansi, int longOptionsColumnWidth, int usageHelpWidth) {
                 // "* -c, --create                Creates a ...."
+                int descriptionWidth = usageHelpWidth - 5 - longOptionsColumnWidth;
                 return forColumns(ansi,
-                        new Column(2,                                       0, TRUNCATE), // "*"
-                        new Column(2,                                       0, SPAN), // "-c"
-                        new Column(1,                                       0, TRUNCATE), // ","
-                        new Column(longOptionsColumnWidth,                  1, SPAN),  // " --create"
-                        new Column(usageHelpWidth - 5 - longOptionsColumnWidth, 1, WRAP)); // " Creates a ..."
+                        new Column(2,                0, TRUNCATE), // "*"
+                        new Column(2,                0, SPAN), // "-c"
+                        new Column(1,                0, TRUNCATE), // ","
+                        new Column(longOptionsColumnWidth, 1, SPAN),  // " --create"
+                        new Column(descriptionWidth, 1, WRAP)); // " Creates a ..."
             }
 
             /** Constructs a new TextTable with columns with the specified width, all SPANning  multiple columns on

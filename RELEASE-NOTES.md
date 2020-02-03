@@ -17,6 +17,9 @@ From this release it is possible to inject the `CommandSpec` into a `IVersionPro
 
 Similarly, from this release it is possible to inject the parent command object into mixins via a `@ParentCommand`-annotated field.
 
+This release adds programmatic API to allow the long options column to grow larger than 20 characters in the usage help message via the `CommandLine::setLongOptionsMaxWidth` and `UsageMessageSpec::longOptionsMaxWidth` methods.
+
+
 Finally, it is now possible let the usage help show that [@-files](https://picocli.info/#AtFiles) are supported by listing a `@<filename>` entry above the list of positional parameters in the usage help.
 
 This is the sixty-seventh public release.
@@ -29,6 +32,7 @@ Picocli follows [semantic versioning](http://semver.org/).
   * [Subcommands are now lazily instantiated](#4.2.0-lazy-instantiation)
   * [Mixins with `@ParentCommand`-annotated fields](#4.2.0-mixins)
   * [Showing `@filename` in usage help](#4.2.0-atfiles-usage)
+  * [Configurable long options column width](#4.2.0-long-options-width)
 * [Fixed issues](#4.2.0-fixes)
 * [Deprecations](#4.2.0-deprecated)
 * [Potential breaking changes](#4.2.0-breaking-changes)
@@ -168,6 +172,36 @@ Since picocli 4.2, [`@ParentCommand`-annotated](https://picocli.info/#_parentcom
 
 For mixins that need to be reusable across more than two levels in the command hierarchy, injecting a [`@Spec`-annotated](https://picocli.info/#_spec_annotation) field gives the mixin access to the full command hierarchy.
 
+### <a name="4.2.0-long-options-width"></a> Configurable long options column width
+
+The default layout shows short options and long options in separate columns, followed by the description column.
+The width of the long options column shrinks automatically if all long options are very short,
+but by default this column does not grow larger than 20 characters.
+
+If the long option with its option parameter is longer than 20 characters
+(for example: `--output=<outputFolder>`), the long option overflows into the description column, and the option description is shown on the next line.
+
+This (the default) looks like this:
+
+```
+Usage: myapp [-hV] [-o=<outputFolder>]
+  -h, --help      Show this help message and exit.
+  -o, --output=<outputFolder>
+                  Output location full path.
+  -V, --version   Print version information and exit.
+```
+
+From picocli 4.2, there is programmatic API to change this via the `CommandLine::setLongOptionsMaxWidth` and `UsageMessageSpec::longOptionsMaxWidth` methods.
+
+In the above example, if we call `commandLine.setLongOptionsMaxWidth(23)` before printing the usage help, we get this result:
+
+```
+Usage: myapp [-hV] [-o=<outputFolder>]
+  -h, --help                    Show this help message and exit.
+  -o, --output=<outputFolder>   Output location full path.
+  -V, --version                 Print version information and exit.
+```
+
 ## <a name="4.2.0-fixes"></a> Fixed issues
 * [#454] API: Added support for repeatable subcommands. Thanks to [Idan Arye](https://github.com/idanarye), [Miroslav Kravec](https://github.com/kravemir), [Philipp Hanslovsky](https://github.com/hanslovsky) and [Jay](https://github.com/lakemove) for raising this and the subsequent discussion.
 * [#629] API: Support injecting `@Spec CommandSpec spec` into `IVersionProvider` implementations. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
@@ -177,6 +211,7 @@ For mixins that need to be reusable across more than two levels in the command h
 * [#468][#505][#852] Auto-completion: added support for positional parameter completion. Thanks to [Serhii Avsheniuk](https://github.com/avshenuk) for the pull request.
 * [#644][#671] Auto-completion: fix [shellcheck](https://github.com/koalaman/shellcheck) warnings in generated autocompletion scripts. Thanks to [Dylan Cali](https://github.com/calid) for raising this, and thanks to [AlcaYezz](https://github.com/AlcaYezz) for the pull request.
 * [#396] Auto-completion: completion scripts no longer use associative arrays, and should now work on OSX.
+* [#934] Enhancement: Make long options column width configurable. Thanks to [tomerz90](https://github.com/tomerz90) for raising this. 
 * [#930] Enhancement: Add `--factory` option to `ReflectionConfigGenerator`, `ResourceConfigGenerator` and `DynamicProxyConfigGenerator`. Thanks to [Santiago Acosta](https://github.com/hanzo2001) for raising this.
 * [#690] Enhancement: Postpone instantiating subcommands until they are matched on the command line. Thanks to [Daniel Breitlauch](https://github.com/danielBreitlauch) for raising this.
 * [#926] Enhancement: Clarify debug trace output when adding aliases.

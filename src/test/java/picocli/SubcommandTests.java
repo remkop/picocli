@@ -809,6 +809,56 @@ public class SubcommandTests {
     }
 
     @Test
+    public void testSetUsageHelpLongOptionsMaxWidth_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        int DEFAULT = UsageMessageSpec.DEFAULT_USAGE_LONG_OPTIONS_WIDTH;
+        assertEquals(DEFAULT, commandLine.getUsageHelpLongOptionsMaxWidth());
+        commandLine.setUsageHelpLongOptionsMaxWidth(50);
+        assertEquals(50, commandLine.getUsageHelpLongOptionsMaxWidth());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", DEFAULT, sub.getUsageHelpLongOptionsMaxWidth());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", DEFAULT, subsub.getUsageHelpLongOptionsMaxWidth());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetUsageHelpLongOptionsMaxWidth_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        int DEFAULT = UsageMessageSpec.DEFAULT_USAGE_LONG_OPTIONS_WIDTH;
+        assertEquals(DEFAULT, commandLine.getUsageHelpLongOptionsMaxWidth());
+        commandLine.setUsageHelpLongOptionsMaxWidth(50);
+        assertEquals(50, commandLine.getUsageHelpLongOptionsMaxWidth());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", 50, sub.getUsageHelpLongOptionsMaxWidth());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", 50, sub.getUsageHelpLongOptionsMaxWidth());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
     public void testSetAdjustLineBreaksForWideCJKCharacters_BeforeSubcommandsAdded() {
         @Command
         class TopLevel {}

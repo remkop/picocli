@@ -3244,6 +3244,36 @@ End users may enable this by setting system property `picocli.usage.width` to `A
 
 This feature requires Java 7.
 
+=== Long Option Column Width
+The default layout shows short options and long options in separate columns, followed by the description column.
+The width of the long options column shrinks automatically if all long options are very short,
+but by default this column does not grow larger than 20 characters.
+
+If the long option with its option parameter is longer than 20 characters
+(for example: `--output=<outputFolder>`), the long option overflows into the description column, and the option description is shown on the next line.
+
+This (the default) looks like this:
+
+----
+Usage: myapp [-hV] [-o=<outputFolder>]
+  -h, --help      Show this help message and exit.
+  -o, --output=<outputFolder>
+                  Output location full path.
+  -V, --version   Print version information and exit.
+----
+
+From picocli 4.2, there is programmatic API to change this via the `CommandLine::setLongOptionsMaxWidth` and `UsageMessageSpec::longOptionsMaxWidth` methods.
+
+In the above example, if we call `commandLine.setLongOptionsMaxWidth(23)` before printing the usage help, we get this result:
+
+----
+Usage: myapp [-hV] [-o=<outputFolder>]
+  -h, --help                    Show this help message and exit.
+  -o, --output=<outputFolder>   Output location full path.
+  -V, --version                 Print version information and exit.
+----
+
+The minimum value that can be specified for `longOptionsMaxWidth` is 20, the maximum value is the <<Usage Width,usage width>> minus `20`.
 
 == ANSI Colors and Styles
 === Colorized Example

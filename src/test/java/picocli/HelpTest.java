@@ -1748,6 +1748,7 @@ public class HelpTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testDefaultLayout_addsEachRowToTable() {
         final Text[][] values = {
@@ -2031,6 +2032,7 @@ public class HelpTest {
                 "<the-app> --number=NUMBER --and-other-option=<aargh>%n"),
                 help.synopsis(0));
     }
+    @SuppressWarnings("deprecation")
     @Test
     public void testTextTable() {
         TextTable table = TextTable.forDefaultColumns(Help.Ansi.OFF, UsageMessageSpec.DEFAULT_USAGE_WIDTH);
@@ -2043,6 +2045,7 @@ public class HelpTest {
                 ,""), table.toString(new StringBuilder()).toString());
     }
 
+    @SuppressWarnings("deprecation")
     @Test(expected = IllegalArgumentException.class)
     public void testTextTableAddsNewRowWhenTooManyValuesSpecified() {
         TextTable table = TextTable.forDefaultColumns(Help.Ansi.OFF, UsageMessageSpec.DEFAULT_USAGE_WIDTH);
@@ -2054,6 +2057,7 @@ public class HelpTest {
 //                ,""), table.toString(new StringBuilder()).toString());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testTextTableAddsNewRowWhenAnyColumnTooLong() {
         TextTable table = TextTable.forDefaultColumns(Help.Ansi.OFF, UsageMessageSpec.DEFAULT_USAGE_WIDTH);
@@ -2461,6 +2465,7 @@ public class HelpTest {
                 "  sub22sub1%n"), sub22);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testLayoutConstructorCreatesDefaultColumns() {
         ColorScheme colorScheme = new ColorScheme.Builder().build();
@@ -2475,6 +2480,7 @@ public class HelpTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testHelpCreateLayout_CreatesDefaultColumns() {
         Help help = new Help(CommandSpec.create(), new ColorScheme.Builder(Help.Ansi.OFF).build());
@@ -3485,6 +3491,7 @@ public class HelpTest {
         assertEquals(format("[picocli WARN] Invalid picocli.usage.width value 54. Using minimum usage width 55.%n"), baos.toString("UTF-8"));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testTextTableWithLargeWidth() {
         TextTable table = TextTable.forDefaultColumns(Help.Ansi.OFF, 200);
@@ -3988,6 +3995,7 @@ public class HelpTest {
         assertEquals(expected, usageMessage);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testTextTableAjustForWideCJKCharsByDefault() {
         assertTrue(TextTable.forDefaultColumns(Help.Ansi.OFF, 80).isAdjustLineBreaksForWideCJKCharacters());
@@ -3995,6 +4003,7 @@ public class HelpTest {
         assertTrue(TextTable.forDefaultColumns(Help.Ansi.OFF, 20, 80).isAdjustLineBreaksForWideCJKCharacters());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testTextTableAjustForWideCJKCharsByDefaultIsMutable() {
         TextTable textTable = TextTable.forDefaultColumns(Help.Ansi.OFF, 80);
@@ -4300,27 +4309,108 @@ public class HelpTest {
         assertEquals(syn1, new Help(CommandSpec.create(), CommandLine.Help.defaultColorScheme(Help.Ansi.OFF)).fullSynopsis());
     }
 
-    @Ignore("#934")
+    // Test for issue #934
     @Test
     public void testConfigurableLongOptionsColumnLength() {
         @Command(name = "myapp", mixinStandardHelpOptions = true)
         class MyApp {
-            @Option(names = {"-o", "--out"}, description = "Output location full path")
+            @Option(names = {"-o", "--output"}, description = "Output location full path.")
             File outputFolder;
-
-            //public static void main(String[] args) {
-            //    new CommandLine(new MyApp())
-            //            .setUsageHelpLongOptionsMaxWidth(25)
-            //            .execute(args);
-            //}
         }
         new CommandLine(new MyApp()).usage(System.out);
         String expected = String.format("" +
                 "Usage: myapp [-hV] [-o=<outputFolder>]%n" +
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -o, --output=<outputFolder>%n" +
-                "                  Output location full path%n" +
+                "                  Output location full path.%n" +
                 "  -V, --version   Print version information and exit.%n");
-        assertEquals("", this.systemOutRule.getLog());
+        assertEquals(expected, this.systemOutRule.getLog());
+
+        systemOutRule.clearLog();
+        CommandLine cmd2 = new CommandLine(new MyApp());
+        cmd2.getCommandSpec().usageMessage().longOptionsMaxWidth("--output=<outputFolder>".length());
+        cmd2.usage(System.out);
+        String expected2 = String.format("" +
+                "Usage: myapp [-hV] [-o=<outputFolder>]%n" +
+                "  -h, --help                    Show this help message and exit.%n" +
+                "  -o, --output=<outputFolder>   Output location full path.%n" +
+                "  -V, --version                 Print version information and exit.%n");
+        assertEquals(expected2, this.systemOutRule.getLog());
+    }
+
+    @Test
+    public void testConfigurableLongOptionsColumnLengthWorksForPositionalParams() {
+        @Command(name = "myapp", mixinStandardHelpOptions = true)
+        class MyApp {
+            @Option(names = {"-o", "--output"}, description = "Output location full path.")
+            File outputFolder;
+
+            @Parameters(split = ",", description = "Some comma-separated values.")
+            List<String> values;
+        }
+        new CommandLine(new MyApp()).usage(System.out);
+        String expected = String.format("" +
+                "Usage: myapp [-hV] [-o=<outputFolder>] [<values>[,<values>...]...]%n" +
+                "      [<values>[,<values>...]...]%n" +
+                "                  Some comma-separated values.%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -o, --output=<outputFolder>%n" +
+                "                  Output location full path.%n" +
+                "  -V, --version   Print version information and exit.%n");
+        assertEquals(expected, this.systemOutRule.getLog());
+
+        systemOutRule.clearLog();
+        CommandLine cmd2 = new CommandLine(new MyApp());
+        cmd2.getCommandSpec().usageMessage().longOptionsMaxWidth("[<values>[,<values>...]...]".length());
+        cmd2.usage(System.out);
+        String expected2 = String.format("" +
+                "Usage: myapp [-hV] [-o=<outputFolder>] [<values>[,<values>...]...]%n" +
+                "      [<values>[,<values>...]...]   Some comma-separated values.%n" +
+                "  -h, --help                        Show this help message and exit.%n" +
+                "  -o, --output=<outputFolder>       Output location full path.%n" +
+                "  -V, --version                     Print version information and exit.%n");
+        assertEquals(expected2, this.systemOutRule.getLog());
+    }
+
+    @Test
+    public void testUsageMessageSpec_LongOptionsColumnLengthMinimum_ReturnsSpec() {
+        UsageMessageSpec spec = CommandSpec.create().usageMessage();
+        assertSame(spec, spec.longOptionsMaxWidth(20));
+    }
+
+    @Test
+    public void testSetLongOptionsColumnLengthMinimum_ModifiesSpec() {
+        CommandLine cmd = new CommandLine(CommandSpec.create());
+        assertEquals(20, cmd.getUsageHelpLongOptionsMaxWidth());
+        assertEquals(20, cmd.getCommandSpec().usageMessage().longOptionsMaxWidth());
+
+        CommandLine returnValue = cmd.setUsageHelpLongOptionsMaxWidth(30);
+        assertSame(returnValue, cmd);
+
+        assertEquals(30, cmd.getUsageHelpLongOptionsMaxWidth());
+        assertEquals(30, cmd.getCommandSpec().usageMessage().longOptionsMaxWidth());
+    }
+
+    @Test
+    public void testUsageMessageSpec_LongOptionsColumnLengthMinimum_Minimum20() {
+        try {
+            CommandSpec.create().usageMessage().longOptionsMaxWidth(19);
+            fail("Expected exception");
+        } catch (InitializationException ok) {
+            assertEquals("Invalid usage long options max width 19. Minimum value is 20", ok.getMessage());
+        }
+    }
+
+    @Test
+    public void testUsageMessageSpec_LongOptionsColumnLengthMinimum_MaxWidthMinus20() {
+        UsageMessageSpec spec = CommandSpec.create().usageMessage();
+        spec.longOptionsMaxWidth(spec.width() - 20);
+        assertEquals(60, spec.longOptionsMaxWidth());
+        try {
+            spec.longOptionsMaxWidth(61);
+            fail("Expected exception");
+        } catch (InitializationException ok) {
+            assertEquals("Invalid usage long options max width 61. Value must not exceed width(80) - 20", ok.getMessage());
+        }
     }
 }
