@@ -8,8 +8,8 @@ import java.io.IOException;
 
 public class OutputFileMixin {
 
-    @Option(names = {"-o", "--output"}, description = "Output file to write the configuration to. " +
-            "If not specified, the configuration is written to the standard output stream.")
+    @Option(names = {"-o", "--output"}, description = "Output file to write the result to. " +
+            "If not specified, the output is written to the standard output stream.")
     File outputFile;
 
     public void write(String text) throws IOException {

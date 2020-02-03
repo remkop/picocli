@@ -105,3 +105,14 @@ publishing {
         }
     }
 }
+apply plugin: 'org.asciidoctor.convert'
+asciidoctor {
+    sourceDir = file('src/test/resources')
+    outputDir = file('build/docs')
+    logDocuments = true
+    backends 'manpage'
+//    attributes 'sourcedir': file('docs') //project.sourceSets.main.java.srcDirs[0]
+////    attributes 'pdf-stylesdir': 'theme',
+////               'pdf-style': 'custom',
+////               'sourcedir': file('docs') //project.sourceSets.main.java.srcDirs[0]
+}
