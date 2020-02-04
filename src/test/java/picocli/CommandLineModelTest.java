@@ -1553,4 +1553,83 @@ public class CommandLineModelTest {
         cmd.parseArgs("--open");
         assertTrue(myApp.open);
     }
+
+    @Test
+    public void testCommandSpecRemoveSuccess() {
+        class Positional {
+            @Parameters(index = "0") String first;
+            @Parameters(index = "1") String second;
+        }
+        CommandLine cmd = new CommandLine(new Positional());
+        CommandSpec spec = cmd.getCommandSpec();
+        PositionalParamSpec first = spec.positionalParameters().get(0);
+        assertEquals(CommandLine.Range.valueOf("0"), first.index());
+        PositionalParamSpec second = spec.positionalParameters().get(1);
+        assertEquals(CommandLine.Range.valueOf("1"), second.index());
+
+        spec.remove(second);
+        assertEquals(1, spec.positionalParameters().size());
+        assertSame(first, spec.positionalParameters().get(0));
+    }
+
+    @Test
+    public void testCommandSpecRemoveFailIfInGroup() {
+        class Args {
+            @Option(names = "-x") int x;
+        }
+        class App {
+            @ArgGroup(exclusive = false, validate = false, multiplicity = "1",
+                    headingKey = "headingKeyXXX", heading = "headingXXX", order = 123)
+            Args args;
+        }
+
+        CommandLine cmd = new CommandLine(new App(), new InnerClassFactory(this));
+        CommandSpec spec = cmd.getCommandSpec();
+
+        try {
+            spec.remove(spec.findOption("-x"));
+            fail("Expected exception");
+        } catch (UnsupportedOperationException ex) {
+            assertEquals("Cannot remove ArgSpec that is part of an ArgGroup", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testCommandSpecRemoveFailIfNotExist() {
+        class Positional {
+            @Parameters(index = "0") String first;
+            @Parameters(index = "1") String second;
+        }
+        CommandLine cmd = new CommandLine(new Positional());
+        CommandSpec spec = cmd.getCommandSpec();
+        PositionalParamSpec first = spec.positionalParameters().get(0);
+        assertEquals(CommandLine.Range.valueOf("0"), first.index());
+        PositionalParamSpec second = spec.positionalParameters().get(1);
+        assertEquals(CommandLine.Range.valueOf("1"), second.index());
+
+        CommandLine.Model.ArgSpec other = CommandLine.Model.OptionSpec.builder("--name").build();
+
+        try {
+            spec.remove(other);
+            fail("Expected exception");
+        } catch (NoSuchElementException ex) {
+            assertEquals("option --name", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testCommandSpec_SpecElements() {
+        class Positional {
+            @CommandLine.Spec CommandSpec spec1;
+            @CommandLine.Spec CommandSpec spec2;
+            @Parameters(index = "0") String first;
+            @Parameters(index = "1") String second;
+        }
+        CommandLine cmd = new CommandLine(new Positional());
+        CommandSpec spec = cmd.getCommandSpec();
+        List<IAnnotatedElement> specElements = spec.specElements();
+        assertEquals(2, specElements.size());
+        assertEquals("spec1", specElements.get(0).getName());
+        assertEquals("spec2", specElements.get(1).getName());
+    }
 }

@@ -286,4 +286,17 @@ public class ModelPositionalParamSpecTest {
         assertNotEquals(p1, positional.index("0..*").build());
         assertEquals(p1, positional.index("1..3").build());
     }
+
+    @Test
+    public void testUnresolvedPositionalParamIndex() {
+        class PositionalUnresolvedIndex {
+            @Parameters(index = "${index:-0}") String first;
+            @Parameters(index = "${index:-1}") String second;
+        }
+        CommandLine cmd = new CommandLine(new PositionalUnresolvedIndex());
+        PositionalParamSpec first = cmd.getCommandSpec().positionalParameters().get(0);
+        assertEquals(CommandLine.Range.valueOf("0"), first.index());
+        PositionalParamSpec second = cmd.getCommandSpec().positionalParameters().get(1);
+        assertEquals(CommandLine.Range.valueOf("1"), second.index());
+    }
 }

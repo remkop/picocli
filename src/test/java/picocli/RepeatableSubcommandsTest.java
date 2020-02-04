@@ -8,6 +8,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.IExitCodeGenerator;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.ParseResult;
 
@@ -565,7 +566,7 @@ public class RepeatableSubcommandsTest {
     }
     @Command(name = "file")
     static class FileCommand implements Callable<Integer> {
-        @CommandLine.Parameters(index = "0", paramLabel = "FILE")
+        @Parameters(index = "0", paramLabel = "FILE")
         File file;
 
         @Option(names = "--count") int count = 1;
@@ -697,5 +698,17 @@ public class RepeatableSubcommandsTest {
     public void testMultivalueOptions() {
         int exitCode = new CommandLine(new MultivalueTop()).execute("sub1 -x1 -x2 -x3 sub2 -y1 -y2 -y3 -y4".split(" "));
         assertEquals(4, exitCode);
+    }
+
+    @Test
+    public void testCommandSpec_SubcommandsRepeatable() {
+        class Positional {
+            @Parameters(index = "0") String first;
+        }
+        CommandLine cmd = new CommandLine(new Positional());
+        CommandLine.Model.CommandSpec spec = cmd.getCommandSpec();
+        assertFalse("orig", spec.subcommandsRepeatable());
+        spec.subcommandsRepeatable(true);
+        assertTrue("after", spec.subcommandsRepeatable());
     }
 }

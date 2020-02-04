@@ -414,4 +414,19 @@ public class NegatableOptionTest {
         }
         return null;
     }
+
+    @Test
+    public void testDuplicateNegatableOption() {
+        class NegOptDupli {
+            @Option(names = "--verbose") boolean verbose;
+            @Option(names = "--no-verbose", negatable = true) boolean noVerbose;
+        }
+        try {
+            new CommandLine(new NegOptDupli());
+            fail("Expected Exception");
+        } catch (CommandLine.DuplicateOptionAnnotationsException ex) {
+            String cls = NegOptDupli.class.getName();
+            assertEquals("Option name '--verbose' is used by both field boolean " + cls + ".noVerbose and field boolean " + cls + ".verbose", ex.getMessage());
+        }
+    }
 }
