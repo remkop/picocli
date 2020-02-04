@@ -17,7 +17,6 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.codegen.annotation.processing.ITypeMetaData;
 import picocli.codegen.annotation.processing.AnnotatedElementHolder;
-import picocli.codegen.util.OutputFileMixin;
 import picocli.codegen.util.Util;
 
 import javax.lang.model.element.Element;

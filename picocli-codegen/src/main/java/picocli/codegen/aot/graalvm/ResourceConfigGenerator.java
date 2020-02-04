@@ -6,7 +6,6 @@ import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
-import picocli.codegen.util.OutputFileMixin;
 import picocli.codegen.util.Util;
 
 import java.util.Arrays;
