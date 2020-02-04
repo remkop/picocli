@@ -1,0 +1,83 @@
+// tag::generated-manpage[]
+// tag::generated-man-header[]
+:doctype: manpage
+:revnumber: import 2.3
+:manmanual: Import Manual
+:mansource: import 2.3
+:man-linkstyle: pass:[blue R < >]
+= import(1)
+// end::generated-man-header[]
+
+// tag::generated-man-name-section[]
+== Name
+
+import - Imports data from a file into the infra inventory db.
+// end::generated-man-name-section[]
+
+// tag::generated-man-synopsis[]
+== Synopsis
+
+*import* [*-nv*] [*--indexed*] [*--[no-]header*] [*-e*=_<charset>_] [*-o*=_<format>_]
+       [*-t*=_<tableName>_] *-C*=_<file-column>=<db-column>_
+       [*-C*=_<file-column>=<db-column>_]... [*-W*=_<db-column>=<value>_]... _<file>_
+// end::generated-man-synopsis[]
+
+// tag::generated-man-description[]
+== Description
+
+Imports data from a file into the infra inventory db.
+// end::generated-man-description[]
+
+// tag::generated-man-options[]
+== Options
+
+*-C*, *--column*=_<file-column>=<db-column>_::
+  Key-value pair specifying the column mapping between the import file column name and the destination table column name.
+
+*-e*, *--encoding*=_<charset>_::
+  Character encoding of the file to import. Default: Shift_JIS
+
+*--indexed*::
+  If true, use indexed access in the file, so specify the (1-based) file column index instead of the file column name.
+
+*-n*, *--dry-run*::
+  Don't actually add the row(s), just show if they exist and/or will be ignored..
+
+*--[no-]header*::
+  By default, or if `--header` is specified, the first line of the file is a list of the column names. If `--no-header` is specified, the first line of the file is data (and indexed access is used).
+
+*-o*, *--format*=_<format>_::
+  File format. Valid values: CSV, TSV. Default: CSV
+
+*-t*, *--table*=_<tableName>_::
+  Name of the table that the CRUD operations apply to. Default: null.
+
+*-v*, *--verbose*::
+  Specify multiple -v options to increase verbosity.
++
+For example, `-v -v -v` or `-vvv`
+
+*-W*, *--column-value*=_<db-column>=<value>_::
+  Key-value pair specifying the destination table column name and the value to set it to.
+// end::generated-man-options[]
+
+// tag::generated-man-arguments[]
+== Arguments
+
+_<file>_::
+  The file to import.
+// end::generated-man-arguments[]
+
+// tag::generated-man-footer[]
+==  Example:
+
+[%hardbreaks]
+pass:c[# ]This imports all rows from the IP_Allocation_v1.20.csv file into the `null` table.
+*import -v src/test/resources/IP_Allocation_v1.20.csv -Chostname=hostname -Chw_type=server_type -Cenv=class -Cdeviceid=null -Cenv=env -Cteam=team -COS=os -Cremarks=description -Crack=rack -Clocation=datacenter -Cmgmt_ip=management_ip -Cfront_ip=front_ip -Cilo_ip=ilo_ip -Capp=application*
+
+[%hardbreaks]
+pass:c[# ]This imports all rows from the network.csv file into the `network` table.
+*import -v --table=network src/test/resources/network.csv -Cdesc=purpose -CDC=datacenter -Csubnet=subnet -Cgateway=gateway -Cvlanid=network*
+// end::generated-man-footer[]
+
+// end::generated-manpage[]

@@ -1,38 +1,52 @@
-= myapp(1)
+// tag::generated-manpage[]
+// tag::generated-man-header[]
 :doctype: manpage
 :revnumber: Versioned Command 1.0
 :manmanual: Myapp Manual
 :mansource: Versioned Command 1.0
 :man-linkstyle: pass:[blue R < >]
+= myapp(1)
+// end::generated-man-header[]
 
+// tag::generated-man-name-section[]
 == Name
 
 myapp - This app does great things.
+// end::generated-man-name-section[]
 
+// tag::generated-man-synopsis[]
 == Synopsis
 
-*myapp* [-hV] [-o=<outputFolder>] [<values>[,<values>...]...]
+*myapp* [*-hV*] [*-o*=_<outputFolder>_] [_<values>_[,_<values>_...]...]
+// end::generated-man-synopsis[]
 
+// tag::generated-man-description[]
 == Description
 
 This app does great things.
+// end::generated-man-description[]
 
+// tag::generated-man-options[]
 == Options
-
-*-o*, *--output*=_<outputFolder>_::
-  Output location full path.
 
 *-h*, *--help*::
   Show this help message and exit.
 
+*-o*, *--output*=_<outputFolder>_::
+  Output location full path.
+
 *-V*, *--version*::
   Print version information and exit.
+// end::generated-man-options[]
 
+// tag::generated-man-arguments[]
 == Arguments
 
 [_<values>_[,_<values>_...]...]::
   Some comma-separated values.
+// end::generated-man-arguments[]
 
+// tag::generated-man-exit-status[]
 == Exit status
 
 *0*::
@@ -43,12 +57,15 @@ This app does great things.
 
 *70*::
   Execution exception: an exception occurred while executing the business logic.
+// end::generated-man-exit-status[]
 
+// tag::generated-man-footer[]
 == Examples
 
+[%hardbreaks]
 This is the first line.
-
 This is the second line.
-
 This is a very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very veryvery very very very very very very very very very very very very very very very long line.
+// end::generated-man-footer[]
 
+// end::generated-manpage[]
