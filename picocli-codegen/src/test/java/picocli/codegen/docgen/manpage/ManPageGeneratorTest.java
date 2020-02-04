@@ -48,7 +48,7 @@ public class ManPageGeneratorTest {
 
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw); //System.out, true
-        ManPageGenerator.generateManPage(pw, new CommandLine(new MyApp()).getCommandSpec());
+        ManPageGenerator.generateSingleManPage(pw, new CommandLine(new MyApp()).getCommandSpec());
         pw.flush();
 
         assertEquals(read("/myapp.manpage.adoc"), sw.toString());

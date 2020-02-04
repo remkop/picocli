@@ -14,10 +14,11 @@ import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
-import picocli.codegen.aot.graalvm.ReflectionConfigGenerator;
-import picocli.codegen.util.OutputFileMixin;
 import picocli.codegen.util.Util;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
@@ -51,13 +52,14 @@ public class ManPageGenerator {
                 "When omitted, the default picocli factory is used.")
         String factoryClass;
 
-        @CommandLine.Mixin
-        OutputFileMixin outputFile = new OutputFileMixin();
+        @Option(names = {"-d", "--outdir"}, defaultValue = ".",
+                description = "Output directory to write the result to. " +
+                        "If not specified, the output is written to the standard output stream.")
+        File directory;
 
         public Integer call() throws Exception {
             List<CommandSpec> specs = Util.getCommandSpecs(factoryClass, classes);
-            String result = ReflectionConfigGenerator.generateReflectionConfig(specs.toArray(new CommandSpec[0]));
-            outputFile.write(result);
+            generateManPage(directory, specs.toArray(new CommandSpec[0]));
             return 0;
         }
 
@@ -67,13 +69,34 @@ public class ManPageGenerator {
         System.exit(new CommandLine(new App()).execute(args));
     }
 
-    public static void generateManPage(PrintWriter pw, CommandSpec... specs) {
+    public static void generateManPage(File directory, CommandSpec... specs) throws IOException {
         for (CommandSpec spec : specs) {
-            generateSingleManPage(pw, spec);
+            generateSingleManPage(directory, spec);
         }
     }
 
-    private static void generateSingleManPage(PrintWriter pw, CommandSpec spec) {
+    private static void generateSingleManPage(File directory, CommandSpec spec) throws IOException {
+        FileWriter writer = null;
+        PrintWriter pw = null;
+        try {
+            if (directory != null && !directory.exists() && !directory.mkdirs()) {
+                System.err.println("Unable to mkdirs for " + directory.getAbsolutePath());
+            }
+            writer = new FileWriter(new File(directory, makeFileName(spec)));
+            pw = new PrintWriter(writer);
+            generateSingleManPage(pw, spec);
+        } finally {
+            Util.closeSilently(pw);
+            Util.closeSilently(writer);
+        }
+    }
+
+    private static String makeFileName(CommandSpec spec) {
+        String result = spec.name() + ".adoc";
+        return result.replaceAll("\\s", "_");
+    }
+
+    public static void generateSingleManPage(PrintWriter pw, CommandSpec spec) {
         genHeader(pw, spec);
         genOptions(pw, spec);
         genPositionals(pw, spec);
