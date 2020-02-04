@@ -1,6 +1,5 @@
 package picocli;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.CommandUserObject;
@@ -12,13 +11,6 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class CommandUserObjectTest {
-
-    @Ignore
-    @Test
-    public void testUsageMessageSpec_GetTerminalWidth() {
-//        CommandLine.Model.UsageMessageSpec
-        fail();
-    }
 
     // CommandUserObject tests
     @Test
