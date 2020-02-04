@@ -207,6 +207,7 @@ Usage: myapp [-hV] [-o=<outputFolder>]
 * [#629] API: Support injecting `@Spec CommandSpec spec` into `IVersionProvider` implementations. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
 * [#795] API: Added `@Command(showAtFileInUsageHelp=true)` attribute to show `@filename` in usage help.
 * [#925] API: Support `@ParentCommand`-annotated fields in mixin classes.
+* [#936] API: Change visibility of `Help.subcommands()` method from protected to public.
 * [#906] Auto-completion: Added automated tests for picocli-generated bash/zsh completion scripts.
 * [#468][#505][#852] Auto-completion: added support for positional parameter completion. Thanks to [Serhii Avsheniuk](https://github.com/avshenuk) for the pull request.
 * [#644][#671] Auto-completion: fix [shellcheck](https://github.com/koalaman/shellcheck) warnings in generated autocompletion scripts. Thanks to [Dylan Cali](https://github.com/calid) for raising this, and thanks to [AlcaYezz](https://github.com/AlcaYezz) for the pull request.

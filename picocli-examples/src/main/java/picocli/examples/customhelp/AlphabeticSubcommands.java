@@ -37,7 +37,7 @@ public class AlphabeticSubcommands implements Runnable {
                      * Returns a sorted map of the subcommands.
                      */
                     @Override
-                    protected Map<String, Help> subcommands() {
+                    public Map<String, Help> subcommands() {
                         return new TreeMap<>(super.subcommands());
                     }
                 };

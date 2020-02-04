@@ -13082,7 +13082,7 @@ public class CommandLine {
 
         /** Returns the map of subcommand {@code Help} instances for this command Help.
          * @since 3.9 */
-        protected Map<String, Help> subcommands() { return Collections.unmodifiableMap(commands); }
+        public Map<String, Help> subcommands() { return Collections.unmodifiableMap(commands); }
 
         /** Returns the list of aliases for the command in this Help.
          * @since 3.9 */
