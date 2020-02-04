@@ -1,6 +1,7 @@
 package picocli.codegen.aot.graalvm;
 
 import picocli.CommandLine.Option;
+import picocli.codegen.util.Util;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -32,9 +33,7 @@ class OutputFileMixin {
             writer = new FileWriter(outputFile);
             writer.write(result);
         } finally {
-            if (writer != null) {
-                writer.close();
-            }
+            Util.closeSilently(writer);
         }
     }
 }

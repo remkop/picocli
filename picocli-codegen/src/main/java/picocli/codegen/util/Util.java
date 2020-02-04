@@ -4,6 +4,8 @@ import picocli.CommandLine;
 import picocli.CommandLine.IFactory;
 import picocli.CommandLine.Model.CommandSpec;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,5 +22,14 @@ public class Util {
             specs.add(new CommandLine(cls, factory).getCommandSpec());
         }
         return specs;
+    }
+
+    public static void closeSilently(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+            }
+        }
     }
 }
