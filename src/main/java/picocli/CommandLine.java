@@ -15277,7 +15277,9 @@ public class CommandLine {
                         destination.length = offset;
                     }
                     for (StyledSection section : sections) {
-                        destination.sections.add(section.withStartIndex(section.startIndex - from + destination.length));
+                        if ((section.startIndex - from) + section.length >= 0) {
+                            destination.sections.add(section.withStartIndex(section.startIndex - from + destination.length));
+                        }
                     }
                     destination.plain.append(plain.toString().substring(from, from + length));
                     destination.length = destination.plain.length();

@@ -639,7 +639,7 @@ public class Demo implements Runnable {
             "Record changes to the repository.%n" +
             "%n" +
             "@|bold git-commit|@ [@|yellow -ap|@] [@|yellow -c|@=@|italic <commit>|@] [@|yellow -C|@=@|italic <commit>|@] [@|yellow -F|@=@|italic <file>|@] [@|yellow --fixup|@=@|italic <commit>|@]%n" +
-            " @|italic         |@  [@|yellow --squash|@=@|italic <commit>|@] [@|yellow -m|@=@|italic <msg>|@]... [@|yellow <files>|@...]%n" +
+            "           [@|yellow --squash|@=@|italic <commit>|@] [@|yellow -m|@=@|italic <msg>|@]... [@|yellow <files>|@...]%n" +
             "%n" +
             "@|bold,underline Description:|@%n" +
             "%n" +
