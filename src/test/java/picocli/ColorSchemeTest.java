@@ -37,6 +37,6 @@ public class ColorSchemeTest {
     @Test
     public void testToString() {
         ColorScheme defaultScheme = CommandLine.Help.defaultColorScheme(CommandLine.Help.Ansi.AUTO);
-        assertEquals("ColorScheme[ansi=AUTO, commands=[bold], optionStyles=[fg_yellow], parameterStyles=[fg_yellow], optionParamStyles=[italic]]", defaultScheme.toString());
+        assertEquals("ColorScheme[ansi=AUTO, commands=[bold], optionStyles=[fg_yellow], parameterStyles=[fg_yellow], optionParamStyles=[italic], customMarkupMap=null]", defaultScheme.toString());
     }
 }

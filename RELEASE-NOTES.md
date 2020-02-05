@@ -208,6 +208,10 @@ Usage: myapp [-hV] [-o=<outputFolder>]
 * [#795] API: Added `@Command(showAtFileInUsageHelp=true)` attribute to show `@filename` in usage help.
 * [#925] API: Support `@ParentCommand`-annotated fields in mixin classes.
 * [#936] API: Change visibility of `Help.subcommands()` method from protected to public.
+* [#459] API: Generate manpage documentation. Thanks to [Miroslav Kravec](https://github.com/kravemir) for raising this.
+         This resulted in the following additional methods: `ColorScheme::customMarkupMap`, `ColorScheme::parse`, `ColorScheme::resetStyle`, `ColorScheme::apply`,  `ColorScheme.Builder::customMarkupMap` (getter and setter) and a new `picocli.CommandLine.Help.Ansi.Text(String, ColorScheme)` constructor.
+         The `picocli.CommandLine.Help.Ansi::apply` method is now deprecated in favor of `ColorScheme::apply`.
+* [#299] API: Generate AsciiDoc documentation. Thanks to [Philippe Charles](https://github.com/charphi) for raising this.
 * [#906] Auto-completion: Added automated tests for picocli-generated bash/zsh completion scripts.
 * [#468][#505][#852] Auto-completion: added support for positional parameter completion. Thanks to [Serhii Avsheniuk](https://github.com/avshenuk) for the pull request.
 * [#644][#671] Auto-completion: fix [shellcheck](https://github.com/koalaman/shellcheck) warnings in generated autocompletion scripts. Thanks to [Dylan Cali](https://github.com/calid) for raising this, and thanks to [AlcaYezz](https://github.com/AlcaYezz) for the pull request.
@@ -238,7 +242,8 @@ Usage: myapp [-hV] [-o=<outputFolder>]
 * [#910] Dependency Upgrade: Bump Spring Boot dependency to 2.2.2 to allow it to work under Java 13. Thanks to [Stéphane Vanacker](https://github.com/svanacker) for raising this.
 
 ## <a name="4.2.0-deprecated"></a> Deprecations
-No features were deprecated in this release.
+The `picocli.CommandLine.Help.Ansi#apply` method has been deprecated.
+Use the `picocli.CommandLine.ColorScheme#apply` method instead.
 
 ## <a name="4.2.0-breaking-changes"></a> Potential breaking changes
 Annotated command objects are now not instantiated until the command is matched on the command line.

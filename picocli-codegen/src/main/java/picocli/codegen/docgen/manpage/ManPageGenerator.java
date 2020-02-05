@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -41,8 +42,25 @@ public class ManPageGenerator {
         public String on()  { return "_"; }
         public String off() { return "_"; }
     };
+    static final IStyle UNDERLINE = new IStyle() {
+        public String on() { return "pass:q[<u>"; }
+        public String off() { return "]"; }
+    };
+    static final IStyle HIGHLIGHT = new IStyle() {
+        public String on() { return "#"; }
+        public String off() { return "#"; }
+    };
     static final ColorScheme COLOR_SCHEME = new ColorScheme.Builder(CommandLine.Help.Ansi.ON).
-            commands(BOLD).options(BOLD).optionParams(ITALIC).parameters(ITALIC).build();
+            commands(BOLD).options(BOLD).optionParams(ITALIC).parameters(ITALIC).customMarkupMap(createMarkupMap()).build();
+
+    private static Map<String, IStyle> createMarkupMap() {
+        Map<String, IStyle> result = new HashMap<String, IStyle>();
+        result.put(Style.bold.name(), BOLD);
+        result.put(Style.italic.name(), ITALIC);
+        result.put(Style.underline.name(), UNDERLINE);
+        result.put(Style.reverse.name(), HIGHLIGHT);
+        return result;
+    }
 
     @Command(name = "gen-manpage",
             description = {"Generates an AsciiDoc file in the manpage format. " +
@@ -62,7 +80,7 @@ public class ManPageGenerator {
 
         @Option(names = {"-d", "--outdir"}, defaultValue = ".",
                 description = "Output directory to write the result to. " +
-                        "If not specified, the output is written to the standard output stream.")
+                        "If not specified, the output is written to the current directory.")
         File directory;
 
         public Integer call() throws Exception {
@@ -272,7 +290,7 @@ public class ManPageGenerator {
             String header = !empty(usage.header())
                     ? usage.header()[0]
                     : (!empty(usage.description()) ? usage.description()[0] : "");
-            Text[] lines = COLOR_SCHEME.ansi().text(format(header)).splitLines();
+            Text[] lines = COLOR_SCHEME.ansi().new Text(format(header), COLOR_SCHEME).splitLines();
 
             pw.printf("  %s%n", replaceAll(lines[0].toString(), Style.reset.off(), ""));
             for (int i = 1; i < lines.length; i++) {
@@ -292,8 +310,8 @@ public class ManPageGenerator {
 
         for (Map.Entry<String, String> entry : spec.usageMessage().exitCodeList().entrySet()) {
             pw.println();
-            pw.printf("*%s*::%n", COLOR_SCHEME.ansi().text(entry.getKey().trim()));
-            pw.printf("  %s%n", COLOR_SCHEME.ansi().text(entry.getValue()));
+            pw.printf("*%s*::%n", COLOR_SCHEME.ansi().new Text(entry.getKey().trim(), COLOR_SCHEME));
+            pw.printf("  %s%n", COLOR_SCHEME.ansi().new Text(entry.getValue(), COLOR_SCHEME));
         }
         pw.printf("// end::generated-man-exit-status[]%n");
         pw.println();
@@ -304,9 +322,10 @@ public class ManPageGenerator {
             return;
         }
         String heading = spec.usageMessage().footerHeading();
+        if (heading.endsWith("%n")) { heading = heading.substring(0, heading.length() - 2); }
         heading = heading.length() == 0 ? "Footer" : heading.replaceAll("%n", " ");
         pw.printf("// tag::generated-man-footer[]%n");
-        pw.printf("== %s%n", COLOR_SCHEME.ansi().text(heading));
+        pw.printf("== %s%n", COLOR_SCHEME.ansi().new Text(heading, COLOR_SCHEME));
         pw.println();
 
         boolean hardbreaks = true;
@@ -316,7 +335,7 @@ public class ManPageGenerator {
                 pw.println("[%hardbreaks]"); // preserve line breaks
                 hardbreaks = false;
             }
-            String renderedLine = COLOR_SCHEME.ansi().text(format(line)).toString();
+            String renderedLine = COLOR_SCHEME.ansi().new Text(format(line), COLOR_SCHEME).toString();
             if (renderedLine.startsWith("# ")) {
                 renderedLine = "pass:c[# ]" + renderedLine.substring(2);
             }

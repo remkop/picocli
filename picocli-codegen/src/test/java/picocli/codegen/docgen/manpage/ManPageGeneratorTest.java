@@ -67,7 +67,6 @@ public class ManPageGeneratorTest {
 
     enum Format { CSV, TSV }
 
-    @Ignore
     @Test
     public void testImport() throws IOException {
         @Command(name = "import", version = {"import 2.3", "ignored line 1", "ignored line 2"},

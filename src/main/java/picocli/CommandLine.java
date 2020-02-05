@@ -2495,7 +2495,7 @@ public class CommandLine {
      */
     public void printVersionHelp(PrintStream out, Help.Ansi ansi) {
         for (String versionInfo : getCommandSpec().version()) {
-            out.println(ansi.new Text(versionInfo));
+            out.println(ansi.new Text(versionInfo, getColorScheme()));
         }
         out.flush();
     }
@@ -2514,7 +2514,7 @@ public class CommandLine {
      */
     public void printVersionHelp(PrintStream out, Help.Ansi ansi, Object... params) {
         for (String versionInfo : getCommandSpec().version()) {
-            out.println(ansi.new Text(format(versionInfo, params)));
+            out.println(ansi.new Text(format(versionInfo, params), getColorScheme()));
         }
         out.flush();
     }
@@ -2537,7 +2537,7 @@ public class CommandLine {
      * @since 4.0 */
     public void printVersionHelp(PrintWriter out, Help.Ansi ansi, Object... params) {
         for (String versionInfo : getCommandSpec().version()) {
-            out.println(ansi.new Text(format(versionInfo, params)));
+            out.println(ansi.new Text(format(versionInfo, params), getColorScheme()));
         }
         out.flush();
     }
@@ -5148,6 +5148,14 @@ public class CommandLine {
     private static <T> List<T> reverseList(List<T> list) {
         Collections.reverse(list);
         return list;
+    }
+    private static <T> T[] reverseArray(T[] all) {
+        for (int i = 0; i < all.length / 2; i++) {
+            T temp = all[i];
+            all[i] = all[all.length - i - 1];
+            all[all.length - i - 1] = temp;
+        }
+        return all;
     }
 
     /** This class provides a namespace for classes and interfaces that model concepts and attributes of command line interfaces in picocli.
@@ -13378,7 +13386,7 @@ public class CommandLine {
             textTable.indentWrappedLines = indent;
 
             // right-adjust the command name by length of synopsis heading
-            Text PADDING = Ansi.OFF.new Text(stringOf('X', synopsisHeadingLength));
+            Text PADDING = Ansi.OFF.new Text(stringOf('X', synopsisHeadingLength), optionsAndPositionalsAndCommandsDetails.colorScheme);
             textTable.addRowValues(PADDING.concat(colorScheme.commandText(commandName)).concat(optionsAndPositionalsAndCommandsDetails));
             return textTable.toString().substring(synopsisHeadingLength); // cut off leading synopsis heading spaces
         }
@@ -13834,7 +13842,9 @@ public class CommandLine {
         public static IParamLabelRenderer createMinimalParamLabelRenderer() {
             return new IParamLabelRenderer() {
                 public Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, List<IStyle> styles) {
-                    return ansi.apply(argSpec.paramLabel(), styles);
+                    return argSpec.command() != null && argSpec.command().commandLine() != null
+                            ? argSpec.command().commandLine().getColorScheme().apply(argSpec.paramLabel(), styles)
+                            : ansi.apply(argSpec.paramLabel(), styles);
                 }
                 public String separator() { return ""; }
             };
@@ -13963,12 +13973,12 @@ public class CommandLine {
                 String[] description = option.description();
                 Text[] descriptionFirstLines = createDescriptionFirstLines(scheme, option, description, showDefault);
                 result.add(new Text[] { scheme.optionText(requiredOption), scheme.optionText(shortOption),
-                        scheme.ansi().new Text(sep), longOptionText, descriptionFirstLines[0] });
+                        scheme.ansi().new Text(sep, scheme), longOptionText, descriptionFirstLines[0] });
                 for (int i = 1; i < descriptionFirstLines.length; i++) {
                     result.add(new Text[] { EMPTY, EMPTY, EMPTY, EMPTY, descriptionFirstLines[i] });
                 }
                 for (int i = 1; i < description.length; i++) {
-                    Text[] descriptionNextLines = scheme.ansi().new Text(description[i]).splitLines();
+                    Text[] descriptionNextLines = scheme.ansi().new Text(description[i], scheme).splitLines();
                     for (Text line : descriptionNextLines) {
                         result.add(new Text[] { EMPTY, EMPTY, EMPTY, EMPTY, line });
                     }
@@ -13987,7 +13997,7 @@ public class CommandLine {
                 Text paramLabelText = parameterLabelRenderer.renderParameterLabel(option, scheme.ansi(), scheme.optionParamStyles);
                 optionText = optionText.concat(paramLabelText);
                 return new Text[][] {{ optionText,
-                        scheme.ansi().new Text(option.description().length == 0 ? "" : option.description()[0]) }};
+                        scheme.ansi().new Text(option.description().length == 0 ? "" : option.description()[0], scheme) }};
             }
         }
         /** The MinimalParameterRenderer converts {@linkplain PositionalParamSpec positional parameters} to a single row with two columns of
@@ -13995,7 +14005,7 @@ public class CommandLine {
         static class MinimalParameterRenderer implements IParameterRenderer {
             public Text[][] render(PositionalParamSpec param, IParamLabelRenderer parameterLabelRenderer, ColorScheme scheme) {
                 return new Text[][] {{ parameterLabelRenderer.renderParameterLabel(param, scheme.ansi(), scheme.parameterStyles),
-                        scheme.ansi().new Text(param.description().length == 0 ? "" : param.description()[0]) }};
+                        scheme.ansi().new Text(param.description().length == 0 ? "" : param.description()[0], scheme) }};
             }
         }
         /** When customizing online help for {@linkplain PositionalParamSpec positional parameters} details, a custom {@code IParameterRenderer}
@@ -14046,7 +14056,7 @@ public class CommandLine {
                     result.add(new Text[] { EMPTY, EMPTY, EMPTY, EMPTY, descriptionFirstLines[i] });
                 }
                 for (int i = 1; i < description.length; i++) {
-                    Text[] descriptionNextLines = scheme.ansi().new Text(description[i]).splitLines();
+                    Text[] descriptionNextLines = scheme.ansi().new Text(description[i], scheme).splitLines();
                     for (Text line : descriptionNextLines) {
                         result.add(new Text[] { EMPTY, EMPTY, EMPTY, EMPTY, line });
                     }
@@ -14058,14 +14068,14 @@ public class CommandLine {
 
         private static void addTrailingDefaultLine(List<Text[]> result, ArgSpec arg, ColorScheme scheme) {
             Text EMPTY = Ansi.EMPTY_TEXT;
-            result.add(new Text[]{EMPTY, EMPTY, EMPTY, EMPTY, scheme.ansi().new Text("  Default: " + arg.defaultValueString(true))});
+            result.add(new Text[]{EMPTY, EMPTY, EMPTY, EMPTY, scheme.ansi().new Text("  Default: " + arg.defaultValueString(true), scheme)});
         }
 
         private static Text[] createDescriptionFirstLines(ColorScheme scheme, ArgSpec arg, String[] description, boolean[] showDefault) {
-            Text[] result = scheme.ansi().new Text(str(description, 0)).splitLines();
+            Text[] result = scheme.ansi().new Text(str(description, 0), scheme).splitLines();
             if (result.length == 0 || (result.length == 1 && result[0].plain.length() == 0)) {
                 if (showDefault[0]) {
-                    result = new Text[]{scheme.ansi().new Text("  Default: " + arg.defaultValueString(true))};
+                    result = new Text[]{scheme.ansi().new Text("  Default: " + arg.defaultValueString(true), scheme)};
                     showDefault[0] = false; // don't show the default value twice
                 } else {
                     result = new Text[]{ Ansi.EMPTY_TEXT };
@@ -14106,10 +14116,11 @@ public class CommandLine {
             public String separator() { return commandSpec.parser().separator(); }
             public Text renderParameterLabel(ArgSpec argSpec, Ansi ansi, List<IStyle> styles) {
                 Range capacity = argSpec.isOption() ? argSpec.arity() : ((PositionalParamSpec)argSpec).capacity();
-                if (capacity.max == 0) { return ansi.new Text(""); }
-                if (argSpec.hideParamSyntax()) { return ansi.apply((argSpec.isOption() ? separator() : "") + argSpec.paramLabel(), styles); }
+                ColorScheme colorScheme = commandSpec.commandLine() == null ? Help.defaultColorScheme(ansi) : commandSpec.commandLine().getColorScheme();
+                if (capacity.max == 0) { return ansi.new Text("", colorScheme); }
+                if (argSpec.hideParamSyntax()) { return colorScheme.apply((argSpec.isOption() ? separator() : "") + argSpec.paramLabel(), styles); }
 
-                Text paramName = ansi.apply(argSpec.paramLabel(), styles);
+                Text paramName = colorScheme.apply(argSpec.paramLabel(), styles);
                 String split = argSpec.splitRegex();
                 String mandatorySep = empty(split) ? " "  : split;
                 String optionalSep  = empty(split) ? " [" : "[" + split;
@@ -14147,16 +14158,16 @@ public class CommandLine {
                 }
                 if (effectivelyVariable) {
                     if (!argSpec.arity().isVariable && argSpec.arity().min > 1) {
-                        result = ansi.new Text("(").concat(result).concat(")"); // repeating group
+                        result = ansi.new Text("(", colorScheme).concat(result).concat(")"); // repeating group
                     }
                     result = result.concat("..."); // PARAM...
                 }
                 String optionSeparator = argSpec.isOption() ? separator() : "";
                 if (capacity.min == 0) { // optional
                     String sep2 = empty(optionSeparator.trim()) ? optionSeparator + "[" : "[" + optionSeparator;
-                    result = ansi.new Text(sep2).concat(result).concat("]");
+                    result = ansi.new Text(sep2, colorScheme).concat(result).concat("]");
                 } else {
-                    result = ansi.new Text(optionSeparator).concat(result);
+                    result = ansi.new Text(optionSeparator, colorScheme).concat(result);
                 }
                 return result;
             }
@@ -14667,11 +14678,16 @@ public class CommandLine {
          * @see Help#defaultColorScheme(Ansi)
          */
         public static class ColorScheme {
+            private static final IStyle EMPTY_STYLE = new IStyle() {
+                public String on() { return ""; }
+                public String off() { return ""; }
+            };
             private final List<IStyle> commandStyles;
             private final List<IStyle> optionStyles;
             private final List<IStyle> parameterStyles;
             private final List<IStyle> optionParamStyles;
             private final Ansi ansi;
+            private final Map<String, IStyle> markupMap;
 
             /** Constructs a new empty ColorScheme with the specified Ansi enabled mode.
              * @see Help#defaultColorScheme(Ansi)
@@ -14684,23 +14700,24 @@ public class CommandLine {
                 optionStyles      = Collections.unmodifiableList(new ArrayList<IStyle>(builder.optionStyles()));
                 parameterStyles   = Collections.unmodifiableList(new ArrayList<IStyle>(builder.parameterStyles()));
                 optionParamStyles = Collections.unmodifiableList(new ArrayList<IStyle>(builder.optionParamStyles()));
+                markupMap         = builder.markupMap == null ? null : Collections.unmodifiableMap(new HashMap<String, IStyle>(builder.markupMap));
             }
             /** Returns a Text with all command styles applied to the specified command string.
              * @param command the command string to apply the registered command styles to
              * @return a Text with all command styles applied to the specified command string */
-            public Ansi.Text commandText(String command)         { return ansi().apply(command,     commandStyles); }
+            public Ansi.Text commandText(String command)         { return apply(command,     commandStyles); }
             /** Returns a Text with all option styles applied to the specified option string.
              * @param option the option string to apply the registered option styles to
              * @return a Text with all option styles applied to the specified option string */
-            public Ansi.Text optionText(String option)           { return ansi().apply(option,      optionStyles); }
+            public Ansi.Text optionText(String option)           { return apply(option,      optionStyles); }
             /** Returns a Text with all parameter styles applied to the specified parameter string.
              * @param parameter the parameter string to apply the registered parameter styles to
              * @return a Text with all parameter styles applied to the specified parameter string */
-            public Ansi.Text parameterText(String parameter)     { return ansi().apply(parameter,   parameterStyles); }
+            public Ansi.Text parameterText(String parameter)     { return apply(parameter,   parameterStyles); }
             /** Returns a Text with all optionParam styles applied to the specified optionParam string.
              * @param optionParam the option parameter string to apply the registered option parameter styles to
              * @return a Text with all option parameter styles applied to the specified option parameter string */
-            public Ansi.Text optionParamText(String optionParam) { return ansi().apply(optionParam, optionParamStyles); }
+            public Ansi.Text optionParamText(String optionParam) { return apply(optionParam, optionParamStyles); }
 
             /** Returns the {@code Ansi} setting of this color scheme. */
             public Ansi ansi() { return ansi; }
@@ -14716,6 +14733,35 @@ public class CommandLine {
             /** Returns the registered styles for option parameters in this color scheme.
              * @since 4.0 */
             public List<IStyle> optionParamStyles() { return optionParamStyles; }
+            /** Returns the custom mapping from markup names (the names of the {@link Style} enum constants, like bold, italic, fg_blue, bg_green, etc) to {@link IStyle} objects in this color scheme.
+             * By default this returns an empty map, unless a custom map was configured.
+             * @since 4.2 */
+            public Map<String, IStyle> customMarkupMap() { return markupMap == null ? Collections.<String, IStyle>emptyMap() : markupMap; }
+
+            public IStyle[] parse(String commaSeparatedCodes) {
+                if (markupMap == null) {
+                    return Style.parse(commaSeparatedCodes);
+                }
+                String[] codes = commaSeparatedCodes.split(",");
+                List<IStyle> styles = new ArrayList<IStyle>();
+                for (int i = 0; i < codes.length; ++i) {
+                    String code = codes[i].toLowerCase(ENGLISH).replace("(", "_").replace(")", "");
+                    IStyle found = (markupMap.containsKey(code)) ? markupMap.get(code) : markupMap.get("fg_" + code);
+                    if (found != null) {
+                        styles.add(found);
+                    }
+                }
+                return styles.toArray(new IStyle[0]);
+            }
+
+            /** Returns the style that "resets" the style state to neutral.
+             * @return {@link Style#reset} if no {@linkplain #customMarkupMap()} is defined, otherwise either the style registered with the "reset" name or an empty {@code IStyle} if no such style is registered.
+             * @since 4.2
+             */
+            public IStyle resetStyle() {
+                if (markupMap == null) { return Style.reset; }
+                return markupMap.containsKey("reset") ? markupMap.get("reset") : EMPTY_STYLE;
+            }
 
             @Override public boolean equals(Object obj) {
                 if (this == obj) { return true; }
@@ -14725,7 +14771,8 @@ public class CommandLine {
                         && commandStyles.equals(other.commandStyles)
                         && optionStyles.equals(other.optionStyles)
                         && parameterStyles.equals(other.parameterStyles)
-                        && optionParamStyles.equals(other.optionParamStyles);
+                        && optionParamStyles.equals(other.optionParamStyles)
+                        && markupMap == null ? other.markupMap == null : markupMap.equals(other.markupMap);
             }
             @Override public int hashCode() {
                 int result = 17;
@@ -14734,6 +14781,7 @@ public class CommandLine {
                 result = result * 37 + optionStyles.hashCode();
                 result = result * 37 + parameterStyles.hashCode();
                 result = result * 37 + optionParamStyles.hashCode();
+                result = result * 37 + (markupMap == null ? 0 : markupMap.hashCode());
                 return result;
             }
             @Override public String toString() {
@@ -14742,7 +14790,27 @@ public class CommandLine {
                         ", optionStyles=" + optionStyles +
                         ", parameterStyles=" + parameterStyles +
                         ", optionParamStyles=" + optionParamStyles +
+                        ", customMarkupMap=" + markupMap +
                 "]";
+            }
+
+            /**
+             * Returns a new Text object where all the specified styles are applied to the full length of the
+             * specified plain text.
+             * @param plainText the string to apply all styles to. Must not contain markup!
+             * @param styles the styles to apply to the full plain text
+             * @return a new Text object
+             * @since 4.2 */
+            public Text apply(String plainText, List<IStyle> styles) {
+                Text result = ansi().new Text(plainText.length());
+                result.colorScheme = this;
+                if (plainText.length() == 0) { return result; }
+                IStyle[] all = styles.toArray(new IStyle[styles.size()]);
+                result.sections.add(new Ansi.StyledSection(
+                        0, plainText.length(), Style.on(all), Style.off(reverseArray(all)) + resetStyle().off()));
+                result.plain.append(plainText);
+                result.length = result.plain.length();
+                return result;
             }
 
             /** Builder class to create {@code ColorScheme} instances.
@@ -14753,6 +14821,7 @@ public class CommandLine {
                 private final List<IStyle> parameterStyles = new ArrayList<IStyle>();
                 private final List<IStyle> optionParamStyles = new ArrayList<IStyle>();
                 private Ansi ansi = Ansi.AUTO;
+                private Map<String, IStyle> markupMap;
 
                 /** Constructs an empty color scheme builder with Ansi.AUTO. */
                 public Builder() { }
@@ -14766,6 +14835,9 @@ public class CommandLine {
                     this.optionStyles.addAll(existing.optionStyles());
                     this.parameterStyles.addAll(existing.parameterStyles());
                     this.optionParamStyles.addAll(existing.optionParamStyles());
+                    if (existing.markupMap != null) {
+                        this.markupMap = new HashMap(existing.markupMap);
+                    }
                 }
                 /** Returns the {@code Ansi} setting of this color scheme builder. */
                 public Ansi ansi() { return ansi; }
@@ -14779,6 +14851,14 @@ public class CommandLine {
                 public List<IStyle> parameterStyles()   { return parameterStyles; }
                 /** Returns the registered styles for option parameters in this color scheme builder. */
                 public List<IStyle> optionParamStyles() { return optionParamStyles; }
+                /** Returns the custom mapping from markup names (the names of the {@link Style} enum constants, like bold, italic, fg_blue, bg_green, etc) to {@link IStyle} objects in this color scheme.
+                 * By default this returns {@code null}, unless a custom map was configured.
+                 * @since 4.2 */
+                public Map<String, IStyle> customMarkupMap() { return markupMap; }
+                /** Sets the custom mapping from markup names (the names of the {@link Style} enum constants, like bold, italic, fg_blue, bg_green, etc) to {@link IStyle} objects in this color scheme.
+                 * @return this color scheme builder to enable method chaining for a more fluent API
+                 * @since 4.2 */
+                public ColorScheme.Builder customMarkupMap(Map<String, IStyle> newValue) { markupMap = newValue; return this; }
 
                 /** Adds the specified styles to the registered styles for commands in this color scheme builder and returns this builder.
                  * @param styles the styles to add to the registered styles for commands in this color scheme builder
@@ -15092,31 +15172,9 @@ public class CommandLine {
                 }
             }
 
-            /**
-             * Returns a new Text object where all the specified styles are applied to the full length of the
-             * specified plain text.
-             * @param plainText the string to apply all styles to. Must not contain markup!
-             * @param styles the styles to apply to the full plain text
-             * @return a new Text object
-             */
+            /** @deprecated use {@link ColorScheme#apply(String, List)} instead */
             public Text apply(String plainText, List<IStyle> styles) {
-                if (plainText.length() == 0) { return new Text(0); }
-                Text result = new Text(plainText.length());
-                IStyle[] all = styles.toArray(new IStyle[styles.size()]);
-                result.sections.add(new StyledSection(
-                        0, plainText.length(), Style.on(all), Style.off(reverse(all)) + Style.reset.off()));
-                result.plain.append(plainText);
-                result.length = result.plain.length();
-                return result;
-            }
-
-            private static <T> T[] reverse(T[] all) {
-                for (int i = 0; i < all.length / 2; i++) {
-                    T temp = all[i];
-                    all[i] = all[all.length - i - 1];
-                    all[all.length - i - 1] = temp;
-                }
-                return all;
+                return CommandLine.Help.defaultColorScheme(this).apply(plainText, styles);
             }
             /** Encapsulates rich text with styles and colors. Text objects may be constructed with Strings containing
              * markup like {@code @|bg(red),white,underline some text|@}, and this class converts the markup to ANSI
@@ -15130,10 +15188,11 @@ public class CommandLine {
                 private int length;
                 private StringBuilder plain = new StringBuilder();
                 private List<StyledSection> sections = new ArrayList<StyledSection>();
+                private ColorScheme colorScheme;
 
                 /** Constructs a Text with the specified max length (for use in a TextTable Column).
                  * @param maxLength max length of this text */
-                public Text(int maxLength) { this.maxLength = maxLength; }
+                public Text(int maxLength) { this.maxLength = maxLength; colorScheme = Help.defaultColorScheme(Ansi.this); }
 
                 /** Copy constructor.
                  * @since 3.9 */
@@ -15143,6 +15202,7 @@ public class CommandLine {
                     this.length = other.length;
                     this.plain = new StringBuilder(other.plain);
                     this.sections = new ArrayList<StyledSection>(other.sections);
+                    this.colorScheme = other.colorScheme;
                 }
                 /**
                  * Constructs a Text with the specified String, which may contain markup like
@@ -15150,6 +15210,16 @@ public class CommandLine {
                  * @param input the string with markup to parse
                  */
                 public Text(String input) {
+                    this(input, Help.defaultColorScheme(Ansi.this));
+                }
+                /**
+                 * Constructs a Text with the specified String (which may contain markup), and ColorScheme.
+                 * @param input the string with markup like {@code @|bg(red),white,underline some text|@} to parse
+                 * @param colorScheme the ColorScheme to use to map markup to replacement strings
+                 * @since 4.2
+                 */
+                public Text(String input, ColorScheme colorScheme) {
+                    this.colorScheme = colorScheme;
                     maxLength = -1;
                     plain.setLength(0);
                     int i = 0;
@@ -15183,9 +15253,9 @@ public class CommandLine {
                             return;
                         }
 
-                        IStyle[] styles = Style.parse(items[0]);
+                        IStyle[] styles = colorScheme.parse(items[0]);
                         addStyledSection(plain.length(), items[1].length(),
-                                Style.on(styles), Style.off(reverse(styles)) + Style.reset.off());
+                                Style.on(styles), Style.off(reverseArray(styles)) + colorScheme.resetStyle().off());
                         plain.append(items[1]);
                         i = k + 2;
                     }
@@ -15239,7 +15309,7 @@ public class CommandLine {
                  * @param string the text to concatenate to the end of this Text
                  * @return a new Text instance
                  * @since 3.0 */
-                public Text concat(String string) { return concat(new Text(string)); }
+                public Text concat(String string) { return concat(new Text(string, colorScheme)); }
 
                 /** Returns a copy of this {@code Text} instance with the specified text concatenated to the end. Does not modify this instance!
                  * @param other the text to concatenate to the end of this Text
