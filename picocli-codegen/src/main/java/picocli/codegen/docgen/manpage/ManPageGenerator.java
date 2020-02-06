@@ -42,10 +42,6 @@ public class ManPageGenerator {
         public String on()  { return "_"; }
         public String off() { return "_"; }
     };
-    static final IStyle UNDERLINE = new IStyle() {
-        public String on() { return "pass:q[<u>"; }
-        public String off() { return "]"; }
-    };
     static final IStyle HIGHLIGHT = new IStyle() {
         public String on() { return "#"; }
         public String off() { return "#"; }
@@ -57,7 +53,7 @@ public class ManPageGenerator {
         Map<String, IStyle> result = new HashMap<String, IStyle>();
         result.put(Style.bold.name(), BOLD);
         result.put(Style.italic.name(), ITALIC);
-        result.put(Style.underline.name(), UNDERLINE);
+        result.put(Style.underline.name(), ITALIC);
         result.put(Style.reverse.name(), HIGHLIGHT);
         return result;
     }
@@ -130,18 +126,18 @@ public class ManPageGenerator {
     public static void generateSingleManPage(PrintWriter pw, CommandSpec spec) {
         spec.commandLine().setColorScheme(COLOR_SCHEME);
 
-        pw.printf("// tag::generated-manpage[]%n");
+        pw.printf("// tag::picocli-generated-manpage[]%n");
         genHeader(pw, spec);
         genOptions(pw, spec);
         genPositionals(pw, spec);
         genCommands(pw, spec);
         genExitStatus(pw, spec);
         genFooter(pw, spec);
-        pw.printf("// end::generated-manpage[]%n");
+        pw.printf("// end::picocli-generated-manpage[]%n");
     }
 
     static void genHeader(PrintWriter pw, CommandSpec spec) {
-        pw.printf("// tag::generated-man-header[]%n");
+        pw.printf("// tag::picocli-generated-man-header[]%n");
         pw.printf(":doctype: manpage%n");
         //pw.printf(":authors: %s%n", spec.userObject()); // author
         pw.printf(":revnumber: %s%n", versionString(spec)); // version
@@ -149,25 +145,25 @@ public class ManPageGenerator {
         pw.printf(":mansource: %s%n", versionString(spec)); // spec.qualifiedName("-").toUpperCase()
         pw.printf(":man-linkstyle: pass:[blue R < >]%n");
         pw.printf("= %s(1)%n", spec.qualifiedName("-")); // command name (lower case)
-        pw.printf("// end::generated-man-header[]%n");
+        pw.printf("// end::picocli-generated-man-header[]%n");
         pw.println();
 
-        pw.printf("// tag::generated-man-name-section[]%n");
+        pw.printf("// tag::picocli-generated-man-name-section[]%n");
         pw.printf("== Name%n%n");
         pw.printf("%s - %s%n", spec.qualifiedName("-"), headerDescriptionString(spec)); // name and description
-        pw.printf("// end::generated-man-name-section[]%n");
+        pw.printf("// end::picocli-generated-man-name-section[]%n");
         pw.println();
 
-        pw.printf("// tag::generated-man-synopsis[]%n");
+        pw.printf("// tag::picocli-generated-man-synopsis[]%n");
         pw.printf("== Synopsis%n%n");
         pw.printf("%s", synopsisString(spec));
-        pw.printf("// end::generated-man-synopsis[]%n");
+        pw.printf("// end::picocli-generated-man-synopsis[]%n");
         pw.println();
 
-        pw.printf("// tag::generated-man-description[]%n");
+        pw.printf("// tag::picocli-generated-man-description[]%n");
         pw.printf("== Description%n%n");
         pw.printf("%s%n", join("%n", (Object[]) spec.usageMessage().description())); // description
-        pw.printf("// end::generated-man-description[]%n");
+        pw.printf("// end::picocli-generated-man-description[]%n");
         pw.println();
     }
 
@@ -201,7 +197,7 @@ public class ManPageGenerator {
         if (spec.options().isEmpty()) {
             return;
         }
-        pw.printf("// tag::generated-man-options[]%n");
+        pw.printf("// tag::picocli-generated-man-options[]%n");
         pw.printf("== Options%n");
 
         IOptionRenderer optionRenderer = spec.commandLine().getHelp().createDefaultOptionRenderer();
@@ -246,7 +242,7 @@ public class ManPageGenerator {
                 pw.printf("+%n%s%n", replaceAll(rows[i][4].toString(), Style.reset.off(), ""));
             }
         }
-        pw.printf("// end::generated-man-options[]%n");
+        pw.printf("// end::picocli-generated-man-options[]%n");
         pw.println();
     }
 
@@ -254,7 +250,7 @@ public class ManPageGenerator {
         if (spec.positionalParameters().isEmpty()) {
             return;
         }
-        pw.printf("// tag::generated-man-arguments[]%n");
+        pw.printf("// tag::picocli-generated-man-arguments[]%n");
         pw.printf("== Arguments%n");
 
         IParameterRenderer parameterRenderer = spec.commandLine().getHelp().createDefaultParameterRenderer();
@@ -268,7 +264,7 @@ public class ManPageGenerator {
                 pw.printf("+%n%s%n", replaceAll(rows[i][4].toString(), Style.reset.off(), ""));
             }
         }
-        pw.printf("// end::generated-man-arguments[]%n");
+        pw.printf("// end::picocli-generated-man-arguments[]%n");
         pw.println();
     }
 
@@ -276,7 +272,7 @@ public class ManPageGenerator {
         if (spec.subcommands().isEmpty()) {
             return;
         }
-        pw.printf("// tag::generated-man-commands[]%n");
+        pw.printf("// tag::picocli-generated-man-commands[]%n");
         pw.printf("== Commands%n");
 
         for (CommandLine.Help subHelp : spec.commandLine().getHelp().subcommands().values()) {
@@ -297,7 +293,7 @@ public class ManPageGenerator {
                 pw.printf("+%n%s%n", replaceAll(lines[i].toString(), Style.reset.off(), ""));
             }
         }
-        pw.printf("// end::generated-man-commands[]%n");
+        pw.printf("// end::picocli-generated-man-commands[]%n");
         pw.println();
     }
 
@@ -305,7 +301,7 @@ public class ManPageGenerator {
         if (spec.usageMessage().exitCodeList().isEmpty()) {
             return;
         }
-        pw.printf("// tag::generated-man-exit-status[]%n");
+        pw.printf("// tag::picocli-generated-man-exit-status[]%n");
         pw.printf("== Exit status%n");
 
         for (Map.Entry<String, String> entry : spec.usageMessage().exitCodeList().entrySet()) {
@@ -313,7 +309,7 @@ public class ManPageGenerator {
             pw.printf("*%s*::%n", COLOR_SCHEME.ansi().new Text(entry.getKey().trim(), COLOR_SCHEME));
             pw.printf("  %s%n", COLOR_SCHEME.ansi().new Text(entry.getValue(), COLOR_SCHEME));
         }
-        pw.printf("// end::generated-man-exit-status[]%n");
+        pw.printf("// end::picocli-generated-man-exit-status[]%n");
         pw.println();
     }
 
@@ -324,7 +320,7 @@ public class ManPageGenerator {
         String heading = spec.usageMessage().footerHeading();
         if (heading.endsWith("%n")) { heading = heading.substring(0, heading.length() - 2); }
         heading = heading.length() == 0 ? "Footer" : heading.replaceAll("%n", " ");
-        pw.printf("// tag::generated-man-footer[]%n");
+        pw.printf("// tag::picocli-generated-man-footer[]%n");
         pw.printf("== %s%n", COLOR_SCHEME.ansi().new Text(heading, COLOR_SCHEME));
         pw.println();
 
@@ -344,7 +340,7 @@ public class ManPageGenerator {
                 hardbreaks = true;
             }
         }
-        pw.printf("// end::generated-man-footer[]%n");
+        pw.printf("// end::picocli-generated-man-footer[]%n");
         pw.println();
     }
 
