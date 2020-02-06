@@ -1,7 +1,11 @@
 package picocli;
 
 import org.junit.Test;
+import picocli.CommandLine.IParameterConsumer;
+import picocli.CommandLine.Model.ArgSpec;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.IGetter;
+import picocli.CommandLine.Model.IScope;
 import picocli.CommandLine.Model.ISetter;
 import picocli.CommandLine.Model.ITypeInfo;
 import picocli.CommandLine.Model.OptionSpec;
@@ -15,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import static org.junit.Assert.*;
 
@@ -107,7 +112,7 @@ public class ModelArgSpecTest {
             public <T> T set(T value) { newVal[0] = value; return null; }
         };
         PositionalParamSpec positional = PositionalParamSpec.builder().setter(setter).build();
-        positional.setValue("abc", new CommandLine(CommandLine.Model.CommandSpec.create()));
+        positional.setValue("abc", new CommandLine(CommandSpec.create()));
         assertEquals("abc", newVal[0]);
     }
 
@@ -203,7 +208,7 @@ public class ModelArgSpecTest {
 
     @Test
     public void testArgSpecBuilderInferLabel() throws Exception{
-        Method m = CommandLine.Model.ArgSpec.Builder.class.getDeclaredMethod("inferLabel", String.class, String.class, ITypeInfo.class);
+        Method m = ArgSpec.Builder.class.getDeclaredMethod("inferLabel", String.class, String.class, ITypeInfo.class);
         m.setAccessible(true);
         assertEquals("<String=String>", m.invoke(null, "", "fieldName", typeInfo(new Class[0])));
         assertEquals("<String=String>", m.invoke(null, "", "fieldName", typeInfo(new Class[]{Integer.class})));
@@ -304,5 +309,43 @@ public class ModelArgSpecTest {
         CommandLine.Range value = CommandLine.Range.valueOf("1..2");
         builder.capacity(value);
         assertSame(value, builder.capacity());
+    }
+
+    @Test
+    public void testArgSpec_defaultValueString() {
+        PositionalParamSpec spec = PositionalParamSpec.builder().defaultValue("Hi ${user.name}").build();
+        assertEquals("Hi ${user.name}", spec.defaultValueString());
+    }
+
+    @Test
+    public void testArgSpecBuilder_parameterConsumerGetter() {
+        PositionalParamSpec.Builder builder = PositionalParamSpec.builder();
+        assertNull(builder.parameterConsumer());
+    }
+
+    @Test
+    public void testArgSpecBuilder_parameterConsumerSetter() {
+        IParameterConsumer consumer = new IParameterConsumer() {
+            public void consumeParameters(Stack<String> args, ArgSpec argSpec, CommandSpec commandSpec) {
+            }
+        };
+        PositionalParamSpec.Builder builder = PositionalParamSpec.builder().parameterConsumer(consumer);
+        assertSame(consumer, builder.parameterConsumer());
+    }
+
+    @Test
+    public void testArgSpecBuilder_scopeGetter() {
+        PositionalParamSpec.Builder builder = PositionalParamSpec.builder();
+        assertNotNull(builder.scope());
+    }
+
+    @Test
+    public void testArgSpecBuilder_scopeSetter() {
+        IScope scope = new IScope() {
+            public <T> T get() { return null; }
+            public <T> T set(T value) { return null; }
+        };
+        PositionalParamSpec.Builder builder = PositionalParamSpec.builder().scope(scope);
+        assertSame(scope, builder.scope());
     }
 }

@@ -375,4 +375,28 @@ public class ModelOptionSpecTest {
         assertNotEquals(p1, option.order(123).names("-a", "-b", "-c").build());
         assertEquals(p1, option.names("-x").build());
     }
+
+    @Test
+    public void testOptionSpecBuilder_negatableGetter() {
+        OptionSpec.Builder builder = OptionSpec.builder("-x");
+        assertFalse(builder.negatable());
+    }
+
+    @Test
+    public void testOptionSpec_negatableSetter() {
+        OptionSpec.Builder builder = OptionSpec.builder("-x").negatable(true);
+        assertTrue(builder.negatable());
+    }
+
+    @Test
+    public void testOptionSpec_fallbackValueGetter() {
+        OptionSpec.Builder builder = OptionSpec.builder("-x");
+        assertEquals("", builder.fallbackValue());
+    }
+
+    @Test
+    public void testOptionSpec_fallbackValueSetter() {
+        OptionSpec.Builder builder = OptionSpec.builder("-x").fallbackValue("fallback");
+        assertEquals("fallback", builder.fallbackValue());
+    }
 }

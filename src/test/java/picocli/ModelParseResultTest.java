@@ -16,17 +16,25 @@
 package picocli;
 
 import org.junit.Test;
-
-import java.io.File;
-import java.util.*;
-
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.ParseResult;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+
 import static org.junit.Assert.*;
-import static picocli.CommandLine.*;
+import static picocli.CommandLine.Command;
+import static picocli.CommandLine.Option;
+import static picocli.CommandLine.Parameters;
+import static picocli.CommandLine.Range;
 
 public class ModelParseResultTest {
     @Test
@@ -689,5 +697,15 @@ public class ModelParseResultTest {
         builder.addUnmatched(stack);
         ParseResult parseResult = builder.build();
         assertEquals(Arrays.asList("c", "b", "a"), parseResult.unmatched());
+    }
+
+    @Test
+    public void testParseResult_matchedOptionsSet() {
+        @Command(mixinStandardHelpOptions = true) class A {}
+        ParseResult pr = new CommandLine(new A()).parseArgs("--help", "--version");
+        Set<OptionSpec> matched = pr.matchedOptionsSet();
+        assertEquals(2, matched.size());
+        assertTrue(matched.contains(pr.commandSpec().findOption("--help")));
+        assertTrue(matched.contains(pr.commandSpec().findOption("--version")));
     }
 }

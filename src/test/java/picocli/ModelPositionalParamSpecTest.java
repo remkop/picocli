@@ -299,4 +299,12 @@ public class ModelPositionalParamSpecTest {
         PositionalParamSpec second = cmd.getCommandSpec().positionalParameters().get(1);
         assertEquals(CommandLine.Range.valueOf("1"), second.index());
     }
+
+    @Test
+    public void testPositionalParamSpec_builderCopy() {
+        PositionalParamSpec original = PositionalParamSpec.builder().index("3..4").build();
+        PositionalParamSpec.Builder builder = PositionalParamSpec.builder(original);
+        assertEquals(CommandLine.Range.valueOf("3..4"), builder.index());
+        assertEquals(original, builder.build());
+    }
 }

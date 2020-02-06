@@ -2,6 +2,7 @@ package picocli;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
@@ -201,12 +202,65 @@ public class ModelUsageMessageSpecTest {
         assertEquals(55, new UsageMessageSpec().width(55).width());
         assertEquals(Integer.MAX_VALUE, new UsageMessageSpec().width(Integer.MAX_VALUE).width());
     }
-
-    @Ignore
     @Test
-    public void testUsageMessageSpec_GetTerminalWidth() {
-//        CommandLine.Model.UsageMessageSpec
-        fail();
+    public void testUsageMessageSpec_synopsisSubcommandLabelSetter() {
+        @Command(name = "blah")
+        class MyApp {
+            @Command void sub() {}
+        }
+        CommandLine cmd = new CommandLine(new MyApp());
+        String expected = String.format("" +
+                "Usage: blah [COMMAND]%n" +
+                "Commands:%n" +
+                "  sub%n");
+        assertEquals(expected, cmd.getUsageMessage());
+
+        UsageMessageSpec spec = cmd.getCommandSpec().usageMessage();
+        assertEquals("[COMMAND]", spec.synopsisSubcommandLabel());
+
+        spec.synopsisSubcommandLabel("xxx");
+        assertEquals("xxx", spec.synopsisSubcommandLabel());
+        String expectedAfter = String.format("" +
+                "Usage: blah xxx%n" +
+                "Commands:%n" +
+                "  sub%n");
+        assertEquals(expectedAfter, cmd.getUsageMessage());
     }
 
+    @Test
+    public void testUsageMessageSpec_showAtFileInUsageHelp() {
+        @Command(name = "blah") class MyApp {}
+
+        CommandLine cmd = new CommandLine(new MyApp());
+        String expected = String.format("" +
+                "Usage: blah%n");
+        assertEquals(expected, cmd.getUsageMessage());
+
+        UsageMessageSpec spec = cmd.getCommandSpec().usageMessage();
+        assertFalse(spec.showAtFileInUsageHelp());
+
+        spec.showAtFileInUsageHelp(true);
+        assertTrue(spec.showAtFileInUsageHelp());
+        String expectedAfter = String.format("" +
+                "Usage: blah [@<filename>...]%n" +
+                "      [@<filename>...]   One or more argument files containing options.%n");
+        assertEquals(expectedAfter, cmd.getUsageMessage());
+    }
+
+    @Test
+    public void testUsageMessageSpec_updateFromCommand() {
+        @Command(name = "blah", resourceBundle = "picocli.SharedMessages") class MyApp {}
+
+        UsageMessageSpec spec = new UsageMessageSpec();
+        assertNull(spec.messages());
+
+        Command annotation = MyApp.class.getAnnotation(Command.class);
+        CommandSpec commandSpec = CommandSpec.create();
+        spec.updateFromCommand(annotation, commandSpec, false);
+
+        CommandLine.Model.Messages messages = spec.messages();
+        assertNotNull(messages);
+        assertSame(commandSpec, messages.commandSpec());
+        assertEquals("picocli.SharedMessages", messages.resourceBundleBaseName());
+    }
 }

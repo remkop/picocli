@@ -14,6 +14,7 @@ import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.ParseResult.GroupMatchContainer;
 import picocli.CommandLine.ParseResult.GroupMatch;
+import picocli.CommandLine.ParseResult.GroupValidationResult;
 import picocli.test.Execution;
 
 import java.io.File;
@@ -2929,7 +2930,37 @@ public class ArgGroupTest {
         } catch (MissingParameterException ex) {
             assertEquals("Error: Missing required argument(s): --enable-more-options", ex.getMessage());
         }
+    }
 
+    @Test
+    public void testGroupValidationResult_extractBlockingFailure() {
+        GroupValidationResult block = new GroupValidationResult(GroupValidationResult.Type.FAILURE_PRESENT);
+        List<GroupValidationResult> list = Arrays.asList(
+                GroupValidationResult.SUCCESS_PRESENT, GroupValidationResult.SUCCESS_ABSENT, block);
+
+        assertSame(block, GroupValidationResult.extractBlockingFailure(list));
+        assertNull(GroupValidationResult.extractBlockingFailure(Arrays.asList(
+                GroupValidationResult.SUCCESS_PRESENT, GroupValidationResult.SUCCESS_ABSENT)));
+    }
+
+    @Test
+    public void testGroupValidationResult_present() {
+        assertTrue(GroupValidationResult.SUCCESS_PRESENT.present());
+        assertFalse(GroupValidationResult.SUCCESS_ABSENT.present());
+        assertFalse(new GroupValidationResult(GroupValidationResult.Type.FAILURE_PRESENT).present());
+        assertFalse(new GroupValidationResult(GroupValidationResult.Type.FAILURE_ABSENT).present());
+    }
+
+    @Test
+    public void testGroupValidationResult_toString() {
+        assertEquals("SUCCESS_PRESENT", GroupValidationResult.SUCCESS_PRESENT.toString());
+        assertEquals("SUCCESS_ABSENT", GroupValidationResult.SUCCESS_ABSENT.toString());
+        assertEquals("FAILURE_PRESENT", new GroupValidationResult(GroupValidationResult.Type.FAILURE_PRESENT).toString());
+        assertEquals("FAILURE_ABSENT", new GroupValidationResult(GroupValidationResult.Type.FAILURE_ABSENT).toString());
+
+        CommandLine cmd = new CommandLine(CommandSpec.create());
+        ParameterException ex = new ParameterException(cmd, "hello");
+        assertEquals("FAILURE_ABSENT: hello", new GroupValidationResult(GroupValidationResult.Type.FAILURE_ABSENT, ex).toString());
     }
 
     // TODO GroupMatch.container()
