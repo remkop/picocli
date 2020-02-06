@@ -9,7 +9,6 @@ import picocli.CommandLine.Help.ColorScheme;
 import picocli.CommandLine.Help.IOptionRenderer;
 import picocli.CommandLine.Help.IParamLabelRenderer;
 import picocli.CommandLine.Help.IParameterRenderer;
-import picocli.CommandLine.Model.ArgGroupSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.IOrdered;
 import picocli.CommandLine.Model.OptionSpec;
@@ -34,6 +33,8 @@ import java.util.concurrent.Callable;
 import static java.lang.String.format;
 
 public class ManPageGenerator {
+    static final int CUSTOMIZABLE_MAN_PAGE_FILE_EXISTS = 4;
+
     static final IStyle BOLD = new IStyle() {
         public String on()  { return "*"; }
         public String off() { return "*"; }
@@ -63,64 +64,136 @@ public class ManPageGenerator {
                     "The generated AsciiDoc file can be passed to asciidoc with the `--backend manpage` option " +
                     "to convert it to a groff man page.",
                     "See https://asciidoctor.org/docs/user-manual/#man-pages"},
-            mixinStandardHelpOptions = true,
+            mixinStandardHelpOptions = true, sortOptions = false, usageHelpAutoWidth = true, usageHelpWidth = 100,
             version = "picocli-codegen ${COMMAND-NAME} " + CommandLine.VERSION)
     private static class App implements Callable<Integer> {
 
         @Parameters(arity = "1..*", description = "One or more classes to generate man pages for.")
         Class<?>[] classes = new Class<?>[0];
 
-        @Option(names = {"-c", "--factory"}, description = "Optionally specify the fully qualified class name of the custom factory to use to instantiate the command class. " +
-                "When omitted, the default picocli factory is used.")
-        String factoryClass;
-
-        @Option(names = {"-d", "--outdir"}, defaultValue = ".",
-                description = "Output directory to write the result to. " +
-                        "If not specified, the output is written to the current directory.")
+        @Option(names = {"-d", "--outdir"}, defaultValue = ".", paramLabel = "<dir>",
+                description = {"Output directory to write the generated AsciiDoc files to. " +
+                        "If not specified, files are written to the current directory.",
+                        "To convert these AsciiDoc files to manpage files, execute " +
+                                "`asciidoctor --backend=manpage --source-dir=THISDIR --destination-dir=ELSEWHERE` " +
+                                "with this directory as the source-dir and some other directory as the destination."
+                })
         File directory;
+
+        @Option(names = {"--customizable-pages-dir"}, paramLabel = "<dir>",
+                description = {
+                        "Optional directory to write customizable man pages. " +
+                                "If specified, additional AsciiDoc files are generated here that have no content " +
+                                "other than `include` directives that pull in the contents " +
+                                "of a generated manpage AsciiDoc file in the `--outdir` directory.",
+                        "These customizable man pages are intended to be generated once, and afterwards " +
+                                "be manually updated and maintained. The resulting man page will be a mixture of " +
+                                "generated and manually edited text.",
+                        "To convert these AsciiDoc files to manpage files, execute " +
+                                "`asciidoctor --backend=manpage --source-dir=THISDIR --destination-dir=ELSEWHERE` " +
+                                "with this directory as the source-dir and some other directory as the destination."
+                }
+        )
+        File customizablePagesDirectory;
+
+        @Option(names = {"-c", "--factory"}, description = "Optionally specify the fully qualified class name of the custom factory to use to instantiate the command class. " +
+                "If omitted, the default picocli factory is used.")
+        String factoryClass;
 
         public Integer call() throws Exception {
             List<CommandSpec> specs = Util.getCommandSpecs(factoryClass, classes);
-            generateManPage(directory, specs.toArray(new CommandSpec[0]));
-            return 0;
+            return generateManPage(directory, customizablePagesDirectory, specs.toArray(new CommandSpec[0]));
         }
-
     }
 
     public static void main(String[] args) {
         System.exit(new CommandLine(new App()).execute(args));
     }
 
-    public static void generateManPage(File directory, CommandSpec... specs) throws IOException {
+    public static int generateManPage(File directory,
+                                       File customizablePagesDirectory,
+                                       CommandSpec... specs) throws IOException {
         for (CommandSpec spec : specs) {
-            generateSingleManPage(directory, spec);
+            int result = generateSingleManPage(directory, customizablePagesDirectory, spec);
+            if (result != CommandLine.ExitCode.OK) {
+                return result;
+            }
 
             // recursively create man pages for subcommands
             for (CommandLine sub : spec.subcommands().values()) {
-                generateManPage(directory, sub.getCommandSpec());
+                result = generateManPage(directory, customizablePagesDirectory, sub.getCommandSpec());
+                if (result != CommandLine.ExitCode.OK) {
+                    return result;
+                }
             }
         }
+        return CommandLine.ExitCode.OK;
     }
 
-    private static void generateSingleManPage(File directory, CommandSpec spec) throws IOException {
+    private static int generateSingleManPage(File directory,
+                                              File customizablePagesDirectory,
+                                              CommandSpec spec) throws IOException {
+
+        if (customizablePagesDirectory != null && customizablePagesDirectory.equals(directory)) {
+            System.err.println("gen-manpage: Error: output directory must differ from customizable man pages directory.");
+            System.err.println("Try 'gen-manpage --help' for more information.");
+            return CommandLine.ExitCode.USAGE;
+        }
+
         FileWriter writer = null;
         PrintWriter pw = null;
         try {
-            if (directory != null && !directory.exists() && !directory.mkdirs()) {
-                System.err.println("Unable to mkdirs for " + directory.getAbsolutePath());
-            }
+            if (!mkdirs(directory))                  {return CommandLine.ExitCode.SOFTWARE;}
+            if (!mkdirs(customizablePagesDirectory)) {return CommandLine.ExitCode.SOFTWARE;}
+
             writer = new FileWriter(new File(directory, makeFileName(spec)));
             pw = new PrintWriter(writer);
             generateSingleManPage(pw, spec);
+            Util.closeSilently(pw);
+            Util.closeSilently(writer);
+
+            if (customizablePagesDirectory != null) {
+                File customizablePage = new File(directory, makeFileName(spec));
+                if (customizablePage.exists()) {
+                    System.err.printf("gen-manpage: Error: customizable man page %s already exists.%n", customizablePage);
+                    System.err.println("Try 'gen-manpage --help' for more information.");
+                    return CUSTOMIZABLE_MAN_PAGE_FILE_EXISTS;
+                }
+                writer = new FileWriter(customizablePage);
+                pw = new PrintWriter(writer);
+                generateCustomizableManPage(pw, directory, spec);
+            }
         } finally {
             Util.closeSilently(pw);
             Util.closeSilently(writer);
         }
+        return CommandLine.ExitCode.OK;
+    }
+
+    private static boolean mkdirs(File directory) {
+        if (directory != null && !directory.exists() && !directory.mkdirs()) {
+            System.err.println("Unable to mkdirs for " + directory.getAbsolutePath());
+            return false;
+        }
+        return true;
     }
 
     private static String makeFileName(CommandSpec spec) {
         String result = spec.qualifiedName("-") + ".adoc";
         return result.replaceAll("\\s", "_");
+    }
+
+    static void generateCustomizableManPage(PrintWriter pw, File directory, CommandSpec spec) {
+        pw.printf(":includedir: %s%n", directory.getAbsolutePath());
+        pw.printf("//include::{includedir}/%s[tag=picocli-generated-manpage]%n", makeFileName(spec));
+
+        List<String> tags = Arrays.asList("header", "name-section", "synopsis",
+                "description", "arguments", "options", "commands", "exit-status", "footer");
+        for (String tag : tags) {
+            pw.println(); // ensure that the include directives are separated with a newline
+            pw.printf("include::{includedir}/%s[tag=picocli-generated-man-%s]%n",
+                    makeFileName(spec), tag);
+        }
     }
 
     public static void generateSingleManPage(PrintWriter pw, CommandSpec spec) {
