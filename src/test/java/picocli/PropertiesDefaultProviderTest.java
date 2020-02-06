@@ -4,9 +4,11 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.PropertiesDefaultProvider;
@@ -22,6 +24,8 @@ import static org.junit.Assert.*;
 public class PropertiesDefaultProviderTest {
     @Rule
     public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+    @Rule
+    public final SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
 
     @Command(name = "providertest", subcommands = Subcommand.class,
             defaultValueProvider = PropertiesDefaultProvider.class)
@@ -200,5 +204,44 @@ public class PropertiesDefaultProviderTest {
         CommandLine cmd = new CommandLine(new CommandIssue876());
         cmd.setDefaultValueProvider(new PropertiesDefaultProvider(temp));
         cmd.execute();
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void testNullFile() {
+        new PropertiesDefaultProvider((File) null);
+    }
+
+    @Test
+    public void testNonExistingFile() {
+        TestUtil.setTraceLevel("DEBUG");
+        new PropertiesDefaultProvider(new File("nosuchfile"));
+        assertTrue(systemErrRule.getLog().startsWith("[picocli WARN] defaults configuration file "));
+        assertTrue(systemErrRule.getLog().endsWith(String.format("nosuchfile does not exist or is not readable%n")));
+    }
+
+    @Test
+    public void testEmptyFile() throws Exception {
+        File temp = File.createTempFile("MyCommand", ".properties");
+        FileWriter fw = new FileWriter(temp);
+        fw.flush();
+        fw.close();
+
+        PropertiesDefaultProvider provider = new PropertiesDefaultProvider(temp);
+        String actual = provider.defaultValue(OptionSpec.builder("-x").build());
+        assertNull(actual);
+    }
+
+    @Test
+    public void testExistingFile() throws Exception {
+        File temp = File.createTempFile("MyCommand", ".properties");
+        FileWriter fw = new FileWriter(temp);
+        fw.write("---=9\n");
+        fw.flush();
+        fw.close();
+
+        PropertiesDefaultProvider provider = new PropertiesDefaultProvider(temp);
+        String actual = provider.defaultValue(OptionSpec.builder("---").build());
+        assertEquals("9", actual);
+
     }
 }
