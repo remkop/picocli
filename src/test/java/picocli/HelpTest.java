@@ -53,6 +53,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URI;
@@ -3618,6 +3619,21 @@ public class HelpTest {
         Matcher matcher = pattern.matcher(sttyResult);
         assertTrue(matcher.matches());
         assertEquals(113, Integer.parseInt(matcher.group(2)));
+    }
+
+    @Test
+    public void testDetermineTerminalWidth() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Method detectTerminalWidth = UsageMessageSpec.class.getDeclaredMethod("detectTerminalWidth");
+        detectTerminalWidth.setAccessible(true);
+
+        TestUtil.setTraceLevel("DEBUG");
+        int width = (Integer) detectTerminalWidth.invoke(null);
+        TestUtil.setTraceLevel("WARN");
+
+        assertTrue(systemErrRule.getLog().startsWith("[picocli DEBUG] getTerminalWidth() executing command ["));
+        assertTrue(systemErrRule.getLog().contains("[picocli DEBUG] getTerminalWidth() parsing output: "));
+        assertTrue(systemErrRule.getLog().contains("[picocli DEBUG] getTerminalWidth() returning: "));
+        //assertEquals(-1, width);
     }
 
     @Test

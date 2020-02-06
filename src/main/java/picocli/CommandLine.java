@@ -6539,10 +6539,12 @@ public class CommandLine {
             }
 
             private static int getTerminalWidth() {
+                return (Help.Ansi.isTTY() || Help.Ansi.isPseudoTTY()) ? detectTerminalWidth() : -1;
+            }
+            private static int detectTerminalWidth() {
                 long start = System.nanoTime();
                 final Tracer tracer = new Tracer();
                 final AtomicInteger size = new AtomicInteger(-1);
-                if (!Help.Ansi.isTTY() && !Help.Ansi.isPseudoTTY()) { return size.intValue(); }
                 final String[] cmd = (Help.Ansi.isWindows() && !Help.Ansi.isPseudoTTY())
                         ? new String[] {"cmd.exe", "/c", "mode con"}
                         : (Help.Ansi.isMac()
@@ -6591,6 +6593,7 @@ public class CommandLine {
                 tracer.debug("getTerminalWidth() returning: %s in %,.1fms%n", size, duration);
                 return size.intValue();
             }
+
             /** Returns the maximum usage help message width. Derived from system property {@code "picocli.usage.width"}
              * if set, otherwise returns the value set via the {@link #width(int)} method, or if not set, the {@linkplain #DEFAULT_USAGE_WIDTH default width}.
              * @return the maximum usage help message width. Never returns less than 55. */
