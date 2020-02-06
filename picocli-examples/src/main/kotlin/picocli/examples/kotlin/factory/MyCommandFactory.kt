@@ -10,6 +10,7 @@ class MyCommandFactory: IFactory {
             println("is cls an Example?")
             if (cls == Example::class.java) {
                 println("Give away rabbit!")
+                @Suppress("UNCHECKED_CAST")
                 return Example("Rabbit") as K
             } else {
                 println("NO")

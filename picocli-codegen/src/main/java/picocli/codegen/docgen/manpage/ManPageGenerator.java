@@ -380,6 +380,7 @@ public class ManPageGenerator {
     /** Sorts {@code OptionSpec} instances by their name in case-insensitive alphabetic order. If an option has
      * multiple names, the shortest name is used for the sorting. Help options follow non-help options. */
     static class SortByShortestOptionNameAlphabetically implements Comparator<OptionSpec> {
+        @SuppressWarnings("deprecation")
         public int compare(OptionSpec o1, OptionSpec o2) {
             if (o1 == null) { return 1; } else if (o2 == null) { return -1; } // options before params
             String[] names1 = ShortestFirst.sort(o1.names());

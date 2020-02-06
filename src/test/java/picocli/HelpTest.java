@@ -2519,6 +2519,7 @@ public class HelpTest {
         assertEquals("", texts[0][1].plainString());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testTextTableConstructorRequiresAtLeastOneColumn() {
         try {
@@ -2530,6 +2531,7 @@ public class HelpTest {
 
     @Test
     public void testTextTablePutValue_DisallowsInvalidRowIndex() {
+        @SuppressWarnings("deprecation")
         TextTable tt = new TextTable(Help.Ansi.OFF, new Help.Column[] {new Help.Column(30, 2, Help.Column.Overflow.SPAN)});
         try {
             tt.putValue(1, 0, Help.Ansi.OFF.text("abc"));
@@ -2540,6 +2542,7 @@ public class HelpTest {
 
     @Test
     public void testTextTablePutValue_NullOrEmpty() {
+        @SuppressWarnings("deprecation")
         TextTable tt = new TextTable(Help.Ansi.OFF, new Help.Column[] {new Help.Column(30, 2, Help.Column.Overflow.SPAN)});
         tt.addEmptyRow();
 
@@ -2554,6 +2557,7 @@ public class HelpTest {
 
     @Test
     public void testTextTableAddRowValues() {
+        @SuppressWarnings("deprecation")
         TextTable tt = new TextTable(Help.Ansi.OFF, new Help.Column[] {new Help.Column(30, 2, Help.Column.Overflow.SPAN)});
         tt.addRowValues(new String[] {null});
         assertEquals(Help.Ansi.EMPTY_TEXT, tt.textAt(0, 0));

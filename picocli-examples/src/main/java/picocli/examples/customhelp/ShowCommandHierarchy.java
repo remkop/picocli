@@ -54,7 +54,7 @@ class MyCommandListRenderer implements IHelpSectionRenderer {
 
         // prepare layout: two columns
         // the left column overflows, the right column wraps if text is too long
-        TextTable textTable = TextTable.forColumns(help.ansi(),
+        TextTable textTable = TextTable.forColumns(help.colorScheme(),
                 new Column(15, 2, Overflow.SPAN),
                 new Column(spec.usageMessage().width() - 15, 2, Overflow.WRAP));
         textTable.setAdjustLineBreaksForWideCJKCharacters(spec.usageMessage().adjustLineBreaksForWideCJKCharacters());

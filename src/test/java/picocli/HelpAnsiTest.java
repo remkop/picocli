@@ -477,6 +477,7 @@ public class HelpAnsiTest {
 
     @Test
     public void testTextApply() {
+        @SuppressWarnings("deprecation")
         Ansi.Text txt = Ansi.ON.apply("--p", Arrays.<Ansi.IStyle>asList(Ansi.Style.fg_red, Ansi.Style.bold));
         assertEquals(Ansi.ON.new Text("@|fg(red),bold --p|@"), txt);
     }

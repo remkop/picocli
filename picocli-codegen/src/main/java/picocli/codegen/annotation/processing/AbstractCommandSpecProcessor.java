@@ -1008,6 +1008,7 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         private List<Integer>[] adjacencyList; // Adjacency List
 
         //Constructor
+        @SuppressWarnings("unchecked")
         Graph(int vertexCount) {
             this.vertexCount = vertexCount;
             adjacencyList = new LinkedList[vertexCount];

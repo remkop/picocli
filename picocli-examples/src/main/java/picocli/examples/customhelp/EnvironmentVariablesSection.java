@@ -73,7 +73,7 @@ class EnvironmentVariablesRenderer implements IHelpSectionRenderer {
     public String render(CommandLine.Help help) {
         if (env.isEmpty()) { return ""; }
         int keyLength = maxLength(env.keySet());
-        TextTable textTable = TextTable.forColumns(help.ansi(),
+        TextTable textTable = TextTable.forColumns(help.colorScheme(),
                 new Column(keyLength + 3, 2, Column.Overflow.SPAN),
                 new Column(width(help) - (keyLength + 3), 2, Column.Overflow.WRAP));
         textTable.setAdjustLineBreaksForWideCJKCharacters(adjustCJK(help));

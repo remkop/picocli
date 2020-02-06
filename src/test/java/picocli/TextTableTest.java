@@ -45,8 +45,8 @@ public class TextTableTest
     assertEquals(" key\n                value\n", normalizeNewlines(textTable));
   }
 
-  private CommandLine.Help.TextTable emptyTable()
-  {
+  @SuppressWarnings("deprecation")
+  private CommandLine.Help.TextTable emptyTable() {
     return forColumns(CommandLine.Help.Ansi.OFF,
                       new CommandLine.Help.Column(15, 1, SPAN),
                       new CommandLine.Help.Column(65, 1, WRAP));
