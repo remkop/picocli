@@ -8822,7 +8822,7 @@ public class CommandLine {
             private Text synopsisUnitText(Help.ColorScheme colorScheme, Text synopsis) {
                 String prefix = multiplicity().min() > 0 ? "(" : "[";
                 String postfix = multiplicity().min() > 0 ? ")" : "]";
-                return colorScheme.ansi().text(prefix).concat(synopsis).concat(postfix);
+                return colorScheme.text(prefix).concat(synopsis).concat(postfix);
             }
 
             private Text rawSynopsisUnitText(Help.ColorScheme colorScheme, Set<ArgSpec> outparam_groupArgs) {
@@ -13384,7 +13384,7 @@ public class CommandLine {
                 indent = commandSpec.usageMessage().synopsisIndent() < 0 ? synopsisHeadingLength : commandSpec.usageMessage().synopsisIndent();
                 indent = Math.min(indent, (int) (UsageMessageSpec.MAX_SYNOPSIS_AUTO_INDENT_THRESHOLD * width()));
             }
-            TextTable textTable = TextTable.forColumnWidths(ansi(), width());
+            TextTable textTable = TextTable.forColumnWidths(colorScheme, width());
             textTable.setAdjustLineBreaksForWideCJKCharacters(commandSpec.usageMessage().adjustLineBreaksForWideCJKCharacters());
             textTable.indentWrappedLines = indent;
 
@@ -13714,7 +13714,7 @@ public class CommandLine {
          * @since 4.1
          */
         public TextTable createTextTable(Map<?, ?> map) {
-            if (map == null || map.isEmpty()) { return TextTable.forColumnWidths(ansi(), 10, width() - 10); }
+            if (map == null || map.isEmpty()) { return TextTable.forColumnWidths(colorScheme, 10, width() - 10); }
             int spacing = 3;
             int indent = 2;
             int keyLength = Math.min(width() - spacing - 1, maxLength(map.keySet()));
@@ -13744,7 +13744,7 @@ public class CommandLine {
                 String header = !empty(usage.header())
                         ? usage.header()[0]
                         : (!empty(usage.description()) ? usage.description()[0] : "");
-                Text[] lines = ansi().text(format(header)).splitLines();
+                Text[] lines = this.colorScheme.text(format(header)).splitLines();
                 for (int i = 0; i < lines.length; i++) {
                     textTable.addRowValues(i == 0 ? help.commandNamesText(", ") : Ansi.EMPTY_TEXT, lines[i]);
                 }
@@ -13788,7 +13788,7 @@ public class CommandLine {
         }
 
         private Layout createLayout(int longOptionsColumnWidth) {
-            TextTable tt = TextTable.forDefaultColumns(colorScheme.ansi(), longOptionsColumnWidth, width());
+            TextTable tt = TextTable.forDefaultColumns(colorScheme, longOptionsColumnWidth, width());
             tt.setAdjustLineBreaksForWideCJKCharacters(commandSpec.usageMessage().adjustLineBreaksForWideCJKCharacters());
             return new Layout(colorScheme, tt, createDefaultOptionRenderer(), createDefaultParameterRenderer());
         }
@@ -14195,7 +14195,7 @@ public class CommandLine {
              * {@linkplain Help#createDefaultParameterRenderer() default parameter renderer}.
              * @param colorScheme the color scheme to use for common, auto-generated parts of the usage help message */
             public Layout(ColorScheme colorScheme, int tableWidth) { this(colorScheme,
-                    TextTable.forDefaultColumns(colorScheme.ansi(), tableWidth)); }
+                    TextTable.forDefaultColumns(colorScheme, UsageMessageSpec.DEFAULT_USAGE_LONG_OPTIONS_WIDTH + 4, tableWidth)); }
 
             /** Constructs a Layout with the specified color scheme, the specified TextTable, the
              * {@linkplain Help#createDefaultOptionRenderer() default option renderer}, and the
@@ -14360,7 +14360,7 @@ public class CommandLine {
             /** By default, indent wrapped lines by 2 spaces. */
             public int indentWrappedLines = 2;
 
-            private final Ansi ansi;
+            private final ColorScheme colorScheme;
             private final int tableWidth;
             private boolean adjustLineBreaksForWideCJKCharacters = true;
 
@@ -14378,7 +14378,7 @@ public class CommandLine {
              */
             public static TextTable forDefaultColumns(Ansi ansi, int usageHelpWidth) {
                 // TODO split out the 1 (for long column indent) and 3 (should be description indent)
-                return forDefaultColumns(ansi, UsageMessageSpec.DEFAULT_USAGE_LONG_OPTIONS_WIDTH + 4, usageHelpWidth);
+                return forDefaultColumns(Help.defaultColorScheme(ansi), UsageMessageSpec.DEFAULT_USAGE_LONG_OPTIONS_WIDTH + 4, usageHelpWidth);
             }
 
             /** Constructs a TextTable with five columns as follows:
@@ -14392,11 +14392,26 @@ public class CommandLine {
              * @param ansi whether to emit ANSI escape codes or not
              * @param longOptionsColumnWidth the width of the long options column
              * @param usageHelpWidth the total width of the columns combined
-             */
+             * @deprecated use {@link #forDefaultColumns(ColorScheme, int, int)} instead */
             public static TextTable forDefaultColumns(Ansi ansi, int longOptionsColumnWidth, int usageHelpWidth) {
+                return forDefaultColumns(Help.defaultColorScheme(ansi), longOptionsColumnWidth, usageHelpWidth);
+            }
+            /** Constructs a TextTable with five columns as follows:
+             * <ol>
+             * <li>required option/parameter marker (width: 2, indent: 0, TRUNCATE on overflow)</li>
+             * <li>short option name (width: 2, indent: 0, TRUNCATE on overflow)</li>
+             * <li>comma separator (width: 1, indent: 0, TRUNCATE on overflow)</li>
+             * <li>long option name(s) (width: 24, indent: 1, SPAN multiple columns on overflow)</li>
+             * <li>description line(s) (width: 51, indent: 1, WRAP to next row on overflow)</li>
+             * </ol>
+             * @param colorScheme the styles and ANSI mode to use for embedded markup
+             * @param longOptionsColumnWidth the width of the long options column
+             * @param usageHelpWidth the total width of the columns combined
+             * @since 4.2 */
+            public static TextTable forDefaultColumns(ColorScheme colorScheme, int longOptionsColumnWidth, int usageHelpWidth) {
                 // "* -c, --create                Creates a ...."
                 int descriptionWidth = usageHelpWidth - 5 - longOptionsColumnWidth;
-                return forColumns(ansi,
+                return forColumns(colorScheme,
                         new Column(2,                0, TRUNCATE), // "*"
                         new Column(2,                0, SPAN), // "-c"
                         new Column(1,                0, TRUNCATE), // ","
@@ -14408,20 +14423,36 @@ public class CommandLine {
              * overflow except the last column which WRAPS to the next row.
              * @param ansi whether to emit ANSI escape codes or not
              * @param columnWidths the width of each table column (all columns have zero indent)
-             */
+             * @deprecated use {@link #forColumns(ColorScheme, Column...)} instead */
             public static TextTable forColumnWidths(Ansi ansi, int... columnWidths) {
+                return forColumnWidths(Help.defaultColorScheme(ansi), columnWidths);
+            }
+            /** Constructs a new TextTable with columns with the specified width, all SPANning  multiple columns on
+             * overflow except the last column which WRAPS to the next row.
+             * @param colorScheme the styles and ANSI mode to use for embedded markup
+             * @param columnWidths the width of each table column (all columns have zero indent)
+             * @since 4.2 */
+            public static TextTable forColumnWidths(ColorScheme colorScheme, int... columnWidths) {
                 Column[] columns = new Column[columnWidths.length];
                 for (int i = 0; i < columnWidths.length; i++) {
                     columns[i] = new Column(columnWidths[i], 0, i == columnWidths.length - 1 ? WRAP : SPAN);
                 }
-                return new TextTable(ansi, columns);
+                return new TextTable(colorScheme, columns);
             }
             /** Constructs a {@code TextTable} with the specified columns.
              * @param ansi whether to emit ANSI escape codes or not
-             * @param columns columns to construct this TextTable with */
+             * @param columns columns to construct this TextTable with
+             * @deprecated use {@link #forColumns(ColorScheme, Column...)} instead */
             public static TextTable forColumns(Ansi ansi, Column... columns) { return new TextTable(ansi, columns); }
-            protected TextTable(Ansi ansi, Column[] columns) {
-                this.ansi = Assert.notNull(ansi, "ansi");
+            /** Constructs a {@code TextTable} with the specified columns.
+             * @param colorScheme the styles and ANSI mode to use for embedded markup
+             * @param columns columns to construct this TextTable with
+             * @since 4.2 */
+            public static TextTable forColumns(ColorScheme colorScheme, Column... columns) { return new TextTable(colorScheme, columns); }
+            /** @deprecated use {@link TextTable#TextTable(ColorScheme, Column[])} instead */
+            protected TextTable(Ansi ansi, Column[] columns) { this(Help.defaultColorScheme(ansi), columns); }
+            protected TextTable(ColorScheme colorScheme, Column[] columns) {
+                this.colorScheme = Assert.notNull(colorScheme, "ansi");
                 this.columns = Assert.notNull(columns, "columns").clone();
                 if (columns.length == 0) { throw new IllegalArgumentException("At least one column is required"); }
                 int totalWidth = 0;
@@ -14460,7 +14491,7 @@ public class CommandLine {
             /** Adds the required {@code char[]} slots for a new row to the {@link #columnValues} field. */
             public void addEmptyRow() {
                 for (int i = 0; i < columns.length; i++) {
-                    columnValues.add(ansi.new Text(columns[i].width));
+                    columnValues.add(colorScheme.ansi().new Text(columns[i].width, colorScheme));
                 }
             }
 
@@ -14474,7 +14505,7 @@ public class CommandLine {
                 for (int col = 0; col < numColumns; col++) {
                     cells[col] = values[col] == null
                             ? new Text[] {Ansi.EMPTY_TEXT}
-                            : ansi.new Text(values[col]).splitLines();
+                            : colorScheme.text(values[col]).splitLines();
                     maxRows = Math.max(maxRows, cells[col].length);
                 }
                 Text rowValues[] = new Text[numColumns];
@@ -14741,6 +14772,11 @@ public class CommandLine {
              * @since 4.2 */
             public Map<String, IStyle> customMarkupMap() { return markupMap == null ? Collections.<String, IStyle>emptyMap() : markupMap; }
 
+            /** Converts the specified markup styles to an array of {@link IStyle} objects.
+             * If no {@linkplain #customMarkupMap() custom markup mapping} is specified, this method delegates to {@link Style#parse(String)},
+             * otherwise it returns the styles found in the custom mapping for the specified markup styles.
+             * @param commaSeparatedCodes a string with a comma-separated list of markup styles (for example, {@code "bold,underline,bg_red"}
+             * @since 4.2 */
             public IStyle[] parse(String commaSeparatedCodes) {
                 if (markupMap == null) {
                     return Style.parse(commaSeparatedCodes);
@@ -14815,6 +14851,28 @@ public class CommandLine {
                 result.length = result.plain.length();
                 return result;
             }
+            /**
+             * Returns a new Text object for this ColorScheme, encapsulating the specified string
+             * which may contain markup like {@code @|bg(red),white,underline some text|@}.
+             * <p>
+             * Calling {@code toString()} on the returned Text will {@linkplain ColorScheme#parse(String) convert}
+             * the markup to the styles defined in this ColorScheme
+             * (if its Ansi mode is ON), or to the plain text without the markup (if this ColorScheme's Ansi mode is OFF).
+             * <p>
+             * Equivalent to {@code this.ansi().new Text(stringWithMarkup, this)}.
+             * @see Ansi#text(String)
+             * @since 4.2 */
+            public Text text(String stringWithMarkup) { return ansi().new Text(stringWithMarkup, this); }
+
+            /**
+             * Returns a String where any markup like
+             * {@code @|bg(red),white,underline some text|@} is {@linkplain ColorScheme#parse(String) converted} to the styles defined in this ColorScheme
+             * (if its Ansi mode is ON), or to the plain text without the markup (if this ColorScheme's Ansi mode is OFF).
+             * <p>
+             * Equivalent to {@code this.ansi().new Text(stringWithMarkup, this).toString()}.
+             * @see Ansi#string(String)
+             * @since 4.2 */
+            public String string(String stringWithMarkup) { return ansi().new Text(stringWithMarkup, this).toString(); }
 
             /** Builder class to create {@code ColorScheme} instances.
              * @since 4.0 */
@@ -14839,7 +14897,7 @@ public class CommandLine {
                     this.parameterStyles.addAll(existing.parameterStyles());
                     this.optionParamStyles.addAll(existing.optionParamStyles());
                     if (existing.markupMap != null) {
-                        this.markupMap = new HashMap(existing.markupMap);
+                        this.markupMap = new HashMap<String, IStyle>(existing.markupMap);
                     }
                 }
                 /** Returns the {@code Ansi} setting of this color scheme builder. */
@@ -15021,6 +15079,7 @@ public class CommandLine {
              * (if this Ansi mode is ON), or suppress ANSI escape codes (if this Ansi mode is OFF).
              * <p>
              * Equivalent to {@code this.new Text(stringWithMarkup)}.
+             * @see ColorScheme#text(String)
              * @since 3.4 */
             public Text text(String stringWithMarkup) { return this.new Text(stringWithMarkup); }
 
@@ -15030,6 +15089,7 @@ public class CommandLine {
              * if this Ansi is ON, or suppressed if this Ansi is OFF.
              * <p>
              * Equivalent to {@code this.new Text(stringWithMarkup).toString()}.
+             * @see ColorScheme#string(String)
              * @since 3.4 */
             public String string(String stringWithMarkup) { return this.new Text(stringWithMarkup).toString(); }
 
@@ -15195,7 +15255,12 @@ public class CommandLine {
 
                 /** Constructs a Text with the specified max length (for use in a TextTable Column).
                  * @param maxLength max length of this text */
-                public Text(int maxLength) { this.maxLength = maxLength; colorScheme = Help.defaultColorScheme(Ansi.this); }
+                public Text(int maxLength) { this(maxLength, Help.defaultColorScheme(Ansi.this)); }
+                /** Constructs a Text with the specified max length (for use in a TextTable Column).
+                 * @param maxLength max length of this text
+                 * @param colorScheme the colorScheme to use
+                 * @since 4.2*/
+                public Text(int maxLength, ColorScheme colorScheme) { this.maxLength = maxLength; this.colorScheme = colorScheme; }
 
                 /** Copy constructor.
                  * @since 3.9 */

@@ -73,7 +73,7 @@ public class LeftAlignOptions implements Callable<Integer> {
                                 COLUMN_OPTION_NAME_SEPARATOR_WIDTH +
                                 COLUMN_LONG_OPTION_NAME_WIDTH;
 
-                        TextTable table = TextTable.forColumnWidths(colorScheme.ansi(),
+                        TextTable table = TextTable.forColumnWidths(colorScheme,
                                 COLUMN_REQUIRED_OPTION_MARKER_WIDTH,
                                 optionNamesColumnWidth,
                                 commandSpec.usageMessage().width() - (optionNamesColumnWidth + COLUMN_REQUIRED_OPTION_MARKER_WIDTH));
