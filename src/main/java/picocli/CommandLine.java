@@ -11201,9 +11201,13 @@ public class CommandLine {
 
                     Set<ArgGroupSpec> missingSubgroups = new LinkedHashSet<ArgGroupSpec>(group().subgroups());
                     missingSubgroups.removeAll(matchedSubgroups.keySet());
+                    int missingRequiredSubgroupCount = 0;
                     for (ArgGroupSpec missingSubgroup : missingSubgroups) {
-                        if (missingElements.length() > 0) { missingElements += " and "; }
-                        missingElements += missingSubgroup.synopsisUnit();
+                        if (missingSubgroup.multiplicity().min() > 0) {
+                            missingRequiredSubgroupCount++;
+                            if (missingElements.length() > 0) { missingElements += " and "; }
+                            missingElements += missingSubgroup.synopsisUnit();
+                        }
                     }
 
                     int requiredSubgroupCount = 0;
@@ -11216,9 +11220,8 @@ public class CommandLine {
                             requiredElements += subgroup.synopsisUnit();
                         }
                     }
-                    int requiredCount = group().requiredArgs().size() + requiredSubgroupCount;
                     int presentCount = matchedValues.size() + matchedSubgroups.size();
-                    boolean haveMissing = presentCount < requiredCount;
+                    boolean haveMissing = !missing.isEmpty() || missingRequiredSubgroupCount > 0;
                     validationResult = group().validate(commandLine, presentCount, haveMissing,
                             presentCount > 0 && haveMissing, exclusiveElements, requiredElements, missingElements);
                 }

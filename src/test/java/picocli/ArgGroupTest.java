@@ -2873,6 +2873,65 @@ public class ArgGroupTest {
         execution.assertSystemErr(expected);
     }
 
+    static class Issue938NestedMutualDependency {
+        static class OtherOptions {
+            @Option(
+                    names = {"-o1", "--other-option-1"},
+                    arity = "1",
+                    required = true)
+            private String first;
+
+            @Option(
+                    names = {"-o2", "--other-option-2"},
+                    arity = "1",
+                    required = true)
+            private String second;
+        }
+
+        static class MySwitchableOptions {
+            @Option(
+                    names = {"-more", "--enable-more-options"},
+                    arity = "0",
+                    required = true)
+            private boolean tlsEnabled = false;
+
+            @ArgGroup(exclusive = false)
+            private OtherOptions options;
+        }
+
+        @Command(name = "mutual-dependency")
+        static class FullCommandLine {
+            @ArgGroup(exclusive = false)
+            private MySwitchableOptions switchableOptions;
+        }
+    }
+
+    @Test
+    public void testIssue938NestedMutualDependency() {
+        final CommandLine commandLine = new CommandLine(new Issue938NestedMutualDependency.FullCommandLine());
+        //commandLine.usage(System.out);
+
+        // Ideally this would PASS (and the switchableOptions would be null)
+        commandLine.parseArgs("--enable-more-options");
+
+        // Should fail as other-option-2 is not set (and defined as required)
+        try {
+            commandLine.parseArgs("--enable-more-options", "--other-option-1=firstString");
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): --other-option-2=<second>", ex.getMessage());
+        }
+
+        try {
+            // Ideally this would FAIL (as the --enable-more-options is not set
+            commandLine.parseArgs("--other-option-1=firstString", "--other-option-2=secondString");
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): --enable-more-options", ex.getMessage());
+        }
+
+    }
+
     // TODO GroupMatch.container()
     // TODO GroupMatch.matchedMaxElements()
     // TODO GroupMatch.matchedFully()

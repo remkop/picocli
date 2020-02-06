@@ -222,6 +222,7 @@ Usage: myapp [-hV] [-o=<outputFolder>]
 * [#926] Enhancement: Clarify debug trace output when adding aliases.
 * [#928] Enhancement: Improve debug tracing: show command user object identity hashcode and prefix "Processing argument..." with argument index.
 * [#920] Enhancement: Reduce `DEBUG` tracing noise if no resource bundle is set.
+* [#938] Bugfix: ArgGroups validation now correctly reports an error when a required option is missing, while an optional subgroup is present. Thanks to [Trent Mohay](https://github.com/rain-on) for raising this.
 * [#933] Bugfix: Incorrect error message when multiple exclusive groups are used. Thanks to [Mikaël Barbero](https://github.com/mbarbero) for raising this.
 * [#905] Bugfix: non-public `@Command`-annotated methods without arguments caused a `IllegalAccessException`. From this release such methods no longer need to be public. Thanks to [David Connelly](https://github.com/dconnelly) for raising this.
 * [#924] Bugfix: `CommandSpec.mixinAnnotatedElements` map should be initialized when discovering `@Mixin`-annotated fields and methods via reflection.
