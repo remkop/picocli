@@ -1,34 +1,34 @@
-// tag::generated-manpage[]
-// tag::generated-man-header[]
+// tag::picocli-generated-full-manpage[]
+// tag::picocli-generated-man-section-header[]
 :doctype: manpage
 :revnumber: import 2.3
 :manmanual: Import Manual
 :mansource: import 2.3
 :man-linkstyle: pass:[blue R < >]
 = import(1)
-// end::generated-man-header[]
+// end::picocli-generated-man-section-header[]
 
-// tag::generated-man-name-section[]
+// tag::picocli-generated-man-section-name[]
 == Name
 
 import - Imports data from a file into the infra inventory db.
-// end::generated-man-name-section[]
+// end::picocli-generated-man-section-name[]
 
-// tag::generated-man-synopsis[]
+// tag::picocli-generated-man-section-synopsis[]
 == Synopsis
 
 *import* [*-nv*] [*--indexed*] [*--[no-]header*] [*-e*=_<charset>_] [*-o*=_<format>_]
        [*-t*=_<tableName>_] *-C*=_<file-column>=<db-column>_
        [*-C*=_<file-column>=<db-column>_]... [*-W*=_<db-column>=<value>_]... _<file>_
-// end::generated-man-synopsis[]
+// end::picocli-generated-man-section-synopsis[]
 
-// tag::generated-man-description[]
+// tag::picocli-generated-man-section-description[]
 == Description
 
 Imports data from a file into the infra inventory db.
-// end::generated-man-description[]
+// end::picocli-generated-man-section-description[]
 
-// tag::generated-man-options[]
+// tag::picocli-generated-man-section-options[]
 == Options
 
 *-C*, *--column*=_<file-column>=<db-column>_::
@@ -59,16 +59,16 @@ For example, `-v -v -v` or `-vvv`
 
 *-W*, *--column-value*=_<db-column>=<value>_::
   Key-value pair specifying the destination table column name and the value to set it to.
-// end::generated-man-options[]
+// end::picocli-generated-man-section-options[]
 
-// tag::generated-man-arguments[]
+// tag::picocli-generated-man-section-arguments[]
 == Arguments
 
 _<file>_::
   The file to import.
-// end::generated-man-arguments[]
+// end::picocli-generated-man-section-arguments[]
 
-// tag::generated-man-footer[]
+// tag::picocli-generated-man-section-footer[]
 ==  Example:
 
 [%hardbreaks]
@@ -78,6 +78,6 @@ pass:c[# ]This imports all rows from the IP_Allocation_v1.20.csv file into the `
 [%hardbreaks]
 pass:c[# ]This imports all rows from the network.csv file into the `network` table.
 *import -v --table=network src/test/resources/network.csv -Cdesc=purpose -CDC=datacenter -Csubnet=subnet -Cgateway=gateway -Cvlanid=network*
-// end::generated-man-footer[]
+// end::picocli-generated-man-section-footer[]
 
-// end::generated-manpage[]
+// end::picocli-generated-full-manpage[]

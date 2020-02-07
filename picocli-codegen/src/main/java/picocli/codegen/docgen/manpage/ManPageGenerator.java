@@ -15,25 +15,20 @@ import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.codegen.util.Assert;
 import picocli.codegen.util.Util;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 import static java.lang.String.format;
 
 public class ManPageGenerator {
-    static final int CUSTOMIZABLE_MAN_PAGE_FILE_EXISTS = 4;
+    static final int EXIT_CODE_FILE_EXISTS = 4;
 
     static final IStyle BOLD = new IStyle() {
         public String on()  { return "*"; }
@@ -59,42 +54,67 @@ public class ManPageGenerator {
         return result;
     }
 
-    @Command(name = "gen-manpage",
-            description = {"Generates an AsciiDoc file in the manpage format. " +
-                    "The generated AsciiDoc file can be passed to asciidoc with the `--backend manpage` option " +
-                    "to convert it to a groff man page.",
-                    "See https://asciidoctor.org/docs/user-manual/#man-pages"},
-            mixinStandardHelpOptions = true, sortOptions = false, usageHelpAutoWidth = true, usageHelpWidth = 100,
-            version = "picocli-codegen ${COMMAND-NAME} " + CommandLine.VERSION)
-    private static class App implements Callable<Integer> {
-
-        @Parameters(arity = "1..*", description = "One or more classes to generate man pages for.")
-        Class<?>[] classes = new Class<?>[0];
-
-        @Option(names = {"-d", "--outdir"}, defaultValue = ".", paramLabel = "<dir>",
+    static class Config {
+        @Option(names = {"-d", "--outdir"}, defaultValue = ".", paramLabel = "<outdir>",
                 description = {"Output directory to write the generated AsciiDoc files to. " +
-                        "If not specified, files are written to the current directory.",
-                        "To convert these AsciiDoc files to manpage files, execute " +
-                                "`asciidoctor --backend=manpage --source-dir=THISDIR --destination-dir=ELSEWHERE` " +
-                                "with this directory as the source-dir and some other directory as the destination."
-                })
+                        "If not specified, files are written to the current directory."})
         File directory;
 
-        @Option(names = {"--customizable-pages-dir"}, paramLabel = "<dir>",
+        @Option(names = {"-t", "--template-dir"}, paramLabel = "<template-dir>",
                 description = {
-                        "Optional directory to write customizable man pages. " +
-                                "If specified, additional AsciiDoc files are generated here that have no content " +
-                                "other than `include` directives that pull in the contents " +
-                                "of a generated manpage AsciiDoc file in the `--outdir` directory.",
-                        "These customizable man pages are intended to be generated once, and afterwards " +
+                        "Optional directory to write customizable man page template files. " +
+                                "If specified, additional AsciiDoc files are generated here containing " +
+                                "`include` directives that import content " +
+                                "from a generated manpage AsciiDoc file in the `--outdir` directory.",
+                        "These customizable templates are intended to be generated once, and afterwards " +
                                 "be manually updated and maintained. The resulting man page will be a mixture of " +
-                                "generated and manually edited text.",
-                        "To convert these AsciiDoc files to manpage files, execute " +
-                                "`asciidoctor --backend=manpage --source-dir=THISDIR --destination-dir=ELSEWHERE` " +
-                                "with this directory as the source-dir and some other directory as the destination."
-                }
-        )
-        File customizablePagesDirectory;
+                                "generated and manually edited text."})
+        File templatesDirectory;
+
+        @Option(names = {"-v", "--verbose"},
+                description = {
+                        "Specify multiple -v options to increase verbosity.",
+                        "For example, `-v -v -v` or `-vvv`"})
+        boolean[] verbosity = new boolean[0];
+
+        @Option(names = {"-f", "--force"}, negatable = true,
+                description = { "Overwrite existing man page templates. " +
+                        "The default is `--no-force`, meaning processing is aborted and the process exits " +
+                        "with status code 4 if a man page template file already exists."})
+        boolean force;
+
+        private void verbose(String message, Object... params) {
+            if (verbosity.length > 0) {
+                System.err.printf(message, params);
+            }
+        }
+
+        private void verboseDetailed(String message, Object... params) {
+            if (verbosity.length > 1) {
+                System.err.printf(message, params);
+            }
+        }
+    }
+
+    @Command(name = "gen-manpage",
+            version = "picocli-codegen ${COMMAND-NAME} " + CommandLine.VERSION, showAtFileInUsageHelp = true,
+            mixinStandardHelpOptions = true, sortOptions = false, usageHelpAutoWidth = true, usageHelpWidth = 100,
+            description = {"Generates one or more AsciiDoc files with doctype 'manpage' in the specified directory."},
+            footerHeading = "%nConverting to Man Page Format%n%n",
+            footer = {"Use the `asciidoctor` tool to convert the generated AsciiDoc files to man pages in roff format:",
+                    "",
+                    "`asciidoctor --backend=manpage --source-dir=SOURCE_DIR --destination-dir=DESTINATION` ",
+                    "",
+                    "Point the SOURCE_DIR to either the `--outdir` directory or the `--template-dir` directory. Use some other directory as the DESTINATION.",
+                    "See https://asciidoctor.org/docs/user-manual/#man-pages",
+                    "See http://man7.org/linux/man-pages/man7/roff.7.html"}
+    )
+    private static class App implements Callable<Integer> {
+
+        @Parameters(arity = "1..*", description = "One or more command classes to generate man pages for.")
+        Class<?>[] classes = new Class<?>[0];
+
+        @CommandLine.Mixin Config config;
 
         @Option(names = {"-c", "--factory"}, description = "Optionally specify the fully qualified class name of the custom factory to use to instantiate the command class. " +
                 "If omitted, the default picocli factory is used.")
@@ -102,7 +122,7 @@ public class ManPageGenerator {
 
         public Integer call() throws Exception {
             List<CommandSpec> specs = Util.getCommandSpecs(factoryClass, classes);
-            return generateManPage(directory, customizablePagesDirectory, specs.toArray(new CommandSpec[0]));
+            return generateManPage(config, specs.toArray(new CommandSpec[0]));
         }
     }
 
@@ -110,18 +130,45 @@ public class ManPageGenerator {
         System.exit(new CommandLine(new App()).execute(args));
     }
 
-    public static int generateManPage(File directory,
-                                       File customizablePagesDirectory,
-                                       CommandSpec... specs) throws IOException {
+    public static int generateManPage(File outdir,
+                                      File customizablePagesDirectory,
+                                      boolean[] verbosity,
+                                      boolean overwriteCustomizablePages,
+                                      CommandSpec... specs) throws IOException {
+        Config config = new Config();
+        config.directory = outdir;
+        config.templatesDirectory = customizablePagesDirectory;
+        config.verbosity = verbosity;
+        config.force = overwriteCustomizablePages;
+
+        return generateManPage(config, specs);
+    }
+
+    static int generateManPage(Config config, CommandSpec... specs) throws IOException {
+        Assert.notNull(config, "config");
+        Assert.notNull(config.directory, "output directory");
+        Assert.notNull(config.verbosity, "verbosity array");
+
+        if (config.templatesDirectory != null && config.templatesDirectory.equals(config.directory)) {
+            System.err.println("gen-manpage: Error: output directory must differ from the templates directory.");
+            System.err.println("Try 'gen-manpage --help' for more information.");
+            return CommandLine.ExitCode.USAGE;
+        }
+
         for (CommandSpec spec : specs) {
-            int result = generateSingleManPage(directory, customizablePagesDirectory, spec);
+            int result = generateSingleManPage(config, spec);
             if (result != CommandLine.ExitCode.OK) {
                 return result;
             }
 
+            Set<CommandSpec> done = new HashSet<CommandSpec>();
+
             // recursively create man pages for subcommands
             for (CommandLine sub : spec.subcommands().values()) {
-                result = generateManPage(directory, customizablePagesDirectory, sub.getCommandSpec());
+                CommandSpec subSpec = sub.getCommandSpec();
+                if (done.contains(subSpec)) {continue;}
+                done.add(subSpec);
+                result = generateManPage(config, subSpec);
                 if (result != CommandLine.ExitCode.OK) {
                     return result;
                 }
@@ -130,50 +177,26 @@ public class ManPageGenerator {
         return CommandLine.ExitCode.OK;
     }
 
-    private static int generateSingleManPage(File directory,
-                                              File customizablePagesDirectory,
-                                              CommandSpec spec) throws IOException {
-
-        if (customizablePagesDirectory != null && customizablePagesDirectory.equals(directory)) {
-            System.err.println("gen-manpage: Error: output directory must differ from customizable man pages directory.");
-            System.err.println("Try 'gen-manpage --help' for more information.");
-            return CommandLine.ExitCode.USAGE;
+    private static int generateSingleManPage(Config config, CommandSpec spec) throws IOException {
+        if (!mkdirs(config, config.directory)) {
+            return CommandLine.ExitCode.SOFTWARE;
         }
+        File manpage = new File(config.directory, makeFileName(spec));
+        config.verbose("Generating man page %s%n", manpage);
 
-        FileWriter writer = null;
-        PrintWriter pw = null;
-        try {
-            if (!mkdirs(directory))                  {return CommandLine.ExitCode.SOFTWARE;}
-            if (!mkdirs(customizablePagesDirectory)) {return CommandLine.ExitCode.SOFTWARE;}
+        generateSingleManPage(spec, manpage);
 
-            writer = new FileWriter(new File(directory, makeFileName(spec)));
-            pw = new PrintWriter(writer);
-            generateSingleManPage(pw, spec);
-            Util.closeSilently(pw);
-            Util.closeSilently(writer);
-
-            if (customizablePagesDirectory != null) {
-                File customizablePage = new File(directory, makeFileName(spec));
-                if (customizablePage.exists()) {
-                    System.err.printf("gen-manpage: Error: customizable man page %s already exists.%n", customizablePage);
-                    System.err.println("Try 'gen-manpage --help' for more information.");
-                    return CUSTOMIZABLE_MAN_PAGE_FILE_EXISTS;
-                }
-                writer = new FileWriter(customizablePage);
-                pw = new PrintWriter(writer);
-                generateCustomizableManPage(pw, directory, spec);
-            }
-        } finally {
-            Util.closeSilently(pw);
-            Util.closeSilently(writer);
-        }
-        return CommandLine.ExitCode.OK;
+        return generateCustomizableManPageTemplate(config, spec);
     }
 
-    private static boolean mkdirs(File directory) {
-        if (directory != null && !directory.exists() && !directory.mkdirs()) {
-            System.err.println("Unable to mkdirs for " + directory.getAbsolutePath());
-            return false;
+    private static boolean mkdirs(Config config, File directory) {
+        if (directory != null && !directory.exists()) {
+            config.verboseDetailed("Creating directory %s%n", directory);
+
+            if (!directory.mkdirs()) {
+                System.err.println("Unable to mkdirs for " + directory.getAbsolutePath());
+                return false;
+            }
         }
         return true;
     }
@@ -183,34 +206,81 @@ public class ManPageGenerator {
         return result.replaceAll("\\s", "_");
     }
 
-    static void generateCustomizableManPage(PrintWriter pw, File directory, CommandSpec spec) {
-        pw.printf(":includedir: %s%n", directory.getAbsolutePath());
-        pw.printf("//include::{includedir}/%s[tag=picocli-generated-manpage]%n", makeFileName(spec));
+    private static void generateSingleManPage(CommandSpec spec, File manpage) throws IOException {
+        FileWriter writer = null;
+        PrintWriter pw = null;
+        try {
+            writer = new FileWriter(manpage);
+            pw = new PrintWriter(writer);
+            writeSingleManPage(pw, spec);
+        } finally {
+            Util.closeSilently(pw);
+            Util.closeSilently(writer);
+        }
+    }
 
-        List<String> tags = Arrays.asList("header", "name-section", "synopsis",
-                "description", "arguments", "options", "commands", "exit-status", "footer");
+    private static int generateCustomizableManPageTemplate(Config config, CommandSpec spec) throws IOException {
+        if (config.templatesDirectory == null) {
+            return CommandLine.ExitCode.OK;
+        }
+        if (!mkdirs(config, config.templatesDirectory)) {
+            return CommandLine.ExitCode.SOFTWARE;
+        }
+
+        File templateFile = new File(config.templatesDirectory, makeFileName(spec));
+        if (templateFile.exists()) {
+            if (config.force) {
+                config.verbose("Overwriting existing man page template file %s...%n", templateFile);
+            } else {
+                System.err.printf("gen-manpage: ERROR: cannot generate man page template file %s: it already exists. Use --force to overwrite.%n", templateFile);
+                System.err.println("Try 'gen-manpage --help' for more information.");
+                return EXIT_CODE_FILE_EXISTS;
+            }
+        } else {
+            config.verbose("Generating customizable man page template %s%n", templateFile);
+        }
+
+        FileWriter writer = null;
+        PrintWriter pw = null;
+        try {
+            writer = new FileWriter(templateFile);
+            pw = new PrintWriter(writer);
+            writeCustomizableManPageTemplate(pw, config.directory, spec);
+        } finally {
+            Util.closeSilently(pw);
+            Util.closeSilently(writer);
+        }
+        return CommandLine.ExitCode.OK;
+    }
+
+    static void writeCustomizableManPageTemplate(PrintWriter pw, File includeDir, CommandSpec spec) {
+        pw.printf(":includedir: %s%n", includeDir.getAbsolutePath().replace('\\', '/'));
+        pw.printf("//include::{includedir}/%s[tag=picocli-generated-full-manpage]%n", makeFileName(spec));
+
+        List<String> tags = Arrays.asList("header", "name", "synopsis",
+                "description", "options", "arguments", "commands", "exit-status", "footer");
         for (String tag : tags) {
             pw.println(); // ensure that the include directives are separated with a newline
-            pw.printf("include::{includedir}/%s[tag=picocli-generated-man-%s]%n",
+            pw.printf("include::{includedir}/%s[tag=picocli-generated-man-section-%s]%n",
                     makeFileName(spec), tag);
         }
     }
 
-    public static void generateSingleManPage(PrintWriter pw, CommandSpec spec) {
+    public static void writeSingleManPage(PrintWriter pw, CommandSpec spec) {
         spec.commandLine().setColorScheme(COLOR_SCHEME);
 
-        pw.printf("// tag::picocli-generated-manpage[]%n");
+        pw.printf("// tag::picocli-generated-full-manpage[]%n");
         genHeader(pw, spec);
         genOptions(pw, spec);
-        genPositionals(pw, spec);
+        genPositionalArgs(pw, spec);
         genCommands(pw, spec);
         genExitStatus(pw, spec);
         genFooter(pw, spec);
-        pw.printf("// end::picocli-generated-manpage[]%n");
+        pw.printf("// end::picocli-generated-full-manpage[]%n");
     }
 
     static void genHeader(PrintWriter pw, CommandSpec spec) {
-        pw.printf("// tag::picocli-generated-man-header[]%n");
+        pw.printf("// tag::picocli-generated-man-section-header[]%n");
         pw.printf(":doctype: manpage%n");
         //pw.printf(":authors: %s%n", spec.userObject()); // author
         pw.printf(":revnumber: %s%n", versionString(spec)); // version
@@ -218,25 +288,25 @@ public class ManPageGenerator {
         pw.printf(":mansource: %s%n", versionString(spec)); // spec.qualifiedName("-").toUpperCase()
         pw.printf(":man-linkstyle: pass:[blue R < >]%n");
         pw.printf("= %s(1)%n", spec.qualifiedName("-")); // command name (lower case)
-        pw.printf("// end::picocli-generated-man-header[]%n");
+        pw.printf("// end::picocli-generated-man-section-header[]%n");
         pw.println();
 
-        pw.printf("// tag::picocli-generated-man-name-section[]%n");
+        pw.printf("// tag::picocli-generated-man-section-name[]%n");
         pw.printf("== Name%n%n");
         pw.printf("%s - %s%n", spec.qualifiedName("-"), headerDescriptionString(spec)); // name and description
-        pw.printf("// end::picocli-generated-man-name-section[]%n");
+        pw.printf("// end::picocli-generated-man-section-name[]%n");
         pw.println();
 
-        pw.printf("// tag::picocli-generated-man-synopsis[]%n");
+        pw.printf("// tag::picocli-generated-man-section-synopsis[]%n");
         pw.printf("== Synopsis%n%n");
-        pw.printf("%s", synopsisString(spec));
-        pw.printf("// end::picocli-generated-man-synopsis[]%n");
+        pw.printf("%s", spec.commandLine().getHelp().synopsis(0));
+        pw.printf("// end::picocli-generated-man-section-synopsis[]%n");
         pw.println();
 
-        pw.printf("// tag::picocli-generated-man-description[]%n");
+        pw.printf("// tag::picocli-generated-man-section-description[]%n");
         pw.printf("== Description%n%n");
-        pw.printf("%s%n", join("%n", (Object[]) spec.usageMessage().description())); // description
-        pw.printf("// end::picocli-generated-man-description[]%n");
+        pw.printf("%s%n", format(COLOR_SCHEME.text(join("%n", (Object[]) spec.usageMessage().description())).toString())); // description
+        pw.printf("// end::picocli-generated-man-section-description[]%n");
         pw.println();
     }
 
@@ -254,23 +324,24 @@ public class ManPageGenerator {
     }
 
     private static String headerDescriptionString(CommandSpec spec) {
+        String result = null;
         String[] headerDescription = spec.usageMessage().header();
         if (headerDescription == null || headerDescription.length == 0 || headerDescription[0] == null || headerDescription[0].length() == 0) {
-            headerDescription = spec.usageMessage().description();
+            // if the command does not have a header, use only the first line from the description:
+            // the other lines will be shown in the DESCRIPTION section of the man page
+            result = firstElement(spec.usageMessage().description());
+        } else {
+            // if the command header has multiple lines, we display all of them in the NAME section
+            result = join("%n", (Object[]) headerDescription);
         }
-        return join("%n", (Object[]) headerDescription);
-    }
-
-    private static String synopsisString(CommandSpec spec) {
-        String synopsis = spec.commandLine().getHelp().synopsis(0);
-        return replaceAll(synopsis, Style.reset.off(), "");
+        return format(COLOR_SCHEME.text(result).toString()); // convert any embedded %n strings to newlines
     }
 
     static void genOptions(PrintWriter pw, CommandSpec spec) {
         if (spec.options().isEmpty()) {
             return;
         }
-        pw.printf("// tag::picocli-generated-man-options[]%n");
+        pw.printf("// tag::picocli-generated-man-section-options[]%n");
         pw.printf("== Options%n");
 
         IOptionRenderer optionRenderer = spec.commandLine().getHelp().createDefaultOptionRenderer();
@@ -309,64 +380,73 @@ public class ManPageGenerator {
         for (OptionSpec option : options) {
             pw.println();
             Text[][] rows = optionRenderer.render(option, valueLabelRenderer, COLOR_SCHEME);
-            pw.printf("%s::%n", replaceAll(join(", ", rows[0][1], rows[0][3]), Style.reset.off(), ""));
-            pw.printf("  %s%n", replaceAll(rows[0][4].toString(), Style.reset.off(), ""));
+            pw.printf("%s::%n", join(", ", rows[0][1], rows[0][3]));
+            pw.printf("  %s%n", rows[0][4]);
             for (int i = 1; i < rows.length; i++) {
-                pw.printf("+%n%s%n", replaceAll(rows[i][4].toString(), Style.reset.off(), ""));
+                pw.printf("+%n%s%n", rows[i][4]);
             }
         }
-        pw.printf("// end::picocli-generated-man-options[]%n");
+        pw.printf("// end::picocli-generated-man-section-options[]%n");
         pw.println();
     }
 
-    static void genPositionals(PrintWriter pw, CommandSpec spec) {
-        if (spec.positionalParameters().isEmpty()) {
+    static void genPositionalArgs(PrintWriter pw, CommandSpec spec) {
+        if (spec.positionalParameters().isEmpty() && !spec.usageMessage().showAtFileInUsageHelp()) {
             return;
         }
-        pw.printf("// tag::picocli-generated-man-arguments[]%n");
+        pw.printf("// tag::picocli-generated-man-section-arguments[]%n");
         pw.printf("== Arguments%n");
 
         IParameterRenderer parameterRenderer = spec.commandLine().getHelp().createDefaultParameterRenderer();
         IParamLabelRenderer paramLabelRenderer = spec.commandLine().getHelp().createDefaultParamLabelRenderer();
-        for (PositionalParamSpec positional : spec.positionalParameters()) {
-            pw.println();
-            Text[][] rows = parameterRenderer.render(positional, paramLabelRenderer, COLOR_SCHEME);
-            pw.printf("%s::%n", replaceAll(join(", ", rows[0][1], rows[0][3]), Style.reset.off(), ""));
-            pw.printf("  %s%n", replaceAll(rows[0][4].toString(), Style.reset.off(), ""));
-            for (int i = 1; i < rows.length; i++) {
-                pw.printf("+%n%s%n", replaceAll(rows[i][4].toString(), Style.reset.off(), ""));
-            }
+        if (spec.usageMessage().showAtFileInUsageHelp()) {
+            CommandLine cmd = new CommandLine(spec).setColorScheme(COLOR_SCHEME);
+            CommandLine.Help help = cmd.getHelp();
+            writePositional(pw, help.AT_FILE_POSITIONAL_PARAM, parameterRenderer, paramLabelRenderer);
         }
-        pw.printf("// end::picocli-generated-man-arguments[]%n");
+        for (PositionalParamSpec positional : spec.positionalParameters()) {
+            writePositional(pw, positional, parameterRenderer, paramLabelRenderer);
+        }
+        pw.printf("// end::picocli-generated-man-section-arguments[]%n");
         pw.println();
+    }
+
+    private static void writePositional(PrintWriter pw, PositionalParamSpec positional, IParameterRenderer parameterRenderer, IParamLabelRenderer paramLabelRenderer) {
+        pw.println();
+        Text[][] rows = parameterRenderer.render(positional, paramLabelRenderer, COLOR_SCHEME);
+        pw.printf("%s::%n", join(", ", rows[0][1], rows[0][3]));
+        pw.printf("  %s%n", rows[0][4]);
+        for (int i = 1; i < rows.length; i++) {
+            pw.printf("+%n%s%n", rows[i][4]);
+        }
     }
 
     static void genCommands(PrintWriter pw, CommandSpec spec) {
         if (spec.subcommands().isEmpty()) {
             return;
         }
-        pw.printf("// tag::picocli-generated-man-commands[]%n");
+        pw.printf("// tag::picocli-generated-man-section-commands[]%n");
         pw.printf("== Commands%n");
 
         for (CommandLine.Help subHelp : spec.commandLine().getHelp().subcommands().values()) {
             pw.println();
 
             Text namesText = subHelp.commandNamesText(", ");
-            String names = replaceAll(namesText.toString(), Style.reset.off(), "");
+            String names = namesText.toString();
             pw.printf("%s::%n", names);
 
             CommandLine.Model.UsageMessageSpec usage = subHelp.commandSpec().usageMessage();
             String header = !empty(usage.header())
                     ? usage.header()[0]
                     : (!empty(usage.description()) ? usage.description()[0] : "");
-            Text[] lines = COLOR_SCHEME.ansi().new Text(format(header), COLOR_SCHEME).splitLines();
+            Text[] lines = COLOR_SCHEME.text(format(header)).splitLines();
 
-            pw.printf("  %s%n", replaceAll(lines[0].toString(), Style.reset.off(), ""));
+            pw.printf("  %s%n", lines[0].toString());
             for (int i = 1; i < lines.length; i++) {
-                pw.printf("+%n%s%n", replaceAll(lines[i].toString(), Style.reset.off(), ""));
+                pw.printf("+%n%s%n", lines[i].toString());
             }
         }
-        pw.printf("// end::picocli-generated-man-commands[]%n");
+        pw.printf("// end::picocli-generated-man-section-commands[]%n");
         pw.println();
     }
 
@@ -374,15 +454,15 @@ public class ManPageGenerator {
         if (spec.usageMessage().exitCodeList().isEmpty()) {
             return;
         }
-        pw.printf("// tag::picocli-generated-man-exit-status[]%n");
+        pw.printf("// tag::picocli-generated-man-section-exit-status[]%n");
         pw.printf("== Exit status%n");
 
         for (Map.Entry<String, String> entry : spec.usageMessage().exitCodeList().entrySet()) {
             pw.println();
-            pw.printf("*%s*::%n", COLOR_SCHEME.ansi().new Text(entry.getKey().trim(), COLOR_SCHEME));
-            pw.printf("  %s%n", COLOR_SCHEME.ansi().new Text(entry.getValue(), COLOR_SCHEME));
+            pw.printf("*%s*::%n", COLOR_SCHEME.text(entry.getKey().trim()));
+            pw.printf("  %s%n", COLOR_SCHEME.text(entry.getValue()));
         }
-        pw.printf("// end::picocli-generated-man-exit-status[]%n");
+        pw.printf("// end::picocli-generated-man-section-exit-status[]%n");
         pw.println();
     }
 
@@ -393,8 +473,8 @@ public class ManPageGenerator {
         String heading = spec.usageMessage().footerHeading();
         if (heading.endsWith("%n")) { heading = heading.substring(0, heading.length() - 2); }
         heading = heading.length() == 0 ? "Footer" : heading.replaceAll("%n", " ");
-        pw.printf("// tag::picocli-generated-man-footer[]%n");
-        pw.printf("== %s%n", COLOR_SCHEME.ansi().new Text(heading, COLOR_SCHEME));
+        pw.printf("// tag::picocli-generated-man-section-footer[]%n");
+        pw.printf("== %s%n", COLOR_SCHEME.text(heading));
         pw.println();
 
         boolean hardbreaks = true;
@@ -404,7 +484,12 @@ public class ManPageGenerator {
                 pw.println("[%hardbreaks]"); // preserve line breaks
                 hardbreaks = false;
             }
-            String renderedLine = COLOR_SCHEME.ansi().new Text(format(line), COLOR_SCHEME).toString();
+            String renderedLine = COLOR_SCHEME.text(format(line)).toString();
+
+            // Lines that start with "# " may be intended as shell comments,
+            // but are rendered as AsciiDoc headers (equivalent to "= ...").
+            // We use a passthrough to prevent substitution. (TODO Should this be customizable?)
+            // See https://asciidoctor.org/docs/user-manual/#passthroughs
             if (renderedLine.startsWith("# ")) {
                 renderedLine = "pass:c[# ]" + renderedLine.substring(2);
             }
@@ -413,7 +498,7 @@ public class ManPageGenerator {
                 hardbreaks = true;
             }
         }
-        pw.printf("// end::picocli-generated-man-footer[]%n");
+        pw.printf("// end::picocli-generated-man-section-footer[]%n");
         pw.println();
     }
 
@@ -471,15 +556,15 @@ public class ManPageGenerator {
         return sb.toString();
     }
 
-    private static String replaceAll(String str, String find, String replacement) {
-        String result = str.replace(find, replacement);
-        while (!result.equals(str)) {
-            str = result;
-            result = str.replace(find, replacement);
+    private static String firstElement(String[] elements) {
+        if (elements == null || elements.length ==0) {
+            return "";
         }
-        return result;
+        return elements[0];
     }
+
     private static boolean empty(Object[] array) { return array == null || array.length == 0; }
+
     static String stripPrefix(String prefixed) {
         for (int i = 0; i < prefixed.length(); i++) {
             if (Character.isJavaIdentifierPart(prefixed.charAt(i))) { return prefixed.substring(i); }

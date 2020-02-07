@@ -56,7 +56,7 @@ public class ManPageGeneratorTest {
 
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw); //System.out, true
-        ManPageGenerator.generateSingleManPage(pw, new CommandLine(new MyApp()).getCommandSpec());
+        ManPageGenerator.writeSingleManPage(pw, new CommandLine(new MyApp()).getCommandSpec());
         pw.flush();
 
         String expected = read("/myapp.manpage.adoc");
@@ -130,7 +130,7 @@ public class ManPageGeneratorTest {
         }
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw); //System.out, true
-        ManPageGenerator.generateSingleManPage(pw, new CommandLine(new ImportCommand()).getCommandSpec());
+        ManPageGenerator.writeSingleManPage(pw, new CommandLine(new ImportCommand()).getCommandSpec());
         pw.flush();
 
         String expected = read("/import.manpage.txt");
