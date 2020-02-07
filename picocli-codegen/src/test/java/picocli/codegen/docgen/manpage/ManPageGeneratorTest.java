@@ -1,8 +1,8 @@
 package picocli.codegen.docgen.manpage;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine;
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -16,7 +16,6 @@ import java.nio.charset.Charset;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import static org.junit.Assert.*;
 
@@ -65,12 +64,39 @@ public class ManPageGeneratorTest {
         assertEquals(expected, sw.toString());
     }
 
+    static class CsvOptions {
+        @Option(names = {"-e", "--encoding"}, defaultValue = "Shift_JIS", order = 2,
+                description = "(CSV/TSV-only) Character encoding of the file to import. Default: ${DEFAULT-VALUE}")
+        Charset charset;
+
+        @Option(names = {"-C", "--column"}, order = 3, paramLabel = "<file-column>=<db-column>", required = true,
+                description = {"(CSV/TSV-only) Key-value pair specifying the column mapping between the import file column name and the destination table column name."})
+        Map<String, String> columnMapping;
+
+        @Option(names = {"-W", "--column-value"}, order = 4, paramLabel = "<db-column>=<value>",
+                description = {"(CSV/TSV-only) Key-value pair specifying the destination table column name and the value to set it to."})
+        Map<String, String> columnValues = new LinkedHashMap<String, String>();
+
+        @Option(names = {"--indexed"}, order = 5, description = "(CSV/TSV-only) If true, use indexed access in the file, so specify the (1-based) file column index instead of the file column name.")
+        boolean indexed;
+
+        @Option(names = {"--no-header"}, negatable = true, defaultValue = "true",
+                description = "(CSV/TSV-only) By default, or if `--header` is specified, the first line of the file is a list of the column names. " +
+                        "If `--no-header` is specified, the first line of the file is data (and indexed access is used).")
+        boolean header;
+
+        @Parameters(description = "Extra CSV file.")
+        File extraFile;
+
+    }
     enum Format { CSV, TSV }
 
     @Test
     public void testImport() throws IOException {
+
         @Command(name = "import", version = {"import 2.3", "ignored line 1", "ignored line 2"},
                 description = "Imports data from a file into the infra inventory db.",
+                optionListHeading = "%nOptions%n", parameterListHeading = "Positional Arguments%n",
                 footerHeading = "%nExample:%n",
                 footer = {
                         "# This imports all rows from the IP_Allocation_v1.20.csv file into the `${table.hosts}` table.",
@@ -92,25 +118,8 @@ public class ManPageGeneratorTest {
             @Parameters(description = "The file to import.")
             File file;
 
-            @Option(names = {"-e", "--encoding"}, defaultValue = "Shift_JIS", order = 2,
-                    description = "Character encoding of the file to import. Default: ${DEFAULT-VALUE}")
-            Charset charset;
-
-            @Option(names = {"-C", "--column"}, order = 3, paramLabel = "<file-column>=<db-column>", required = true,
-                    description = {"Key-value pair specifying the column mapping between the import file column name and the destination table column name."})
-            Map<String, String> columnMapping;
-
-            @Option(names = {"-W", "--column-value"}, order = 4, paramLabel = "<db-column>=<value>",
-                    description = {"Key-value pair specifying the destination table column name and the value to set it to."})
-            Map<String, String> columnValues = new LinkedHashMap<String, String>();
-
-            @Option(names = {"--indexed"}, order = 5, description = "If true, use indexed access in the file, so specify the (1-based) file column index instead of the file column name.")
-            boolean indexed;
-
-            @Option(names = {"--no-header"}, negatable = true, defaultValue = "true",
-                    description = "By default, or if `--header` is specified, the first line of the file is a list of the column names. " +
-                            "If `--no-header` is specified, the first line of the file is data (and indexed access is used).")
-            boolean header;
+            @ArgGroup(validate = false, heading = "%nCSV/TSV-only Options%n")
+            CsvOptions csvOptions;
 
             @Option(names = {"-n", "--dry-run"},
                     description = "Don't actually add the row(s), just show if they exist and/or will be ignored..")
@@ -133,7 +142,7 @@ public class ManPageGeneratorTest {
         ManPageGenerator.writeSingleManPage(pw, new CommandLine(new ImportCommand()).getCommandSpec());
         pw.flush();
 
-        String expected = read("/import.manpage.txt");
+        String expected = read("/import.manpage.txt.adoc");
         expected = expected.replace("\r\n", "\n");
         expected = expected.replace("\n", System.getProperty("line.separator"));
         assertEquals(expected, sw.toString());

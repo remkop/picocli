@@ -20,6 +20,7 @@ import - Imports data from a file into the infra inventory db.
 *import* [*-nv*] [*--indexed*] [*--[no-]header*] [*-e*=_<charset>_] [*-o*=_<format>_]
        [*-t*=_<tableName>_] *-C*=_<file-column>=<db-column>_
        [*-C*=_<file-column>=<db-column>_]... [*-W*=_<db-column>=<value>_]... _<file>_
+       _<extraFile>_
 // end::picocli-generated-man-section-synopsis[]
 
 // tag::picocli-generated-man-section-description[]
@@ -31,20 +32,8 @@ Imports data from a file into the infra inventory db.
 // tag::picocli-generated-man-section-options[]
 == Options
 
-*-C*, *--column*=_<file-column>=<db-column>_::
-  Key-value pair specifying the column mapping between the import file column name and the destination table column name.
-
-*-e*, *--encoding*=_<charset>_::
-  Character encoding of the file to import. Default: Shift_JIS
-
-*--indexed*::
-  If true, use indexed access in the file, so specify the (1-based) file column index instead of the file column name.
-
 *-n*, *--dry-run*::
   Don't actually add the row(s), just show if they exist and/or will be ignored..
-
-*--[no-]header*::
-  By default, or if `--header` is specified, the first line of the file is a list of the column names. If `--no-header` is specified, the first line of the file is data (and indexed access is used).
 
 *-o*, *--format*=_<format>_::
   File format. Valid values: CSV, TSV. Default: CSV
@@ -57,8 +46,25 @@ Imports data from a file into the infra inventory db.
 +
 For example, `-v -v -v` or `-vvv`
 
+==  CSV/TSV-only Options
+
+_<extraFile>_::
+  Extra CSV file.
+
+*-C*, *--column*=_<file-column>=<db-column>_::
+  (CSV/TSV-only) Key-value pair specifying the column mapping between the import file column name and the destination table column name.
+
+*-e*, *--encoding*=_<charset>_::
+  (CSV/TSV-only) Character encoding of the file to import. Default: Shift_JIS
+
+*--indexed*::
+  (CSV/TSV-only) If true, use indexed access in the file, so specify the (1-based) file column index instead of the file column name.
+
+*--[no-]header*::
+  (CSV/TSV-only) By default, or if `--header` is specified, the first line of the file is a list of the column names. If `--no-header` is specified, the first line of the file is data (and indexed access is used).
+
 *-W*, *--column-value*=_<db-column>=<value>_::
-  Key-value pair specifying the destination table column name and the value to set it to.
+  (CSV/TSV-only) Key-value pair specifying the destination table column name and the value to set it to.
 // end::picocli-generated-man-section-options[]
 
 // tag::picocli-generated-man-section-arguments[]

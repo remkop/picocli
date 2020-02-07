@@ -9,6 +9,7 @@ import picocli.CommandLine.Help.ColorScheme;
 import picocli.CommandLine.Help.IOptionRenderer;
 import picocli.CommandLine.Help.IParamLabelRenderer;
 import picocli.CommandLine.Help.IParameterRenderer;
+import picocli.CommandLine.Model.ArgGroupSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.IOrdered;
 import picocli.CommandLine.Model.OptionSpec;
@@ -345,49 +346,77 @@ public class ManPageGenerator {
         pw.printf("== Options%n");
 
         IOptionRenderer optionRenderer = spec.commandLine().getHelp().createDefaultOptionRenderer();
-        IParamLabelRenderer valueLabelRenderer = spec.commandLine().getHelp().createDefaultParamLabelRenderer();
+        IParamLabelRenderer paramLabelRenderer = spec.commandLine().getHelp().createDefaultParamLabelRenderer();
+        IParameterRenderer parameterRenderer = spec.commandLine().getHelp().createDefaultParameterRenderer();
+
+        List<OptionSpec> options = new ArrayList<OptionSpec>(spec.options()); // options are stored in order of declaration
+        List<ArgGroupSpec> groups = optionListGroups(spec);
+        for (ArgGroupSpec group : groups) { options.removeAll(group.options()); }
 
         Comparator<OptionSpec> optionSort = spec.usageMessage().sortOptions()
                 ? new SortByShortestOptionNameAlphabetically()
                 : createOrderComparatorIfNecessary(spec.options());
-
-        List<OptionSpec> options = new ArrayList<OptionSpec>(spec.options()); // options are stored in order of declaration
         if (optionSort != null) {
             Collections.sort(options, optionSort); // default: sort options ABC
         }
-//        List<ArgGroupSpec> groups = optionListGroups();
-//        for (ArgGroupSpec group : groups) { options.removeAll(group.options()); }
-//
-//        StringBuilder sb = new StringBuilder();
-//        layout.addOptions(options, valueLabelRenderer);
-//        sb.append(layout.toString());
-//
-//        Collections.sort(groups, new SortByOrder<ArgGroupSpec>());
-//        for (ArgGroupSpec group : groups) {
-//            sb.append(createHeading(group.heading()));
-//
-//            CommandLine.Help.Layout groupLayout = createDefaultLayout();
-//            groupLayout.addPositionalParameters(group.positionalParameters(), valueLabelRenderer);
-//            List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.options());
-//            if (optionSort != null) {
-//                Collections.sort(groupOptions, optionSort);
-//            }
-//            groupLayout.addOptions(groupOptions, valueLabelRenderer);
-//            sb.append(groupLayout);
-//        }
-//        return sb.toString();
-
         for (OptionSpec option : options) {
+            writeOption(pw, optionRenderer, paramLabelRenderer, option);
+        }
+
+        // now create a custom option section for each arg group that has a heading
+        Collections.sort(groups, new SortByOrder<ArgGroupSpec>());
+        for (ArgGroupSpec group : groups) {
             pw.println();
-            Text[][] rows = optionRenderer.render(option, valueLabelRenderer, COLOR_SCHEME);
-            pw.printf("%s::%n", join(", ", rows[0][1], rows[0][3]));
-            pw.printf("  %s%n", rows[0][4]);
-            for (int i = 1; i < rows.length; i++) {
-                pw.printf("+%n%s%n", rows[i][4]);
+            String heading = makeHeading(group.heading(), "Options Group");
+            pw.printf("== %s%n", COLOR_SCHEME.text(heading));
+
+            for (PositionalParamSpec positional : group.positionalParameters()) {
+                writePositional(pw, positional, parameterRenderer, paramLabelRenderer);
+            }
+            List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.options());
+            if (optionSort != null) {
+                Collections.sort(groupOptions, optionSort);
+            }
+            for (OptionSpec option : groupOptions) {
+                writeOption(pw, optionRenderer, paramLabelRenderer, option);
             }
         }
+
         pw.printf("// end::picocli-generated-man-section-options[]%n");
         pw.println();
+    }
+
+    /** Returns the list of {@code ArgGroupSpec}s with a non-{@code null} heading. */
+    private static List<ArgGroupSpec> optionListGroups(CommandSpec commandSpec) {
+        List<ArgGroupSpec> result = new ArrayList<ArgGroupSpec>();
+        optionListGroups(commandSpec.argGroups(), result);
+        return result;
+    }
+    private static void optionListGroups(List<ArgGroupSpec> groups, List<ArgGroupSpec> result) {
+        for (ArgGroupSpec group : groups) {
+            optionListGroups(group.subgroups(), result);
+            if (group.heading() != null) { result.add(group); }
+        }
+    }
+
+    private static void writeOption(PrintWriter pw, IOptionRenderer optionRenderer, IParamLabelRenderer paramLabelRenderer, OptionSpec option) {
+        pw.println();
+        Text[][] rows = optionRenderer.render(option, paramLabelRenderer, COLOR_SCHEME);
+        pw.printf("%s::%n", join(", ", rows[0][1], rows[0][3]));
+        pw.printf("  %s%n", rows[0][4]);
+        for (int i = 1; i < rows.length; i++) {
+            pw.printf("+%n%s%n", rows[i][4]);
+        }
+    }
+
+    private static void writePositional(PrintWriter pw, PositionalParamSpec positional, IParameterRenderer parameterRenderer, IParamLabelRenderer paramLabelRenderer) {
+        pw.println();
+        Text[][] rows = parameterRenderer.render(positional, paramLabelRenderer, COLOR_SCHEME);
+        pw.printf("%s::%n", join(", ", rows[0][1], rows[0][3]));
+        pw.printf("  %s%n", rows[0][4]);
+        for (int i = 1; i < rows.length; i++) {
+            pw.printf("+%n%s%n", rows[i][4]);
+        }
     }
 
     static void genPositionalArgs(PrintWriter pw, CommandSpec spec) {
@@ -399,26 +428,24 @@ public class ManPageGenerator {
 
         IParameterRenderer parameterRenderer = spec.commandLine().getHelp().createDefaultParameterRenderer();
         IParamLabelRenderer paramLabelRenderer = spec.commandLine().getHelp().createDefaultParamLabelRenderer();
+
         if (spec.usageMessage().showAtFileInUsageHelp()) {
             CommandLine cmd = new CommandLine(spec).setColorScheme(COLOR_SCHEME);
             CommandLine.Help help = cmd.getHelp();
             writePositional(pw, help.AT_FILE_POSITIONAL_PARAM, parameterRenderer, paramLabelRenderer);
         }
-        for (PositionalParamSpec positional : spec.positionalParameters()) {
+
+        // positional parameters that are part of a group
+        // are shown in the custom option section for that group
+        List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(spec.positionalParameters());
+        List<ArgGroupSpec> groups = optionListGroups(spec);
+        for (ArgGroupSpec group : groups) { positionals.removeAll(group.positionalParameters()); }
+
+        for (PositionalParamSpec positional : positionals) {
             writePositional(pw, positional, parameterRenderer, paramLabelRenderer);
         }
         pw.printf("// end::picocli-generated-man-section-arguments[]%n");
         pw.println();
-    }
-
-    private static void writePositional(PrintWriter pw, PositionalParamSpec positional, IParameterRenderer parameterRenderer, IParamLabelRenderer paramLabelRenderer) {
-        pw.println();
-        Text[][] rows = parameterRenderer.render(positional, paramLabelRenderer, COLOR_SCHEME);
-        pw.printf("%s::%n", join(", ", rows[0][1], rows[0][3]));
-        pw.printf("  %s%n", rows[0][4]);
-        for (int i = 1; i < rows.length; i++) {
-            pw.printf("+%n%s%n", rows[i][4]);
-        }
     }
 
     static void genCommands(PrintWriter pw, CommandSpec spec) {
@@ -470,9 +497,7 @@ public class ManPageGenerator {
         if (spec.usageMessage().footerHeading().length() == 0 || spec.usageMessage().footer().length == 0) {
             return;
         }
-        String heading = spec.usageMessage().footerHeading();
-        if (heading.endsWith("%n")) { heading = heading.substring(0, heading.length() - 2); }
-        heading = heading.length() == 0 ? "Footer" : heading.replaceAll("%n", " ");
+        String heading = makeHeading(spec.usageMessage().footerHeading(), "Footer");
         pw.printf("// tag::picocli-generated-man-section-footer[]%n");
         pw.printf("== %s%n", COLOR_SCHEME.text(heading));
         pw.println();
@@ -500,6 +525,12 @@ public class ManPageGenerator {
         }
         pw.printf("// end::picocli-generated-man-section-footer[]%n");
         pw.println();
+    }
+
+    private static String makeHeading(String heading, String defaultIfEmpty) {
+        if (heading.endsWith("%n")) { heading = heading.substring(0, heading.length() - 2); }
+        heading = heading.trim().length() == 0 ? defaultIfEmpty : heading.replaceAll("%n", " ");
+        return heading;
     }
 
     private static Comparator<OptionSpec> createOrderComparatorIfNecessary(List<OptionSpec> options) {
