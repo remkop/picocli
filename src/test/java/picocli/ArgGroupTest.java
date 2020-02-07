@@ -2963,6 +2963,22 @@ public class ArgGroupTest {
         assertEquals("FAILURE_ABSENT: hello", new GroupValidationResult(GroupValidationResult.Type.FAILURE_ABSENT, ex).toString());
     }
 
+    @Command(name = "Issue940")
+    static class Issue940Command {
+
+        @ArgGroup MyArgGroup myArgGroup;// = new MyArgGroup();
+
+        private static class MyArgGroup {
+            @Option(names = {"--no-header"}, negatable = true)
+            boolean header;
+        }
+    }
+
+    @Test
+    public void testIssue940NegatableOptionInArgGroupGivesNPE() {
+        new CommandLine(new Issue940Command());
+    }
+
     // TODO GroupMatch.container()
     // TODO GroupMatch.matchedMaxElements()
     // TODO GroupMatch.matchedFully()

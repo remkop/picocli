@@ -8847,7 +8847,9 @@ public class CommandLine {
             private Text concatOptionText(Text text, Help.ColorScheme colorScheme, OptionSpec option) {
                 if (!option.hidden()) {
                     Text name = option.negatable()
-                            ? colorScheme.optionText(option.commandSpec.negatableOptionTransformer().makeSynopsis(option.shortestName(), option.commandSpec))
+                            ? colorScheme.optionText(
+                                    (option.commandSpec == null ? RegexTransformer.createDefault() : option.commandSpec.negatableOptionTransformer())
+                                            .makeSynopsis(option.shortestName(), option.commandSpec))
                             : colorScheme.optionText(option.shortestName());
                     Text param = createLabelRenderer(option.commandSpec).renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
                     text = text.concat(open(option)).concat(name).concat(param).concat(close(option));
