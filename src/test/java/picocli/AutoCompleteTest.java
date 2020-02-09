@@ -1362,7 +1362,7 @@ public class AutoCompleteTest {
                 "Generate bash/zsh completion script for myapp.%n" +
                 "Run the following command to give `myapp` TAB completion in the current shell:%n" +
                 "%n" +
-                "source <(myapp generate-completion)%n" +
+                "  source <(myapp generate-completion)%n" +
                 "%n" +
                 "Options:%n" +
                 "  -h, --help      Show this help message and exit.%n" +

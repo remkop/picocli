@@ -10332,7 +10332,12 @@ public class CommandLine {
                 });
                 lookups.put("", new ILookup() {
                     public String get(String key) {
-                        String result = System.getProperty(key);
+                        String result = "COMMAND-NAME".equals(key) ? commandSpec.name()
+                                : "COMMAND-FULL-NAME".equals(key) ? commandSpec.qualifiedName()
+                                : "PARENT-COMMAND-NAME".equals(key) && commandSpec.parent() != null ? commandSpec.parent().name()
+                                : "PARENT-COMMAND-FULL-NAME".equals(key) && commandSpec.parent() != null ? commandSpec.parent().qualifiedName()
+                                : null;
+                        if (result == null) { result = System.getProperty(key); }
                         if (result == null) { result = System.getenv(key); }
                         if (result == null) { result = bundleValue(commandSpec.resourceBundle(), key); }
                         return result;
@@ -10354,15 +10359,7 @@ public class CommandLine {
             }
             public String interpolate(String original) {
                 if (original == null || !commandSpec.interpolateVariables()) { return original; }
-                // TODO don't expand escaped vars, like $${COMMAND-NAME}
-                String result1 = original.replaceAll("\\$\\{COMMAND-NAME}", commandSpec.name());
-                String result2 = result1.replaceAll("\\$\\{COMMAND-FULL-NAME}", commandSpec.qualifiedName());
-                if (commandSpec.parent() != null) {
-                    String tmp = result2.replaceAll("\\$\\{PARENT-COMMAND-NAME}", commandSpec.parent().name());
-                    result2 = tmp.replaceAll("\\$\\{PARENT-COMMAND-FULL-NAME}", commandSpec.parent().qualifiedName());
-                }
-                String result = resolveLookups(result2, new HashSet<String>(), new HashMap<String, String>());
-                return result;
+                return resolveLookups(original, new HashSet<String>(), new HashMap<String, String>());
             }
             public String interpolateCommandName(String original) {
                 if (original == null || !commandSpec.interpolateVariables()) { return original; }

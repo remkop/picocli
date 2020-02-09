@@ -231,6 +231,8 @@ Usage: myapp [-hV] [-o=<outputFolder>]
 * [#934] Enhancement: Make long options column width configurable. Thanks to [tomerz90](https://github.com/tomerz90) for raising this. 
 * [#930] Enhancement: Add `--factory` option to `ReflectionConfigGenerator`, `ResourceConfigGenerator` and `DynamicProxyConfigGenerator`. Thanks to [Santiago Acosta](https://github.com/hanzo2001) for raising this.
 * [#690] Enhancement: Postpone instantiating subcommands until they are matched on the command line. Thanks to [Daniel Breitlauch](https://github.com/danielBreitlauch) for raising this.
+* [#942] Enhancement: Show at files in usage help for picocli built-in commands.
+* [#941] Enhancement: Allow default values for predefined variables.
 * [#926] Enhancement: Clarify debug trace output when adding aliases.
 * [#928] Enhancement: Improve debug tracing: show command user object identity hashcode and prefix "Processing argument..." with argument index.
 * [#920] Enhancement: Reduce `DEBUG` tracing noise if no resource bundle is set.
@@ -240,6 +242,7 @@ Usage: myapp [-hV] [-o=<outputFolder>]
 * [#905] Bugfix: non-public `@Command`-annotated methods without arguments caused a `IllegalAccessException`. From this release such methods no longer need to be public. Thanks to [David Connelly](https://github.com/dconnelly) for raising this.
 * [#924] Bugfix: `CommandSpec.mixinAnnotatedElements` map should be initialized when discovering `@Mixin`-annotated fields and methods via reflection.
 * [#937] Bugfix: `Text.getStyledChars` no longer incorrectly inserts ANSI escape chars into the next line prefix when lines are broken.
+* [#943] DOC: Create man pages for built-in picocli commands.
 * [#929] DOC: Add [jbang](https://github.com/maxandersen/jbang) under [packaging](https://picocli.info/#_packaging_your_application) in the user manual.
 * [#927] DOC: Show current picocli version in the Spring Boot section of the user manual. Thanks to [Christian Grobmeier](https://github.com/grobmeier) for the pull request.
 * [#919] DOC: Added example Gradle project with Kotlin and Graal Native Image. Thanks to [OndrejMalek](https://github.com/OndrejMalek) for the pull request.

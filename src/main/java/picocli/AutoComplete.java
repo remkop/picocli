@@ -203,10 +203,10 @@ public class AutoComplete {
     @Command(name = "generate-completion", version = "generate-completion " + CommandLine.VERSION,
             mixinStandardHelpOptions = true,
             description = {
-                "Generate bash/zsh completion script for ${PARENT-COMMAND-NAME}.",
-                "Run the following command to give `${PARENT-COMMAND-NAME}` TAB completion in the current shell:",
+                "Generate bash/zsh completion script for ${PARENT-COMMAND-NAME:-the parent command of this command}.",
+                "Run the following command to give `${PARENT-COMMAND-NAME:-$PARENTCOMMAND}` TAB completion in the current shell:",
                 "",
-                "source <(${PARENT-COMMAND-NAME} ${COMMAND-NAME})",
+                "  source <(${PARENT-COMMAND-NAME:-$PARENTCOMMAND} ${COMMAND-NAME})",
                 ""},
             optionListHeading = "Options:%n",
             helpCommand = true
