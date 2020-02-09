@@ -278,7 +278,12 @@ public class AutoCompleteTest {
             "   call `System.exit(ERROR_CODE)` when an error occurs.%n" +
             "%n" +
             "If these system properties are not defined or have value \"false\", this program%n" +
-            "completes without terminating the JVM.%n");
+            "completes without terminating the JVM.%n" +
+            "%n" +
+            "Example%n" +
+            "-------%n" +
+            "  java -cp \"myapp.jar;picocli-4.2.0-SNAPSHOT.jar\" picocli.AutoComplete my.pkg.%n" +
+            "MyClass%n");
 
     @Test
     public void testAutoCompleteAppHelp() {
