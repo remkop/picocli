@@ -5,6 +5,8 @@ The picocli community is pleased to announce picocli 4.2.0.
 
 This release adds support for Repeatable Subcommands: when a command is marked as `@Command(subcommandsRepeatable = true)` it becomes possible to specify that command's subcommands multiple times on the command line.
 
+The `picocli-codegen` module can now generate AsciiDoc documentation for picocli-based applications. AsciiDoc is a lightweight markup language that can easily can be converted to unix man pages, HTML and PDF with the wonderful [asciidoctor](https://asciidoctor.org/docs/user-manual/#man-pages) tool.
+
 From this release, subcommands are not instantiated until they are matched on the command line. This should improve the startup time for applications with subcommands that do a lot of initialization when they are instantiated.
 
 Autocompletion improvements: from this release the generated bash completions scripts support completing positional parameters, and are implemented without the use of associative arrays (so they should work on MacOS or other systems that use older versions of bash).
@@ -27,6 +29,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.2.0-toc"></a> Table of Contents
 * [New and noteworthy](#4.2.0-new)
+  * [Generate AsciiDoc Documentation for Your Application](#4.2.0-generate-docs)
   * [Repeatable Subcommands](#4.2.0-repeatable-subcommands)
   * [Inject `CommandSpec` into a `IVersionProvider`](#4.2.0-versionprovider-with-spec)
   * [Subcommands are now lazily instantiated](#4.2.0-lazy-instantiation)
@@ -38,6 +41,12 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#4.2.0-breaking-changes)
 
 ## <a name="4.2.0-new"></a> New and Noteworthy
+
+### <a name="4.2.0-generate-docs"></a> Generate AsciiDoc Documentation for Your Application (convertable to unix man pages, HTML and PDF)
+This release adds a new class `picocli.codegen.docgen.manpage.ManPageGenerator` to the `picocli-codegen` module that generates AsciiDoc documentation for picocli-based applications using the `manpage` doctype and manpage document structure.
+The generated AsciiDoc files can be converted to HTML, PDF and unix man pages with the [asciidoctor](https://asciidoctor.org/docs/user-manual/#man-pages) tool.
+
+The [`picocli-codegen` README](https://github.com/remkop/picocli/blob/master/picocli-codegen/README.adoc) has more details.
 
 ### <a name="4.2.0-repeatable-subcommands"></a> Repeatable Subcommands
 From picocli 4.2, it is possible to specify that a command's subcommands can be specified multiple times by marking it with `@Command(subcommandsRepeatable = true)`.
@@ -208,10 +217,13 @@ Usage: myapp [-hV] [-o=<outputFolder>]
 * [#795] API: Added `@Command(showAtFileInUsageHelp=true)` attribute to show `@filename` in usage help.
 * [#925] API: Support `@ParentCommand`-annotated fields in mixin classes.
 * [#936] API: Change visibility of `Help.subcommands()` method from protected to public.
-* [#459] API: Generate manpage documentation. Thanks to [Miroslav Kravec](https://github.com/kravemir) for raising this.
-         This resulted in the following additional methods: `ColorScheme::customMarkupMap`, `ColorScheme::parse`, `ColorScheme::resetStyle`, `ColorScheme::apply`,  `ColorScheme.Builder::customMarkupMap` (getter and setter) and a new `picocli.CommandLine.Help.Ansi.Text(String, ColorScheme)` constructor.
-         The `picocli.CommandLine.Help.Ansi::apply` method is now deprecated in favor of `ColorScheme::apply`.
+* [#459] API: Generate manpage documentation. Thanks to [Miroslav Kravec](https://github.com/kravemir) for raising this. The `picocli-codegen` module can now generate AsciiDoc documentation that uses the `manpage` doctype and adheres to the manpage document structure so it can be converted to unix man pages in troff format with the [asciidoctor](https://asciidoctor.org/docs/user-manual/#man-pages) tool.
 * [#299] API: Generate AsciiDoc documentation. Thanks to [Philippe Charles](https://github.com/charphi) for raising this.
+         Added a new class `picocli.codegen.docgen.manpage.ManPageGenerator` to the `picocli-codegen` module that generates AsciiDoc documentation using the `manpage` doctype and manpage document structure.
+         Custom markup like `@|bold mytext|@`, `@|italic mytext|@` etc., originally intended to be converted to ANSI escape codes, can from this release also be converted to custom markup like `<b>mytext</b>` and `<i>mytext</i>` in HTML, or `*mytext*` and `_mytext_` in lightweight markup languages like AsciiDoc.
+         Applications can control this by setting a `ColorScheme` with a custom markup map.
+         This ticket resulted in the following additional methods: `ColorScheme::text`, `ColorScheme::string`, `ColorScheme::customMarkupMap`, `ColorScheme::parse`, `ColorScheme::resetStyle`, `ColorScheme::apply`,  `ColorScheme.Builder::customMarkupMap` (getter and setter) and a new `picocli.CommandLine.Help.Ansi.Text(String, ColorScheme)` constructor.
+         The `picocli.CommandLine.Help.Ansi::apply` method is now deprecated in favor of `ColorScheme::apply`.
 * [#906] Auto-completion: Added automated tests for picocli-generated bash/zsh completion scripts.
 * [#468][#505][#852] Auto-completion: added support for positional parameter completion. Thanks to [Serhii Avsheniuk](https://github.com/avshenuk) for the pull request.
 * [#644][#671] Auto-completion: fix [shellcheck](https://github.com/koalaman/shellcheck) warnings in generated autocompletion scripts. Thanks to [Dylan Cali](https://github.com/calid) for raising this, and thanks to [AlcaYezz](https://github.com/AlcaYezz) for the pull request.
@@ -244,8 +256,12 @@ Usage: myapp [-hV] [-o=<outputFolder>]
 * [#910] Dependency Upgrade: Bump Spring Boot dependency to 2.2.2 to allow it to work under Java 13. Thanks to [Stéphane Vanacker](https://github.com/svanacker) for raising this.
 
 ## <a name="4.2.0-deprecated"></a> Deprecations
-The `picocli.CommandLine.Help.Ansi#apply` method has been deprecated.
-Use the `picocli.CommandLine.ColorScheme#apply` method instead.
+* The `picocli.CommandLine.Help.Ansi#apply` method has been deprecated in favor of the `picocli.CommandLine.Help.ColorScheme#apply` method.
+* The `picocli.CommandLine.Help.TextTable forDefaultColumns(Ansi, int, int)` method has been deprecated in favor of the new `TextTable.forDefaultColumns(ColorScheme, int, int)` method.
+* The `picocli.CommandLine.Help.TextTable forColumnWidths(Ansi, int...)` method has been deprecated in favor of the new `TextTable.forColumnWidths(ColorScheme, int...)` method.
+* The `picocli.CommandLine.Help.TextTable forColumns(Ansi, Column...)` method has been deprecated in favor of the new `TextTable.forColumns(ColorScheme, Column...)` method.
+* The `picocli.CommandLine.Help.TextTable constructor (Ansi, Column[])` has been deprecated in favor of the new `TextTable(ColorScheme, Column...)` constructor.
+
 
 ## <a name="4.2.0-breaking-changes"></a> Potential breaking changes
 Annotated command objects are now not instantiated until the command is matched on the command line.

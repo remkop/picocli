@@ -11,22 +11,44 @@
 
 image::https://picocli.info/images/logo/horizontal-400x150.png[picocli,height="150px"]
 
-Picocli Code Generation contains tools for generating source code, documentation and configuration files 
-for picocli-based applications.
+== About `picocli-codegen`
+The `picocli-codegen` (Picocli Code Generation) module contains tools for generating configuration files and documentation for picocli-based applications.
 
-== Annotation Processor
-The `picocli-codegen` module includes an annotation processor that can build a model from the picocli annotations at compile time rather than at runtime.
+This module also includes an annotation processor that can build a model from the picocli annotations at compile time rather than at runtime.
 
-Use this if you’re interested in:
+The annotation processor allows many of the tools to be invoked automatically as part of the build without configuration.
+If a tool does not have an annotation processor wrapper (yet), it can be invoked on the command line, and can be scripted to be invoked automatically as part of building your project.
+
+
+As of picocli version 4.2, this module has three major use cases:
 
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **Graal native images**. The annotation processor generates and updates https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[Graal configuration]
+* **Graal native images**. To create a GraalVM native image for a picocli application, https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[configuration] is needed. The `ReflectionConfigGenerator`, `ResourceConfigGenerator` and `DynamicProxyGenerator` tools can generate configuration files for https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md[resources] and https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md[dynamic proxies], respectively.
++
+The annotation processor embeds these three tools and generates the configuration files under `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
+By embedding these configuration files, your jar is instantly Graal-enabled.
+In most cases no further configuration is needed when generating a native image.
+* **Generate Documentation**. The `ManPageGenerator` tool can generate AsciiDoc documentation for picocli applications. AsciiDoc is a lightweight markup language that can easily can be converted to unix man pages, HTML and PDF with the wonderful https://asciidoctor.org/docs/user-manual/#man-pages[asciidoctor] tool.
+
+
+
+== Generate GraalVM Configurations
+
+To build a GraalVM native image for a picocli-based application, configuration files are needed to tell the GraalVM `native-image` generator tool which classes, methods and fields will be accessed reflectively, and which resources and dynamic proxies the application will use.
+
+The `picocli-codegen` module has tools that generates these configuration files for a picocli-based application.
+The annotation processor in the `picocli-codegen` jar wraps these tools so they are executed automatically during compilation.
+
+The annotation processor generates and updates https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[Graal configuration]
 files under `META-INF/native-image/picocli-generated/$project` during compilation,
 to be included in the application jar.
 This includes configuration files for https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md[resources] and https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md[dynamic proxies].
 By embedding these configuration files, your jar is instantly Graal-enabled.
-The `$project` location is configurable, see <<Picocli Processor Options,processor options>> below.
+
 In most cases no further configuration is needed when generating a native image.
+
+TIP: It is recommended that you configure the `$project` location for your project to ensure the configuration files are in a unique location when jars are shaded into an uberjar, see <<Picocli Processor Options,processor options>> below.
+
 
 === Enabling the Annotation Processor
 
@@ -75,7 +97,7 @@ An alternative that works with older versions of the `maven-compiler-plugin` is 
 ```
 
 
-See Processor Options below.
+See <<Picocli Processor Options,processor options>> below.
 
 
 ==== Gradle
@@ -119,16 +141,18 @@ The `project` option can be omitted, but it is a good idea to specify the `proje
 ==== Javac
 To pass an annotation processor option with `javac`, specify the `-A` command line option:
 
-```
+----
 javac -Aproject=org.myorg.myproject/myapp -cp ...
-```
+----
+
 The `-A` option lets you pass options to annotation processors. See the https://docs.oracle.com/javase/8/docs/technotes/tools/unix/javac.html[javac documentation] for details.
 
 ==== Maven
 
 To set an annotation processor option in Maven, you need to use the `maven-compiler-plugin` and configure the `compilerArgs` section.
 
-```xml
+[source,xml]
+----
 <build>
   <plugins>
     <plugin>
@@ -144,21 +168,22 @@ To set an annotation processor option in Maven, you need to use the `maven-compi
     </plugin>
   </plugins>
 </build>
-```
+----
 
 See https://maven.apache.org/plugins/maven-compiler-plugin/compile-mojo.html for details.
 
 === Gradle Example
 To set an annotation processor option in Gradle, add these options to the `options.compilerArgs` list in the `compileJava` block.
 
-```groovy
+[source,groovy]
+----
 compileJava {
     // minimum 1.6
     sourceCompatibility = ${java-version}
     targetCompatibility = ${java-version}
     options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
 }
-```
+----
 
 See the https://docs.gradle.org/current/dsl/org.gradle.api.tasks.compile.CompileOptions.html[Gradle documentation] for details.
 
@@ -212,7 +237,8 @@ This example uses the `process-classes` phase of the build, there are http://mav
 
 Note that the `picocli-codegen` module is only added as a dependency for the `exec` plugin, so it does not need to be added to the project dependencies.
 
-```xml
+[sourc,xml]
+----
 <build>
   <plugins>
     <plugin>
@@ -249,14 +275,16 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
     </plugin>
   </plugins>
 </build>
-```
+----
+
 
 ===== Gradle
 
 For Gradle, add a custom configuration for the `picocli-codegen` module to your `gradle.build`.
 This allows us to add this module to the classpath of our custom task without adding it as a dependency to the "standard" build.
 
-```groovy
+[source,groovy]
+----
 configurations {
     generateConfig
 }
@@ -264,12 +292,14 @@ dependencies {
     compile 'info.picocli:picocli:4.1.4'
     generateConfig 'info.picocli:picocli-codegen:4.1.4'
 }
-```
+----
+
 
 Then, add a custom task to run the `ReflectionConfigGenerator` tool.
 This example generates the file during the `assemble` lifecycle task, there are https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_tasks[alternatives].
 
-```groovy
+[source,groovy]
+----
 task(generateGraalReflectionConfig, dependsOn: 'classes', type: JavaExec) {
     main = 'picocli.codegen.aot.graalvm.ReflectionConfigGenerator'
     classpath = configurations.generateConfig + sourceSets.main.runtimeClasspath
@@ -277,7 +307,7 @@ task(generateGraalReflectionConfig, dependsOn: 'classes', type: JavaExec) {
     args = ["--output=$outputFile", 'com.your.package.YourCommand1', 'com.your.package.YourCommand2']
 }
 assemble.dependsOn generateGraalReflectionConfig
-```
+----
 
 
 === ResourceConfigGenerator
@@ -316,7 +346,8 @@ This example uses the `process-classes` phase of the build, there are http://mav
 
 Note that the `picocli-codegen` module is only added as a dependency for the `exec` plugin, so it does not need to be added to the project dependencies.
 
-```xml
+[source,xml]
+----
 <build>
   <plugins>
     <plugin>
@@ -353,14 +384,15 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
     </plugin>
   </plugins>
 </build>
-```
+----
 
 ===== Gradle
 
 For Gradle, add a custom configuration for the `picocli-codegen` module to your `gradle.build`.
 This allows us to add this module to the classpath of our custom task without adding it as a dependency to the "standard" build.
 
-```groovy
+[source,groovy]
+----
 configurations {
     generateConfig
 }
@@ -368,12 +400,13 @@ dependencies {
     compile 'info.picocli:picocli:4.1.4'
     generateConfig 'info.picocli:picocli-codegen:4.1.4'
 }
-```
+----
 
 Then, add a custom task to run the `ResourceConfigGenerator` tool.
 This example generates the file during the `assemble` lifecycle task, there are https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_tasks[alternatives].
 
-```groovy
+[source,groovy]
+----
 task(generateGraalResourceConfig, dependsOn: 'classes', type: JavaExec) {
     main = 'picocli.codegen.aot.graalvm.ResourceConfigGenerator'
     classpath = configurations.generateConfig + sourceSets.main.runtimeClasspath
@@ -381,7 +414,7 @@ task(generateGraalResourceConfig, dependsOn: 'classes', type: JavaExec) {
     args = ["--output=$outputFile", 'com.your.package.YourCommand1', 'com.your.package.YourCommand2']
 }
 assemble.dependsOn generateGraalResourceConfig
-```
+----
 
 === DynamicProxyConfigGenerator
 
@@ -418,7 +451,8 @@ This example uses the `process-classes` phase of the build, there are http://mav
 
 Note that the `picocli-codegen` module is only added as a dependency for the `exec` plugin, so it does not need to be added to the project dependencies.
 
-```xml
+[source,xml]
+----
 <build>
   <plugins>
     <plugin>
@@ -455,14 +489,15 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
     </plugin>
   </plugins>
 </build>
-```
+----
 
 ===== Gradle
 
 For Gradle, add a custom configuration for the `picocli-codegen` module to your `gradle.build`.
 This allows us to add this module to the classpath of our custom task without adding it as a dependency to the "standard" build.
 
-```groovy
+[source,groovy]
+----
 configurations {
     generateConfig
 }
@@ -470,12 +505,13 @@ dependencies {
     compile 'info.picocli:picocli:4.1.4'
     generateConfig 'info.picocli:picocli-codegen:4.1.4'
 }
-```
+----
 
 Then, add a custom task to run the `DynamicProxyConfigGenerator` tool.
 This example generates the file during the `assemble` lifecycle task, there are https://docs.gradle.org/current/userguide/java_plugin.html#sec:java_tasks[alternatives].
 
-```groovy
+[source,groovy]
+----
 task(generateGraalDynamicProxyConfig, dependsOn: 'classes', type: JavaExec) {
     main = 'picocli.codegen.aot.graalvm.DynamicProxyConfigGenerator'
     classpath = configurations.generateConfig + sourceSets.main.runtimeClasspath
@@ -483,4 +519,143 @@ task(generateGraalDynamicProxyConfig, dependsOn: 'classes', type: JavaExec) {
     args = ["--output=$outputFile", 'com.your.package.YourCommand1', 'com.your.package.YourCommand2']
 }
 assemble.dependsOn generateGraalDynamicProxyConfig
-```
+----
+
+== Generate Documentation
+The `picocli.codegen.docgen.manpage.ManPageGenerator` tool introduced in picocli 4.2 generates AsciiDoc documentation using the `manpage` doctype and manpage document structure.
+The generated AsciiDoc files can be converted to HTML, PDF and unix man pages with the https://asciidoctor.org/docs/user-manual/#man-pages[asciidoctor] tool.
+
+=== Gradle Example
+Example gradle build.gradle snippet:
+
+You will also need the https://asciidoctor.org/docs/asciidoctor-gradle-plugin/[AsciiDoctor Gradle Plugin].
+
+[source,groovy]
+----
+dependencies {
+    compile "info.picocli:picocli:4.2.0-SNAPSHOT"
+    annotationProcessor "info.picocli:picocli-codegen:4.2.0-SNAPSHOT"
+}
+
+mainClassName = "my.pkg.MyCommand"
+
+task generateManpageAsciiDoc(type: JavaExec) {
+    dependsOn(classes)
+    group = "Documentation"
+    description = "Generate AsciiDoc manpage"
+    classpath(configurations.compile, configurations.annotationProcessor, sourceSets.main.runtimeClasspath)
+    main 'picocli.codegen.docgen.manpage.ManPageGenerator'
+    args mainClassName, "--outdir=${project.buildDir}/generated/docs", "-v" //, "--template-dir=src/docs/mantemplates"
+}
+
+apply plugin: 'org.asciidoctor.convert'
+asciidoctor {
+    dependsOn(generateManpageAsciiDoc)
+    sourceDir = file("${project.buildDir}/generated/docs")
+    outputDir = file("${project.buildDir}/docs")
+    logDocuments = true
+    backends 'manpage'
+}
+----
+
+
+The `generateManpageAsciiDoc` task generates `<cmd>.adoc` files with doctype `manpage` in `build/generated/docs` for each command and subcommand.
+
+The `asciidoctor` task converts the generated `<cmd>.adoc` files in `build/generated/docs` to `<cmd>.1` manpage files in `build/docs/manpage/`.
+
+You could then use the Gradle `distribution` plugin to include the generated manpage files in the distribution archive:
+
+[source,groovy]
+----
+apply plugin: "distribution"
+distributions {
+    main {
+        contents {
+            from ("${project.buildDir}/docs/manpage") {
+                into('docs')
+            }
+        }
+    }
+}
+----
+
+
+=== Maven Example
+
+You will also need the https://github.com/asciidoctor/asciidoctor-maven-plugin[AsciiDoctor Maven Plugin].
+
+[source,xml]
+----
+TODO
+----
+
+=== Customizing with Templates
+
+The generated man page is very similar to the online help generated by the command itself when a user specifies the `--help` option.
+You may want to add more details or extra sections to the man page.
+This can be achieved by leveraging AsciiDoctor's https://asciidoctor.org/docs/user-manual/#include-directive[include mechanism].
+
+To create customized man pages, first point the `sourceDir` for the `asciidoctor` task to a different directory than the directory where the AsciiDoc files with doctype `manpage` are generated.
+
+Let's call this new directory `src/docs/manpage`. In this directory, we keep a manually maintained `xxx.adoc` file for each generated AsciiDoc file with doctype `manpage`.
+Now we can customize the resulting manpage by editing the manually maintained files in `src/docs/manpage`.
+
+In its simplest form we can include the full generated page with the `generated-manpage` tag.
+This allows us to add some sections to the end of the page.
+For example:
+
+[subs=+macros]
+----
+// src/docs/manpage/xxx.adoc
+pass:c[:includedir: ../../../build/generated/docs]
+pass:c[include::{includedir}/xxx.adoc[tag=picocli-generated-full-manpage]]
+
+== Authors
+My, myself and I.
+----
+
+It is also possible to include the picocli-generated sections individually, so that the generated sections can be customized with additional text that follows the generated text for the section. For example:
+
+[subs=+macros]
+----
+// src/docs/manpage/yyy.adoc
+pass:c[:includedir: ../../../build/generated/docs]
+pass:c[include::{includedir}/yyy.adoc[tag=picocli-generated-man-section-header]]
+
+pass:c[include::{includedir}/yyy.adoc[tag=picocli-generated-man-section-name]]
+
+This is a very good tool that will serve you well.
+
+pass:c[include::{includedir}/yyy.adoc[tag=picocli-generated-man-section-synopsis]]
+
+*mycommand* [-hVv] [a=VERY] [--different=synopsis]
+
+pass:c[include::{includedir}/yyy.adoc[tag=picocli-generated-man-section-description]]
+
+Here are some additional description lines.
+
+pass:c[include::{includedir}/yyy.adoc[tag=picocli-generated-man-section-options]]
+
+pass:c[include::{includedir}/yyy.adoc[tag=picocli-generated-man-section-arguments]]
+
+pass:c[include::{includedir}/yyy.adoc[tag=picocli-generated-man-section-commands]]
+
+pass:c[include::{includedir}/yyy.adoc[tag=picocli-generated-man-section-exit-status]]
+
+pass:c[include::{includedir}/yyy.adoc[tag=picocli-generated-man-section-footer]]
+
+== More Examples
+
+[%hardbreaks]
+Here are some extra examples:
+abc def ghi jkl mno pq
+abc def ghi jkl mno pq
+abc def ghi jkl mno pq
+
+== Authors
+All of us.
+
+== Copyright
+Just hand it out, it's fine.
+----
+

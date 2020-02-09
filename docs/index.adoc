@@ -3339,6 +3339,10 @@ class GitCommit { ... }
 
 CAUTION: Markup styles cannot be nested, for example: `@|bold this @|underline that|@|@` will not work. You can achieve the same by combining styles, for example: `@|bold this|@ @|bold,underline that|@` will work fine.
 
+From picocli 4.2, custom markup like `@|bold mytext|@`, `@|italic mytext|@` etc. can also be converted to custom markup like `<b>mytext</b>` and `<i>mytext</i>` in HTML, or `pass:c[*mytext*]` and `pass:c[_mytext_]` in lightweight markup languages like AsciiDoc.
+Applications can control this by setting a `ColorScheme` with a custom markup map.
+This feature is used to generate man page documentation.
+
 === Styles and Colors in Application Output
 
 The use of ANSI colors and styles is not limited to the <<Usage Help with Styles and Colors,usage help>>
