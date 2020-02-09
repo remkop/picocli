@@ -796,10 +796,10 @@ import java.net.Proxy.Type;
 import java.util.concurrent.TimeUnit;
 
 class MapDemo {
-    @Option(names = {"-p", "--proxyHost"});
+    @Option(names = {"-p", "--proxyHost"})
     Map<Proxy.Type, InetAddress> proxies;
 
-    @Option(names = {"-u", "--timeUnit"});
+    @Option(names = {"-u", "--timeUnit"})
     Map<TimeUnit, Long> timeout;
 }
 ----
