@@ -133,9 +133,9 @@ The `project` option can be omitted, but it is a good idea to specify the `proje
 * `other.resource.patterns` - comma-separated list of regular expressions matching additional resources to include in the image
 * `other.resource.bundles` - comma-separated list of the base names of additional resource bundles to include in the image
 * `other.proxy.interfaces` - comma-separated list of the fully qualified class names of additional interfaces for which to generate proxy classes when building the image
-* `disable.proxy.config` - don’t generate `proxy-config.json`
-* `disable.reflect.config` - don’t generate `reflect-config.json`
-* `disable.resources.config` - don’t generate `resources-config.json`
+* `disable.proxy.config` - disable the <<DynamicProxyConfigGenerator>> tool so no `proxy-config.json` file is generated
+* `disable.reflect.config` - disable the <<ReflectionConfigGenerator>> tool so no  `reflect-config.json` file is generated
+* `disable.resources.config` - disable the <<ResourceConfigGenerator>> tool so no  `resources-config.json` file is generated
 
 
 ==== Javac
@@ -533,8 +533,8 @@ You will also need the https://asciidoctor.org/docs/asciidoctor-gradle-plugin/[A
 [source,groovy]
 ----
 dependencies {
-    compile "info.picocli:picocli:4.2.0-SNAPSHOT"
-    annotationProcessor "info.picocli:picocli-codegen:4.2.0-SNAPSHOT"
+    compile "info.picocli:picocli:4.2.0"
+    annotationProcessor "info.picocli:picocli-codegen:4.2.0"
 }
 
 mainClassName = "my.pkg.MyCommand"
@@ -584,9 +584,49 @@ distributions {
 
 You will also need the https://github.com/asciidoctor/asciidoctor-maven-plugin[AsciiDoctor Maven Plugin].
 
+For Maven, add an `exec:java` goal to generate a Graal proxy configuration file with the `ManPageGenerator` tool.
+This example uses the `process-classes` phase of the build, there are http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html[alternatives].
+
+Note that the `picocli-codegen` module is only added as a dependency for the `exec` plugin, so it does not need to be added to the project dependencies.
+
 [source,xml]
 ----
-TODO
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.codehaus.mojo</groupId>
+      <artifactId>exec-maven-plugin</artifactId>
+      <version>1.6.0</version>
+      <executions>
+        <execution>
+          <id>generateManPages</id>
+          <phase>process-classes</phase>
+          <goals>
+            <goal>java</goal>
+          </goals>
+        </execution>
+      </executions>
+      <configuration>
+        <includeProjectDependencies>true</includeProjectDependencies>
+        <includePluginDependencies>true</includePluginDependencies>
+        <mainClass>picocli.codegen.docgen.manpage.ManPageGenerator</mainClass>
+        <arguments>
+          <argument>--outdir=target/generated/docs</argument>
+          <argument>com.your.package.YourCommand1</argument>
+          <argument>com.your.package.YourCommand2</argument>
+        </arguments>
+      </configuration>
+      <dependencies>
+        <dependency>
+          <groupId>info.picocli</groupId>
+          <artifactId>picocli-codegen</artifactId>
+          <version>4.2.0</version>
+          <type>jar</type>
+        </dependency>
+      </dependencies>
+    </plugin>
+  </plugins>
+</build>
 ----
 
 === Customizing with Templates
