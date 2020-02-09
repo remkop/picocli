@@ -105,14 +105,28 @@ publishing {
         }
     }
 }
+
+task generateManpageAsciiDoc(type: JavaExec) {
+    dependsOn(classes)
+    group = "Documentation"
+    description = "Generate AsciiDoc manpage"
+    classpath(configurations.compile, configurations.annotationProcessor, sourceSets.main.runtimeClasspath)
+    main 'picocli.codegen.docgen.manpage.ManPageGenerator'
+    args 'picocli.codegen.docgen.manpage.ManPageGenerator$App',
+            'picocli.codegen.aot.graalvm.DynamicProxyConfigGenerator$App',
+            'picocli.codegen.aot.graalvm.ReflectionConfigGenerator$App',
+            'picocli.codegen.aot.graalvm.ResourceConfigGenerator$App',
+            'picocli.AutoComplete$App', // the command line app
+            'picocli.AutoComplete$GenerateCompletion', // generate completion subcommand
+            "--outdir=${project.buildDir}/generated/docs", "-v" //, "--template-dir=src/docs/mantemplates"
+}
+
 apply plugin: 'org.asciidoctor.convert'
 asciidoctor {
-    sourceDir = file('src/test/resources')
-    outputDir = file('build/docs')
+    dependsOn(generateManpageAsciiDoc)
+    sourceDir = file("${project.buildDir}/generated/docs")
+    outputDir = file("${project.buildDir}/docs")
     logDocuments = true
-    backends 'manpage'
-//    attributes 'sourcedir': file('docs') //project.sourceSets.main.java.srcDirs[0]
-////    attributes 'pdf-stylesdir': 'theme',
-////               'pdf-style': 'custom',
-////               'sourcedir': file('docs') //project.sourceSets.main.java.srcDirs[0]
+    backends 'manpage', 'html5'
 }
+javadoc.dependsOn('asciidoctor')

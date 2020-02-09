@@ -1,0 +1,11 @@
+= Picocli Built-In Tools
+
+Below is a list of the manual pages for the picocli built-in tools.
+
+* link:gen-manpage.html[gen-manpage] (`picocli.codegen.docgen.manpage.ManPageGenerator`)
+* link:picocli.AutoComplete.html[picocli.AutoComplete] (`picocli.AutoComplete`)
+* link:generate-completion.html[generate-completion] (`picocli.AutoComplete$GenerateCompletion` - to be used as a subcommand)
+* link:gen-reflect-config.html[gen-reflect-config] (`picocli.codegen.aot.graalvm.ReflectionConfigGenerator`)
+* link:gen-proxy-config.html[gen-proxy-config] (`picocli.codegen.aot.graalvm.DynamicProxyConfigGenerator`)
+* link:gen-resource-config.html[gen-resource-config] (`picocli.codegen.aot.graalvm.ResourceConfigGenerator`)
+

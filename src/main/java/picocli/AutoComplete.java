@@ -103,7 +103,12 @@ public class AutoComplete {
                     "* `\"@|yellow picocli.autocomplete.systemExitOnError|@\"`",
                     "   call `System.exit(ERROR_CODE)` when an error occurs.",
                     "",
-                    "If these system properties are not defined or have value \"false\", this program completes without terminating the JVM."
+                    "If these system properties are not defined or have value \"false\", this program completes without terminating the JVM.",
+                    "",
+                    "Example",
+                    "-------",
+                    "  java -cp \"myapp.jar;picocli-4.2.0-SNAPSHOT.jar\" " +
+                            "picocli.AutoComplete my.pkg.MyClass"
             },
             exitCodeListHeading = "%nExit Codes:%n",
             exitCodeList = {

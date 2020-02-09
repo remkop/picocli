@@ -108,7 +108,13 @@ public class ManPageGenerator {
                     "",
                     "Point the SOURCE_DIR to either the `--outdir` directory or the `--template-dir` directory. Use some other directory as the DESTINATION.",
                     "See https://asciidoctor.org/docs/user-manual/#man-pages",
-                    "See http://man7.org/linux/man-pages/man7/roff.7.html"}
+                    "See http://man7.org/linux/man-pages/man7/roff.7.html",
+                    "",
+                    "Example",
+                    "-------",
+                    "  java -cp \"myapp.jar;picocli-4.2.0-SNAPSHOT.jar;picocli-codegen-4.2.0-SNAPSHOT.jar\" " +
+                            "picocli.codegen.docgen.manpage.ManPageGenerator my.pkg.MyClass"
+            }
     )
     private static class App implements Callable<Integer> {
 
@@ -289,24 +295,28 @@ public class ManPageGenerator {
         pw.printf(":mansource: %s%n", versionString(spec)); // spec.qualifiedName("-").toUpperCase()
         pw.printf(":man-linkstyle: pass:[blue R < >]%n");
         pw.printf("= %s(1)%n", spec.qualifiedName("-")); // command name (lower case)
+        pw.println();
         pw.printf("// end::picocli-generated-man-section-header[]%n");
         pw.println();
 
         pw.printf("// tag::picocli-generated-man-section-name[]%n");
         pw.printf("== Name%n%n");
         pw.printf("%s - %s%n", spec.qualifiedName("-"), headerDescriptionString(spec)); // name and description
+        pw.println();
         pw.printf("// end::picocli-generated-man-section-name[]%n");
         pw.println();
 
         pw.printf("// tag::picocli-generated-man-section-synopsis[]%n");
         pw.printf("== Synopsis%n%n");
         pw.printf("%s", spec.commandLine().getHelp().synopsis(0));
+        pw.println();
         pw.printf("// end::picocli-generated-man-section-synopsis[]%n");
         pw.println();
 
         pw.printf("// tag::picocli-generated-man-section-description[]%n");
         pw.printf("== Description%n%n");
         pw.printf("%s%n", format(COLOR_SCHEME.text(join("%n", (Object[]) spec.usageMessage().description())).toString())); // description
+        pw.println();
         pw.printf("// end::picocli-generated-man-section-description[]%n");
         pw.println();
     }
@@ -381,7 +391,7 @@ public class ManPageGenerator {
                 writeOption(pw, optionRenderer, paramLabelRenderer, option);
             }
         }
-
+        pw.println();
         pw.printf("// end::picocli-generated-man-section-options[]%n");
         pw.println();
     }
@@ -444,6 +454,7 @@ public class ManPageGenerator {
         for (PositionalParamSpec positional : positionals) {
             writePositional(pw, positional, parameterRenderer, paramLabelRenderer);
         }
+        pw.println();
         pw.printf("// end::picocli-generated-man-section-arguments[]%n");
         pw.println();
     }
@@ -473,6 +484,7 @@ public class ManPageGenerator {
                 pw.printf("+%n%s%n", lines[i].toString());
             }
         }
+        pw.println();
         pw.printf("// end::picocli-generated-man-section-commands[]%n");
         pw.println();
     }
@@ -489,6 +501,7 @@ public class ManPageGenerator {
             pw.printf("*%s*::%n", COLOR_SCHEME.text(entry.getKey().trim()));
             pw.printf("  %s%n", COLOR_SCHEME.text(entry.getValue()));
         }
+        pw.println();
         pw.printf("// end::picocli-generated-man-section-exit-status[]%n");
         pw.println();
     }
@@ -523,6 +536,7 @@ public class ManPageGenerator {
                 hardbreaks = true;
             }
         }
+        pw.println();
         pw.printf("// end::picocli-generated-man-section-footer[]%n");
         pw.println();
     }

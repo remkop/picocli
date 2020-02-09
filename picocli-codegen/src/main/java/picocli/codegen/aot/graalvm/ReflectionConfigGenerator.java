@@ -85,6 +85,11 @@ public class ReflectionConfigGenerator {
                     "The generated JSON file can be passed to the `-H:ReflectionConfigurationFiles=/path/to/reflect-config.json` " +
                     "option of the `native-image` GraalVM utility.",
                     "See https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md"},
+            footerHeading = "%nExample%n",
+            footer = {
+                    "  java -cp \"myapp.jar;picocli-4.2.0-SNAPSHOT.jar;picocli-codegen-4.2.0-SNAPSHOT.jar\" " +
+                            "picocli.codegen.aot.graalvm.ReflectionConfigGenerator my.pkg.MyClass"
+            },
             mixinStandardHelpOptions = true,
             version = "picocli-codegen ${COMMAND-NAME} " + CommandLine.VERSION)
     private static class App implements Callable<Integer> {

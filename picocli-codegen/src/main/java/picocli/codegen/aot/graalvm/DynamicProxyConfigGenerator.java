@@ -48,6 +48,11 @@ public class DynamicProxyConfigGenerator {
                     "The generated JSON file can be passed to the `-H:DynamicProxyConfigurationFiles=/path/to/proxy-config.json` " +
                     "option of the `native-image` GraalVM utility.",
                     "See https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md"},
+            footerHeading = "%nExample%n",
+            footer = {
+                "  java -cp \"myapp.jar;picocli-4.2.0-SNAPSHOT.jar;picocli-codegen-4.2.0-SNAPSHOT.jar\" " +
+                        "picocli.codegen.aot.graalvm.DynamicProxyConfigGenerator my.pkg.MyClass"
+            },
             mixinStandardHelpOptions = true, version = "picocli-codegen gen-proxy-config " + CommandLine.VERSION)
     private static class App implements Callable<Integer> {
 
@@ -83,10 +88,10 @@ public class DynamicProxyConfigGenerator {
     }
 
     /**
-     * Returns a JSON String with the resources and resource bundles to include for the specified
-     * {@code CommandSpec} objects.
+     * Returns a JSON String with the interface names to generate dynamic proxy classes for in the native image,
+     * used by the specified {@code CommandSpec} objects.
      *
-     * @param specs one or more {@code CommandSpec} objects to inspect for resource bundles
+     * @param specs one or more {@code CommandSpec} objects to inspect for dynamic proxies
      * @param interfaceClasses other (non-{@code @Command}) fully qualified interface names to generate dynamic proxy classes for
      * @return a JSON String in the <a href="https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md#manual-configuration">format</a>
      *       required by the {@code -H:DynamicProxyConfigurationFiles=/path/to/proxy-config.json} option of the GraalVM {@code native-image} utility.
