@@ -14,10 +14,10 @@ import java.util.concurrent.Callable;
 
 public class JniConfigGenerator {
 
-    @Command(name = "gen-jni-config",
+    @Command(name = "gen-jni-config", showAtFileInUsageHelp = true,
             description = {"Generates a JSON file with the program elements that will be " +
-                    "accessed reflectively from native code. " +
-                    "The generated JSON file can be passed to the -H:JNIConfigurationFiles=/path/to/jni-config.json " +
+                    "accessed reflectively from native code.",
+                    "The generated JSON file can be passed to the `-H:JNIConfigurationFiles=/path/to/jni-config.json` " +
                     "option of the `native-image` GraalVM utility.",
                     "See https://github.com/oracle/graal/blob/master/substratevm/JNI.md"},
             mixinStandardHelpOptions = true,

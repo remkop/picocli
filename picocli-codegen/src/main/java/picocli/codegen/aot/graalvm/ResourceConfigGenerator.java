@@ -39,15 +39,15 @@ import java.util.concurrent.Callable;
  */
 public class ResourceConfigGenerator {
 
-    @Command(name = "gen-resource-config",
-            description = {"Generates a JSON file with the resources and resource bundles to include in the native image. " +
-                    "The generated JSON file can be passed to the -H:ResourceConfigurationFiles=/path/to/resource-config.json " +
+    @Command(name = "gen-resource-config", showAtFileInUsageHelp = true,
+            description = {"Generates a JSON file with the resources and resource bundles to include in the native image.",
+                    "The generated JSON file can be passed to the `-H:ResourceConfigurationFiles=/path/to/resource-config.json` " +
                     "option of the `native-image` GraalVM utility.",
                     "See https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md"},
             mixinStandardHelpOptions = true, version = "picocli-codegen gen-resource-config " + CommandLine.VERSION)
     private static class App implements Callable<Integer> {
 
-        @Parameters(arity = "0..*", description = "Zero or more @Command classes with a resource bundle to include in the image.")
+        @Parameters(arity = "0..*", description = "Zero or more `@Command` classes with a resource bundle to include in the image.")
         Class<?>[] classes = new Class<?>[0];
 
         @Option(names = {"-b", "--bundle"}, paramLabel = "<bundle-base-name>",

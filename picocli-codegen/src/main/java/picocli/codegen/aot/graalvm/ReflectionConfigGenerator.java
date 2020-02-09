@@ -79,10 +79,10 @@ public class ReflectionConfigGenerator {
     private static final String REFLECTED_METHOD_BINDING_METHOD = "method";
     private static final String REFLECTED_BINDING_FIELD_SCOPE = "scope";
 
-    @Command(name = "gen-reflect-config",
+    @Command(name = "gen-reflect-config", showAtFileInUsageHelp = true,
             description = {"Generates a JSON file with the program elements that will be " +
-                    "accessed reflectively for the specified @Command classes. " +
-                    "The generated JSON file can be passed to the -H:ReflectionConfigurationFiles=/path/to/reflect-config.json " +
+                    "accessed reflectively for the specified `@Command` classes.",
+                    "The generated JSON file can be passed to the `-H:ReflectionConfigurationFiles=/path/to/reflect-config.json` " +
                     "option of the `native-image` GraalVM utility.",
                     "See https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md"},
             mixinStandardHelpOptions = true,
