@@ -92,15 +92,17 @@ public class AutoComplete {
     /**
      * CLI command class for generating completion script.
      */
-    @Command(name = "picocli.AutoComplete", mixinStandardHelpOptions = true,
+    @Command(name = "picocli.AutoComplete", mixinStandardHelpOptions = true, showAtFileInUsageHelp = true,
             version = "picocli.AutoComplete " + CommandLine.VERSION, sortOptions = false,
             description = "Generates a bash completion script for the specified command class.",
             footerHeading = "%n@|bold System Properties:|@%n",
             footer = {"Set the following system properties to control the exit code of this program:",
-                    " \"@|yellow picocli.autocomplete.systemExitOnSuccess|@\" - call `System.exit(0)` when",
-                    "                                              execution completes normally",
-                    " \"@|yellow picocli.autocomplete.systemExitOnError|@\"   - call `System.exit(ERROR_CODE)`",
-                    "                                              when an error occurs",
+                    "",
+                    "* `\"@|yellow picocli.autocomplete.systemExitOnSuccess|@\"`",
+                    "   call `System.exit(0)` when execution completes normally.",
+                    "* `\"@|yellow picocli.autocomplete.systemExitOnError|@\"`",
+                    "   call `System.exit(ERROR_CODE)` when an error occurs.",
+                    "",
                     "If these system properties are not defined or have value \"false\", this program completes without terminating the JVM."
             },
             exitCodeListHeading = "%nExit Codes:%n",
@@ -109,8 +111,8 @@ public class AutoComplete {
                     "1:Usage error: user input for the command was incorrect, " +
                             "e.g., the wrong number of arguments, a bad flag, " +
                             "a bad syntax in a parameter, etc.",
-                    "2:The specified command script exists (Specify --force to overwrite).",
-                    "3:The specified completion script exists (Specify --force to overwrite).",
+                    "2:The specified command script exists (Specify `--force` to overwrite).",
+                    "3:The specified completion script exists (Specify `--force` to overwrite).",
                     "4:An exception occurred while generating the completion script."
             },
             exitCodeOnInvalidInput = EXIT_CODE_INVALID_INPUT,
@@ -118,7 +120,7 @@ public class AutoComplete {
     private static class App implements Callable<Integer> {
 
         @Parameters(arity = "1", description = "Fully qualified class name of the annotated " +
-                "@Command class to generate a completion script for.")
+                "`@Command` class to generate a completion script for.")
         String commandLineFQCN;
 
         @Option(names = {"-c", "--factory"}, description = "Optionally specify the fully qualified class name of the custom factory to use to instantiate the command class. " +
@@ -126,8 +128,8 @@ public class AutoComplete {
         String factoryClass;
 
         @Option(names = {"-n", "--name"}, description = "Optionally specify the name of the command to create a completion script for. " +
-                "When omitted, the annotated class @Command 'name' attribute is used. " +
-                "If no @Command 'name' attribute exists, '<CLASS-SIMPLE-NAME>' (in lower-case) is used.")
+                "When omitted, the annotated class `@Command(name = \"...\")` attribute is used. " +
+                "If no `@Command(name = ...)` attribute exists, '<CLASS-SIMPLE-NAME>' (in lower-case) is used.")
         String commandName;
 
         @Option(names = {"-o", "--completionScript"},

@@ -232,10 +232,12 @@ public class AutoCompleteTest {
 
     private static final String AUTO_COMPLETE_APP_USAGE = String.format("" +
             "Usage: picocli.AutoComplete [-fhVw] [-c=<factoryClass>] [-n=<commandName>]%n" +
-            "                            [-o=<autoCompleteScript>] <commandLineFQCN>%n" +
+            "                            [-o=<autoCompleteScript>] [@<filename>...]%n" +
+            "                            <commandLineFQCN>%n" +
             "Generates a bash completion script for the specified command class.%n" +
+            "      [@<filename>...]       One or more argument files containing options.%n" +
             "      <commandLineFQCN>      Fully qualified class name of the annotated%n" +
-            "                               @Command class to generate a completion script%n" +
+            "                               `@Command` class to generate a completion script%n" +
             "                               for.%n" +
             "  -c, --factory=<factoryClass>%n" +
             "                             Optionally specify the fully qualified class name%n" +
@@ -244,9 +246,10 @@ public class AutoCompleteTest {
             "                               factory is used.%n" +
             "  -n, --name=<commandName>   Optionally specify the name of the command to%n" +
             "                               create a completion script for. When omitted,%n" +
-            "                               the annotated class @Command 'name' attribute is%n" +
-            "                               used. If no @Command 'name' attribute exists,%n" +
-            "                               '<CLASS-SIMPLE-NAME>' (in lower-case) is used.%n" +
+            "                               the annotated class `@Command(name = \"...\")`%n" +
+            "                               attribute is used. If no `@Command(name = ...)`%n" +
+            "                               attribute exists, '<CLASS-SIMPLE-NAME>' (in%n" +
+            "                               lower-case) is used.%n" +
             "  -o, --completionScript=<autoCompleteScript>%n" +
             "                             Optionally specify the path of the completion%n" +
             "                               script file to generate. When omitted, a file%n" +
@@ -262,16 +265,18 @@ public class AutoCompleteTest {
             "  0   Successful program execution%n" +
             "  1   Usage error: user input for the command was incorrect, e.g., the wrong%n" +
             "        number of arguments, a bad flag, a bad syntax in a parameter, etc.%n" +
-            "  2   The specified command script exists (Specify --force to overwrite).%n" +
-            "  3   The specified completion script exists (Specify --force to overwrite).%n" +
+            "  2   The specified command script exists (Specify `--force` to overwrite).%n" +
+            "  3   The specified completion script exists (Specify `--force` to overwrite).%n" +
             "  4   An exception occurred while generating the completion script.%n" +
             "%n" +
             "System Properties:%n" +
             "Set the following system properties to control the exit code of this program:%n" +
-            " \"picocli.autocomplete.systemExitOnSuccess\" - call `System.exit(0)` when%n" +
-            "                                              execution completes normally%n" +
-            " \"picocli.autocomplete.systemExitOnError\"   - call `System.exit(ERROR_CODE)`%n" +
-            "                                              when an error occurs%n" +
+            "%n" +
+            "* `\"picocli.autocomplete.systemExitOnSuccess\"`%n" +
+            "   call `System.exit(0)` when execution completes normally.%n" +
+            "* `\"picocli.autocomplete.systemExitOnError\"`%n" +
+            "   call `System.exit(ERROR_CODE)` when an error occurs.%n" +
+            "%n" +
             "If these system properties are not defined or have value \"false\", this program%n" +
             "completes without terminating the JVM.%n");
 
