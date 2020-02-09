@@ -6,12 +6,14 @@
 :mansource: import 2.3
 :man-linkstyle: pass:[blue R < >]
 = import(1)
+
 // end::picocli-generated-man-section-header[]
 
 // tag::picocli-generated-man-section-name[]
 == Name
 
 import - Imports data from a file into the infra inventory db.
+
 // end::picocli-generated-man-section-name[]
 
 // tag::picocli-generated-man-section-synopsis[]
@@ -21,12 +23,14 @@ import - Imports data from a file into the infra inventory db.
        [*-t*=_<tableName>_] *-C*=_<file-column>=<db-column>_
        [*-C*=_<file-column>=<db-column>_]... [*-W*=_<db-column>=<value>_]... _<file>_
        _<extraFile>_
+
 // end::picocli-generated-man-section-synopsis[]
 
 // tag::picocli-generated-man-section-description[]
 == Description
 
 Imports data from a file into the infra inventory db.
+
 // end::picocli-generated-man-section-description[]
 
 // tag::picocli-generated-man-section-options[]
@@ -65,6 +69,7 @@ _<extraFile>_::
 
 *-W*, *--column-value*=_<db-column>=<value>_::
   (CSV/TSV-only) Key-value pair specifying the destination table column name and the value to set it to.
+
 // end::picocli-generated-man-section-options[]
 
 // tag::picocli-generated-man-section-arguments[]
@@ -72,6 +77,7 @@ _<extraFile>_::
 
 _<file>_::
   The file to import.
+
 // end::picocli-generated-man-section-arguments[]
 
 // tag::picocli-generated-man-section-footer[]
@@ -84,6 +90,7 @@ pass:c[# ]This imports all rows from the IP_Allocation_v1.20.csv file into the `
 [%hardbreaks]
 pass:c[# ]This imports all rows from the network.csv file into the `network` table.
 *import -v --table=network src/test/resources/network.csv -Cdesc=purpose -CDC=datacenter -Csubnet=subnet -Cgateway=gateway -Cvlanid=network*
+
 // end::picocli-generated-man-section-footer[]
 
 // end::picocli-generated-full-manpage[]

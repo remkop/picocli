@@ -6,24 +6,28 @@
 :mansource: Versioned Command 1.0
 :man-linkstyle: pass:[blue R < >]
 = myapp(1)
+
 // end::picocli-generated-man-section-header[]
 
 // tag::picocli-generated-man-section-name[]
 == Name
 
 myapp - This app does great things.
+
 // end::picocli-generated-man-section-name[]
 
 // tag::picocli-generated-man-section-synopsis[]
 == Synopsis
 
 *myapp* [*-hV*] [*-o*=_<outputFolder>_] [_<values>_[,_<values>_...]...]
+
 // end::picocli-generated-man-section-synopsis[]
 
 // tag::picocli-generated-man-section-description[]
 == Description
 
 This app does great things.
+
 // end::picocli-generated-man-section-description[]
 
 // tag::picocli-generated-man-section-options[]
@@ -37,6 +41,7 @@ This app does great things.
 
 *-V*, *--version*::
   Print version information and exit.
+
 // end::picocli-generated-man-section-options[]
 
 // tag::picocli-generated-man-section-arguments[]
@@ -44,6 +49,7 @@ This app does great things.
 
 [_<values>_[,_<values>_...]...]::
   Some comma-separated values.
+
 // end::picocli-generated-man-section-arguments[]
 
 // tag::picocli-generated-man-section-exit-status[]
@@ -57,6 +63,7 @@ This app does great things.
 
 *70*::
   Execution exception: an exception occurred while executing the business logic.
+
 // end::picocli-generated-man-section-exit-status[]
 
 // tag::picocli-generated-man-section-footer[]
@@ -66,6 +73,7 @@ This app does great things.
 This is the first line.
 This is the second line.
 This is a very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very veryvery very very very very very very very very very very very very very very very long line.
+
 // end::picocli-generated-man-section-footer[]
 
 // end::picocli-generated-full-manpage[]
