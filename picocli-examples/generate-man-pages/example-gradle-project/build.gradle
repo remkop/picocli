@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "org.asciidoctor:asciidoctor-gradle-plugin:$asciidoctorGradlePluginVersion"
+        classpath "org.asciidoctor:asciidoctor-gradle-plugin:1.6.1"
     }
 }
 
@@ -33,11 +33,13 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 dependencies {
-    compile "info.picocli:picocli:4.2.0"
-    annotationProcessor "info.picocli:picocli-codegen:4.2.0"
+    compile "info.picocli:picocli:4.2.0-SNAPSHOT"
+    annotationProcessor "info.picocli:picocli-codegen:4.2.0-SNAPSHOT"
 }
 
-mainClassName = "my.pkg.MyCommand"
+project.ext {
+    mainClassName = "com.company.Main"
+}
 
 task generateManpageAsciiDoc(type: JavaExec) {
     dependsOn(classes)
@@ -45,7 +47,7 @@ task generateManpageAsciiDoc(type: JavaExec) {
     description = "Generate AsciiDoc manpage"
     classpath(configurations.compile, configurations.annotationProcessor, sourceSets.main.runtimeClasspath)
     main 'picocli.codegen.docgen.manpage.ManPageGenerator'
-    args mainClassName, "--outdir=${project.buildDir}/generated/docs", "-v" //, "--template-dir=src/docs/mantemplates"
+    args project.ext.mainClassName, "--outdir=${project.buildDir}/generated/docs", "-v", "--template-dir=src/docs/mantemplates"
 }
 
 apply plugin: 'org.asciidoctor.convert'
@@ -54,5 +56,6 @@ asciidoctor {
     sourceDir = file("${project.buildDir}/generated/docs")
     outputDir = file("${project.buildDir}/docs")
     logDocuments = true
-    backends 'manpage'
+    backends 'manpage', 'html5'
 }
+assemble.dependsOn(asciidoctor)
