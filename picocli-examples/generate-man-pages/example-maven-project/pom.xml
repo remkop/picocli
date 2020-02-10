@@ -55,19 +55,65 @@
           <includePluginDependencies>true</includePluginDependencies>
           <mainClass>picocli.codegen.docgen.manpage.ManPageGenerator</mainClass>
           <arguments>
-            <argument>--outdir=target/generated/docs</argument>
-            <argument>com.your.package.YourCommand1</argument>
-            <argument>com.your.package.YourCommand2</argument>
+            <argument>--outdir=${project.build.directory}/generated-picocli-docs</argument>
+            <argument>-v</argument>
+<!--            <argument>&#45;&#45;template-dir=src/docs/mantemplates</argument>-->
+            <argument>com.company.Main</argument>
+            <!-- <argument>com.your.package.YourCommand2</argument>-->
           </arguments>
         </configuration>
         <dependencies>
           <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli-codegen</artifactId>
-            <version>4.2.0</version>
+            <version>4.2.0-SNAPSHOT</version>
             <type>jar</type>
           </dependency>
         </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.asciidoctor</groupId>
+        <artifactId>asciidoctor-maven-plugin</artifactId>
+        <version>1.5.6</version>
+        <executions>
+          <execution>
+            <id>output-html</id>
+<!--            <phase>prepare-package</phase>-->
+            <phase>process-classes</phase>
+            <goals>
+              <goal>process-asciidoc</goal>
+            </goals>
+            <configuration>
+              <sourceHighlighter>coderay</sourceHighlighter>
+              <backend>html5</backend>
+              <!-- <attributes>-->
+              <!--   <toc/>-->
+              <!--   <linkcss>false</linkcss>-->
+              <!-- </attributes>-->
+            </configuration>
+          </execution>
+          <execution>
+            <id>output-manpage</id>
+<!--            <phase>prepare-package</phase>-->
+            <phase>process-classes</phase>
+            <goals>
+              <goal>process-asciidoc</goal>
+            </goals>
+            <configuration>
+              <sourceHighlighter>coderay</sourceHighlighter>
+              <backend>manpage</backend>
+              <!-- <attributes>-->
+              <!--   <toc/>-->
+              <!--   <linkcss>false</linkcss>-->
+              <!-- </attributes>-->
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <sourceDirectory>${project.build.directory}/generated-picocli-docs</sourceDirectory>
+<!--          <headerFooter>true</headerFooter>-->
+<!--          <imagesDir>../resources/images</imagesDir>-->
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -88,12 +134,12 @@
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
-      <version>4.1.4</version>
+      <version>4.2.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli-codegen</artifactId>
-      <version>4.1.4</version>
+      <version>4.2.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
