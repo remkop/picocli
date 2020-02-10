@@ -23,27 +23,27 @@ If a tool does not have an annotation processor wrapper (yet), it can be invoked
 As of picocli version 4.2, this module has three major use cases:
 
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **Graal native images**. To create a GraalVM native image for a picocli application, https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[configuration] is needed. The `ReflectionConfigGenerator`, `ResourceConfigGenerator` and `DynamicProxyGenerator` tools can generate configuration files for https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md[resources] and https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md[dynamic proxies], respectively.
+* **GraalVm native images**. To create a GraalVM native image for a picocli application, https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[configuration] is needed. The `ReflectionConfigGenerator`, `ResourceConfigGenerator` and `DynamicProxyGenerator` tools can generate configuration files for https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md[resources] and https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md[dynamic proxies], respectively.
 +
 The annotation processor embeds these three tools and generates the configuration files under `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
-By embedding these configuration files, your jar is instantly Graal-enabled.
+By embedding these configuration files, your jar is instantly GraalVM-enabled.
 In most cases no further configuration is needed when generating a native image.
 * **Generate Documentation**. The `ManPageGenerator` tool can generate AsciiDoc documentation for picocli applications. AsciiDoc is a lightweight markup language that can easily can be converted to unix man pages, HTML and PDF with the wonderful https://asciidoctor.org/docs/user-manual/#man-pages[asciidoctor] tool.
 
 
 
-== Generate GraalVM Configurations
+== Generate GraalVM Configurations with the Annotation Processor
 
 To build a GraalVM native image for a picocli-based application, configuration files are needed to tell the GraalVM `native-image` generator tool which classes, methods and fields will be accessed reflectively, and which resources and dynamic proxies the application will use.
 
-The `picocli-codegen` module has tools that generates these configuration files for a picocli-based application.
+The `picocli-codegen` module has tools that generate these configuration files for a picocli-based application.
 The annotation processor in the `picocli-codegen` jar wraps these tools so they are executed automatically during compilation.
 
-The annotation processor generates and updates https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[Graal configuration]
+The annotation processor generates and updates https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[GraalVM configuration]
 files under `META-INF/native-image/picocli-generated/$project` during compilation,
 to be included in the application jar.
 This includes configuration files for https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md[resources] and https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md[dynamic proxies].
-By embedding these configuration files, your jar is instantly Graal-enabled.
+By embedding these configuration files, your jar is instantly GraalVM-enabled.
 
 In most cases no further configuration is needed when generating a native image.
 
@@ -187,9 +187,12 @@ compileJava {
 
 See the https://docs.gradle.org/current/dsl/org.gradle.api.tasks.compile.CompileOptions.html[Gradle documentation] for details.
 
-== Manually Running the Tools for Configuring GraalVM Native Image Builds
 
-The annotation processor is the recommended way to generate configuration files for GraalVM native images, but there may be cases where you want to generate these configuration files manually. The sections below give details on how to do this.
+== Generate GraalVM Configurations Manually
+
+The annotation processor is the recommended way to generate configuration files for GraalVM native images, but there may be cases where you want to generate these configuration files manually. For example, if your commands are written in Groovy or Kotlin, the picocli annotation processor will not be able to auto-generate configuration files for your commands, and you need to do some work to invoke the commands in your build.
+
+The sections below give details on how to do this.
 
 The `picocli-codegen` module contains the following tools to assist with AOT compilation to GraalVM native image builds:
 
@@ -237,7 +240,7 @@ This example uses the `process-classes` phase of the build, there are http://mav
 
 Note that the `picocli-codegen` module is only added as a dependency for the `exec` plugin, so it does not need to be added to the project dependencies.
 
-[sourc,xml]
+[source,xml]
 ----
 <build>
   <plugins>
@@ -554,14 +557,14 @@ asciidoctor {
     sourceDir = file("${project.buildDir}/generated/docs")
     outputDir = file("${project.buildDir}/docs")
     logDocuments = true
-    backends 'manpage'
+    backends 'manpage', 'html5'
 }
 ----
 
 
 The `generateManpageAsciiDoc` task generates `<cmd>.adoc` files with doctype `manpage` in `build/generated/docs` for each command and subcommand.
 
-The `asciidoctor` task converts the generated `<cmd>.adoc` files in `build/generated/docs` to `<cmd>.1` manpage files in `build/docs/manpage/`.
+The `asciidoctor` task converts the generated `<cmd>.adoc` files in `build/generated/docs` to `<cmd>.1` manpage files in `build/docs/manpage/`, and to `<cmd>.html` HTML files in `build/docs/html5/`.
 
 You could then use the Gradle `distribution` plugin to include the generated manpage files in the distribution archive:
 
@@ -630,49 +633,81 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
 ----
 
 === Customizing with Templates
-
 The generated man page is very similar to the online help generated by the command itself when a user specifies the `--help` option.
 You may want to add more details or extra sections to the man page.
-This can be achieved by leveraging AsciiDoctor's https://asciidoctor.org/docs/user-manual/#include-directive[include mechanism].
 
-To create customized man pages, first point the `sourceDir` for the `asciidoctor` task to a different directory than the directory where the AsciiDoc files with doctype `manpage` are generated.
+To achieve this, the `ManPageGenerator` tool has an option to generate "template" files in addition to the manpage AsciiDoc files.
 
-Let's call this new directory `src/docs/manpage`. In this directory, we keep a manually maintained `xxx.adoc` file for each generated AsciiDoc file with doctype `manpage`.
-Now we can customize the resulting manpage by editing the manually maintained files in `src/docs/manpage`.
 
-In its simplest form we can include the full generated page with the `generated-manpage` tag.
+==== Templates Concept
+
+The generated manpage AsciiDoc files will be regenerated every build. We don't want to edit these files because we would lose our changes every time the files are regenerated.
+
+Instead, we will edit "template" files.
+Template files leverage AsciiDoctor's https://asciidoctor.org/docs/user-manual/#include-directive[include mechanism] to import the contents of the generated manpage AsciiDoc files into a separate file.
+
+The template page initially just contains a number of `include::path/to/some.adoc[tag=xxx]` statements. Each `include` statement imports part of a generated manpage AsciiDoc file. You can rearrange these includes and add text after the sections  to customize the resulting man page.
+
+Template files are intended to be generated _only once_, and afterwards be manually updated and maintained.
+Changes in the generated manpage AsciiDoc files will be reflected in the final output via the includes, but otherwise won't impact the additions or modifications you made to the template files.
+
+Once we generated the template files, we will tell the `asciidoctor` tool to take our template files as input instead of the generated manpage AsciiDoc files.
+The resulting man page will be a mixture of generated and manually edited text.
+
+==== Creating Template Files
+To create template pages, specify the `--template-dir` option when invoking the `picocli.codegen.docgen.manpage.ManPageGenerator` tool. For example:
+
+----
+java -cp $CLASSPATH picocli.codegen.docgen.manpage.ManPageGenerator \
+     -v --outdir=${project.buildDir}/generated/docs \
+     --template-dir=src/docs/man-templates \
+     my.pkg.MyCommand
+----
+
+This generates AsciiDoc files with the 'manpage' doctype in `build/generated/docs`, and template files in `src/docs/man-templates`.
+
+CAUTION: Do this only once, then remove the `--template-dir` option, so that subsequent `ManPageGenerator` invocations will only update the generated manpage AsciiDoc files and will not overwrite the template files.
+
+We can now edit the files in `src/docs/man-templates` and tell the `asciidoctor` tool to generate HTML and man page files in troff format from the files in `src/docs/man-templates`.
+
+
+==== Using Template Files
+
+In its simplest form a template file can include the full generated page with the `picocli-generated-full-manpage` tag.
 This allows us to add some sections to the end of the page.
 For example:
 
-[subs=+macros]
+[subs="+macros,verbatim,quotes"]
 ----
-// src/docs/manpage/xxx.adoc
+// src/docs/man-templates/xxx.adoc
 pass:c[:includedir: ../../../build/generated/docs]
 pass:c[include::{includedir}/xxx.adoc[tag=picocli-generated-full-manpage]]
 
-== Authors
-My, myself and I.
+#== Authors#
+#My, myself and I.#
 ----
 
 It is also possible to include the picocli-generated sections individually, so that the generated sections can be customized with additional text that follows the generated text for the section. For example:
 
-[subs=+macros]
+[subs="+macros,verbatim,quotes"]
 ----
-// src/docs/manpage/yyy.adoc
+// src/docs/man-templates/yyy.adoc
 pass:c[:includedir: ../../../build/generated/docs]
 pass:c[include::{includedir}/yyy.adoc[tag=picocli-generated-man-section-header]]
 
 pass:c[include::{includedir}/yyy.adoc[tag=picocli-generated-man-section-name]]
 
-This is a very good tool that will serve you well.
+#This is a very good tool that will serve you well.#
 
 pass:c[include::{includedir}/yyy.adoc[tag=picocli-generated-man-section-synopsis]]
 
-*mycommand* [-hVv] [a=VERY] [--different=synopsis]
+#pass:c[*mycommand*] [-hVv] [a=VERY] [--different=synopsis]#
 
 pass:c[include::{includedir}/yyy.adoc[tag=picocli-generated-man-section-description]]
 
-Here are some additional description lines.
+#Here is one additional description line.#
+
+#Here is another additional description line.#
 
 pass:c[include::{includedir}/yyy.adoc[tag=picocli-generated-man-section-options]]
 
@@ -684,18 +719,28 @@ pass:c[include::{includedir}/yyy.adoc[tag=picocli-generated-man-section-exit-sta
 
 pass:c[include::{includedir}/yyy.adoc[tag=picocli-generated-man-section-footer]]
 
-== More Examples
+#== More Examples#
 
-[%hardbreaks]
-Here are some extra examples:
-abc def ghi jkl mno pq
-abc def ghi jkl mno pq
-abc def ghi jkl mno pq
+#[%hardbreaks]#
+#Here are some extra examples:#
+#abc def ghi jkl mno pq#
+#abc def ghi jkl mno pq#
+#abc def ghi jkl mno pq#
 
-== Authors
-All of us.
+#== Authors#
+#All of us.#
 
-== Copyright
-Just hand it out, it's fine.
+#== Copyright#
+#Just hand it out, it's fine.#
 ----
 
+Then, when invoking the `asciidoctor` tool, specify the directory containing the template files as the source directory. For example:
+
+[source,bash]
+----
+# generate man pages in troff format in build/docs/manpage
+asciidoctor --backend=manpage --source-dir=src/docs/man-templates --destination-dir=build/docs
+
+# generate man pages in HTML format in build/docs/html5
+asciidoctor --backend=html5 --source-dir=src/docs/man-templates --destination-dir=build/docs
+----
