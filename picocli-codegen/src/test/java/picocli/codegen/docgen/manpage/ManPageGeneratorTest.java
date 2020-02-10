@@ -121,9 +121,14 @@ public class ManPageGeneratorTest {
             @ArgGroup(validate = false, heading = "%nCSV/TSV-only Options%n")
             CsvOptions csvOptions;
 
-            @Option(names = {"-n", "--dry-run"},
+            @Option(names = {"--dry-run"},
                     description = "Don't actually add the row(s), just show if they exist and/or will be ignored..")
             boolean dryRun;
+
+            @Option(names = "-n", description = {"Number-of-iterations limit as:  `-n number`",
+                    "Specifies the maximum number of iterations, or frames, top " +
+                            "should produce before ending."})
+            int number;
 
             @Option(names = {"-t", "--table"}, paramLabel = "<tableName>", order = 51,
                     description = {"Name of the table that the CRUD operations apply to. Default: ${table.hosts}."})

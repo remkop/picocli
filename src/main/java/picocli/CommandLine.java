@@ -15368,6 +15368,12 @@ public class CommandLine {
                     Text result = (Text) clone();
                     result.from = from + start;
                     result.length = end - start;
+                    result.sections.clear();
+                    for (StyledSection section : this.sections) {
+                        if (section.startIndex >= result.from + result.length) { continue; }
+                        if (section.startIndex + section.length <= result.from) { continue; }
+                        result.sections.add(section);
+                    }
                     return result;
                 }
                 /** @deprecated use {@link #concat(String)} instead */

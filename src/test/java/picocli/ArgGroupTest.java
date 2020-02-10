@@ -1313,11 +1313,11 @@ public class ArgGroupTest {
         }
         String expected = String.format("" +
                 "Usage: @|bold <main class>|@ [[@|yellow -a|@=@|italic <a>|@ @|yellow -b|@=@|italic <b>|@ @|yellow -c|@=@|italic <c>|@] | (@|yellow -x|@=@|italic <x>|@ | @|yellow -y|@=@|italic <y>|@)]%n" +
-                "@|yellow  |@ @|yellow -a|@=@|italic <|@@|italic a>|@%n" +
-                "@|yellow  |@ @|yellow -b|@=@|italic <|@@|italic b>|@%n" +
-                "@|yellow  |@ @|yellow -c|@=@|italic <|@@|italic c>|@%n" +
-                "@|yellow  |@ @|yellow -x|@=@|italic <|@@|italic x>|@%n" +
-                "@|yellow  |@ @|yellow -y|@=@|italic <|@@|italic y>|@%n");
+                "@|yellow  |@ @|yellow -a|@=@|italic <a>|@%n" +
+                "@|yellow  |@ @|yellow -b|@=@|italic <b>|@%n" +
+                "@|yellow  |@ @|yellow -c|@=@|italic <c>|@%n" +
+                "@|yellow  |@ @|yellow -x|@=@|italic <x>|@%n" +
+                "@|yellow  |@ @|yellow -y|@=@|italic <y>|@%n");
         expected = Help.Ansi.ON.string(expected);
         String actual = new CommandLine(new App(), new InnerClassFactory(this)).getUsageMessage(Help.Ansi.ON);
         assertEquals(expected, actual);

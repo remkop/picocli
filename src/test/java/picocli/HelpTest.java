@@ -2967,7 +2967,7 @@ public class HelpTest {
         String expected = Help.Ansi.ON.string(String.format("" +
                 "Usage: @|bg_cyan <main class>|@ [@|green -hV|@] [@|green -f|@=@|magenta ARCHIVE|@] @|bg_white POSITIONAL|@%n" +
                 "@|bg_white  |@     @|bg_white POSITIONAL|@   positional arg%n" +
-                "  @|green -f|@=@|magenta A|@@|magenta RCHIVE|@       the archive file%n" +
+                "  @|green -f|@=@|magenta ARCHIVE|@       the archive file%n" +
                 "  @|green -h|@, @|green --help|@       Show this help message and exit.%n" +
                 "  @|green -V|@, @|green --version|@    Print version information and exit.%n"));
         assertEquals(expected, baos.toString());

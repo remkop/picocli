@@ -19,10 +19,10 @@ import - Imports data from a file into the infra inventory db.
 // tag::picocli-generated-man-section-synopsis[]
 == Synopsis
 
-*import* [*-nv*] [*--indexed*] [*--[no-]header*] [*-e*=_<charset>_] [*-o*=_<format>_]
-       [*-t*=_<tableName>_] *-C*=_<file-column>=<db-column>_
-       [*-C*=_<file-column>=<db-column>_]... [*-W*=_<db-column>=<value>_]... _<file>_
-       _<extraFile>_
+*import* [*-v*] [*--dry-run*] [*--indexed*] [*--[no-]header*] [*-e*=_<charset>_]
+       [*-n*=_<number>_] [*-o*=_<format>_] [*-t*=_<tableName>_]
+       *-C*=_<file-column>=<db-column>_ [*-C*=_<file-column>=<db-column>_]...
+       [*-W*=_<db-column>=<value>_]... _<file>_ _<extraFile>_
 
 // end::picocli-generated-man-section-synopsis[]
 
@@ -36,8 +36,13 @@ Imports data from a file into the infra inventory db.
 // tag::picocli-generated-man-section-options[]
 == Options
 
-*-n*, *--dry-run*::
+*--dry-run*::
   Don't actually add the row(s), just show if they exist and/or will be ignored..
+
+*-n*, _<number>_::
+  Number-of-iterations limit as:  `-n number`
++
+Specifies the maximum number of iterations, or frames, top should produce before ending.
 
 *-o*, *--format*=_<format>_::
   File format. Valid values: CSV, TSV. Default: CSV

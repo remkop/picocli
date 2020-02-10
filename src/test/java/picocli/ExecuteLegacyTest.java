@@ -488,7 +488,7 @@ public class ExecuteLegacyTest {
             "Usage: @|bold mycmd|@ [@|yellow -hV|@] [@|yellow -x|@=@|italic <option>|@]%n" +
             "  @|yellow -h|@, @|yellow --help|@      Show this help message and exit.%n" +
             "  @|yellow -V|@, @|yellow --version|@   Print version information and exit.%n" +
-            "  @|yellow -x|@=@|italic <|@@|italic option>|@     this is an option%n")).toString();
+            "  @|yellow -x|@=@|italic <option>|@     this is an option%n")).toString();
 
     @Test
     public void testCall1WithInvalidInput() {

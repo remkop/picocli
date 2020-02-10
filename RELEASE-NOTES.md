@@ -242,6 +242,7 @@ Usage: myapp [-hV] [-o=<outputFolder>]
 * [#905] Bugfix: non-public `@Command`-annotated methods without arguments caused a `IllegalAccessException`. From this release such methods no longer need to be public. Thanks to [David Connelly](https://github.com/dconnelly) for raising this.
 * [#924] Bugfix: `CommandSpec.mixinAnnotatedElements` map should be initialized when discovering `@Mixin`-annotated fields and methods via reflection.
 * [#937] Bugfix: `Text.getStyledChars` no longer incorrectly inserts ANSI escape chars into the next line prefix when lines are broken.
+* [#945] Bugfix: `Text.substring` now leaves out `StyledSection` instances that do not apply.
 * [#944] DOC: Fix typo in picocli user manual - remove unnecessary semicolon. Thanks to [ztbx](https://github.com/ztbx) for raising this.
 * [#943] DOC: Create man pages for built-in picocli commands.
 * [#929] DOC: Add [jbang](https://github.com/maxandersen/jbang) under [packaging](https://picocli.info/#_packaging_your_application) in the user manual.

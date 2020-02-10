@@ -200,7 +200,7 @@ public class HelpAnsiTest {
         String expected = String.format("" +
                 "Usage: @|reverse <main class>|@ [@|bg_magenta -x|@=@|bg_yellow <options>|@]... [@|bg_cyan <params>|@...]%n" +
                 "      [@|bg_cyan <params>|@...]   param desc%n" +
-                "  @|bg_magenta -x|@=@|bg_yellow <|@@|bg_yellow options>|@        option desc%n");
+                "  @|bg_magenta -x|@=@|bg_yellow <options>|@        option desc%n");
         assertEquals(Ansi.ON.new Text(expected).toString(), actual);
     }
 
