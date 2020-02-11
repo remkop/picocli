@@ -71,6 +71,11 @@ public class ResourceConfigGenerator {
         @Mixin
         OutputFileMixin outputFile = new OutputFileMixin();
 
+        @Option(names = "--exit", negatable = true,
+                description = "Specify this option if you want the application to call `System.exit` when finished. " +
+                "By default, `System.exit` is not called.")
+        boolean exit;
+
         public Integer call() throws Exception {
             List<CommandSpec> specs = Util.getCommandSpecs(factoryClass, classes);
             String result = ResourceConfigGenerator.generateResourceConfig(specs.toArray(new CommandSpec[0]), bundles, resourceRegex);
@@ -84,7 +89,11 @@ public class ResourceConfigGenerator {
      * @param args one or more fully qualified class names of {@code @Command}-annotated classes.
      */
     public static void main(String... args) {
-        new CommandLine(new App()).execute(args);
+        App app = new App();
+        int exitCode = new CommandLine(app).execute(args);
+        if (app.exit) {
+            System.exit(exitCode);
+        }
     }
 
     /**
