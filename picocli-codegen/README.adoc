@@ -524,7 +524,9 @@ task(generateGraalDynamicProxyConfig, dependsOn: 'classes', type: JavaExec) {
 assemble.dependsOn generateGraalDynamicProxyConfig
 ----
 
+
 == Generate Documentation
+
 The `picocli.codegen.docgen.manpage.ManPageGenerator` tool introduced in picocli 4.2 generates AsciiDoc documentation using the `manpage` doctype and manpage document structure.
 The generated AsciiDoc files can be converted to HTML, PDF and unix man pages with the https://asciidoctor.org/docs/user-manual/#man-pages[asciidoctor] tool.
 
@@ -562,9 +564,9 @@ asciidoctor {
 ----
 
 
-The `generateManpageAsciiDoc` task generates `<cmd>.adoc` files with doctype `manpage` in `build/generated-picocli-docs` for each command and subcommand.
+The `generateManpageAsciiDoc` task generates `$COMMANDNAME.adoc` files with doctype `manpage` in `build/generated-picocli-docs` for each command and subcommand.
 
-The `asciidoctor` task converts the generated `<cmd>.adoc` files in `build/generated-picocli-docs` to `<cmd>.1` manpage files in `build/docs/manpage/`, and to `<cmd>.html` HTML files in `build/docs/html5/`.
+The `asciidoctor` task converts the generated `$COMMANDNAME.adoc` files in `build/generated-picocli-docs` to `$COMMANDNAME.1` manpage files in `build/docs/manpage/`, and to `$COMMANDNAME.html` HTML files in `build/docs/html5/`.
 
 See the link:https://github.com/remkop/picocli/tree/master/picocli-examples/generate-man-pages/example-gradle-project[example-gradle-project] in the `picocli-examples` module for a full working example.
 
