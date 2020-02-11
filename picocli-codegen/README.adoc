@@ -650,10 +650,11 @@ The template page initially just contains a number of `include::path/to/some.ado
 Each `include` statement imports part of a generated manpage AsciiDoc file.
 You can rearrange these includes and add text after each include to customize the resulting man page.
 
+Once we generated the template files, we will need to tell the `asciidoctor` tool to take our template files as input instead of the generated manpage AsciiDoc files.
+
 Template files are intended to be generated _only once_, and afterwards be manually updated and maintained.
 Changes in the generated manpage AsciiDoc files will be reflected in the final output via the includes, but otherwise won't impact the additions or modifications you made to the template files.
 
-Once we generated the template files, we will need to tell the `asciidoctor` tool to take our template files as input instead of the generated manpage AsciiDoc files.
 The resulting man page will be a mixture of generated and manually edited text.
 
 ==== Creating Template Files
