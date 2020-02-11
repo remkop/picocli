@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="4.2.0"></a> Picocli 4.2.0 (UNRELEASED)
+# <a name="4.2.0"></a> Picocli 4.2.0
 The picocli community is pleased to announce picocli 4.2.0.
 
 This release adds support for Repeatable Subcommands: when a command is marked as `@Command(subcommandsRepeatable = true)` it becomes possible to specify that command's subcommands multiple times on the command line.

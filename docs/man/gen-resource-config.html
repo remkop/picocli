@@ -443,7 +443,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="_synopsis">Synopsis</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p><strong>gen-resource-config</strong> [<strong>-hV</strong>] [<strong>-c</strong>=<em>&lt;factoryClass&gt;</em>] [<strong>-o</strong>=<em>&lt;outputFile&gt;</em>]
+<p><strong>gen-resource-config</strong> [<strong>-hV</strong>] [<strong>--[no-]exit</strong>] [<strong>-c</strong>=<em>&lt;factoryClass&gt;</em>] [<strong>-o</strong>=<em>&lt;outputFile&gt;</em>]
                     [<strong>-b</strong>=<em>&lt;bundle-base-name&gt;</em>]&#8230;&#8203; [<strong>-p</strong>=<em>&lt;resourceRegex&gt;</em>]&#8230;&#8203;
                     [<em>@&lt;filename&gt;</em>&#8230;&#8203;] [<em>&lt;classes&gt;</em>&#8230;&#8203;]</p>
 </div>
@@ -468,21 +468,25 @@ See <a href="https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.m
 <dd>
 <p>Additional resource bundle(s) to be included in the image. This option may be specified multiple times with different regular expression patterns.</p>
 </dd>
+<dt class="hdlist1"><strong>-p</strong>, <strong>--pattern</strong>=<em>&lt;resourceRegex&gt;</em></dt>
+<dd>
+<p>Java regexp that matches resource(s) to be included in the image. This option may be specified multiple times with different regular expression patterns.</p>
+</dd>
 <dt class="hdlist1"><strong>-c</strong>, <strong>--factory</strong>=<em>&lt;factoryClass&gt;</em></dt>
 <dd>
 <p>Optionally specify the fully qualified class name of the custom factory to use to instantiate the command class. When omitted, the default picocli factory is used.</p>
-</dd>
-<dt class="hdlist1"><strong>-h</strong>, <strong>--help</strong></dt>
-<dd>
-<p>Show this help message and exit.</p>
 </dd>
 <dt class="hdlist1"><strong>-o</strong>, <strong>--output</strong>=<em>&lt;outputFile&gt;</em></dt>
 <dd>
 <p>Output file to write the configuration to. If not specified, the configuration is written to the standard output stream.</p>
 </dd>
-<dt class="hdlist1"><strong>-p</strong>, <strong>--pattern</strong>=<em>&lt;resourceRegex&gt;</em></dt>
+<dt class="hdlist1"><strong>--[no-]exit</strong></dt>
 <dd>
-<p>Java regexp that matches resource(s) to be included in the image. This option may be specified multiple times with different regular expression patterns.</p>
+<p>Specify <code>--exit</code> if you want the application to call <code>System.exit</code> when finished. By default, <code>System.exit</code> is not called.</p>
+</dd>
+<dt class="hdlist1"><strong>-h</strong>, <strong>--help</strong></dt>
+<dd>
+<p>Show this help message and exit.</p>
 </dd>
 <dt class="hdlist1"><strong>-V</strong>, <strong>--version</strong></dt>
 <dd>
@@ -510,11 +514,32 @@ See <a href="https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.m
 </div>
 </div>
 <div class="sect1">
+<h2 id="_exit_codes_if_enabled_with_exit">Exit Codes (if enabled with <code>--exit</code>)</h2>
+<div class="sectionbody">
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><strong>0</strong></dt>
+<dd>
+<p>Successful program execution.</p>
+</dd>
+<dt class="hdlist1"><strong>1</strong></dt>
+<dd>
+<p>A runtime exception occurred while generating man pages.</p>
+</dd>
+<dt class="hdlist1"><strong>2</strong></dt>
+<dd>
+<p>Usage error: user input for the command was incorrect, e.g., the wrong number of arguments, a bad flag, a bad syntax in a parameter, etc.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_example">Example</h2>
 <div class="sectionbody">
 <div class="literalblock">
 <div class="content">
-<pre>java -cp "myapp.jar;picocli-4.2.0-SNAPSHOT.jar;picocli-codegen-4.2.0-SNAPSHOT.jar" picocli.codegen.aot.graalvm.ResourceConfigGenerator my.pkg.MyClass</pre>
+<pre>java -cp "myapp.jar;picocli-4.2.0.jar;picocli-codegen-4.2.0.jar" picocli.codegen.aot.graalvm.ResourceConfigGenerator my.pkg.MyClass</pre>
 </div>
 </div>
 </div>
@@ -522,8 +547,8 @@ See <a href="https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.m
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.2.0-SNAPSHOT<br>
-Last updated 2020-02-10 07:39:24 +0900
+Version 4.2.0<br>
+Last updated 2020-02-12 07:13:06 +0900
 </div>
 </div>
 </body>

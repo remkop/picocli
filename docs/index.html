@@ -526,7 +526,7 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 4.1.4,</span>
+<span id="revnumber">version 4.2.0,</span>
 <span id="revdate">2019-12-08</span>
 </div>
 <div id="toc" class="toc2">
@@ -658,10 +658,12 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_expanded_example">13.13. Expanded Example</a></li>
 <li><a href="#_option_parameter_separators">13.14. Option-Parameter Separators</a></li>
 <li><a href="#_hidden_options_and_parameters">13.15. Hidden Options and Parameters</a></li>
-<li><a href="#_show_default_values">13.16. Show Default Values</a></li>
-<li><a href="#_required_option_marker">13.17. Required-Option Marker</a></li>
-<li><a href="#_usage_width">13.18. Usage Width</a></li>
-<li><a href="#_auto_terminal_width">13.19. Auto (Terminal) Width</a></li>
+<li><a href="#_show_at_files">13.16. Show At Files</a></li>
+<li><a href="#_show_default_values">13.17. Show Default Values</a></li>
+<li><a href="#_required_option_marker">13.18. Required-Option Marker</a></li>
+<li><a href="#_usage_width">13.19. Usage Width</a></li>
+<li><a href="#_auto_terminal_width">13.20. Auto (Terminal) Width</a></li>
+<li><a href="#_long_option_column_width">13.21. Long Option Column Width</a></li>
 </ul>
 </li>
 <li><a href="#_ansi_colors_and_styles">14. ANSI Colors and Styles</a>
@@ -691,18 +693,20 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_executing_subcommands">16.5. Executing Subcommands</a></li>
 <li><a href="#_manually_parsing_subcommands">16.6. Manually Parsing Subcommands</a></li>
 <li><a href="#_parentcommand_annotation">16.7. <code>@ParentCommand</code> Annotation</a></li>
-<li><a href="#_usage_help_for_subcommands">16.8. Usage Help for Subcommands</a></li>
-<li><a href="#_hidden_subcommands">16.9. Hidden Subcommands</a></li>
-<li><a href="#_help_subcommands">16.10. Help Subcommands</a></li>
-<li><a href="#_nested_sub_subcommands">16.11. Nested sub-Subcommands</a></li>
-<li><a href="#_required_subcommands">16.12. Required Subcommands</a></li>
+<li><a href="#_nested_sub_subcommands">16.8. Nested sub-Subcommands</a></li>
+<li><a href="#_repeatable_subcommands">16.9. Repeatable Subcommands</a></li>
+<li><a href="#_usage_help_for_subcommands">16.10. Usage Help for Subcommands</a></li>
+<li><a href="#_hidden_subcommands">16.11. Hidden Subcommands</a></li>
+<li><a href="#_help_subcommands">16.12. Help Subcommands</a></li>
+<li><a href="#_required_subcommands">16.13. Required Subcommands</a></li>
 </ul>
 </li>
 <li><a href="#_reuse">17. Reuse</a>
 <ul class="sectlevel2">
 <li><a href="#_subclassing">17.1. Subclassing</a></li>
 <li><a href="#_mixins">17.2. Mixins</a></li>
-<li><a href="#_reuse_combinations">17.3. Reuse Combinations</a></li>
+<li><a href="#_use_case_sharing_options">17.3. Use Case: Sharing Options</a></li>
+<li><a href="#_reuse_combinations">17.4. Reuse Combinations</a></li>
 </ul>
 </li>
 <li><a href="#_internationalization">18. Internationalization</a>
@@ -747,42 +751,44 @@ table.CodeRay td.code>pre{padding:0}
 </li>
 <li><a href="#_tracing">22. Tracing</a></li>
 <li><a href="#_tab_autocomplete">23. TAB Autocomplete</a></li>
-<li><a href="#_java_9_jpms_modules">24. Java 9 JPMS Modules</a>
+<li><a href="#_generate_man_page_documentation">24. Generate Man Page Documentation</a></li>
+<li><a href="#_java_9_jpms_modules">25. Java 9 JPMS Modules</a>
 <ul class="sectlevel2">
-<li><a href="#_module_configuration">24.1. Module Configuration</a></li>
+<li><a href="#_module_configuration">25.1. Module Configuration</a></li>
 </ul>
 </li>
-<li><a href="#_osgi_bundle">25. OSGi Bundle</a></li>
-<li><a href="#_packaging_your_application">26. Packaging Your Application</a>
+<li><a href="#_osgi_bundle">26. OSGi Bundle</a></li>
+<li><a href="#_packaging_your_application">27. Packaging Your Application</a>
 <ul class="sectlevel2">
-<li><a href="#_graalvm_native_image">26.1. GraalVM Native Image</a></li>
-<li><a href="#_build_tool_plugins">26.2. Build Tool Plugins</a></li>
-<li><a href="#_launch4j">26.3. launch4j</a></li>
-<li><a href="#_javapackager_java_8">26.4. javapackager (Java 8)</a></li>
-<li><a href="#_jlink_java_9">26.5. jlink (Java 9+)</a></li>
-<li><a href="#_jpackage_early_access">26.6. jpackage (Early Access)</a></li>
+<li><a href="#_graalvm_native_image">27.1. GraalVM Native Image</a></li>
+<li><a href="#_build_tool_plugins">27.2. Build Tool Plugins</a></li>
+<li><a href="#_launch4j">27.3. launch4j</a></li>
+<li><a href="#_javapackager_java_8">27.4. javapackager (Java 8)</a></li>
+<li><a href="#_jlink_java_9">27.5. jlink (Java 9+)</a></li>
+<li><a href="#_jpackage_early_access">27.6. jpackage (Early Access)</a></li>
+<li><a href="#_jbang">27.7. jbang</a></li>
 </ul>
 </li>
-<li><a href="#_picocli_in_other_languages">27. Picocli in Other Languages</a>
+<li><a href="#_picocli_in_other_languages">28. Picocli in Other Languages</a>
 <ul class="sectlevel2">
-<li><a href="#_groovy">27.1. Groovy</a></li>
-<li><a href="#_kotlin">27.2. Kotlin</a></li>
-<li><a href="#_scala">27.3. Scala</a></li>
+<li><a href="#_groovy">28.1. Groovy</a></li>
+<li><a href="#_kotlin">28.2. Kotlin</a></li>
+<li><a href="#_scala">28.3. Scala</a></li>
 </ul>
 </li>
-<li><a href="#_api_javadoc">28. API Javadoc</a></li>
-<li><a href="#_github_project">29. GitHub Project</a></li>
-<li><a href="#_issue_tracker">30. Issue Tracker</a></li>
-<li><a href="#_mailing_list">31. Mailing List</a></li>
-<li><a href="#_license">32. License</a></li>
-<li><a href="#_releases">33. Releases</a></li>
-<li><a href="#_download">34. Download</a>
+<li><a href="#_api_javadoc">29. API Javadoc</a></li>
+<li><a href="#_github_project">30. GitHub Project</a></li>
+<li><a href="#_issue_tracker">31. Issue Tracker</a></li>
+<li><a href="#_mailing_list">32. Mailing List</a></li>
+<li><a href="#_license">33. License</a></li>
+<li><a href="#_releases">34. Releases</a></li>
+<li><a href="#_download">35. Download</a>
 <ul class="sectlevel2">
-<li><a href="#_gradle_3">34.1. Gradle</a></li>
-<li><a href="#_maven_3">34.2. Maven</a></li>
-<li><a href="#_scala_sbt">34.3. Scala SBT</a></li>
-<li><a href="#_ivy">34.4. Ivy</a></li>
-<li><a href="#_source">34.5. Source</a></li>
+<li><a href="#_gradle_3">35.1. Gradle</a></li>
+<li><a href="#_maven_3">35.2. Maven</a></li>
+<li><a href="#_scala_sbt">35.3. Scala SBT</a></li>
+<li><a href="#_ivy">35.4. Ivy</a></li>
+<li><a href="#_source">35.5. Source</a></li>
 </ul>
 </li>
 </ul>
@@ -827,6 +833,9 @@ Picocli-based applications can be ahead-of-time compiled to <span class="image">
 </div>
 <div class="paragraph">
 <p><span class="image"><img src="images/checksum-usage-help.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
+</div>
+<div class="paragraph">
+<p>Picocli <a href="#_generate_man_page_documentation">generates beautiful documentation</a> for your application (HTML, PDF and Unix man pages).</p>
 </div>
 <div class="paragraph">
 <p>Another distinguishing feature of picocli is how it aims
@@ -904,7 +913,7 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <h4 id="_gradle">2.1.1. Gradle</h4>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.1.4'</pre>
+<pre>compile 'info.picocli:picocli:4.2.0'</pre>
 </div>
 </div>
 </div>
@@ -915,7 +924,7 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.1.4&lt;/version&gt;
+  &lt;version&gt;4.2.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -980,7 +989,7 @@ In most cases no further configuration is needed when generating a native image.
       &lt;path&gt;
         &lt;groupId&gt;info.picocli&lt;/groupId&gt;
         &lt;artifactId&gt;picocli-codegen&lt;/artifactId&gt;
-        &lt;version&gt;4.1.4&lt;/version&gt;
+        &lt;version&gt;4.2.0&lt;/version&gt;
       &lt;/path&gt;
     &lt;/annotationProcessorPaths&gt;
     &lt;compilerArgs&gt;
@@ -999,8 +1008,8 @@ In most cases no further configuration is needed when generating a native image.
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code>dependencies {
-    compile 'info.picocli:picocli:4.1.4'
-    annotationProcessor 'info.picocli:picocli-codegen:4.1.4'
+    compile 'info.picocli:picocli:4.2.0'
+    annotationProcessor 'info.picocli:picocli-codegen:4.2.0'
 }</code></pre>
 </div>
 </div>
@@ -1195,7 +1204,7 @@ After the user enters a password value and presses enter, the <code>call()</code
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code>--password 123 --user Joe</code></pre>
+<pre>--password 123 --user Joe</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1203,7 +1212,7 @@ After the user enters a password value and presses enter, the <code>call()</code
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code>--password --user Joe</code></pre>
+<pre>--password --user Joe</pre>
 </div>
 </div>
 <div class="admonitionblock tip">
@@ -1225,7 +1234,7 @@ Another idea is to add a separate different option (that could be named <code>--
 <p>A command that combines either of these with an interactive <code>--password</code> option (with the default <code>arity = "0"</code>) allows end users to provide a password without specifying it in plain text on the command line. Such a command can be executed both interactively and in batch mode.</p>
 </div>
 <div class="paragraph">
-<p>The <code>picocli-examples</code> module has <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/interactive/PasswordDemo.java">an example</a>.</p>
+<p>The <a href="https://github.com/remkop/picocli/blob/master/picocli-examples"><code>picocli-examples</code></a> module has an example, coded both in <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/interactive/PasswordDemo.java">Java</a> and <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/interactive/PasswordDemo.kt">Kotlin</a>.</p>
 </div>
 </td>
 </tr>
@@ -1574,7 +1583,13 @@ The documentation for these tools shows further examples.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_simplified_format">3.9.2. Simplified Format</h4>
+<h4 id="_files_usage_help">3.9.2. @-files Usage Help</h4>
+<div class="paragraph">
+<p>From picocli 4.2, an entry for <code>@&lt;filename&gt;</code> can be shown in the options and parameters list of the usage help message of a command with the <code>@Command(showAtFileInUsageHelp = true)</code> annotation. See <a href="#_show_at_files">Show At Files</a> for details.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_simplified_format">3.9.3. Simplified Format</h4>
 <div class="paragraph">
 <p>From picocli 3.8.1, a simpler argument file format is also supported where every line (except empty lines and comment lines)
 is interpreted as a single argument. Arguments containing whitespace do not need to be quoted,
@@ -4634,6 +4649,48 @@ and a build-generated version properties file-based
 <div class="paragraph">
 <p>The version strings returned from the <code>IVersionProvider</code> may contain <a href="#_variable_interpolation">system properties and environment variables</a>.</p>
 </div>
+<div class="paragraph">
+<p>For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">VersionProviderWithVariables</span> <span class="directive">implements</span> IVersionProvider {
+    <span class="directive">public</span> <span class="predefined-type">String</span><span class="type">[]</span> getVersion() {
+        <span class="keyword">return</span> <span class="keyword">new</span> <span class="predefined-type">String</span><span class="type">[]</span> { <span class="string"><span class="delimiter">&quot;</span><span class="content">${COMMAND-FULL-NAME} version 1.0</span><span class="delimiter">&quot;</span></span> };
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The above example version provider will show the fully qualified command name (that is, preceded by its parent fully qualified command name)
+of any command that uses this version provider.</p>
+</div>
+<div class="paragraph">
+<p>This is one way to create a version provider that can be reused across multiple commands.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_injecting_commandspec_into_a_iversionprovider">12.2.4. Injecting <code>CommandSpec</code> Into a <code>IVersionProvider</code></h4>
+<div class="paragraph">
+<p>From picocli 4.2.0, <code>IVersionProvider</code> implementations can have <code>@Spec</code>-annotated fields. If such a field
+exists, picocli will inject the <code>CommandSpec</code> of the command that uses this version provider.
+This gives the version provider access to the full command hierarchy,
+and may make it easier to implement version providers that can be reused among multiple commands.</p>
+</div>
+<div class="paragraph">
+<p>For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">MyVersionProvider</span> <span class="directive">implements</span> IVersionProvider {
+    <span class="annotation">@Spec</span> CommandSpec spec;
+
+    <span class="directive">public</span> <span class="predefined-type">String</span><span class="type">[]</span> getVersion() {
+        <span class="keyword">return</span> <span class="keyword">new</span> <span class="predefined-type">String</span><span class="type">[]</span> { <span class="string"><span class="delimiter">&quot;</span><span class="content">Version info for </span><span class="delimiter">&quot;</span></span> + spec.qualifiedName() };
+    }
+}</code></pre>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -5085,9 +5142,129 @@ by default each of these fields would be shown in the usage message, which would
 </div>
 </div>
 <div class="sect2">
-<h3 id="_show_default_values">13.16. Show Default Values</h3>
+<h3 id="_show_at_files">13.16. Show At Files</h3>
+<div class="paragraph">
+<p>From picocli 4.2, an entry for <code>@&lt;filename&gt;</code> can be shown in the options and parameters list of the usage help message of a command with the <code>@Command(showAtFileInUsageHelp = true)</code> annotation.</p>
+</div>
 <div class="sect3">
-<h4 id="_default_value_variable">13.16.1. <code>${DEFAULT-VALUE}</code> Variable</h4>
+<h4 id="_example_2">13.16.1. Example</h4>
+<div class="paragraph">
+<p>Example command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myapp</span><span class="delimiter">&quot;</span></span>, showAtFileInUsageHelp = <span class="predefined-constant">true</span>,
+        mixinStandardHelpOptions = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Example command.</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">MyApp</span> {
+    <span class="annotation">@Parameters</span>(description = <span class="string"><span class="delimiter">&quot;</span><span class="content">A file.</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">File</span> file;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The usage help message for this command looks like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: myapp [-hV] [@&lt;filename&gt;...] &lt;file&gt;
+Example command.
+      [@&lt;filename&gt;...]   One or more argument files containing options.
+      &lt;file&gt;             A file.
+  -h, --help             Show this help message and exit.
+  -V, --version          Print version information and exit.</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_changing_the_at_file_entry_location">13.16.2. Changing the At File Entry Location</h4>
+<div class="paragraph">
+<p>By default, the <code>@&lt;filename&gt;</code> entry is shown before the positional parameters in the synopsis as well as in the parameters list.</p>
+</div>
+<div class="paragraph">
+<p>This can be changed with the <a href="#_usage_help_api">Help API</a> for reordering sections. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">static</span> <span class="include">picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_AT_FILE_PARAMETER</span>;
+<span class="keyword">import</span> <span class="include">static</span> <span class="include">picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_COMMAND_LIST_HEADING</span>;
+<span class="keyword">import</span> <span class="include">static</span> <span class="include">picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_OPTION_LIST_HEADING</span>;
+
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myapp</span><span class="delimiter">&quot;</span></span>, showAtFileInUsageHelp = <span class="predefined-constant">true</span>,
+        mixinStandardHelpOptions = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Example command.</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">MyApp</span> {
+    <span class="annotation">@Parameters</span>(description = <span class="string"><span class="delimiter">&quot;</span><span class="content">A file.</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">File</span> file;
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
+        CommandLine cmd = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp());
+        <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; copy = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;&gt;(cmd.getHelpSectionKeys());
+        copy.remove(SECTION_KEY_AT_FILE_PARAMETER);
+        copy.add(copy.indexOf(SECTION_KEY_COMMAND_LIST_HEADING), SECTION_KEY_AT_FILE_PARAMETER);
+        cmd.setHelpSectionKeys(copy);
+
+        cmd.usage(<span class="predefined-type">System</span>.out);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The resulting usage help message shows the <code>@&lt;filename&gt;</code> entry has moved to the bottom, following the options list:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: myapp [-hV] [@&lt;filename&gt;...] &lt;file&gt;
+Example command.
+      &lt;file&gt;             A file.
+  -h, --help             Show this help message and exit.
+  -V, --version          Print version information and exit.
+      [@&lt;filename&gt;...]   One or more argument files containing options.</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_changing_the_at_file_entry_text">13.16.3. Changing the At File Entry Text</h4>
+<div class="paragraph">
+<p>Both the label and the description of the <code>@&lt;filename&gt;</code> entry have been defined with <a href="#_custom_variables">custom variables</a>, to allow applications to change the text. The variables are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>picocli.atfile.label</code></p>
+</li>
+<li>
+<p><code>picocli.atfile.description</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>By setting the above variables in either system properties, environment variables or the <a href="#_internationalization">resource bundle</a> for a command, the text can be customized.</p>
+</div>
+<div class="paragraph">
+<p>For example, if we define these system properties:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">System</span>.setProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">picocli.atfile.label</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">my@@@@file</span><span class="delimiter">&quot;</span></span>);
+<span class="predefined-type">System</span>.setProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">picocli.atfile.description</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">@files rock!</span><span class="delimiter">&quot;</span></span>);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>then the usage help for our above example changes to this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: myapp [-hV] [my@@@@file...] &lt;file&gt;
+Example command.
+      [my@@@@file...]   @files rock!
+      &lt;file&gt;            A file.
+  -h, --help            Show this help message and exit.
+  -V, --version         Print version information and exit.</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_show_default_values">13.17. Show Default Values</h3>
+<div class="sect3">
+<h4 id="_default_value_variable">13.17.1. <code>${DEFAULT-VALUE}</code> Variable</h4>
 <div class="paragraph">
 <p>From picocli 3.2, it is possible to embed the <a href="#_default_values">default values</a> in the description for an option or positional parameter by
 specifying the <a href="#_variable_interpolation">variable</a> <code>${DEFAULT-VALUE}</code> in the description text.
@@ -5119,7 +5296,7 @@ CommandLine.usage(<span class="keyword">new</span> DefaultValues(), <span class=
 </div>
 </div>
 <div class="sect3">
-<h4 id="_completion_candidates_variable">13.16.2. <code>${COMPLETION-CANDIDATES}</code> Variable</h4>
+<h4 id="_completion_candidates_variable">13.17.2. <code>${COMPLETION-CANDIDATES}</code> Variable</h4>
 <div class="paragraph">
 <p>Similarly, it is possible to embed the completion candidates in the description for an option or positional parameter by
 specifying the <a href="#_variable_interpolation">variable</a> <code>${COMPLETION-CANDIDATES}</code> in the description text.</p>
@@ -5159,7 +5336,7 @@ CommandLine.usage(<span class="keyword">new</span> ValidValuesDemo(), <span clas
 </div>
 </div>
 <div class="sect3">
-<h4 id="_legacy_configuration_for_displaying_default_values">13.16.3. Legacy Configuration for Displaying Default Values</h4>
+<h4 id="_legacy_configuration_for_displaying_default_values">13.17.3. Legacy Configuration for Displaying Default Values</h4>
 <div class="paragraph">
 <p>Prior to picocli 3.2, you need to use the <code>@Command(showDefaultValues = true)</code> attribute to append the default value of
  all non-<code>null</code> options and positional parameters to the description column.</p>
@@ -5188,7 +5365,7 @@ This attribute accepts three values:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_required_option_marker">13.17. Required-Option Marker</h3>
+<h3 id="_required_option_marker">13.18. Required-Option Marker</h3>
 <div class="paragraph">
 <p>Required options can be marked in the option list by the character specified with the <code>requiredOptionMarker</code> attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with the <a href="#_abbreviated_synopsis"><code>abbreviateSynopsis</code></a> attribute. For example:</p>
 </div>
@@ -5213,7 +5390,7 @@ This attribute accepts three values:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_width">13.18. Usage Width</h3>
+<h3 id="_usage_width">13.19. Usage Width</h3>
 <div class="paragraph">
 <p>The default width of the usage help message is 80 characters.
 Commands defined with <code>@Command(usageHelpWidth = NUMBER)</code> in the annotations will use the specified width.</p>
@@ -5229,7 +5406,7 @@ Commands defined with <code>@Command(usageHelpWidth = NUMBER)</code> in the anno
 </div>
 </div>
 <div class="sect2">
-<h3 id="_auto_terminal_width">13.19. Auto (Terminal) Width</h3>
+<h3 id="_auto_terminal_width">13.20. Auto (Terminal) Width</h3>
 <div class="paragraph">
 <p>From 4.0, commands defined with <code>@Command(usageHelpAutoWidth = true)</code> will try to adjust the usage message help layout to the terminal width.
 There is also programmatic API to control this via the <code>CommandLine::setUsageHelpAutoWidth</code> and <code>UsageMessageSpec::autoWidth</code> methods.</p>
@@ -5239,6 +5416,47 @@ There is also programmatic API to control this via the <code>CommandLine::setUsa
 </div>
 <div class="paragraph">
 <p>This feature requires Java 7.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_long_option_column_width">13.21. Long Option Column Width</h3>
+<div class="paragraph">
+<p>The default layout shows short options and long options in separate columns, followed by the description column.
+The width of the long options column shrinks automatically if all long options are very short,
+but by default this column does not grow larger than 20 characters.</p>
+</div>
+<div class="paragraph">
+<p>If the long option with its option parameter is longer than 20 characters
+(for example: <code>--output=&lt;outputFolder&gt;</code>), the long option overflows into the description column, and the option description is shown on the next line.</p>
+</div>
+<div class="paragraph">
+<p>This (the default) looks like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: myapp [-hV] [-o=&lt;outputFolder&gt;]
+  -h, --help      Show this help message and exit.
+  -o, --output=&lt;outputFolder&gt;
+                  Output location full path.
+  -V, --version   Print version information and exit.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>From picocli 4.2, there is programmatic API to change this via the <code>CommandLine::setLongOptionsMaxWidth</code> and <code>UsageMessageSpec::longOptionsMaxWidth</code> methods.</p>
+</div>
+<div class="paragraph">
+<p>In the above example, if we call <code>commandLine.setLongOptionsMaxWidth(23)</code> before printing the usage help, we get this result:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: myapp [-hV] [-o=&lt;outputFolder&gt;]
+  -h, --help                    Show this help message and exit.
+  -o, --output=&lt;outputFolder&gt;   Output location full path.
+  -V, --version                 Print version information and exit.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The minimum value that can be specified for <code>longOptionsMaxWidth</code> is 20, the maximum value is the <a href="#_usage_width">usage width</a> minus <code>20</code>.</p>
 </div>
 </div>
 </div>
@@ -5358,6 +5576,11 @@ Markup styles cannot be nested, for example: <code>@|bold this @|underline that|
 </td>
 </tr>
 </table>
+</div>
+<div class="paragraph">
+<p>From picocli 4.2, custom markup like <code>@|bold mytext|@</code>, <code>@|italic mytext|@</code> etc. can also be converted to custom markup like <code>&lt;b&gt;mytext&lt;/b&gt;</code> and <code>&lt;i&gt;mytext&lt;/i&gt;</code> in HTML, or <code>*mytext*</code> and <code>_mytext_</code> in lightweight markup languages like AsciiDoc.
+Applications can control this by setting a <code>ColorScheme</code> with a custom markup map.
+This feature is used to generate man page documentation.</p>
 </div>
 </div>
 <div class="sect2">
@@ -5771,6 +5994,9 @@ map.put(SECTION_KEY_FOOTER,                 help -&gt; help.footer());</code></p
 <p>SECTION_KEY_PARAMETER_LIST_HEADING</p>
 </li>
 <li>
+<p>SECTION_KEY_AT_FILE_PARAMETER</p>
+</li>
+<li>
 <p>SECTION_KEY_PARAMETER_LIST</p>
 </li>
 <li>
@@ -5910,9 +6136,6 @@ See the <a href="https://github.com/remkop/picocli/blob/master/src/test/java/pic
 </div>
 </div>
 <div class="paragraph">
-<p>The declared subcommands are automatically instantiated and added when the <code>new CommandLine(new Git())</code> instance is constructed. The result is the same as if subcommands were added <a href="#_registering_subcommands_programmatically">programmatically</a>.</p>
-</div>
-<div class="paragraph">
 <p>Subcommands referenced in a <code>subcommands</code> attribute <em>must</em> have a <code>@Command</code> annotation with a <code>name</code> attribute, or an exception is thrown from the <code>CommandLine</code> constructor. This name will be used both for generating usage help and for recognizing subcommands when parsing the command line.</p>
 </div>
 <div class="paragraph">
@@ -5920,6 +6143,12 @@ See the <a href="https://github.com/remkop/picocli/blob/master/src/test/java/pic
 </div>
 <div class="paragraph">
 <p>Subcommands referenced in a <code>subcommands</code> attribute need to have a public no-argument constructor to be instantiated, unless a <a href="#_custom_factory">Custom Factory</a> is installed to instantiate classes.</p>
+</div>
+<div class="paragraph">
+<p>Prior to picocli 4,2, the declared subcommands were instantiated immediately when the top-level <code>CommandLine</code> (the <code>new CommandLine(new Git())</code> object in the above example) was constructed.</p>
+</div>
+<div class="paragraph">
+<p>From picocli 4.2, the declared subcommands are not instantiated until they are matched on the command line, unless they have a <code>@Spec</code> or <code>@ParentObject</code>-annotated field; these are injected during initialization, and in order to inject them the subcommand is instantiated during initialization.</p>
 </div>
 </div>
 <div class="sect2">
@@ -5991,7 +6220,10 @@ adding subcommands.
 <div class="sect2">
 <h3 id="_subcommands_as_methods">16.4. Subcommands as Methods</h3>
 <div class="paragraph">
-<p>From picocli 3.6 it is possible to register subcommands in a very compact manner by having a <code>@Command</code> class with <code>@Command</code>-annotated methods. The methods are automatically <a href="#_subcommand_methods">registered as subcommands</a> of the <code>@Command</code> class.</p>
+<p>As of picocli 3.6 it is possible to register subcommands in a very compact manner by having a <code>@Command</code> class with <code>@Command</code>-annotated methods. The methods are automatically <a href="#_subcommand_methods">registered as subcommands</a> of the <code>@Command</code> class.</p>
+</div>
+<div class="paragraph">
+<p>The <a href="https://github.com/remkop/picocli/blob/master/picocli-examples"><code>picocli-examples</code></a> module has an  minimal example application, demonstrating the definition of subcommands via methods. This example was coded in <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubCmdsViaMethods.java">Java</a>, <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/subcommands/SubCmdsViaMethods.kt">Kotlin</a> and <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/scala/picocli/examples/scala/subcommands/SubCmdsViaMethods.scala">Scala</a>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -6222,7 +6454,161 @@ The <code>List</code> subcommand can use the <code>@ParentCommand</code> annotat
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_help_for_subcommands">16.8. Usage Help for Subcommands</h3>
+<h3 id="_nested_sub_subcommands">16.8. Nested sub-Subcommands</h3>
+<div class="paragraph">
+<p>The specified object can be an annotated object or a
+<code>CommandLine</code> instance with its own nested subcommands. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MainCommand())
+    .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd1</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> ChildCommand1())
+    .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd2</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> ChildCommand2())
+    .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> ChildCommand3())
+        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub1</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> GrandChild3Command1())
+        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub2</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> GrandChild3Command2())
+        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> GrandChild3Command3())
+            .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3sub1</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> GreatGrandChild3Command3_1())
+            .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3sub2</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> GreatGrandChild3Command3_2())
+        )
+    );</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Declaratively, subcommands can be nested by specifying the <code>subcommands</code> attribute on subcommand classes:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">main</span><span class="delimiter">&quot;</span></span>, subcommands = {
+    ChildCommand1.class,
+    ChildCommand2.class,
+    ChildCommand3.class })
+<span class="type">class</span> <span class="class">MainCommand</span> { }
+
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3</span><span class="delimiter">&quot;</span></span>, subcommands = {
+    GrandChild3Command1.class,
+    GrandChild3Command2.class,
+    GrandChild3Command3.class })
+<span class="type">class</span> <span class="class">ChildCommand3</span> { }
+
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3</span><span class="delimiter">&quot;</span></span>, subcommands = {
+    GreatGrandChild3Command3_1.class,
+    GreatGrandChild3Command3_2.class })
+<span class="type">class</span> <span class="class">GrandChild3Command3</span> { }
+...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By default, the usage help message only shows the subcommands of the specified command,
+and not the nested sub-subcommands. This can be customized by specifying your own <a href="#_reordering_sections"><code>IHelpSectionRenderer</code></a> for the command list section.
+The <code>picocli-examples</code> module has an <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/customhelp/ShowCommandHierarchy.java">example</a> that shows how to accomplish this.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_repeatable_subcommands">16.9. Repeatable Subcommands</h3>
+<div class="paragraph">
+<p>From picocli 4.2, it is possible to specify that a command&#8217;s subcommands can be specified multiple times by marking it with <code>@Command(subcommandsRepeatable = true)</code>.</p>
+</div>
+<div class="sect3">
+<h4 id="_example_3">16.9.1. Example</h4>
+<div class="paragraph">
+<p>Below is an example where the top-level command <code>myapp</code> is marked as <code>subcommandsRepeatable = true</code>.
+This command has three subcommands, <code>add</code>, <code>list</code> and <code>send-report</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myapp</span><span class="delimiter">&quot;</span></span>, subcommandsRepeatable = <span class="predefined-constant">true</span>)
+<span class="type">class</span> <span class="class">MyApp</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+
+    <span class="annotation">@Command</span>
+    <span class="type">void</span> add(<span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> x, <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-w</span><span class="delimiter">&quot;</span></span>) <span class="type">double</span> w) { ... }
+
+    <span class="annotation">@Command</span>
+    <span class="type">void</span> list(<span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">--where</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> where) { ... }
+
+    <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">send-report</span><span class="delimiter">&quot;</span></span>)
+    <span class="type">void</span> sendReport(<span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">--to</span><span class="delimiter">&quot;</span></span>, split = <span class="string"><span class="delimiter">&quot;</span><span class="content">,</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span><span class="type">[]</span> recipients) { ... }
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
+        <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp()).execute(args);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The above example command allows users to specify one or more of its subcommands multiple time. For example, this would be a valid invocation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">myapp add -x=item1 -w=0.2 \
+      add -x=item2 -w=0.5 \
+      add -x=item3 -w=0.7 \
+      list --where &quot;w&gt;0.2&quot; \
+      send-report --to=recipient@myorg.com</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the above command line invocation, the <code>myapp</code> top-level command is followed by its subcommand <code>add</code>.
+Next, this is followed by another two occurences of <code>add</code>, followed by <code>list</code> and <code>send-report</code>.
+These are all "sibling" commands, that share the same parent command <code>myapp</code>.
+This invocation is valid because <code>myapp</code> is marked with <code>subcommandsRepeatable = true</code>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_repeatable_subcommands_specification">16.9.2. Repeatable Subcommands Specification</h4>
+<div class="paragraph">
+<p>Normally, <code>subcommandsRepeatable</code> is <code>false</code>, so for each command, only one of its subcommands can be specified, potentially followed by only one sub-subcommand of that subcommand, etc.
+In mathematical terms, a valid sequence of commands and subcommands can be represented by a <em>directed rooted tree</em> that starts at the top-level command. This is illustrated by the diagram below.</p>
+</div>
+<div id="sequences-when-subcommands-not-repeatable" class="imageblock">
+<div class="content">
+<img src="images/subcommands-non-repeatable.png" alt="subcommands non repeatable">
+</div>
+<div class="title">Figure 1. By default, valid sequences of commands and subcommands form a directed rooted tree.</div>
+</div>
+<div class="paragraph">
+<p>When <code>subcommandsRepeatable</code> is set to <code>true</code> on a command, the subcommands of this command may appear multiple times.
+Also, a subcommand can be followed by a "sibling" command (another command with the same parent command).</p>
+</div>
+<div class="paragraph">
+<p>In mathematical terms, when a parent command has this property, the additional valid sequences of its subcommands form a fully connected subgraph (<em>a complete digraph</em>).</p>
+</div>
+<div class="paragraph">
+<p>The blue and green dotted arrows in the diagram below illustrate the additional sequences that are allowed when a command has repeatable subcommands.</p>
+</div>
+<div id="sequences-when-subcommands-repeatable" class="imageblock">
+<div class="content">
+<img src="images/subcommands-repeatable.png" alt="subcommands repeatable">
+</div>
+<div class="title">Figure 2. If a command is marked to allow repeatable subcommands, the additional valid sequences of its subcommands form a fully connected subgraph.</div>
+</div>
+<div class="paragraph">
+<p>Note that it is not valid to specify a subcommand followed by its parent command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash"># invalid: cannot move _up_ the hierarchy
+myapp add -x=item1 -w=0.2 myapp</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_repeatable_subcommands_execution">16.9.3. Repeatable Subcommands Execution</h4>
+<div class="paragraph">
+<p>The default <a href="#_executing_commands_with_subcommands"><code>IExecutionStrategy</code></a> (<code>picocli.CommandLine.RunLast</code>) only executes the last subcommands <em>with the same parent</em>. For example, if</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>toplevelcmd subcmd-A subcmd-B subsub-B1 subsub-B2</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>is invoked, only the last two sub-subcommands <code>subsub-B1</code> and <code>subsub-B2</code> (who both have parent command <code>subcmd-B</code>) are executed by default. You can <a href="https://picocli.info/apidocs/picocli/CommandLine.html#setExecutionStrategy-picocli.CommandLine.IExecutionStrategy-">set</a> a different <a href="https://picocli.info/apidocs/picocli/CommandLine.IExecutionStrategy.html">execution strategy</a> if this does not meet your needs.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_usage_help_for_subcommands">16.10. Usage Help for Subcommands</h3>
 <div class="paragraph">
 <p>After registering subcommands, calling the <code>commandLine.usage</code> method will show a usage help message that includes all registered subcommands. For example:</p>
 </div>
@@ -6334,7 +6720,7 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hidden_subcommands">16.9. Hidden Subcommands</h3>
+<h3 id="_hidden_subcommands">16.11. Hidden Subcommands</h3>
 <div class="paragraph">
 <p>Commands with the <code>hidden</code> attribute set to <code>true</code> will not be shown in the usage help message of their parent command.</p>
 </div>
@@ -6365,7 +6751,7 @@ Commands:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_help_subcommands">16.10. Help Subcommands</h3>
+<h3 id="_help_subcommands">16.12. Help Subcommands</h3>
 <div class="paragraph">
 <p>Commands with the <code>helpCommand</code> attribute set to <code>true</code> are treated as help commands.
 When picocli encounters a help command on the command line, required options and required positional parameters of the parent command
@@ -6381,58 +6767,7 @@ are not validated (similar to <a href="#_help_options">help options</a>).</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_nested_sub_subcommands">16.11. Nested sub-Subcommands</h3>
-<div class="paragraph">
-<p>The specified object can be an annotated object or a
-<code>CommandLine</code> instance with its own nested subcommands. For example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MainCommand())
-    .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd1</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> ChildCommand1())
-    .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd2</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> ChildCommand2())
-    .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> ChildCommand3())
-        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub1</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> GrandChild3Command1())
-        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub2</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> GrandChild3Command2())
-        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> GrandChild3Command3())
-            .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3sub1</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> GreatGrandChild3Command3_1())
-            .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3sub2</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> GreatGrandChild3Command3_2())
-        )
-    );</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Declaratively, subcommands can be nested by specifying the <code>subcommands</code> attribute on subcommand classes:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">main</span><span class="delimiter">&quot;</span></span>, subcommands = {
-    ChildCommand1.class,
-    ChildCommand2.class,
-    ChildCommand3.class })
-<span class="type">class</span> <span class="class">MainCommand</span> { }
-
-<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3</span><span class="delimiter">&quot;</span></span>, subcommands = {
-    GrandChild3Command1.class,
-    GrandChild3Command2.class,
-    GrandChild3Command3.class })
-<span class="type">class</span> <span class="class">ChildCommand3</span> { }
-
-<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3</span><span class="delimiter">&quot;</span></span>, subcommands = {
-    GreatGrandChild3Command3_1.class,
-    GreatGrandChild3Command3_2.class })
-<span class="type">class</span> <span class="class">GrandChild3Command3</span> { }
-...</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>By default, the usage help message only shows the subcommands of the specified command,
-and not the nested sub-subcommands. This can be customized by specifying your own <a href="#_reordering_sections"><code>IHelpSectionRenderer</code></a> for the command list section.
-The <code>picocli-examples</code> module has an <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/customhelp/ShowCommandHierarchy.java">example</a> that shows how to accomplish this.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_required_subcommands">16.12. Required Subcommands</h3>
+<h3 id="_required_subcommands">16.13. Required Subcommands</h3>
 <div class="paragraph">
 <p>For some command suites, it does not make sense to invoke the top-level command by itself, and the user is required to specify a subcommand.</p>
 </div>
@@ -6599,7 +6934,80 @@ commandLine.parseArgs(<span class="string"><span class="delimiter">&quot;</span>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_reuse_combinations">17.3. Reuse Combinations</h3>
+<h3 id="_use_case_sharing_options">17.3. Use Case: Sharing Options</h3>
+<div class="paragraph">
+<p>A common use case is sharing options between different levels of the command hierarchy, so that "global" options from the top-level command are also available on subcommands.</p>
+</div>
+<div class="paragraph">
+<p>Since picocli 4.2, <a href="#_parentcommand_annotation"><code>@ParentCommand</code>-annotated</a> fields can be used in mixins, which makes this easier. Here is an example implementation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">// Define a mixin that delegates to the parent command.</span>
+<span class="type">class</span> <span class="class">MyMixin</span> {
+    <span class="annotation">@ParentCommand</span> Top top;
+
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>)
+    <span class="directive">public</span> <span class="type">void</span> setVerbose(<span class="type">boolean</span><span class="type">[]</span> verbosity) { top.setVerbose(verbosity); }
+}
+
+<span class="comment">// An example Top-level command with two subcommands.</span>
+<span class="comment">// The `-v` option can be specified on the top-level command as well as the subcommands.</span>
+<span class="annotation">@Command</span>(subcommands = Sub2.class)
+<span class="type">class</span> <span class="class">Top</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+    <span class="directive">private</span> <span class="type">boolean</span><span class="type">[]</span> verbosity = <span class="keyword">new</span> <span class="type">boolean</span>[<span class="integer">0</span>];
+
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span>})
+    <span class="directive">public</span> <span class="type">void</span> setVerbose(<span class="type">boolean</span><span class="type">[]</span> verbosity) { <span class="local-variable">this</span>.verbosity = verbosity; }
+
+    <span class="directive">public</span> <span class="type">void</span> verbose(<span class="predefined-type">String</span> pattern, <span class="predefined-type">Object</span>... params) {
+        <span class="keyword">if</span> (verbosity.length &gt;= <span class="integer">1</span>) {
+            <span class="predefined-type">System</span>.out.printf(pattern, params);
+        }
+    }
+
+    <span class="directive">public</span> <span class="type">void</span> run() { verbose(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hello from top%n</span><span class="delimiter">&quot;</span></span>); }
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> Top()).execute(args);
+    }
+
+    <span class="comment">// The @Mixin-annotated parameter adds the `-v` option to this subcommand.</span>
+    <span class="annotation">@Command</span>
+    <span class="type">void</span> sub1(<span class="annotation">@Mixin</span> MyMixin mymixin) { verbose(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hello from sub1%n</span><span class="delimiter">&quot;</span></span>); }
+}
+
+<span class="comment">// Subcommand classes can mix in the `-v` option with a @Mixin-annotated field.</span>
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">sub2</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">Sub2</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span>{
+    <span class="annotation">@Mixin</span> MyMixin mymixin;
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="type">void</span> run() { mymixin.top.verbose(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hello from sub2%n</span><span class="delimiter">&quot;</span></span>); }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With this, the <code>-v</code> option can be specified on the top-level command as well as the subcommands, so all of the below are valid invocations:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>java Top -v
+java Top -v sub1
+java Top sub1 -v
+java Top -v sub2
+java Top sub2 -v</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>All of these invocations will print some output, since the <code>-v</code> option was specified.</p>
+</div>
+<div class="paragraph">
+<p>For mixins that need to be reusable across more than two levels in the command hierarchy, injecting a <a href="#_spec_annotation"><code>@Spec</code>-annotated</a> field gives the mixin access to the full command hierarchy.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_reuse_combinations">17.4. Reuse Combinations</h3>
 <div class="paragraph">
 <p>The above mechanisms can be combined in any way. Mixins can be nested, and there is no limitation to how deeply mixins can be nested. A mixin may also inherit options, positional parameters and command attributes from a super class.</p>
 </div>
@@ -6641,8 +7049,11 @@ commandLine.parseArgs(<span class="string"><span class="delimiter">&quot;</span>
 <h2 id="_internationalization">18. Internationalization</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>From version 3.6, usage help message sections and the description for options and positional parameters can be specified in a resource bundle.
+<p>As of version 3.6, usage help message sections and the description for options and positional parameters can be specified in a resource bundle.
 A resource bundle can be set via annotations and programmatically.</p>
+</div>
+<div class="paragraph">
+<p>In order to get you started quickly, the <a href="https://github.com/remkop/picocli/blob/master/picocli-examples"><code>picocli-examples</code></a> module has a minimal i18n example, coded both in <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/i18n/I18NDemo.java">Java</a> and <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/i18n/I18NDemo.kt">Kotlin</a>.</p>
 </div>
 <div class="sect2">
 <h3 id="_configuration">18.1. Configuration</h3>
@@ -7650,7 +8061,7 @@ To use this custom factory, add the following dependency:</p>
 <pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
   <span class="tag">&lt;groupId&gt;</span>info.picocli<span class="tag">&lt;/groupId&gt;</span>
   <span class="tag">&lt;artifactId&gt;</span>picocli-spring-boot-starter<span class="tag">&lt;/artifactId&gt;</span>
-  <span class="tag">&lt;version&gt;</span>4.0.1<span class="tag">&lt;/version&gt;</span>
+  <span class="tag">&lt;version&gt;</span>4.2.0<span class="tag">&lt;/version&gt;</span>
 <span class="tag">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -7660,7 +8071,7 @@ To use this custom factory, add the following dependency:</p>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code>dependencies {
-    compile "info.picocli:picocli-spring-boot-starter:4.0.1"
+    compile "info.picocli:picocli-spring-boot-starter:4.2.0"
 }</code></pre>
 </div>
 </div>
@@ -7889,7 +8300,44 @@ See the <a href="autocomplete.html">Autocomplete for Java Command Line Applicati
 </div>
 </div>
 <div class="sect1">
-<h2 id="_java_9_jpms_modules">24. Java 9 JPMS Modules</h2>
+<h2 id="_generate_man_page_documentation">24. Generate Man Page Documentation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>From picocli 4.2, the <code>picocli-codegen</code> module has a <code>ManPageGenerator</code> tool that can generate AsciiDoc documentation using the <code>manpage</code> doctype and manpage document structure.
+The generated AsciiDoc files can be converted to HTML, PDF and unix man pages with the wonderful <a href="https://asciidoctor.org/docs/user-manual/#man-pages">asciidoctor</a> tool.</p>
+</div>
+<div class="paragraph">
+<p>See the <a href="https://github.com/remkop/picocli/tree/master/picocli-codegen#generate-documentation">Generate Documentation</a> section of the <a href="https://github.com/remkop/picocli/tree/master/picocli-codegen">picocli-codegen README</a> for details on how to generate and customize this documentation.</p>
+</div>
+<div class="paragraph">
+<p>The man pages for the picocli built-in tools were created with this tool:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="man/gen-manpage.html">gen-manpage</a> (<code>picocli.codegen.docgen.manpage.ManPageGenerator</code>)</p>
+</li>
+<li>
+<p><a href="man/picocli.AutoComplete.html">picocli.AutoComplete</a> (<code>picocli.AutoComplete</code>)</p>
+</li>
+<li>
+<p><a href="man/generate-completion.html">generate-completion</a> (<code>picocli.AutoComplete$GenerateCompletion</code> - to be used as a subcommand)</p>
+</li>
+<li>
+<p><a href="man/gen-reflect-config.html">gen-reflect-config</a> (<code>picocli.codegen.aot.graalvm.ReflectionConfigGenerator</code>)</p>
+</li>
+<li>
+<p><a href="man/gen-proxy-config.html">gen-proxy-config</a> (<code>picocli.codegen.aot.graalvm.DynamicProxyConfigGenerator</code>)</p>
+</li>
+<li>
+<p><a href="man/gen-resource-config.html">gen-resource-config</a> (<code>picocli.codegen.aot.graalvm.ResourceConfigGenerator</code>)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_java_9_jpms_modules">25. Java 9 JPMS Modules</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The main <code>picocli-${version}.jar</code> is a JPMS module named <code>info.picocli</code>.</p>
@@ -7905,7 +8353,7 @@ This causes problems for some older tools, which incorrectly process the module 
 To provide the best backward compatibility, the main picocli artifact is a <a href="https://openjdk.java.net/jeps/238#Modular-multi-release-JAR-files">modular multi-release jar</a> with the <code>module-info.class</code> file located in <code>META-INF/versions/9</code>.</p>
 </div>
 <div class="sect2">
-<h3 id="_module_configuration">24.1. Module Configuration</h3>
+<h3 id="_module_configuration">25.1. Module Configuration</h3>
 <div class="paragraph">
 <p>Applications that use Java 9&#8217;s modules need to configure their module to allow picocli reflective access to the annotated classes and fields.</p>
 </div>
@@ -7946,7 +8394,7 @@ open module com.yourorg.yourapp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_osgi_bundle">25. OSGi Bundle</h2>
+<h2 id="_osgi_bundle">26. OSGi Bundle</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p><span class="image"><img src="https://www.osgi.org/wp-content/uploads/OSGi-website-header-logo.png" alt="OSGi logo"></span></p>
@@ -7957,13 +8405,13 @@ open module com.yourorg.yourapp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_packaging_your_application">26. Packaging Your Application</h2>
+<h2 id="_packaging_your_application">27. Packaging Your Application</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>You finished your application. Congratulations! Now, how do you package it and distribute it to your users? Here are some ideas.</p>
 </div>
 <div class="sect2">
-<h3 id="_graalvm_native_image">26.1. GraalVM Native Image</h3>
+<h3 id="_graalvm_native_image">27.1. GraalVM Native Image</h3>
 <div class="paragraph">
 <p><span class="image"><img src="images/exe-picocli-on-graalvm.png" alt="Turn your picocli-based application into a native image" width="265" height="150"></span></p>
 </div>
@@ -8000,25 +8448,25 @@ Gradle users may be interested in the <a href="https://github.com/palantir/gradl
 </div>
 </div>
 <div class="sect2">
-<h3 id="_build_tool_plugins">26.2. Build Tool Plugins</h3>
+<h3 id="_build_tool_plugins">27.2. Build Tool Plugins</h3>
 <div class="paragraph">
 <p>Both <a href="https://www.mojohaus.org/appassembler/">Application Assembler Maven Plugin</a> and <a href="https://docs.gradle.org/current/userguide/application_plugin.html">Gradle Application plugin</a> create a distribution zip or tar file with launcher scripts. Both require a JRE to be installed on the target machine.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_launch4j">26.3. launch4j</h3>
+<h3 id="_launch4j">27.3. launch4j</h3>
 <div class="paragraph">
 <p><a href="http://launch4j.sourceforge.net/docs.html">launch4j</a> can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_javapackager_java_8">26.4. javapackager (Java 8)</h3>
+<h3 id="_javapackager_java_8">27.4. javapackager (Java 8)</h3>
 <div class="paragraph">
 <p>JDK 8 <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javapackager.html">javapackager</a> can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jlink_java_9">26.5. jlink (Java 9+)</h3>
+<h3 id="_jlink_java_9">27.5. jlink (Java 9+)</h3>
 <div class="paragraph">
 <p>With the JPMS module system introduced in Java 9 it became possible to use <a href="https://docs.oracle.com/javase/9/tools/jlink.htm#JSWOR-GUID-CECAC52B-CFEE-46CB-8166-F17A8E9280E9">jlink</a> to create a custom light-weight JRE with only the necessary modules.
 This JRE may be as small as 30-40MB.
@@ -8029,7 +8477,7 @@ Use <code>jlink</code> with the <code>--launcher</code> option to generate launc
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jpackage_early_access">26.6. jpackage (Early Access)</h3>
+<h3 id="_jpackage_early_access">27.6. jpackage (Early Access)</h3>
 <div class="paragraph">
 <p><a href="https://jdk.java.net/jpackage/">jpackage</a> is an early access build of <a href="https://openjdk.java.net/jeps/343">JEP 343: Packaging Tool</a>.
 JPackage can take the custom light-weight JRE produced by <code>jlink</code> and create an installer and a native application launcher.
@@ -8043,16 +8491,27 @@ Gradle users may like these plugins: <a href="https://badass-runtime-plugin.bery
 and <a href="https://badass-jlink-plugin.beryx.org/releases/latest/">org.beryx Badass JLink Plugin</a>.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_jbang">27.7. jbang</h3>
+<div class="paragraph">
+<p><a href="https://github.com/maxandersen/jbang">jbang</a> allows you to write scripts in Java that use external dependencies.
+You use it with a <code>//DEPS</code> comment, similar to the <a href="http://groovy-lang.org/grape.html"><code>@Grab</code></a> annotation in Groovy.</p>
+</div>
+<div class="paragraph">
+<p>Use <code>jbang --init=cli helloworld.java</code> to create an initial script with a picocli template.
+This <a href="https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&amp;speed=2">asciinema presentation</a> shows what is possible.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_picocli_in_other_languages">27. Picocli in Other Languages</h2>
+<h2 id="_picocli_in_other_languages">28. Picocli in Other Languages</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli may be used in other JVM languages that support annotations.</p>
 </div>
 <div class="sect2">
-<h3 id="_groovy">27.1. Groovy</h3>
+<h3 id="_groovy">28.1. Groovy</h3>
 <div class="paragraph">
 <p>In Groovy, use <code>[</code> and <code>]</code> to surround array values, instead of the <code>{</code> and <code>}</code> used in Java.</p>
 </div>
@@ -8092,7 +8551,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.1.4</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.2.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -8120,7 +8579,7 @@ count.times {
 </td>
 <td class="content">
 When upgrading scripts to picocli 4.0, just changing the version number is not enough!
-Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.1.4')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.1.4')</code> will not work,
+Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.2.0')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.2.0')</code> will not work,
 because the <code>@picocli.groovy.PicocliScript</code> annotation class and supporting classes have been moved into a separate module, <code>picocli-groovy</code>.
 </td>
 </tr>
@@ -8141,7 +8600,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.1.4</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.2.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -8151,7 +8610,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 </div>
 <div class="sect2">
-<h3 id="_kotlin">27.2. Kotlin</h3>
+<h3 id="_kotlin">28.2. Kotlin</h3>
 <div class="paragraph">
 <p>Kotlin 1.2 (released Nov 28, 2017) officially supports <a href="http://kotlinlang.org/docs/reference/whatsnew12.html#array-literals-in-annotations">array literals in annotations</a>, allowing a more compact notation:</p>
 </div>
@@ -8221,7 +8680,7 @@ fun main(args: Array&lt;String&gt;) = System.exit(CommandLine(MyApp()).execute(*
 </div>
 </div>
 <div class="sect2">
-<h3 id="_scala">27.3. Scala</h3>
+<h3 id="_scala">28.3. Scala</h3>
 <div class="paragraph">
 <p>Scala does not allow specifying array annotation attribute as a single value,
 so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for the <code>names</code>, <code>description</code> and <code>type</code> attributes.</p>
@@ -8245,17 +8704,20 @@ class MyApp extends Callable[Int] {
     }
 }
 object MyApp {
-    def main(args: Array[String]) {
+    def main(args: Array[String]): Unit = {
         System.exit(new CommandLine(new MyApp()).execute(args: _*))
     }
 }</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>In order to get you started quickly, you may have a look at the <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/scala/picocli/examples/scala">Scala examples</a> folder of the picocli code repository.</p>
+</div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_api_javadoc">28. API Javadoc</h2>
+<h2 id="_api_javadoc">29. API Javadoc</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli API Javadoc can be found <a href="apidocs/">here</a>.</p>
@@ -8266,7 +8728,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_github_project">29. GitHub Project</h2>
+<h2 id="_github_project">30. GitHub Project</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="https://github.com/remkop/picocli">GitHub project</a> has the source code, tests, build scripts, etc.</p>
@@ -8280,7 +8742,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_issue_tracker">30. Issue Tracker</h2>
+<h2 id="_issue_tracker">31. Issue Tracker</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The GitHub <a href="https://github.com/remkop/picocli/issues">Issue Tracker</a> can be used to report bugs or request features. There is also a <a href="#_mailing_list">Mailing List</a>, and for questions where the user community may know the answer, <a href="https://stackoverflow.com/questions/tagged/picocli">StackOverflow</a> is both a good resource and a great way to build an online knowledge base.</p>
@@ -8288,7 +8750,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_mailing_list">31. Mailing List</h2>
+<h2 id="_mailing_list">32. Mailing List</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Join the <a href="https://groups.google.com/d/forum/picocli">picocli Google group</a> if you are interested in discussing anything picocli-related and receiving announcements on new releases.</p>
@@ -8296,7 +8758,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_license">32. License</h2>
+<h2 id="_license">33. License</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli is licensed under the <a href="https://github.com/remkop/picocli/blob/master/LICENSE">Apache License 2.0</a>.</p>
@@ -8304,7 +8766,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_releases">33. Releases</h2>
+<h2 id="_releases">34. Releases</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Previous versions are available from the GitHub project <a href="https://github.com/remkop/picocli/releases">Releases</a>.</p>
@@ -8312,50 +8774,50 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_download">34. Download</h2>
+<h2 id="_download">35. Download</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>You can add picocli as an external dependency to your project, or you can include it as source.
 See the <a href="#_source">source code</a> below. Copy and paste it into a file called <code>CommandLine.java</code>, add it to your project, and enjoy!</p>
 </div>
 <div class="sect2">
-<h3 id="_gradle_3">34.1. Gradle</h3>
+<h3 id="_gradle_3">35.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.1.4'</pre>
+<pre>compile 'info.picocli:picocli:4.2.0'</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_maven_3">34.2. Maven</h3>
+<h3 id="_maven_3">35.2. Maven</h3>
 <div class="listingblock">
 <div class="content">
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.1.4&lt;/version&gt;
+  &lt;version&gt;4.2.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_scala_sbt">34.3. Scala SBT</h3>
+<h3 id="_scala_sbt">35.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "4.1.4"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "4.2.0"</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_ivy">34.4. Ivy</h3>
+<h3 id="_ivy">35.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.1.4" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.2.0" /&gt;</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_source">34.5. Source</h3>
+<h3 id="_source">35.5. Source</h3>
 <div class="paragraph">
 <p>Picocli has only one source file: <a href="https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java">CommandLine.java</a>.
 This facilitates including it in your project in source form to avoid having an external dependency on picocli.</p>
@@ -8366,8 +8828,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.1.4<br>
-Last updated 2019-12-26 10:01:39 +0900
+Version 4.2.0<br>
+Last updated 2020-02-12 07:02:37 +0900
 </div>
 </div>
 </body>

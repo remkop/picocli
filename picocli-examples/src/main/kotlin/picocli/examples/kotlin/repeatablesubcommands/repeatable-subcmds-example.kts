@@ -1,8 +1,8 @@
 #!/usr/bin/env kscript
 
-//DEPS info.picocli:picocli:4.2.0-SNAPSHOT
+//DEPS info.picocli:picocli:4.2.0
 
-//@file:DependsOn("info.picocli:picocli:4.2.0-SNAPSHOT")
+//@file:DependsOn("info.picocli:picocli:4.2.0")
 //import DependsOn // this (and the line above) requires holgerbrandl/kscript
 
 

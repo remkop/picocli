@@ -107,8 +107,8 @@ public class AutoComplete {
                     "",
                     "Example",
                     "-------",
-                    "  java -cp \"myapp.jar;picocli-4.2.0-SNAPSHOT.jar\" " +
-                            "picocli.AutoComplete my.pkg.MyClass"
+                    "  java -cp \"myapp.jar;picocli-4.2.0.jar\" \\",
+                    "              picocli.AutoComplete my.pkg.MyClass"
             },
             exitCodeListHeading = "%nExit Codes:%n",
             exitCodeList = {
