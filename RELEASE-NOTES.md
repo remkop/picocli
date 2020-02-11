@@ -236,6 +236,7 @@ Usage: myapp [-hV] [-o=<outputFolder>]
 * [#926] Enhancement: Clarify debug trace output when adding aliases.
 * [#928] Enhancement: Improve debug tracing: show command user object identity hashcode and prefix "Processing argument..." with argument index.
 * [#920] Enhancement: Reduce `DEBUG` tracing noise if no resource bundle is set.
+* [#946] Enhancement: Add `--exit` option to picocli codegen utilities.
 * [#940] Bugfix: ArgGroups with a negatable option no longer cause a `NullPointerException` during initialization.
 * [#938] Bugfix: ArgGroups validation now correctly reports an error when a required option is missing, while an optional subgroup is present. Thanks to [Trent Mohay](https://github.com/rain-on) for raising this.
 * [#933] Bugfix: Incorrect error message when multiple exclusive groups are used. Thanks to [Mikaël Barbero](https://github.com/mbarbero) for raising this.
