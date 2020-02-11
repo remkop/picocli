@@ -652,11 +652,11 @@ You can rearrange these includes and add text after each include to customize th
 
 Once we created the template files, we will need to tell the `asciidoctor` tool to take these template files as input instead of the generated manpage AsciiDoc files.
 
+The resulting man page will be a mixture of generated and manually edited text.
+
 The `ManPageGenerator` tool can generate template files, but template files should not be generated multiple times.
 They are intended to be generated _only once_, and afterwards be manually updated and maintained.
-Changes in the generated manpage AsciiDoc files will be reflected in the final output via the includes, but otherwise won't impact the additions or modifications you made to the template files.
-
-The resulting man page will be a mixture of generated and manually edited text.
+Changes in the generated manpage AsciiDoc files will then be reflected in the final output via the includes, without impacting the additions or modifications you made to the template files.
 
 ==== Creating Template Files
 To create template pages, specify the `--template-dir` option when invoking the `picocli.codegen.docgen.manpage.ManPageGenerator` tool. For example:
