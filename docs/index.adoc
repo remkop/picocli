@@ -5402,9 +5402,9 @@ See the link:autocomplete.html[Autocomplete for Java Command Line Applications] 
 From picocli 4.2, the `picocli-codegen` module has a `ManPageGenerator` tool that can generate AsciiDoc documentation using the `manpage` doctype and manpage document structure.
 The generated AsciiDoc files can be converted to HTML, PDF and unix man pages with the wonderful https://asciidoctor.org/docs/user-manual/#man-pages[asciidoctor] tool.
 
-See the link:https://github.com/remkop/picocli/tree/master/picocli-codegen#generate-documentation[Generate Documentation] section of the link:https://github.com/remkop/picocli/tree/master/picocli-codegen[picocli-codegen README] for details on how to generate this documentation.
+See the link:https://github.com/remkop/picocli/tree/master/picocli-codegen#generate-documentation[Generate Documentation] section of the link:https://github.com/remkop/picocli/tree/master/picocli-codegen[picocli-codegen README] for details on how to generate and customize this documentation.
 
-See also the man pages for the picocli built-in tools:
+The man pages for the picocli built-in tools were created with this tool:
 
 * link:man/gen-manpage.html[gen-manpage] (`picocli.codegen.docgen.manpage.ManPageGenerator`)
 * link:man/picocli.AutoComplete.html[picocli.AutoComplete] (`picocli.AutoComplete`)
