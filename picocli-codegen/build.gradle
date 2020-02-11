@@ -118,13 +118,13 @@ task generateManpageAsciiDoc(type: JavaExec) {
             'picocli.codegen.aot.graalvm.ResourceConfigGenerator$App',
             'picocli.AutoComplete$App', // the command line app
             'picocli.AutoComplete$GenerateCompletion', // generate completion subcommand
-            "--outdir=${project.buildDir}/generated/docs", "-v" //, "--template-dir=src/docs/mantemplates"
+            "--outdir=${project.buildDir}/picocli-generated-docs", "-v" //, "--template-dir=src/docs/mantemplates"
 }
 
 apply plugin: 'org.asciidoctor.convert'
 asciidoctor {
     dependsOn(generateManpageAsciiDoc)
-    sourceDir = file("${project.buildDir}/generated/docs")
+    sourceDir = file("${project.buildDir}/picocli-generated-docs")
     outputDir = file("${project.buildDir}/docs")
     logDocuments = true
     backends 'manpage', 'html5'
