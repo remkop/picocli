@@ -127,6 +127,11 @@ public class ManPageGenerator {
                 "If omitted, the default picocli factory is used.")
         String factoryClass;
 
+        @Option(names = "--exit", negatable = true,
+                description = "Specify this option if you want the application to call `System.exit` when finished. " +
+                "By default, `System.exit` is not called.")
+        boolean exit;
+
         public Integer call() throws Exception {
             List<CommandSpec> specs = Util.getCommandSpecs(factoryClass, classes);
             return generateManPage(config, specs.toArray(new CommandSpec[0]));
@@ -134,7 +139,11 @@ public class ManPageGenerator {
     }
 
     public static void main(String[] args) {
-        System.exit(new CommandLine(new App()).execute(args));
+        App app = new App();
+        int exitCode = new CommandLine(app).execute(args);
+        if (app.exit) {
+            System.exit(exitCode);
+        }
     }
 
     public static int generateManPage(File outdir,
