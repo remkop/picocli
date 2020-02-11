@@ -57,7 +57,7 @@
           <arguments>
             <argument>--outdir=${project.build.directory}/generated-picocli-docs</argument>
             <argument>-v</argument>
-<!--            <argument>&#45;&#45;template-dir=src/docs/mantemplates</argument>-->
+            <!--            <argument>&#45;&#45;template-dir=src/docs/mantemplates</argument>-->
             <argument>com.company.Main</argument>
             <!-- <argument>com.your.package.YourCommand2</argument>-->
           </arguments>
@@ -74,7 +74,7 @@
       <plugin>
         <groupId>org.asciidoctor</groupId>
         <artifactId>asciidoctor-maven-plugin</artifactId>
-        <version>1.5.6</version>
+        <version>1.6.0</version>
         <executions>
           <execution>
             <id>output-html</id>
@@ -86,10 +86,6 @@
             <configuration>
               <sourceHighlighter>coderay</sourceHighlighter>
               <backend>html5</backend>
-              <!-- <attributes>-->
-              <!--   <toc/>-->
-              <!--   <linkcss>false</linkcss>-->
-              <!-- </attributes>-->
             </configuration>
           </execution>
           <execution>
@@ -102,17 +98,11 @@
             <configuration>
               <sourceHighlighter>coderay</sourceHighlighter>
               <backend>manpage</backend>
-              <!-- <attributes>-->
-              <!--   <toc/>-->
-              <!--   <linkcss>false</linkcss>-->
-              <!-- </attributes>-->
             </configuration>
           </execution>
         </executions>
         <configuration>
           <sourceDirectory>${project.build.directory}/generated-picocli-docs</sourceDirectory>
-<!--          <headerFooter>true</headerFooter>-->
-<!--          <imagesDir>../resources/images</imagesDir>-->
         </configuration>
       </plugin>
     </plugins>
