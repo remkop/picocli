@@ -47,15 +47,31 @@ task generateManpageAsciiDoc(type: JavaExec) {
     description = "Generate AsciiDoc manpage"
     classpath(configurations.compile, configurations.annotationProcessor, sourceSets.main.runtimeClasspath)
     main 'picocli.codegen.docgen.manpage.ManPageGenerator'
-    args project.ext.mainClassName, "--outdir=${project.buildDir}/generated/docs", "-v", "--template-dir=src/docs/mantemplates"
+    args project.ext.mainClassName, "--outdir=${project.buildDir}/generated-picocli-docs", "-v", "--template-dir=src/docs/mantemplates"
 }
 
 apply plugin: 'org.asciidoctor.convert'
 asciidoctor {
     dependsOn(generateManpageAsciiDoc)
-    sourceDir = file("${project.buildDir}/generated/docs")
+    sourceDir = file("${project.buildDir}/generated-picocli-docs")
     outputDir = file("${project.buildDir}/docs")
     logDocuments = true
     backends 'manpage', 'html5'
 }
 assemble.dependsOn(asciidoctor)
+
+// We can now use the Gradle `distribution` plugin to include
+// the generated manpage files in the distribution archive:
+apply plugin: "distribution"
+distributions {
+    main {
+        contents {
+            from ("${project.buildDir}/docs/manpage") {
+                into('man')
+            }
+            from ("${project.buildDir}/docs/html5") {
+                into('docs')
+            }
+        }
+    }
+}
