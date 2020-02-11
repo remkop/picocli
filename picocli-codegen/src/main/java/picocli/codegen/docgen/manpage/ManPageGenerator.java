@@ -29,7 +29,7 @@ import java.util.concurrent.Callable;
 import static java.lang.String.format;
 
 public class ManPageGenerator {
-    static final int EXIT_CODE_FILE_EXISTS = 4;
+    static final int EXIT_CODE_TEMPLATE_EXISTS = 4;
 
     static final IStyle BOLD = new IStyle() {
         public String on()  { return "*"; }
@@ -101,6 +101,15 @@ public class ManPageGenerator {
             version = "picocli-codegen ${COMMAND-NAME} " + CommandLine.VERSION, showAtFileInUsageHelp = true,
             mixinStandardHelpOptions = true, sortOptions = false, usageHelpAutoWidth = true, usageHelpWidth = 100,
             description = {"Generates one or more AsciiDoc files with doctype 'manpage' in the specified directory."},
+            exitCodeListHeading = "%nExit Codes:%n",
+            exitCodeList = {
+                    "0:Successful program execution",
+                    "1:A runtime exception occurred while generating man pages.",
+                    "2:Usage error: user input for the command was incorrect, " +
+                            "e.g., the wrong number of arguments, a bad flag, " +
+                            "a bad syntax in a parameter, etc.",
+                    "4:A template file exists in the template directory (Specify `--force` to overwrite)."
+            },
             footerHeading = "%nConverting to Man Page Format%n%n",
             footer = {"Use the `asciidoctor` tool to convert the generated AsciiDoc files to man pages in roff format:",
                     "",
@@ -202,7 +211,7 @@ public class ManPageGenerator {
 
         generateSingleManPage(spec, manpage);
 
-        return generateCustomizableManPageTemplate(config, spec);
+        return generateCustomizableTemplate(config, spec);
     }
 
     private static boolean mkdirs(Config config, File directory) {
@@ -235,7 +244,7 @@ public class ManPageGenerator {
         }
     }
 
-    private static int generateCustomizableManPageTemplate(Config config, CommandSpec spec) throws IOException {
+    private static int generateCustomizableTemplate(Config config, CommandSpec spec) throws IOException {
         if (config.templatesDirectory == null) {
             return CommandLine.ExitCode.OK;
         }
@@ -248,9 +257,10 @@ public class ManPageGenerator {
             if (config.force) {
                 config.verbose("Overwriting existing man page template file %s...%n", templateFile);
             } else {
-                System.err.printf("gen-manpage: ERROR: cannot generate man page template file %s: it already exists. Use --force to overwrite.%n", templateFile);
+                System.err.printf("gen-manpage: ERROR: cannot generate man page template file %s: it already exists. " +
+                        "Remove the --template-dir option or use --force to overwrite.%n", templateFile);
                 System.err.println("Try 'gen-manpage --help' for more information.");
-                return EXIT_CODE_FILE_EXISTS;
+                return EXIT_CODE_TEMPLATE_EXISTS;
             }
         } else {
             config.verbose("Generating customizable man page template %s%n", templateFile);
