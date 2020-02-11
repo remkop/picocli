@@ -104,6 +104,11 @@ public class ReflectionConfigGenerator {
         @Mixin
         OutputFileMixin outputFile = new OutputFileMixin();
 
+        @Option(names = "--exit", negatable = true,
+                description = "Specify this option if you want the application to call `System.exit` when finished. " +
+                "By default, `System.exit` is not called.")
+        boolean exit;
+
         public Integer call() throws Exception {
             List<CommandSpec> specs = Util.getCommandSpecs(factoryClass, classes);
             String result = ReflectionConfigGenerator.generateReflectionConfig(specs.toArray(new CommandSpec[0]));
@@ -118,7 +123,11 @@ public class ReflectionConfigGenerator {
      * @param args one or more fully qualified class names of {@code @Command}-annotated classes.
      */
     public static void main(String... args) {
-        new CommandLine(new App()).execute(args);
+        App app = new App();
+        int exitCode = new CommandLine(app).execute(args);
+        if (app.exit) {
+            System.exit(exitCode);
+        }
     }
 
     /**
