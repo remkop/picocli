@@ -40,6 +40,7 @@ Picocli-based applications can be ahead-of-time compiled to image:https://www.gr
 
 image:checksum-usage-help.png[Screenshot of usage help with Ansi codes enabled]
 
+Picocli << Generate Man Page Documentation,generates beautiful documentation>> for your application (HTML, PDF and Unix man pages).
 
 Another distinguishing feature of picocli is how it aims
 to let users run picocli-based applications without requiring picocli as an external dependency:
