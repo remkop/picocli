@@ -43,11 +43,19 @@ import java.util.concurrent.Callable;
  */
 public class DynamicProxyConfigGenerator {
 
-    @Command(name = "gen-proxy-config", showAtFileInUsageHelp = true,
+    @Command(name = "gen-proxy-config", showAtFileInUsageHelp = true, sortOptions = false,
             description = {"Generates a JSON file with the interface names to generate dynamic proxy classes for in the native image.",
                     "The generated JSON file can be passed to the `-H:DynamicProxyConfigurationFiles=/path/to/proxy-config.json` " +
                     "option of the `native-image` GraalVM utility.",
                     "See https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md"},
+            exitCodeListHeading = "%nExit Codes (if enabled with `--exit`)%n",
+            exitCodeList = {
+                    "0:Successful program execution.",
+                    "1:A runtime exception occurred while generating man pages.",
+                    "2:Usage error: user input for the command was incorrect, " +
+                            "e.g., the wrong number of arguments, a bad flag, " +
+                            "a bad syntax in a parameter, etc."
+            },
             footerHeading = "%nExample%n",
             footer = {
                 "  java -cp \"myapp.jar;picocli-4.2.0-SNAPSHOT.jar;picocli-codegen-4.2.0-SNAPSHOT.jar\" " +
@@ -68,13 +76,13 @@ public class DynamicProxyConfigGenerator {
                 "When omitted, the default picocli factory is used.")
         String factoryClass;
 
-        @Option(names = "--exit", negatable = true,
-                description = "Specify this option if you want the application to call `System.exit` when finished. " +
-                "By default, `System.exit` is not called.")
-        boolean exit;
-
         @Mixin
         OutputFileMixin outputFile = new OutputFileMixin();
+
+        @Option(names = "--exit", negatable = true,
+                description = "Specify `--exit` if you want the application to call `System.exit` when finished. " +
+                        "By default, `System.exit` is not called.")
+        boolean exit;
 
         public Integer call() throws Exception {
             List<CommandSpec> specs = Util.getCommandSpecs(factoryClass, classes);

@@ -39,11 +39,19 @@ import java.util.concurrent.Callable;
  */
 public class ResourceConfigGenerator {
 
-    @Command(name = "gen-resource-config", showAtFileInUsageHelp = true,
+    @Command(name = "gen-resource-config", showAtFileInUsageHelp = true, sortOptions = false,
             description = {"Generates a JSON file with the resources and resource bundles to include in the native image.",
                     "The generated JSON file can be passed to the `-H:ResourceConfigurationFiles=/path/to/resource-config.json` " +
                     "option of the `native-image` GraalVM utility.",
                     "See https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md"},
+            exitCodeListHeading = "%nExit Codes (if enabled with `--exit`)%n",
+            exitCodeList = {
+                    "0:Successful program execution.",
+                    "1:A runtime exception occurred while generating man pages.",
+                    "2:Usage error: user input for the command was incorrect, " +
+                            "e.g., the wrong number of arguments, a bad flag, " +
+                            "a bad syntax in a parameter, etc."
+            },
             footerHeading = "%nExample%n",
             footer = {
                     "  java -cp \"myapp.jar;picocli-4.2.0-SNAPSHOT.jar;picocli-codegen-4.2.0-SNAPSHOT.jar\" " +
@@ -72,7 +80,7 @@ public class ResourceConfigGenerator {
         OutputFileMixin outputFile = new OutputFileMixin();
 
         @Option(names = "--exit", negatable = true,
-                description = "Specify this option if you want the application to call `System.exit` when finished. " +
+                description = "Specify `--exit` if you want the application to call `System.exit` when finished. " +
                 "By default, `System.exit` is not called.")
         boolean exit;
 

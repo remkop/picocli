@@ -21,12 +21,20 @@ public class JniConfigGenerator {
                     "The generated JSON file can be passed to the `-H:JNIConfigurationFiles=/path/to/jni-config.json` " +
                     "option of the `native-image` GraalVM utility.",
                     "See https://github.com/oracle/graal/blob/master/substratevm/JNI.md"},
+            exitCodeListHeading = "%nExit Codes (if enabled with `--exit`)%n",
+            exitCodeList = {
+                    "0:Successful program execution.",
+                    "1:A runtime exception occurred while generating man pages.",
+                    "2:Usage error: user input for the command was incorrect, " +
+                            "e.g., the wrong number of arguments, a bad flag, " +
+                            "a bad syntax in a parameter, etc."
+            },
             footerHeading = "%nExample%n",
             footer = {
                     "  java -cp \"myapp.jar;picocli-4.2.0-SNAPSHOT.jar;picocli-codegen-4.2.0-SNAPSHOT.jar\" " +
                             "picocli.codegen.aot.graalvm.JniConfigGenerator my.pkg.MyClass"
             },
-            mixinStandardHelpOptions = true,
+            mixinStandardHelpOptions = true, sortOptions = false,
             version = "picocli-codegen ${COMMAND-NAME} " + CommandLine.VERSION)
     private static class App implements Callable<Integer> {
 
@@ -37,7 +45,7 @@ public class JniConfigGenerator {
         OutputFileMixin outputFile = new OutputFileMixin();
 
         @Option(names = "--exit", negatable = true,
-                description = "Specify this option if you want the application to call `System.exit` when finished. " +
+                description = "Specify `--exit` if you want the application to call `System.exit` when finished. " +
                 "By default, `System.exit` is not called.")
         boolean exit;
 

@@ -64,12 +64,14 @@ public class ManPageGenerator {
         @Option(names = {"-t", "--template-dir"}, paramLabel = "<template-dir>",
                 description = {
                         "Optional directory to write customizable man page template files. " +
-                                "If specified, additional AsciiDoc files are generated here containing " +
-                                "`include` directives that import content " +
-                                "from a generated manpage AsciiDoc file in the `--outdir` directory.",
+                                "If specified, an additional \"template\" file is created here for each " +
+                                "generated manpage AsciiDoc file. ",
+                        "Each template file contains `include` directives that import content " +
+                                "from the corresponding generated manpage AsciiDoc file in the `--outdir` directory. " +
+                                "Text can be added after each include to customize the resulting man page. " +
+                                "The resulting man page will be a mixture of generated and manually edited text.",
                         "These customizable templates are intended to be generated once, and afterwards " +
-                                "be manually updated and maintained. The resulting man page will be a mixture of " +
-                                "generated and manually edited text."})
+                                "be manually updated and maintained."})
         File templatesDirectory;
 
         @Option(names = {"-v", "--verbose"},
@@ -101,14 +103,14 @@ public class ManPageGenerator {
             version = "picocli-codegen ${COMMAND-NAME} " + CommandLine.VERSION, showAtFileInUsageHelp = true,
             mixinStandardHelpOptions = true, sortOptions = false, usageHelpAutoWidth = true, usageHelpWidth = 100,
             description = {"Generates one or more AsciiDoc files with doctype 'manpage' in the specified directory."},
-            exitCodeListHeading = "%nExit Codes:%n",
+            exitCodeListHeading = "%nExit Codes (if enabled with `--exit`)%n",
             exitCodeList = {
-                    "0:Successful program execution",
+                    "0:Successful program execution.",
                     "1:A runtime exception occurred while generating man pages.",
                     "2:Usage error: user input for the command was incorrect, " +
                             "e.g., the wrong number of arguments, a bad flag, " +
                             "a bad syntax in a parameter, etc.",
-                    "4:A template file exists in the template directory (Specify `--force` to overwrite)."
+                    "4:A template file exists in the template directory. (Remove the `--template-dir` option or use `--force` to overwrite.)"
             },
             footerHeading = "%nConverting to Man Page Format%n%n",
             footer = {"Use the `asciidoctor` tool to convert the generated AsciiDoc files to man pages in roff format:",
@@ -137,7 +139,7 @@ public class ManPageGenerator {
         String factoryClass;
 
         @Option(names = "--exit", negatable = true,
-                description = "Specify this option if you want the application to call `System.exit` when finished. " +
+                description = "Specify `--exit` if you want the application to call `System.exit` when finished. " +
                 "By default, `System.exit` is not called.")
         boolean exit;
 
@@ -512,8 +514,12 @@ public class ManPageGenerator {
         if (spec.usageMessage().exitCodeList().isEmpty()) {
             return;
         }
+        String heading = makeHeading(spec.usageMessage().exitCodeListHeading(), "Exit status");
         pw.printf("// tag::picocli-generated-man-section-exit-status[]%n");
-        pw.printf("== Exit status%n");
+        //pw.printf("== Exit status%n");
+        pw.printf("== %s%n", COLOR_SCHEME.text(heading));
+
+
 
         for (Map.Entry<String, String> entry : spec.usageMessage().exitCodeList().entrySet()) {
             pw.println();
