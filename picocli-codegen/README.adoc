@@ -1,6 +1,6 @@
 = Picocli Code Generation
 :revnumber: 4.2.0
-:revdate: 2019-12-22
+:revdate: 2020-02-12
 :toc: left
 :numbered:
 :toclevels: 4
