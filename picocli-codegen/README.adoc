@@ -646,12 +646,14 @@ The generated manpage AsciiDoc files will be regenerated every build. We don't w
 Instead, we will edit "template" files.
 Template files leverage AsciiDoctor's https://asciidoctor.org/docs/user-manual/#include-directive[include mechanism] to import the contents of the generated manpage AsciiDoc files into a separate file.
 
-The template page initially just contains a number of `include::path/to/some.adoc[tag=xxx]` statements. Each `include` statement imports part of a generated manpage AsciiDoc file. You can rearrange these includes and add text after the sections  to customize the resulting man page.
+The template page initially just contains a number of `include::path/to/some.adoc[tag=xxx]` statements.
+Each `include` statement imports part of a generated manpage AsciiDoc file.
+You can rearrange these includes and add text after each include to customize the resulting man page.
 
 Template files are intended to be generated _only once_, and afterwards be manually updated and maintained.
 Changes in the generated manpage AsciiDoc files will be reflected in the final output via the includes, but otherwise won't impact the additions or modifications you made to the template files.
 
-Once we generated the template files, we will tell the `asciidoctor` tool to take our template files as input instead of the generated manpage AsciiDoc files.
+Once we generated the template files, we will need to tell the `asciidoctor` tool to take our template files as input instead of the generated manpage AsciiDoc files.
 The resulting man page will be a mixture of generated and manually edited text.
 
 ==== Creating Template Files
@@ -667,6 +669,9 @@ java -cp $CLASSPATH picocli.codegen.docgen.manpage.ManPageGenerator \
 This generates AsciiDoc files with the 'manpage' doctype in `build/generated/docs`, and template files in `src/docs/man-templates`.
 
 CAUTION: Do this only once, then remove the `--template-dir` option, so that subsequent `ManPageGenerator` invocations will only update the generated manpage AsciiDoc files and will not overwrite the template files.
+
+CAUTION: If the `ManPageGenerator` tool detects an existing template file, it will abort with an error (and exit code 4).
+The existing template will not be overwritten unless the `--force` option is specified. 
 
 We can now edit the files in `src/docs/man-templates` and tell the `asciidoctor` tool to generate HTML and man page files in troff format from the files in `src/docs/man-templates`.
 
