@@ -1,5 +1,34 @@
 # picocli Release Notes
 
+# <a name="4.2.1"></a> Picocli 4.2.1 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.2.1.
+
+This release contains bugfixes and enhancements. 
+
+ 
+This is the sixty-seventh public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.2.1-toc"></a> Table of Contents
+* [New and noteworthy](#4.2.1-new)
+* [Fixed issues](#4.2.1-fixes)
+* [Deprecations](#4.2.1-deprecated)
+* [Potential breaking changes](#4.2.1-breaking-changes)
+
+## <a name="4.2.1-new"></a> New and Noteworthy
+
+
+## <a name="4.2.1-fixes"></a> Fixed issues
+[#951] DOC: Fixed typo in `picocli-codegen` annotation processor documentation: `disable.resource.config` is correct (the option name was incorrectly spelled as `disable.resources.config`). Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for raising this.
+
+## <a name="4.2.1-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.2.1-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 # <a name="4.2.0"></a> Picocli 4.2.0
 The picocli community is pleased to announce picocli 4.2.0.
 
@@ -1960,7 +1989,7 @@ The `project` option can be omitted, but it is a good idea to specify the `proje
 * `other.proxy.interfaces` - comma-separated list of the fully qualified class names of additional interfaces for which to generate proxy classes when building the image
 * `disable.proxy.config` - don’t generate `proxy-config.json`
 * `disable.reflect.config` - don’t generate `reflect-config.json`
-* `disable.resources.config` - don’t generate `resources-config.json`
+* `disable.resource.config` - don’t generate `resources-config.json`
 
 
 ##### Javac

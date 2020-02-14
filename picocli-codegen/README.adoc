@@ -135,7 +135,7 @@ The `project` option can be omitted, but it is a good idea to specify the `proje
 * `other.proxy.interfaces` - comma-separated list of the fully qualified class names of additional interfaces for which to generate proxy classes when building the image
 * `disable.proxy.config` - disable the <<DynamicProxyConfigGenerator>> tool so no `proxy-config.json` file is generated
 * `disable.reflect.config` - disable the <<ReflectionConfigGenerator>> tool so no  `reflect-config.json` file is generated
-* `disable.resources.config` - disable the <<ResourceConfigGenerator>> tool so no  `resources-config.json` file is generated
+* `disable.resource.config` - disable the <<ResourceConfigGenerator>> tool so no  `resources-config.json` file is generated
 
 
 ==== Javac
