@@ -215,6 +215,8 @@ and it needs to know ahead of time the reflectively accessed program elements.
 
 `ReflectionConfigGenerator` generates a JSON String with the program elements that will be accessed reflectively in a picocli-based application, in order to compile this application ahead-of-time into a native executable with GraalVM.
 
+The <<Generate Documentation,generated>> manual page for the `ReflectionConfigGenerator` tool https://picocli.info/man/gen-reflect-config.html[is here].
+
 The output of `ReflectionConfigGenerator` is intended to be passed to the `-H:ReflectionConfigurationFiles=/path/to/reflect-config.json` option of the `native-image` GraalVM utility,
 or placed in a `META-INF/native-image/` subdirectory of the JAR. 
 
@@ -320,6 +322,8 @@ https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md[classpath r
 
 `ResourceConfigGenerator` generates a JSON String with the resource bundles and other classpath resources
 that should be included in the Substrate VM native image.
+
+The <<Generate Documentation,generated>> manual page for the `ResourceConfigGenerator` tool https://picocli.info/man/gen-resource-config.html[is here].
 
 The output of `ResourceConfigGenerator` is intended to be passed to the `-H:ResourceConfigurationFiles=/path/to/reflect-config.json` option of the `native-image` GraalVM utility,
 or placed in a `META-INF/native-image/` subdirectory of the JAR. 
@@ -427,6 +431,8 @@ https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md[need to
 `DynamicProxyConfigGenerator` generates a JSON String with the fully qualified interface names for which
 dynamic proxy classes should be generated at native image build time.
 
+The <<Generate Documentation,generated>> manual page for the `DynamicProxyConfigGenerator` tool https://picocli.info/man/gen-proxy-config.html[is here].
+
 The output of `DynamicProxyConfigGenerator` is intended to be passed to the `-H:DynamicProxyConfigurationFiles=/path/to/proxy-config.json` option of the `native-image` GraalVM utility,
 or placed in a `META-INF/native-image/` subdirectory of the JAR.
 
@@ -529,6 +535,8 @@ assemble.dependsOn generateGraalDynamicProxyConfig
 
 The `picocli.codegen.docgen.manpage.ManPageGenerator` tool introduced in picocli 4.2 generates AsciiDoc documentation using the `manpage` doctype and manpage document structure.
 The generated AsciiDoc files can be converted to HTML, PDF and unix man pages with the https://asciidoctor.org/docs/user-manual/#man-pages[asciidoctor] tool.
+
+The generated manual page for the `ManPageGenerator` tool itself https://picocli.info/man/gen-manpage.html[is here].
 
 === Gradle Example
 Example gradle build.gradle snippet:
