@@ -62,7 +62,9 @@ abstract class AbstractGenerator implements IGenerator {
      * @param msg the info message
      */
     protected void logInfo(String msg) {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, getClass().getSimpleName() + " " + msg);
+        if (processingEnv.getOptions().get("quiet") == null) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, getClass().getSimpleName() + " " + msg);
+        }
     }
     /**
      * Prints a compile-time error message prefixed with "FATAL ERROR".
