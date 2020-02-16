@@ -4,8 +4,13 @@ import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
 import org.junit.Test;
 
+import javax.tools.Diagnostic;
 import javax.tools.JavaFileManager;
 import javax.tools.StandardLocation;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
@@ -31,21 +36,31 @@ public class NativeImageConfigGeneratorProcessorTest {
     }
 
     private void expectGeneratedWithNotes(Compilation compilation, String[][] allParams) {
+        int noteCount = 0;
         for (String[] params : allParams) {
+            String noteText = String.format(
+                    "%s writing to: CLASS_OUTPUT/META-INF/native-image/picocli-generated/%s", params[0], params[1]);
             boolean generated = Boolean.parseBoolean(params[2]);
             if (generated) {
                 assertThat(compilation)
                         .generatedFile(StandardLocation.CLASS_OUTPUT,
                                 "META-INF/native-image/picocli-generated/" + params[1]);
-                assertThat(compilation).hadNoteContaining(String.format(
-                        "%s writing to: CLASS_OUTPUT/META-INF/native-image/picocli-generated/%s", params[0], params[1]));
+                assertThat(compilation).hadNoteContaining(noteText);
+                noteCount++;
             } else {
                 assertThat(compilation).hadNoteContaining(params[0] + " is not enabled");
                 assertNoGeneratedFile(compilation, StandardLocation.CLASS_OUTPUT,
                         "META-INF/native-image/picocli-generated/" + params[1]);
+                List<String> notes = compilation.diagnostics().stream()
+                        .filter(d -> d.getKind() == Diagnostic.Kind.NOTE)
+                        .map(d -> d.getMessage(Locale.ENGLISH))
+                        .collect(Collectors.toList());
+                assertFalse(notes.stream().anyMatch(note -> note.contains(noteText)));
+                assertThat(compilation).hadNoteContainingMatch(params[0] + " is not enabled");
+                noteCount++;
             }
         }
-        assertThat(compilation).hadNoteCount(allParams.length);
+        assertThat(compilation).hadNoteCount(noteCount);
     }
 
     @Test
@@ -110,6 +125,26 @@ public class NativeImageConfigGeneratorProcessorTest {
                         .withOptions("-A" + ProxyConfigGen.OPTION_DISABLE) // no value
                         .compile(JavaFileObjects.forResource(
                                 "picocli/examples/subcommands/ParentCommandDemo.java"));
+
+        assertThat(compilation).succeeded();
+        String[][] allParams = {
+                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" },
+                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" },
+                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "false" },
+        };
+        expectGeneratedWithNotes(compilation, allParams);
+    }
+
+    @Test
+    public void testOptionDisableProxyQuiet() {
+        NativeImageConfigGeneratorProcessor processor = new NativeImageConfigGeneratorProcessor();
+        Compilation compilation =
+                javac()
+                        .withProcessors(processor)
+                        .withOptions("-A" + ProxyConfigGen.OPTION_DISABLE, "-A" + AbstractGenerator.OPTION_QUIET) // no value
+                        .compile(JavaFileObjects.forResource(
+                                "picocli/examples/subcommands/ParentCommandDemo.java"));
+
         assertThat(compilation).succeeded();
         String[][] allParams = {
                 { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" },

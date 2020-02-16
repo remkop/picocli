@@ -9,6 +9,7 @@ import javax.tools.StandardLocation;
 import java.util.Map;
 
 abstract class AbstractGenerator implements IGenerator {
+    public static final String OPTION_QUIET = "quiet";
     protected final ProcessingEnvironment processingEnv;
     private final String fileName;
     private final String disableKey;
@@ -62,7 +63,7 @@ abstract class AbstractGenerator implements IGenerator {
      * @param msg the info message
      */
     protected void logInfo(String msg) {
-        if (processingEnv.getOptions().get("quiet") == null) {
+        if (!processingEnv.getOptions().containsKey("quiet")) {
             processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, getClass().getSimpleName() + " " + msg);
         }
     }
