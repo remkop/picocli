@@ -38,6 +38,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -813,6 +814,87 @@ public class ExecuteTest {
         cmd.setExitCodeExceptionMapper(mapper);
         int exitCode = cmd.execute("-x");
         assertEquals(1, exitCode);
+    }
+
+    @Test
+    public void testParameterExceptionHandler_ShowsStacktraceIfTracingDebug() {
+        @Command class App implements Runnable {
+            @Option(names = "-x") int x;
+            public void run() { }
+        }
+        TestUtil.setTraceLevel("DEBUG");
+        CommandLine cmd = new CommandLine(new App());
+        cmd.execute("-x=abc");
+
+        //String expected = String.format("" +
+        //        "[picocli DEBUG] Creating CommandSpec for object 5cbc508c of class picocli.ExecuteTest$27App with factory picocli.CommandLine$DefaultFactory%n" +
+        //        "[picocli INFO] Picocli version: 4.2.1-SNAPSHOT, JVM: 1.8.0_161 (Oracle Corporation Java HotSpot(TM) 64-Bit Server VM 25.161-b12), OS: Windows 10 10.0 amd64%n" +
+        //        "[picocli INFO] Parsing 1 command line args [-x=abc]%n" +
+        //        "[picocli DEBUG] Parser configuration: posixClusteredShortOptionsAllowed=true, stopAtPositional=false, stopAtUnmatched=false, separator=null, overwrittenOptionsAllowed=false, unmatchedArgumentsAllowed=false, expandAtFiles=true, atFileCommentChar=#, useSimplifiedAtFiles=false, endOfOptionsDelimiter=--, limitSplit=false, aritySatisfiedByAttachedOptionParam=false, toggleBooleanFlags=false, unmatchedOptionsArePositionalParams=false, collectErrors=false,caseInsensitiveEnumValuesAllowed=false, trimQuotes=false, splitQuotedStrings=false%n" +
+        //        "[picocli DEBUG] (ANSI is disabled by default: systemproperty[picocli.ansi]=false, isatty=false, TERM=null, OSTYPE=null, isWindows=true, JansiConsoleInstalled=false, ANSICON=null, ConEmuANSI=null, NO_COLOR=null, CLICOLOR=null, CLICOLOR_FORCE=null)%n" +
+        //        "[picocli DEBUG] Set initial value for field int picocli.ExecuteTest$27App.x of type int to 0.%n" +
+        //        "[picocli DEBUG] Initializing picocli.ExecuteTest$27App: 1 options, 0 positional parameters, 0 required, 0 groups, 0 subcommands.%n" +
+        //        "[picocli DEBUG] [0] Processing argument '-x=abc'. Remainder=[]%n" +
+        //        "[picocli DEBUG] Separated '-x' option from 'abc' option parameter%n" +
+        //        "[picocli DEBUG] Found option named '-x': field int picocli.ExecuteTest$27App.x, arity=1%n" +
+        //        "Invalid value for option '-x': 'abc' is not an int%n" +
+        //        "Usage: <main class> [-x=<x>]%n" +
+        //        "  -x=<x>%n" +
+        //        "picocli.CommandLine$ParameterException: Invalid value for option '-x': 'abc' is not an int%n" +
+        //        "\tat picocli.CommandLine$Interpreter.tryConvert(CommandLine.java:12397)%n" +
+        //        "\tat picocli.CommandLine$Interpreter.applyValueToSingleValuedField(CommandLine.java:11967)%n" +
+        //        "\tat picocli.CommandLine$Interpreter.applyOption(CommandLine.java:11871)%n" +
+        //        "\tat picocli.CommandLine$Interpreter.processStandaloneOption(CommandLine.java:11759)%n" +
+        //        "\tat picocli.CommandLine$Interpreter.processArguments(CommandLine.java:11630)%n" +
+        //        "\tat picocli.CommandLine$Interpreter.parse(CommandLine.java:11459)%n" +
+        //        "\tat picocli.CommandLine$Interpreter.parse(CommandLine.java:11349)%n" +
+        //        "\tat picocli.CommandLine.parseArgs(CommandLine.java:1311)%n" +
+        //        "\tat picocli.CommandLine.execute(CommandLine.java:1907)%n" +
+        //        "\tat picocli.ExecuteTest.testParameterExceptionHandler_ShowsStacktraceIfTracingDebug(ExecuteTest.java:826)%n" +
+        //        "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)%n" +
+        //        "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)%n" +
+        //        "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)%n" +
+        //        "\tat java.lang.reflect.Method.invoke(Method.java:498)%n" +
+        //        "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)%n" +
+        //        "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)%n" +
+        //        "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)%n" +
+        //        "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)%n" +
+        //        "\tat org.junit.rules.ExternalResource$1.evaluate(ExternalResource.java:48)%n" +
+        //        "\tat org.junit.rules.ExternalResource$1.evaluate(ExternalResource.java:48)%n" +
+        //        "\tat org.junit.contrib.java.lang.system.internal.LogPrintStream$1$1.evaluate(LogPrintStream.java:30)%n" +
+        //        "\tat org.junit.contrib.java.lang.system.internal.PrintStreamHandler$3.evaluate(PrintStreamHandler.java:48)%n" +
+        //        "\tat org.junit.contrib.java.lang.system.internal.LogPrintStream$1.evaluate(LogPrintStream.java:26)%n" +
+        //        "\tat org.junit.contrib.java.lang.system.internal.LogPrintStream$1$1.evaluate(LogPrintStream.java:30)%n" +
+        //        "\tat org.junit.contrib.java.lang.system.internal.PrintStreamHandler$3.evaluate(PrintStreamHandler.java:48)%n" +
+        //        "\tat org.junit.contrib.java.lang.system.internal.LogPrintStream$1.evaluate(LogPrintStream.java:26)%n" +
+        //        "\tat org.junit.rules.RunRules.evaluate(RunRules.java:20)%n" +
+        //        "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)%n" +
+        //        "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)%n" +
+        //        "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)%n" +
+        //        "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)%n" +
+        //        "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)%n" +
+        //        "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)%n" +
+        //        "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)%n" +
+        //        "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)%n" +
+        //        "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)%n" +
+        //        "\tat org.junit.runner.JUnitCore.run(JUnitCore.java:137)%n" +
+        //        "\tat com.intellij.junit4.JUnit4IdeaTestRunner.startRunnerWithArgs(JUnit4IdeaTestRunner.java:68)%n" +
+        //        "\tat com.intellij.rt.junit.IdeaTestRunner$Repeater.startRunnerWithArgs(IdeaTestRunner.java:33)%n" +
+        //        "\tat com.intellij.rt.junit.JUnitStarter.prepareStreamsAndStart(JUnitStarter.java:230)%n" +
+        //        "\tat com.intellij.rt.junit.JUnitStarter.main(JUnitStarter.java:58)%n");
+        //assertEquals(expected, systemErrRule.getLog());
+
+        List<String> lines = Arrays.asList(systemErrRule.getLog().split(System.getProperty("line.separator")));
+        int msgPos = lines.indexOf("Invalid value for option '-x': 'abc' is not an int");
+        assertNotEquals(-1, msgPos);
+
+        int i = msgPos + 1;
+        assertEquals("Usage: <main class> [-x=<x>]", lines.get(i++));
+        assertEquals("  -x=<x>", lines.get(i++));
+        assertEquals("picocli.CommandLine$ParameterException: Invalid value for option '-x': 'abc' is not an int", lines.get(i++));
+        assertTrue(lines.get(i++).startsWith("\tat picocli.CommandLine$Interpreter.tryConvert(CommandLine.java:"));
+        assertTrue(lines.get(i++).startsWith("\tat picocli.CommandLine$Interpreter.applyValueToSingleValuedField(CommandLine.java:"));
+        assertTrue(lines.get(i++).startsWith("\tat picocli.CommandLine$Interpreter.applyOption(CommandLine.java:"));
     }
 
     @SuppressWarnings("deprecation")

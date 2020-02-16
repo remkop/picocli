@@ -1657,6 +1657,10 @@ public class CommandLine {
             if (!UnmatchedArgumentException.printSuggestions(ex, writer)) {
                 ex.getCommandLine().usage(writer, colorScheme);
             }
+            Tracer tracer = new Tracer();
+            if (tracer.isDebug()) { // #956 show error details if DEBUG is enabled
+                ex.printStackTrace(tracer.stream);
+            }
         }
         /** This implementation always simply rethrows the specified exception.
          * @param ex the ExecutionException describing the problem that occurred while executing the {@code Runnable} or {@code Callable} command
