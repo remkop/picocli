@@ -2030,7 +2030,7 @@ The default execution exception handling results in the stack trace of the excep
 This is sufficient for most applications.
 
 If you have designed your business logic to throw exceptions with user-facing error messages, you want to print this error message instead of the stack trace.
-This can be accomplished by installing a custom `IExecutionException`, like this:
+This can be accomplished by installing a custom `IExecutionExceptionHandler`, like this:
 
 [source,java]
 ----
@@ -2039,7 +2039,7 @@ new CommandLine(new MyApp())
     .execute(args);
 ----
 
-Where the `IExecutionException` implementation could look something like this:
+Where the `IExecutionExceptionHandler` implementation could look something like this:
 [source,java]
 ----
 class PrintExceptionMessageHandler implements IExecutionExceptionHandler() {

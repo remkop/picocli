@@ -3705,7 +3705,7 @@ This is sufficient for most applications.</p>
 </div>
 <div class="paragraph">
 <p>If you have designed your business logic to throw exceptions with user-facing error messages, you want to print this error message instead of the stack trace.
-This can be accomplished by installing a custom <code>IExecutionException</code>, like this:</p>
+This can be accomplished by installing a custom <code>IExecutionExceptionHandler</code>, like this:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -3715,7 +3715,7 @@ This can be accomplished by installing a custom <code>IExecutionException</code>
 </div>
 </div>
 <div class="paragraph">
-<p>Where the <code>IExecutionException</code> implementation could look something like this:</p>
+<p>Where the <code>IExecutionExceptionHandler</code> implementation could look something like this:</p>
 </div>
 <div class="listingblock">
 <div class="content">
