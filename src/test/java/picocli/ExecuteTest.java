@@ -897,6 +897,26 @@ public class ExecuteTest {
         assertTrue(lines.get(i++).startsWith("\tat picocli.CommandLine$Interpreter.applyOption(CommandLine.java:"));
     }
 
+    @Test
+    public void testTracingDebugList() {
+        @Command
+        class App implements Runnable {
+            @Parameters
+            int[] x;
+
+            @CommandLine.Unmatched List<String> unmatched;
+
+            public void run() { }
+        }
+        TestUtil.setTraceLevel("DEBUG");
+        CommandLine cmd = new CommandLine(new App());
+        cmd.execute("abc");
+
+        //String expected = String.format("");
+        //assertEquals(expected, systemErrRule.getLog());
+        assertTrue(systemErrRule.getLog().contains("[picocli DEBUG] abc cannot be assigned to args[0..*] at position 0: type conversion fails"));
+    }
+
     @SuppressWarnings("deprecation")
     @Test
     public void testModifiedExecutionStrategy() {
