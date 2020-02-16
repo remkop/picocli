@@ -10175,15 +10175,15 @@ public class CommandLine {
                     currentValue = value;
                     return result;
                 } catch (InvocationTargetException ex) {
-                    if (ex.getCause() instanceof PicocliException) { throw (PicocliException) ex.getCause(); }
-                    throw createParameterException(value, ex.getCause());
+                    if (ex.getTargetException() instanceof PicocliException) { throw (PicocliException) ex.getTargetException(); }
+                    throw createParameterException(value, ex.getTargetException());
                 } catch (Exception ex) {
                     throw createParameterException(value, ex);
                 }
             }
             private ParameterException createParameterException(Object value, Throwable t) {
                 CommandLine cmd = spec.commandLine() == null ? new CommandLine(spec) : spec.commandLine();
-                return new ParameterException(cmd, "Could not invoke " + method + " with " + value, t);
+                return new ParameterException(cmd, "Could not invoke " + method + " with " + value + " (" + t + ")", t);
             }
             public String toString() {
                 return String.format("%s(%s)", getClass().getSimpleName(), method);

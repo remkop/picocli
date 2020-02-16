@@ -234,7 +234,7 @@ public class OptionMethodImplTest {
             assertNotNull(ex.getCause());
             assertTrue(ex.getCause() instanceof IllegalArgumentException);
             assertEquals("Boo!", ex.getCause().getMessage());
-            assertEquals("Could not invoke public void picocli.OptionMethodImplTest$1App.jvmException(java.lang.String) with abc", ex.getMessage());
+            assertEquals("Could not invoke public void picocli.OptionMethodImplTest$1App.jvmException(java.lang.String) with abc (java.lang.IllegalArgumentException: Boo!)", ex.getMessage());
         }
     }
 
