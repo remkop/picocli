@@ -41,23 +41,28 @@ public class NativeImageConfigGeneratorProcessorTest {
             String noteText = String.format(
                     "%s writing to: CLASS_OUTPUT/META-INF/native-image/picocli-generated/%s", params[0], params[1]);
             boolean generated = Boolean.parseBoolean(params[2]);
+            boolean verbose = Boolean.parseBoolean(params[3]);
             if (generated) {
                 assertThat(compilation)
                         .generatedFile(StandardLocation.CLASS_OUTPUT,
                                 "META-INF/native-image/picocli-generated/" + params[1]);
-                assertThat(compilation).hadNoteContaining(noteText);
-                noteCount++;
+                if (verbose) {
+                    assertThat(compilation).hadNoteContaining(noteText);
+                    noteCount++;
+                }
             } else {
-                assertThat(compilation).hadNoteContaining(params[0] + " is not enabled");
                 assertNoGeneratedFile(compilation, StandardLocation.CLASS_OUTPUT,
                         "META-INF/native-image/picocli-generated/" + params[1]);
-                List<String> notes = compilation.diagnostics().stream()
-                        .filter(d -> d.getKind() == Diagnostic.Kind.NOTE)
-                        .map(d -> d.getMessage(Locale.ENGLISH))
-                        .collect(Collectors.toList());
-                assertFalse(notes.stream().anyMatch(note -> note.contains(noteText)));
-                assertThat(compilation).hadNoteContainingMatch(params[0] + " is not enabled");
-                noteCount++;
+                if (verbose) {
+                    assertThat(compilation).hadNoteContaining(params[0] + " is not enabled");
+                    List<String> notes = compilation.diagnostics().stream()
+                            .filter(d -> d.getKind() == Diagnostic.Kind.NOTE)
+                            .map(d -> d.getMessage(Locale.ENGLISH))
+                            .collect(Collectors.toList());
+                    assertFalse(notes.stream().anyMatch(note -> note.contains(noteText)));
+                    assertThat(compilation).hadNoteContainingMatch(params[0] + " is not enabled");
+                    noteCount++;
+                }
             }
         }
         assertThat(compilation).hadNoteCount(noteCount);
@@ -73,9 +78,9 @@ public class NativeImageConfigGeneratorProcessorTest {
                                 "picocli/examples/subcommands/ParentCommandDemo.java"));
         assertThat(compilation).succeeded();
         String[][] allParams = {
-                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" },
-                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" },
-                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "true" },
+                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true", "true" },
+                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true", "true" },
+                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "true", "true" },
         };
         expectGeneratedWithNotes(compilation, allParams);
     }
@@ -91,9 +96,9 @@ public class NativeImageConfigGeneratorProcessorTest {
                                 "picocli/examples/subcommands/ParentCommandDemo.java"));
         assertThat(compilation).succeeded();
         String[][] allParams = {
-                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "false" },
-                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" },
-                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "true" },
+                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "false", "true" },
+                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" , "true"},
+                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "true" , "true"},
         };
         expectGeneratedWithNotes(compilation, allParams);
     }
@@ -109,9 +114,9 @@ public class NativeImageConfigGeneratorProcessorTest {
                                 "picocli/examples/subcommands/ParentCommandDemo.java"));
         assertThat(compilation).succeeded();
         String[][] allParams = {
-                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" },
-                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "false" },
-                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "true" },
+                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" , "true"},
+                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "false", "true" },
+                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "true" , "true"},
         };
         expectGeneratedWithNotes(compilation, allParams);
     }
@@ -128,9 +133,9 @@ public class NativeImageConfigGeneratorProcessorTest {
 
         assertThat(compilation).succeeded();
         String[][] allParams = {
-                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" },
-                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" },
-                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "false" },
+                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" , "true"},
+                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" , "true"},
+                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "false", "true" },
         };
         expectGeneratedWithNotes(compilation, allParams);
     }
@@ -147,9 +152,9 @@ public class NativeImageConfigGeneratorProcessorTest {
 
         assertThat(compilation).succeeded();
         String[][] allParams = {
-                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" },
-                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" },
-                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "false" },
+                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" , "false" },
+                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" , "false" },
+                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "false", "false" },
         };
         expectGeneratedWithNotes(compilation, allParams);
     }
