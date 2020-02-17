@@ -4018,8 +4018,8 @@ public class CommandLine {
         enum Target {
             /** Injects the {@code CommandSpec} of the command where this {@code @Spec}-annotated program element is declared. */
             SELF,
-            /** (Only for commands that are {@linkplain Mixin mixed into} another command.)
-             * Injects the {@code CommandSpec} of the "mixee" command that receives the options and other command elements defined here.
+            /** Injects the {@code CommandSpec} of the "mixee" command that receives the options and other command elements defined here,
+             * or {@code null} if this commands is not {@linkplain Mixin mixed into} another command.
              * The "mixee" command has a {@code @Mixin}-annotated program element with the type of the class where this {@code @Spec}-annotated program element is declared. */
             MIXEE}
 
