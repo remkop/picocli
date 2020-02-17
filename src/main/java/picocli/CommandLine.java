@@ -4012,7 +4012,23 @@ public class CommandLine {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.FIELD, ElementType.METHOD})
-    public @interface Spec { }
+    public @interface Spec {
+        /** Identifies what kind of {@code CommandSpec} should be injected.
+         * @since 4.3.0 */
+        enum Target {
+            /** Injects the {@code CommandSpec} of the command where this {@code @Spec}-annotated program element is declared. */
+            SELF,
+            /** (Only for commands that are {@linkplain Mixin mixed into} another command.)
+             * Injects the {@code CommandSpec} of the "mixee" command that receives the options and other command elements defined here.
+             * The "mixee" command has a {@code @Mixin}-annotated program element with the type of the class where this {@code @Spec}-annotated program element is declared. */
+            MIXEE}
+
+        /** Whether to inject the {@code CommandSpec} of this command (the default) or the {@code CommandSpec}
+         * of the "mixee" command that receives the options and other command elements defined here.
+         * @see Mixin
+         * @since 4.3.0 */
+        Target value() default Target.SELF;
+    }
 
     /**
      * <p>Annotate your class with {@code @Command} when you want more control over the format of the generated help
@@ -9987,7 +10003,13 @@ public class CommandLine {
                         throw new InitializationException("@Mixins are not supported on @ArgGroups");
                         // TODO groupBuilder.addMixin(member.getMixinName(), buildMixinForMember(member, factory));
                     } else {
-                        commandSpec.addMixin(member.getMixinName(), buildMixinForMember(member, factory), member);
+                        CommandSpec mixin = buildMixinForMember(member, factory);
+                        commandSpec.addMixin(member.getMixinName(), mixin, member);
+                        for (IAnnotatedElement specElement : mixin.specElements) {
+                            if (specElement.getAnnotation(Spec.class).value() == Spec.Target.MIXEE) {
+                                try { specElement.setter().set(commandSpec); } catch (Exception ex) { throw new InitializationException("Could not inject MIXEE spec", ex); }
+                            }
+                        }
                     }
                     result = true;
                 }
@@ -10021,7 +10043,9 @@ public class CommandLine {
                 if (member.isSpec()) {
                     validateInjectSpec(member);
                     commandSpec.addSpecElement(member);
-                    try { member.setter().set(commandSpec); } catch (Exception ex) { throw new InitializationException("Could not inject spec", ex); }
+                    if (member.getAnnotation(Spec.class).value() == Spec.Target.SELF) {
+                        try { member.setter().set(commandSpec); } catch (Exception ex) { throw new InitializationException("Could not inject spec", ex); }
+                    }
                 }
                 if (member.isParentCommand()) {
                     commandSpec.addParentCommandElement(member);

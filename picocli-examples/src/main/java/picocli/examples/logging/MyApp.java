@@ -11,11 +11,15 @@ import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFact
 import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Spec;
 
 @Command(name = "app", subcommands = LoggingSub.class)
 class MyApp implements Runnable {
     private static Logger logger = LogManager.getLogger(MyApp.class);
+
+    @Spec CommandSpec spec;
 
     @Option(names = {"-v", "--verbose"},
             description = {
@@ -37,10 +41,11 @@ class MyApp implements Runnable {
 
     @Override
     public void run() {
-        logger.trace("Starting... (trace)");
-        logger.debug("Starting... (debug)");
-        logger.info("Starting... (info)");
-        logger.warn("Starting... (warn)");
+        String synopsis = spec.commandLine().getHelp().synopsis(0).trim();
+        logger.trace("Starting... (trace) from {}", synopsis);
+        logger.debug("Starting... (debug) from {}", synopsis);
+        logger.info("Starting... (info)  from {}", synopsis);
+        logger.warn("Starting... (warn)  from {}", synopsis);
     }
 
     public static void main(String[] args) {

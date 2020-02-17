@@ -5,13 +5,15 @@ import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Spec;
 
+import static picocli.CommandLine.Spec.Target.MIXEE;
+
 /**
  * This is a mixin that adds a {@code --verbose} option to a command.
  * If this option is specified, the implementation will delegate
  * the new value to the top-level command.
  */
 public class Verbosity {
-    @Spec CommandSpec spec;
+    @Spec(MIXEE) CommandSpec spec;
 
     /**
      * Returns the {@link CommandSpec} of the top-level command.

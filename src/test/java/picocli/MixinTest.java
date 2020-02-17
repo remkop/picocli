@@ -973,6 +973,30 @@ public class MixinTest {
         Issue925SubMixin mixinInstance = (Issue925SubMixin) mixin.userObject();
         assertNotNull(mixinInstance.sub);
         assertSame(subCmdObject, mixinInstance.sub);
-
     }
+
+    static class VerbosityMixin {
+        @Spec CommandSpec mySpec;
+        @Spec(Spec.Target.MIXEE) CommandSpec commandSpec;
+
+        @Option(names = "-v") boolean verbose;
+    }
+
+    @Test
+    public void testMixinSpecTarget() {
+        class MyApp {
+            @Mixin VerbosityMixin verbosityMixin;
+        }
+
+        MyApp myApp = new MyApp();
+        new CommandLine(myApp).parseArgs("-v");
+        assertNotNull(myApp.verbosityMixin.mySpec);
+        assertNotNull(myApp.verbosityMixin.commandSpec);
+
+        assertNotSame(myApp.verbosityMixin.commandSpec, myApp.verbosityMixin.mySpec);
+        assertTrue(myApp.verbosityMixin.mySpec.userObject() instanceof VerbosityMixin);
+
+        assertSame(myApp, myApp.verbosityMixin.commandSpec.userObject());
+    }
+
 }

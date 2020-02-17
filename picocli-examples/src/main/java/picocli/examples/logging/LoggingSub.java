@@ -13,17 +13,21 @@ public class LoggingSub implements Runnable {
 
     @Override
     public void run() {
-        logger.trace("Hi (tracing) from LoggingSub");
-        logger.debug("Hi (debugging) from LoggingSub");
-        logger.info("Hi (info) from LoggingSub");
-        logger.warn("Hi (warning) from LoggingSub");
+        String synopsis = verbosity.spec.commandLine().getHelp().synopsis(0).trim();
+
+        logger.trace("Hi (tracing)   from {}", synopsis);
+        logger.debug("Hi (debugging) from {}", synopsis);
+        logger.info("Hi (info)      from {}", synopsis);
+        logger.warn("Hi (warning)   from {}", synopsis);
     }
 
     @Command
     void commandMethodSub(@Mixin Verbosity myVerbosity) {
-        logger.trace("Hi (tracing) from commandMethodSub");
-        logger.debug("Hi (debugging) from commandMethodSub");
-        logger.info("Hi (info) from commandMethodSub");
-        logger.warn("Hi (warning) from commandMethodSub");
+        String synopsis = myVerbosity.spec.commandLine().getHelp().synopsis(0).trim();
+
+        logger.trace("Hi (tracing)   from {}", synopsis);
+        logger.debug("Hi (debugging) from {}", synopsis);
+        logger.info("Hi (info)      from {}", synopsis);
+        logger.warn("Hi (warning)   from {}", synopsis);
     }
 }
