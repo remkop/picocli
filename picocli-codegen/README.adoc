@@ -130,6 +130,7 @@ The `project` option can be omitted, but it is a good idea to specify the `proje
 
 
 ==== Other Options
+* `verbose` - (from picocli 4.3) print NOTE-level diagnostic messages to the console
 * `other.resource.patterns` - comma-separated list of regular expressions matching additional resources to include in the image
 * `other.resource.bundles` - comma-separated list of the base names of additional resource bundles to include in the image
 * `other.proxy.interfaces` - comma-separated list of the fully qualified class names of additional interfaces for which to generate proxy classes when building the image

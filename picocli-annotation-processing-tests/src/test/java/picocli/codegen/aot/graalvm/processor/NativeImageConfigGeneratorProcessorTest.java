@@ -78,9 +78,9 @@ public class NativeImageConfigGeneratorProcessorTest {
                                 "picocli/examples/subcommands/ParentCommandDemo.java"));
         assertThat(compilation).succeeded();
         String[][] allParams = {
-                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true", "true" },
-                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true", "true" },
-                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "true", "true" },
+                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true", "false" },
+                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true", "false" },
+                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "true", "false" },
         };
         expectGeneratedWithNotes(compilation, allParams);
     }
@@ -96,9 +96,9 @@ public class NativeImageConfigGeneratorProcessorTest {
                                 "picocli/examples/subcommands/ParentCommandDemo.java"));
         assertThat(compilation).succeeded();
         String[][] allParams = {
-                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "false", "true" },
-                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" , "true"},
-                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "true" , "true"},
+                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "false", "false" },
+                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" , "false"},
+                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "true" , "false"},
         };
         expectGeneratedWithNotes(compilation, allParams);
     }
@@ -114,9 +114,9 @@ public class NativeImageConfigGeneratorProcessorTest {
                                 "picocli/examples/subcommands/ParentCommandDemo.java"));
         assertThat(compilation).succeeded();
         String[][] allParams = {
-                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" , "true"},
-                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "false", "true" },
-                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "true" , "true"},
+                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" , "false"},
+                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "false", "false" },
+                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "true" , "false"},
         };
         expectGeneratedWithNotes(compilation, allParams);
     }
@@ -133,28 +133,28 @@ public class NativeImageConfigGeneratorProcessorTest {
 
         assertThat(compilation).succeeded();
         String[][] allParams = {
-                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" , "true"},
-                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" , "true"},
-                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "false", "true" },
+                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" , "false"},
+                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" , "false"},
+                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "false", "false" },
         };
         expectGeneratedWithNotes(compilation, allParams);
     }
 
     @Test
-    public void testOptionDisableProxyQuiet() {
+    public void testOptionDisableProxyVerbose() {
         NativeImageConfigGeneratorProcessor processor = new NativeImageConfigGeneratorProcessor();
         Compilation compilation =
                 javac()
                         .withProcessors(processor)
-                        .withOptions("-A" + ProxyConfigGen.OPTION_DISABLE, "-A" + AbstractGenerator.OPTION_QUIET) // no value
+                        .withOptions("-A" + ProxyConfigGen.OPTION_DISABLE, "-A" + AbstractGenerator.OPTION_VERBOSE) // no value
                         .compile(JavaFileObjects.forResource(
                                 "picocli/examples/subcommands/ParentCommandDemo.java"));
 
         assertThat(compilation).succeeded();
         String[][] allParams = {
-                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" , "false" },
-                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" , "false" },
-                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "false", "false" },
+                { ReflectConfigGen.class.getSimpleName(),  "reflect-config.json",  "true" , "true" },
+                { ResourceConfigGen.class.getSimpleName(), "resource-config.json", "true" , "true" },
+                { ProxyConfigGen.class.getSimpleName(),    "proxy-config.json",    "false", "true" },
         };
         expectGeneratedWithNotes(compilation, allParams);
     }

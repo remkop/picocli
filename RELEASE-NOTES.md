@@ -21,6 +21,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 ## <a name="4.2.1-fixes"></a> Fixed issues
 [#958] API: Allow mixins to get a reference to the command they are mixed into.
 [#956] Enhancement: Default ParameterExceptionHandler should show stack trace when tracing is set to DEBUG level.
+[#952] Enhancement: Make annotation processor quiet by default; add `-Averbose` annotation processor option to enable printing NOTE-level diagnostic messages to the console.
 [#957] Bugfix: Debug tracing now shows variable value instead of variable name.
 [#955] Bugfix: TargetInvocationMessage handling in `MethodBinding.set` methods should use `getTargetException` not `getCause`; better error reporting.
 [#951] DOC: Fixed typo in `picocli-codegen` annotation processor documentation: `disable.resource.config` is correct (the option name was incorrectly spelled as `disable.resources.config`). Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for raising this.
