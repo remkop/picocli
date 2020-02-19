@@ -2112,4 +2112,13 @@ public class SubcommandTests {
         assertTrue(childCount > 0);
         assertTrue(grandChildCount > 0);
     }
+
+    @Test
+    public void testCommandSpecRoot() {
+        CommandLine command = createNestedCommand();
+        CommandLine sub = command.getSubcommands().get("cmd2").getSubcommands().get("sub22").getSubcommands().get("sub22sub1");
+        assertSame(command.getCommandSpec(), sub.getCommandSpec().root());
+        assertNotSame(sub.getCommandSpec(), sub.getCommandSpec().root());
+        assertSame(sub.getCommandSpec().parent().parent().parent(), sub.getCommandSpec().root());
+    }
 }

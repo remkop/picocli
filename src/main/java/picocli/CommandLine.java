@@ -5564,6 +5564,10 @@ public class CommandLine {
             /** Returns the parent command of this subcommand, or {@code null} if this is a top-level command. */
             public CommandSpec parent() { return parent; }
 
+            /** Returns the root command: the top-level command of the hierarchy, never {@code null}.
+             * @since 4.3 */
+            public CommandSpec root() { CommandSpec root = this; while (root.parent != null) { root = root.parent; } return root; }
+
             /** Sets the parent command of this subcommand.
              * @return this CommandSpec for method chaining */
             public CommandSpec parent(CommandSpec parent) {
