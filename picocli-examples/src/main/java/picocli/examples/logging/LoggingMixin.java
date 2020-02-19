@@ -1,8 +1,11 @@
 package picocli.examples.logging;
 
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
 import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
 import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory;
@@ -42,7 +45,7 @@ import static picocli.CommandLine.Spec.Target.MIXEE;
  * </p>
  */
 public class LoggingMixin {
-    @Spec(MIXEE) CommandSpec spec; // spec of the command where the @Mixin is used
+    private @Spec(MIXEE) CommandSpec spec; // spec of the command where the @Mixin is used
 
     private boolean[] verbosity = new boolean[0];
 
@@ -67,10 +70,17 @@ public class LoggingMixin {
         // that will take the verbosity level that we stored in the top-level command's LoggingMixin
         // to configure Log4j2 before executing the command that the user specified.
 
-        CommandSpec root = spec;
-        while (root.parent() != null) { root = root.parent(); }
-        IOwner owner = root.commandLine().getCommand();
+        IOwner owner = spec.root().commandLine().getCommand();
         owner.getLoggingMixin().verbosity = verbosity;
+    }
+
+    /**
+     * Returns the verbosity from the LoggingMixin of the top-level command.
+     * @return the verbosity value
+     */
+    public boolean[] getVerbosity() {
+        IOwner owner = spec.root().commandLine().getCommand();
+        return owner.getLoggingMixin().verbosity;
     }
 
     /**
@@ -91,7 +101,7 @@ public class LoggingMixin {
      * @return the exit code of executing the most specific subcommand
      */
     public static int executionStrategy(ParseResult parseResult) {
-        IOwner owner = parseResult.commandSpec().commandLine().getCommand();
+        IOwner owner = parseResult.commandSpec().root().commandLine().getCommand();
         owner.getLoggingMixin().configureLoggers();
 
         return new CommandLine.RunLast().execute(parseResult);
@@ -107,22 +117,36 @@ public class LoggingMixin {
      * </ul>
      */
     public void configureLoggers() {
-        LoggingMixin.initializeLog4j();
+        configureAppender(LoggerContext.getContext(false), calcLogLevel());
+    }
 
-        if (verbosity.length >= 3) {
-            Configurator.setRootLevel(Level.TRACE);
-        } else if (verbosity.length == 2) {
-            Configurator.setRootLevel(Level.DEBUG);
-        } else if (verbosity.length == 1) {
-            Configurator.setRootLevel(Level.INFO);
-        } else {
-            Configurator.setRootLevel(Level.WARN);
+    private Level calcLogLevel() {
+        switch (getVerbosity().length) {
+            case 0:  return Level.WARN;
+            case 1:  return Level.INFO;
+            case 2:  return Level.DEBUG;
+            default: return Level.TRACE;
         }
+    }
+
+    private void configureAppender(LoggerContext loggerContext, Level level) {
+        final LoggerConfig rootConfig = loggerContext.getConfiguration().getRootLogger();
+        for (Appender appender : rootConfig.getAppenders().values()) {
+            if (appender instanceof ConsoleAppender) {
+                rootConfig.removeAppender(appender.getName());
+                rootConfig.addAppender(appender, level, null);
+            }
+        }
+        if (rootConfig.getLevel().isMoreSpecificThan(level)) {
+            rootConfig.setLevel(level);
+        }
+        loggerContext.updateLoggers();
     }
 
     // usually you would just have a log4j2.xml config file...
     // here we do a quick and dirty programmatic setup
-    private static void initializeLog4j() {
+    // IMPORTANT: The below MUST be called BEFORE any call to LogManager.getLogger() is made.
+    public static LoggerContext initializeLog4j() {
         ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
         builder.setStatusLevel(Level.ERROR); // show internal log4j2 errors
         builder.setConfigurationName("QuickAndDirtySetup");
@@ -133,8 +157,8 @@ public class LoggingMixin {
         builder.add(appenderBuilder);
         //builder.add(builder.newLogger("org.apache.logging.log4j", Level.DEBUG)
         //        .add(builder.newAppenderRef("Stdout")).addAttribute("additivity", false));
-        builder.add(builder.newRootLogger(Level.WARN).add(builder.newAppenderRef("Stdout")));
-        /*LoggerContext loggerContext = */Configurator.initialize(builder.build());
+        builder.add(builder.newRootLogger(Level.ERROR).add(builder.newAppenderRef("Stdout").addAttribute("level", Level.WARN)));
+        return Configurator.initialize(builder.build());
     }
 
     /**

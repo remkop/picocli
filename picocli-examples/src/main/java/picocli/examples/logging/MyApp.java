@@ -32,6 +32,9 @@ import picocli.CommandLine.Spec;
  */
 @Command(name = "app", subcommands = LoggingSub.class)
 class MyApp implements Runnable, LoggingMixin.IOwner {
+    static {
+        LoggingMixin.initializeLog4j(); // programmatic initialization; must be done before calling LogManager.getLogger()
+    }
     private static Logger logger = LogManager.getLogger(MyApp.class);
 
     @Spec CommandSpec spec;
