@@ -16,6 +16,8 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.Spec;
 
+import java.util.function.Supplier;
+
 import static picocli.CommandLine.Spec.Target.MIXEE;
 
 /**
@@ -38,8 +40,8 @@ import static picocli.CommandLine.Spec.Target.MIXEE;
  * <h3>Important:</h3>
  * <p>
  *   <ul>
- *       <li>The top-level command must implement the {@link IOwner} interface.</li>
- *       <li>Set an execution strategy that calls {@link #configureLoggers} before executing any command.
+ *       <li>The top-level command must implement the {@link Supplier Supplier&lt;LoggingMixin&gt;} interface.</li>
+ *       <li>Make sure that {@link #configureLoggers} is called before executing any command.
  *       This can be accomplished with {@code new CommandLine(...).setExecutionStrategy(LoggingMixin::executionStrategy)).execute(args)}.</li>
  *   </ul>
  * </p>
@@ -53,25 +55,11 @@ public class LoggingMixin {
      * Sets the specified verbosity on the LoggingMixin of the top-level command.
      * @param verbosity the new verbosity value
      */
-    @Option(names = {"-v", "--verbose"},
-            description = {
+    @Option(names = {"-v", "--verbose"}, description = {
                     "Specify multiple -v options to increase verbosity.",
-                    "For example, `-v -v -v` or `-vvv`"}
-    )
+                    "For example, `-v -v -v` or `-vvv`"})
     public void setVerbose(boolean[] verbosity) {
-
-        // Each subcommand that mixes in the LoggingMixin has its own instance of this class,
-        // so there may be many LoggingMixin instances.
-        // We want to store the verbosity state in a single, central place, so
-        // we find the top-level command (which _must_ implement LoggingMixin.IOwner),
-        // and store the verbosity level on that top-level command's LoggingMixin.
-        //
-        // In the main method, `LoggingMixin::executionStrategy` should be set as the execution strategy:
-        // that will take the verbosity level that we stored in the top-level command's LoggingMixin
-        // to configure Log4j2 before executing the command that the user specified.
-
-        IOwner owner = spec.root().commandLine().getCommand();
-        owner.getLoggingMixin().verbosity = verbosity;
+        getTopLevelCommandLoggingMixin(spec).verbosity = verbosity;
     }
 
     /**
@@ -79,8 +67,21 @@ public class LoggingMixin {
      * @return the verbosity value
      */
     public boolean[] getVerbosity() {
-        IOwner owner = spec.root().commandLine().getCommand();
-        return owner.getLoggingMixin().verbosity;
+        return getTopLevelCommandLoggingMixin(spec).verbosity;
+    }
+
+    // Each subcommand that mixes in the LoggingMixin has its own instance of this class,
+    // so there may be many LoggingMixin instances.
+    // We want to store the verbosity value in a single, central place, so
+    // we find the top-level command (which we expect to implement Supplier<LoggingMixin>),
+    // and store the verbosity level on our top-level command's LoggingMixin.
+    //
+    // In the main method, `LoggingMixin::executionStrategy` should be set as the execution strategy:
+    // that will take the verbosity level that we stored in the top-level command's LoggingMixin
+    // to configure Log4j2 before executing the command that the user specified.
+    @SuppressWarnings("unchecked")
+    private static LoggingMixin getTopLevelCommandLoggingMixin(CommandSpec commandSpec) {
+        return ((Supplier<LoggingMixin>) commandSpec.root().userObject()).get();
     }
 
     /**
@@ -101,14 +102,12 @@ public class LoggingMixin {
      * @return the exit code of executing the most specific subcommand
      */
     public static int executionStrategy(ParseResult parseResult) {
-        IOwner owner = parseResult.commandSpec().root().commandLine().getCommand();
-        owner.getLoggingMixin().configureLoggers();
-
+        getTopLevelCommandLoggingMixin(parseResult.commandSpec()).configureLoggers();
         return new CommandLine.RunLast().execute(parseResult);
     }
 
     /**
-     * Configures Log4j2, using the specified verbosity:
+     * Configures the Log4j2 console appender(s), using the specified verbosity:
      * <ul>
      *   <li>{@code -vvv} : enable TRACE level</li>
      *   <li>{@code -vv} : enable DEBUG level</li>
@@ -117,7 +116,20 @@ public class LoggingMixin {
      * </ul>
      */
     public void configureLoggers() {
-        configureAppender(LoggerContext.getContext(false), calcLogLevel());
+        Level level = getTopLevelCommandLoggingMixin(spec).calcLogLevel();
+
+        LoggerContext loggerContext = LoggerContext.getContext(false);
+        LoggerConfig rootConfig = loggerContext.getConfiguration().getRootLogger();
+        for (Appender appender : rootConfig.getAppenders().values()) {
+            if (appender instanceof ConsoleAppender) {
+                rootConfig.removeAppender(appender.getName());
+                rootConfig.addAppender(appender, level, null);
+            }
+        }
+        if (rootConfig.getLevel().isMoreSpecificThan(level)) {
+            rootConfig.setLevel(level);
+        }
+        loggerContext.updateLoggers(); // apply the changes
     }
 
     private Level calcLogLevel() {
@@ -129,22 +141,8 @@ public class LoggingMixin {
         }
     }
 
-    private void configureAppender(LoggerContext loggerContext, Level level) {
-        final LoggerConfig rootConfig = loggerContext.getConfiguration().getRootLogger();
-        for (Appender appender : rootConfig.getAppenders().values()) {
-            if (appender instanceof ConsoleAppender) {
-                rootConfig.removeAppender(appender.getName());
-                rootConfig.addAppender(appender, level, null);
-            }
-        }
-        if (rootConfig.getLevel().isMoreSpecificThan(level)) {
-            rootConfig.setLevel(level);
-        }
-        loggerContext.updateLoggers();
-    }
-
     // usually you would just have a log4j2.xml config file...
-    // here we do a quick and dirty programmatic setup
+    // for this example we do a quick and dirty programmatic setup
     // IMPORTANT: The below MUST be called BEFORE any call to LogManager.getLogger() is made.
     public static LoggerContext initializeLog4j() {
         ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
@@ -159,17 +157,5 @@ public class LoggingMixin {
         //        .add(builder.newAppenderRef("Stdout")).addAttribute("additivity", false));
         builder.add(builder.newRootLogger(Level.ERROR).add(builder.newAppenderRef("Stdout").addAttribute("level", Level.WARN)));
         return Configurator.initialize(builder.build());
-    }
-
-    /**
-     * The top-level command must implement this interface.
-     * <p>
-     * If the {@code --verbose} option is specified on any subcommand,
-     * {@code LoggingMixin} calls {@link #getLoggingMixin()} on the top-level command
-     * and stores the specified verbosity in that {@code LoggingMixin} instance.
-     * </p>
-     */
-    public interface IOwner {
-        LoggingMixin getLoggingMixin();
     }
 }

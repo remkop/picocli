@@ -5,8 +5,8 @@ import org.apache.logging.log4j.Logger;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
-import picocli.CommandLine.Model.CommandSpec;
-import picocli.CommandLine.Spec;
+
+import java.util.function.Supplier;
 
 /**
  * This class, together with {@link LoggingMixin}, demonstrates how a mixin can be used to
@@ -24,35 +24,32 @@ import picocli.CommandLine.Spec;
  *   To use {@code LoggingMixin} in other applications than this example, make sure that:
  * </p>
  * <ul>
- *   <li>The top-level command implements the {@link LoggingMixin.IOwner} interface.</li>
- *   <li>The execution strategy calls {@link LoggingMixin#configureLoggers} before executing any command.
+ *   <li>The top-level command implements the {@link Supplier Supplier&lt;LoggingMixin&gt;} interface.</li>
+ *   <li>The {@link LoggingMixin#configureLoggers} method is called before executing any command.
  *   An easy way to accomplish this is with this code:
  *   {@code new CommandLine(xxx).setExecutionStrategy(LoggingMixin::executionStrategy)).execute(args)}.</li>
  * </ul>
  */
 @Command(name = "app", subcommands = LoggingSub.class)
-class MyApp implements Runnable, LoggingMixin.IOwner {
+class MyApp implements Runnable, Supplier<LoggingMixin> {
     static {
         LoggingMixin.initializeLog4j(); // programmatic initialization; must be done before calling LogManager.getLogger()
     }
     private static Logger logger = LogManager.getLogger(MyApp.class);
 
-    @Spec CommandSpec spec;
-
     @Mixin LoggingMixin loggingMixin;
 
     @Override
-    public LoggingMixin getLoggingMixin() {
+    public LoggingMixin get() {
         return loggingMixin;
     }
 
     @Override
     public void run() {
-        String synopsis = spec.commandLine().getHelp().synopsis(0).trim();
-        logger.trace("Starting... (trace) from {}", synopsis);
-        logger.debug("Starting... (debug) from {}", synopsis);
-        logger.info("Starting... (info)  from {}", synopsis);
-        logger.warn("Starting... (warn)  from {}", synopsis);
+        logger.trace("Starting... (trace) from app");
+        logger.debug("Starting... (debug) from app");
+        logger.info ("Starting... (info)  from app");
+        logger.warn ("Starting... (warn)  from app");
     }
 
     public static void main(String[] args) {
