@@ -16,8 +16,6 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.Spec;
 
-import java.util.function.Supplier;
-
 import static picocli.CommandLine.Spec.Target.MIXEE;
 
 /**
@@ -37,19 +35,38 @@ import static picocli.CommandLine.Spec.Target.MIXEE;
  * <p>
  *   This mixin can be used on multiple commands, on any level in the command hierarchy.
  * </p>
- * <h3>Important:</h3>
  * <p>
- *   <ul>
- *       <li>The top-level command must implement the {@link Supplier Supplier&lt;LoggingMixin&gt;} interface.</li>
- *       <li>Make sure that {@link #configureLoggers} is called before executing any command.
- *       This can be accomplished with {@code new CommandLine(...).setExecutionStrategy(LoggingMixin::executionStrategy)).execute(args)}.</li>
- *   </ul>
- * </p>
+ *   Make sure that {@link #configureLoggers} is called before executing any command.
+ *   This can be accomplished with:
+ * </p><pre>
+ * public static void main(String... args) {
+ *     new CommandLine(new MyApp())
+ *             .setExecutionStrategy(LoggingMixin::executionStrategy))
+ *             .execute(args);
+ * }
+ * </pre>
  */
 public class LoggingMixin {
-    private @Spec(MIXEE) CommandSpec spec; // spec of the command where the @Mixin is used
+    /**
+     * This mixin is able to climb the command hierarchy because the
+     * {@code @Spec(Target.MIXEE)}-annotated field gets a reference to the command where it is used.
+     */
+    private @Spec(MIXEE) CommandSpec mixee; // spec of the command where the @Mixin is used
 
     private boolean[] verbosity = new boolean[0];
+
+    // Each subcommand that mixes in the LoggingMixin has its own instance of this class,
+    // so there may be many LoggingMixin instances.
+    // We want to store the verbosity value in a single, central place, so
+    // we find the top-level command,
+    // and store the verbosity level on our top-level command's LoggingMixin.
+    //
+    // In the main method, `LoggingMixin::executionStrategy` should be set as the execution strategy:
+    // that will take the verbosity level that we stored in the top-level command's LoggingMixin
+    // to configure Log4j2 before executing the command that the user specified.
+    private static LoggingMixin getTopLevelCommandLoggingMixin(CommandSpec commandSpec) {
+        return ((MyApp) commandSpec.root().userObject()).loggingMixin;
+    }
 
     /**
      * Sets the specified verbosity on the LoggingMixin of the top-level command.
@@ -59,7 +76,7 @@ public class LoggingMixin {
                     "Specify multiple -v options to increase verbosity.",
                     "For example, `-v -v -v` or `-vvv`"})
     public void setVerbose(boolean[] verbosity) {
-        getTopLevelCommandLoggingMixin(spec).verbosity = verbosity;
+        getTopLevelCommandLoggingMixin(mixee).verbosity = verbosity;
     }
 
     /**
@@ -67,21 +84,7 @@ public class LoggingMixin {
      * @return the verbosity value
      */
     public boolean[] getVerbosity() {
-        return getTopLevelCommandLoggingMixin(spec).verbosity;
-    }
-
-    // Each subcommand that mixes in the LoggingMixin has its own instance of this class,
-    // so there may be many LoggingMixin instances.
-    // We want to store the verbosity value in a single, central place, so
-    // we find the top-level command (which we expect to implement Supplier<LoggingMixin>),
-    // and store the verbosity level on our top-level command's LoggingMixin.
-    //
-    // In the main method, `LoggingMixin::executionStrategy` should be set as the execution strategy:
-    // that will take the verbosity level that we stored in the top-level command's LoggingMixin
-    // to configure Log4j2 before executing the command that the user specified.
-    @SuppressWarnings("unchecked")
-    private static LoggingMixin getTopLevelCommandLoggingMixin(CommandSpec commandSpec) {
-        return ((Supplier<LoggingMixin>) commandSpec.root().userObject()).get();
+        return getTopLevelCommandLoggingMixin(mixee).verbosity;
     }
 
     /**
@@ -116,7 +119,7 @@ public class LoggingMixin {
      * </ul>
      */
     public void configureLoggers() {
-        Level level = getTopLevelCommandLoggingMixin(spec).calcLogLevel();
+        Level level = getTopLevelCommandLoggingMixin(mixee).calcLogLevel();
 
         LoggerContext loggerContext = LoggerContext.getContext(false);
         LoggerConfig rootConfig = loggerContext.getConfiguration().getRootLogger();

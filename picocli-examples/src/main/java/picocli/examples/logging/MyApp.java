@@ -6,8 +6,6 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 
-import java.util.function.Supplier;
-
 /**
  * This class, together with {@link LoggingMixin}, demonstrates how a mixin can be used to
  * implement "global" options: options that exist on all (or almost all) commands and subcommands.
@@ -21,28 +19,24 @@ import java.util.function.Supplier;
  *   is a {@code @Command}-annotated method. See {@link LoggingSub} and {@link LoggingSubSub} for examples.
  * </p>
  * <p>
- *   To use {@code LoggingMixin} in other applications than this example, make sure that:
- * </p>
- * <ul>
- *   <li>The top-level command implements the {@link Supplier Supplier&lt;LoggingMixin&gt;} interface.</li>
- *   <li>The {@link LoggingMixin#configureLoggers} method is called before executing any command.
- *   An easy way to accomplish this is with this code:
- *   {@code new CommandLine(xxx).setExecutionStrategy(LoggingMixin::executionStrategy)).execute(args)}.</li>
- * </ul>
+ *   Make sure that {@link LoggingMixin#configureLoggers} is called before executing any command.
+ *   This can be accomplished with:
+ * </p><pre>
+ * public static void main(String... args) {
+ *     new CommandLine(new MyApp())
+ *             .setExecutionStrategy(LoggingMixin::executionStrategy))
+ *             .execute(args);
+ * }
+ * </pre>
  */
 @Command(name = "app", subcommands = LoggingSub.class)
-class MyApp implements Runnable, Supplier<LoggingMixin> {
+class MyApp implements Runnable {
     static {
         LoggingMixin.initializeLog4j(); // programmatic initialization; must be done before calling LogManager.getLogger()
     }
     private static Logger logger = LogManager.getLogger(MyApp.class);
 
     @Mixin LoggingMixin loggingMixin;
-
-    @Override
-    public LoggingMixin get() {
-        return loggingMixin;
-    }
 
     @Override
     public void run() {
