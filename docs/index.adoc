@@ -4275,7 +4275,11 @@ class Git implements Runnable {
 You may find yourself defining the same options, parameters or command attributes in many command line applications.
 To reduce duplication, picocli supports both subclassing and mixins as ways to reuse such options and attributes.
 
-For both mechanisms, the first step is to extract these options, parameters and command attributes into a separate class. Below is an example class, `ReusableOptions`, that we will use in example scenarios in this chapter:
+=== Subclassing
+One way to reuse the above option and attributes is to extend the class.
+Picocli will walk the class hierarchy to check for annotations, so `@Options`, `@Parameters` and `@Command` attributes declared on a superclass are available in all subclasses.
+
+Below is an example class, `ReusableOptions`, that defines some usage help attributes and a `--verbose` option that we want to reuse.
 
 [source,java]
 ----
@@ -4292,13 +4296,8 @@ public class ReusableOptions {
     protected boolean[] verbosity = new boolean[0];
 }
 ----
-This defines some usage help attributes that give a spacious layout, and a `verbosity` option that makes the operation more talkative.
 
-
-=== Subclassing
-One way to reuse the above option and attributes is to extend the class. Picocli will walk the class hierarchy to check for annotations, so `@Options`, `@Parameters` and `@Command` attributes declared on a superclass are available in all subclasses.
-
-For example, all commands that extend the <<Reuse,above sample>> `ReusableOptions` class will inherit the `--verbose` option, and generate a usage help message in the same spacious style. Example code:
+Now, any command defined in a class that extends `ReusableOptions` will inherit the `--verbose` option, and generate a usage help message in the same spacious style. Example code:
 
 [source,java]
 ----
@@ -4307,18 +4306,74 @@ public class MyCommand extends ReusableOptions { ... }
 ----
 
 === Mixins
-Picocli 3.0 introduces the concept of "mixins". Mixins are a convenient alternative to subclassing:
+Picocli 3.0 introduced the concept of "mixins". Mixins are a convenient alternative to subclassing:
 picocli annotations from _any_ class can be added to ("mixed in" with) another command.
-This includes options, positional parameters, subcommands and command attributes.
-Picocli <<Mixin Standard Help Options,mixinStandardHelpOptions>> internally uses a mixin.
+Picocli's <<Mixin Standard Help Options,mixinStandardHelpOptions>> internally uses a mixin.
 
-A mixin is a separate class with options, positional parameters, subcommands and command attributes
-that you want to reuse in other commands.
-Mixins can be installed by calling the `CommandLine.addMixin` method with an object of this class, or annotating a field in your command with `@Mixin`.
+A mixin is a separate class with options, positional parameters, subcommands and command attributes that you want to reuse in one or more other commands.
+A command receiving these mixed in options, positional parameters, and command attributes is called a "mixee".
+
+Mixins can be installed declaratively with a `@Mixin`-annotated field (or a `@Mixin`-annotated method parameter for command methods).
+Mixins can be installed programmatically by calling the `CommandLine.addMixin` method with an instance of the mixin class.
+
+The examples below again use the sample `ReusableOptions` class as the mixin:
+
+[source,java]
+----
+@Command(synopsisHeading      = "%nUsage:%n%n",
+         descriptionHeading   = "%nDescription:%n%n",
+         parameterListHeading = "%nParameters:%n%n",
+         optionListHeading    = "%nOptions:%n%n",
+         commandListHeading   = "%nCommands:%n%n")
+public class ReusableOptions {
+
+    @Option(names = { "-v", "--verbose" }, description = {
+        "Specify multiple -v options to increase verbosity.",
+        "For example, `-v -v -v` or `-vvv`" })
+    protected boolean[] verbosity = new boolean[0];
+}
+----
+
+==== `@Mixin` Annotation
+A command defined in a class can include a mixin by annotating a field with `@Mixin`.
+Similarly, a <<Subcommands as Methods,`@Command`-annotated method>> can include a mixin by declaring a `@Mixin`-annotated parameter.
+All picocli annotations found in the mixin class are added to the command (the "mixee").
+For example:
+
+[source,java]
+----
+@Command(name = "mymixee", description = "Example reuse with @Mixin annotation.")
+public class MyCommand {
+
+    // adds the options defined in ReusableOptions to this command
+    @Mixin
+    private ReusableOptions myMixin;
+
+    @Command
+    void subzip(@Mixin ReusableOptions opts) {
+        // ...
+    }
+}
+----
+In addition to adding the options, subcommands and command attributes of the mixed-in object to the command,
+the mixed-in object is also injected into the field annotated with `@Mixin`, making it trivial for the command to reference the mixed-in object if necessary.
+
+[source,java]
+----
+MyCommand zip = new MyCommand();
+CommandLine commandLine = new CommandLine(zip);
+commandLine.parseArgs("-vvv");
+
+// the options defined in ReusableOptions have been added to the zip command
+assert zip.myMixin.verbosity.length == 3;
+----
+
+Mixins added with the `@Mixin` annotation can also be accessed via the map returned by `CommandLine.getMixins`.
+
+The GitHub project has a https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/mixin[full working example].
 
 ==== Adding Mixins Programmatically
 The below example shows how a mixin can be added programmatically with the `CommandLine.addMixin` method.
-We use the sample `ReusableOptions` class <<Reuse,defined above>> as the mixin:
 
 [source,java]
 ----
@@ -4338,38 +4393,6 @@ commandLine.parseArgs("-vvv");
 assert mixin == commandLine.getMixins().get("myMixin");
 assert mixin.verbosity.length == 3;
 ----
-
-==== `@Mixin` Annotation
-A command can also include a mixin by annotating a field with `@Mixin`. All picocli annotations found in the mixin class
-are added to the command that has a field annotated with `@Mixin`. For example, again using the sample `ReusableOptions` class <<Reuse,defined above>>:
-
-[source,java]
-----
-@Command(name = "zip", description = "Example reuse with @Mixin annotation.")
-public class MyCommand {
-
-    // adds the options defined in ReusableOptions to this command
-    @Mixin
-    private ReusableOptions myMixin;
-    ...
-}
-----
-In addition to adding the options, subcommands and command attributes of the mixed-in object to the command,
-the mixed-in object is also injected into the field annotated with `@Mixin`, making it trivial for the command to reference the mixed-in object if necessary.
-
-[source,java]
-----
-MyCommand zip = new MyCommand();
-CommandLine commandLine = new CommandLine(zip);
-commandLine.parseArgs("-vvv");
-
-// the options defined in ReusableOptions have been added to the zip command
-assert zip.myMixin.verbosity.length == 3;
-----
-
-Mixins added with the `@Mixin` annotation can also be accessed via the map returned by `CommandLine.getMixins`.
-
-The GitHub project has a https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/mixin[full working example].
 
 
 === Use Case: Sharing Options
@@ -4551,6 +4574,7 @@ java MyApp sub -v subsubmethod
 java MyApp sub subsubmethod -vv
 ----
 
+See also the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/logging[logging] example in `picocli-examples` for a way to modify only the Log4j ConsoleAppenders' log level from the specified verbosity.
 
 === Reuse Combinations
 
