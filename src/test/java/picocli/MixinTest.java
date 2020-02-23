@@ -147,6 +147,19 @@ public class MixinTest {
     }
 
     @Test
+    public void testMixeeWithoutMixin() {
+        @Command class SomeMixin {
+            @Spec CommandSpec spec;
+            @Spec(Spec.Target.MIXEE) CommandSpec mixee;
+            @Option(names = "-x") int x;
+        }
+        SomeMixin mixin = new SomeMixin();
+        new CommandLine(mixin).parseArgs();
+        assertNull("Not mixed into anything: no mixee", mixin.mixee);
+        assertNotNull(mixin.spec);
+    }
+
+    @Test
     public void testMixinAnnotationRejectedIfNotAValidCommand() {
         class Invalid {}
         class Receiver {
