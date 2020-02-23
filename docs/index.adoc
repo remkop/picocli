@@ -3933,6 +3933,7 @@ private void handleParseResult(ParseResult parsed) {
 You may be interested in the <<Executing Commands,execute method>> to reduce error handling and other boilerplate code in your application.
 See also the previous section, <<Executing Subcommands>>.
 
+[#parentcommand-annotation]
 === `@ParentCommand` Annotation
 In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.
 
@@ -4312,7 +4313,7 @@ picocli annotations from _any_ class can be added to ("mixed in" with) a command
 Picocli's <<Mixin Standard Help Options,mixinStandardHelpOptions>> internally uses a mixin.
 
 A mixin is a separate class with options, positional parameters, subcommands and command attributes that you want to reuse in one or more other commands.
-A command receiving these mixed in options, positional parameters, and command attributes is called a "mixee".
+A command receiving these mixed in options, positional parameters, and command attributes is called the "mixee".
 
 Mixins can be installed declaratively with a `@Mixin`-annotated field (or a `@Mixin`-annotated method parameter for command methods).
 Alternatively, mixins can be installed programmatically by calling the `CommandLine.addMixin` method with an instance of the mixin class.
@@ -4335,9 +4336,10 @@ public class ReusableOptions {
 }
 ----
 
+[#mixin-annotation]
 ==== `@Mixin` Annotation
 A command defined in a class can include a mixin by annotating a field with `@Mixin`.
-Similarly, a <<Subcommands as Methods,`@Command`-annotated method>> can include a mixin by declaring a `@Mixin`-annotated parameter.
+Similarly, a <<Subcommands as Methods,`@Command`-annotated method>> can include a mixin by declaring a `@Mixin`-annotated method parameter.
 All picocli annotations found in the mixin class are added to the command (the "mixee").
 For example:
 
@@ -4373,6 +4375,31 @@ Mixins added with the `@Mixin` annotation can also be accessed via the map retur
 
 The GitHub project has a https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/mixin[full working example].
 
+=== Accessing the Mixee From a Mixin
+
+Sometimes you need to write a Mixin class that accesses the mixee command where it is mixed in.
+
+This can be accomplished with the <<spec-annotation, `@Spec` annotation>>, by setting its target to `Spec.Target.MIXEE`.
+For example:
+
+[source,java]
+----
+class AdvancedMixin {
+    @Spec(Spec.Target.MIXEE) CommandSpec mixee;
+
+    @Option(names = "-x")
+    void setValue(int x) {
+        // get another value from the command we are mixed in to
+        int y = ((java.util.function.IntSupplier) mixee.userObject()).getAsInt();
+
+        int product = x * y;
+
+        // set the result on the top-level (root) command
+        ((java.util.function.IntConsumer) mixee.root().userObject()).accept(product);
+    }
+}
+----
+
 ==== Adding Mixins Programmatically
 The below example shows how a mixin can be added programmatically with the `CommandLine.addMixin` method.
 
@@ -4396,71 +4423,8 @@ assert mixin.verbosity.length == 3;
 ----
 
 
-=== Use Case: Sharing Options
 
-A common use case is sharing options between different levels of the command hierarchy, so that "global" options from the top-level command are also available on subcommands.
-
-Since picocli 4.2, <<_parentcommand_annotation,`@ParentCommand`-annotated>> fields can be used in mixins, which makes this easier. Here is an example implementation:
-
-[source,java]
-----
-// Define a mixin that delegates to the parent command.
-class MyMixin {
-    @ParentCommand Top top;
-
-    @Option(names = "-v")
-    public void setVerbose(boolean[] verbosity) { top.setVerbose(verbosity); }
-}
-
-// An example Top-level command with two subcommands.
-// The `-v` option can be specified on the top-level command as well as the subcommands.
-@Command(subcommands = Sub2.class)
-class Top implements Runnable {
-    private boolean[] verbosity = new boolean[0];
-
-    @Option(names = {"-v", "--verbose"})
-    public void setVerbose(boolean[] verbosity) { this.verbosity = verbosity; }
-
-    public void verbose(String pattern, Object... params) {
-        if (verbosity.length >= 1) {
-            System.out.printf(pattern, params);
-        }
-    }
-
-    public void run() { verbose("Hello from top%n"); }
-
-    public static void main(String[] args) {
-        new CommandLine(new Top()).execute(args);
-    }
-
-    // The @Mixin-annotated parameter adds the `-v` option to this subcommand.
-    @Command
-    void sub1(@Mixin MyMixin mymixin) { verbose("Hello from sub1%n"); }
-}
-
-// Subcommand classes can mix in the `-v` option with a @Mixin-annotated field.
-@Command(name = "sub2")
-class Sub2 implements Runnable{
-    @Mixin MyMixin mymixin;
-
-    @Override
-    public void run() { mymixin.top.verbose("Hello from sub2%n"); }
-}
-----
-
-With this, the `-v` option can be specified on the top-level command as well as the subcommands, so all of the below are valid invocations:
-
-----
-java Top -v
-java Top -v sub1
-java Top sub1 -v
-java Top -v sub2
-java Top sub2 -v
-----
-
-All of these invocations will print some output, since the `-v` option was specified.
-
-=== Use Case 2: Sharing Options
+=== Use Case: Global Option to Configure Log Level
 
 For mixins that need to be reusable across more than two levels in the command hierarchy,
 injecting a <<_spec_annotation,`@Spec`-annotated>> field with target `Spec.Target.MIXEE` gives the mixin access to the full command hierarchy.
@@ -4576,6 +4540,71 @@ java MyApp sub subsubmethod -vv
 ----
 
 See also the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/logging[logging] example in `picocli-examples` for a way to modify only the Log4j ConsoleAppenders' log level from the specified verbosity.
+
+
+=== Use Case: Sharing Options
+
+A common use case is sharing options between different levels of the command hierarchy, so that "global" options from the top-level command are also available on subcommands.
+
+Since picocli 4.2, <<_parentcommand_annotation,`@ParentCommand`-annotated>> fields can be used in mixins, which makes this easier. Here is an example implementation:
+
+[source,java]
+----
+// Define a mixin that delegates to the parent command.
+class MyMixin {
+    @ParentCommand Top top;
+
+    @Option(names = "-v")
+    public void setVerbose(boolean[] verbosity) { top.setVerbose(verbosity); }
+}
+
+// An example Top-level command with two subcommands.
+// The `-v` option can be specified on the top-level command as well as the subcommands.
+@Command(subcommands = Sub2.class)
+class Top implements Runnable {
+    private boolean[] verbosity = new boolean[0];
+
+    @Option(names = {"-v", "--verbose"})
+    public void setVerbose(boolean[] verbosity) { this.verbosity = verbosity; }
+
+    public void verbose(String pattern, Object... params) {
+        if (verbosity.length >= 1) {
+            System.out.printf(pattern, params);
+        }
+    }
+
+    public void run() { verbose("Hello from top%n"); }
+
+    public static void main(String[] args) {
+        new CommandLine(new Top()).execute(args);
+    }
+
+    // The @Mixin-annotated parameter adds the `-v` option to this subcommand.
+    @Command
+    void sub1(@Mixin MyMixin mymixin) { verbose("Hello from sub1%n"); }
+}
+
+// Subcommand classes can mix in the `-v` option with a @Mixin-annotated field.
+@Command(name = "sub2")
+class Sub2 implements Runnable{
+    @Mixin MyMixin mymixin;
+
+    @Override
+    public void run() { mymixin.top.verbose("Hello from sub2%n"); }
+}
+----
+
+With this, the `-v` option can be specified on the top-level command as well as the subcommands, so all of the below are valid invocations:
+
+----
+java Top -v
+java Top -v sub1
+java Top sub1 -v
+java Top -v sub2
+java Top sub2 -v
+----
+
+All of these invocations will print some output, since the `-v` option was specified.
 
 === Reuse Combinations
 
@@ -5082,6 +5111,7 @@ class App {
 
 In the above example, the `-x` and `-y` options are added to the other options of the `doit` command.
 
+[#spec-annotation]
 === `@Spec` Annotation
 Picocli 3.2 introduces a `@Spec` annotation for injecting the `CommandSpec` model of the command into a command field.
 
