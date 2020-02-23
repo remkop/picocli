@@ -4436,7 +4436,121 @@ java Top sub2 -v
 
 All of these invocations will print some output, since the `-v` option was specified.
 
-For mixins that need to be reusable across more than two levels in the command hierarchy, injecting a <<_spec_annotation,`@Spec`-annotated>> field gives the mixin access to the full command hierarchy.
+=== Use Case 2: Sharing Options
+
+For mixins that need to be reusable across more than two levels in the command hierarchy,
+injecting a <<_spec_annotation,`@Spec`-annotated>> field with target `Spec.Target.MIXEE` gives the mixin access to the full command hierarchy.
+
+The `MIXEE` target indicates that the `CommandSpec` to inject is not the spec of the enclosing class, but the spec of the command where the `@Mixin` is used.
+
+The example below shows a class that has a "global" option `--verbose` that can be used on any command to configure the Log4j log level.
+The `@Spec(MIXEE)`-annotated field allows the mixin to climb the command hierarchy and store the "verbosity" value in a single place.
+The log level is then configured from that single value.
+
+[source,java]
+----
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
+
+import picocli.CommandLine.Spec;
+import static picocli.CommandLine.Spec.Target.MIXEE;
+
+class LoggingMixin {
+    private @Spec(MIXEE) CommandSpec mixee; // spec of the command where the @Mixin is used
+
+    boolean[] verbosity = new boolean[0];
+
+    /**
+     * Sets the specified verbosity on the LoggingMixin of the top-level command.
+     * @param verbosity the new verbosity value
+     */
+    @Option(names = {"-v", "--verbose"}, description = {
+            "Specify multiple -v options to increase verbosity.",
+            "For example, `-v -v -v` or `-vvv`"})
+    public void setVerbose(boolean[] verbosity) {
+        // Each subcommand that mixes in the LoggingMixin has its own instance
+        // of this class, so there may be many LoggingMixin instances.
+        // We want to store the verbosity value in a single, central place,
+        // so we find the top-level command,
+        // and store the verbosity level on our top-level command's LoggingMixin.
+        ((MyApp) mixee.root().userObject()).loggingMixin.verbosity = verbosity;
+    }
+}
+
+@Command(name = "app", subcommands = Sub.class)
+class MyApp implements Runnable {
+    private static Logger logger = LogManager.getLogger(MyApp.class);
+
+    @Mixin LoggingMixin loggingMixin;
+
+    @Override
+    public void run() {
+        logger.trace("Starting... (trace) from app");
+        logger.debug("Starting... (debug) from app");
+        logger.info ("Starting... (info)  from app");
+        logger.warn ("Starting... (warn)  from app");
+    }
+
+    private Level calcLogLevel() {
+        switch (loggingMixin.verbosity.length) {
+            case 0:  return Level.WARN;
+            case 1:  return Level.INFO;
+            case 2:  return Level.DEBUG;
+            default: return Level.TRACE;
+        }
+    }
+
+    // A reference to this method can be used as a custom execution strategy
+    // that first configures Log4j based on the specified verbosity level,
+    // and then delegates to the default execution strategy.
+    private int executionStrategy(ParseResult parseResult) {
+        Configurator.setRootLevel(calcLogLevel()); // configure log4j
+        return new CommandLine.RunLast().execute(parseResult); // default execution strategy
+    }
+
+    public static void main(String[] args) {
+        MyApp app = new MyApp();
+        new CommandLine(app)
+                .setExecutionStrategy(app::executionStrategy)
+                .execute(args);
+    }
+}
+
+class Sub implements Runnable {
+    private static Logger logger = LogManager.getLogger();
+
+    @Mixin LoggingMixin loggingMixin;
+
+    @Override
+    public void run() {
+        logger.trace("Hi (tracing)   from app sub");
+        logger.debug("Hi (debugging) from app sub");
+        logger.info ("Hi (info)      from app sub");
+        logger.warn ("Hi (warning)   from app sub");
+    }
+
+    @Command
+    void subsubmethod(@Mixin LoggingMixin loggingMixin) {
+        logger.trace("Hi (tracing)   from app sub subsubmethod");
+        logger.debug("Hi (debugging) from app sub subsubmethod");
+        logger.info ("Hi (info)      from app sub subsubmethod");
+        logger.warn ("Hi (warning)   from app sub subsubmethod");
+    }
+}
+----
+
+
+With this, the `-v` option can be specified on the top-level command as well as the subcommands, so all of the below are valid invocations:
+
+----
+java MyApp -v
+java MyApp -v sub
+java MyApp sub -v subsubmethod
+java MyApp sub subsubmethod -vv
+----
+
 
 === Reuse Combinations
 
