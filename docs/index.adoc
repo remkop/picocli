@@ -4273,10 +4273,10 @@ class Git implements Runnable {
 
 == Reuse
 You may find yourself defining the same options, parameters or command attributes in many command line applications.
-To reduce duplication, picocli supports both subclassing and mixins as ways to reuse such options and attributes.
+To reduce duplication, picocli supports two ways to reuse such options and attributes: subclassing and mixins.
 
 === Subclassing
-One way to reuse the above option and attributes is to extend the class.
+One way to reuse options and attributes is to extend the class where they are defined.
 Picocli will walk the class hierarchy to check for annotations, so `@Options`, `@Parameters` and `@Command` attributes declared on a superclass are available in all subclasses.
 
 Below is an example class, `ReusableOptions`, that defines some usage help attributes and a `--verbose` option that we want to reuse.
@@ -4306,15 +4306,16 @@ public class MyCommand extends ReusableOptions { ... }
 ----
 
 === Mixins
-Picocli 3.0 introduced the concept of "mixins". Mixins are a convenient alternative to subclassing:
-picocli annotations from _any_ class can be added to ("mixed in" with) another command.
+Picocli 3.0 introduced the concept of "mixins".
+Mixins allow reuse without subclassing:
+picocli annotations from _any_ class can be added to ("mixed in" with) a command.
 Picocli's <<Mixin Standard Help Options,mixinStandardHelpOptions>> internally uses a mixin.
 
 A mixin is a separate class with options, positional parameters, subcommands and command attributes that you want to reuse in one or more other commands.
 A command receiving these mixed in options, positional parameters, and command attributes is called a "mixee".
 
 Mixins can be installed declaratively with a `@Mixin`-annotated field (or a `@Mixin`-annotated method parameter for command methods).
-Mixins can be installed programmatically by calling the `CommandLine.addMixin` method with an instance of the mixin class.
+Alternatively, mixins can be installed programmatically by calling the `CommandLine.addMixin` method with an instance of the mixin class.
 
 The examples below again use the sample `ReusableOptions` class as the mixin:
 
@@ -4350,7 +4351,7 @@ public class MyCommand {
     private ReusableOptions myMixin;
 
     @Command
-    void subzip(@Mixin ReusableOptions opts) {
+    void subcmd(@Mixin ReusableOptions opts) {
         // ...
     }
 }
