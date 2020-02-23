@@ -111,6 +111,42 @@ public class MixinTest {
     }
 
     @Test
+    public void testMixinIn_SubCommandMethod() {
+        @Command class ValidMixin {
+            @Option(names = "-x") int x;
+        }
+        @Command class Mixee {
+            @Command int sub(@Mixin ValidMixin mixin) {
+                return mixin.x;
+            }
+        }
+        IFactory fact = new InnerClassFactory(this);
+        assertEquals(3, new CommandLine(new Mixee(), fact).execute("sub", "-x=3"));
+        assertEquals(4, new CommandLine(new Mixee(), fact).execute("sub", "-x=4"));
+    }
+
+    @Test
+    public void testMixinMixeeIn_SubCommandMethod() {
+        @Command class ValidMixin {
+            @Spec CommandSpec spec;
+            @Spec(Spec.Target.MIXEE) CommandSpec mixee;
+            @Option(names = "-x") int x;
+        }
+        @Command class Mixee {
+            @Command int sub(@Mixin ValidMixin mixin) throws NoSuchMethodException {
+                assertNotSame  (mixin.mixee, mixin.spec);
+                assertNotEquals(mixin.mixee, mixin.spec);
+                assertEquals(ValidMixin.class.getName(), mixin.spec.userObject().getClass().getName());
+                assertEquals(Mixee.class.getDeclaredMethod("sub", ValidMixin.class).toString(),
+                        mixin.mixee.userObject().toString());
+                return mixin.x;
+            }
+        }
+        IFactory fact = new InnerClassFactory(this);
+        assertEquals(3, new CommandLine(new Mixee(), fact).execute("sub", "-x=3"));
+    }
+
+    @Test
     public void testMixinAnnotationRejectedIfNotAValidCommand() {
         class Invalid {}
         class Receiver {
