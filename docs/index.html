@@ -691,14 +691,15 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_subcommand_aliases">16.3. Subcommand Aliases</a></li>
 <li><a href="#_subcommands_as_methods">16.4. Subcommands as Methods</a></li>
 <li><a href="#_executing_subcommands">16.5. Executing Subcommands</a></li>
-<li><a href="#_manually_parsing_subcommands">16.6. Manually Parsing Subcommands</a></li>
-<li><a href="#_parentcommand_annotation">16.7. <code>@ParentCommand</code> Annotation</a></li>
-<li><a href="#_nested_sub_subcommands">16.8. Nested sub-Subcommands</a></li>
-<li><a href="#_repeatable_subcommands">16.9. Repeatable Subcommands</a></li>
-<li><a href="#_usage_help_for_subcommands">16.10. Usage Help for Subcommands</a></li>
-<li><a href="#_hidden_subcommands">16.11. Hidden Subcommands</a></li>
-<li><a href="#_help_subcommands">16.12. Help Subcommands</a></li>
-<li><a href="#_required_subcommands">16.13. Required Subcommands</a></li>
+<li><a href="#_initialization_before_execution">16.6. Initialization Before Execution</a></li>
+<li><a href="#_manually_parsing_subcommands">16.7. Manually Parsing Subcommands</a></li>
+<li><a href="#parentcommand-annotation">16.8. <code>@ParentCommand</code> Annotation</a></li>
+<li><a href="#_nested_sub_subcommands">16.9. Nested sub-Subcommands</a></li>
+<li><a href="#_repeatable_subcommands">16.10. Repeatable Subcommands</a></li>
+<li><a href="#_usage_help_for_subcommands">16.11. Usage Help for Subcommands</a></li>
+<li><a href="#_hidden_subcommands">16.12. Hidden Subcommands</a></li>
+<li><a href="#_help_subcommands">16.13. Help Subcommands</a></li>
+<li><a href="#_required_subcommands">16.14. Required Subcommands</a></li>
 </ul>
 </li>
 <li><a href="#_reuse">17. Reuse</a>
@@ -1400,7 +1401,7 @@ Short option names are not given a negative alias by default. (This is <a href="
 <h3 id="_positional_parameters">3.6. Positional Parameters</h3>
 <div class="paragraph">
 <p>Any command line arguments that are not subcommands or options (or option parameters) are interpreted as positional parameters.
-Positional parameters generally follow the options but from picocli v2.0, positional parameters can be mixed with options on the command line.</p>
+Positional parameters generally follow the options but from picocli 2.0, positional parameters can be mixed with options on the command line.</p>
 </div>
 <div class="paragraph">
 <p>Use the (zero-based) <code>index</code> attribute to specify exactly which parameters to capture.
@@ -1446,7 +1447,7 @@ PositionalParameters params = CommandLine.populateCommand(<span class="keyword">
 <div class="sect2">
 <h3 id="_mixing_options_and_positional_parameters">3.7. Mixing Options and Positional Parameters</h3>
 <div class="paragraph">
-<p>From picocli v2.0, positional parameters can be mixed with options on the command line.</p>
+<p>From picocli 2.0, positional parameters can be mixed with options on the command line.</p>
 </div>
 <div class="paragraph">
 <p>For example:</p>
@@ -1849,7 +1850,7 @@ To ensure a custom type converter is available to all subcommands, register the 
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-Starting from picocli v2.0, the <code>type</code> attribute is no longer necessary for <code>Collection</code> and <code>Map</code> fields:
+Starting from picocli 2.0, the <code>type</code> attribute is no longer necessary for <code>Collection</code> and <code>Map</code> fields:
 picocli will infer the collection element type from the generic type.
 (The <code>type</code> attribute still works as before, it is just optional in most cases.)
 </td>
@@ -1911,7 +1912,7 @@ See the <a href="#_split_regex">Split Regex</a> section for details.</p>
 <div class="sect3">
 <h4 id="_maps">4.4.2. Maps</h4>
 <div class="paragraph">
-<p>Picocli v1.0 introduced support for <code>Map</code> fields similar to Java&#8217;s system properties <code>-Dkey=value</code> or Gradle&#8217;s project properties <code>-Pmyprop=myvalue</code>.</p>
+<p>Picocli 1.0 introduced support for <code>Map</code> fields similar to Java&#8217;s system properties <code>-Dkey=value</code> or Gradle&#8217;s project properties <code>-Pmyprop=myvalue</code>.</p>
 </div>
 <div class="paragraph">
 <p><code>Map</code> fields may have any type for their key and value
@@ -2321,7 +2322,7 @@ x = -1</code></pre>
 <div class="sect3">
 <h4 id="_repeated_boolean_options">6.1.3. Repeated Boolean Options</h4>
 <div class="paragraph">
-<p>Boolean options with multiple values are supported from picocli v2.1.0.</p>
+<p>Boolean options with multiple values are supported from picocli 2.1.0.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2480,9 +2481,9 @@ the <code>-f</code> argument is recognized as a separate option.</p>
 <i class="fa icon-caution" title="Caution"></i>
 </td>
 <td class="content">
-Prior to picocli v2.0, multi-valued options used to greedily consume as many arguments as possible until
+Prior to picocli 2.0, multi-valued options used to greedily consume as many arguments as possible until
 encountering another option or subcommand.
-If your application relies on the previous behaviour, you need to explicitly specify an option arity of <code>0..*</code> when migrating to picocli v2.0.
+If your application relies on the previous behaviour, you need to explicitly specify an option arity of <code>0..*</code> when migrating to picocli 2.0.
 </td>
 </tr>
 </table>
@@ -4412,7 +4413,7 @@ commands with access to the parent command and sibling commands, whether to use 
 <div class="sect2">
 <h3 id="_printing_help_automatically">11.5. Printing Help Automatically</h3>
 <div class="paragraph">
-<p>From picocli v2.0, the <a href="#execute">convenience methods</a> will automatically print usage help and version information
+<p>From picocli 2.0, the <a href="#execute">convenience methods</a> will automatically print usage help and version information
 when a help option was specified on the command line (options annotated with the <code>versionHelp</code> or <code>usageHelp</code> attribute - but not the <code>help</code> attribute).</p>
 </div>
 <div class="paragraph">
@@ -4574,7 +4575,7 @@ OS: Linux 4.4.0-17134-Microsoft amd64</pre>
 <div class="sect3">
 <h4 id="_version_info_with_format_specifiers">12.1.5. Version Info With Format Specifiers</h4>
 <div class="paragraph">
-<p>From picocli v1.0, the <code>version</code> may contain <a href="#_format_specifiers">format specifiers</a>:</p>
+<p>From picocli 1.0, the <code>version</code> may contain <a href="#_format_specifiers">format specifiers</a>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -6325,7 +6326,48 @@ See also <a href="#_executing_commands_with_subcommands">Executing Commands with
 </div>
 </div>
 <div class="sect2">
-<h3 id="_manually_parsing_subcommands">16.6. Manually Parsing Subcommands</h3>
+<h3 id="_initialization_before_execution">16.6. Initialization Before Execution</h3>
+<div class="paragraph">
+<p>Sometimes an application needs to take some action before execution.
+With a single command, you can simply do this in the beginning of the <code>run</code> or <code>call</code> method, but in an application with subcommands you don&#8217;t want to repeat this code in every subcommand.</p>
+</div>
+<div class="paragraph">
+<p>One idea is to put the shared initialization logic in a custom execution strategy. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(subcommands = {Sub1.class, Sub2.class, Sub3.class})
+<span class="type">class</span> <span class="class">MyApp</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+
+    <span class="comment">// A reference to this method can be used as a custom execution strategy</span>
+    <span class="comment">// that first calls the init() method,</span>
+    <span class="comment">// and then delegates to the default execution strategy.</span>
+    <span class="directive">private</span> <span class="type">int</span> executionStrategy(ParseResult parseResult) {
+        init(); <span class="comment">// custom initialization to be done before executing any command or subcommand</span>
+        <span class="keyword">return</span> <span class="keyword">new</span> CommandLine.RunLast().execute(parseResult); <span class="comment">// default execution strategy</span>
+    }
+
+    <span class="directive">private</span> <span class="type">void</span> init() {
+        <span class="comment">// ...</span>
+    }
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        MyApp app = <span class="keyword">new</span> MyApp();
+        <span class="keyword">new</span> CommandLine(app)
+                .setExecutionStrategy(app::executionStrategy)
+                .execute(args);
+    }
+
+    <span class="comment">//...</span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This ensures the <code>init</code> method is called <em>after</em> the command line is parsed (so all options and positional parameters are assigned) but <em>before</em> the user-specified subcommand is executed.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_manually_parsing_subcommands">16.7. Manually Parsing Subcommands</h3>
 <div class="paragraph">
 <p>For the following example, we assume we created an alias <code>git</code> that invokes our Java application. This could also be a script or a function that calls our Java program:</p>
 </div>
@@ -6398,7 +6440,7 @@ See also the previous section, <a href="#_executing_subcommands">Executing Subco
 </div>
 </div>
 <div class="sect2">
-<h3 id="_parentcommand_annotation">16.7. <code>@ParentCommand</code> Annotation</h3>
+<h3 id="parentcommand-annotation">16.8. <code>@ParentCommand</code> Annotation</h3>
 <div class="paragraph">
 <p>In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.</p>
 </div>
@@ -6454,7 +6496,7 @@ The <code>List</code> subcommand can use the <code>@ParentCommand</code> annotat
 </div>
 </div>
 <div class="sect2">
-<h3 id="_nested_sub_subcommands">16.8. Nested sub-Subcommands</h3>
+<h3 id="_nested_sub_subcommands">16.9. Nested sub-Subcommands</h3>
 <div class="paragraph">
 <p>The specified object can be an annotated object or a
 <code>CommandLine</code> instance with its own nested subcommands. For example:</p>
@@ -6505,12 +6547,12 @@ The <code>picocli-examples</code> module has an <a href="https://github.com/remk
 </div>
 </div>
 <div class="sect2">
-<h3 id="_repeatable_subcommands">16.9. Repeatable Subcommands</h3>
+<h3 id="_repeatable_subcommands">16.10. Repeatable Subcommands</h3>
 <div class="paragraph">
 <p>From picocli 4.2, it is possible to specify that a command&#8217;s subcommands can be specified multiple times by marking it with <code>@Command(subcommandsRepeatable = true)</code>.</p>
 </div>
 <div class="sect3">
-<h4 id="_example_3">16.9.1. Example</h4>
+<h4 id="_example_3">16.10.1. Example</h4>
 <div class="paragraph">
 <p>Below is an example where the top-level command <code>myapp</code> is marked as <code>subcommandsRepeatable = true</code>.
 This command has three subcommands, <code>add</code>, <code>list</code> and <code>send-report</code>:</p>
@@ -6555,7 +6597,7 @@ This invocation is valid because <code>myapp</code> is marked with <code>subcomm
 </div>
 </div>
 <div class="sect3">
-<h4 id="_repeatable_subcommands_specification">16.9.2. Repeatable Subcommands Specification</h4>
+<h4 id="_repeatable_subcommands_specification">16.10.2. Repeatable Subcommands Specification</h4>
 <div class="paragraph">
 <p>Normally, <code>subcommandsRepeatable</code> is <code>false</code>, so for each command, only one of its subcommands can be specified, potentially followed by only one sub-subcommand of that subcommand, etc.
 In mathematical terms, a valid sequence of commands and subcommands can be represented by a <em>directed rooted tree</em> that starts at the top-level command. This is illustrated by the diagram below.</p>
@@ -6593,7 +6635,7 @@ myapp add -x=item1 -w=0.2 myapp</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_repeatable_subcommands_execution">16.9.3. Repeatable Subcommands Execution</h4>
+<h4 id="_repeatable_subcommands_execution">16.10.3. Repeatable Subcommands Execution</h4>
 <div class="paragraph">
 <p>The default <a href="#_executing_commands_with_subcommands"><code>IExecutionStrategy</code></a> (<code>picocli.CommandLine.RunLast</code>) only executes the last subcommands <em>with the same parent</em>. For example, if</p>
 </div>
@@ -6608,7 +6650,7 @@ myapp add -x=item1 -w=0.2 myapp</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_help_for_subcommands">16.10. Usage Help for Subcommands</h3>
+<h3 id="_usage_help_for_subcommands">16.11. Usage Help for Subcommands</h3>
 <div class="paragraph">
 <p>After registering subcommands, calling the <code>commandLine.usage</code> method will show a usage help message that includes all registered subcommands. For example:</p>
 </div>
@@ -6720,7 +6762,7 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hidden_subcommands">16.11. Hidden Subcommands</h3>
+<h3 id="_hidden_subcommands">16.12. Hidden Subcommands</h3>
 <div class="paragraph">
 <p>Commands with the <code>hidden</code> attribute set to <code>true</code> will not be shown in the usage help message of their parent command.</p>
 </div>
@@ -6751,7 +6793,7 @@ Commands:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_help_subcommands">16.12. Help Subcommands</h3>
+<h3 id="_help_subcommands">16.13. Help Subcommands</h3>
 <div class="paragraph">
 <p>Commands with the <code>helpCommand</code> attribute set to <code>true</code> are treated as help commands.
 When picocli encounters a help command on the command line, required options and required positional parameters of the parent command
@@ -6767,7 +6809,7 @@ are not validated (similar to <a href="#_help_options">help options</a>).</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_required_subcommands">16.13. Required Subcommands</h3>
+<h3 id="_required_subcommands">16.14. Required Subcommands</h3>
 <div class="paragraph">
 <p>For some command suites, it does not make sense to invoke the top-level command by itself, and the user is required to specify a subcommand.</p>
 </div>
