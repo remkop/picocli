@@ -3,7 +3,9 @@
 # <a name="4.2.1"></a> Picocli 4.2.1 (UNRELEASED)
 The picocli community is pleased to announce picocli 4.2.1.
 
-This release contains bugfixes and enhancements. 
+This release contains bugfixes and enhancements.
+
+From this release, mixin classes can declare a `@Spec(Spec.Target.MIXEE)`-annotated field; the `CommandSpec` of the command _receiving_ this mixin (the "mixee") is injected into this field.
 
  
 This is the sixty-seventh public release.
@@ -11,12 +13,43 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.2.1-toc"></a> Table of Contents
 * [New and noteworthy](#4.2.1-new)
+  * [`@Spec(MIXEE)` Annotation](#4.2.1-mixee)
 * [Fixed issues](#4.2.1-fixes)
 * [Deprecations](#4.2.1-deprecated)
 * [Potential breaking changes](#4.2.1-breaking-changes)
 
 ## <a name="4.2.1-new"></a> New and Noteworthy
 
+### <a name="4.2.1-mixee"></a>  `@Spec(MIXEE)` Annotation
+Since picocli 4.3, the `@Spec` annotation has a `value` element.
+The value is `Spec.Target.SELF` by default, meaning that the `CommandSpec` of the enclosing class is injected into the `@Spec`-annotated field.
+
+For classes that are used as a [mixins](https://picocli.info/#_mixins), there is another value that may be useful.
+When `@Spec(Spec.Target.MIXEE)` is specified in a mixin class, the `CommandSpec` of the command _receiving_ this mixin (the "mixee") is injected into the `@Spec`-annotated field.
+This can be useful when a mixin contains logic that is common to many commands. For example:
+
+```java
+class AdvancedMixin {
+    @Spec(Spec.Target.MIXEE) CommandSpec mixee;
+
+    /**
+     * When the -x option is specified on any subcommand,
+     * multiply its value with another integer supplied by this subcommand
+     * and set the result on the top-level command.
+     * @param x the value of the -x option
+     */
+    @Option(names = "-x")
+    void setValue(int x) {
+        // get another value from the command we are mixed into
+        int y = ((java.util.function.IntSupplier) mixee.userObject()).getAsInt();
+
+        int product = x * y;
+
+        // set the result on the top-level (root) command
+        ((java.util.function.IntConsumer) mixee.root().userObject()).accept(product);
+    }
+}
+```
 
 ## <a name="4.2.1-fixes"></a> Fixed issues
 * [#958] API: Add `@Spec(Spec.Target.MIXEE)` annotation element to allow mixins to get a reference to the command they are mixed into.
