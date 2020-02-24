@@ -3907,6 +3907,8 @@ class MyApp implements Runnable {
 
 This ensures the `init` method is called _after_ the command line is parsed (so all options and positional parameters are assigned) but _before_ the user-specified subcommand is executed.
 
+The https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/logging[logging example] in `picocli-examples` shows how this can be used to configure the Log4j log level based on a `--verbose` option, prior to execution.
+
 === Manually Parsing Subcommands
 For the following example, we assume we created an alias `git` that invokes our Java application. This could also be a script or a function that calls our Java program:
 [source,bash]
@@ -4417,7 +4419,7 @@ Sometimes you need to write a Mixin class that accesses the mixee (the command w
 
 From picocli 4.3, this can be accomplished with the <<spec-annotation, `@Spec(Spec.Target.MIXEE)` annotation>>.
 
-By default, the `CommandSpec` of the enclosing class is injected into a `@Spec`-annotated field, but when `MIXEE` is specified the `CommandSpec` of the command _receiving_ this mixin (the "mixee") is injected.
+By default, the `CommandSpec` of the enclosing class is injected into a `@Spec`-annotated field, but when `MIXEE` is specified in a mixin class, the `CommandSpec` of the command _receiving_ this mixin (the "mixee") is injected.
 This can be useful when a mixin contains logic that is common to many commands.
 For example:
 
@@ -5175,7 +5177,7 @@ Since picocli 4.3, the `@Spec` annotation has a `value` element.
 The value is `Spec.Target.SELF` by default, meaning that the `CommandSpec` of the enclosing class is injected into the `@Spec`-annotated field.
 
 For classes that are used as a <<Mixins,mixin>>, there is another value that may be useful.
-When `@Spec(Spec.Target.MIXEE)` is specified, the `CommandSpec` of the command _receiving_ this mixin (the "mixee") is injected into the `@Spec`-annotated field.
+When `@Spec(Spec.Target.MIXEE)` is specified in a mixin class, the `CommandSpec` of the command _receiving_ this mixin (the "mixee") is injected into the `@Spec`-annotated field.
 This can be useful when a mixin contains logic that is common to many commands.
 See <<Accessing the Mixee from a Mixin>> for more details.
 
