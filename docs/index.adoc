@@ -441,7 +441,7 @@ The negated form of this option is `--backup`, and if that is specified, the def
 
 === Positional Parameters
 Any command line arguments that are not subcommands or options (or option parameters) are interpreted as positional parameters.
-Positional parameters generally follow the options but from picocli v2.0, positional parameters can be mixed with options on the command line.
+Positional parameters generally follow the options but from picocli 2.0, positional parameters can be mixed with options on the command line.
 
 Use the (zero-based) `index` attribute to specify exactly which parameters to capture.
 Omitting the `index` attribute means the field captures _all_ positional parameters.
@@ -478,7 +478,7 @@ assert params.allParameters.equals(Arrays.asList("localhost", "12345", "file1.tx
 See <<Strongly Typed Everything>> for which types are supported out of the box and how to add custom types.
 
 === Mixing Options and Positional Parameters
-From picocli v2.0, positional parameters can be mixed with options on the command line.
+From picocli 2.0, positional parameters can be mixed with options on the command line.
 
 For example:
 
@@ -739,7 +739,7 @@ This may also be useful for applications that need a custom type converter but w
 Type converters declared with the `converter` attribute need to have a public no-argument constructor to be instantiated, unless a <<Custom Factory>> is installed to instantiate classes.
 
 === Arrays, Collections, Maps
-NOTE: Starting from picocli v2.0, the `type` attribute is no longer necessary for `Collection` and `Map` fields:
+NOTE: Starting from picocli 2.0, the `type` attribute is no longer necessary for `Collection` and `Map` fields:
 picocli will infer the collection element type from the generic type.
 (The `type` attribute still works as before, it is just optional in most cases.)
 
@@ -783,7 +783,7 @@ See the <<Split Regex>> section for details.
 
 
 ==== Maps
-Picocli v1.0 introduced support for `Map` fields similar to Java's system properties `-Dkey=value` or Gradle's project properties `-Pmyprop=myvalue`.
+Picocli 1.0 introduced support for `Map` fields similar to Java's system properties `-Dkey=value` or Gradle's project properties `-Pmyprop=myvalue`.
 
 `Map` fields may have any type for their key and value
 as long as a <<Strongly Typed Everything,converter>> is registered for both the key and the value type.
@@ -1081,7 +1081,7 @@ Again, each value is appended to the array or collection.
 
 
 ==== Repeated Boolean Options
-Boolean options with multiple values are supported from picocli v2.1.0.
+Boolean options with multiple values are supported from picocli 2.1.0.
 [source,java]
 ----
 @Option(names = "-v", description = { "Specify multiple -v options to increase verbosity.",
@@ -1171,9 +1171,9 @@ If no `arity` is specified, the number of parameters depends on the field's type
 |===
 
 
-CAUTION: Prior to picocli v2.0, multi-valued options used to greedily consume as many arguments as possible until
+CAUTION: Prior to picocli 2.0, multi-valued options used to greedily consume as many arguments as possible until
 encountering another option or subcommand.
-If your application relies on the previous behaviour, you need to explicitly specify an option arity of `0..*` when migrating to picocli v2.0.
+If your application relies on the previous behaviour, you need to explicitly specify an option arity of `0..*` when migrating to picocli 2.0.
 
 ==== Positional Parameter Arity
 
@@ -2520,7 +2520,7 @@ public interface IHelpCommandInitializable2 {
 
 === Printing Help Automatically
 
-From picocli v2.0, the <<Executing Commands,convenience methods>> will automatically print usage help and version information
+From picocli 2.0, the <<Executing Commands,convenience methods>> will automatically print usage help and version information
 when a help option was specified on the command line (options annotated with the `versionHelp` or `usageHelp` attribute - but not the `help` attribute).
 
 The same holds for the `mixinStandardHelpOptions` attribute, the built-in `HelpCommand` and any custom help subcommands marked as a <<Help Subcommands,help command>>.
@@ -2623,7 +2623,7 @@ The markup will be rendered as ANSI escape codes on supported systems.
 image:VersionInfoWithColors.png[Screenshot of version information containing markup with Ansi styles and colors]
 
 ==== Version Info With Format Specifiers
-From picocli v1.0, the `version` may contain <<Format Specifiers,format specifiers>>:
+From picocli 1.0, the `version` may contain <<Format Specifiers,format specifiers>>:
 
 [source,java]
 ----
@@ -3870,6 +3870,36 @@ $ echo $?
 As you can see, the _last specified_ command or subcommand is executed and its exit code is returned.
 See also <<Executing Commands with Subcommands>> for details on configuring this.
 
+=== Initialization Before Execution
+
+Sometimes an application needs to take some action before execution.
+
+This can be accomplished with a custom execution strategy. For example:
+
+
+[source,java]
+----
+class MyApp implements Runnable {
+    private int executionStrategy(ParseResult parseResult) {
+        init();
+        return new CommandLine.RunLast().execute(parseResult); // default execution strategy
+    }
+
+    private void init() {
+        // ...
+    }
+
+    public static void main(String[] args) {
+        MyApp app = new MyApp();
+        new CommandLine(app)
+                .setExecutionStrategy(app::executionStrategy)
+                .execute(args);
+    }
+
+    //...
+}
+----
+
 === Manually Parsing Subcommands
 For the following example, we assume we created an alias `git` that invokes our Java application. This could also be a script or a function that calls our Java program:
 [source,bash]
@@ -4313,7 +4343,7 @@ picocli annotations from _any_ class can be added to ("mixed in" with) a command
 Picocli's <<Mixin Standard Help Options,mixinStandardHelpOptions>> internally uses a mixin.
 
 A mixin is a separate class with options, positional parameters, subcommands and command attributes that you want to reuse in one or more other commands.
-A command receiving these mixed in options, positional parameters, and command attributes is called the "mixee".
+A command receiving these mixed-in options, positional parameters, and command attributes is called the "mixee".
 
 Mixins can be installed declaratively with a `@Mixin`-annotated field (or a `@Mixin`-annotated method parameter for command methods).
 Alternatively, mixins can be installed programmatically by calling the `CommandLine.addMixin` method with an instance of the mixin class.
@@ -4345,7 +4375,7 @@ For example:
 
 [source,java]
 ----
-@Command(name = "mymixee", description = "Example reuse with @Mixin annotation.")
+@Command(name = "zip", description = "Example reuse with @Mixin annotation.")
 public class MyCommand {
 
     // adds the options defined in ReusableOptions to this command
@@ -4363,23 +4393,25 @@ the mixed-in object is also injected into the field annotated with `@Mixin`, mak
 
 [source,java]
 ----
-MyCommand zip = new MyCommand();
-CommandLine commandLine = new CommandLine(zip);
-commandLine.parseArgs("-vvv");
+MyCommand cmd = new MyCommand();
+new CommandLine(cmd).parseArgs("-vvv");
 
-// the options defined in ReusableOptions have been added to the zip command
-assert zip.myMixin.verbosity.length == 3;
+// the options defined in ReusableOptions have been added to the `MyCommand` command
+assert cmd.myMixin.verbosity.length == 3;
 ----
 
 Mixins added with the `@Mixin` annotation can also be accessed via the map returned by `CommandLine.getMixins`.
 
 The GitHub project has a https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/mixin[full working example].
 
-=== Accessing the Mixee From a Mixin
+==== Accessing the Mixee from a Mixin
 
-Sometimes you need to write a Mixin class that accesses the mixee command where it is mixed in.
+Sometimes you need to write a Mixin class that accesses the mixee (the command where it is mixed in).
 
-This can be accomplished with the <<spec-annotation, `@Spec` annotation>>, by setting its target to `Spec.Target.MIXEE`.
+From picocli 4.3, this can be accomplished with the <<spec-annotation, `@Spec(Spec.Target.MIXEE)` annotation>>.
+
+By default, the `CommandSpec` of the enclosing class is injected into a `@Spec`-annotated field, but when `MIXEE` is specified the `CommandSpec` of the command _receiving_ this mixin (the "mixee") is injected.
+This can be useful when a mixin contains logic that is common to many commands.
 For example:
 
 [source,java]
@@ -4387,9 +4419,15 @@ For example:
 class AdvancedMixin {
     @Spec(Spec.Target.MIXEE) CommandSpec mixee;
 
+    /**
+     * When the -x option is specified on any subcommand,
+     * multiply its value with another integer supplied by this subcommand
+     * and set the result on the top-level command.
+     * @param x the value of the -x option
+     */
     @Option(names = "-x")
     void setValue(int x) {
-        // get another value from the command we are mixed in to
+        // get another value from the command we are mixed into
         int y = ((java.util.function.IntSupplier) mixee.userObject()).getAsInt();
 
         int product = x * y;
@@ -4399,6 +4437,63 @@ class AdvancedMixin {
     }
 }
 ----
+
+
+==== Accessing the Parent Command from a Mixin
+
+Since picocli 4.2, <<_parentcommand_annotation,`@ParentCommand`-annotated>> fields can be used in mixins.
+This injects a reference to the parent command of the mixee into the mixin.
+Here is an example implementation:
+
+[source,java]
+----
+// Define a mixin that delegates to the parent command.
+class MyMixin {
+    @ParentCommand Top top;
+
+    @Option(names = {"-v", "--verbose"})
+    public void setVerbose(boolean verbose) { top.verbose = verbose; }
+}
+
+// An example Top-level command with a subcommand.
+// The `-v` option can be specified on the top-level command as well as its subcommands.
+@Command(subcommands = Sub.class)
+class Top implements Runnable {
+    @Option(names = {"-v", "--verbose"})
+    boolean verbose;
+
+    public void verbose(String pattern, Object... params) {
+        if (verbose) {
+            System.out.printf(pattern, params);
+        }
+    }
+
+    public void run() { verbose("Hello from top%n"); }
+
+    public static void main(String[] args) {
+        new CommandLine(new Top()).execute(args);
+    }
+}
+
+// Subcommand classes can mix in the `-v` option with a @Mixin-annotated field.
+@Command(name = "sub")
+class Sub implements Runnable{
+    @Mixin MyMixin mymixin;
+
+    @Override
+    public void run() { mymixin.top.verbose("Hello from sub%n"); }
+}
+----
+
+With this, the `-v` option can be specified on the top-level command as well as its subcommands, so all of the below are valid invocations:
+
+----
+java Top -v
+java Top -v sub
+java Top sub -v
+----
+
+All of these invocations will print some output, since the `-v` option was specified.
 
 ==== Adding Mixins Programmatically
 The below example shows how a mixin can be added programmatically with the `CommandLine.addMixin` method.
@@ -4424,16 +4519,16 @@ assert mixin.verbosity.length == 3;
 
 
 
-=== Use Case: Global Option to Configure Log Level
+=== Use Case: Configure Log Level with a Global Option
 
 For mixins that need to be reusable across more than two levels in the command hierarchy,
-injecting a <<_spec_annotation,`@Spec`-annotated>> field with target `Spec.Target.MIXEE` gives the mixin access to the full command hierarchy.
+declaring a <<_spec_annotation,`@Spec(Spec.Target.MIXEE)`-annotated>> field gives the mixin access to the full command hierarchy.
 
-The `MIXEE` target indicates that the `CommandSpec` to inject is not the spec of the enclosing class, but the spec of the command where the `@Mixin` is used.
+The `MIXEE` value indicates that the `CommandSpec` to inject is not the spec of the enclosing class, but the spec of the command where the `@Mixin` is used.
 
-The example below shows a class that has a "global" option `--verbose` that can be used on any command to configure the Log4j log level.
+The example below shows a class that uses Log4j for logging, and has a "global" option `--verbose` that can be specified on any command to allow users to configure the Log4j log level.
 The `@Spec(MIXEE)`-annotated field allows the mixin to climb the command hierarchy and store the "verbosity" value in a single place.
-The log level is then configured from that single value.
+When the application is started, a custom execution strategy is used to configure the log level from that single value.
 
 [source,java]
 ----
@@ -4540,71 +4635,6 @@ java MyApp sub subsubmethod -vv
 ----
 
 See also the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/logging[logging] example in `picocli-examples` for a way to modify only the Log4j ConsoleAppenders' log level from the specified verbosity.
-
-
-=== Use Case: Sharing Options
-
-A common use case is sharing options between different levels of the command hierarchy, so that "global" options from the top-level command are also available on subcommands.
-
-Since picocli 4.2, <<_parentcommand_annotation,`@ParentCommand`-annotated>> fields can be used in mixins, which makes this easier. Here is an example implementation:
-
-[source,java]
-----
-// Define a mixin that delegates to the parent command.
-class MyMixin {
-    @ParentCommand Top top;
-
-    @Option(names = "-v")
-    public void setVerbose(boolean[] verbosity) { top.setVerbose(verbosity); }
-}
-
-// An example Top-level command with two subcommands.
-// The `-v` option can be specified on the top-level command as well as the subcommands.
-@Command(subcommands = Sub2.class)
-class Top implements Runnable {
-    private boolean[] verbosity = new boolean[0];
-
-    @Option(names = {"-v", "--verbose"})
-    public void setVerbose(boolean[] verbosity) { this.verbosity = verbosity; }
-
-    public void verbose(String pattern, Object... params) {
-        if (verbosity.length >= 1) {
-            System.out.printf(pattern, params);
-        }
-    }
-
-    public void run() { verbose("Hello from top%n"); }
-
-    public static void main(String[] args) {
-        new CommandLine(new Top()).execute(args);
-    }
-
-    // The @Mixin-annotated parameter adds the `-v` option to this subcommand.
-    @Command
-    void sub1(@Mixin MyMixin mymixin) { verbose("Hello from sub1%n"); }
-}
-
-// Subcommand classes can mix in the `-v` option with a @Mixin-annotated field.
-@Command(name = "sub2")
-class Sub2 implements Runnable{
-    @Mixin MyMixin mymixin;
-
-    @Override
-    public void run() { mymixin.top.verbose("Hello from sub2%n"); }
-}
-----
-
-With this, the `-v` option can be specified on the top-level command as well as the subcommands, so all of the below are valid invocations:
-
-----
-java Top -v
-java Top -v sub1
-java Top sub1 -v
-java Top -v sub2
-java Top sub2 -v
-----
-
-All of these invocations will print some output, since the `-v` option was specified.
 
 === Reuse Combinations
 
@@ -5121,15 +5151,26 @@ This complements the `@ParentCommand` annotation;  the `@ParentCommand` annotati
 [source,java]
 ----
 class InjectSpecExample implements Runnable {
-   @Spec CommandSpec commandSpec;
+    @Spec CommandSpec commandSpec;
 
-   //...
+    //...
 
-   public void run() {
-       // do something with the injected spec
-   }
+    public void run() {
+        // do something with the injected spec
+        System.out.println("My full name is " + commandSpec.qualifiedName());
+    }
 }
 ----
+
+[#spec-mixee-annotation]
+==== `@Spec(MIXEE)` Annotation
+Since picocli 4.3, the `@Spec` annotation has a `value` element.
+The value is `Spec.Target.SELF` by default, meaning that the `CommandSpec` of the enclosing class is injected into the `@Spec`-annotated field.
+
+For classes that are used as a <<Mixins,mixin>>, there is another value that may be useful.
+When `@Spec(Spec.Target.MIXEE)` is specified, the `CommandSpec` of the command _receiving_ this mixin (the "mixee") is injected into the `@Spec`-annotated field.
+This can be useful when a mixin contains logic that is common to many commands.
+See <<Accessing the Mixee from a Mixin>> for more details.
 
 === Improved Support for Chinese, Japanese and Korean
 Picocli will align the usage help message to fit within some user-defined width (80 columns by default).
@@ -5523,7 +5564,7 @@ public class MyMicronautApp implements Runnable {
 ----
 
 == Tracing
-Picocli v1.0 introduced support for parser tracing to facilitate troubleshooting.
+Picocli 1.0 introduced support for parser tracing to facilitate troubleshooting.
 
 System property `picocli.trace` controls the trace level. Supported levels are `OFF`, `WARN`, `INFO`, and `DEBUG`. The default trace level is `WARN`.
 
