@@ -3873,15 +3873,20 @@ See also <<Executing Commands with Subcommands>> for details on configuring this
 === Initialization Before Execution
 
 Sometimes an application needs to take some action before execution.
+With a single command, you can simply do this in the beginning of the `run` or `call` method, but in an application with subcommands you don't want to repeat this code in every subcommand.
 
-This can be accomplished with a custom execution strategy. For example:
-
+One idea is to put the shared initialization logic in a custom execution strategy. For example:
 
 [source,java]
 ----
+@Command(subcommands = {Sub1.class, Sub2.class, Sub3.class})
 class MyApp implements Runnable {
+
+    // A reference to this method can be used as a custom execution strategy
+    // that first calls the init() method,
+    // and then delegates to the default execution strategy.
     private int executionStrategy(ParseResult parseResult) {
-        init();
+        init(); // custom initialization to be done before executing any command or subcommand
         return new CommandLine.RunLast().execute(parseResult); // default execution strategy
     }
 
