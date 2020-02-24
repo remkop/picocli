@@ -3905,6 +3905,8 @@ class MyApp implements Runnable {
 }
 ----
 
+This ensures the `init` method is called _after_ the command line is parsed (so all options and positional parameters are assigned) but _before_ the specified subcommand is executed.
+
 === Manually Parsing Subcommands
 For the following example, we assume we created an alias `git` that invokes our Java application. This could also be a script or a function that calls our Java program:
 [source,bash]
