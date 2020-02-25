@@ -16,7 +16,7 @@ In a single file, so you can include it _in source form_.
 This lets users run picocli-based applications without requiring picocli as an external dependency.
 
 Picocli-based applications can be ahead-of-time compiled to <img src="https://www.graalvm.org/resources/img/logo-colored.svg" alt="GraalVM">
-[native images](https://picocli.info/#_graalvm_native_images), with extremely fast startup time and lower memory requirements,
+[native image](https://picocli.info/#_graalvm_native_image), with extremely fast startup time and lower memory requirements,
 which can be distributed as a single executable file.
 Picocli comes with an [annotation processor](https://github.com/remkop/picocli/releases#4.0.0-annotation-processor) that automatically Graal-enables your jar during compilation.
 
