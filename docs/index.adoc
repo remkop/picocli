@@ -34,8 +34,8 @@ Picocli is a one-file framework for creating Java command line applications with
 Supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more.
 Generates highly customizable usage help messages with <<ANSI Colors and Styles,ANSI colors and styles>>.
 Picocli-based applications can have link:autocomplete.html[command line TAB completion] showing available options, option parameters and subcommands, for any level of nested subcommands.
-Picocli-based applications can be ahead-of-time compiled to image:https://www.graalvm.org/resources/img/logo-colored.svg[GraalVM]
-<<GraalVM Native Image,native images>>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.
+Picocli-based applications can be ahead-of-time compiled to a image:https://www.graalvm.org/resources/img/logo-colored.svg[GraalVM]
+<<GraalVM Native Image,native image>>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.
 
 
 image:checksum-usage-help.png[Screenshot of usage help with Ansi codes enabled]
@@ -3464,7 +3464,7 @@ public static void main(String[] args) {
 ----
 
 ===== Jansi in GraalVM Native Images
-In Java applications compiled to GraalVM native images for Windows, Jansi by itself is https://github.com/fusesource/jansi/issues/162[insufficient] to show colors.
+In Java applications compiled to a GraalVM native image for Windows, Jansi by itself is https://github.com/fusesource/jansi/issues/162[insufficient] to show colors.
 This is partly because GraalVM requires configuration and partly because Jansi internally depends on non-standard system properties, without a graceful fallback if these properties are absent (as is the case in GraalVM).
 
 Users may be interested in combining Jansi with https://github.com/remkop/picocli-jansi-graalvm[picocli-jansi-graalvm] until this issue is fixed. Example usage:

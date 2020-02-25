@@ -58,6 +58,7 @@ class AdvancedMixin {
 * [#952] Enhancement: Make annotation processor quiet by default; add `-Averbose` annotation processor option to enable printing NOTE-level diagnostic messages to the console.
 * [#957] Bugfix: Debug tracing now shows variable value instead of variable name.
 * [#955] Bugfix: TargetInvocationMessage handling in `MethodBinding.set` methods should use `getTargetException` not `getCause`; better error reporting.
+* [#963] DOC: Fixed broken link in README. Thanks to [vladimirf7](https://github.com/vladimirf7) for the pull request.
 * [#895] DOC: Added [Initialization Before Execution](https://picocli.info/#_initialization_before_execution) section on initialization with subcommands to the user manual. Thanks to [Walter Scott Johnson](https://github.com/li-wjohnson) for raising this. 
 * [#951] DOC: Fixed typo in `picocli-codegen` annotation processor documentation: `disable.resource.config` is correct (the option name was incorrectly spelled as `disable.resources.config`). Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for raising this.
 
