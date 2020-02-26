@@ -3324,6 +3324,14 @@ public class CommandLine {
     private static class NoCompletionCandidates implements Iterable<String> {
         public Iterator<String> iterator() { throw new UnsupportedOperationException(); }
     }
+    /** Specifies the scope of the element.
+     * @since 4.3 */
+    public enum ScopeType {
+        /** The element only exists in the current command. */
+        LOCAL,
+        /** The element exists in the command where the element is defined and all descendents (subcommands, sub-subcommands, etc.). */
+        SUBTREE,
+    }
     /**
      * <p>
      * Annotate fields in your class with {@code @Option} and picocli will initialize these fields when matching
@@ -3692,6 +3700,11 @@ public class CommandLine {
          * @since 4.0 */
         boolean negatable() default false;
 
+        /** Determines on which command(s) this option exists: on this command only (the default), or
+         * whether it is applied to this command and all subcommands, sub-subcommands, etc.
+         * @since 4.3
+         */
+        ScopeType scopeType() default ScopeType.LOCAL;
         /**
          * For options with an optional parameter (for example, {@code arity = "0..1"}), this value is assigned to the annotated element
          * if the option is specified on the command line without an option parameter.
@@ -5487,6 +5500,12 @@ public class CommandLine {
                     if (previous != null && previous != subCommandLine) { throw new InitializationException("Alias '" + alias + "' for subcommand '" + actualName + "' is already used by another subcommand of '" + this.name() + "'"); }
                 }
                 subSpec.initCommandHierarchyWithResourceBundle(resourceBundleBaseName(), resourceBundle());
+
+                for (OptionSpec option : options()) {
+                    if (option.scopeType() == ScopeType.SUBTREE) {
+                        subSpec.addOption(option);
+                    }
+                }
                 return this;
             }
 
@@ -5600,6 +5619,15 @@ public class CommandLine {
                 }
                 options.add(option);
                 addOptionNegative(option, tracer);
+                if (option.scopeType() == ScopeType.SUBTREE) {
+                    Set<CommandLine> done = new HashSet<CommandLine>();
+                    for (CommandLine sub : subcommands().values()) {
+                        if (!done.contains(sub)) {
+                            sub.getCommandSpec().addOption(OptionSpec.builder(option).build());
+                            done.add(sub);
+                        }
+                    }
+                }
                 return addArg(option);
             }
 
@@ -7345,7 +7373,7 @@ public class CommandLine {
             private       Object initialValue;
             private final boolean hasInitialValue;
             private       boolean isInitialValueCached;
-            private final IAnnotatedElement source;
+            protected final IAnnotatedElement annotatedElement;
             private final IGetter getter;
             private final ISetter setter;
             private final IScope scope;
@@ -7372,7 +7400,7 @@ public class CommandLine {
                 initialValue = builder.initialValue;
                 hasInitialValue = builder.hasInitialValue;
                 isInitialValueCached = builder.isInitialValueCached;
-                source = builder.source;
+                annotatedElement = builder.annotatedElement;
                 defaultValue = NO_DEFAULT_VALUE.equals(builder.defaultValue) ? null : builder.defaultValue;
                 required = builder.required;
                 toString = builder.toString;
@@ -7566,8 +7594,8 @@ public class CommandLine {
              * the option will be reset to the initial value before parsing (regardless of whether a default value exists),
              * to clear values that would otherwise remain from parsing previous input. */
             public Object initialValue()   {
-                if (!isInitialValueCached && source != null) {
-                    try { initialValue = source.getter().get(); } catch (Exception ex) { }
+                if (!isInitialValueCached && annotatedElement != null) {
+                    try { initialValue = annotatedElement.getter().get(); } catch (Exception ex) { }
                     isInitialValueCached = true;
                 }
                 return initialValue;
@@ -7643,7 +7671,7 @@ public class CommandLine {
             public IGetter getter()        { return getter; }
             /** Returns the {@link ISetter} that is responsible for modifying the value of this argument. */
             public ISetter setter()        { return setter; }
-            /** Returns the {@link IScope} that determines on which object to set the value (or from which object to get the value) of this argument. */
+            /** Returns the binding {@link IScope} that determines on which object to set the value (or from which object to get the value) of this argument. */
             public IScope scope()          { return scope; }
 
             /** Returns the current value of this argument. Delegates to the current {@link #getter()}. */
@@ -7905,7 +7933,7 @@ public class CommandLine {
                 private IGetter getter = new ObjectBinding();
                 private ISetter setter = (ISetter) getter;
                 private IScope scope = new ObjectScope(null);
-                private IAnnotatedElement source;
+                private IAnnotatedElement annotatedElement;
 
                 Builder() {}
                 Builder(ArgSpec original) {
@@ -7922,8 +7950,9 @@ public class CommandLine {
                     setTypeInfo(original.typeInfo);
                     converters = original.converters;
                     defaultValue = original.defaultValue;
+                    annotatedElement = original.annotatedElement;
                     initialValue = original.initialValue;
-                    isInitialValueCached = true;
+                    isInitialValueCached = original.isInitialValueCached;
                     hasInitialValue = original.hasInitialValue;
                     showDefaultValue = original.showDefaultValue;
                     completionCandidates = original.completionCandidates;
@@ -7933,23 +7962,23 @@ public class CommandLine {
                     setter = original.setter;
                     scope = original.scope;
                 }
-                Builder(IAnnotatedElement source) {
-                    this.source = source;
-                    userObject = source.userObject();
-                    setTypeInfo(source.getTypeInfo());
-                    toString = source.getToString();
-                    getter = source.getter();
-                    setter = source.setter();
-                    scope = source.scope();
-                    hasInitialValue = source.hasInitialValue();
+                Builder(IAnnotatedElement annotatedElement) {
+                    this.annotatedElement = annotatedElement;
+                    userObject = annotatedElement.userObject();
+                    setTypeInfo(annotatedElement.getTypeInfo());
+                    toString = annotatedElement.getToString();
+                    getter = annotatedElement.getter();
+                    setter = annotatedElement.setter();
+                    scope = annotatedElement.scope();
+                    hasInitialValue = annotatedElement.hasInitialValue();
                     isInitialValueCached = false;
                 }
-                Builder(Option option, IAnnotatedElement source, IFactory factory) {
-                    this(source);
-                    arity = Range.optionArity(source);
+                Builder(Option option, IAnnotatedElement annotatedElement, IFactory factory) {
+                    this(annotatedElement);
+                    arity = Range.optionArity(annotatedElement);
                     required = option.required();
 
-                    paramLabel = inferLabel(option.paramLabel(), source.getName(), source.getTypeInfo());
+                    paramLabel = inferLabel(option.paramLabel(), annotatedElement.getName(), annotatedElement.getTypeInfo());
 
                     hideParamSyntax = option.hideParamSyntax();
                     interactive = option.interactive();
@@ -7969,16 +7998,16 @@ public class CommandLine {
                         }
                     }
                 }
-                Builder(Parameters parameters, IAnnotatedElement source, IFactory factory) {
-                    this(source);
-                    arity = Range.parameterArity(source);
+                Builder(Parameters parameters, IAnnotatedElement annotatedElement, IFactory factory) {
+                    this(annotatedElement);
+                    arity = Range.parameterArity(annotatedElement);
                     required = arity.min > 0;
 
                     // method parameters may be positional parameters without @Parameters annotation
                     if (parameters == null) {
-                        paramLabel = inferLabel(null, source.getName(), source.getTypeInfo());
+                        paramLabel = inferLabel(null, annotatedElement.getName(), annotatedElement.getTypeInfo());
                     } else {
-                        paramLabel = inferLabel(parameters.paramLabel(), source.getName(), source.getTypeInfo());
+                        paramLabel = inferLabel(parameters.paramLabel(), annotatedElement.getName(), annotatedElement.getTypeInfo());
 
                         hideParamSyntax = parameters.hideParamSyntax();
                         interactive = parameters.interactive();
@@ -8102,7 +8131,7 @@ public class CommandLine {
                 public IGetter getter()        { return getter; }
                 /** Returns the {@link ISetter} that is responsible for modifying the value of this argument. */
                 public ISetter setter()        { return setter; }
-                /** Returns the {@link IScope} that determines where the setter sets the value (or the getter gets the value) of this argument. */
+                /** Returns the binding {@link IScope} that determines where the setter sets the value (or the getter gets the value) of this argument. */
                 public IScope scope()          { return scope; }
 
                 public String toString() { return toString; }
@@ -8205,10 +8234,10 @@ public class CommandLine {
                 public T getter(IGetter getter)              { this.getter = getter; return self(); }
                 /** Sets the {@link ISetter} that is responsible for modifying the value of this argument, and returns this builder. */
                 public T setter(ISetter setter)              { this.setter = setter; return self(); }
-                /** Sets the {@link IScope} that targets where the setter sets the value, and returns this builder. */
+                /** Sets the binding {@link IScope} that targets where the setter sets the value, and returns this builder. */
                 public T scope(IScope scope)                 { this.scope = scope; return self(); }
 
-                /** Sets the string respresentation of this option or positional parameter to the specified value, and returns this builder. */
+                /** Sets the string representation of this option or positional parameter to the specified value, and returns this builder. */
                 public T withToString(String toString)       { this.toString = toString; return self(); }
             }
         }
@@ -8363,6 +8392,18 @@ public class CommandLine {
              * @see #defaultValue()
              * @since 4.0 */
             public String fallbackValue() { return interpolate(fallbackValue); }
+
+            /** Returns whether this option is "global", that is, is applies to this command as well as all sub- and sub-subcommands (to any depth).
+             * @return whether this option applies to all descendent subcommands of the command where it is defined
+             * @since 4.3 */
+            public ScopeType scopeType() {
+                if (annotatedElement == null || annotatedElement.getAnnotation(Option.class) == null) {
+                    return ScopeType.LOCAL;
+                }
+                try {
+                    return annotatedElement.getAnnotation(Option.class).scopeType();
+                } catch (Exception ex) { throw new RuntimeException(ex); }
+            }
 
             public boolean equals(Object obj) {
                 if (obj == this) { return true; }
