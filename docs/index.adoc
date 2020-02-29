@@ -5690,9 +5690,10 @@ For example:
 
 [source,java]
 ----
-StringWriter sw = new StringWriter();
 MyApp app = new MyApp();
 CommandLine cmd = new CommandLine(app);
+
+StringWriter sw = new StringWriter();
 cmd.setOut(new PrintWriter(sw));
 
 // black box testing
@@ -5716,7 +5717,7 @@ class MyApp implements Runnable {
 
     public void run() {
         // make testing easier by printing to the Err and Out streams provided by picocli
-        spec.commandLine.getOut().println("Your output is abc...");
+        spec.commandLine().getOut().println("Your output is abc...");
     }
 }
 ----
@@ -5730,16 +5731,16 @@ ByteArrayOutputStream out = new ByteArrayOutputStream();
 PrintStream oldErr = System.err;
 PrintStream oldOut = System.out;
 try {
-    System.setErr(new PrintStream(err));
+    System.setErr(new PrintStream(err));           // setup
     System.setOut(new PrintStream(out));
-    String[] args = "my command args".split(" ");
+    String[] args = "my command args".split(" ");  // test
     new CommandLine(new MyApp()).execute(args);
-    assertEquals("MY COMMAND OUTPUT", out.toString());
-    assertEquals("", err.toString());
 } finally {
-    System.setErr(oldErr);
+    System.setErr(oldErr);                         // teardown
     System.setOut(oldOut);
 }
+assertEquals("MY COMMAND OUTPUT", out.toString()); // verify
+assertEquals("", err.toString());
 ----
 
 If you're testing with JUnit 4, you can do the setup in a `@org.junit.Before`-annotated method and teardown in an `@org.junit.After`-annotated method.
@@ -5752,34 +5753,36 @@ For example:
 //import org.junit.Before; // JUnit 4
 import org.junit.jupiter.api.AfterEach;  // JUnit 5
 import org.junit.jupiter.api.BeforeEach; // JUnit 5
+//...
+class TestOutput {
+    final PrintStream originalOut = System.out;
+    final PrintStream originalErr = System.err;
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    final ByteArrayOutputStream err = new ByteArrayOutputStream();
 
-final PrintStream originalOut = System.out;
-final PrintStream originalErr = System.err;
-final ByteArrayOutputStream out = new ByteArrayOutputStream();
-final ByteArrayOutputStream err = new ByteArrayOutputStream();
+    //@Before   // JUnit 4
+    @BeforeEach // JUnit 5
+    public void setUpStreams() {
+        out.reset();
+        err.reset();
+        System.setOut(new PrintStream(out));
+        System.setErr(new PrintStream(err));
+    }
 
-//@Before   // JUnit 4
-@BeforeEach // JUnit 5
-public void setUpStreams() {
-    out.reset();
-    err.reset();
-    System.setOut(new PrintStream(out));
-    System.setErr(new PrintStream(err));
-}
+    //@After   // JUnit 4
+    @AfterEach // JUnit 5
+    public void restoreStreams() {
+        System.setOut(originalOut);
+        System.setErr(originalErr);
+    }
 
-//@After   // JUnit 4
-@AfterEach // JUnit 5
-public void restoreStreams() {
-    System.setOut(originalOut);
-    System.setErr(originalErr);
-}
-
-@Test
-public void test() {
-    String[] args = "my command args".split(" ");
-    new CommandLine(new MyApp()).execute(args);
-    assertEquals("MY COMMAND OUTPUT", out.toString());
-    assertEquals("", err.toString());
+    @Test
+    public void test() {
+        String[] args = "my command args".split(" ");
+        new CommandLine(new MyApp()).execute(args);
+        assertEquals("MY COMMAND OUTPUT", out.toString());
+        assertEquals("", err.toString());
+    }
 }
 ----
 
