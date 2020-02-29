@@ -750,15 +750,15 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_micronaut_example">21.3. Micronaut Example</a></li>
 </ul>
 </li>
-<li><a href="#_tracing">22. Tracing</a></li>
-<li><a href="#_tab_autocomplete">23. TAB Autocomplete</a></li>
-<li><a href="#_generate_man_page_documentation">24. Generate Man Page Documentation</a></li>
-<li><a href="#_java_9_jpms_modules">25. Java 9 JPMS Modules</a>
+<li><a href="#_java_9_jpms_modules">22. Java 9 JPMS Modules</a>
 <ul class="sectlevel2">
-<li><a href="#_module_configuration">25.1. Module Configuration</a></li>
+<li><a href="#_module_configuration">22.1. Module Configuration</a></li>
 </ul>
 </li>
-<li><a href="#_osgi_bundle">26. OSGi Bundle</a></li>
+<li><a href="#_osgi_bundle">23. OSGi Bundle</a></li>
+<li><a href="#_tracing">24. Tracing</a></li>
+<li><a href="#_tab_autocomplete">25. TAB Autocomplete</a></li>
+<li><a href="#_generate_man_page_documentation">26. Generate Man Page Documentation</a></li>
 <li><a href="#_testing_your_application">27. Testing Your Application</a></li>
 <li><a href="#_packaging_your_application">28. Packaging Your Application</a>
 <ul class="sectlevel2">
@@ -8272,7 +8272,75 @@ The business logic of your command looks like any other picocli command with opt
 </div>
 </div>
 <div class="sect1">
-<h2 id="_tracing">22. Tracing</h2>
+<h2 id="_java_9_jpms_modules">22. Java 9 JPMS Modules</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The main <code>picocli-${version}.jar</code> is a JPMS module named <code>info.picocli</code>.</p>
+</div>
+<div class="paragraph">
+<p>Starting from picocli 4.0, this jar will be an explicit module instead of an automatic module,
+so the <a href="https://docs.oracle.com/en/java/javase/12/tools/jlink.html"><code>jlink</code> tool</a> can be used to provide a trimmed binary image that has only the required modules.
+(Note that <a href="https://medium.com/azulsystems/using-jlink-to-build-java-runtimes-for-non-modular-applications-9568c5e70ef4">there are ways</a> to use jlink with non-modular applications.)</p>
+</div>
+<div class="paragraph">
+<p>Typically, a modular jar includes the <code>module-info.class</code> file in its root directory.
+This causes problems for some older tools, which incorrectly process the module descriptor as if it were a normal Java class.
+To provide the best backward compatibility, the main picocli artifact is a <a href="https://openjdk.java.net/jeps/238#Modular-multi-release-JAR-files">modular multi-release jar</a> with the <code>module-info.class</code> file located in <code>META-INF/versions/9</code>.</p>
+</div>
+<div class="sect2">
+<h3 id="_module_configuration">22.1. Module Configuration</h3>
+<div class="paragraph">
+<p>Applications that use Java 9&#8217;s modules need to configure their module to allow picocli reflective access to the annotated classes and fields.</p>
+</div>
+<div class="paragraph">
+<p>Often applications want the annotated classes and fields to be <strong>private</strong>; there should be no need to make them part of the exported API of your module just to allow picocli to access them. The below settings make this possible.</p>
+</div>
+<div class="paragraph">
+<p>Example <code>module-info.java</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>module com.yourorg.yourapp {
+   requires info.picocli;
+
+   // Open this package for reflection to external frameworks.
+   opens your.package.using.picocli;
+
+   // or: limit access to picocli only
+   opens other.package.using.picocli to info.picocli;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that neither package is <code>exported</code>, so other modules cannot accidentally compile against types in these packages.</p>
+</div>
+<div class="paragraph">
+<p>Alternatively:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>// open all packages in the module to reflective access
+open module com.yourorg.yourapp {
+   requires info.picocli;
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_osgi_bundle">23. OSGi Bundle</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><span class="image"><img src="https://www.osgi.org/wp-content/uploads/OSGi-website-header-logo.png" alt="OSGi logo"></span></p>
+</div>
+<div class="paragraph">
+<p>From 4.0, the picocli JAR is an OSGi bundle with <code>Bundle-Name: picocli</code> and other appropriate metadata in the manifest.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_tracing">24. Tracing</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli 1.0 introduced support for parser tracing to facilitate troubleshooting.</p>
@@ -8334,7 +8402,7 @@ unalias git</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_tab_autocomplete">23. TAB Autocomplete</h2>
+<h2 id="_tab_autocomplete">25. TAB Autocomplete</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli-based applications can now have command line completion in Bash or Zsh Unix shells.
@@ -8343,7 +8411,7 @@ See the <a href="autocomplete.html">Autocomplete for Java Command Line Applicati
 </div>
 </div>
 <div class="sect1">
-<h2 id="_generate_man_page_documentation">24. Generate Man Page Documentation</h2>
+<h2 id="_generate_man_page_documentation">26. Generate Man Page Documentation</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>From picocli 4.2, the <code>picocli-codegen</code> module has a <code>ManPageGenerator</code> tool that can generate AsciiDoc documentation using the <code>manpage</code> doctype and manpage document structure.
@@ -8380,74 +8448,6 @@ The generated AsciiDoc files can be converted to HTML, PDF and unix man pages wi
 </div>
 </div>
 <div class="sect1">
-<h2 id="_java_9_jpms_modules">25. Java 9 JPMS Modules</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>The main <code>picocli-${version}.jar</code> is a JPMS module named <code>info.picocli</code>.</p>
-</div>
-<div class="paragraph">
-<p>Starting from picocli 4.0, this jar will be an explicit module instead of an automatic module,
-so the <a href="https://docs.oracle.com/en/java/javase/12/tools/jlink.html"><code>jlink</code> tool</a> can be used to provide a trimmed binary image that has only the required modules.
-(Note that <a href="https://medium.com/azulsystems/using-jlink-to-build-java-runtimes-for-non-modular-applications-9568c5e70ef4">there are ways</a> to use jlink with non-modular applications.)</p>
-</div>
-<div class="paragraph">
-<p>Typically, a modular jar includes the <code>module-info.class</code> file in its root directory.
-This causes problems for some older tools, which incorrectly process the module descriptor as if it were a normal Java class.
-To provide the best backward compatibility, the main picocli artifact is a <a href="https://openjdk.java.net/jeps/238#Modular-multi-release-JAR-files">modular multi-release jar</a> with the <code>module-info.class</code> file located in <code>META-INF/versions/9</code>.</p>
-</div>
-<div class="sect2">
-<h3 id="_module_configuration">25.1. Module Configuration</h3>
-<div class="paragraph">
-<p>Applications that use Java 9&#8217;s modules need to configure their module to allow picocli reflective access to the annotated classes and fields.</p>
-</div>
-<div class="paragraph">
-<p>Often applications want the annotated classes and fields to be <strong>private</strong>; there should be no need to make them part of the exported API of your module just to allow picocli to access them. The below settings make this possible.</p>
-</div>
-<div class="paragraph">
-<p>Example <code>module-info.java</code>:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code>module com.yourorg.yourapp {
-   requires info.picocli;
-
-   // Open this package for reflection to external frameworks.
-   opens your.package.using.picocli;
-
-   // or: limit access to picocli only
-   opens other.package.using.picocli to info.picocli;
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Note that neither package is <code>exported</code>, so other modules cannot accidentally compile against types in these packages.</p>
-</div>
-<div class="paragraph">
-<p>Alternatively:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code>// open all packages in the module to reflective access
-open module com.yourorg.yourapp {
-   requires info.picocli;
-}</code></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_osgi_bundle">26. OSGi Bundle</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p><span class="image"><img src="https://www.osgi.org/wp-content/uploads/OSGi-website-header-logo.png" alt="OSGi logo"></span></p>
-</div>
-<div class="paragraph">
-<p>From 4.0, the picocli JAR is an OSGi bundle with <code>Bundle-Name: picocli</code> and other appropriate metadata in the manifest.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
 <h2 id="_testing_your_application">27. Testing Your Application</h2>
 <div class="sectionbody">
 <div class="paragraph">
@@ -8464,9 +8464,10 @@ open module com.yourorg.yourapp {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">StringWriter</span> sw = <span class="keyword">new</span> <span class="predefined-type">StringWriter</span>();
-MyApp app = <span class="keyword">new</span> MyApp();
+<pre class="CodeRay highlight"><code data-lang="java">MyApp app = <span class="keyword">new</span> MyApp();
 CommandLine cmd = <span class="keyword">new</span> CommandLine(app);
+
+<span class="predefined-type">StringWriter</span> sw = <span class="keyword">new</span> <span class="predefined-type">StringWriter</span>();
 cmd.setOut(<span class="keyword">new</span> <span class="predefined-type">PrintWriter</span>(sw));
 
 <span class="comment">// black box testing</span>
@@ -8491,7 +8492,7 @@ Applications can get these writers via the <a href="#spec-annotation"><code>@Spe
 
     <span class="directive">public</span> <span class="type">void</span> run() {
         <span class="comment">// make testing easier by printing to the Err and Out streams provided by picocli</span>
-        spec.commandLine.getOut().println(<span class="string"><span class="delimiter">&quot;</span><span class="content">Your output is abc...</span><span class="delimiter">&quot;</span></span>);
+        spec.commandLine().getOut().println(<span class="string"><span class="delimiter">&quot;</span><span class="content">Your output is abc...</span><span class="delimiter">&quot;</span></span>);
     }
 }</code></pre>
 </div>
@@ -8506,16 +8507,16 @@ Applications can get these writers via the <a href="#spec-annotation"><code>@Spe
 <span class="predefined-type">PrintStream</span> oldErr = <span class="predefined-type">System</span>.err;
 <span class="predefined-type">PrintStream</span> oldOut = <span class="predefined-type">System</span>.out;
 <span class="keyword">try</span> {
-    <span class="predefined-type">System</span>.setErr(<span class="keyword">new</span> <span class="predefined-type">PrintStream</span>(err));
+    <span class="predefined-type">System</span>.setErr(<span class="keyword">new</span> <span class="predefined-type">PrintStream</span>(err));           <span class="comment">// setup</span>
     <span class="predefined-type">System</span>.setOut(<span class="keyword">new</span> <span class="predefined-type">PrintStream</span>(out));
-    <span class="predefined-type">String</span><span class="type">[]</span> args = <span class="string"><span class="delimiter">&quot;</span><span class="content">my command args</span><span class="delimiter">&quot;</span></span>.split(<span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>);
+    <span class="predefined-type">String</span><span class="type">[]</span> args = <span class="string"><span class="delimiter">&quot;</span><span class="content">my command args</span><span class="delimiter">&quot;</span></span>.split(<span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>);  <span class="comment">// test</span>
     <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp()).execute(args);
-    assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="content">MY COMMAND OUTPUT</span><span class="delimiter">&quot;</span></span>, out.toString());
-    assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>, err.toString());
 } <span class="keyword">finally</span> {
-    <span class="predefined-type">System</span>.setErr(oldErr);
+    <span class="predefined-type">System</span>.setErr(oldErr);                         <span class="comment">// teardown</span>
     <span class="predefined-type">System</span>.setOut(oldOut);
-}</code></pre>
+}
+assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="content">MY COMMAND OUTPUT</span><span class="delimiter">&quot;</span></span>, out.toString()); <span class="comment">// verify</span>
+assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>, err.toString());</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -8529,34 +8530,36 @@ For example:</p>
 <span class="comment">//import org.junit.Before; // JUnit 4</span>
 <span class="keyword">import</span> <span class="include">org.junit.jupiter.api.AfterEach</span>;  <span class="comment">// JUnit 5</span>
 <span class="keyword">import</span> <span class="include">org.junit.jupiter.api.BeforeEach</span>; <span class="comment">// JUnit 5</span>
+<span class="comment">//...</span>
+<span class="type">class</span> <span class="class">TestOutput</span> {
+    <span class="directive">final</span> <span class="predefined-type">PrintStream</span> originalOut = <span class="predefined-type">System</span>.out;
+    <span class="directive">final</span> <span class="predefined-type">PrintStream</span> originalErr = <span class="predefined-type">System</span>.err;
+    <span class="directive">final</span> <span class="predefined-type">ByteArrayOutputStream</span> out = <span class="keyword">new</span> <span class="predefined-type">ByteArrayOutputStream</span>();
+    <span class="directive">final</span> <span class="predefined-type">ByteArrayOutputStream</span> err = <span class="keyword">new</span> <span class="predefined-type">ByteArrayOutputStream</span>();
 
-<span class="directive">final</span> <span class="predefined-type">PrintStream</span> originalOut = <span class="predefined-type">System</span>.out;
-<span class="directive">final</span> <span class="predefined-type">PrintStream</span> originalErr = <span class="predefined-type">System</span>.err;
-<span class="directive">final</span> <span class="predefined-type">ByteArrayOutputStream</span> out = <span class="keyword">new</span> <span class="predefined-type">ByteArrayOutputStream</span>();
-<span class="directive">final</span> <span class="predefined-type">ByteArrayOutputStream</span> err = <span class="keyword">new</span> <span class="predefined-type">ByteArrayOutputStream</span>();
+    <span class="comment">//@Before   // JUnit 4</span>
+    <span class="annotation">@BeforeEach</span> <span class="comment">// JUnit 5</span>
+    <span class="directive">public</span> <span class="type">void</span> setUpStreams() {
+        out.reset();
+        err.reset();
+        <span class="predefined-type">System</span>.setOut(<span class="keyword">new</span> <span class="predefined-type">PrintStream</span>(out));
+        <span class="predefined-type">System</span>.setErr(<span class="keyword">new</span> <span class="predefined-type">PrintStream</span>(err));
+    }
 
-<span class="comment">//@Before   // JUnit 4</span>
-<span class="annotation">@BeforeEach</span> <span class="comment">// JUnit 5</span>
-<span class="directive">public</span> <span class="type">void</span> setUpStreams() {
-    out.reset();
-    err.reset();
-    <span class="predefined-type">System</span>.setOut(<span class="keyword">new</span> <span class="predefined-type">PrintStream</span>(out));
-    <span class="predefined-type">System</span>.setErr(<span class="keyword">new</span> <span class="predefined-type">PrintStream</span>(err));
-}
+    <span class="comment">//@After   // JUnit 4</span>
+    <span class="annotation">@AfterEach</span> <span class="comment">// JUnit 5</span>
+    <span class="directive">public</span> <span class="type">void</span> restoreStreams() {
+        <span class="predefined-type">System</span>.setOut(originalOut);
+        <span class="predefined-type">System</span>.setErr(originalErr);
+    }
 
-<span class="comment">//@After   // JUnit 4</span>
-<span class="annotation">@AfterEach</span> <span class="comment">// JUnit 5</span>
-<span class="directive">public</span> <span class="type">void</span> restoreStreams() {
-    <span class="predefined-type">System</span>.setOut(originalOut);
-    <span class="predefined-type">System</span>.setErr(originalErr);
-}
-
-<span class="annotation">@Test</span>
-<span class="directive">public</span> <span class="type">void</span> test() {
-    <span class="predefined-type">String</span><span class="type">[]</span> args = <span class="string"><span class="delimiter">&quot;</span><span class="content">my command args</span><span class="delimiter">&quot;</span></span>.split(<span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>);
-    <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp()).execute(args);
-    assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="content">MY COMMAND OUTPUT</span><span class="delimiter">&quot;</span></span>, out.toString());
-    assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>, err.toString());
+    <span class="annotation">@Test</span>
+    <span class="directive">public</span> <span class="type">void</span> test() {
+        <span class="predefined-type">String</span><span class="type">[]</span> args = <span class="string"><span class="delimiter">&quot;</span><span class="content">my command args</span><span class="delimiter">&quot;</span></span>.split(<span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>);
+        <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp()).execute(args);
+        assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="content">MY COMMAND OUTPUT</span><span class="delimiter">&quot;</span></span>, out.toString());
+        assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>, err.toString());
+    }
 }</code></pre>
 </div>
 </div>
