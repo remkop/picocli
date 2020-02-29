@@ -5572,6 +5572,52 @@ public class MyMicronautApp implements Runnable {
 }
 ----
 
+
+== Java 9 JPMS Modules
+
+The main `picocli-${version}.jar` is a JPMS module named `info.picocli`.
+
+Starting from picocli 4.0, this jar will be an explicit module instead of an automatic module,
+so the https://docs.oracle.com/en/java/javase/12/tools/jlink.html[`jlink` tool] can be used to provide a trimmed binary image that has only the required modules.
+(Note that https://medium.com/azulsystems/using-jlink-to-build-java-runtimes-for-non-modular-applications-9568c5e70ef4[there are ways] to use jlink with non-modular applications.)
+
+Typically, a modular jar includes the `module-info.class` file in its root directory.
+This causes problems for some older tools, which incorrectly process the module descriptor as if it were a normal Java class.
+To provide the best backward compatibility, the main picocli artifact is a https://openjdk.java.net/jeps/238#Modular-multi-release-JAR-files[modular multi-release jar] with the `module-info.class` file located in `META-INF/versions/9`.
+
+=== Module Configuration
+Applications that use Java 9's modules need to configure their module to allow picocli reflective access to the annotated classes and fields.
+
+Often applications want the annotated classes and fields to be **private**; there should be no need to make them part of the exported API of your module just to allow picocli to access them. The below settings make this possible.
+
+Example `module-info.java`:
+```
+module com.yourorg.yourapp {
+   requires info.picocli;
+
+   // Open this package for reflection to external frameworks.
+   opens your.package.using.picocli;
+
+   // or: limit access to picocli only
+   opens other.package.using.picocli to info.picocli;
+}
+```
+Note that neither package is `exported`, so other modules cannot accidentally compile against types in these packages.
+
+Alternatively:
+```
+// open all packages in the module to reflective access
+open module com.yourorg.yourapp {
+   requires info.picocli;
+}
+```
+
+== OSGi Bundle
+
+image:https://www.osgi.org/wp-content/uploads/OSGi-website-header-logo.png[OSGi logo]
+
+From 4.0, the picocli JAR is an OSGi bundle with `Bundle-Name: picocli` and other appropriate metadata in the manifest.
+
 == Tracing
 Picocli 1.0 introduced support for parser tracing to facilitate troubleshooting.
 
@@ -5631,52 +5677,6 @@ The man pages for the picocli built-in tools were created with this tool:
 * link:man/gen-reflect-config.html[gen-reflect-config] (`picocli.codegen.aot.graalvm.ReflectionConfigGenerator`)
 * link:man/gen-proxy-config.html[gen-proxy-config] (`picocli.codegen.aot.graalvm.DynamicProxyConfigGenerator`)
 * link:man/gen-resource-config.html[gen-resource-config] (`picocli.codegen.aot.graalvm.ResourceConfigGenerator`)
-
-
-== Java 9 JPMS Modules
-
-The main `picocli-${version}.jar` is a JPMS module named `info.picocli`.
-
-Starting from picocli 4.0, this jar will be an explicit module instead of an automatic module,
-so the https://docs.oracle.com/en/java/javase/12/tools/jlink.html[`jlink` tool] can be used to provide a trimmed binary image that has only the required modules.
-(Note that https://medium.com/azulsystems/using-jlink-to-build-java-runtimes-for-non-modular-applications-9568c5e70ef4[there are ways] to use jlink with non-modular applications.)
-
-Typically, a modular jar includes the `module-info.class` file in its root directory.
-This causes problems for some older tools, which incorrectly process the module descriptor as if it were a normal Java class.
-To provide the best backward compatibility, the main picocli artifact is a https://openjdk.java.net/jeps/238#Modular-multi-release-JAR-files[modular multi-release jar] with the `module-info.class` file located in `META-INF/versions/9`.
-
-=== Module Configuration
-Applications that use Java 9's modules need to configure their module to allow picocli reflective access to the annotated classes and fields.
-
-Often applications want the annotated classes and fields to be **private**; there should be no need to make them part of the exported API of your module just to allow picocli to access them. The below settings make this possible.
-
-Example `module-info.java`:
-```
-module com.yourorg.yourapp {
-   requires info.picocli;
-
-   // Open this package for reflection to external frameworks.
-   opens your.package.using.picocli;
-
-   // or: limit access to picocli only
-   opens other.package.using.picocli to info.picocli;
-}
-```
-Note that neither package is `exported`, so other modules cannot accidentally compile against types in these packages.
-
-Alternatively:
-```
-// open all packages in the module to reflective access
-open module com.yourorg.yourapp {
-   requires info.picocli;
-}
-```
-
-== OSGi Bundle
-
-image:https://www.osgi.org/wp-content/uploads/OSGi-website-header-logo.png[OSGi logo]
-
-From 4.0, the picocli JAR is an OSGi bundle with `Bundle-Name: picocli` and other appropriate metadata in the manifest.
 
 == Testing Your Application
 
