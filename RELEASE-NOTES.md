@@ -61,6 +61,7 @@ class AdvancedMixin {
 * [#963] DOC: Fixed broken link in README. Thanks to [vladimirf7](https://github.com/vladimirf7) for the pull request.
 * [#895] DOC: Added [Initialization Before Execution](https://picocli.info/#_initialization_before_execution) section on initialization with subcommands to the user manual. Thanks to [Walter Scott Johnson](https://github.com/li-wjohnson) for raising this. 
 * [#951] DOC: Fixed typo in `picocli-codegen` annotation processor documentation: `disable.resource.config` is correct (the option name was incorrectly spelled as `disable.resources.config`). Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for raising this.
+* [#966] DOC: Add section about Testing to the user manual.
 * [#965] Dependency Upgrade: in `picocli-examples`, bump `hibernate-validator` from 6.0.2 to 6.1.2 to deal with [CVE-2019-10219](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-10219). Thanks to [https://github.com/Security3rd](Security3rd) for raising this.
 
 ## <a name="4.2.1-deprecated"></a> Deprecations

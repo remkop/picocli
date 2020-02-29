@@ -5021,7 +5021,7 @@ class ValidationExample {
 
 
 [#command-methods]
-=== `@Command` Methods
+=== [[_command-methods]] `@Command` Methods
 From picocli 3.6, methods can be annotated with `@Command`.
 The method parameters provide the command options and parameters. For example:
 
@@ -5151,7 +5151,7 @@ class App {
 In the above example, the `-x` and `-y` options are added to the other options of the `doit` command.
 
 [#spec-annotation]
-=== `@Spec` Annotation
+=== [[_spec-annotation]] `@Spec` Annotation
 Picocli 3.2 introduces a `@Spec` annotation for injecting the `CommandSpec` model of the command into a command field.
 
 This is useful when a command needs to use the picocli API, for example to walk the command hierarchy and iterate over its sibling commands.
@@ -5677,6 +5677,141 @@ open module com.yourorg.yourapp {
 image:https://www.osgi.org/wp-content/uploads/OSGi-website-header-logo.png[OSGi logo]
 
 From 4.0, the picocli JAR is an OSGi bundle with `Bundle-Name: picocli` and other appropriate metadata in the manifest.
+
+== Testing Your Application
+
+Picocli 4.0 introduced the <<Executing Commands,`execute`>>, `get/setOut`, and `get/setErr` APIs that make testing a lot easier.
+
+Applications can do black box testing by verifying the exit code and the output of the program to the standard output stream and standard error stream.
+
+Additionally, you can do white box testing by keeping a reference to the application and asserting on its state after giving it various command line inputs.
+
+For example:
+
+[source,java]
+----
+StringWriter sw = new StringWriter();
+MyApp app = new MyApp();
+CommandLine cmd = new CommandLine(app);
+cmd.setOut(new PrintWriter(sw));
+
+// black box testing
+int exitCode = cmd.execute("-x", "-y=123");
+assertEquals(0, exitCode);
+assertEquals("Your output is abc...", sw.toString());
+
+// white box testing
+assertEquals("expectedValue1", app.getState1());
+assertEquals("expectedValue2", app.getState2());
+----
+
+This assumes that the application uses the `PrintWriter` provided by https://picocli.info/apidocs/picocli/CommandLine.html#getOut--[`CommandLine.getOut`] or  https://picocli.info/apidocs/picocli/CommandLine.html#getErr--[`CommandLine.getErr`].
+Applications can get these writers via the <<#spec-annotation,`@Spec`>> annotation:
+
+[source,java]
+----
+@Command
+class MyApp implements Runnable {
+    @Spec CommandSpec spec;
+
+    public void run() {
+        // make testing easier by printing to the Err and Out streams provided by picocli
+        spec.commandLine.getOut().println("Your output is abc...");
+    }
+}
+----
+
+Applications that use a version of picocli older than 4.0, or applications that print to `System.out` or `System.err` directly can be tested by capturing the standard output and error streams like this:
+
+[source,java]
+----
+ByteArrayOutputStream err = new ByteArrayOutputStream();
+ByteArrayOutputStream out = new ByteArrayOutputStream();
+PrintStream oldErr = System.err;
+PrintStream oldOut = System.out;
+try {
+    System.setErr(new PrintStream(err));
+    System.setOut(new PrintStream(out));
+    String[] args = "my command args".split(" ");
+    new CommandLine(new MyApp()).execute(args);
+    assertEquals("MY COMMAND OUTPUT", out.toString());
+    assertEquals("", err.toString());
+} finally {
+    System.setErr(oldErr);
+    System.setOut(oldOut);
+}
+----
+
+If you're testing with JUnit 4, you can do the setup in a `@org.junit.Before`-annotated method and teardown in an `@org.junit.After`-annotated method.
+The JUnit 5 equivalent annotations are `@org.junit.jupiter.api.BeforeEach` and `@org.junit.jupiter.api.AfterEach`, respectively.
+For example:
+
+[source,java]
+----
+//import org.junit.After;  // JUnit 4
+//import org.junit.Before; // JUnit 4
+import org.junit.jupiter.api.AfterEach;  // JUnit 5
+import org.junit.jupiter.api.BeforeEach; // JUnit 5
+
+final PrintStream originalOut = System.out;
+final PrintStream originalErr = System.err;
+final ByteArrayOutputStream out = new ByteArrayOutputStream();
+final ByteArrayOutputStream err = new ByteArrayOutputStream();
+
+//@Before   // JUnit 4
+@BeforeEach // JUnit 5
+public void setUpStreams() {
+    out.reset();
+    err.reset();
+    System.setOut(new PrintStream(out));
+    System.setErr(new PrintStream(err));
+}
+
+//@After   // JUnit 4
+@AfterEach // JUnit 5
+public void restoreStreams() {
+    System.setOut(originalOut);
+    System.setErr(originalErr);
+}
+
+@Test
+public void test() {
+    String[] args = "my command args".split(" ");
+    new CommandLine(new MyApp()).execute(args);
+    assertEquals("MY COMMAND OUTPUT", out.toString());
+    assertEquals("", err.toString());
+}
+----
+
+Testing the exit code of applications that call `System.exit` can be tricky but is not impossible.
+
+Applications that use JUnit 4 can use Stephan Birkner's  https://stefanbirkner.github.io/system-rules[System-Rules] project for testing the  https://stefanbirkner.github.io/system-rules/#ExpectedSystemExit[exit code].
+(This library has many other nice features, including capturing the standard output and standard error https://stefanbirkner.github.io/system-rules/#SystemErrAndOutRule[streams], and more.)
+For example:
+
+[source,java]
+----
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.ExpectedSystemExit;
+
+class MyTest {
+    @Rule public final ExpectedSystemExit exit = ExpectedSystemExit.none();
+
+    @Test
+    public void testExitCode() {
+        @Command class App implements Runnable {
+            public void run() {
+                System.exit(23);
+            }
+        }
+        exit.expectSystemExitWithStatus(23);
+        new CommandLine(new App()).execute();
+    }
+}
+----
+
+JUnit 5 users may be interested in Todd Ginsberg's blog post https://todd.ginsberg.com/post/testing-system-exit/[Testing System.exit() with JUnit5].
 
 == Packaging Your Application
 

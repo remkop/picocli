@@ -705,7 +705,7 @@ public class I18nTest {
             System.setErr(new PrintStream(err));
             CommandLine cl = new CommandLine(new I18nCommand());
         } finally {
-            System.setOut(oldErr);
+            System.setErr(oldErr);
         }
 
         String expected = String.format("" +

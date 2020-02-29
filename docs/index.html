@@ -733,8 +733,8 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_tips_tricks">20. Tips &amp; Tricks</a>
 <ul class="sectlevel2">
 <li><a href="#option-parameters-methods">20.1. <code>@Option</code> and <code>@Parameters</code> Methods</a></li>
-<li><a href="#command-methods">20.2. <code>@Command</code> Methods</a></li>
-<li><a href="#_spec_annotation">20.3. <code>@Spec</code> Annotation</a></li>
+<li><a href="#command-methods">20.2.  <code>@Command</code> Methods</a></li>
+<li><a href="#spec-annotation">20.3.  <code>@Spec</code> Annotation</a></li>
 <li><a href="#_improved_support_for_chinese_japanese_and_korean">20.4. Improved Support for Chinese, Japanese and Korean</a></li>
 <li><a href="#_custom_factory">20.5. Custom Factory</a></li>
 <li><a href="#_boolean_options_with_parameters">20.6. Boolean Options with Parameters</a></li>
@@ -759,37 +759,38 @@ table.CodeRay td.code>pre{padding:0}
 </ul>
 </li>
 <li><a href="#_osgi_bundle">26. OSGi Bundle</a></li>
-<li><a href="#_packaging_your_application">27. Packaging Your Application</a>
+<li><a href="#_testing_your_application">27. Testing Your Application</a></li>
+<li><a href="#_packaging_your_application">28. Packaging Your Application</a>
 <ul class="sectlevel2">
-<li><a href="#_graalvm_native_image">27.1. GraalVM Native Image</a></li>
-<li><a href="#_build_tool_plugins">27.2. Build Tool Plugins</a></li>
-<li><a href="#_launch4j">27.3. launch4j</a></li>
-<li><a href="#_javapackager_java_8">27.4. javapackager (Java 8)</a></li>
-<li><a href="#_jlink_java_9">27.5. jlink (Java 9+)</a></li>
-<li><a href="#_jpackage_early_access">27.6. jpackage (Early Access)</a></li>
-<li><a href="#_jbang">27.7. jbang</a></li>
+<li><a href="#_graalvm_native_image">28.1. GraalVM Native Image</a></li>
+<li><a href="#_build_tool_plugins">28.2. Build Tool Plugins</a></li>
+<li><a href="#_launch4j">28.3. launch4j</a></li>
+<li><a href="#_javapackager_java_8">28.4. javapackager (Java 8)</a></li>
+<li><a href="#_jlink_java_9">28.5. jlink (Java 9+)</a></li>
+<li><a href="#_jpackage_early_access">28.6. jpackage (Early Access)</a></li>
+<li><a href="#_jbang">28.7. jbang</a></li>
 </ul>
 </li>
-<li><a href="#_picocli_in_other_languages">28. Picocli in Other Languages</a>
+<li><a href="#_picocli_in_other_languages">29. Picocli in Other Languages</a>
 <ul class="sectlevel2">
-<li><a href="#_groovy">28.1. Groovy</a></li>
-<li><a href="#_kotlin">28.2. Kotlin</a></li>
-<li><a href="#_scala">28.3. Scala</a></li>
+<li><a href="#_groovy">29.1. Groovy</a></li>
+<li><a href="#_kotlin">29.2. Kotlin</a></li>
+<li><a href="#_scala">29.3. Scala</a></li>
 </ul>
 </li>
-<li><a href="#_api_javadoc">29. API Javadoc</a></li>
-<li><a href="#_github_project">30. GitHub Project</a></li>
-<li><a href="#_issue_tracker">31. Issue Tracker</a></li>
-<li><a href="#_mailing_list">32. Mailing List</a></li>
-<li><a href="#_license">33. License</a></li>
-<li><a href="#_releases">34. Releases</a></li>
-<li><a href="#_download">35. Download</a>
+<li><a href="#_api_javadoc">30. API Javadoc</a></li>
+<li><a href="#_github_project">31. GitHub Project</a></li>
+<li><a href="#_issue_tracker">32. Issue Tracker</a></li>
+<li><a href="#_mailing_list">33. Mailing List</a></li>
+<li><a href="#_license">34. License</a></li>
+<li><a href="#_releases">35. Releases</a></li>
+<li><a href="#_download">36. Download</a>
 <ul class="sectlevel2">
-<li><a href="#_gradle_3">35.1. Gradle</a></li>
-<li><a href="#_maven_3">35.2. Maven</a></li>
-<li><a href="#_scala_sbt">35.3. Scala SBT</a></li>
-<li><a href="#_ivy">35.4. Ivy</a></li>
-<li><a href="#_source">35.5. Source</a></li>
+<li><a href="#_gradle_3">36.1. Gradle</a></li>
+<li><a href="#_maven_3">36.2. Maven</a></li>
+<li><a href="#_scala_sbt">36.3. Scala SBT</a></li>
+<li><a href="#_ivy">36.4. Ivy</a></li>
+<li><a href="#_source">36.5. Source</a></li>
 </ul>
 </li>
 </ul>
@@ -829,8 +830,8 @@ For the busy and impatient: there is also a <a href="quick-guide.html">Quick Gui
 Supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more.
 Generates highly customizable usage help messages with <a href="#_ansi_colors_and_styles">ANSI colors and styles</a>.
 Picocli-based applications can have <a href="autocomplete.html">command line TAB completion</a> showing available options, option parameters and subcommands, for any level of nested subcommands.
-Picocli-based applications can be ahead-of-time compiled to <span class="image"><img src="https://www.graalvm.org/resources/img/logo-colored.svg" alt="GraalVM"></span>
-<a href="#_graalvm_native_image">native images</a>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.</p>
+Picocli-based applications can be ahead-of-time compiled to a <span class="image"><img src="https://www.graalvm.org/resources/img/logo-colored.svg" alt="GraalVM"></span>
+<a href="#_graalvm_native_image">native image</a>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.</p>
 </div>
 <div class="paragraph">
 <p><span class="image"><img src="images/checksum-usage-help.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
@@ -5748,7 +5749,7 @@ public <span class="directive">static</span> <span class="type">void</span> main
 <div class="sect4">
 <h5 id="_jansi_in_graalvm_native_images">Jansi in GraalVM Native Images</h5>
 <div class="paragraph">
-<p>In Java applications compiled to GraalVM native images for Windows, Jansi by itself is <a href="https://github.com/fusesource/jansi/issues/162">insufficient</a> to show colors.
+<p>In Java applications compiled to a GraalVM native image for Windows, Jansi by itself is <a href="https://github.com/fusesource/jansi/issues/162">insufficient</a> to show colors.
 This is partly because GraalVM requires configuration and partly because Jansi internally depends on non-standard system properties, without a graceful fallback if these properties are absent (as is the case in GraalVM).</p>
 </div>
 <div class="paragraph">
@@ -7606,7 +7607,7 @@ cmd.parseArgs(args);
 </div>
 </div>
 <div class="sect2">
-<h3 id="command-methods">20.2. <code>@Command</code> Methods</h3>
+<h3 id="command-methods">20.2. <a id="_command-methods"></a> <code>@Command</code> Methods</h3>
 <div class="paragraph">
 <p>From picocli 3.6, methods can be annotated with <code>@Command</code>.
 The method parameters provide the command options and parameters. For example:</p>
@@ -7767,7 +7768,7 @@ All options and positional parameters defined in the mixin class are added to th
 </div>
 </div>
 <div class="sect2">
-<h3 id="_spec_annotation">20.3. <code>@Spec</code> Annotation</h3>
+<h3 id="spec-annotation">20.3. <a id="_spec-annotation"></a> <code>@Spec</code> Annotation</h3>
 <div class="paragraph">
 <p>Picocli 3.2 introduces a <code>@Spec</code> annotation for injecting the <code>CommandSpec</code> model of the command into a command field.</p>
 </div>
@@ -8274,7 +8275,7 @@ The business logic of your command looks like any other picocli command with opt
 <h2 id="_tracing">22. Tracing</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Picocli v1.0 introduced support for parser tracing to facilitate troubleshooting.</p>
+<p>Picocli 1.0 introduced support for parser tracing to facilitate troubleshooting.</p>
 </div>
 <div class="paragraph">
 <p>System property <code>picocli.trace</code> controls the trace level. Supported levels are <code>OFF</code>, <code>WARN</code>, <code>INFO</code>, and <code>DEBUG</code>. The default trace level is <code>WARN</code>.</p>
@@ -8447,13 +8448,161 @@ open module com.yourorg.yourapp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_packaging_your_application">27. Packaging Your Application</h2>
+<h2 id="_testing_your_application">27. Testing Your Application</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Picocli 4.0 introduced the <a href="#execute"><code>execute</code></a>, <code>get/setOut</code>, and <code>get/setErr</code> APIs that make testing a lot easier.</p>
+</div>
+<div class="paragraph">
+<p>Applications can do black box testing by verifying the exit code and the output of the program to the standard output stream and standard error stream.</p>
+</div>
+<div class="paragraph">
+<p>Additionally, you can do white box testing by keeping a reference to the application and asserting on its state after giving it various command line inputs.</p>
+</div>
+<div class="paragraph">
+<p>For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">StringWriter</span> sw = <span class="keyword">new</span> <span class="predefined-type">StringWriter</span>();
+MyApp app = <span class="keyword">new</span> MyApp();
+CommandLine cmd = <span class="keyword">new</span> CommandLine(app);
+cmd.setOut(<span class="keyword">new</span> <span class="predefined-type">PrintWriter</span>(sw));
+
+<span class="comment">// black box testing</span>
+<span class="type">int</span> exitCode = cmd.execute(<span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-y=123</span><span class="delimiter">&quot;</span></span>);
+assertEquals(<span class="integer">0</span>, exitCode);
+assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="content">Your output is abc...</span><span class="delimiter">&quot;</span></span>, sw.toString());
+
+<span class="comment">// white box testing</span>
+assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="content">expectedValue1</span><span class="delimiter">&quot;</span></span>, app.getState1());
+assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="content">expectedValue2</span><span class="delimiter">&quot;</span></span>, app.getState2());</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This assumes that the application uses the <code>PrintWriter</code> provided by <a href="https://picocli.info/apidocs/picocli/CommandLine.html#getOut--"><code>CommandLine.getOut</code></a> or  <a href="https://picocli.info/apidocs/picocli/CommandLine.html#getErr--"><code>CommandLine.getErr</code></a>.
+Applications can get these writers via the <a href="#spec-annotation"><code>@Spec</code></a> annotation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>
+<span class="type">class</span> <span class="class">MyApp</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+    <span class="annotation">@Spec</span> CommandSpec spec;
+
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        <span class="comment">// make testing easier by printing to the Err and Out streams provided by picocli</span>
+        spec.commandLine.getOut().println(<span class="string"><span class="delimiter">&quot;</span><span class="content">Your output is abc...</span><span class="delimiter">&quot;</span></span>);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Applications that use a version of picocli older than 4.0, or applications that print to <code>System.out</code> or <code>System.err</code> directly can be tested by capturing the standard output and error streams like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">ByteArrayOutputStream</span> err = <span class="keyword">new</span> <span class="predefined-type">ByteArrayOutputStream</span>();
+<span class="predefined-type">ByteArrayOutputStream</span> out = <span class="keyword">new</span> <span class="predefined-type">ByteArrayOutputStream</span>();
+<span class="predefined-type">PrintStream</span> oldErr = <span class="predefined-type">System</span>.err;
+<span class="predefined-type">PrintStream</span> oldOut = <span class="predefined-type">System</span>.out;
+<span class="keyword">try</span> {
+    <span class="predefined-type">System</span>.setErr(<span class="keyword">new</span> <span class="predefined-type">PrintStream</span>(err));
+    <span class="predefined-type">System</span>.setOut(<span class="keyword">new</span> <span class="predefined-type">PrintStream</span>(out));
+    <span class="predefined-type">String</span><span class="type">[]</span> args = <span class="string"><span class="delimiter">&quot;</span><span class="content">my command args</span><span class="delimiter">&quot;</span></span>.split(<span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>);
+    <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp()).execute(args);
+    assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="content">MY COMMAND OUTPUT</span><span class="delimiter">&quot;</span></span>, out.toString());
+    assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>, err.toString());
+} <span class="keyword">finally</span> {
+    <span class="predefined-type">System</span>.setErr(oldErr);
+    <span class="predefined-type">System</span>.setOut(oldOut);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you&#8217;re testing with JUnit 4, you can do the setup in a <code>@org.junit.Before</code>-annotated method and teardown in an <code>@org.junit.After</code>-annotated method.
+The JUnit 5 equivalent annotations are <code>@org.junit.jupiter.api.BeforeEach</code> and <code>@org.junit.jupiter.api.AfterEach</code>, respectively.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">//import org.junit.After;  // JUnit 4</span>
+<span class="comment">//import org.junit.Before; // JUnit 4</span>
+<span class="keyword">import</span> <span class="include">org.junit.jupiter.api.AfterEach</span>;  <span class="comment">// JUnit 5</span>
+<span class="keyword">import</span> <span class="include">org.junit.jupiter.api.BeforeEach</span>; <span class="comment">// JUnit 5</span>
+
+<span class="directive">final</span> <span class="predefined-type">PrintStream</span> originalOut = <span class="predefined-type">System</span>.out;
+<span class="directive">final</span> <span class="predefined-type">PrintStream</span> originalErr = <span class="predefined-type">System</span>.err;
+<span class="directive">final</span> <span class="predefined-type">ByteArrayOutputStream</span> out = <span class="keyword">new</span> <span class="predefined-type">ByteArrayOutputStream</span>();
+<span class="directive">final</span> <span class="predefined-type">ByteArrayOutputStream</span> err = <span class="keyword">new</span> <span class="predefined-type">ByteArrayOutputStream</span>();
+
+<span class="comment">//@Before   // JUnit 4</span>
+<span class="annotation">@BeforeEach</span> <span class="comment">// JUnit 5</span>
+<span class="directive">public</span> <span class="type">void</span> setUpStreams() {
+    out.reset();
+    err.reset();
+    <span class="predefined-type">System</span>.setOut(<span class="keyword">new</span> <span class="predefined-type">PrintStream</span>(out));
+    <span class="predefined-type">System</span>.setErr(<span class="keyword">new</span> <span class="predefined-type">PrintStream</span>(err));
+}
+
+<span class="comment">//@After   // JUnit 4</span>
+<span class="annotation">@AfterEach</span> <span class="comment">// JUnit 5</span>
+<span class="directive">public</span> <span class="type">void</span> restoreStreams() {
+    <span class="predefined-type">System</span>.setOut(originalOut);
+    <span class="predefined-type">System</span>.setErr(originalErr);
+}
+
+<span class="annotation">@Test</span>
+<span class="directive">public</span> <span class="type">void</span> test() {
+    <span class="predefined-type">String</span><span class="type">[]</span> args = <span class="string"><span class="delimiter">&quot;</span><span class="content">my command args</span><span class="delimiter">&quot;</span></span>.split(<span class="string"><span class="delimiter">&quot;</span><span class="content"> </span><span class="delimiter">&quot;</span></span>);
+    <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp()).execute(args);
+    assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="content">MY COMMAND OUTPUT</span><span class="delimiter">&quot;</span></span>, out.toString());
+    assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>, err.toString());
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Testing the exit code of applications that call <code>System.exit</code> can be tricky but is not impossible.</p>
+</div>
+<div class="paragraph">
+<p>Applications that use JUnit 4 can use Stephan Birkner&#8217;s  <a href="https://stefanbirkner.github.io/system-rules">System-Rules</a> project for testing the  <a href="https://stefanbirkner.github.io/system-rules/#ExpectedSystemExit">exit code</a>.
+(This library has many other nice features, including capturing the standard output and standard error <a href="https://stefanbirkner.github.io/system-rules/#SystemErrAndOutRule">streams</a>, and more.)
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">org.junit.Rule</span>;
+<span class="keyword">import</span> <span class="include">org.junit.Test</span>;
+<span class="keyword">import</span> <span class="include">org.junit.contrib.java.lang.system.ExpectedSystemExit</span>;
+
+<span class="type">class</span> <span class="class">MyTest</span> {
+    <span class="annotation">@Rule</span> <span class="directive">public</span> <span class="directive">final</span> ExpectedSystemExit exit = ExpectedSystemExit.none();
+
+    <span class="annotation">@Test</span>
+    <span class="directive">public</span> <span class="type">void</span> testExitCode() {
+        <span class="annotation">@Command</span> <span class="type">class</span> <span class="class">App</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+            <span class="directive">public</span> <span class="type">void</span> run() {
+                <span class="predefined-type">System</span>.exit(<span class="integer">23</span>);
+            }
+        }
+        exit.expectSystemExitWithStatus(<span class="integer">23</span>);
+        <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> App()).execute();
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>JUnit 5 users may be interested in Todd Ginsberg&#8217;s blog post <a href="https://todd.ginsberg.com/post/testing-system-exit/">Testing System.exit() with JUnit5</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_packaging_your_application">28. Packaging Your Application</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>You finished your application. Congratulations! Now, how do you package it and distribute it to your users? Here are some ideas.</p>
 </div>
 <div class="sect2">
-<h3 id="_graalvm_native_image">27.1. GraalVM Native Image</h3>
+<h3 id="_graalvm_native_image">28.1. GraalVM Native Image</h3>
 <div class="paragraph">
 <p><span class="image"><img src="images/exe-picocli-on-graalvm.png" alt="Turn your picocli-based application into a native image" width="265" height="150"></span></p>
 </div>
@@ -8490,25 +8639,25 @@ Gradle users may be interested in the <a href="https://github.com/palantir/gradl
 </div>
 </div>
 <div class="sect2">
-<h3 id="_build_tool_plugins">27.2. Build Tool Plugins</h3>
+<h3 id="_build_tool_plugins">28.2. Build Tool Plugins</h3>
 <div class="paragraph">
 <p>Both <a href="https://www.mojohaus.org/appassembler/">Application Assembler Maven Plugin</a> and <a href="https://docs.gradle.org/current/userguide/application_plugin.html">Gradle Application plugin</a> create a distribution zip or tar file with launcher scripts. Both require a JRE to be installed on the target machine.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_launch4j">27.3. launch4j</h3>
+<h3 id="_launch4j">28.3. launch4j</h3>
 <div class="paragraph">
 <p><a href="http://launch4j.sourceforge.net/docs.html">launch4j</a> can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_javapackager_java_8">27.4. javapackager (Java 8)</h3>
+<h3 id="_javapackager_java_8">28.4. javapackager (Java 8)</h3>
 <div class="paragraph">
 <p>JDK 8 <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javapackager.html">javapackager</a> can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jlink_java_9">27.5. jlink (Java 9+)</h3>
+<h3 id="_jlink_java_9">28.5. jlink (Java 9+)</h3>
 <div class="paragraph">
 <p>With the JPMS module system introduced in Java 9 it became possible to use <a href="https://docs.oracle.com/javase/9/tools/jlink.htm#JSWOR-GUID-CECAC52B-CFEE-46CB-8166-F17A8E9280E9">jlink</a> to create a custom light-weight JRE with only the necessary modules.
 This JRE may be as small as 30-40MB.
@@ -8519,7 +8668,7 @@ Use <code>jlink</code> with the <code>--launcher</code> option to generate launc
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jpackage_early_access">27.6. jpackage (Early Access)</h3>
+<h3 id="_jpackage_early_access">28.6. jpackage (Early Access)</h3>
 <div class="paragraph">
 <p><a href="https://jdk.java.net/jpackage/">jpackage</a> is an early access build of <a href="https://openjdk.java.net/jeps/343">JEP 343: Packaging Tool</a>.
 JPackage can take the custom light-weight JRE produced by <code>jlink</code> and create an installer and a native application launcher.
@@ -8534,7 +8683,7 @@ and <a href="https://badass-jlink-plugin.beryx.org/releases/latest/">org.beryx B
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jbang">27.7. jbang</h3>
+<h3 id="_jbang">28.7. jbang</h3>
 <div class="paragraph">
 <p><a href="https://github.com/maxandersen/jbang">jbang</a> allows you to write scripts in Java that use external dependencies.
 You use it with a <code>//DEPS</code> comment, similar to the <a href="http://groovy-lang.org/grape.html"><code>@Grab</code></a> annotation in Groovy.</p>
@@ -8547,13 +8696,13 @@ This <a href="https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&am
 </div>
 </div>
 <div class="sect1">
-<h2 id="_picocli_in_other_languages">28. Picocli in Other Languages</h2>
+<h2 id="_picocli_in_other_languages">29. Picocli in Other Languages</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli may be used in other JVM languages that support annotations.</p>
 </div>
 <div class="sect2">
-<h3 id="_groovy">28.1. Groovy</h3>
+<h3 id="_groovy">29.1. Groovy</h3>
 <div class="paragraph">
 <p>In Groovy, use <code>[</code> and <code>]</code> to surround array values, instead of the <code>{</code> and <code>}</code> used in Java.</p>
 </div>
@@ -8652,7 +8801,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 </div>
 <div class="sect2">
-<h3 id="_kotlin">28.2. Kotlin</h3>
+<h3 id="_kotlin">29.2. Kotlin</h3>
 <div class="paragraph">
 <p>Kotlin 1.2 (released Nov 28, 2017) officially supports <a href="http://kotlinlang.org/docs/reference/whatsnew12.html#array-literals-in-annotations">array literals in annotations</a>, allowing a more compact notation:</p>
 </div>
@@ -8722,7 +8871,7 @@ fun main(args: Array&lt;String&gt;) = System.exit(CommandLine(MyApp()).execute(*
 </div>
 </div>
 <div class="sect2">
-<h3 id="_scala">28.3. Scala</h3>
+<h3 id="_scala">29.3. Scala</h3>
 <div class="paragraph">
 <p>Scala does not allow specifying array annotation attribute as a single value,
 so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for the <code>names</code>, <code>description</code> and <code>type</code> attributes.</p>
@@ -8759,7 +8908,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_api_javadoc">29. API Javadoc</h2>
+<h2 id="_api_javadoc">30. API Javadoc</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli API Javadoc can be found <a href="apidocs/">here</a>.</p>
@@ -8770,7 +8919,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_github_project">30. GitHub Project</h2>
+<h2 id="_github_project">31. GitHub Project</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="https://github.com/remkop/picocli">GitHub project</a> has the source code, tests, build scripts, etc.</p>
@@ -8784,7 +8933,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_issue_tracker">31. Issue Tracker</h2>
+<h2 id="_issue_tracker">32. Issue Tracker</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The GitHub <a href="https://github.com/remkop/picocli/issues">Issue Tracker</a> can be used to report bugs or request features. There is also a <a href="#_mailing_list">Mailing List</a>, and for questions where the user community may know the answer, <a href="https://stackoverflow.com/questions/tagged/picocli">StackOverflow</a> is both a good resource and a great way to build an online knowledge base.</p>
@@ -8792,7 +8941,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_mailing_list">32. Mailing List</h2>
+<h2 id="_mailing_list">33. Mailing List</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Join the <a href="https://groups.google.com/d/forum/picocli">picocli Google group</a> if you are interested in discussing anything picocli-related and receiving announcements on new releases.</p>
@@ -8800,7 +8949,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_license">33. License</h2>
+<h2 id="_license">34. License</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli is licensed under the <a href="https://github.com/remkop/picocli/blob/master/LICENSE">Apache License 2.0</a>.</p>
@@ -8808,7 +8957,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_releases">34. Releases</h2>
+<h2 id="_releases">35. Releases</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Previous versions are available from the GitHub project <a href="https://github.com/remkop/picocli/releases">Releases</a>.</p>
@@ -8816,14 +8965,14 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_download">35. Download</h2>
+<h2 id="_download">36. Download</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>You can add picocli as an external dependency to your project, or you can include it as source.
 See the <a href="#_source">source code</a> below. Copy and paste it into a file called <code>CommandLine.java</code>, add it to your project, and enjoy!</p>
 </div>
 <div class="sect2">
-<h3 id="_gradle_3">35.1. Gradle</h3>
+<h3 id="_gradle_3">36.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
 <pre>compile 'info.picocli:picocli:4.2.0'</pre>
@@ -8831,7 +8980,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_maven_3">35.2. Maven</h3>
+<h3 id="_maven_3">36.2. Maven</h3>
 <div class="listingblock">
 <div class="content">
 <pre>&lt;dependency&gt;
@@ -8843,7 +8992,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_scala_sbt">35.3. Scala SBT</h3>
+<h3 id="_scala_sbt">36.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
 <pre>libraryDependencies += "info.picocli" % "picocli" % "4.2.0"</pre>
@@ -8851,7 +9000,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_ivy">35.4. Ivy</h3>
+<h3 id="_ivy">36.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
 <pre>&lt;dependency org="info.picocli" name="picocli" rev="4.2.0" /&gt;</pre>
@@ -8859,7 +9008,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_source">35.5. Source</h3>
+<h3 id="_source">36.5. Source</h3>
 <div class="paragraph">
 <p>Picocli has only one source file: <a href="https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java">CommandLine.java</a>.
 This facilitates including it in your project in source form to avoid having an external dependency on picocli.</p>
@@ -8871,7 +9020,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.2.0<br>
-Last updated 2020-02-12 08:14:19 +0900
+Last updated 2020-02-29 20:23:51 +0900
 </div>
 </div>
 </body>
