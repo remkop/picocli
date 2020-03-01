@@ -1,5 +1,6 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -2120,5 +2121,63 @@ public class SubcommandTests {
         assertSame(command.getCommandSpec(), sub.getCommandSpec().root());
         assertNotSame(sub.getCommandSpec(), sub.getCommandSpec().root());
         assertSame(sub.getCommandSpec().parent().parent().parent(), sub.getCommandSpec().root());
+    }
+
+    @Ignore
+    @Test
+    public void testSubcommandsNotInstantiated() {
+        @Command(subcommands = Foo.class)
+        class App { }
+
+        CommandLine cmd = new CommandLine(new App());
+        cmd.usage(System.out);
+    }
+
+    @Command(name = "foo")
+    static class Foo {
+        public Foo() {
+            throw new IllegalStateException("Don't instantiate me!");
+        }
+    }
+    
+    @Command(name = "playpico",
+            description = "play picocli", mixinStandardHelpOptions = true,
+            subcommands = { //CommandLine.HelpCommand.class,
+                    Foo.class })
+    static class Launcher implements Runnable {
+        @CommandLine.Spec CommandSpec spec;
+    
+        public static void main(String[] args) {
+            new CommandLine(new Launcher())
+                    .setCaseInsensitiveEnumValuesAllowed(true)
+                    .setUsageHelpLongOptionsMaxWidth(40)
+                    .setUsageHelpAutoWidth(true)
+                    .execute(args);
+        }
+        public void run() {
+            spec.commandLine().usage(spec.commandLine().getOut());
+        }
+    }
+    @Ignore
+    @Test
+    public void testPostponeInstantiation_Issue690() {
+        StringWriter out = new StringWriter();
+        StringWriter err = new StringWriter();
+        new CommandLine(new Launcher())
+                .setCaseInsensitiveEnumValuesAllowed(true)
+                .setUsageHelpLongOptionsMaxWidth(40)
+                .setUsageHelpAutoWidth(true)
+                .setErr(new PrintWriter(err))
+                .setOut(new PrintWriter(out))
+                .execute();
+        assertEquals("", err.toString());
+        
+        assertEquals(String.format("" +
+                "Usage: playpico [-hV] [COMMAND]%n" +
+                "play picocli%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "Commands:%n" +
+                "  foo%n"), out.toString());
     }
 }
