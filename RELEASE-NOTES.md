@@ -56,6 +56,7 @@ class AdvancedMixin {
 * [#960] API: Add method `CommandSpec::root` to return the `CommandSpec` of the top-level command. 
 * [#956] Enhancement: Default ParameterExceptionHandler should show stack trace when tracing is set to DEBUG level.
 * [#952] Enhancement: Make annotation processor quiet by default; add `-Averbose` annotation processor option to enable printing NOTE-level diagnostic messages to the console.
+* [#968] Bugfix: Avoid creating user object in Help constructor. Thanks to [Immueggpain](https://github.com/Immueggpain) for raising this.
 * [#957] Bugfix: Debug tracing now shows variable value instead of variable name.
 * [#955] Bugfix: TargetInvocationMessage handling in `MethodBinding.set` methods should use `getTargetException` not `getCause`; better error reporting.
 * [#963] DOC: Fixed broken link in README. Thanks to [vladimirf7](https://github.com/vladimirf7) for the pull request.

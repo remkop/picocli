@@ -22,6 +22,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.RunAll;
+import picocli.CommandLine.Spec;
 import picocli.CommandLine.UnmatchedArgumentException;
 
 import java.io.PrintWriter;
@@ -2036,7 +2037,7 @@ public class SubcommandTests {
     static class MandatorySubcommand625 {
         @Command(name = "top", subcommands = Sub.class, synopsisSubcommandLabel = "COMMAND")
         static class Top implements Runnable {
-            @CommandLine.Spec
+            @Spec
             CommandSpec spec;
             public void run() {
                 throw new ParameterException(spec.commandLine(), "Missing required subcommand");
@@ -2123,42 +2124,41 @@ public class SubcommandTests {
         assertSame(sub.getCommandSpec().parent().parent().parent(), sub.getCommandSpec().root());
     }
 
-    @Ignore
     @Test
     public void testSubcommandsNotInstantiated() {
         @Command(subcommands = Foo.class)
         class App { }
 
         CommandLine cmd = new CommandLine(new App());
-        cmd.usage(System.out);
+        StringWriter sw = new StringWriter();
+        cmd.usage(new PrintWriter(sw)); // no exception
     }
 
-    @Command(name = "foo")
+    @Command(name = "foo", description = "I am ${COMMAND-FULL-NAME}. I don't do much.")
     static class Foo {
         public Foo() {
             throw new IllegalStateException("Don't instantiate me!");
         }
+
     }
     
     @Command(name = "playpico",
             description = "play picocli", mixinStandardHelpOptions = true,
-            subcommands = { //CommandLine.HelpCommand.class,
-                    Foo.class })
+            subcommands = Foo.class )
     static class Launcher implements Runnable {
-        @CommandLine.Spec CommandSpec spec;
+        @Spec CommandSpec spec;
+        @Option(names = "-x", defaultValue = "123", description = "X; default=${DEFAULT-VALUE}")
+        int x;
     
         public static void main(String[] args) {
             new CommandLine(new Launcher())
-                    .setCaseInsensitiveEnumValuesAllowed(true)
-                    .setUsageHelpLongOptionsMaxWidth(40)
-                    .setUsageHelpAutoWidth(true)
                     .execute(args);
         }
         public void run() {
             spec.commandLine().usage(spec.commandLine().getOut());
         }
     }
-    @Ignore
+
     @Test
     public void testPostponeInstantiation_Issue690() {
         StringWriter out = new StringWriter();
@@ -2173,11 +2173,12 @@ public class SubcommandTests {
         assertEquals("", err.toString());
         
         assertEquals(String.format("" +
-                "Usage: playpico [-hV] [COMMAND]%n" +
+                "Usage: playpico [-hV] [-x=<x>] [COMMAND]%n" +
                 "play picocli%n" +
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n" +
+                "  -x=<x>          X; default=123%n" +
                 "Commands:%n" +
-                "  foo%n"), out.toString());
+                "  foo  I am playpico foo. I don't do much.%n"), out.toString());
     }
 }

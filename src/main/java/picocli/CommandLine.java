@@ -13142,7 +13142,6 @@ public class CommandLine {
          * @param colorScheme the color scheme to use */
         public Help(CommandSpec commandSpec, ColorScheme colorScheme) {
             this.commandSpec = Assert.notNull(commandSpec, "commandSpec");
-            commandSpec.userObject(); // #690 ensure the user object is instantiated
             this.aliases = new ArrayList<String>(Arrays.asList(commandSpec.aliases()));
             this.aliases.add(0, commandSpec.name());
             this.colorScheme = new ColorScheme.Builder(colorScheme).applySystemProperties().build();
