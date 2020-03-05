@@ -1022,6 +1022,34 @@ In most cases no further configuration is needed when generating a native image.
 }</code></pre>
 </div>
 </div>
+</div>
+<div class="sect4">
+<h5 id="_kotlin_projects_using_gradle">Kotlin Projects Using Gradle</h5>
+<div class="paragraph">
+<p>Kotlin projects should add the <code>kotlin-kapt</code> plugin to enable the Kotlin Annotation processing tool (kapt),
+then replace <code>annotationProcessor</code> with <code>kapt</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>apply plugin: 'kotlin-kapt' // required
+dependencies {
+    // ...
+    kapt 'info.picocli:picocli-codegen:4.2.0'
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And replace <code>compileJava.options.compilerArgs</code> with <code>kapt.arguments</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>kapt {
+    arguments {
+        arg("project", "${project.group}/${project.name}")
+    }
+}</code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>See the <a href="https://github.com/remkop/picocli/tree/master/picocli-codegen"><code>picocli-codegen</code> README</a> for more details.</p>
 </div>

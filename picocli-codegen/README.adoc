@@ -117,6 +117,66 @@ dependencies {
 }
 ```
 
+==== Kotlin Projects Using Maven
+
+Add an execution of the `kapt` goal from `kotlin-maven-plugin` before `compile`:
+
+```
+<plugin>
+    <artifactId>kotlin-maven-plugin</artifactId>
+    <groupId>org.jetbrains.kotlin</groupId>
+    <version>${kotlin.version}</version>
+    <executions>
+        <execution>
+            <id>kapt</id>
+            <goals>
+                <goal>kapt</goal>
+            </goals>
+            <configuration>
+                <sourceDirs>
+                    <sourceDir>src/main/kotlin</sourceDir>
+                    <sourceDir>src/main/java</sourceDir>
+                </sourceDirs>
+                <annotationProcessorPaths>
+                    <annotationProcessorPath>
+                        <groupId>info.picocli</groupId>
+                        <artifactId>picocli-codegen</artifactId>
+                        <version>4.2.0</version>
+                    </annotationProcessorPath>
+                </annotationProcessorPaths>
+            </configuration>
+        </execution>
+        <execution>
+            <id>compile</id>
+            <!-- ... details omitted... -->
+        </execution>
+    </executions>
+</plugin>
+```
+
+JetBrains' https://github.com/JetBrains/kotlin-examples/tree/master/maven/dagger-maven-example[Kotlin Examples repository] has a complete example complete sample project showing the use of Kotlin, Maven and Dagger.
+
+==== Kotlin Projects Using Gradle
+Kotlin projects should add the `kotlin-kapt` plugin to enable the Kotlin Annotation processing tool (kapt),
+then replace `annotationProcessor` with `kapt`:
+
+```
+apply plugin: 'kotlin-kapt' // required
+dependencies {
+    // ...
+    kapt 'info.picocli:picocli-codegen:4.2.0'
+}
+```
+
+And replace `compileJava.options.compilerArgs` with `kapt.arguments`:
+```
+kapt {
+    arguments {
+        arg("project", "${project.group}/${project.name}")
+    }
+}
+```
+
 === Picocli Processor Options
 
 The picocli annotation processor supports the options below.
@@ -188,10 +248,24 @@ compileJava {
 
 See the https://docs.gradle.org/current/dsl/org.gradle.api.tasks.compile.CompileOptions.html[Gradle documentation] for details.
 
+=== Gradle Example for Kotlin Projects
+
+In Kotlin projects using Gradle, replace `compileJava.options.compilerArgs` with `kapt.arguments`:
+```
+kapt {
+    arguments {
+        arg("project", "${project.group}/${project.name}")
+    }
+}
+```
+
+See the https://kotlinlang.org/docs/reference/kapt.html[Kotlin Annotation Processing documentation] for details.
+
 
 == Generate GraalVM Configurations Manually
 
-The annotation processor is the recommended way to generate configuration files for GraalVM native images, but there may be cases where you want to generate these configuration files manually. For example, if your commands are written in Groovy or Kotlin, the picocli annotation processor will not be able to auto-generate configuration files for your commands, and you need to do some work to invoke the commands in your build.
+The annotation processor is the recommended way to generate configuration files for GraalVM native images, but there may be cases where you want to generate these configuration files manually.
+For example, if your commands are written in Groovy, the picocli annotation processor will not be able to auto-generate configuration files for your commands, and you need to do some work to invoke the commands in your build.
 
 The sections below give details on how to do this.
 

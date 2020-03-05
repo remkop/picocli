@@ -185,6 +185,26 @@ compileJava {
 }
 ```
 
+===== Kotlin Projects Using Gradle
+Kotlin projects should add the `kotlin-kapt` plugin to enable the Kotlin Annotation processing tool (kapt),
+then replace `annotationProcessor` with `kapt`:
+
+```
+apply plugin: 'kotlin-kapt' // required
+dependencies {
+    // ...
+    kapt 'info.picocli:picocli-codegen:4.2.1-SNAPSHOT'
+}
+```
+
+And replace `compileJava.options.compilerArgs` with `kapt.arguments`:
+```
+kapt {
+    arguments {
+        arg("project", "${project.group}/${project.name}")
+    }
+}
+```
 See the https://github.com/remkop/picocli/tree/master/picocli-codegen[`picocli-codegen` README] for more details.
 
 
