@@ -119,6 +119,7 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 * [VIDEO] [Des applications en ligne de commande avec Picocli et GraalVM (N. Peters)](https://www.youtube.com/watch?v=8ENbMwkaFyk) (2019-05-07): 15 minute presentation by Nicolas Peters during Devoxx FR. Presentation slides are [available on GitHub](https://t.co/tXhtpTpAff?amp=1).
 
 #### 日本語
+* [Javaのコマンドラインアプリケーション向けのフレームワーク、picocliで遊ぶ](https://kazuhira-r.hatenablog.com/entry/2020/03/07/013626) (2020-03-07) blog post by [かずひら](https://twitter.com/kazuhira_r).
 * [KuromojiのCLIコマンドとpicocliとGraalVM](https://blog.johtani.info/blog/2020/02/28/kuromoji-cli/) (2020-02-28) blog post by [@johtani](https://twitter.com/johtani).
 * [GraalVM, PicocliとJavaでときめくネイティブコマンドラインアプリを作ろう](https://remkop.github.io/presentations/20191123/) (2019-11-23) Slides for my presentation at Japan Java User Group's [JJUG CCC 2019 Fall](https://ccc2019fall.java-users.jp/) conference.
 * [GraalVM と Picocliで Javaのネイティブコマンドラインアプリを作ろう](https://remkop.github.io/presentations/20190906/) (2019-09-06) Slides for my lightning talk presentation at [【東京】JJUG ナイトセミナー: ビール片手にLT大会 9/6（金）](https://jjug.doorkeeper.jp/events/95987)
