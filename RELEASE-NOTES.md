@@ -64,6 +64,8 @@ class AdvancedMixin {
 * [#951] DOC: Fixed typo in `picocli-codegen` annotation processor documentation: `disable.resource.config` is correct (the option name was incorrectly spelled as `disable.resources.config`). Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for raising this.
 * [#966] DOC: Add section about Testing to the user manual.
 * [#965] Dependency Upgrade: in `picocli-examples`, bump `hibernate-validator` from 6.0.2 to 6.1.2 to deal with [CVE-2019-10219](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-10219). Thanks to [https://github.com/Security3rd](Security3rd) for raising this.
+* [#973] (DOC) Update documentation for using the `picocli-codegen` annotation processor during the build with Kotlin.
+* [#972] (DOC) Add section "Handling Invalid Input" for custom type converters to user manual, demonstrating `TypeConversionException`. Add example `InetSocketAddressConverter` to `picocli-examples`. Thanks to [Simon](https://github.com/sbernard31) for raising this.
 
 ## <a name="4.2.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
@@ -462,8 +464,6 @@ Also, "hidden" subcommands and options are no longer shown as suggestions in unm
 * [#889][#885] (DOC) Update of Picocli Programmatic API documentation. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#891] (DOC) Fixed broken links in README. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#892] (DOC) Minor improvements to example app in `picocli-shell-jline3`.
-* [#973] (DOC) Update documentation for using the `picocli-codegen` annotation processor during the build with Kotlin.
-* [#972] (DOC) Add section "Handling Invalid Input" for custom type converters to user manual, demonstrating `TypeConversionException`. Add example `InetSocketAddressConverter` to `picocli-examples`. Thanks to [Simon](https://github.com/sbernard31) for raising this.
 
 ## <a name="4.1.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
