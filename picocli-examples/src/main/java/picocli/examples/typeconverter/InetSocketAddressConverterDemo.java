@@ -11,7 +11,7 @@ public class InetSocketAddressConverterDemo {
 
     static class InetSocketAddressConverter implements ITypeConverter<InetSocketAddress> {
         @Override
-        public InetSocketAddress convert(String value) throws Exception {
+        public InetSocketAddress convert(String value) {
             int pos = value.lastIndexOf(':');
             if (pos < 0) {
                 //throw new IllegalArgumentException("Invalid format: must be 'host:port' but was '" + value + "'");

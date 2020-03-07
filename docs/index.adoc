@@ -722,6 +722,46 @@ and all subcommands (and nested sub-subcommands) that were added _before_ the co
 Subcommands added later will not have the converter added automatically.
 To ensure a custom type converter is available to all subcommands, register the type converter last, after adding subcommands.
 
+=== Handling Invalid Input
+
+If the user specifies invalid input, custom type converters should throw an exception.
+Any exception is fine, and will result in a message like the below being displayed to the user:
+
+----
+Invalid value for option '-a': cannot convert 'xxxinvalidinput' to InetSocketAddress (java.lang.IllegalArgumentException: Invalid format: must be 'host:port' but was 'xxxinvalidinput')
+----
+
+The above error message is generic and is reasonable for many exceptions, but sometimes you want more control over the error message displayed to the user.
+To achieve this, throw a `picocli.CommandLine.TypeConversionException` instead.
+When a `TypeConversionException` is thrown, picocli will show an error message that indicates the problematic option, followed by the exception message text. The resulting output looks something like this:
+
+----
+Invalid value for option '-a': Invalid format: must be 'host:port' but was 'xxxinvalidinput'
+----
+
+Below is an example custom converter that throws a `TypeConversionException`:
+
+[source,java]
+----
+import java.net.InetSocketAddress;
+
+class InetSocketAddressConverter implements ITypeConverter<InetSocketAddress> {
+    @Override
+    public InetSocketAddress convert(String value) {
+        int pos = value.lastIndexOf(':');
+        if (pos < 0) {
+            throw new TypeConversionException(
+                    "Invalid format: must be 'host:port' but was '" + value + "'");
+        }
+        String adr = value.substring(0, pos);
+        int port = Integer.parseInt(value.substring(pos + 1));
+        return new InetSocketAddress(adr, port);
+    }
+}
+----
+
+The `picocli-examples` module on GitHub has a runnable https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/typeconverter/InetSocketAddressConverterDemo.java[example].
+
 === Option-specific Type Converters
 Picocli 2.2 added a `converter` attribute to the `@Option` and `@Parameter` annotations. This allows a specific option or positional parameter to use a different converter than would be used by default based on the type of the field.
 

@@ -463,6 +463,7 @@ Also, "hidden" subcommands and options are no longer shown as suggestions in unm
 * [#891] (DOC) Fixed broken links in README. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#892] (DOC) Minor improvements to example app in `picocli-shell-jline3`.
 * [#973] (DOC) Update documentation for using the `picocli-codegen` annotation processor during the build with Kotlin.
+* [#972] (DOC) Add section "Handling Invalid Input" for custom type converters to user manual, demonstrating `TypeConversionException`. Add example `InetSocketAddressConverter` to `picocli-examples`. Thanks to [Simon](https://github.com/sbernard31) for raising this.
 
 ## <a name="4.1.2-deprecated"></a> Deprecations
 No features were deprecated in this release.

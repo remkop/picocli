@@ -557,10 +557,11 @@ table.CodeRay td.code>pre{padding:0}
 <ul class="sectlevel2">
 <li><a href="#_built_in_types">4.1. Built-in Types</a></li>
 <li><a href="#_custom_type_converters">4.2. Custom Type Converters</a></li>
-<li><a href="#_option_specific_type_converters">4.3. Option-specific Type Converters</a></li>
-<li><a href="#_arrays_collections_maps">4.4. Arrays, Collections, Maps</a></li>
-<li><a href="#_abstract_field_types">4.5. Abstract Field Types</a></li>
-<li><a href="#_enum_types">4.6. Enum Types</a></li>
+<li><a href="#_handling_invalid_input">4.3. Handling Invalid Input</a></li>
+<li><a href="#_option_specific_type_converters">4.4. Option-specific Type Converters</a></li>
+<li><a href="#_arrays_collections_maps">4.5. Arrays, Collections, Maps</a></li>
+<li><a href="#_abstract_field_types">4.6. Abstract Field Types</a></li>
+<li><a href="#_enum_types">4.7. Enum Types</a></li>
 </ul>
 </li>
 <li><a href="#_default_values">5. Default Values</a>
@@ -1826,7 +1827,54 @@ To ensure a custom type converter is available to all subcommands, register the 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_specific_type_converters">4.3. Option-specific Type Converters</h3>
+<h3 id="_handling_invalid_input">4.3. Handling Invalid Input</h3>
+<div class="paragraph">
+<p>If the user specifies invalid input, custom type converters should throw an exception.
+Any exception is fine, and will result in a message like the below being displayed to the user:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Invalid value for option '-a': cannot convert 'xxxinvalidinput' to InetSocketAddress (java.lang.IllegalArgumentException: Invalid format: must be 'host:port' but was 'xxxinvalidinput')</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The above error message is generic and is reasonable for many exceptions, but sometimes you want more control over the error message displayed to the user.
+To achieve this, throw a <code>picocli.CommandLine.TypeConversionException</code> instead.
+When a <code>TypeConversionException</code> is thrown, picocli will show an error message that indicates the problematic option, followed by the exception message text. The resulting output looks something like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Invalid value for option '-a': Invalid format: must be 'host:port' but was 'xxxinvalidinput'</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Below is an example custom converter that throws a <code>TypeConversionException</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">java.net.InetSocketAddress</span>;
+
+<span class="type">class</span> <span class="class">InetSocketAddressConverter</span> <span class="directive">implements</span> ITypeConverter&lt;<span class="predefined-type">InetSocketAddress</span>&gt; {
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="predefined-type">InetSocketAddress</span> convert(<span class="predefined-type">String</span> value) {
+        <span class="type">int</span> pos = value.lastIndexOf(<span class="string"><span class="delimiter">'</span><span class="content">:</span><span class="delimiter">'</span></span>);
+        <span class="keyword">if</span> (pos &lt; <span class="integer">0</span>) {
+            <span class="keyword">throw</span> <span class="keyword">new</span> TypeConversionException(
+                    <span class="string"><span class="delimiter">&quot;</span><span class="content">Invalid format: must be 'host:port' but was '</span><span class="delimiter">&quot;</span></span> + value + <span class="string"><span class="delimiter">&quot;</span><span class="content">'</span><span class="delimiter">&quot;</span></span>);
+        }
+        <span class="predefined-type">String</span> adr = value.substring(<span class="integer">0</span>, pos);
+        <span class="type">int</span> port = <span class="predefined-type">Integer</span>.parseInt(value.substring(pos + <span class="integer">1</span>));
+        <span class="keyword">return</span> <span class="keyword">new</span> <span class="predefined-type">InetSocketAddress</span>(adr, port);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>picocli-examples</code> module has a runnable <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/typeconverter/InetSocketAddressConverterDemo.java">example</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_option_specific_type_converters">4.4. Option-specific Type Converters</h3>
 <div class="paragraph">
 <p>Picocli 2.2 added a <code>converter</code> attribute to the <code>@Option</code> and <code>@Parameter</code> annotations. This allows a specific option or positional parameter to use a different converter than would be used by default based on the type of the field.</p>
 </div>
@@ -1871,7 +1919,7 @@ To ensure a custom type converter is available to all subcommands, register the 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_arrays_collections_maps">4.4. Arrays, Collections, Maps</h3>
+<h3 id="_arrays_collections_maps">4.5. Arrays, Collections, Maps</h3>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -1887,7 +1935,7 @@ picocli will infer the collection element type from the generic type.
 </table>
 </div>
 <div class="sect3">
-<h4 id="_arrays_and_collections">4.4.1. Arrays and Collections</h4>
+<h4 id="_arrays_and_collections">4.5.1. Arrays and Collections</h4>
 <div class="paragraph">
 <p>Multiple parameters can be captured together in a single array or <code>Collection</code> field.
 The array or collection elements can be any type for which a <a href="#_strongly_typed_everything">converter</a> is registered.
@@ -1939,7 +1987,7 @@ See the <a href="#_split_regex">Split Regex</a> section for details.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_maps">4.4.2. Maps</h4>
+<h4 id="_maps">4.5.2. Maps</h4>
 <div class="paragraph">
 <p>Picocli 1.0 introduced support for <code>Map</code> fields similar to Java&#8217;s system properties <code>-Dkey=value</code> or Gradle&#8217;s project properties <code>-Pmyprop=myvalue</code>.</p>
 </div>
@@ -1996,7 +2044,7 @@ See the <a href="#_split_regex">Split Regex</a> section for details.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_abstract_field_types">4.5. Abstract Field Types</h3>
+<h3 id="_abstract_field_types">4.6. Abstract Field Types</h3>
 <div class="paragraph">
 <p>The field&#8217;s type can be an interface or an abstract class.
 The <code>type</code> attribute can be used to control for each field what concrete class the string value should be converted to.
@@ -2017,7 +2065,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_maps_and_collections_with_abstract_elements">4.5.1. Maps and Collections with Abstract Elements</h4>
+<h4 id="_maps_and_collections_with_abstract_elements">4.6.1. Maps and Collections with Abstract Elements</h4>
 <div class="paragraph">
 <p>For raw maps and collections, or when using generics with unbounded wildcards like <code>Map&lt;?, ?&gt;</code>, or when the type parameters are themselves abstract classes like <code>List&lt;CharSequence&gt;</code> or <code>Map&lt;? extends Number, ? super Number&gt;</code>, there is not enough information to convert to a stronger type. By default, the raw String values are added as is to such collections.</p>
 </div>
@@ -2041,7 +2089,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_enum_types">4.6. Enum Types</h3>
+<h3 id="_enum_types">4.7. Enum Types</h3>
 <div class="paragraph">
 <p>It is encouraged to use <code>enum</code> types for options or positional parameters with a limited set of valid values.
 Not only will picocli validate the input, it allows you to <a href="#_show_default_values">show all values</a> in the usage help message with <code>@Option(description = "Valid values: ${COMPLETION-CANDIDATES}")</code>. It also allows command line completion to suggest completion candidates for the values of this option.</p>
