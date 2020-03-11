@@ -137,7 +137,7 @@ In most cases no further configuration is needed when generating a native image.
 
 ==== Processor option: `project`
 
-The picocli annotation processor supports a number of https://github.com/remkop/picocli/tree/master/picocli-codegen#picocli-processor-options[options], most important of which is the `project` option to control the output subdirectory: the generated files are written to `META-INF/native-image/picocli-generated/${project}`. A good convention is to use the Maven `${groupId}/${artifactId}` as the value; a unique subdirectory ensures your jar can be shaded with other jars that may also contain generated configuration files.
+The picocli annotation processor supports a number of https://github.com/remkop/picocli/tree/master/picocli-codegen#picocli-processor-options[options], most important of which is the `project` option to control the output subdirectory: the generated files are written to `META-INF/native-image/picocli-generated/${project}`. A good convention is to use the Maven `${project.groupId}/${project.artifactId}` as the value; a unique subdirectory ensures your jar can be shaded with other jars that may also contain generated configuration files.
 
 To configure this option, pass the `-Aproject=<some value>` to the javac compiler. The examples below show how to do this for Maven and Gradle.
 
@@ -162,7 +162,7 @@ https://immutables.github.io/apt.html[This page] shows the steps to configure Ec
       </path>
     </annotationProcessorPaths>
     <compilerArgs>
-      <arg>-Aproject=${groupId}/${artifactId}</arg>
+      <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
     </compilerArgs>
   </configuration>
 </plugin>
