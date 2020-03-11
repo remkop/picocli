@@ -97,6 +97,9 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 
 ### Articles & Presentations
 #### English
+* [Creating CLI tools with Scala, Picocli and GraalVM](https://medium.com/@takezoe/creating-cli-tools-with-scala-picocli-and-graalvm-ffde05bbd01d) (2020-03-09) by [Naoki Takezoe](https://twitter.com/takezoen)
+* [Building native Java CLIs with GraalVM, Picocli, and Gradle](https://medium.com/@mitch.seymour/building-native-java-clis-with-graalvm-picocli-and-gradle-2e8a8388d70d) (2020-03-08) by [Mitch Seymour](https://medium.com/@mitch.seymour)
+* [Build Great Native CLI Apps in Java with Graalvm and Picocli](https://www.infoq.com/articles/java-native-cli-graalvm-picocli/) (2020-03-07)
 * [Picocli Structured Objects](https://gist.github.com/hanslovsky/8276da86c53bc6d95bf01447cd5cb2b7#file-00_picocli-structured-objects-md) (2019-09-10) by [Philipp Hanslovsky](https://gist.github.com/hanslovsky) explains how to use picocli's support for repeating argument groups to add or configure structured objects from the command line.
 * [Create a Java Command Line Program with Picocli|Baeldung](https://www.baeldung.com/java-picocli-create-command-line-program) (2019-05-07) by [François Dupire](https://www.baeldung.com/author/francois-dupire/).
 * A whirlwind tour of picocli [JAX Magazine "Putting the spotlight on Java tools"](https://jaxenter.com/jax-mag-java-tools-157592.html) (2019-04-08).
@@ -179,7 +182,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 * [jbang](https://github.com/maxandersen/jbang) not only uses picocli internally, but also has a CLI template to generate an initial script: use `jbang --init=cli helloworld.java` to generate a sample picocli-enabled jbang script. See [asciinema](https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&speed=2). 
 
 
-<img src="https://picocli.info/images/downloads-201911.png">
+<img src="https://picocli.info/images/downloads-202002.png">
 
 Glad to see more people are using picocli. We must be doing something right. :-) 
 
