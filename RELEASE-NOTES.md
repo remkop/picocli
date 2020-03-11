@@ -66,6 +66,8 @@ class AdvancedMixin {
 * [#965] Dependency Upgrade: in `picocli-examples`, bump `hibernate-validator` from 6.0.2 to 6.1.2 to deal with [CVE-2019-10219](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-10219). Thanks to [https://github.com/Security3rd](Security3rd) for raising this.
 * [#973] (DOC) Update documentation for using the `picocli-codegen` annotation processor during the build with Kotlin.
 * [#972] (DOC) Add section "Handling Invalid Input" for custom type converters to user manual, demonstrating `TypeConversionException`. Add example `InetSocketAddressConverter` to `picocli-examples`. Thanks to [Simon](https://github.com/sbernard31) for raising this.
+* [#975] (DOC) Update user manual [Annotation Processor](https://picocli.info/#_enabling_the_annotation_processor) section to use `${project.groupId}` instead of deprecated `${groupId}`. Thanks to [Dmitry Timofeev](https://github.com/dmitry-timofeev) for the pull request.
+
 
 ## <a name="4.2.1-deprecated"></a> Deprecations
 No features were deprecated in this release.

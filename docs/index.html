@@ -964,7 +964,7 @@ In most cases no further configuration is needed when generating a native image.
 <div class="sect3">
 <h4 id="_processor_option_project">2.3.1. Processor option: <code>project</code></h4>
 <div class="paragraph">
-<p>The picocli annotation processor supports a number of <a href="https://github.com/remkop/picocli/tree/master/picocli-codegen#picocli-processor-options">options</a>, most important of which is the <code>project</code> option to control the output subdirectory: the generated files are written to <code>META-INF/native-image/picocli-generated/${project}</code>. A good convention is to use the Maven <code>${groupId}/${artifactId}</code> as the value; a unique subdirectory ensures your jar can be shaded with other jars that may also contain generated configuration files.</p>
+<p>The picocli annotation processor supports a number of <a href="https://github.com/remkop/picocli/tree/master/picocli-codegen#picocli-processor-options">options</a>, most important of which is the <code>project</code> option to control the output subdirectory: the generated files are written to <code>META-INF/native-image/picocli-generated/${project}</code>. A good convention is to use the Maven <code>${project.groupId}/${project.artifactId}</code> as the value; a unique subdirectory ensures your jar can be shaded with other jars that may also contain generated configuration files.</p>
 </div>
 <div class="paragraph">
 <p>To configure this option, pass the <code>-Aproject=&lt;some value&gt;</code> to the javac compiler. The examples below show how to do this for Maven and Gradle.</p>
@@ -996,7 +996,7 @@ In most cases no further configuration is needed when generating a native image.
       &lt;/path&gt;
     &lt;/annotationProcessorPaths&gt;
     &lt;compilerArgs&gt;
-      &lt;arg&gt;-Aproject=${groupId}/${artifactId}&lt;/arg&gt;
+      &lt;arg&gt;-Aproject=${project.groupId}/${project.artifactId}&lt;/arg&gt;
     &lt;/compilerArgs&gt;
   &lt;/configuration&gt;
 &lt;/plugin&gt;</code></pre>
@@ -1870,7 +1870,7 @@ When a <code>TypeConversionException</code> is thrown, picocli will show an erro
 </div>
 </div>
 <div class="paragraph">
-<p>The <code>picocli-examples</code> module has a runnable <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/typeconverter/InetSocketAddressConverterDemo.java">example</a>.</p>
+<p>The <code>picocli-examples</code> module on GitHub has a runnable <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/typeconverter/InetSocketAddressConverterDemo.java">example</a>.</p>
 </div>
 </div>
 <div class="sect2">
