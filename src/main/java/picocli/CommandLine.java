@@ -1798,7 +1798,7 @@ public class CommandLine {
         } else if (command instanceof Method) {
             try {
                 Method method = (Method) command;
-                Object[] parsedArgs = parsed.getCommandSpec().argValues();
+                Object[] parsedArgs = parsed.getCommandSpec().commandMethodParamValues();
                 Object executionResult;
                 if (Modifier.isStatic(method.getModifiers())) {
                     executionResult = method.invoke(null, parsedArgs); // invoke static method
@@ -5279,6 +5279,7 @@ public class CommandLine {
             private final ParserSpec parser = new ParserSpec();
             private final Interpolator interpolator = new Interpolator(this);
             private final UsageMessageSpec usageMessage = new UsageMessageSpec(interpolator);
+            private TypedMember[] methodParams;
 
             private final CommandUserObject userObject;
             private CommandLine commandLine;
@@ -5932,40 +5933,30 @@ public class CommandLine {
             /** Returns the list of all options and positional parameters configured for this command.
              * @return an immutable list of all options and positional parameters for this command. */
             public List<ArgSpec> args() { return Collections.unmodifiableList(args); }
-            Object[] argValues() {
-                Map<Class<?>, CommandSpec> allMixins = null;
-                int argsLength = args.size();
-                int shift = 0;
-                for (Map.Entry<String, CommandSpec> mixinEntry : mixins.entrySet()) {
-                    if (mixinEntry.getKey().equals(AutoHelpMixin.KEY)) {
-                        shift = 2;
-                        argsLength -= shift;
-                        continue;
-                    }
-                    CommandSpec mixin = mixinEntry.getValue();
-                    int mixinArgs = mixin.args.size();
-                    argsLength -= (mixinArgs - 1); // subtract 1 because that's the mixin
-                    if (allMixins == null) {
-                        allMixins = new IdentityHashMap<Class<?>, CommandSpec>(mixins.size());
-                    }
-                    allMixins.put(mixin.userObject.getType(), mixin);
+            Object[] commandMethodParamValues() {
+                if (mixins.isEmpty() && groups.isEmpty()) {
+                    Object[] values = new Object[args.size()];
+                    for (int i = 0; i < values.length; i++) { values[i] = args.get(i).getValue(); }
+                    return values;
                 }
-
-                Object[] values = new Object[argsLength];
-                if (allMixins == null) {
-                    for (int i = 0; i < values.length; i++) { values[i] = args.get(i + shift).getValue(); }
-                } else {
-                    int argIndex = shift;
-                    Class<?>[] methodParams = ((Method) userObject.getInstance()).getParameterTypes();
-                    for (int i = 0; i < methodParams.length; i++) {
-                        final Class<?> param = methodParams[i];
-                        CommandSpec mixin = allMixins.remove(param);
-                        if (mixin == null) {
-                            values[i] = args.get(argIndex++).getValue();
-                        } else {
-                            values[i] = mixin.userObject.getInstance();
-                            argIndex += mixin.args.size();
+                Object[] values = new Object[methodParams.length];
+                int argIndex = mixins.containsKey(AutoHelpMixin.KEY) ? 2 : 0;
+                for (int i = 0; i < methodParams.length; i++) {
+                    if (methodParams[i].isAnnotationPresent(Mixin.class)) {
+                        String name = methodParams[i].getAnnotation(Mixin.class).name();
+                        CommandSpec mixin = mixins.get(empty(name) ? methodParams[i].name : name);
+                        values[i] = mixin.userObject.getInstance();
+                        argIndex += mixin.args.size();
+                    } else if (methodParams[i].isAnnotationPresent(ArgGroup.class)) {
+                        values[i] = null;
+                        for (ArgGroupSpec group : groups) {
+                            if (group.typeInfo.equals(methodParams[i].typeInfo)) {
+                                values[i] = group.userObjectOr(null);
+                                break;
+                            }
                         }
+                    } else {
+                        values[i] = args.get(argIndex++).getValue();
                     }
                 }
                 return values;
@@ -8823,6 +8814,7 @@ public class CommandLine {
             public IScope scope()          { return scope; }
 
             Object userObject() { try { return getter.get(); } catch (Exception ex) { return ex.toString(); } }
+            Object userObjectOr(Object defaultValue) { try { return getter.get(); } catch (Exception ex) { return defaultValue; } }
             String id() { return id; }
 
             /** Returns the options and positional parameters in this group; may be empty but not {@code null}. */
@@ -10100,15 +10092,19 @@ public class CommandLine {
             private static boolean initFromMethodParameters(IScope scope, Method method, CommandSpec receiver, ArgGroupSpec.Builder groupBuilder, IFactory factory) {
                 boolean result = false;
                 int optionCount = 0;
-                for (int i = 0, count = method.getParameterTypes().length; i < count; i++) {
+                TypedMember[] members = new TypedMember[method.getParameterTypes().length];
+                for (int i = 0, count = members.length; i < count; i++) {
                     MethodParam param = new MethodParam(method, i);
-                    if (param.isAnnotationPresent(Option.class) || param.isAnnotationPresent(Mixin.class)) {
+                    if (param.isAnnotationPresent(Option.class) || param.isAnnotationPresent(Mixin.class) || param.isAnnotationPresent(ArgGroup.class)) {
                         optionCount++;
                     } else {
+
                         param.position = i - optionCount;
                     }
-                    result |= initFromAnnotatedTypedMembers(new TypedMember(param, scope), null, receiver, groupBuilder, factory);
+                    members[i] = new TypedMember(param, scope);
+                    result |= initFromAnnotatedTypedMembers(members[i], null, receiver, groupBuilder, factory);
                 }
+                receiver.methodParams = members;
                 return result;
             }
             @SuppressWarnings("unchecked")

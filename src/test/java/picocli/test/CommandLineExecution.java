@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 public class CommandLineExecution extends Execution {
-    private final CommandLine commandLine;
+    private final Supplier<CommandLine> commandLineSupplier;
     private ByteArrayOutputStream out;
     private ByteArrayOutputStream err;
     private StringWriter outWriter;
@@ -17,10 +17,10 @@ public class CommandLineExecution extends Execution {
     private boolean customizeErr;
     private boolean alive;
 
-    CommandLineExecution(CommandLine commandLine, String[] args) {
-        if (commandLine == null) { throw new NullPointerException("commandLine is null"); }
+    CommandLineExecution(Supplier<CommandLine> commandLineSupplier, String[] args) {
+        if (commandLineSupplier == null) { throw new NullPointerException("commandLineSupplier is null"); }
         if (args == null) { throw new NullPointerException("args array is null"); }
-        this.commandLine = commandLine;
+        this.commandLineSupplier = commandLineSupplier;
         this.args = args;
     }
 
@@ -42,6 +42,8 @@ public class CommandLineExecution extends Execution {
         try {
             System.setOut(new PrintStream(out));
             System.setErr(new PrintStream(err));
+
+            CommandLine commandLine = commandLineSupplier.get();
             if (customizeOut) {
                 outWriter = new StringWriter();
                 commandLine.setOut(new PrintWriter(outWriter));

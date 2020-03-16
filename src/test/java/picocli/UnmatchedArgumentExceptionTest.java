@@ -6,6 +6,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.UnmatchedArgumentException;
 import picocli.test.Execution;
+import picocli.test.Supplier;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -136,11 +137,16 @@ public class UnmatchedArgumentExceptionTest {
         class CompletionSubcommandDemo implements Runnable {
             public void run() { }
         }
-        CommandLine cmd = new CommandLine(new CompletionSubcommandDemo());
-        CommandLine gen = cmd.getSubcommands().get("generate-completion");
-        gen.getCommandSpec().usageMessage().hidden(true);
+        Supplier<CommandLine> supplier = new Supplier<CommandLine>() {
+            public CommandLine get() {
+                CommandLine cmd = new CommandLine(new CompletionSubcommandDemo());
+                CommandLine gen = cmd.getSubcommands().get("generate-completion");
+                gen.getCommandSpec().usageMessage().hidden(true);
+                return cmd;
+            }
+        };
 
-        Execution execution = Execution.builder(cmd).execute("ge");
+        Execution execution = Execution.builder(supplier).execute("ge");
         execution.assertSystemErr("" +
                 "Unmatched argument at index 0: 'ge'%n" +
                 "Usage: Completion [COMMAND]%n");

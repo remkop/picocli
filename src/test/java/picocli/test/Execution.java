@@ -14,13 +14,13 @@ public abstract class Execution {
 
     public static final class Builder {
         private File executable;
-        private CommandLine commandLine;
+        private Supplier<CommandLine> commandLineSupplier;
         private boolean customizeOut;
         private boolean customizeErr;
 
-        private Builder(CommandLine commandLine) {
-            if (commandLine == null) { throw new NullPointerException("commandLine is null"); }
-            this.commandLine = commandLine;
+        private Builder(Supplier<CommandLine> commandLineSupplier) {
+            if (commandLineSupplier == null) { throw new NullPointerException("commandLineSupplier is null"); }
+            this.commandLineSupplier = commandLineSupplier;
         }
 
         private Builder(File executable) {
@@ -37,8 +37,8 @@ public abstract class Execution {
         }
 
         private Execution createExecution(String[] args) {
-            if (commandLine != null) {
-                return new CommandLineExecution(commandLine, args)
+            if (commandLineSupplier != null) {
+                return new CommandLineExecution(commandLineSupplier, args)
                         .setCustomizeErr(customizeErr)
                         .setCustomizeOut(customizeOut);
             }
@@ -66,8 +66,8 @@ public abstract class Execution {
     public abstract String getSystemOutString();
     public abstract String getSystemErrString();
 
-    public static Builder builder(CommandLine commandLine) {
-        return new Builder(commandLine);
+    public static Builder builder(Supplier<CommandLine> commandLineSupplier) {
+        return new Builder(commandLineSupplier);
     }
 
     public Execution assertExitCode(int expectedExitCode) {

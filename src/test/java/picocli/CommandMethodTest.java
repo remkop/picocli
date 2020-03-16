@@ -257,7 +257,7 @@ public class CommandMethodTest {
         assertEquals(1, parsed.size());
 
         // get method args
-        Object[] methodArgValues = parsed.get(0).getCommandSpec().argValues();
+        Object[] methodArgValues = parsed.get(0).getCommandSpec().commandMethodParamValues();
         assertNotNull(methodArgValues);
 
         // verify args
@@ -297,7 +297,7 @@ public class CommandMethodTest {
         assertEquals(2, parsed.size());
 
         // get method args
-        Object[] methodArgValues = parsed.get(1).getCommandSpec().argValues();
+        Object[] methodArgValues = parsed.get(1).getCommandSpec().commandMethodParamValues();
         assertNotNull(methodArgValues);
 
         // verify args
@@ -339,7 +339,7 @@ public class CommandMethodTest {
         assertEquals(1, parsed.size());
 
         // get method args
-        Object[] methodArgValues = parsed.get(0).getCommandSpec().argValues();
+        Object[] methodArgValues = parsed.get(0).getCommandSpec().commandMethodParamValues();
         assertNotNull(methodArgValues);
 
         // verify args
@@ -376,7 +376,7 @@ public class CommandMethodTest {
         assertEquals(1, parsed.size());
 
         // get method args
-        Object[] methodArgValues = parsed.get(0).getCommandSpec().argValues();
+        Object[] methodArgValues = parsed.get(0).getCommandSpec().commandMethodParamValues();
         assertNotNull(methodArgValues);
 
         // verify args
@@ -482,7 +482,7 @@ public class CommandMethodTest {
 
             // extract arg values
             assertEquals(1, result.size());
-            Object[] methodArgValues = result.get(0).getCommandSpec().argValues();
+            Object[] methodArgValues = result.get(0).getCommandSpec().commandMethodParamValues();
             assertNotNull(methodArgValues);
 
             // verify parsing had the same result

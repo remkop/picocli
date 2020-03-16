@@ -1,12 +1,27 @@
 package picocli;
 
+import junitparams.JUnitParamsRunner;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
-import picocli.CommandLine.*;
+import org.junit.runner.RunWith;
+import picocli.ArgGroupTest.CommandMethodsWithGroupsAndMixins.InvokedSub;
+import picocli.CommandLine.ArgGroup;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.Mixin;
+import picocli.CommandLine.Help;
+import picocli.CommandLine.ParseResult;
+import picocli.CommandLine.InitializationException;
+import picocli.CommandLine.DuplicateOptionAnnotationsException;
+import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.MaxValuesExceededException;
+import picocli.CommandLine.MissingParameterException;
+import picocli.CommandLine.MutuallyExclusiveArgsException;
 import picocli.CommandLine.Model.ArgGroupSpec;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
@@ -16,16 +31,23 @@ import picocli.CommandLine.ParseResult.GroupMatchContainer;
 import picocli.CommandLine.ParseResult.GroupMatch;
 import picocli.CommandLine.ParseResult.GroupValidationResult;
 import picocli.test.Execution;
+import picocli.test.Supplier;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
+import static picocli.ArgGroupTest.CommandMethodsWithGroupsAndMixins.InvokedSub.withMixin;
+import static picocli.ArgGroupTest.CommandMethodsWithGroupsAndMixins.InvokedSub.posAndMixin;
+import static picocli.ArgGroupTest.CommandMethodsWithGroupsAndMixins.InvokedSub.posAndOptAndMixin;
+import static picocli.ArgGroupTest.CommandMethodsWithGroupsAndMixins.InvokedSub.groupFirst;
 
+@RunWith(JUnitParamsRunner.class)
 public class ArgGroupTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
@@ -825,10 +847,22 @@ public class ArgGroupTest {
     static class Excl {
         @Option(names = "-x", required = true) boolean x;
         @Option(names = "-y", required = true) boolean y;
+
+        @Override
+        public boolean equals(Object obj) {
+            Excl other = (Excl) obj;
+            return x == other.x && y == other.y;
+        }
     }
     static class All {
         @Option(names = "-a", required = true) boolean a;
         @Option(names = "-b", required = true) boolean b;
+
+        @Override
+        public boolean equals(Object obj) {
+            All other = (All) obj;
+            return a == other.a && b == other.b;
+        }
     }
     static class Composite {
         @ArgGroup(exclusive = false, multiplicity = "0..1")
@@ -836,6 +870,20 @@ public class ArgGroupTest {
 
         @ArgGroup(exclusive = true, multiplicity = "1")
         Excl excl = new Excl();
+
+        public Composite() {}
+        public Composite(boolean a, boolean b, boolean x, boolean y) {
+            this.all.a = a;
+            this.all.b = b;
+            this.excl.x = x;
+            this.excl.y = y;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            Composite other = (Composite) obj;
+            return all.equals(other.all) && excl.equals(other.excl);
+        }
     }
     static class CompositeApp {
         // SYNOPSIS: ([-a -b] | (-x | -y))
@@ -2863,7 +2911,10 @@ public class ArgGroupTest {
     public void testIssue933() {
         //new CommandLine(new Issue933()).execute("-a A -b B -c C".split(" "));
         //System.out.println("OK");
-        Execution execution = Execution.builder(new CommandLine(new Issue933())).execute("-a A -c C -d D".split(" "));
+        Supplier<CommandLine> supplier = new Supplier<CommandLine>() {
+            public CommandLine get() { return new CommandLine(new Issue933()); }};
+
+        Execution execution = Execution.builder(supplier).execute("-a A -c C -d D".split(" "));
         String expected = String.format("" +
                 "Error: -c=<optionC>, -d=<optionD> are mutually exclusive (specify only one)%n" +
                 "Usage: <main class> (-a=<optionA> | -b=<optionB>) (-c=<optionC> | -d=<optionD>)%n" +
@@ -2977,6 +3028,215 @@ public class ArgGroupTest {
     @Test
     public void testIssue940NegatableOptionInArgGroupGivesNPE() {
         new CommandLine(new Issue940Command());
+    }
+
+    @Command(name = "974", mixinStandardHelpOptions = true, version = "1.0")
+    static class Issue974AnnotatedCommandMethod {
+        static class Exclusive {
+            @Option(names = "-a", description = "a", required = true) String a;
+            @Option(names = "-b", description = "b", required = true) String b;
+        }
+
+        int generateX;
+        int generateY;
+        Exclusive generateExclusive;
+
+        @Command(name = "generate", description = "Generate")
+        void generate(@Option(names = "-x", description = "x", required = true) int x,
+                      @Option(names = "-y", description = "y", required = true) int y,
+                      @ArgGroup Exclusive e) {
+
+            this.generateX = x;
+            this.generateY = y;
+            this.generateExclusive = e;
+        }
+    }
+
+    @Test
+    public void testIssue974CommandMethodWithoutGroup() {
+        String[] args = "generate -x=1 -y=2".split(" ");
+        Issue974AnnotatedCommandMethod bean = new Issue974AnnotatedCommandMethod();
+        new CommandLine(bean).execute(args);
+        assertEquals(1, bean.generateX);
+        assertEquals(2, bean.generateY);
+        assertNull(bean.generateExclusive);
+    }
+
+    @Test
+    public void testIssue974CommandMethodWithGroup() {
+        String[] args = "generate -x=1 -y=2 -a=xyz".split(" ");
+        Issue974AnnotatedCommandMethod bean = new Issue974AnnotatedCommandMethod();
+        new CommandLine(bean).execute(args);
+        assertEquals(1, bean.generateX);
+        assertEquals(2, bean.generateY);
+        assertNotNull(bean.generateExclusive);
+        assertEquals("xyz", bean.generateExclusive.a);
+        assertNull(bean.generateExclusive.b);
+    }
+
+    @Command static class SomeMixin {
+        @Option(names = "-i") int anInt;
+        @Option(names = "-L") long aLong;
+
+        public SomeMixin() {}
+        public SomeMixin(int i, long aLong) { this.anInt = i; this.aLong = aLong; }
+
+        @Override
+        public boolean equals(Object obj) {
+            SomeMixin other = (SomeMixin) obj;
+            return anInt == other.anInt && aLong == other.aLong;
+        }
+    }
+    
+    @picocli.CommandLine.Command
+    static class CommandMethodsWithGroupsAndMixins {
+        enum InvokedSub { withMixin, posAndMixin, posAndOptAndMixin, groupFirst}
+        EnumSet<InvokedSub> invoked = EnumSet.noneOf(InvokedSub.class);
+        SomeMixin myMixin;
+        Composite myComposite;
+        int[] myPositionalInt;
+        String[] myStrings;
+
+        @Command(mixinStandardHelpOptions = true)
+        void withMixin(@Mixin SomeMixin mixin, @ArgGroup(multiplicity = "0..1") Composite composite) {
+            this.myMixin = mixin;
+            this.myComposite = composite;
+            invoked.add(withMixin);
+        }
+
+        @Command(mixinStandardHelpOptions = true)
+        void posAndMixin(int[] posInt, @ArgGroup(multiplicity = "0..1") Composite composite, @Mixin SomeMixin mixin) {
+            this.myMixin = mixin;
+            this.myComposite = composite;
+            this.myPositionalInt = posInt;
+            invoked.add(InvokedSub.posAndMixin);
+        }
+
+        @Command(mixinStandardHelpOptions = true)
+        void posAndOptAndMixin(int[] posInt, @Option(names = "-s") String[] strings, @Mixin SomeMixin mixin, @ArgGroup(multiplicity = "0..1") Composite composite) {
+            this.myMixin = mixin;
+            this.myComposite = composite;
+            this.myPositionalInt = posInt;
+            this.myStrings = strings;
+            invoked.add(InvokedSub.posAndOptAndMixin);
+        }
+
+        @Command(mixinStandardHelpOptions = true)
+        void groupFirst(@ArgGroup(multiplicity = "0..1") Composite composite, @Mixin SomeMixin mixin, int[] posInt, @Option(names = "-s") String[] strings) {
+            this.myMixin = mixin;
+            this.myComposite = composite;
+            this.myPositionalInt = posInt;
+            this.myStrings = strings;
+            invoked.add(InvokedSub.groupFirst);
+        }
+    }
+
+    @Test
+    public void testAnnotatedMethod_withMixin_help() {
+        final CommandMethodsWithGroupsAndMixins bean = new CommandMethodsWithGroupsAndMixins();
+        Supplier<CommandLine> supplier = new Supplier<CommandLine>() {
+            public CommandLine get() { return new CommandLine(bean); }};
+
+        Execution execution = Execution.builder(supplier).execute("withMixin -h".split(" "));
+        execution.assertSystemOut(String.format("" +
+                "Usage: <main class> withMixin [[-a -b] | (-x | -y)] [-hV] [-i=<anInt>]%n" +
+                "                              [-L=<aLong>]%n" +
+                "  -a%n" +
+                "  -b%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -i=<anInt>%n" +
+                "  -L=<aLong>%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "  -x%n" +
+                "  -y%n"));
+    }
+
+    private Object[] commandMethodArgs() {
+        SomeMixin _000_000 = new SomeMixin();
+        SomeMixin _123_000 = new SomeMixin(123, 0);
+        SomeMixin _000_543 = new SomeMixin(0, 543);
+        SomeMixin _123_321 = new SomeMixin(123, 321);
+        Composite AB = new Composite(true, true, false, false);
+        Composite X = new Composite(false, false, true, false);
+        Composite Y = new Composite(false, false, false, true);
+        int[] _987 = new int[] {9, 8, 7};
+        String[] _sXY = new String[] {"X", "Y"};
+        return new Object[][]{
+                {"withMixin",                     withMixin, _000_000, null, null, null},
+                {"withMixin -i=123",              withMixin, _123_000, null, null, null},
+                {"withMixin -L=543",              withMixin, _000_543, null, null, null},
+                {"withMixin -i=123 -L=321",       withMixin, _123_321, null, null, null},
+                {"withMixin -a -b",               withMixin, _000_000, AB, null, null},
+                {"withMixin -i=123 -a -b",        withMixin, _123_000, AB, null, null},
+                {"withMixin -L=543 -a -b",        withMixin, _000_543, AB, null, null},
+                {"withMixin -i=123 -L=321 -a -b", withMixin, _123_321, AB, null, null},
+                {"withMixin -x",                  withMixin, _000_000, X, null, null},
+                {"withMixin -i=123 -x",           withMixin, _123_000, X, null, null},
+                {"withMixin -L=543 -y",           withMixin, _000_543, Y, null, null},
+                {"withMixin -i=123 -L=321 -y",    withMixin, _123_321, Y, null, null},
+
+                {"posAndMixin 9 8 7",                     posAndMixin, _000_000, null, _987, null},
+                {"posAndMixin 9 8 7 -i=123",              posAndMixin, _123_000, null, _987, null},
+                {"posAndMixin 9 8 7 -L=543",              posAndMixin, _000_543, null, _987, null},
+                {"posAndMixin 9 8 7 -i=123 -L=321",       posAndMixin, _123_321, null, _987, null},
+                {"posAndMixin 9 8 7 -a -b",               posAndMixin, _000_000, AB, _987, null},
+                {"posAndMixin 9 8 7 -i=123 -a -b",        posAndMixin, _123_000, AB, _987, null},
+                {"posAndMixin 9 8 7 -L=543 -a -b",        posAndMixin, _000_543, AB, _987, null},
+                {"posAndMixin 9 8 7 -i=123 -L=321 -a -b", posAndMixin, _123_321, AB, _987, null},
+                {"posAndMixin 9 8 7 -x",                  posAndMixin, _000_000, X, _987, null},
+                {"posAndMixin 9 8 7 -i=123 -x",           posAndMixin, _123_000, X, _987, null},
+                {"posAndMixin 9 8 7 -L=543 -y",           posAndMixin, _000_543, Y, _987, null},
+                {"posAndMixin 9 8 7 -i=123 -L=321 -y",    posAndMixin, _123_321, Y, _987, null},
+
+                {"posAndOptAndMixin 9 8 7 -sX -sY ",                    posAndOptAndMixin, _000_000, null, _987, _sXY},
+                {"posAndOptAndMixin 9 8 7 -sX -sY -i=123",              posAndOptAndMixin, _123_000, null, _987, _sXY},
+                {"posAndOptAndMixin 9 8 7 -sX -sY -L=543",              posAndOptAndMixin, _000_543, null, _987, _sXY},
+                {"posAndOptAndMixin 9 8 7 -sX -sY -i=123 -L=321",       posAndOptAndMixin, _123_321, null, _987, _sXY},
+                {"posAndOptAndMixin 9 8 7 -sX -sY -a -b",               posAndOptAndMixin, _000_000, AB, _987, _sXY},
+                {"posAndOptAndMixin 9 8 7 -sX -sY -i=123 -a -b",        posAndOptAndMixin, _123_000, AB, _987, _sXY},
+                {"posAndOptAndMixin 9 8 7 -sX -sY -L=543 -a -b",        posAndOptAndMixin, _000_543, AB, _987, _sXY},
+                {"posAndOptAndMixin 9 8 7 -sX -sY -i=123 -L=321 -a -b", posAndOptAndMixin, _123_321, AB, _987, _sXY},
+                {"posAndOptAndMixin 9 8 7 -sX -sY -x",                  posAndOptAndMixin, _000_000, X, _987, _sXY},
+                {"posAndOptAndMixin 9 8 7 -sX -sY -i=123 -x",           posAndOptAndMixin, _123_000, X, _987, _sXY},
+                {"posAndOptAndMixin 9 8 7 -sX -sY -L=543 -y",           posAndOptAndMixin, _000_543, Y, _987, _sXY},
+                {"posAndOptAndMixin 9 8 7 -sX -sY -i=123 -L=321 -y",    posAndOptAndMixin, _123_321, Y, _987, _sXY},
+
+                {"groupFirst 9 8 7 -sX -sY ",                    groupFirst, _000_000, null, _987, _sXY},
+                {"groupFirst 9 8 7 -sX -sY -i=123",              groupFirst, _123_000, null, _987, _sXY},
+                {"groupFirst 9 8 7 -sX -sY -L=543",              groupFirst, _000_543, null, _987, _sXY},
+                {"groupFirst 9 8 7 -sX -sY -i=123 -L=321",       groupFirst, _123_321, null, _987, _sXY},
+                {"groupFirst 9 8 7 -sX -sY -a -b",               groupFirst, _000_000, AB, _987, _sXY},
+                {"groupFirst 9 8 7 -sX -sY -i=123 -a -b",        groupFirst, _123_000, AB, _987, _sXY},
+                {"groupFirst 9 8 7 -sX -sY -L=543 -a -b",        groupFirst, _000_543, AB, _987, _sXY},
+                {"groupFirst 9 8 7 -sX -sY -i=123 -L=321 -a -b", groupFirst, _123_321, AB, _987, _sXY},
+                {"groupFirst 9 8 7 -sX -sY -x",                  groupFirst, _000_000, X, _987, _sXY},
+                {"groupFirst 9 8 7 -sX -sY -i=123 -x",           groupFirst, _123_000, X, _987, _sXY},
+                {"groupFirst 9 8 7 -sX -sY -L=543 -y",           groupFirst, _000_543, Y, _987, _sXY},
+                {"groupFirst 9 8 7 -sX -sY -i=123 -L=321 -y",    groupFirst, _123_321, Y, _987, _sXY},
+        };
+    }
+    @Ignore
+    @Test
+    @junitparams.Parameters(method = "commandMethodArgs")
+    public void testCommandMethod(String args,
+                                  InvokedSub invokedSub,
+                                  SomeMixin expectedMixin,
+                                  Composite expectedArgGroup,
+                                  int[] expectedPositionalInt,
+                                  String[] expectedStrings) {
+        CommandMethodsWithGroupsAndMixins bean = new CommandMethodsWithGroupsAndMixins();
+        new CommandLine(bean).execute(args.split(" "));
+        assertTrue(bean.invoked.contains(invokedSub));
+        EnumSet<InvokedSub> notInvoked = EnumSet.allOf(InvokedSub.class);
+        notInvoked.remove(invokedSub);
+        for (InvokedSub sub : notInvoked) {
+            assertFalse(bean.invoked.contains(sub));
+        }
+        assertTrue(bean.invoked.contains(invokedSub));
+        assertEquals(expectedMixin, bean.myMixin);
+        assertEquals(expectedArgGroup, bean.myComposite);
+        assertArrayEquals(expectedPositionalInt, bean.myPositionalInt);
+        assertArrayEquals(expectedStrings, bean.myStrings);
     }
 
     // TODO GroupMatch.container()
