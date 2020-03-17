@@ -3215,7 +3215,7 @@ public class ArgGroupTest {
                 {"groupFirst 9 8 7 -sX -sY -i=123 -L=321 -y",    groupFirst, _123_321, Y, _987, _sXY},
         };
     }
-    @Ignore
+
     @Test
     @junitparams.Parameters(method = "commandMethodArgs")
     public void testCommandMethod(String args,

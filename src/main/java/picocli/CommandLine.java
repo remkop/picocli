@@ -5952,6 +5952,7 @@ public class CommandLine {
                         for (ArgGroupSpec group : groups) {
                             if (group.typeInfo.equals(methodParams[i].typeInfo)) {
                                 values[i] = group.userObjectOr(null);
+                                argIndex += group.argCount();
                                 break;
                             }
                         }
@@ -8816,6 +8817,11 @@ public class CommandLine {
             Object userObject() { try { return getter.get(); } catch (Exception ex) { return ex.toString(); } }
             Object userObjectOr(Object defaultValue) { try { return getter.get(); } catch (Exception ex) { return defaultValue; } }
             String id() { return id; }
+            int argCount() {
+                int result = args.size();
+                for (ArgGroupSpec sub : subgroups()) { result += sub.argCount(); }
+                return result;
+            }
 
             /** Returns the options and positional parameters in this group; may be empty but not {@code null}. */
             public Set<ArgSpec> args() { return args; }
