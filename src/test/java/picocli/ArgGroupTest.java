@@ -3132,7 +3132,7 @@ public class ArgGroupTest {
     }
 
     @Test
-    public void testAnnotatedMethod_withMixin_help() {
+    public void testCommandMethod_withMixin_help() {
         final CommandMethodsWithGroupsAndMixins bean = new CommandMethodsWithGroupsAndMixins();
         Supplier<CommandLine> supplier = new Supplier<CommandLine>() {
             public CommandLine get() { return new CommandLine(bean); }};
@@ -3147,6 +3147,71 @@ public class ArgGroupTest {
                 "  -i=<anInt>%n" +
                 "  -L=<aLong>%n" +
                 "  -V, --version   Print version information and exit.%n" +
+                "  -x%n" +
+                "  -y%n"));
+    }
+
+    @Test
+    public void testCommandMethod_posAndMixin_help() {
+        final CommandMethodsWithGroupsAndMixins bean = new CommandMethodsWithGroupsAndMixins();
+        Supplier<CommandLine> supplier = new Supplier<CommandLine>() {
+            public CommandLine get() { return new CommandLine(bean); }};
+
+        Execution execution = Execution.builder(supplier).execute("posAndMixin -h".split(" "));
+        execution.assertSystemOut(String.format("" +
+                "Usage: <main class> posAndMixin [[-a -b] | (-x | -y)] [-hV] [-i=<anInt>]%n" +
+                "                                [-L=<aLong>] [<arg0>...]%n" +
+                "      [<arg0>...]%n" +
+                "  -a%n" +
+                "  -b%n" +
+                "  -h, --help        Show this help message and exit.%n" +
+                "  -i=<anInt>%n" +
+                "  -L=<aLong>%n" +
+                "  -V, --version     Print version information and exit.%n" +
+                "  -x%n" +
+                "  -y%n"));
+    }
+
+    @Test
+    public void testCommandMethod_posAndOptAndMixin_help() {
+        final CommandMethodsWithGroupsAndMixins bean = new CommandMethodsWithGroupsAndMixins();
+        Supplier<CommandLine> supplier = new Supplier<CommandLine>() {
+            public CommandLine get() { return new CommandLine(bean); }};
+
+        Execution execution = Execution.builder(supplier).execute("posAndOptAndMixin -h".split(" "));
+        execution.assertSystemOut(String.format("" +
+                "Usage: <main class> posAndOptAndMixin [[-a -b] | (-x | -y)] [-hV] [-i=<anInt>]%n" +
+                "                                      [-L=<aLong>] [-s=<arg1>]... [<arg0>...]%n" +
+                "      [<arg0>...]%n" +
+                "  -a%n" +
+                "  -b%n" +
+                "  -h, --help        Show this help message and exit.%n" +
+                "  -i=<anInt>%n" +
+                "  -L=<aLong>%n" +
+                "  -s=<arg1>%n" +
+                "  -V, --version     Print version information and exit.%n" +
+                "  -x%n" +
+                "  -y%n"));
+    }
+
+    @Test
+    public void testCommandMethod_groupFirst_help() {
+        final CommandMethodsWithGroupsAndMixins bean = new CommandMethodsWithGroupsAndMixins();
+        Supplier<CommandLine> supplier = new Supplier<CommandLine>() {
+            public CommandLine get() { return new CommandLine(bean); }};
+
+        Execution execution = Execution.builder(supplier).execute("groupFirst -h".split(" "));
+        execution.assertSystemOut(String.format("" +
+                "Usage: <main class> groupFirst [[-a -b] | (-x | -y)] [-hV] [-i=<anInt>]%n" +
+                "                               [-L=<aLong>] [-s=<arg3>]... [<arg2>...]%n" +
+                "      [<arg2>...]%n" +
+                "  -a%n" +
+                "  -b%n" +
+                "  -h, --help        Show this help message and exit.%n" +
+                "  -i=<anInt>%n" +
+                "  -L=<aLong>%n" +
+                "  -s=<arg3>%n" +
+                "  -V, --version     Print version information and exit.%n" +
                 "  -x%n" +
                 "  -y%n"));
     }
