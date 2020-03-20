@@ -5740,6 +5740,7 @@ The man pages for the picocli built-in tools were created with this tool:
 
 == Testing Your Application
 
+=== Black Box and White Box Testing
 Picocli 4.0 introduced the <<Executing Commands,`execute`>>, `get/setOut`, and `get/setErr` APIs that make testing a lot easier.
 
 Applications can do black box testing by verifying the exit code and the output of the program to the standard output stream and standard error stream.
@@ -5766,6 +5767,7 @@ assertEquals("expectedValue1", app.getState1());
 assertEquals("expectedValue2", app.getState2());
 ----
 
+=== Testing the Output
 This assumes that the application uses the `PrintWriter` provided by https://picocli.info/apidocs/picocli/CommandLine.html#getOut--[`CommandLine.getOut`] or  https://picocli.info/apidocs/picocli/CommandLine.html#getErr--[`CommandLine.getErr`].
 Applications can get these writers via the <<#spec-annotation,`@Spec`>> annotation:
 
@@ -5846,6 +5848,7 @@ class TestOutput {
 }
 ----
 
+=== Testing the Exit Code
 Testing the exit code of applications that call `System.exit` can be tricky but is not impossible.
 
 Applications that use JUnit 4 can use Stephan Birkner's  https://stefanbirkner.github.io/system-rules[System-Rules] project for testing the  https://stefanbirkner.github.io/system-rules/#ExpectedSystemExit[exit code].
@@ -5875,6 +5878,50 @@ class MyTest {
 ----
 
 JUnit 5 users may be interested in Todd Ginsberg's blog post https://todd.ginsberg.com/post/testing-system-exit/[Testing System.exit() with JUnit5].
+
+=== Testing Environment Variables
+
+Since picocli offers support for using <<Variable Interpolation,environment variables>> in the annotations, you may want to test this.
+
+Applications that use JUnit 4 can use Stephan Birkner's  https://stefanbirkner.github.io/system-rules[System-Rules] project for https://stefanbirkner.github.io/system-rules/#EnvironmentVariables[testing environment variables].
+
+JUnit 5 does not appear to provide an equivalent extension for testing environment variables.
+JUnit 5 users can use Stephan Birkner's `@Rule EnvironmentVariables ...` for testing environment variables, but there are some things to be aware of.
+
+* Use `com.github.stefanbirkner:system-rules` version 1.17.2: the latest version, 1.18, has an https://github.com/stefanbirkner/system-rules/issues/70[issue] that means the Environment Variables rule will not work in JUnit 5.
+* https://github.com/remkop/picocli/issues/976#issuecomment-601200999[Apparently] the JUnit 5 https://junit.org/junit5/docs/current/user-guide/#migrating-from-junit4-rule-support[`@EnableRuleMigrationSupport` annotation] is not sufficient to reliably use `@Rule EnvironmentVariables` in a JUnit 5 test.
+* Instead, I recommend creating a separate JUnit 4 test class for the environment variable tests.
+
+In Gradle, use the following dependencies:
+
+[source]
+----
+dependencies {
+    implementation      "info.picocli:picocli:${picocliVersion}"
+    annotationProcessor "info.picocli:picocli-codegen:${picocliVersion}"
+
+    testImplementation("com.github.stefanbirkner:system-rules:1.17.2") {
+        exclude group:"junit"
+    }
+    testImplementation "junit:junit:${junit4Version}"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junit5Version}"
+
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.6.0"
+    testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${junit5Version}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junit5Version}"
+
+    // ...
+}
+
+test {
+    useJUnitPlatform {
+        includeEngines 'junit-jupiter', 'junit-vintage'
+    }
+}
+----
+
+For more details, see the https://github.com/remkop/picocli/files/4359943/bulk-scripts-public.zip[sample project] provided by David M. Carr.
+
 
 == Packaging Your Application
 

@@ -760,7 +760,14 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_tracing">24. Tracing</a></li>
 <li><a href="#_tab_autocomplete">25. TAB Autocomplete</a></li>
 <li><a href="#_generate_man_page_documentation">26. Generate Man Page Documentation</a></li>
-<li><a href="#_testing_your_application">27. Testing Your Application</a></li>
+<li><a href="#_testing_your_application">27. Testing Your Application</a>
+<ul class="sectlevel2">
+<li><a href="#_black_box_and_white_box_testing">27.1. Black Box and White Box Testing</a></li>
+<li><a href="#_testing_the_output">27.2. Testing the Output</a></li>
+<li><a href="#_testing_the_exit_code">27.3. Testing the Exit Code</a></li>
+<li><a href="#_testing_environment_variables">27.4. Testing Environment Variables</a></li>
+</ul>
+</li>
 <li><a href="#_packaging_your_application">28. Packaging Your Application</a>
 <ul class="sectlevel2">
 <li><a href="#_graalvm_native_image">28.1. GraalVM Native Image</a></li>
@@ -8526,6 +8533,8 @@ The generated AsciiDoc files can be converted to HTML, PDF and unix man pages wi
 <div class="sect1">
 <h2 id="_testing_your_application">27. Testing Your Application</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_black_box_and_white_box_testing">27.1. Black Box and White Box Testing</h3>
 <div class="paragraph">
 <p>Picocli 4.0 introduced the <a href="#execute"><code>execute</code></a>, <code>get/setOut</code>, and <code>get/setErr</code> APIs that make testing a lot easier.</p>
 </div>
@@ -8556,6 +8565,9 @@ assertEquals(<span class="string"><span class="delimiter">&quot;</span><span cla
 assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="content">expectedValue2</span><span class="delimiter">&quot;</span></span>, app.getState2());</code></pre>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_testing_the_output">27.2. Testing the Output</h3>
 <div class="paragraph">
 <p>This assumes that the application uses the <code>PrintWriter</code> provided by <a href="https://picocli.info/apidocs/picocli/CommandLine.html#getOut--"><code>CommandLine.getOut</code></a> or  <a href="https://picocli.info/apidocs/picocli/CommandLine.html#getErr--"><code>CommandLine.getErr</code></a>.
 Applications can get these writers via the <a href="#spec-annotation"><code>@Spec</code></a> annotation:</p>
@@ -8639,6 +8651,9 @@ For example:</p>
 }</code></pre>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_testing_the_exit_code">27.3. Testing the Exit Code</h3>
 <div class="paragraph">
 <p>Testing the exit code of applications that call <code>System.exit</code> can be tricky but is not impossible.</p>
 </div>
@@ -8671,6 +8686,65 @@ For example:</p>
 </div>
 <div class="paragraph">
 <p>JUnit 5 users may be interested in Todd Ginsberg&#8217;s blog post <a href="https://todd.ginsberg.com/post/testing-system-exit/">Testing System.exit() with JUnit5</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_testing_environment_variables">27.4. Testing Environment Variables</h3>
+<div class="paragraph">
+<p>Since picocli offers support for using <a href="#_variable_interpolation">environment variables</a> in the annotations, you may want to test this.</p>
+</div>
+<div class="paragraph">
+<p>Applications that use JUnit 4 can use Stephan Birkner&#8217;s  <a href="https://stefanbirkner.github.io/system-rules">System-Rules</a> project for <a href="https://stefanbirkner.github.io/system-rules/#EnvironmentVariables">testing environment variables</a>.</p>
+</div>
+<div class="paragraph">
+<p>JUnit 5 does not appear to provide an equivalent extension for testing environment variables.
+JUnit 5 users can use Stephan Birkner&#8217;s <code>@Rule EnvironmentVariables &#8230;&#8203;</code> for testing environment variables, but there are some things to be aware of.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Use <code>com.github.stefanbirkner:system-rules</code> version 1.17.2: the latest version, 1.18, has an <a href="https://github.com/stefanbirkner/system-rules/issues/70">issue</a> that means the Environment Variables rule will not work in JUnit 5.</p>
+</li>
+<li>
+<p><a href="https://github.com/remkop/picocli/issues/976#issuecomment-601200999">Apparently</a> the JUnit 5 <a href="https://junit.org/junit5/docs/current/user-guide/#migrating-from-junit4-rule-support"><code>@EnableRuleMigrationSupport</code> annotation</a> is not sufficient to reliably use <code>@Rule EnvironmentVariables</code> in a JUnit 5 test.</p>
+</li>
+<li>
+<p>Instead, I recommend creating a separate JUnit 4 test class for the environment variable tests.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In Gradle, use the following dependencies:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>dependencies {
+    implementation      "info.picocli:picocli:${picocliVersion}"
+    annotationProcessor "info.picocli:picocli-codegen:${picocliVersion}"
+
+    testImplementation("com.github.stefanbirkner:system-rules:1.17.2") {
+        exclude group:"junit"
+    }
+    testImplementation "junit:junit:${junit4Version}"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junit5Version}"
+
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.6.0"
+    testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${junit5Version}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junit5Version}"
+
+    // ...
+}
+
+test {
+    useJUnitPlatform {
+        includeEngines 'junit-jupiter', 'junit-vintage'
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For more details, see the <a href="https://github.com/remkop/picocli/files/4359943/bulk-scripts-public.zip">sample project</a> provided by David M. Carr.</p>
+</div>
 </div>
 </div>
 </div>

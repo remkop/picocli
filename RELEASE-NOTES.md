@@ -1,7 +1,7 @@
 # picocli Release Notes
 
-# <a name="4.2.1"></a> Picocli 4.2.1 (UNRELEASED)
-The picocli community is pleased to announce picocli 4.2.1.
+# <a name="4.3.0"></a> Picocli 4.3.0 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.3.0.
 
 This release contains bugfixes and enhancements.
 
@@ -11,16 +11,16 @@ From this release, mixin classes can declare a `@Spec(Spec.Target.MIXEE)`-annota
 This is the sixty-seventh public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
-## <a name="4.2.1-toc"></a> Table of Contents
-* [New and noteworthy](#4.2.1-new)
-  * [`@Spec(MIXEE)` Annotation](#4.2.1-mixee)
-* [Fixed issues](#4.2.1-fixes)
-* [Deprecations](#4.2.1-deprecated)
-* [Potential breaking changes](#4.2.1-breaking-changes)
+## <a name="4.3.0-toc"></a> Table of Contents
+* [New and noteworthy](#4.3.0-new)
+  * [`@Spec(MIXEE)` Annotation](#4.3.0-mixee)
+* [Fixed issues](#4.3.0-fixes)
+* [Deprecations](#4.3.0-deprecated)
+* [Potential breaking changes](#4.3.0-breaking-changes)
 
-## <a name="4.2.1-new"></a> New and Noteworthy
+## <a name="4.3.0-new"></a> New and Noteworthy
 
-### <a name="4.2.1-mixee"></a>  `@Spec(MIXEE)` Annotation
+### <a name="4.3.0-mixee"></a>  `@Spec(MIXEE)` Annotation
 Since picocli 4.3, the `@Spec` annotation has a `value` element.
 The value is `Spec.Target.SELF` by default, meaning that the `CommandSpec` of the enclosing class is injected into the `@Spec`-annotated field.
 
@@ -51,7 +51,7 @@ class AdvancedMixin {
 }
 ```
 
-## <a name="4.2.1-fixes"></a> Fixed issues
+## <a name="4.3.0-fixes"></a> Fixed issues
 * [#958] API: Add `@Spec(Spec.Target.MIXEE)` annotation element to allow mixins to get a reference to the command they are mixed into.
 * [#960] API: Add method `CommandSpec::root` to return the `CommandSpec` of the top-level command. 
 * [#956] Enhancement: Default ParameterExceptionHandler should show stack trace when tracing is set to DEBUG level.
@@ -68,12 +68,12 @@ class AdvancedMixin {
 * [#973] (DOC) Update documentation for using the `picocli-codegen` annotation processor during the build with Kotlin.
 * [#972] (DOC) Add section "Handling Invalid Input" for custom type converters to user manual, demonstrating `TypeConversionException`. Add example `InetSocketAddressConverter` to `picocli-examples`. Thanks to [Simon](https://github.com/sbernard31) for raising this.
 * [#975] (DOC) Update user manual [Annotation Processor](https://picocli.info/#_enabling_the_annotation_processor) section to use `${project.groupId}` instead of deprecated `${groupId}`. Thanks to [Dmitry Timofeev](https://github.com/dmitry-timofeev) for the pull request.
+* [#976] (DOC) Update user manual Testing section; add subsection on [Testing Environment Variables](file:///C:/Users/remko/IdeaProjects/picocli3/build/docs/html5/index.html#_testing_environment_variables). Thanks to [David M. Carr](https://github.com/davidmc24) for raising this and providing a [sample project](https://github.com/remkop/picocli/files/4359943/bulk-scripts-public.zip).
 
-
-## <a name="4.2.1-deprecated"></a> Deprecations
+## <a name="4.3.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
 
-## <a name="4.2.1-breaking-changes"></a> Potential breaking changes
+## <a name="4.3.0-breaking-changes"></a> Potential breaking changes
 This release has no breaking changes.
 
 
