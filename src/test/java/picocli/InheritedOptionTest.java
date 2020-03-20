@@ -19,7 +19,7 @@ import static org.junit.Assert.*;
 import static picocli.CommandLine.ScopeType.INHERIT;
 import static picocli.CommandLine.ScopeType.LOCAL;
 
-public class GlobalOptionTest {
+public class InheritedOptionTest {
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
@@ -104,7 +104,7 @@ public class GlobalOptionTest {
 
     @Command(name = "ext",
             subcommands = ExtSub.class,
-            resourceBundle = "picocli.GlobalOptionTest$MyBundle")
+            resourceBundle = "picocli.InheritedOptionTest$MyBundle") //MyBundle.class.getName()
     static class Ext extends Base{
     }
     
