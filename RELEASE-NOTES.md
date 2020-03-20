@@ -29,6 +29,9 @@ When `@Spec(Spec.Target.MIXEE)` is specified in a mixin class, the `CommandSpec`
 This can be useful when a mixin contains logic that is common to many commands. For example:
 
 ```java
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Spec;
+
 class AdvancedMixin {
     @Spec(Spec.Target.MIXEE) CommandSpec mixee;
 
@@ -40,12 +43,14 @@ class AdvancedMixin {
      */
     @Option(names = "-x")
     void setValue(int x) {
-        // get another value from the command we are mixed into
+        // Get another value from the command we are mixed into.
+        // This mixin requires the command(s) it is mixed into to implement `IntSupplier`.
         int y = ((java.util.function.IntSupplier) mixee.userObject()).getAsInt();
 
         int product = x * y;
 
-        // set the result on the top-level (root) command
+        // Set the result on the top-level (root) command.
+        // This mixin requires the root command to implement `IntConsumer`.
         ((java.util.function.IntConsumer) mixee.root().userObject()).accept(product);
     }
 }
