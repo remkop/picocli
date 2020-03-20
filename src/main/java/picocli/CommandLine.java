@@ -3330,7 +3330,7 @@ public class CommandLine {
         /** The element only exists in the current command. */
         LOCAL,
         /** The element exists in the command where the element is defined and all descendents (subcommands, sub-subcommands, etc.). */
-        SUBTREE,
+        INHERIT,
     }
     /**
      * <p>
@@ -3701,10 +3701,10 @@ public class CommandLine {
         boolean negatable() default false;
 
         /** Determines on which command(s) this option exists: on this command only (the default), or
-         * whether it is applied to this command and all subcommands, sub-subcommands, etc.
+         * whether this is a "global" option that is applied to this command and all subcommands, sub-subcommands, etc.
          * @since 4.3
          */
-        ScopeType scopeType() default ScopeType.LOCAL;
+        ScopeType scope() default ScopeType.LOCAL;
         /**
          * For options with an optional parameter (for example, {@code arity = "0..1"}), this value is assigned to the annotated element
          * if the option is specified on the command line without an option parameter.
@@ -3916,6 +3916,11 @@ public class CommandLine {
          */
         String descriptionKey() default "";
 
+        /** Determines on which command(s) this positional parameter exists: on this command only (the default), or
+         * whether this is a "global" parameter that is applied to this command and all subcommands, sub-subcommands, etc.
+         * @since 4.3
+         */
+        ScopeType scope() default ScopeType.LOCAL;
         /**
          * Optionally specify a custom {@code IParameterConsumer} to temporarily suspend picocli's parsing logic
          * and process one or more command line arguments in a custom manner.
@@ -5196,9 +5201,9 @@ public class CommandLine {
     public static final class Model {
         private Model() {}
 
-        /** The scope of a binding is the context where the current value should be gotten from or set to.
-         * For a field, the scope is the object whose field value to get/set. For a method binding, it is the
-         * object on which the method should be invoked.
+        /** The scope of a getter/setter binding is the context where the current value should be gotten from or set to.
+         * Usually, this is an instance of the enclosing element. For a field, the scope is the object whose field value to get/set.
+         * For a method binding, it is the object on which the method should be invoked.
          * <p>The getter and setter of the scope allow you to change the object onto which the option and positional parameter getters and setters should be applied.</p>
          * @since 4.0
          */
@@ -5503,7 +5508,7 @@ public class CommandLine {
                 subSpec.initCommandHierarchyWithResourceBundle(resourceBundleBaseName(), resourceBundle());
 
                 for (OptionSpec option : options()) {
-                    if (option.scopeType() == ScopeType.SUBTREE) {
+                    if (option.scopeType() == ScopeType.INHERIT) {
                         subSpec.addOption(option);
                     }
                 }
@@ -5620,7 +5625,7 @@ public class CommandLine {
                 }
                 options.add(option);
                 addOptionNegative(option, tracer);
-                if (option.scopeType() == ScopeType.SUBTREE) {
+                if (option.scopeType() == ScopeType.INHERIT) {
                     Set<CommandLine> done = new HashSet<CommandLine>();
                     for (CommandLine sub : subcommands().values()) {
                         if (!done.contains(sub)) {
@@ -7369,6 +7374,7 @@ public class CommandLine {
             private final IGetter getter;
             private final ISetter setter;
             private final IScope scope;
+            private final ScopeType scopeType;
             private Range arity;
             private List<String> stringValues = new ArrayList<String>();
             private List<String> originalStringValues = new ArrayList<String>();
@@ -7399,6 +7405,7 @@ public class CommandLine {
                 getter = builder.getter;
                 setter = builder.setter;
                 scope  = builder.scope;
+                scopeType = builder.scopeType;
 
                 Range tempArity = builder.arity;
                 if (tempArity == null) {
@@ -7666,6 +7673,11 @@ public class CommandLine {
             /** Returns the binding {@link IScope} that determines on which object to set the value (or from which object to get the value) of this argument. */
             public IScope scope()          { return scope; }
 
+            /** Returns the scope of this argument; it it local, or inherited (it applies to this command as well as all sub- and sub-subcommands).
+             * @return whether this argument applies to all descendent subcommands of the command where it is defined
+             * @since 4.3 */
+            public ScopeType scopeType() { return scopeType; }
+
             /** Returns the current value of this argument. Delegates to the current {@link #getter()}. */
             public <T> T getValue() throws PicocliException {
                 try {
@@ -7855,6 +7867,7 @@ public class CommandLine {
                         && Assert.equals(this.descriptionKey, other.descriptionKey)
                         && Assert.equals(this.parameterConsumer, other.parameterConsumer)
                         && this.typeInfo.equals(other.typeInfo)
+                        && this.scopeType.equals(other.scopeType)
                         ;
                 return result;
             }
@@ -7871,6 +7884,7 @@ public class CommandLine {
                         + 37 * Assert.hashCode(descriptionKey)
                         + 37 * Assert.hashCode(parameterConsumer)
                         + 37 * typeInfo.hashCode()
+                        + 37 * scopeType.hashCode()
                         ;
             }
 
@@ -7925,6 +7939,7 @@ public class CommandLine {
                 private IGetter getter = new ObjectBinding();
                 private ISetter setter = (ISetter) getter;
                 private IScope scope = new ObjectScope(null);
+                private ScopeType scopeType = ScopeType.LOCAL;
                 private IAnnotatedElement annotatedElement;
 
                 Builder() {}
@@ -7953,6 +7968,7 @@ public class CommandLine {
                     getter = original.getter;
                     setter = original.setter;
                     scope = original.scope;
+                    scopeType = original.scopeType;
                 }
                 Builder(IAnnotatedElement annotatedElement) {
                     this.annotatedElement = annotatedElement;
@@ -7980,6 +7996,7 @@ public class CommandLine {
                     hidden = option.hidden();
                     defaultValue = option.defaultValue();
                     showDefaultValue = option.showDefaultValue();
+                    scopeType = option.scope();
                     if (factory != null) {
                         converters = DefaultFactory.createConverter(factory, option.converter());
                         if (!NoCompletionCandidates.class.equals(option.completionCandidates())) {
@@ -8009,6 +8026,7 @@ public class CommandLine {
                         hidden = parameters.hidden();
                         defaultValue = parameters.defaultValue();
                         showDefaultValue = parameters.showDefaultValue();
+                        scopeType = parameters.scope();
                         if (factory != null) { // annotation processors will pass a null factory
                             converters = DefaultFactory.createConverter(factory, parameters.converter());
                             if (!NoCompletionCandidates.class.equals(parameters.completionCandidates())) {
@@ -8123,8 +8141,12 @@ public class CommandLine {
                 public IGetter getter()        { return getter; }
                 /** Returns the {@link ISetter} that is responsible for modifying the value of this argument. */
                 public ISetter setter()        { return setter; }
-                /** Returns the binding {@link IScope} that determines where the setter sets the value (or the getter gets the value) of this argument. */
+                /** Returns the binding {@link IScope} that determines the instance of the enclosing element where the setter sets the value (or the getter gets the value) of this argument. */
                 public IScope scope()          { return scope; }
+                /** Returns the scope of this argument.
+                 * @return whether this argument applies to all descendent subcommands of the command where it is defined
+                 * @since 4.3 */
+                public ScopeType scopeType() { return scopeType; }
 
                 public String toString() { return toString; }
 
@@ -8228,6 +8250,9 @@ public class CommandLine {
                 public T setter(ISetter setter)              { this.setter = setter; return self(); }
                 /** Sets the binding {@link IScope} that targets where the setter sets the value, and returns this builder. */
                 public T scope(IScope scope)                 { this.scope = scope; return self(); }
+                /** Sets the scope of where this argument applies: only this command, or also all sub (and sub-sub) commands, and returns this builder.
+                 * @since 4.3 */
+                public T scopeType(ScopeType scopeType) { this.scopeType = scopeType; return self(); }
 
                 /** Sets the string representation of this option or positional parameter to the specified value, and returns this builder. */
                 public T withToString(String toString)       { this.toString = toString; return self(); }
@@ -8384,18 +8409,6 @@ public class CommandLine {
              * @see #defaultValue()
              * @since 4.0 */
             public String fallbackValue() { return interpolate(fallbackValue); }
-
-            /** Returns whether this option is "global", that is, is applies to this command as well as all sub- and sub-subcommands (to any depth).
-             * @return whether this option applies to all descendent subcommands of the command where it is defined
-             * @since 4.3 */
-            public ScopeType scopeType() {
-                if (annotatedElement == null || annotatedElement.getAnnotation(Option.class) == null) {
-                    return ScopeType.LOCAL;
-                }
-                try {
-                    return annotatedElement.getAnnotation(Option.class).scopeType();
-                } catch (Exception ex) { throw new RuntimeException(ex); }
-            }
 
             public boolean equals(Object obj) {
                 if (obj == this) { return true; }
