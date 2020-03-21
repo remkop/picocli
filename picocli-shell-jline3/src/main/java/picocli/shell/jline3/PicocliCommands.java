@@ -78,11 +78,11 @@ public class PicocliCommands {
     }
 
     private SystemCompleter compileCompleters(SystemCompleter completer, CommandLine cmd) {
-        completer.addAliases(extractAliases(cmd));
-
-        for (Map.Entry<String, CommandLine> entry : cmd.getSubcommands().entrySet()) {
-            CommandLine sub = entry.getValue();
-            registerCompleters(completer, entry.getKey(), sub.getCommandSpec());
+        for (CommandLine sub : cmd.getSubcommands().values()) {
+            for (String alias : sub.getCommandSpec().aliases()) {
+                completer.getAliases().put(alias, sub.getCommandName());
+            }
+            registerCompleters(completer, sub.getCommandSpec());
 
             // TODO support nested sub-subcommands (https://github.com/remkop/picocli/issues/969)
             //   Is the below sufficient?
@@ -91,7 +91,7 @@ public class PicocliCommands {
         return completer;
     }
 
-    private void registerCompleters(SystemCompleter out, String commandName, CommandSpec spec) {
+    private void registerCompleters(SystemCompleter out, CommandSpec spec) {
         List<String> options = new ArrayList<>();
         Map<String, List<String>> optionValues = new HashMap<>();
         for (OptionSpec o : spec.options()) {
@@ -110,6 +110,7 @@ public class PicocliCommands {
         // TODO positional parameter completion
         // JLine OptionCompleter need to be improved with option descriptions and option value completion,
         // now it completes only strings.
+        String commandName = spec.name();
         if (options.isEmpty() && optionValues.isEmpty()) {
             out.add(commandName, new ArgumentCompleter(new StringsCompleter(commandName), NullCompleter.INSTANCE));
         } else {
