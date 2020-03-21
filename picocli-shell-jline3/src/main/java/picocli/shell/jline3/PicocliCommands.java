@@ -85,7 +85,7 @@ public class PicocliCommands {
 
             // TODO support nested sub-subcommands (https://github.com/remkop/picocli/issues/969)
             //   Is the below sufficient?
-            //   compileCompleters(out, sub.commandLine());
+            //   compileCompleters(completer, sub.commandLine());
         }
         return completer;
     }
