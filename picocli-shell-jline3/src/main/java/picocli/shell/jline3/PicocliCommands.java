@@ -70,32 +70,42 @@ public class PicocliCommands {
         return commands.contains(command) || aliasCommand.containsKey(command);
     }
 
+    private static class CommandHierarchyCompleter extends SystemCompleter {
+        List<CommandHierarchyCompleter> nested = new ArrayList<>();
+        @Override
+        public void compile() {
+            super.compile();
+            nested.forEach(CommandHierarchyCompleter::compile);
+        }
+    }
+
     /**
      *
      * @return SystemCompleter for command completion
      */
     public SystemCompleter compileCompleters() {
-        return compileCompleters(new SystemCompleter(), cmd);
+        return createCompilableCompleter(cmd);
     }
 
-    private SystemCompleter compileCompleters(SystemCompleter completer, CommandLine cmd) {
+    private CommandHierarchyCompleter createCompilableCompleter(CommandLine cmd) {
+        CommandHierarchyCompleter result = new CommandHierarchyCompleter();
         for (CommandLine sub : cmd.getSubcommands().values()) {
             String commandName = sub.getCommandName();
             for (String alias : sub.getCommandSpec().aliases()) {
-                completer.getAliases().put(alias, commandName);
+                result.getAliases().put(alias, commandName);
             }
-            ArgumentCompleter argumentCompleter = createArgumentCompleter(sub.getCommandSpec());
-            completer.add(commandName, argumentCompleter);
+            ArgumentCompleter argumentCompleter = createArgumentCompleter(result, sub.getCommandSpec());
+            result.add(commandName, argumentCompleter);
         }
-        return completer;
+        return result;
     }
 
-    private ArgumentCompleter createArgumentCompleter(CommandSpec spec) {
-        Completer optionCompleter = createOptionCompleter(spec);
+    private ArgumentCompleter createArgumentCompleter(CommandHierarchyCompleter hierarchy, CommandSpec spec) {
+        Completer optionCompleter = createOptionCompleter(hierarchy, spec);
         return new ArgumentCompleter(new StringsCompleter(spec.name()), optionCompleter);
     }
 
-    private Completer createOptionCompleter(CommandSpec spec) {
+    private Completer createOptionCompleter(CommandHierarchyCompleter hierarchy, CommandSpec spec) {
         // TODO positional parameter completion
         // JLine OptionCompleter need to be improved with option descriptions and option value completion,
         // now it completes only strings.
@@ -115,16 +125,18 @@ public class PicocliCommands {
             }
         }
         // TODO support nested sub-subcommands (https://github.com/remkop/picocli/issues/969)
-        //   Is the below sufficient? - problem is that SystemCompleter needs a call to compile()...
         //
-        //   List<Completer> subcommands = new ArrayList<>();
-        //   for (CommandLine sub : spec.subcommands().values()) {
-        //       subcommands.add(compileCompleters(new SystemCompleter(), sub));
-        //   }
-        //   Completer nestedCompleters = new AggregateCompleter(subcommands);
+        List<Completer> subcommands = new ArrayList<>();
+//        for (CommandLine sub : spec.subcommands().values()) {
+//            // TODO unfortunately createCompilableCompleter will not include an OptionCompleter for sub...
+//            CommandHierarchyCompleter subCompleter = createCompilableCompleter(sub);
+//            hierarchy.nested.add(subCompleter); // ensure subCompleter is compiled when top-level completer is compiled
+//            subcommands.add(subCompleter);
+//        }
+//        Completer nestedCompleters = new AggregateCompleter(subcommands);
         Completer nestedCompleters = NullCompleter.INSTANCE;
 
-        return options.isEmpty() && optionValues.isEmpty()
+        return options.isEmpty() && optionValues.isEmpty() && subcommands.isEmpty()
                 ? NullCompleter.INSTANCE
                 : new OptionCompleter(nestedCompleters, optionValues, options, 1);
     }
