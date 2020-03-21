@@ -6,6 +6,7 @@ import org.jline.builtins.Options.HelpException;
 import org.jline.builtins.Widgets.ArgDesc;
 import org.jline.builtins.Widgets.CmdDesc;
 import org.jline.reader.Completer;
+import org.jline.reader.impl.completer.AggregateCompleter;
 import org.jline.reader.impl.completer.ArgumentCompleter;
 import org.jline.reader.impl.completer.NullCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
@@ -79,44 +80,53 @@ public class PicocliCommands {
 
     private SystemCompleter compileCompleters(SystemCompleter completer, CommandLine cmd) {
         for (CommandLine sub : cmd.getSubcommands().values()) {
+            String commandName = sub.getCommandName();
             for (String alias : sub.getCommandSpec().aliases()) {
-                completer.getAliases().put(alias, sub.getCommandName());
+                completer.getAliases().put(alias, commandName);
             }
-            registerCompleters(completer, sub.getCommandSpec());
-
-            // TODO support nested sub-subcommands (https://github.com/remkop/picocli/issues/969)
-            //   Is the below sufficient?
-            //   compileCompleters(completer, sub);
+            ArgumentCompleter argumentCompleter = createArgumentCompleter(sub.getCommandSpec());
+            completer.add(commandName, argumentCompleter);
         }
         return completer;
     }
 
-    private void registerCompleters(SystemCompleter out, CommandSpec spec) {
-        List<String> options = new ArrayList<>();
-        Map<String, List<String>> optionValues = new HashMap<>();
-        for (OptionSpec o : spec.options()) {
-            List<String> values = new ArrayList<>();
-            if (o.completionCandidates() != null) {
-                o.completionCandidates().forEach(values::add);
-            }
-            if (o.arity().max() == 0) {
-                options.addAll(Arrays.asList(o.names()));
-            } else {
-                for (String n: o.names()) {
-                    optionValues.put(n, values);
-                }
-            }
-        }
+    private ArgumentCompleter createArgumentCompleter(CommandSpec spec) {
+        Completer optionCompleter = createOptionCompleter(spec);
+        return new ArgumentCompleter(new StringsCompleter(spec.name()), optionCompleter);
+    }
+
+    private Completer createOptionCompleter(CommandSpec spec) {
         // TODO positional parameter completion
         // JLine OptionCompleter need to be improved with option descriptions and option value completion,
         // now it completes only strings.
-        String commandName = spec.name();
-        if (options.isEmpty() && optionValues.isEmpty()) {
-            out.add(commandName, new ArgumentCompleter(new StringsCompleter(commandName), NullCompleter.INSTANCE));
-        } else {
-            out.add(commandName, new ArgumentCompleter(new StringsCompleter(commandName)
-                     , new OptionCompleter(NullCompleter.INSTANCE, optionValues, options, 1)));
+        List<String> options = new ArrayList<>();
+        Map<String, List<String>> optionValues = new HashMap<>();
+        for (OptionSpec option : spec.options()) {
+            if (option.arity().max() == 0) {
+                options.addAll(Arrays.asList(option.names()));
+            } else {
+                List<String> values = new ArrayList<>();
+                if (option.completionCandidates() != null) {
+                    option.completionCandidates().forEach(values::add);
+                }
+                for (String name : option.names()) {
+                    optionValues.put(name, values);
+                }
+            }
         }
+        // TODO support nested sub-subcommands (https://github.com/remkop/picocli/issues/969)
+        //   Is the below sufficient? - problem is that SystemCompleter needs a call to compile()...
+        //
+        //   List<Completer> subcommands = new ArrayList<>();
+        //   for (CommandLine sub : spec.subcommands().values()) {
+        //       subcommands.add(compileCompleters(new SystemCompleter(), sub));
+        //   }
+        //   Completer nestedCompleters = new AggregateCompleter(subcommands);
+        Completer nestedCompleters = NullCompleter.INSTANCE;
+
+        return options.isEmpty() && optionValues.isEmpty()
+                ? NullCompleter.INSTANCE
+                : new OptionCompleter(nestedCompleters, optionValues, options, 1);
     }
 
     /**
