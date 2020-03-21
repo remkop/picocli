@@ -79,9 +79,10 @@ public class PicocliCommands {
 
     private SystemCompleter compileCompleters(SystemCompleter completer, CommandLine cmd) {
         completer.addAliases(extractAliases(cmd));
-        for (String name : cmd.getCommandSpec().subcommands().keySet()) {
-            CommandSpec sub = cmd.getSubcommands().get(name).getCommandSpec();
-            registerCompleters(completer, name, sub);
+
+        for (Map.Entry<String, CommandLine> entry : cmd.getSubcommands().entrySet()) {
+            CommandSpec sub = entry.getValue().getCommandSpec();
+            registerCompleters(completer, entry.getKey(), sub);
 
             // TODO support nested sub-subcommands (https://github.com/remkop/picocli/issues/969)
             //   Is the below sufficient?
