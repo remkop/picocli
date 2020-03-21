@@ -1,14 +1,5 @@
 package picocli.shell.jline3;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
 import org.jline.builtins.Completers.OptionCompleter;
 import org.jline.builtins.Completers.SystemCompleter;
 import org.jline.builtins.Options.HelpException;
@@ -19,11 +10,20 @@ import org.jline.reader.impl.completer.ArgumentCompleter;
 import org.jline.reader.impl.completer.NullCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.utils.AttributedString;
-
 import picocli.CommandLine;
 import picocli.CommandLine.Help;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
+
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Compiles SystemCompleter for command completion and implements a method commandDescription() that provides command descriptions
@@ -37,7 +37,7 @@ public class PicocliCommands {
     private final Supplier<Path> workDir;
     private final CommandLine cmd;
     private final List<String> commands;
-    private final Map<String,String> aliasCommand = new HashMap<>();
+    private final Map<String, String> aliasCommand;
 
     public PicocliCommands(Path workDir, CommandLine cmd) {
         this(() -> workDir, cmd);
@@ -47,11 +47,17 @@ public class PicocliCommands {
         this.workDir = workDir;
         this.cmd = cmd;
         commands = new ArrayList<>(cmd.getCommandSpec().subcommands().keySet());
-        for (String c: commands) {
-            for (String a: cmd.getSubcommands().get(c).getCommandSpec().aliases()) {
-                aliasCommand.put(a, c);
+        aliasCommand = extractAliases(cmd);
+    }
+
+    private static Map<String, String> extractAliases(CommandLine cmd) {
+        Map<String, String> result = new LinkedHashMap<>();
+        for (String name : cmd.getCommandSpec().subcommands().keySet()) {
+            for (String alias : cmd.getSubcommands().get(name).getCommandSpec().aliases()) {
+                result.put(alias, name);
             }
         }
+        return result;
     }
 
     /**
@@ -68,37 +74,49 @@ public class PicocliCommands {
      * @return SystemCompleter for command completion
      */
     public SystemCompleter compileCompleters() {
-        SystemCompleter out = new SystemCompleter();
-        out.addAliases(aliasCommand);
-        for (String s: commands) {
-            CommandSpec spec = cmd.getSubcommands().get(s).getCommandSpec();
-            List<String> options = new ArrayList<>();
-            Map<String,List<String>> optionValues = new HashMap<>();
-            for (OptionSpec o: spec.options()) {
-                List<String> values = new ArrayList<>();
-                if (o.completionCandidates() != null) {
-                    o.completionCandidates().forEach(v -> values.add(v));
-                }
-                if (o.arity().max() == 0) {
-                    options.addAll(Arrays.asList(o.names()));
-                } else {
-                    for (String n: o.names()) {
-                        optionValues.put(n, values);
-                    }
-                }
+        return compileCompleters(new SystemCompleter(), cmd);
+    }
+
+    private SystemCompleter compileCompleters(SystemCompleter completer, CommandLine cmd) {
+        completer.addAliases(extractAliases(cmd));
+        for (String name : cmd.getCommandSpec().subcommands().keySet()) {
+            CommandSpec sub = cmd.getSubcommands().get(name).getCommandSpec();
+            registerCompleters(completer, name, sub);
+
+            // TODO support nested sub-subcommands (https://github.com/remkop/picocli/issues/969)
+            //   Is the below sufficient?
+            //   compileCompleters(out, sub.commandLine());
+        }
+        return completer;
+    }
+
+    private void registerCompleters(SystemCompleter out, String commandName, CommandSpec spec) {
+        List<String> options = new ArrayList<>();
+        Map<String, List<String>> optionValues = new HashMap<>();
+        for (OptionSpec o : spec.options()) {
+            List<String> values = new ArrayList<>();
+            if (o.completionCandidates() != null) {
+                o.completionCandidates().forEach(values::add);
             }
-            // TODO positional parameter completion
-            // JLine OptionCompleter need to be improved with option descriptions and option value completion,
-            // now it completes only strings.
-            if (options.isEmpty() && optionValues.isEmpty()) {
-                out.add(s, new ArgumentCompleter(new StringsCompleter(s), NullCompleter.INSTANCE));
+            if (o.arity().max() == 0) {
+                options.addAll(Arrays.asList(o.names()));
             } else {
-                out.add(s, new ArgumentCompleter(new StringsCompleter(s)
-                         , new OptionCompleter(NullCompleter.INSTANCE, optionValues, options, 1)));
+                for (String n: o.names()) {
+                    optionValues.put(n, values);
+                }
             }
         }
-        return out;
+        // TODO positional parameter completion
+        // JLine OptionCompleter need to be improved with option descriptions and option value completion,
+        // now it completes only strings.
+        if (options.isEmpty() && optionValues.isEmpty()) {
+            out.add(commandName, new ArgumentCompleter(new StringsCompleter(commandName), NullCompleter.INSTANCE));
+        } else {
+            out.add(commandName, new ArgumentCompleter(new StringsCompleter(commandName)
+                     , new OptionCompleter(NullCompleter.INSTANCE, optionValues, options, 1)));
+        }
     }
+
     /**
      *
      * @param command
@@ -113,7 +131,7 @@ public class PicocliCommands {
         main.add(HelpException.highlightSyntax(synopsis.trim(), HelpException.defaultStyle()));
         // using JLine help highlight because the statement below does not work well...
         //        main.add(new AttributedString(spec.usageMessage().sectionMap().get("synopsis").render(cmdhelp).toString()));
-        for (OptionSpec o: spec.options()) {
+        for (OptionSpec o : spec.options()) {
             String key = Arrays.stream(o.names()).collect(Collectors.joining(" "));
             List<AttributedString> val = new ArrayList<>();
             for (String d:  o.description()) {
