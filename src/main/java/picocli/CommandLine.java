@@ -5137,10 +5137,15 @@ public class CommandLine {
          * or {@link #min()} if this range is absolute.
          * @return {@code 1} for a relative index like {@code "1+"},
          *      or {@code -1} for a relative index without an anchor, like {@code "+"}
+         * @since 4.3
          */
         public int anchorPoint() {
             if (isRelative()) { return parseInt(originalValue, Integer.MAX_VALUE);}
-            return min; }
+            return min;
+        }
+        /** Returns the original String value that this range was constructed with.
+         * @since 4.3 */
+        public String originalValue() { return originalValue; }
         /** Returns the lower bound of this range (inclusive).
          * @since 4.0 */
         public int min() { return min; }
@@ -5703,12 +5708,20 @@ public class CommandLine {
                     positional.index = Range.valueOf(interpolator.interpolate(positional.index().originalValue));
                     positional.initCapacity();
                 }
-                Range index = positional.index();
-                if (index.isRelative()) {
+                if (positional.index().isRelative()) {
                     Collections.sort(positionalParameters, new PositionalParametersSorter());
-                    int i = positionalParameters.indexOf(positional);
-                    positional.index = new Range(i, i, index.isVariable(), index.isUnspecified, index.originalValue);
-                    positional.initCapacity();
+                    // adjust the index of the new positional
+                    // and all others with relative indices that were sorted after this positional
+                    for (int i = positionalParameters.indexOf(positional); i < positionalParameters.size(); i++) {
+                        PositionalParamSpec adjust = positionalParameters.get(i);
+                        Range index = adjust.index();
+                        if (index.isRelative()) {
+                            //int min = i == 0 ? 0 : positionalParameters.get(i - 1).index().min();
+                            int max = i == 0 ? 0 : positionalParameters.get(i - 1).index().max() + 1;
+                            adjust.index = new Range(max, max, index.isVariable(), index.isUnspecified, index.originalValue);
+                            adjust.initCapacity();
+                        }
+                    }
                 }
                 if (positional.scopeType() == ScopeType.INHERIT) {
                     Set<CommandLine> done = new HashSet<CommandLine>();
