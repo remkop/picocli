@@ -357,7 +357,6 @@ public class InterpolatedModelTest {
         private String commonMixinTwoParam;
     }
 
-    @Ignore
     @Test
     // test for https://github.com/remkop/picocli/issues/564
     public void testMixinsWithVariableIndex() {
@@ -379,15 +378,11 @@ public class InterpolatedModelTest {
         // ...
 
         String expected = String.format("" +
-                "Usage: testCommand [COMMON-PARAM-ONE...] [TEST-COMMAND-PARAM...]%n" +
-                "                   [COMMON-PARAM-TWO...]%n" +
+                "Usage: testCommand COMMON-PARAM-ONE TEST-COMMAND-PARAM COMMON-PARAM-TWO%n" +
                 "Example for issue 564%n" +
-                "      [COMMON-PARAM-ONE...]%n" +
-                "%n" +
-                "      [TEST-COMMAND-PARAM...]%n" +
-                "%n" +
-                "      [COMMON-PARAM-TWO...]%n" +
-                "%n");
+                "      COMMON-PARAM-ONE%n" +
+                "      TEST-COMMAND-PARAM%n" +
+                "      COMMON-PARAM-TWO%n");
         String actual = cmd.getUsageMessage();
         assertEquals(expected, actual);
     }

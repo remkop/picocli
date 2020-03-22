@@ -5710,6 +5710,15 @@ public class CommandLine {
                     positional.index = new Range(i, i, index.isVariable(), index.isUnspecified, index.originalValue);
                     positional.initCapacity();
                 }
+                if (positional.scopeType() == ScopeType.INHERIT) {
+                    Set<CommandLine> done = new HashSet<CommandLine>();
+                    for (CommandLine sub : subcommands().values()) {
+                        if (!done.contains(sub)) {
+                            sub.getCommandSpec().addPositional(PositionalParamSpec.builder(positional).build());
+                            done.add(sub);
+                        }
+                    }
+                }
                 return this;
             }
             private CommandSpec addArg(ArgSpec arg) {
