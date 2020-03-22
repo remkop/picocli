@@ -5099,7 +5099,8 @@ public class CommandLine {
         }
         private static int parseInt(String str, int defaultValue) {
             try {
-                return Integer.parseInt(str);
+                int pos = str.indexOf('+');
+                return Integer.parseInt(pos < 0 ? str : str.substring(0, str.indexOf('+')));
             } catch (Exception ex) {
                 return defaultValue;
             }
@@ -5123,10 +5124,23 @@ public class CommandLine {
         /** Returns {@code true} if this Range is a default value, {@code false} if the user specified this value.
          * @since 4.0 */
         public boolean isUnspecified() { return isUnspecified; }
-        /** Returns {@code true} if this range contains variables that have not been expanded yet,
-         * {@code false} if this Range does not contain any variables.
+        /** Returns {@code true} if this range contains a relative index like {@code "1+"}, or variables that have not been expanded yet,
+         * {@code false} if this Range does not contain any variables or relative indices.
          * @since 4.0 */
         public boolean isUnresolved() { return originalValue != null && originalValue.contains("${"); }
+        /** Returns {@code true} if this range contains a relative index like {@code "1+"}, or
+         * {@code false} if this Range does not contain any relative indices.
+         * @since 4.3 */
+        public boolean isRelative() { return originalValue != null && originalValue.contains("+"); }
+
+        /** Returns the anchor position that this range is {@linkplain #isRelative() relative} to,
+         * or {@link #min()} if this range is absolute.
+         * @return {@code 1} for a relative index like {@code "1+"},
+         *      or {@code -1} for a relative index without an anchor, like {@code "+"}
+         */
+        public int anchorPoint() {
+            if (isRelative()) { return parseInt(originalValue, Integer.MAX_VALUE);}
+            return min; }
         /** Returns the lower bound of this range (inclusive).
          * @since 4.0 */
         public int min() { return min; }
@@ -5157,8 +5171,16 @@ public class CommandLine {
             return min == max ? String.valueOf(min) : min + ".." + (isVariable ? "*" : max);
         }
         public int compareTo(Range other) {
-            int result = min - other.min;
-            return (result == 0) ? max - other.max : result;
+            int result = (anchorPoint() < other.anchorPoint()) ? -1 : ((anchorPoint() == other.anchorPoint()) ? 0 : 1); // don't subtract; prevent overflow
+            if (result == 0) {
+                result = (max < other.max) ? -1 : ((max == other.max) ? 0 : 1);
+            }
+            if (result == 0) {
+                if (this.isRelative() != other.isRelative()) {
+                    result = isRelative() ? 1 : -1; // relative follows absolute
+                }
+            }
+            return result;
         }
         /** Returns true for these ranges: 0 and 0..1. */
         boolean isValidForInteractiveArgs() { return (min == 0 && (max == 0 || max == 1)); }
@@ -5170,7 +5192,7 @@ public class CommandLine {
         int min = 0;
         for (PositionalParamSpec positional : positionalParametersFields) {
             Range index = positional.index();
-            if (index.min > min) {
+            if (index.min > min && !index.isRelative()) {
                 throw new ParameterIndexGapException("Command definition should have a positional parameter with index=" + min +
                         ". Nearest positional parameter '" + positional.paramLabel() + "' has index=" + index.min);
             }
@@ -5507,9 +5529,9 @@ public class CommandLine {
                 }
                 subSpec.initCommandHierarchyWithResourceBundle(resourceBundleBaseName(), resourceBundle());
 
-                for (OptionSpec option : options()) {
-                    if (option.scopeType() == ScopeType.INHERIT) {
-                        subSpec.addOption(option);
+                for (ArgSpec arg : args()) {
+                    if (arg.scopeType() == ScopeType.INHERIT) {
+                        subSpec.add(arg);
                     }
                 }
                 return this;
@@ -5679,6 +5701,13 @@ public class CommandLine {
                 addArg(positional);
                 if (positional.index().isUnresolved()) {
                     positional.index = Range.valueOf(interpolator.interpolate(positional.index().originalValue));
+                    positional.initCapacity();
+                }
+                Range index = positional.index();
+                if (index.isRelative()) {
+                    Collections.sort(positionalParameters, new PositionalParametersSorter());
+                    int i = positionalParameters.indexOf(positional);
+                    positional.index = new Range(i, i, index.isVariable(), index.isUnspecified, index.originalValue);
                     positional.initCapacity();
                 }
                 return this;
@@ -11773,8 +11802,12 @@ public class CommandLine {
             int interactiveConsumed = 0;
             int originalNowProcessingSize = parseResultBuilder.nowProcessing.size();
             Map<PositionalParamSpec, Integer> newPositions = new IdentityHashMap<PositionalParamSpec, Integer>();
-            for (PositionalParamSpec positionalParam : commandSpec.positionalParameters()) {
+            for (int i = 0; i < commandSpec.positionalParameters().size(); i++) {
+                PositionalParamSpec positionalParam = commandSpec.positionalParameters().get(i);
                 Range indexRange = positionalParam.index();
+                if (indexRange.isRelative()) {
+                    indexRange = new Range(i, i, false, false, indexRange.originalValue);
+                }
                 int localPosition = getPosition(positionalParam);
                 if (positionalParam.group() != null) { // does the positionalParam's index range contain the current position in the currently matching group
                     GroupMatchContainer groupMatchContainer = parseResultBuilder.groupMatchContainer.findOrCreateMatchingGroup(positionalParam, commandSpec.commandLine());

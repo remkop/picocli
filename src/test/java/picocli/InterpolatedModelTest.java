@@ -348,12 +348,12 @@ public class InterpolatedModelTest {
     }
 
     static class CommonMixinOne {
-        @Parameters(index = "${sys:commonParam1}", paramLabel = "COMMON-PARAM-ONE")
+        @Parameters(index = "0+", paramLabel = "COMMON-PARAM-ONE")
         private String commonMixinOneParam;
     }
 
     static class CommonMixinTwo {
-        @Parameters(index = "${sys:commonParam2}", paramLabel = "COMMON-PARAM-TWO")
+        @Parameters(index = "2+", paramLabel = "COMMON-PARAM-TWO")
         private String commonMixinTwoParam;
     }
 
@@ -365,25 +365,29 @@ public class InterpolatedModelTest {
         class TestCommand {
 
             @Mixin
-            private CommonMixinTwo myCommonMixinTwo;
+            private CommonMixinOne myCommonMixinOne;
 
             @Parameters(index = "1", paramLabel = "TEST-COMMAND-PARAM")
             private String testCommandParam;
 
             @Mixin
-            private CommonMixinOne myCommonMixinOne;
+            private CommonMixinTwo myCommonMixinTwo;
         }
-
-        // re-order the indices of the mixin parameters for this application:
-        System.setProperty("commonParam2", "0");
-        System.setProperty("commonParam1", "2");
 
         CommandLine cmd = new CommandLine(new TestCommand());
         //ParseResult result = cmd.parseArgs(args);
         // ...
 
         String expected = String.format("" +
-                "");
+                "Usage: testCommand [COMMON-PARAM-ONE...] [TEST-COMMAND-PARAM...]%n" +
+                "                   [COMMON-PARAM-TWO...]%n" +
+                "Example for issue 564%n" +
+                "      [COMMON-PARAM-ONE...]%n" +
+                "%n" +
+                "      [TEST-COMMAND-PARAM...]%n" +
+                "%n" +
+                "      [COMMON-PARAM-TWO...]%n" +
+                "%n");
         String actual = cmd.getUsageMessage();
         assertEquals(expected, actual);
     }

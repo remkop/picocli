@@ -58,7 +58,8 @@ class AdvancedMixin {
 
 ## <a name="4.3.0-fixes"></a> Fixed issues
 * [#958] API: Add `@Spec(Spec.Target.MIXEE)` annotation element to allow mixins to get a reference to the command they are mixed into.
-* [#960] API: Add method `CommandSpec::root` to return the `CommandSpec` of the top-level command. 
+* [#960] API: Add method `CommandSpec::root` to return the `CommandSpec` of the top-level command.
+* [#564][#370] Add support for relative indices for positional parameters. Useful in mixins and inherited positional parameters. 
 * [#956] Enhancement: Default ParameterExceptionHandler should show stack trace when tracing is set to DEBUG level.
 * [#952] Enhancement: Make annotation processor quiet by default; add `-Averbose` annotation processor option to enable printing NOTE-level diagnostic messages to the console.
 * [#974] Enhancement/Bugfix: Add support for `@ArgGroup` argument groups in `@Command`-annotated methods. Thanks to [Usman Saleem](https://github.com/usmansaleem) for raising this.
