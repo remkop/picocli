@@ -80,14 +80,15 @@ class CommandGroupRenderer implements CommandLine.IHelpSectionRenderer {
 
         for (String name : cmdNames) {
             CommandLine.Model.CommandSpec sub = help.commandSpec().subcommands().get(name).getCommandSpec();
-            String description = description(sub.usageMessage());
 
             // create comma-separated list of command name and aliases
             String names = sub.names().toString();
             names = names.substring(1, names.length() - 1); // remove leading '[' and trailing ']'
 
-            // description may contain line separators
+            // description may contain line separators; use Text::splitLines to handle this
+            String description = description(sub.usageMessage());
             CommandLine.Help.Ansi.Text[] lines = help.colorScheme().text(String.format(description)).splitLines();
+
             for (int i = 0; i < lines.length; i++) {
                 CommandLine.Help.Ansi.Text desc = help.ansi().text(i == 0 ? names : "");
                 textTable.addRowValues(desc, lines[i]);
