@@ -1,4 +1,4 @@
-package picocli.examples.subcommands;
+package picocli.examples.customhelp;
 
 import org.jetbrains.annotations.NotNull;
 import picocli.CommandLine;
@@ -22,7 +22,7 @@ public class GroupingDemo {
         sections.put("%nFirst Group:%n", Arrays.asList("sub2", "sub4", "sub6"));
         sections.put("%nSecond Group:%n", Arrays.asList("sub1", "sub3", "sub5"));
         sections.put("%nThird Group:%n", Arrays.asList("sub7", "sub8"));
-        MyCommandListRenderer renderer = new MyCommandListRenderer(sections);
+        CommandGroupRenderer renderer = new CommandGroupRenderer(sections);
 
         CommandLine cmd = new CommandLine(new GroupingDemo());
         cmd.getHelpSectionMap().remove(SECTION_KEY_COMMAND_LIST_HEADING);
@@ -56,10 +56,10 @@ public class GroupingDemo {
     void sub8() {}
 }
 
-class MyCommandListRenderer implements CommandLine.IHelpSectionRenderer {
+class CommandGroupRenderer implements CommandLine.IHelpSectionRenderer {
     private final Map<String, List<String>> sections;
 
-    public MyCommandListRenderer(Map<String, List<String>> sections) {
+    public CommandGroupRenderer(Map<String, List<String>> sections) {
         this.sections = sections;
     }
 
