@@ -1,6 +1,5 @@
 package picocli.examples.customhelp;
 
-import org.jetbrains.annotations.NotNull;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -97,7 +96,6 @@ class CommandGroupRenderer implements CommandLine.IHelpSectionRenderer {
         return help.createHeading(sectionHeading) + textTable.toString();
     }
 
-    @NotNull
     private CommandLine.Help.TextTable createTextTable(CommandLine.Help help) {
         CommandLine.Model.CommandSpec spec = help.commandSpec();
         // prepare layout: two columns
