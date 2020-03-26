@@ -2,6 +2,11 @@ package picocli.examples.customhelp;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Help.Ansi.Text;
+import picocli.CommandLine.Help.Column;
+import picocli.CommandLine.Help.TextTable;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Model.UsageMessageSpec;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -72,10 +77,10 @@ class CommandGroupRenderer implements CommandLine.IHelpSectionRenderer {
     }
 
     private String renderSection(String sectionHeading, List<String> cmdNames, CommandLine.Help help) {
-        CommandLine.Help.TextTable textTable = createTextTable(help);
+        TextTable textTable = createTextTable(help);
 
         for (String name : cmdNames) {
-            CommandLine.Model.CommandSpec sub = help.commandSpec().subcommands().get(name).getCommandSpec();
+            CommandSpec sub = help.commandSpec().subcommands().get(name).getCommandSpec();
 
             // create comma-separated list of command name and aliases
             String names = sub.names().toString();
@@ -83,24 +88,24 @@ class CommandGroupRenderer implements CommandLine.IHelpSectionRenderer {
 
             // description may contain line separators; use Text::splitLines to handle this
             String description = description(sub.usageMessage());
-            CommandLine.Help.Ansi.Text[] lines = help.colorScheme().text(String.format(description)).splitLines();
+            Text[] lines = help.colorScheme().text(String.format(description)).splitLines();
 
             for (int i = 0; i < lines.length; i++) {
-                CommandLine.Help.Ansi.Text cmdNamesText = help.colorScheme().commandText(i == 0 ? names : "");
+                Text cmdNamesText = help.colorScheme().commandText(i == 0 ? names : "");
                 textTable.addRowValues(cmdNamesText, lines[i]);
             }
         }
         return help.createHeading(sectionHeading) + textTable.toString();
     }
 
-    private CommandLine.Help.TextTable createTextTable(CommandLine.Help help) {
-        CommandLine.Model.CommandSpec spec = help.commandSpec();
+    private TextTable createTextTable(CommandLine.Help help) {
+        CommandSpec spec = help.commandSpec();
         // prepare layout: two columns
         // the left column overflows, the right column wraps if text is too long
         int commandLength = maxLength(spec.subcommands(), 37);
-        CommandLine.Help.TextTable textTable = CommandLine.Help.TextTable.forColumns(help.colorScheme(),
-                new CommandLine.Help.Column(commandLength + 2, 2, CommandLine.Help.Column.Overflow.SPAN),
-                new CommandLine.Help.Column(spec.usageMessage().width() - (commandLength + 2), 2, CommandLine.Help.Column.Overflow.WRAP));
+        TextTable textTable = TextTable.forColumns(help.colorScheme(),
+                new Column(commandLength + 2, 2, Column.Overflow.SPAN),
+                new Column(spec.usageMessage().width() - (commandLength + 2), 2, Column.Overflow.WRAP));
         textTable.setAdjustLineBreaksForWideCJKCharacters(spec.usageMessage().adjustLineBreaksForWideCJKCharacters());
         return textTable;
     }
@@ -110,7 +115,7 @@ class CommandGroupRenderer implements CommandLine.IHelpSectionRenderer {
         return Math.min(max, result);
     }
 
-    private String description(CommandLine.Model.UsageMessageSpec usageMessage) {
+    private String description(UsageMessageSpec usageMessage) {
         if (usageMessage.header().length > 0) {
             return usageMessage.header()[0];
         }
