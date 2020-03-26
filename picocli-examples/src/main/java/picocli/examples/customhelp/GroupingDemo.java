@@ -66,11 +66,9 @@ class CommandGroupRenderer implements CommandLine.IHelpSectionRenderer {
     public String render(CommandLine.Help help) {
         if (help.commandSpec().subcommands().isEmpty()) { return ""; }
 
-        String result = "";
-        for (Map.Entry<String, List<String>> entry : sections.entrySet()) {
-            result += renderSection(entry.getKey(), entry.getValue(), help);
-        }
-        return result;
+        StringBuilder result = new StringBuilder();
+        sections.entrySet().forEach(e -> result.append(renderSection(e.getKey(), e.getValue(), help)));
+        return result.toString();
     }
 
     private String renderSection(String sectionHeading, List<String> cmdNames, CommandLine.Help help) {
@@ -108,10 +106,7 @@ class CommandGroupRenderer implements CommandLine.IHelpSectionRenderer {
     }
 
     private int maxLength(Map<String, CommandLine> subcommands, int max) {
-        int result = 0;
-        for (CommandLine cmd : subcommands.values()) {
-            result = Math.max(result, cmd.getCommandSpec().names().toString().length() - 2);
-        }
+        int result = subcommands.values().stream().map(cmd -> cmd.getCommandSpec().names().toString().length() - 2).max(Integer::compareTo).get();
         return Math.min(max, result);
     }
 
