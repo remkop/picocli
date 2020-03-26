@@ -15,6 +15,7 @@ jdk:
 - openjdk12
 - openjdk13
 - openjdk14
+- openjdk15
 - openjdk-ea
 #  - oraclejdk7
 # $ jdk_switcher use oraclejdk7
