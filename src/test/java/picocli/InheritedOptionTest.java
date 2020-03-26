@@ -214,7 +214,6 @@ public class InheritedOptionTest {
         assertEquals(LOCAL, PositionalParamSpec.builder().build().scopeType());
     }
 
-    //@Ignore("Needs https://github.com/remkop/picocli/issues/564 and https://github.com/remkop/picocli/issues/370")
     @Test
     public void testProgrammaticAddPositionalParamBeforeSub() {
         PositionalParamSpec optA = PositionalParamSpec.builder().scopeType(INHERIT).build();
@@ -226,7 +225,6 @@ public class InheritedOptionTest {
         assertFalse(sub.positionalParameters().isEmpty());
     }
 
-    //@Ignore("Needs https://github.com/remkop/picocli/issues/564 and https://github.com/remkop/picocli/issues/370")
     @Test
     public void testProgrammaticAddPositionalParamAfterSub() {
         PositionalParamSpec positional = PositionalParamSpec.builder().scopeType(INHERIT).build();

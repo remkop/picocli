@@ -703,7 +703,7 @@ public class ArgSplitTest {
         assertTrue(app.map.keySet().toString(), app.map.containsKey("a=b=c"));
         assertEquals("x=y=z", app.map.get("a=b=c"));
     }
-    //@Ignore("Needs support for nested quoting #595")
+
     @Test
     public void testQuotedMapKeysTrimQuotesWithSplit() {
         class App {
@@ -736,7 +736,7 @@ public class ArgSplitTest {
         assertTrue(app.map.keySet().toString(), app.map.containsKey("a=b=c"));
         assertEquals("x y z", app.map.get("a=b=c"));
     }
-    //@Ignore("Needs support for nested quoting #595")
+
     @Test
     public void testQuotedMapKeysAndQuotedMapValuesNeedExtraQuotesWithSplit() {
         class App {
