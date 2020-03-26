@@ -64,13 +64,11 @@ class CommandGroupRenderer implements CommandLine.IHelpSectionRenderer {
 
     //@Override
     public String render(CommandLine.Help help) {
-        CommandLine.Model.CommandSpec spec = help.commandSpec();
-        if (spec.subcommands().isEmpty()) { return ""; }
+        if (help.commandSpec().subcommands().isEmpty()) { return ""; }
 
         String result = "";
-        for (String sectionHeading : sections.keySet()) {
-            List<String> cmdNames = sections.get(sectionHeading);
-            result += renderSection(sectionHeading, cmdNames, help);
+        for (Map.Entry<String, List<String>> entry : sections.entrySet()) {
+            result += renderSection(entry.getKey(), entry.getValue(), help);
         }
         return result;
     }
@@ -90,8 +88,8 @@ class CommandGroupRenderer implements CommandLine.IHelpSectionRenderer {
             CommandLine.Help.Ansi.Text[] lines = help.colorScheme().text(String.format(description)).splitLines();
 
             for (int i = 0; i < lines.length; i++) {
-                CommandLine.Help.Ansi.Text desc = help.ansi().text(i == 0 ? names : "");
-                textTable.addRowValues(desc, lines[i]);
+                CommandLine.Help.Ansi.Text cmdNamesText = help.colorScheme().commandText(i == 0 ? names : "");
+                textTable.addRowValues(cmdNamesText, lines[i]);
             }
         }
         return help.createHeading(sectionHeading) + textTable.toString();
