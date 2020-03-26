@@ -72,7 +72,7 @@ class CommandGroupRenderer implements CommandLine.IHelpSectionRenderer {
         if (help.commandSpec().subcommands().isEmpty()) { return ""; }
 
         StringBuilder result = new StringBuilder();
-        sections.entrySet().forEach(e -> result.append(renderSection(e.getKey(), e.getValue(), help)));
+        sections.forEach((key, value) -> result.append(renderSection(key, value, help)));
         return result.toString();
     }
 
