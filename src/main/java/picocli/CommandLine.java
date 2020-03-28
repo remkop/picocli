@@ -5026,7 +5026,7 @@ public class CommandLine {
             if (member.isMethodParameter()) {
                 int min = member.getMethodParamPosition();
                 int max = member.isMultiValue() ? Integer.MAX_VALUE : min;
-                return new Range(min, max, member.isMultiValue(), false, "");
+                return new Range(min, max, member.isMultiValue(), false, null);
             }
             return Range.valueOf("*"); // the default
         }

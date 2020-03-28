@@ -3356,12 +3356,11 @@ public class CommandLineTest {
     }
 
     @SuppressWarnings("unchecked")
-    @Ignore
     @Test
     public void testInterpreterProcessClusteredShortOptions() throws Exception {
         Class c = Class.forName("picocli.CommandLine$Interpreter");
         Method processClusteredShortOptions = c.getDeclaredMethod("processClusteredShortOptions",
-                Collection.class, Set.class, String.class, Stack.class);
+                Collection.class, Set.class, String.class, boolean.class, Stack.class);
         processClusteredShortOptions.setAccessible(true);
 
         CommandSpec spec = CommandSpec.create();
@@ -3372,8 +3371,8 @@ public class CommandLineTest {
 
         Stack<String> stack = new Stack<String>();
         String arg = "-xa";
-        processClusteredShortOptions.invoke(interpreter, new ArrayList<ArgSpec>(), new HashSet<String>(), arg, stack);
-        // TODO
+        processClusteredShortOptions.invoke(interpreter, new ArrayList<ArgSpec>(), new HashSet<String>(), arg, true, stack);
+        assertEquals(true, cmd.getParseResult().matchedOptionValue('x', null));
     }
 
     @Test

@@ -2,7 +2,6 @@ package picocli;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -16,14 +15,10 @@ public class FallbackTest {
                 description = "Use reader", paramLabel = "<reader>", fallbackValue = "")
         String reader;
 
-        @Option(names = "-x")
-        String arity1;
+        @Option(names = "-x") String arity1;
+        @Parameters String[] params = {};
 
-        @Parameters
-        String[] params = {};
-
-        public void run() {
-        }
+        public void run() { }
 
         private String subApp;
         private String[] subParams;
