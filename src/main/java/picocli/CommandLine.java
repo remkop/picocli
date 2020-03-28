@@ -4966,6 +4966,7 @@ public class CommandLine {
         @Deprecated public final boolean isVariable;
         private final boolean isUnspecified;
         private final String originalValue;
+        private final int anchor;
 
         /** Constructs a new Range object with the specified parameters.
          * @param min minimum number of required parameters
@@ -4982,6 +4983,12 @@ public class CommandLine {
             this.isVariable = variable;
             this.isUnspecified = unspecified;
             this.originalValue = originalValue;
+            // relative indices have an anchorPoint that is used for sorting
+            if (originalValue != null && originalValue.contains("+")) {
+                anchor = "+".equals(originalValue) ? Integer.MAX_VALUE : parseInt(originalValue, Integer.MAX_VALUE);
+            } else {
+                anchor = min;
+            }
         }
         /** Returns a new {@code Range} based on the {@link Option#arity()} annotation on the specified field,
          * or the field type's default arity if no arity was specified.
@@ -5128,21 +5135,18 @@ public class CommandLine {
          * {@code false} if this Range does not contain any variables or relative indices.
          * @since 4.0 */
         public boolean isUnresolved() { return originalValue != null && originalValue.contains("${"); }
-        /** Returns {@code true} if this range contains a relative index like {@code "1+"}, or
+        /** Returns {@code true} if this Range contains a relative index like {@code "1+"}, or
          * {@code false} if this Range does not contain any relative indices.
          * @since 4.3 */
         public boolean isRelative() { return originalValue != null && originalValue.contains("+"); }
 
-        /** Returns the anchor position that this range is {@linkplain #isRelative() relative} to,
-         * or {@link #min()} if this range is absolute.
+        /** Returns the anchor position that this Range is {@linkplain #isRelative() relative} to,
+         * or {@link #min()} if this Range is absolute.
          * @return {@code 1} for a relative index like {@code "1+"},
-         *      or {@code -1} for a relative index without an anchor, like {@code "+"}
-         * @since 4.3
-         */
-        public int anchorPoint() {
-            if (isRelative()) { return parseInt(originalValue, Integer.MAX_VALUE);}
-            return min;
-        }
+         *      or {@code Integer.MAX_VALUE} for a relative index without an anchor, like {@code "+"}
+         * @since 4.3 */
+        int anchor() { return anchor; } // not public (yet): TBD if we need a minAnchor and maxAnchor in the future
+        boolean isRelativeToAnchor() { return anchor != Integer.MAX_VALUE && isRelative(); }
         /** Returns the original String value that this range was constructed with.
          * @since 4.3 */
         public String originalValue() { return originalValue; }
@@ -5173,10 +5177,14 @@ public class CommandLine {
         }
         public String toString() {
             if (isUnresolved()) { return originalValue; }
-            return min == max ? String.valueOf(min) : min + ".." + (isVariable ? "*" : max);
+            String result = min == max ? String.valueOf(min) : min + ".." + (isVariable ? "*" : max);
+            return isRelative() ? result + " (" + originalValue + ")" : result;
         }
         public int compareTo(Range other) {
-            int result = (anchorPoint() < other.anchorPoint()) ? -1 : ((anchorPoint() == other.anchorPoint()) ? 0 : 1); // don't subtract; prevent overflow
+            if (originalValue != null && other.originalValue != null && originalValue.equals(other.originalValue)) {
+                return 0; // try to keep stable sort for relative indexes
+            }
+            int result = (anchor() < other.anchor()) ? -1 : ((anchor() == other.anchor()) ? 0 : 1); // don't subtract; prevent overflow
             if (result == 0) {
                 result = (max < other.max) ? -1 : ((max == other.max) ? 0 : 1);
             }
@@ -5718,6 +5726,7 @@ public class CommandLine {
                         if (index.isRelative()) {
                             //int min = i == 0 ? 0 : positionalParameters.get(i - 1).index().min();
                             int max = i == 0 ? 0 : positionalParameters.get(i - 1).index().max() + 1;
+                            max = index.isRelativeToAnchor() ? Math.max(max, index.anchor()) : max; // never less than anchor
                             adjust.index = new Range(max, max, index.isVariable(), index.isUnspecified, index.originalValue);
                             adjust.initCapacity();
                         }
@@ -12761,7 +12770,7 @@ public class CommandLine {
             new Tracer().warn("Could not close " + closeable + ": " + ex.toString());
         }
     }
-    private static class PositionalParametersSorter implements Comparator<ArgSpec> {
+    static class PositionalParametersSorter implements Comparator<ArgSpec> {
         private static final Range OPTION_INDEX = new Range(0, 0, false, true, "0");
         public int compare(ArgSpec p1, ArgSpec p2) {
             int result = index(p1).compareTo(index(p2));
