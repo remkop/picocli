@@ -2739,7 +2739,7 @@ This can be useful for <a href="#_optionally_interactive">password options</a> a
     <span class="predefined-type">String</span> value;
 
     <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-y</span><span class="delimiter">&quot;</span></span>, arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">0..*</span><span class="delimiter">&quot;</span></span>,
-      description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Option with one or more parameters</span><span class="delimiter">&quot;</span></span>)
+      description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Option with optional parameters</span><span class="delimiter">&quot;</span></span>)
     <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; values;
 }</code></pre>
 </div>
@@ -2748,8 +2748,11 @@ This can be useful for <a href="#_optionally_interactive">password options</a> a
 <p>When <code>-x VALUE</code> is specified on the command line, this results in an error: <code>Missing required parameter: &lt;file&gt;</code>. Similarly, when <code>-y a b c path/to/file</code> is specified.</p>
 </div>
 <div class="paragraph">
-<p>Users can disambiguate the input with the <a href="#_double_dash">end-of-options delimiter</a>,
-and specify <code>-x &dash;&dash; VALUE</code> or <code>-y a b c &dash;&dash; VALUE</code>, but it may be better to redesign your command to avoid the ambiguity.</p>
+<p>Users can use the <a href="#_double_dash">end-of-options delimiter</a> and disambiguate the input with
+ <code>-x &dash;&dash; VALUE</code> or <code>-y a b c &dash;&dash; VALUE</code>, but this may not be obvious to many users.</p>
+</div>
+<div class="paragraph">
+<p>A better alternative may be to redesign your command to avoid the ambiguity altogether.</p>
 </div>
 </td>
 </tr>

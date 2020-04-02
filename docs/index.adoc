@@ -1331,15 +1331,17 @@ class Ambiguous {
     String value;
 
     @Option(names = "-y", arity = "0..*",
-      description = "Option with one or more parameters")
+      description = "Option with optional parameters")
     List<String> values;
 }
 ----
 
 When `-x VALUE` is specified on the command line, this results in an error: `Missing required parameter: <file>`. Similarly, when `-y a b c path/to/file` is specified.
 
-Users can disambiguate the input with the <<Double dash (`--`),end-of-options delimiter>>,
-and specify `-x &dash;&dash; VALUE` or `-y a b c &dash;&dash; VALUE`, but it may be better to redesign your command to avoid the ambiguity.
+Users can use the <<Double dash (`--`),end-of-options delimiter>> and disambiguate the input with
+ `-x &dash;&dash; VALUE` or `-y a b c &dash;&dash; VALUE`, but this may not be obvious to many users.
+
+A better alternative may be to redesign your command to avoid the ambiguity altogether.
 ====
 
 == Argument Groups
