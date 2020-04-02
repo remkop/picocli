@@ -498,7 +498,7 @@ assert params.allParameters.equals(Arrays.asList("localhost", "12345", "file1.tx
 See <<Strongly Typed Everything>> for which types are supported out of the box and how to add custom types.
 
 === Mixing Options and Positional Parameters
-From picocli 2.0, positional parameters can be mixed with options on the command line.
+From picocli 2.0, positional parameters can be specified anywhere on the command line, they no longer need to follow the options.
 
 For example:
 
@@ -523,7 +523,6 @@ new CommandLine(mixed).parseArgs(args);
 assert mixed.positional.equals(Arrays.asList("param0", "param1", "param2", "param3");
 assert mixed.options.equals   (Arrays.asList("AAA", "BBB"));
 ----
-
 
 === Double dash (`--`)
 When one of the command line arguments is just two dashes without any characters attached (`--`),
@@ -1282,7 +1281,9 @@ The following command line arguments would be accepted:
 ----
 
 === Required Parameters
-Use the `arity` attribute to make `@Parameters` mandatory:
+Single-value `@Parameters` are always mandatory, because single-value positional parameters <<Positional Parameter Arity,have `arity = "1"`>> by default.
+
+The `arity` attribute can be used to make multi-value `@Parameters` mandatory:
 [source, java]
 ----
 class BothOptionAndParametersMandatory {
@@ -1304,6 +1305,42 @@ The following command line arguments would be accepted:
 <command> -n 123 file1
 ----
 
+=== Options with an Optional Parameter
+
+Options with `arity = "0..1"` have an optional parameter.
+This can be useful for <<Optionally Interactive,password options>> and in some other cases.
+
+The <<fallbackValue-annotation,fallback value>> determines what value is assigned when the option is specified without a value, while the <<defaultValue-annotation,default value>> determines what value is assigned when the option is not specified at all.
+
+[WARNING]
+====
+Be careful when defining commands that have both an option with an optional parameter and a positional parameter.
+
+The picocli parser is "greedy" when it handles optional parameters: it looks at the value following the option name, and if that value is likely to be a parameter (not another option or subcommand) then it will process the value as a parameter for that option. This may not always be what you want.
+
+For example:
+
+[source,java]
+----
+class Ambiguous {
+    @Parameters(description = "The file (required).")
+    File file;
+
+    @Option(names = "-x", arity = "0..1",
+      description = "Option with optional parameter")
+    String value;
+
+    @Option(names = "-y", arity = "0..*",
+      description = "Option with one or more parameters")
+    List<String> values;
+}
+----
+
+When `-x VALUE` is specified on the command line, this results in an error: `Missing required parameter: <file>`. Similarly, when `-y a b c path/to/file` is specified.
+
+Users can disambiguate the input with the <<Double dash (`--`),end-of-options delimiter>>,
+and specify `-x &dash;&dash; VALUE` or `-y a b c &dash;&dash; VALUE`, but it may be better to redesign your command to avoid the ambiguity.
+====
 
 == Argument Groups
 Picocli 4.0 introduces a new `@ArgGroup` annotation and its `ArgGroupSpec` programmatic equivalent.

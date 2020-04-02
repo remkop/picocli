@@ -75,6 +75,7 @@ class AdvancedMixin {
 * [#972] (DOC) Add section "Handling Invalid Input" for custom type converters to user manual, demonstrating `TypeConversionException`. Add example `InetSocketAddressConverter` to `picocli-examples`. Thanks to [Simon](https://github.com/sbernard31) for raising this.
 * [#975] (DOC) Update user manual [Annotation Processor](https://picocli.info/#_enabling_the_annotation_processor) section to use `${project.groupId}` instead of deprecated `${groupId}`. Thanks to [Dmitry Timofeev](https://github.com/dmitry-timofeev) for the pull request.
 * [#976] (DOC) Update user manual Testing section; add subsection on [Testing Environment Variables](file:///C:/Users/remko/IdeaProjects/picocli3/build/docs/html5/index.html#_testing_environment_variables). Thanks to [David M. Carr](https://github.com/davidmc24) for raising this and providing a [sample project](https://github.com/remkop/picocli/files/4359943/bulk-scripts-public.zip).
+* [#979][#981] (DOC) Update user manual: add section [Options with an Optional Parameter](https://picocli.info/#_options_with_an_optional_parameter). Thanks to [razvanh](https://github.com/razvanh), [Jake](https://github.com/kyeo138) and [mohdpasha](https://github.com/mohdpasha) for raising this.
 
 ## <a name="4.3.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
