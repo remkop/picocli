@@ -1,5 +1,6 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -755,4 +756,25 @@ public class AtFileTest {
         assertEquals(expected, actual);
     }
 
+    @Ignore("Requires #984 Parameters heading not shown when `@filename` is the only parameter")
+    @Test
+    public void testAtFileParameterListHeadingShownIfNoOtherPositionalParameters() {
+        @Command(name = "A", mixinStandardHelpOptions = true,
+                showAtFileInUsageHelp = true,
+                parameterListHeading = "Parameters:%n",
+                optionListHeading = "Options:%n",
+                description = "... description ...")
+        class A { }
+
+        String actual = new CommandLine(new A()).getUsageMessage();
+        String expected = String.format("" +
+                "Usage: A [-hV] [@<filename>...]%n" +
+                "... description ...%n" +
+                "Parameters:%n" +
+                "      [@<filename>...]   One or more argument files containing options.%n" +
+                "Options:%n" +
+                "  -h, --help             Show this help message and exit.%n" +
+                "  -V, --version          Print version information and exit.%n");
+        assertEquals(expected, actual);
+    }
 }
