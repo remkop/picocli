@@ -777,4 +777,29 @@ public class AtFileTest {
                 "  -V, --version          Print version information and exit.%n");
         assertEquals(expected, actual);
     }
+
+    @Ignore("Requires #985 Show end-of-options `--` in usage help options list")
+    @Test
+    public void testEndOfOptionsDelimiter() {
+        @Command(name = "A", mixinStandardHelpOptions = true,
+                //FIXME showEndOfOptionsDelimiterInUsageHelp = true,
+                description = "... description ...")
+        class A {
+            @Parameters(arity = "1", description = "The file.")
+            private File file;
+
+            @Option(names = {"-x"}, arity="0..*", description = "Option with multiple params.")
+            private String params;
+        }
+
+        String actual = new CommandLine(new A()).getUsageMessage();
+        String expected = String.format("" +
+                "Usage: A [-hV] [-x[=<params>...]] [--] <file>%n" +
+                "... description ...%n" +
+                "      <file>             The file.%n" +
+                "  --                     End of options. All following arguments are positional%n" +
+                "                           parameters.%n" +
+                "  -x=[<params>...]       Option with multiple params.%n");
+        assertEquals(expected, actual);
+    }
 }
