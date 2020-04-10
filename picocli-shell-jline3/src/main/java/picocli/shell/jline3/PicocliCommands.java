@@ -6,16 +6,14 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.jline.builtins.CommandRegistry;
-import org.jline.builtins.Completers.OptionCompleter;
 import org.jline.builtins.Completers.SystemCompleter;
 import org.jline.builtins.Options.HelpException;
 import org.jline.builtins.Widgets.ArgDesc;
 import org.jline.builtins.Widgets.CmdDesc;
+import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
-import org.jline.reader.impl.completer.AggregateCompleter;
-import org.jline.reader.impl.completer.ArgumentCompleter;
-import org.jline.reader.impl.completer.NullCompleter;
-import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.reader.LineReader;
+import org.jline.reader.ParsedLine;
 import org.jline.utils.AttributedString;
 import picocli.CommandLine;
 import picocli.CommandLine.Help;
@@ -25,7 +23,6 @@ import picocli.CommandLine.Model.OptionSpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -67,75 +64,78 @@ public class PicocliCommands implements CommandRegistry {
         return commands.contains(command) || aliasCommand.containsKey(command);
     }
 
-    private static class CommandHierarchyCompleter extends SystemCompleter {
-        List<CommandHierarchyCompleter> nested = new ArrayList<>();
-        @Override
-        public void compile() {
-            super.compile();
-            nested.forEach(CommandHierarchyCompleter::compile);
-        }
-    }
 
-    /**
-     *
-     * @return SystemCompleter for command completion
-     */
     public SystemCompleter compileCompleters() {
-        return createCompilableCompleter(cmd);
+        SystemCompleter out = new SystemCompleter();
+        List<String> all = new ArrayList<>();
+        all.addAll(commands);
+        all.addAll(aliasCommand.keySet());
+        out.add(all, new PicocliCompleter());
+        return out;
     }
 
-    private CommandHierarchyCompleter createCompilableCompleter(CommandLine cmd) {
-        CommandHierarchyCompleter result = new CommandHierarchyCompleter();
-        for (CommandLine sub : cmd.getSubcommands().values()) {
-            String commandName = sub.getCommandName();
-            for (String alias : sub.getCommandSpec().aliases()) {
-                result.getAliases().put(alias, commandName);
+    private class PicocliCompleter implements Completer {
+
+        public PicocliCompleter() {}
+
+        @Override
+        public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
+            assert commandLine != null;
+            assert candidates != null;
+            String word = commandLine.word();
+            List<String> words = commandLine.words();
+            CommandLine sub = cmd;
+            for (int i = 0; i < commandLine.wordIndex(); i++) {
+                if (!words.get(i).startsWith("-")) {
+                    sub = findSubcommandLine(sub,words.get(i));
+                    if (sub == null) {
+                        return;
+                    }
+                }
             }
-            ArgumentCompleter argumentCompleter = createArgumentCompleter(result, sub.getCommandSpec());
-            result.add(commandName, argumentCompleter);
-        }
-        return result;
-    }
-
-    private ArgumentCompleter createArgumentCompleter(CommandHierarchyCompleter hierarchy, CommandSpec spec) {
-        Completer optionCompleter = createOptionCompleter(hierarchy, spec);
-        return new ArgumentCompleter(new StringsCompleter(spec.name()), optionCompleter);
-    }
-
-    private Completer createOptionCompleter(CommandHierarchyCompleter hierarchy, CommandSpec spec) {
-        // TODO positional parameter completion
-        // JLine OptionCompleter need to be improved with option descriptions and option value completion,
-        // now it completes only strings.
-        List<String> options = new ArrayList<>();
-        Map<String, List<String>> optionValues = new HashMap<>();
-        for (OptionSpec option : spec.options()) {
-            if (option.arity().max() == 0) {
-                options.addAll(Arrays.asList(option.names()));
+            if (word.startsWith("-")) {
+                String buffer = word.substring(0, commandLine.wordCursor());
+                int eq = buffer.indexOf('=');
+                for (OptionSpec option : sub.getCommandSpec().options()) {
+                    if (option.arity().max() == 0 && eq < 0) {
+                        addCandidates(candidates, Arrays.asList(option.names()));
+                    } else {
+                        if (eq > 0) {
+                            String opt = buffer.substring(0, eq);
+                            if (Arrays.asList(option.names()).contains(opt) && option.completionCandidates() != null) {
+                                addCandidates(candidates, option.completionCandidates(), buffer.substring(0, eq + 1), "", true);
+                            }
+                        } else {
+                            addCandidates(candidates, Arrays.asList(option.names()), "", "=", false);
+                        }
+                    }
+                }
             } else {
-                List<String> values = new ArrayList<>();
-                if (option.completionCandidates() != null) {
-                    option.completionCandidates().forEach(values::add);
-                }
-                for (String name : option.names()) {
-                    optionValues.put(name, values);
+                addCandidates(candidates, sub.getSubcommands().keySet());
+                for (CommandLine s : sub.getSubcommands().values()) {
+                    addCandidates(candidates, Arrays.asList(s.getCommandSpec().aliases()));
                 }
             }
         }
-        // TODO support nested sub-subcommands (https://github.com/remkop/picocli/issues/969)
-        //
-        List<Completer> subcommands = new ArrayList<>();
-//        for (CommandLine sub : spec.subcommands().values()) {
-//            // TODO unfortunately createCompilableCompleter will not include an OptionCompleter for sub...
-//            CommandHierarchyCompleter subCompleter = createCompilableCompleter(sub);
-//            hierarchy.nested.add(subCompleter); // ensure subCompleter is compiled when top-level completer is compiled
-//            subcommands.add(subCompleter);
-//        }
-//        Completer nestedCompleters = new AggregateCompleter(subcommands);
-        Completer nestedCompleters = NullCompleter.INSTANCE;
 
-        return options.isEmpty() && optionValues.isEmpty() && subcommands.isEmpty()
-                ? NullCompleter.INSTANCE
-                : new OptionCompleter(nestedCompleters, optionValues, options, 1);
+        private void addCandidates(List<Candidate> candidates, Iterable<String> cands) {
+            addCandidates(candidates, cands, "", "", true);
+        }
+
+        private void addCandidates(List<Candidate> candidates, Iterable<String> cands, String preFix, String postFix, boolean complete) {
+            for (String s : cands) {
+                candidates.add(new Candidate(AttributedString.stripAnsi(preFix + s + postFix), s, null, null, null, null, complete));
+            }
+        }
+
+        private CommandLine findSubcommandLine(CommandLine cmdline, String command) {
+            for (CommandLine s : cmdline.getSubcommands().values()) {
+                if (s.getCommandName().equals(command) || Arrays.asList(s.getCommandSpec().aliases()).contains(command)) {
+                    return s;
+                }
+            }
+            return null;
+        }
     }
 
     /**
