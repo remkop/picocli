@@ -175,7 +175,8 @@ public class Example {
                     .build();
             builtins.setLineReader(reader);
             commands.setReader(reader);
-            new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TipType.COMPLETER);
+            TailTipWidgets ttw = new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TipType.COMPLETER);
+            ttw.setDescriptionCache(false);
             KeyMap<Binding> keyMap = reader.getKeyMaps().get("main");
             keyMap.bind(new Reference("tailtip-toggle"), KeyMap.alt("s"));
 
@@ -194,6 +195,7 @@ public class Example {
                 } catch (EndOfFileException e) {
                     return;
                 } catch (Exception e) {
+                    e.printStackTrace();
                     systemRegistry.trace(e);
                 }
             }
