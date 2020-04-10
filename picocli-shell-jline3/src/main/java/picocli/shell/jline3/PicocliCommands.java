@@ -1,5 +1,11 @@
 package picocli.shell.jline3;
 
+import java.nio.file.Path;
+import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import org.jline.builtins.CommandRegistry;
 import org.jline.builtins.Completers.OptionCompleter;
 import org.jline.builtins.Completers.SystemCompleter;
 import org.jline.builtins.Options.HelpException;
@@ -16,15 +22,12 @@ import picocli.CommandLine.Help;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * Compiles SystemCompleter for command completion and implements a method commandDescription() that provides command descriptions
@@ -34,11 +37,11 @@ import java.util.stream.Collectors;
  *
  * @since 4.1.2
  */
-public class PicocliCommands {
+public class PicocliCommands implements CommandRegistry {
     private final Supplier<Path> workDir;
     private final CommandLine cmd;
-    private final List<String> commands;
-    private final Map<String, String> aliasCommand;
+    private final Set<String> commands;
+    private final Map<String,String> aliasCommand = new HashMap<>();
 
     public PicocliCommands(Path workDir, CommandLine cmd) {
         this(() -> workDir, cmd);
@@ -47,18 +50,12 @@ public class PicocliCommands {
     public PicocliCommands(Supplier<Path> workDir, CommandLine cmd) {
         this.workDir = workDir;
         this.cmd = cmd;
-        commands = new ArrayList<>(cmd.getCommandSpec().subcommands().keySet());
-        aliasCommand = extractAliases(cmd);
-    }
-
-    private static Map<String, String> extractAliases(CommandLine cmd) {
-        Map<String, String> result = new LinkedHashMap<>();
-        for (String name : cmd.getCommandSpec().subcommands().keySet()) {
-            for (String alias : cmd.getSubcommands().get(name).getCommandSpec().aliases()) {
-                result.put(alias, name);
+        commands = cmd.getCommandSpec().subcommands().keySet();
+        for (String c: commands) {
+            for (String a: cmd.getSubcommands().get(c).getCommandSpec().aliases()) {
+                aliasCommand.put(a, c);
             }
         }
-        return result;
     }
 
     /**
@@ -161,15 +158,40 @@ public class PicocliCommands {
             for (String d:  o.description()) {
                 val.add(new AttributedString(d));
             }
-            if (val.isEmpty()) {
-                val.add(new AttributedString("")); // in order to avoid IndexOutOfBoundsException
-                                                   // need to be fixed in JLine
-            }
-            if (o.arity().max() > 0 && key.matches(".*[a-zA-Z]{2,}$")) {
+            if (o.arity().max() > 0) {
                 key += "=" + o.paramLabel();
             }
             options.put(key, val);
         }
         return new CmdDesc(main, ArgDesc.doArgNames(Arrays.asList("")), options);
+    }
+
+    @Override
+    public List<String> commandInfo(String command) {
+        List<String> out = new ArrayList<>();
+        CommandSpec spec = cmd.getSubcommands().get(command).getCommandSpec();
+        Help cmdhelp = new picocli.CommandLine.Help(spec);
+        String description = AttributedString.stripAnsi(spec.usageMessage().sectionMap().get("description").render(cmdhelp).toString());
+        out.addAll(Arrays.asList(description.split("\\r?\\n")));
+        return out;
+    }
+
+    @Override
+    public Object execute(CommandRegistry.CommandSession session, String command, String[] args) throws Exception {
+        List<String> arguments = new ArrayList<>();
+        arguments.add(command);
+        arguments.addAll(Arrays.asList(args));
+        cmd.execute(arguments.toArray(new String[0]));
+        return null;
+    }
+
+    @Override
+    public Set<String> commandNames() {
+        return commands;
+    }
+
+    @Override
+    public Map<String, String> commandAliases() {
+        return aliasCommand;
     }
 }
