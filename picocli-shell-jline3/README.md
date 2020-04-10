@@ -115,9 +115,9 @@ public class Example {
      * A command with some options to demonstrate completion.
      */
     @Command(name = "cmd", mixinStandardHelpOptions = true, version = "1.0",
-            description = "Command with some options to demonstrate TAB-completion" +
-                    " (note that enum values also get completed)",
-            subcommands = CommandLine.HelpCommand.class)
+            description = {"Command with some options to demonstrate TAB-completion.",
+                    " (Note that enum values also get completed.)"},
+            subcommands = {Nested.class, CommandLine.HelpCommand.class})
     static class MyCommand implements Runnable {
         @Option(names = {"-v", "--verbose"},
                 description = { "Specify multiple -v options to increase verbosity.",
@@ -148,6 +148,35 @@ public class Example {
             } else {
                 parent.out.println("hi!");
             }
+        }
+    }
+
+    @Command(name = "nested", mixinStandardHelpOptions = true, subcommands = {CommandLine.HelpCommand.class},
+            description = "Hosts more sub-subcommands")
+    static class Nested implements Runnable {
+        public void run() {
+            System.out.println("I'm a nested subcommand. I don't do much, but I have sub-subcommands!");
+        }
+
+        @Command(mixinStandardHelpOptions = true, subcommands = {CommandLine.HelpCommand.class},
+                description = "Multiplies two numbers.")
+        public void multiply(@Option(names = {"-l", "--left"}, required = true) int left,
+                             @Option(names = {"-r", "--right"}, required = true) int right) {
+            System.out.printf("%d * %d = %d%n", left, right, left * right);
+        }
+
+        @Command(mixinStandardHelpOptions = true, subcommands = {CommandLine.HelpCommand.class},
+                description = "Adds two numbers.")
+        public void add(@Option(names = {"-l", "--left"}, required = true) int left,
+                        @Option(names = {"-r", "--right"}, required = true) int right) {
+            System.out.printf("%d + %d = %d%n", left, right, left + right);
+        }
+
+        @Command(mixinStandardHelpOptions = true, subcommands = {CommandLine.HelpCommand.class},
+                description = "Subtracts two numbers.")
+        public void subtract(@Option(names = {"-l", "--left"}, required = true) int left,
+                             @Option(names = {"-r", "--right"}, required = true) int right) {
+            System.out.printf("%d - %d = %d%n", left, right, left - right);
         }
     }
 
