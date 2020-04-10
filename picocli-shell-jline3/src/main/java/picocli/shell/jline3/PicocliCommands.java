@@ -84,14 +84,9 @@ public class PicocliCommands implements CommandRegistry {
             assert candidates != null;
             String word = commandLine.word();
             List<String> words = commandLine.words();
-            CommandLine sub = cmd;
-            for (int i = 0; i < commandLine.wordIndex(); i++) {
-                if (!words.get(i).startsWith("-")) {
-                    sub = findSubcommandLine(sub,words.get(i));
-                    if (sub == null) {
-                        return;
-                    }
-                }
+            CommandLine sub = findSubcommandLine(words, commandLine.wordIndex());
+            if (sub == null) {
+                return;
             }
             if (word.startsWith("-")) {
                 String buffer = word.substring(0, commandLine.wordCursor());
@@ -128,14 +123,28 @@ public class PicocliCommands implements CommandRegistry {
             }
         }
 
-        private CommandLine findSubcommandLine(CommandLine cmdline, String command) {
-            for (CommandLine s : cmdline.getSubcommands().values()) {
-                if (s.getCommandName().equals(command) || Arrays.asList(s.getCommandSpec().aliases()).contains(command)) {
-                    return s;
+    }
+
+    private CommandLine findSubcommandLine(List<String> args, int lastIdx) {
+        CommandLine out = cmd;
+        for (int i = 0; i < lastIdx; i++) {
+            if (!args.get(i).startsWith("-")) {
+                out = findSubcommandLine(out, args.get(i));
+                if (out == null) {
+                    break;
                 }
             }
-            return null;
         }
+        return out;
+    }
+
+    private CommandLine findSubcommandLine(CommandLine cmdline, String command) {
+        for (CommandLine s : cmdline.getSubcommands().values()) {
+            if (s.getCommandName().equals(command) || Arrays.asList(s.getCommandSpec().aliases()).contains(command)) {
+                return s;
+            }
+        }
+        return null;
     }
 
     /**
@@ -143,8 +152,13 @@ public class PicocliCommands implements CommandRegistry {
      * @param command
      * @return command description for JLine TailTipWidgets to be displayed in terminal status bar.
      */
-    public CmdDesc commandDescription(String command) {
-        CommandSpec spec = cmd.getSubcommands().get(command).getCommandSpec();
+    @Override
+    public CmdDesc commandDescription(List<String> args) {
+        CommandLine sub = findSubcommandLine(args, args.size());
+        if (sub == null) {
+            return null;
+        }
+        CommandSpec spec = sub.getCommandSpec();
         Help cmdhelp= new picocli.CommandLine.Help(spec);
         List<AttributedString> main = new ArrayList<>();
         Map<String, List<AttributedString>> options = new HashMap<>();
