@@ -30,7 +30,7 @@ public class InteractiveConverterDemo implements Runnable {
     }
 
     /**
-     * This is a stubborn and vengeful path converter:
+     * Interactive (and a bit demanding) path converter:    :-)
      * If the user supplied a non-existing path, this converter
      * will keep asking for an existing path, until the user either
      * supplies it, or we get end-of-stream (user pressed CTRL-D),
