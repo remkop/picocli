@@ -7,8 +7,11 @@ This release contains bugfixes and enhancements.
 
 From this release, mixin classes can declare a `@Spec(Spec.Target.MIXEE)`-annotated field; the `CommandSpec` of the command _receiving_ this mixin (the "mixee") is injected into this field.
 
+Notable bugfixes:
+
+* Fixed broken autocompletion for nested sub-subcommands in Picocli Shell JLine3.
  
-This is the sixty-seventh public release.
+This is the sixty-eighth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.3.0-toc"></a> Table of Contents
@@ -63,6 +66,8 @@ class AdvancedMixin {
 * [#956] Enhancement: Default ParameterExceptionHandler should show stack trace when tracing is set to DEBUG level.
 * [#952] Enhancement: Make annotation processor quiet by default; add `-Averbose` annotation processor option to enable printing NOTE-level diagnostic messages to the console.
 * [#974] Enhancement/Bugfix: Add support for `@ArgGroup` argument groups in `@Command`-annotated methods. Thanks to [Usman Saleem](https://github.com/usmansaleem) for raising this.
+* [#987] Bugfix: Bump JLine to 3.14.1 and fix [#969] autocompletion in Picocli Shell JLine3. Thanks to [mattirn](https://github.com/mattirn) for the pull request.
+* [#969] Bugfix: Fixed broken autocompletion for nested subcommands in Picocli Shell JLine3. Thanks to [niklas97](https://github.com/niklas97) for raising this.
 * [#968] Bugfix: Avoid creating user object in Help constructor. Thanks to [Immueggpain](https://github.com/Immueggpain) for raising this.
 * [#957] Bugfix: Debug tracing now shows variable value instead of variable name.
 * [#955] Bugfix: TargetInvocationMessage handling in `MethodBinding.set` methods should use `getTargetException` not `getCause`; better error reporting.
@@ -70,12 +75,12 @@ class AdvancedMixin {
 * [#895] DOC: Added [Initialization Before Execution](https://picocli.info/#_initialization_before_execution) section on initialization with subcommands to the user manual. Thanks to [Walter Scott Johnson](https://github.com/li-wjohnson) for raising this. 
 * [#951] DOC: Fixed typo in `picocli-codegen` annotation processor documentation: `disable.resource.config` is correct (the option name was incorrectly spelled as `disable.resources.config`). Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for raising this.
 * [#966] DOC: Add section about Testing to the user manual.
-* [#965] Dependency Upgrade: in `picocli-examples`, bump `hibernate-validator` from 6.0.2 to 6.1.2 to deal with [CVE-2019-10219](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-10219). Thanks to [https://github.com/Security3rd](Security3rd) for raising this.
 * [#973] (DOC) Update documentation for using the `picocli-codegen` annotation processor during the build with Kotlin.
 * [#972] (DOC) Add section "Handling Invalid Input" for custom type converters to user manual, demonstrating `TypeConversionException`. Add example `InetSocketAddressConverter` to `picocli-examples`. Thanks to [Simon](https://github.com/sbernard31) for raising this.
 * [#975] (DOC) Update user manual [Annotation Processor](https://picocli.info/#_enabling_the_annotation_processor) section to use `${project.groupId}` instead of deprecated `${groupId}`. Thanks to [Dmitry Timofeev](https://github.com/dmitry-timofeev) for the pull request.
 * [#976] (DOC) Update user manual Testing section; add subsection on [Testing Environment Variables](file:///C:/Users/remko/IdeaProjects/picocli3/build/docs/html5/index.html#_testing_environment_variables). Thanks to [David M. Carr](https://github.com/davidmc24) for raising this and providing a [sample project](https://github.com/remkop/picocli/files/4359943/bulk-scripts-public.zip).
 * [#979][#981] (DOC) Update user manual: add section [Options with an Optional Parameter](https://picocli.info/#_options_with_an_optional_parameter). Thanks to [razvanh](https://github.com/razvanh), [Jake](https://github.com/kyeo138) and [mohdpasha](https://github.com/mohdpasha) for raising this.
+* [#965] Dependency Upgrade: in `picocli-examples`, bump `hibernate-validator` from 6.0.2 to 6.1.2 to deal with [CVE-2019-10219](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-10219). Thanks to [https://github.com/Security3rd](Security3rd) for raising this.
 
 ## <a name="4.3.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
