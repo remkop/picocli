@@ -5,7 +5,11 @@ The picocli community is pleased to announce picocli 4.3.0.
 
 This release contains bugfixes and enhancements.
 
-From this release, mixin classes can declare a `@Spec(Spec.Target.MIXEE)`-annotated field; the `CommandSpec` of the command _receiving_ this mixin (the "mixee") is injected into this field.
+This release adds support for "inherited" options. Options defined with `scope = ScopeType.INHERIT` are shared with all subcommands (and sub-subcommands, to any level of depth). Applications can define an inherited option on the top-level command, in one place, to allow end users to specify this option anywhere: not only on the top-level command, but also on any of the subcommands and nested sub-subcommands.
+
+Additionally, this release adds support for relative indices for positional parameters. Single-value positional parameters now have a relative index by default. This is useful for positional parameters that are used in multiple places like in mixins or inherited positional parameters.
+
+Also, from this release, mixins are more powerful. Mixin classes can declare a `@Spec(MIXEE)`-annotated field, and picocli will inject the `CommandSpec` of the command _receiving_ this mixin (the "mixee") into this field. This is useful for mixins containing shared logic, in addition to shared options and parameters. 
 
 Notable bugfixes:
 
@@ -16,14 +20,82 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.3.0-toc"></a> Table of Contents
 * [New and noteworthy](#4.3.0-new)
+  * [Inherited Options](#4.3.0-inherited-options)
+  * [Relative Index for Positional Parameters](#4.3.0-relative-index)
   * [`@Spec(MIXEE)` Annotation](#4.3.0-mixee)
 * [Fixed issues](#4.3.0-fixes)
 * [Deprecations](#4.3.0-deprecated)
 * [Potential breaking changes](#4.3.0-breaking-changes)
 
 ## <a name="4.3.0-new"></a> New and Noteworthy
+### <a name="4.3.0-inherited-options"></a> Inherited Options
+This release adds support for "inherited" options. Options defined with `scope = ScopeType.INHERIT` are shared with all subcommands (and sub-subcommands, to any level of depth). Applications can define an inherited option on the top-level command, in one place, to allow end users to specify this option anywhere: not only on the top-level command, but also on any of the subcommands and nested sub-subcommands.
+
+Below is an example where an inherited option is used to configure logging.
+
+```java
+@Command(name = "app", subcommands = Sub.class)
+class App implements Runnable {
+    private static Logger logger = LogManager.getLogger(App.class);
+
+    @Option(names = "-x", scope = ScopeType.LOCAL) // option is not shared: this is the default
+    int x;
+    
+    @Option(names = "-v", scope = ScopeType.INHERIT) // option is shared with subcommands, sub-subcommands, etc
+    public void setVerbose(boolean verbose) {
+        // Configure log4j.
+        // This is a simplistic example: you probably only want to modify the ConsoleAppender level.
+        Configurator.setRootLevel(verbose ? Level.DEBUG : Level.INFO);
+    }
+    
+    public void run() {
+        logger.debug("-x={}", x);
+    }
+}
+
+@Command(name = "sub")
+class Sub implements Runnable {
+    private static Logger logger = LogManager.getLogger(Sub.class);
+
+    @Option(names = "-y")
+    int y;
+    
+    public void run() {
+        logger.debug("-y={}", y);
+    }
+}
+```
+
+Users can specify the `-v` option on either the top-level command or on the subcommand, and it will have the same effect.
+
+```
+# the -v option can be specified on the top-level command
+java App -x=3 -v sub -y=4
+```
+
+Specifying the `-v` option on the subcommand will have the same effect. For example: 
+```
+# specifying the -v option on the subcommand also changes the log level
+java App -x=3 sub -y=4 -v
+```
+
+NOTE: Subcommands don't need to do anything to receive inherited options, but a potential drawback is that subcommands do not get a reference to inherited options.
+
+Subcommands that need to inspect the value of an inherited option can use the `@ParentCommand` annotation to get a reference to their parent command, and access the inherited option via the parent reference.
+Alternatively, for such subcommands, sharing options via mixins may be a more suitable mechanism.
+
+### <a name="4.3.0-relative-index"></a> Relative Index for Positional Parameters
+Additionally, this release adds support for relative indices for positional parameters. Single-value positional parameters now have a relative index by default. This is useful for positional parameters that are used in multiple places like in mixins or inherited positional parameters.
+
+From this release, positional parameters can use a relative index.
+
+This allows positional parameters to be used as inherited options.
+
+
 
 ### <a name="4.3.0-mixee"></a>  `@Spec(MIXEE)` Annotation
+From this release, mixins are more powerful. Mixin classes can declare a `@Spec(MIXEE)`-annotated field, and picocli will inject the `CommandSpec` of the command _receiving_ this mixin (the "mixee") into this field. This is useful for mixins containing shared logic, in addition to shared options and parameters. 
+
 Since picocli 4.3, the `@Spec` annotation has a `value` element.
 The value is `Spec.Target.SELF` by default, meaning that the `CommandSpec` of the enclosing class is injected into the `@Spec`-annotated field.
 
@@ -60,9 +132,10 @@ class AdvancedMixin {
 ```
 
 ## <a name="4.3.0-fixes"></a> Fixed issues
+* [#649][#948] Provide convenience API for global options, also known as: Feature request: inheriting mixins in subcommands. Thanks to [Garret Wilson](https://github.com/garretwilson) for the request and subsequent discussion (and patience!). 
 * [#958] API: Add `@Spec(Spec.Target.MIXEE)` annotation element to allow mixins to get a reference to the command they are mixed into.
 * [#960] API: Add method `CommandSpec::root` to return the `CommandSpec` of the top-level command.
-* [#564][#370] Add support for relative indices for positional parameters. Useful in mixins and inherited positional parameters. 
+* [#564] Add support for relative indices for positional parameters. Useful in mixins and inherited positional parameters. Thanks to [krisleonard-mcafee](https://github.com/krisleonard-mcafee) for raising this topic.
 * [#956] Enhancement: Default ParameterExceptionHandler should show stack trace when tracing is set to DEBUG level.
 * [#952] Enhancement: Make annotation processor quiet by default; add `-Averbose` annotation processor option to enable printing NOTE-level diagnostic messages to the console.
 * [#974] Enhancement/Bugfix: Add support for `@ArgGroup` argument groups in `@Command`-annotated methods. Thanks to [Usman Saleem](https://github.com/usmansaleem) for raising this.
@@ -87,7 +160,50 @@ class AdvancedMixin {
 No features were deprecated in this release.
 
 ## <a name="4.3.0-breaking-changes"></a> Potential breaking changes
-This release has no breaking changes.
+
+### Default index now depends on type
+The picocli 4.3.0 release introduces support for relative indices for positional parameters. This only matters for single-value parameters.
+
+Prior to this release, the default index of a positional parameter was always `0..*`. For a single-value parameter, only one value can actually be captured, so the effective index was actually `0` (zero).
+
+If an application defined multiple `@Parameters`-annotated fields without explicitly defining their index, they would all capture only the first positional parameter. This has changed in this release.
+
+#### Single-value positional parameters
+The default index has changed for single-value positional parameters: `@Parameters`-annotated fields whose type is a primitive or a single-value object (not an array, collection or a map).
+
+For **single-value** positional parameters, the default index is `+` from picocli 4.3.0 onwards: this means that if an application defines multiple positional parameters, they will now by default capture different indices. For example:
+
+```java
+class SingleValuePositionals {
+    @Parameters String s1; // relative index is resolved to index = "0"
+    @Parameters String s2; // relative index is resolved to index = "1"
+    @Parameters String s3; // relative index is resolved to index = "2"
+}
+```
+
+Single-value positional parameters with an **explicit** index are not impacted, these work as before. For example:
+
+```java
+class ExplicitIndexPositionals {
+    @Parameters(index = "0") String s1; // absolute index, captures value at index 0
+    @Parameters(index = "1") String s2; // absolute index, captures value at index 1
+    @Parameters(index = "2") String s3; // absolute index, captures value at index 2
+}
+```
+
+
+
+#### Multi-Value positional parameters
+This change does not impact multi-value positional parameters: `@Parameters`-annotated fields whose type is an array, collection or a map.
+
+For multi-value positional parameters, the default index is still `0..*`, as it was before: this captures all positional parameters. Example:
+
+```java
+class MultiValuePositionals {
+    @Parameters List<String> list; // default index = "0..*": all positional params
+    @Parameters String[] array;    // default index = "0..*": also captures all positional params
+}
+``` 
 
 
 

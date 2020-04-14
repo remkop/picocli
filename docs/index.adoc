@@ -4008,6 +4008,122 @@ This ensures the `init` method is called _after_ the command line is parsed (so 
 
 The https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/logging_mixin_advanced[logging example] in `picocli-examples` shows how this can be used to configure the Log4j log level based on a `--verbose` option, prior to execution.
 
+[#parentcommand-annotation]
+=== `@ParentCommand` Annotation
+In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.
+
+The `@ParentCommand` annotation introduced in picocli 2.2 makes it easy for subcommands to access their parent command options: subcommand fields annotated with `@ParentCommand` are initialized with a reference to the parent command. For example:
+
+[source,java]
+----
+@Command(name = "fileutils", subcommands = List.class)
+class FileUtils {
+
+    @Option(names = {"-d", "--directory"},
+            description = "this option applies to all subcommands")
+    File baseDirectory;
+}
+----
+
+The above top-level command has a `--directory` option that applies to its subcommands.
+The `List` subcommand can use the `@ParentCommand` annotation to get a reference to the parent command, so it can easily access the parent command options.
+
+[source,java]
+----
+@Command(name = "list")
+class List implements Runnable {
+
+    @ParentCommand
+    private FileUtils parent; // picocli injects reference to parent command
+
+    @Option(names = {"-r", "--recursive"},
+            description = "Recursively list subdirectories")
+    private boolean recursive;
+
+    @Override
+    public void run() {
+        list(new File(parent.baseDirectory, "."));
+    }
+
+    private void list(File dir) {
+        System.out.println(dir.getAbsolutePath());
+        if (dir.isDirectory()) {
+            for (File f : dir.listFiles()) {
+                if (f.isDirectory() && recursive) {
+                    list(f);
+                } else {
+                    System.out.println(f.getAbsolutePath());
+                }
+            }
+        }
+    }
+}
+----
+
+=== Inherited Options
+Picocli 4.3 adds support for "inherited" options.
+Options defined with `scope = ScopeType.INHERIT` are shared with all subcommands (and sub-subcommands, to any level of depth).
+Applications can define an inherited option on the top-level command, in one place, to allow end users to specify this option anywhere: not only on the top-level command, but also on any of the subcommands and nested sub-subcommands.
+
+Below is an example where an inherited option is used to configure logging.
+
+[source,java]
+----
+@Command(name = "app", subcommands = Sub.class)
+class App implements Runnable {
+    private static Logger logger = LogManager.getLogger(App.class);
+
+    @Option(names = "-x", scope = ScopeType.LOCAL) // option is not shared: this is the default
+    int x;
+
+    @Option(names = "-v", scope = ScopeType.INHERIT) // option is shared with subcommands
+    public void setVerbose(boolean[] verbose) {
+        // Configure log4j.
+        // (This is a simplistic example: a real application may use more levels and
+        // perhaps configure only the ConsoleAppender level instead of the root log level.)
+        Configurator.setRootLevel(verbose.length > 0 ? Level.DEBUG : Level.INFO);
+    }
+
+    public void run() {
+        logger.debug("-x={}", x);
+    }
+}
+
+@Command(name = "sub")
+class Sub implements Runnable {
+    private static Logger logger = LogManager.getLogger(Sub.class);
+
+    @Option(names = "-y")
+    int y;
+
+    public void run() {
+        logger.debug("-y={}", y);
+    }
+}
+----
+
+Users can specify the `-v` option on either the top-level command or on the subcommand, and it will have the same effect.
+
+----
+# the -v option can be specified on the top-level command
+java App -x=3 -v sub -y=4
+----
+
+Specifying the `-v` option on the subcommand will have the same effect. For example:
+----
+# specifying the -v option on the subcommand also changes the log level
+java App -x=3 sub -y=4 -v
+----
+
+[NOTE]
+====
+Subcommands don't need to do anything to receive inherited options, but a potential drawback is that subcommands do not get a reference to inherited options.
+
+Subcommands that need to inspect the value of an inherited option can use the <<parentcommand-annotation,`@ParentCommand` annotation>> to get a reference to their parent command, and access the inherited option via the parent reference.
+Alternatively, for such subcommands, sharing options via <<Mixins,mixins>> may be a more suitable mechanism.
+====
+
+
 === Manually Parsing Subcommands
 For the following example, we assume we created an alias `git` that invokes our Java application. This could also be a script or a function that calls our Java program:
 [source,bash]
@@ -4070,58 +4186,6 @@ private void handleParseResult(ParseResult parsed) {
 
 You may be interested in the <<Executing Commands,execute method>> to reduce error handling and other boilerplate code in your application.
 See also the previous section, <<Executing Subcommands>>.
-
-[#parentcommand-annotation]
-=== `@ParentCommand` Annotation
-In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.
-
-The `@ParentCommand` annotation introduced in picocli 2.2 makes it easy for subcommands to access their parent command options: subcommand fields annotated with `@ParentCommand` are initialized with a reference to the parent command. For example:
-
-[source,java]
-----
-@Command(name = "fileutils", subcommands = List.class)
-class FileUtils {
-
-    @Option(names = {"-d", "--directory"},
-            description = "this option applies to all subcommands")
-    File baseDirectory;
-}
-----
-
-The above top-level command has a `--directory` option that applies to its subcommands.
-The `List` subcommand can use the `@ParentCommand` annotation to get a reference to the parent command, so it can easily access the parent command options.
-
-[source,java]
-----
-@Command(name = "list")
-class List implements Runnable {
-
-    @ParentCommand
-    private FileUtils parent; // picocli injects reference to parent command
-
-    @Option(names = {"-r", "--recursive"},
-            description = "Recursively list subdirectories")
-    private boolean recursive;
-
-    @Override
-    public void run() {
-        list(new File(parent.baseDirectory, "."));
-    }
-
-    private void list(File dir) {
-        System.out.println(dir.getAbsolutePath());
-        if (dir.isDirectory()) {
-            for (File f : dir.listFiles()) {
-                if (f.isDirectory() && recursive) {
-                    list(f);
-                } else {
-                    System.out.println(f.getAbsolutePath());
-                }
-            }
-        }
-    }
-}
-----
 
 === Nested sub-Subcommands
 The specified object can be an annotated object or a
@@ -4630,7 +4694,7 @@ assert mixin.verbosity.length == 3;
 === Use Case: Configure Log Level with a Global Option
 
 For mixins that need to be reusable across more than two levels in the command hierarchy,
-declaring a <<_spec_annotation,`@Spec(Spec.Target.MIXEE)`-annotated>> field gives the mixin access to the full command hierarchy.
+declaring a <<spec-annotation,`@Spec(MIXEE)`-annotated>> field gives the mixin access to the full command hierarchy.
 
 The `MIXEE` value indicates that the `CommandSpec` to inject is not the spec of the enclosing class, but the spec of the command where the `@Mixin` is used.
 
@@ -4743,6 +4807,11 @@ java MyApp sub subsubmethod -vv
 ----
 
 See also the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/logging_mixin_advanced[logging] example in `picocli-examples` for a way to modify only the Log4j ConsoleAppenders' log level from the specified verbosity.
+
+=== Sharing Options in Subcommands
+
+The above use case can also be accomplished (with less code) via <<Inherited Options>>.
+Inherited options are another reuse mechanism where an application defines an option on one command, after which end users can specify this option on any of the subcommands, and it will set the value of the annotated field on the parent command.
 
 === Reuse Combinations
 
