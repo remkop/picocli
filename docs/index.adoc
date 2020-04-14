@@ -4006,7 +4006,7 @@ class MyApp implements Runnable {
 
 This ensures the `init` method is called _after_ the command line is parsed (so all options and positional parameters are assigned) but _before_ the user-specified subcommand is executed.
 
-The https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/logging[logging example] in `picocli-examples` shows how this can be used to configure the Log4j log level based on a `--verbose` option, prior to execution.
+The https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/logging_mixin_advanced[logging example] in `picocli-examples` shows how this can be used to configure the Log4j log level based on a `--verbose` option, prior to execution.
 
 === Manually Parsing Subcommands
 For the following example, we assume we created an alias `git` that invokes our Java application. This could also be a script or a function that calls our Java program:
@@ -4742,7 +4742,7 @@ java MyApp sub -v subsubmethod
 java MyApp sub subsubmethod -vv
 ----
 
-See also the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/logging[logging] example in `picocli-examples` for a way to modify only the Log4j ConsoleAppenders' log level from the specified verbosity.
+See also the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/logging_mixin_advanced[logging] example in `picocli-examples` for a way to modify only the Log4j ConsoleAppenders' log level from the specified verbosity.
 
 === Reuse Combinations
 

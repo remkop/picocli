@@ -1,4 +1,4 @@
-package picocli.examples.logging_manual_example;
+package picocli.examples.logging_mixin_simple;
 
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;

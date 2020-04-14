@@ -1,4 +1,4 @@
-package picocli.examples.logging_manual_example;
+package picocli.examples.logging_mixin_simple;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;

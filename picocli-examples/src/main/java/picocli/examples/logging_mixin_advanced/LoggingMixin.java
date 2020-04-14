@@ -1,4 +1,4 @@
-package picocli.examples.logging;
+package picocli.examples.logging_mixin_advanced;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Appender;

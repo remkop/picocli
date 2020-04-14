@@ -1,11 +1,12 @@
-package picocli.examples.logging_manual_example;
+package picocli.examples.logging_mixin_advanced;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 
-public class Sub implements Runnable {
+@Command(name = "sub", subcommands = LoggingSubSub.class)
+public class LoggingSub implements Runnable {
     private static Logger logger = LogManager.getLogger();
 
     @Mixin LoggingMixin loggingMixin;
@@ -18,8 +19,8 @@ public class Sub implements Runnable {
         logger.warn ("Hi (warning)   from app sub");
     }
 
-    @Command
-    void subsubmethod(@Mixin LoggingMixin loggingMixin) {
+    @Command(name = "subsubmethod")
+    void commandMethodSub(@Mixin LoggingMixin loggingMixin) {
         logger.trace("Hi (tracing)   from app sub subsubmethod");
         logger.debug("Hi (debugging) from app sub subsubmethod");
         logger.info ("Hi (info)      from app sub subsubmethod");
