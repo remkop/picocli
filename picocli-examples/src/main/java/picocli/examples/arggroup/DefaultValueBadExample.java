@@ -6,11 +6,11 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "bad", description = "usage help shows the wrong default value")
-public class BadExample {
+public class DefaultValueBadExample {
     @ArgGroup BadGroup badGroup;
 
     public static void main(String[] args) {
-        new CommandLine(new BadExample()).usage(System.out);
+        new CommandLine(new DefaultValueBadExample()).usage(System.out);
     }
 }
 class BadGroup {
