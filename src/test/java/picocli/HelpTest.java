@@ -3619,7 +3619,24 @@ public class HelpTest {
                 "    Keyboard delay: 1\n" +
                 "    Code page:      932\n" +
                 "\n";
-        Pattern pattern = Pattern.compile(".*olumns(:)?\\s+(\\d+)\\D.*", Pattern.DOTALL);
+        Pattern pattern = Pattern.compile(".*?:\\s*(\\d+)\\D.*?:\\s*(\\d+)\\D.*", Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(sttyResult);
+        assertTrue(matcher.matches());
+        assertEquals(113, Integer.parseInt(matcher.group(2)));
+    }
+
+    @Test
+    public void testGetTerminalWidthWindowsInternational() {
+        String sttyResult = "\n" +
+                "Status von Gerät CON:\n" +
+                "---------------------\n" +
+                "    Zeilen:          9001\n" +
+                "    Spalten:         113\n" +
+                "    Wiederholrate:   31\n" +
+                "    Verzögerungszeit:1\n" +
+                "    Codepage:        850\n" +
+                "\n";
+        Pattern pattern = Pattern.compile(".*?:\\s*(\\d+)\\D.*?:\\s*(\\d+)\\D.*", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(sttyResult);
         assertTrue(matcher.matches());
         assertEquals(113, Integer.parseInt(matcher.group(2)));
