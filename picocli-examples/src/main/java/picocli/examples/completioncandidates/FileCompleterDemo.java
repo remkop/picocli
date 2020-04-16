@@ -22,11 +22,11 @@ public class FileCompleterDemo implements Runnable {
         new CommandLine(new FileCompleterDemo()).execute(args);
     }
 
-static class FileCompleter implements Iterable<String> {
-    @Override
-    public Iterator<String> iterator() {
-        String[] files = new File(".").list();
-        return files == null ? Collections.emptyIterator() : Arrays.asList(files).iterator();
+    static class FileCompleter implements Iterable<String> {
+        @Override
+        public Iterator<String> iterator() {
+            String[] files = new File(".").list();
+            return files == null ? Collections.emptyIterator() : Arrays.asList(files).iterator();
+        }
     }
-}
 }
