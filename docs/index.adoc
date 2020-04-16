@@ -463,8 +463,9 @@ The negated form of this option is `--backup`, and if that is specified, the def
 Any command line arguments that are not subcommands or options (or option parameters) are interpreted as positional parameters.
 Positional parameters generally follow the options but from picocli 2.0, positional parameters can be mixed with options on the command line.
 
+==== Explicit Index
+
 Use the (zero-based) `index` attribute to specify exactly which parameters to capture.
-Omitting the `index` attribute means the field captures _all_ positional parameters.
 Array or collection fields can capture multiple values.
 
 The `index` attribute accepts _range_ values, so an annotation like `@Parameters(index="2..4")` captures the arguments at index 2, 3 and 4. Range values can be _open-ended_. For example, `@Parameters(index="3..*")` captures all arguments from index 3 and up.
@@ -474,12 +475,12 @@ For example:
 [source,java]
 ----
 class PositionalParameters {
-    @Parameters(hidden = true)  // "hidden": don't show this parameter in usage help message
-    List<String> allParameters; // no "index" attribute: captures _all_ arguments (as Strings)
-
     @Parameters(index = "0")    InetAddress host;
     @Parameters(index = "1")    int port;
     @Parameters(index = "2..*") File[] files;
+
+    @Parameters(hidden = true)  // "hidden": don't show this parameter in usage help message
+    List<String> allParameters; // no "index" attribute: captures _all_ arguments
 }
 ----
 
@@ -492,10 +493,36 @@ PositionalParameters params = CommandLine.populateCommand(new PositionalParamete
 assert params.host.getHostName().equals("localhost");
 assert params.port == 12345;
 assert Arrays.equals(params.files, new File[] {new File("file1.txt"), new File("file2.txt")});
-assert params.allParameters.equals(Arrays.asList("localhost", "12345", "file1.txt", "file2.txt"));
+
+assert params.allParameters.equals(Arrays.asList(args));
+
 ----
 
 See <<Strongly Typed Everything>> for which types are supported out of the box and how to add custom types.
+
+==== Omitting the Index
+It is possible to omit the `index` attribute. This means different things for single-value and for multi-value positional parameters.
+
+For *multi-value* positional parameters (arrays or collections), omitting the `index` attribute means the field captures _all_ positional parameters (the equivalent of `index = "0..*"`).
+
+For *single-value* positional parameters, picocli's behaviour has changed since version 4.3:
+prior to picocli 4.3, the default index for single-value positional parameters was also `index = "0..*"`, even though only one value (usually the first argument) can be captured.
+From version 4.3, picocli assigns an index automatically, based on the other positional parameters defined in the same command.
+
+[CAUTION]
+====
+Automatic indexes depend on the ability of Java reflection and Java annotation processors to iterate over fields in declaration order in the source code.
+Officially this is not guaranteed by the Java spec.
+In practice this has worked in Oracle JVMs and OpenJDK from Java 6, but there is some risk this may not work in the future or on other JVM's.
+In general, for single-value positional parameters, using <<Explicit Index,explicit indexes>> is the safer option.
+(Multi-value positional parameters can safely omit the `index` attribute.)
+====
+
+IMPORTANT: Methods cannot be iterated over in predictable order.
+For applications with <<option-parameters-methods,`@Parameters`-annotated methods>> or combinations of `@Parameters`-annotated methods and `@Parameters`-annotated fields, we recommend using <<Explicit Index,explicit indexes>> for single-value positional parameters.
+
+
+See <<Automatic Parameter Indexes>> for details.
 
 === Mixing Options and Positional Parameters
 From picocli 2.0, positional parameters can be specified anywhere on the command line, they no longer need to follow the options.
@@ -5349,15 +5376,6 @@ When `@Spec(Spec.Target.MIXEE)` is specified in a mixin class, the `CommandSpec`
 This can be useful when a mixin contains logic that is common to many commands.
 See <<Accessing the Mixee from a Mixin>> for more details.
 
-=== Improved Support for Chinese, Japanese and Korean
-Picocli will align the usage help message to fit within some user-defined width (80 columns by default).
-A number of characters in Chinese, Japanese and Korean (CJK) are wider than others.
-If those characters are treated to have the same width as other characters, the usage help message may extend past the right margin.
-
-From 4.0, picocli will use 2 columns for these wide characters when calculating where to put line breaks, resulting in better usage help message text.
-
-This can be switched off with `CommandLine.setAdjustLineBreaksForWideCJKCharacters(false)`.
-
 === Custom Factory
 
 Declaratively registered <<Registering Subcommands Declaratively,subcommands>>, <<Option-specific Type Converters,type converters>> and <<Dynamic Version Information,version providers>> must be instantiated somehow. From picocli 2.2, a custom factory can be specified when constructing a `CommandLine` instance. This allows full control over object creation and opens possibilities for Inversion of Control and Dependency Injection (see <<Dependency Injection,next section>>). For example:
@@ -5401,6 +5419,137 @@ public <K> K create(Class<K> clazz) throws Exception {
     }
 }
 ```
+
+
+=== Automatic Parameter Indexes
+==== Automatic Indexes
+
+<<Positional Parameters,Positional parameters>> have an `index` attribute that determines which command line argument(s) are captured.
+It is possible to omit the `index` attribute and let picocli automatically assign an index.
+
+This means different things for single-value and for multi-value positional parameters.
+
+For *multi-value* positional parameters (arrays or collections), omitting the `index` attribute means the field captures _all_ positional parameters (the equivalent of `index = "0..*"`).
+
+For *single-value* positional parameters, picocli's behaviour has changed since version 4.3:
+prior to picocli 4.3, the default index for single-value positional parameters was also `index = "0..*"`, even though only one value (usually the first argument) can be captured.
+From version 4.3, the default index is `index = "0+"`, which tells picocli to assign an index automatically, starting from zero, based on the other positional parameters defined in the same command.
+A simple example can look like this:
+
+[source,java]
+----
+class AutomaticIndex {
+    @Parameters(hidden = true)  // "hidden": don't show this parameter in usage help message
+    List<String> allParameters; // no "index" attribute: captures _all_ arguments
+
+    @Parameters String group;    // assigned index = "0"
+    @Parameters String artifact; // assigned index = "1"
+    @Parameters String version;  // assigned index = "2"
+}
+----
+
+Picocli initializes fields with the values at the specified index in the arguments array.
+[source,java]
+----
+String[] args = { "info.picocli", "picocli", "4.3.0" };
+AutomaticIndex auto = CommandLine.populateCommand(new AutomaticIndex(), args);
+
+assert auto.group.equals("info.picocli");
+assert auto.artifact.equals("picocli");
+assert auto.version.equals("4.3.0");
+assert auto.allParameters.equals(Arrays.asList(args));
+----
+
+[CAUTION]
+====
+Automatic indexes depend on the ability of Java reflection and Java annotation processors to iterate over fields in declaration order in the source code.
+Officially this is not guaranteed by the Java spec.
+In practice this has worked in Oracle JVMs and OpenJDK from Java 6, but there is some risk this may not work in the future or on other JVM's.
+In general, for single-value positional parameters, using <<Explicit Index,explicit indexes>> is the safer option.
+(Multi-value positional parameters can safely omit the `index` attribute.)
+====
+
+IMPORTANT: Methods cannot be iterated over in predictable order.
+For applications with <<option-parameters-methods,`@Parameters`-annotated methods>> or combinations of `@Parameters`-annotated methods and `@Parameters`-annotated fields, we recommend using <<Explicit Index,explicit indexes>> for single-value positional parameters.
+
+==== Anchored Automatic Index
+The default automatic index (`index = "0+"`) for single-value positional parameters is "anchored at zero": it starts at zero, and is increased with each additional positional parameter.
+
+Sometimes you want to have indexes assigned automatically from a different starting point than zero.
+This can be useful when defining <<Mixins>> with positional parameters.
+
+To accomplish this, specify an index with the anchor point and a `+` character to indicate that picocli should start to automatically assign indexes from that anchor point. For example:
+
+[source,java]
+----
+class Anchored {
+    @Parameters(index = "1+") String p1; // assigned index = "1" or higher
+    @Parameters(index = "1+") String p2; // assigned index = "2" or higher
+}
+----
+
+==== Combining Explicit and Automatic Indexes
+If a command defines a positional parameter with an explicit index at the anchor point, then automatic indexes anchored at that point will start from the explicit index plus 1.
+For example:
+
+[source,java]
+----
+class ExplicitAndAutomaticIndexes {
+    @Parameters(index = "0") String explicit0;   // explicit index "0" at default anchor point
+    @Parameters String pAuto1;                   // assigned index "1", anchor point + 1
+    @Parameters String pAuto2;                   // assigned index "2"
+    @Parameters(index = "1+") String pAnchored1; // assigned index "1": no explicit index 1
+    @Parameters(index = "1+") String pAnchored2; // assigned index "2"
+    @Parameters(index = "2") String explicit2;   // explicit index "2", matching anchor for "2+"
+    @Parameters(index = "2+") String pAnchored3; // assigned index "3", anchor point + 1
+    @Parameters(index = "2+") String pAnchored4; // assigned index "4"
+}
+----
+
+==== Unanchored Automatic Index
+
+Sometimes you want to have indexes assigned automatically to come at the end.
+This can be useful when defining <<Mixins>> with positional parameters.
+
+To accomplish this, specify an index with a `+` character to indicate that picocli should automatically assign indexes that come at the end.
+For example:
+
+[source,java]
+----
+class Unanchored {
+    @Parameters(index = "0") String p0;
+    @Parameters(index = "1+") String p1; // assigned index = "1"
+    @Parameters(index = "1+") String p2; // assigned index = "2"
+    @Parameters(index = "3") String p3;
+    @Parameters(index = "+") String p4; // assigned index = "4" <-- unanchored
+    @Parameters(index = "+") String p5; // assigned index = "5" <-- unanchored
+}
+----
+
+==== Cannot Combine Unanchored and Open-ended Indexes
+
+It is not possible to combine unanchored indexes (`+`) with open-ended explicit indexes (`*`):
+the parameter with the open-ended index will capture all arguments, and there is no position "after the other indexes" that can be assigned.
+
+The below example will always give a `Missing required parameter: <last>` error:
+
+[source,java]
+----
+class BadCombination {
+    @Parameters(index = "0..*") List<String> all;
+    @Parameters(index = "+") String last;
+}
+----
+
+
+=== Improved Support for Chinese, Japanese and Korean
+Picocli will align the usage help message to fit within some user-defined width (80 columns by default).
+A number of characters in Chinese, Japanese and Korean (CJK) are wider than others.
+If those characters are treated to have the same width as other characters, the usage help message may extend past the right margin.
+
+From 4.0, picocli will use 2 columns for these wide characters when calculating where to put line breaks, resulting in better usage help message text.
+
+This can be switched off with `CommandLine.setAdjustLineBreaksForWideCJKCharacters(false)`.
 
 === Boolean Options with Parameters
 By default the value of a boolean field is set to the logical negative of its default value when the option is specified on the command line.
