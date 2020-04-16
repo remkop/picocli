@@ -4966,6 +4966,7 @@ public class CommandLine {
         @Deprecated public final boolean isVariable;
         private final boolean isUnspecified;
         private final String originalValue;
+        private final boolean relative;
         private final int anchor;
 
         /** Constructs a new Range object with the specified parameters.
@@ -4983,8 +4984,9 @@ public class CommandLine {
             this.isVariable = variable;
             this.isUnspecified = unspecified;
             this.originalValue = originalValue;
+            this.relative = originalValue != null && originalValue.contains("+");
             // relative indices have an anchorPoint that is used for sorting
-            if (originalValue != null && originalValue.contains("+")) {
+            if (relative) {
                 anchor = "+".equals(originalValue) ? Integer.MAX_VALUE : parseInt(originalValue, Integer.MAX_VALUE);
             } else {
                 anchor = min;
@@ -5028,7 +5030,10 @@ public class CommandLine {
                 int max = member.isMultiValue() ? Integer.MAX_VALUE : min;
                 return new Range(min, max, member.isMultiValue(), false, null);
             }
-            return Range.valueOf("*"); // the default
+            return defaultParameterIndex(member.getTypeInfo());
+        }
+        private static Range defaultParameterIndex(ITypeInfo typeInfo) {
+            return Range.valueOf(typeInfo.isMultiValue() ? "*" : "0+"); // the default
         }
         static Range adjustForType(Range result, IAnnotatedElement member) {
             return result.isUnspecified ? defaultArity(member) : result;
@@ -5061,7 +5066,7 @@ public class CommandLine {
         @Deprecated public static Range defaultArity(Class<?> type) {
             return isBoolean(type) ? Range.valueOf("0").unspecified(true) : Range.valueOf("1").unspecified(true);
         }
-        private int size() { return 1 + max - min; }
+        private int size() { return isRelative() ? 1 : 1 + max - min; }
         static Range parameterCapacity(IAnnotatedElement member) {
             Range arity = parameterArity(member);
             if (!member.isMultiValue()) { return arity; }
@@ -5098,10 +5103,10 @@ public class CommandLine {
                 variable = max == Integer.MAX_VALUE;
             } else {
                 max = parseInt(range, Integer.MAX_VALUE);
-                variable = max == Integer.MAX_VALUE;
+                variable = !range.contains("+") && max == Integer.MAX_VALUE;
                 min = variable ? 0 : max;
             }
-            Range result = new Range(min, max, variable, unspecified, range);
+            Range result = new Range(min, max, variable, unspecified, unspecified ? null : range);
             return result;
         }
         private static int parseInt(String str, int defaultValue) {
@@ -5138,7 +5143,7 @@ public class CommandLine {
         /** Returns {@code true} if this Range contains a relative index like {@code "1+"}, or
          * {@code false} if this Range does not contain any relative indices.
          * @since 4.3 */
-        public boolean isRelative() { return originalValue != null && originalValue.contains("+"); }
+        public boolean isRelative() { return relative; }
 
         /** Returns the anchor position that this Range is {@linkplain #isRelative() relative} to,
          * or {@link #min()} if this Range is absolute.
@@ -5177,8 +5182,16 @@ public class CommandLine {
         }
         public String toString() {
             if (isUnresolved()) { return originalValue; }
-            String result = min == max ? String.valueOf(min) : min + ".." + (isVariable ? "*" : max);
-            return isRelative() ? result + " (" + originalValue + ")" : result;
+            if (min == max) {
+                return (relative && min == Integer.MAX_VALUE) ? "+" : String.valueOf(min);
+            } else {
+                return min + ".." + (isVariable ? "*" : max);
+            }
+        }
+        /** Returns equivalent of {@code format("%s (%s)", originalValue, toString())}. */
+        String internalToString() {
+            if (isUnresolved()) { return originalValue; }
+            return isRelative() ? originalValue + " (" + toString() + ")" : toString();
         }
         public int compareTo(Range other) {
             if (originalValue != null && other.originalValue != null && originalValue.equals(other.originalValue)) {
@@ -5201,13 +5214,15 @@ public class CommandLine {
             return contains(index.min) || contains(index.max) || index.contains(min) || index.contains(max);
         }
     }
-    private static void validatePositionalParameters(List<PositionalParamSpec> positionalParametersFields) {
+    private static void validatePositionalParameters(List<PositionalParamSpec> positionals) {
         int min = 0;
-        for (PositionalParamSpec positional : positionalParametersFields) {
+        for (PositionalParamSpec positional : positionals) {
             Range index = positional.index();
             if (index.min > min && !index.isRelative()) {
+                List<String> indices = new ArrayList<String>();
+                for (PositionalParamSpec pos : positionals) {indices.add(pos.index().internalToString());}
                 throw new ParameterIndexGapException("Command definition should have a positional parameter with index=" + min +
-                        ". Nearest positional parameter '" + positional.paramLabel() + "' has index=" + index.min);
+                        ". Nearest positional parameter '" + positional.paramLabel() + "' has index=" + index + ". (Full list: " + indices + ")");
             }
             min = Math.max(min, index.max);
             min = min == Integer.MAX_VALUE ? min : min + 1;
@@ -5716,33 +5731,36 @@ public class CommandLine {
                     positional.index = Range.valueOf(interpolator.interpolate(positional.index().originalValue));
                     positional.initCapacity();
                 }
-                if (positional.index().isRelative()) {
-                    Collections.sort(positionalParameters, new PositionalParametersSorter());
-                    // adjust the index of the new positional
-                    // and all others with relative indices that were sorted after this positional
-                    for (int i = positionalParameters.indexOf(positional); i < positionalParameters.size(); i++) {
-                        PositionalParamSpec adjust = positionalParameters.get(i);
-                        Range index = adjust.index();
-                        if (index.isRelative()) {
-                            //int min = i == 0 ? 0 : positionalParameters.get(i - 1).index().min();
-                            int max = i == 0 ? 0 : positionalParameters.get(i - 1).index().max() + 1;
-                            max = index.isRelativeToAnchor() ? Math.max(max, index.anchor()) : max; // never less than anchor
-                            adjust.index = new Range(max, max, index.isVariable(), index.isUnspecified, index.originalValue);
-                            adjust.initCapacity();
-                        }
-                    }
-                }
+                adjustRelativeIndices(positional);
                 if (positional.scopeType() == ScopeType.INHERIT) {
-                    Set<CommandLine> done = new HashSet<CommandLine>();
-                    for (CommandLine sub : subcommands().values()) {
-                        if (!done.contains(sub)) {
-                            sub.getCommandSpec().addPositional(PositionalParamSpec.builder(positional).build());
-                            done.add(sub);
-                        }
+                    Set<CommandLine> subCmds = new HashSet<CommandLine>(subcommands().values());// subcommands may be registered multiple times with different aliases
+                    for (CommandLine sub : subCmds) {
+                        sub.getCommandSpec().addPositional(PositionalParamSpec.builder(positional).build());
                     }
                 }
                 return this;
             }
+
+            /** Adjusts the index of the new positional param and all others with relative indices
+             * that were sorted after this positional.
+             * @param newlyAdded the newly added positional parameter
+             */
+            private void adjustRelativeIndices(PositionalParamSpec newlyAdded) {
+                Collections.sort(positionalParameters, new PositionalParametersSorter());
+                for (int i = positionalParameters.indexOf(newlyAdded); i < positionalParameters.size(); i++) {
+                    PositionalParamSpec adjust = positionalParameters.get(i);
+                    Range index = adjust.index();
+                    if (index.isRelative()) {
+                        //int min = i == 0 ? 0 : positionalParameters.get(i - 1).index().min();
+                        int previousMax = i == 0 ? -1 : positionalParameters.get(i - 1).index().max();
+                        int max = i == 0 ? 0 : (previousMax == Integer.MAX_VALUE ? previousMax : previousMax + 1); // prevent overflow
+                        max = index.isRelativeToAnchor() ? Math.max(max, index.anchor()) : max; // never less than anchor
+                        adjust.index = new Range(max, max, index.isVariable(), index.isUnspecified, index.originalValue);
+                        adjust.initCapacity();
+                    }
+                }
+            }
+
             private CommandSpec addArg(ArgSpec arg) {
                 args.add(arg);
                 arg.messages(usageMessage().messages());
@@ -7422,7 +7440,7 @@ public class CommandLine {
             private boolean required;
             private final boolean interactive;
             private final String splitRegex;
-            private final ITypeInfo typeInfo;
+            protected final ITypeInfo typeInfo;
             private final ITypeConverter<?>[] converters;
             private final Iterable<String> completionCandidates;
             private final IParameterConsumer parameterConsumer;
@@ -8647,7 +8665,11 @@ public class CommandLine {
             /** Ensures all attributes of this {@code PositionalParamSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
             private PositionalParamSpec(Builder builder) {
                 super(builder);
-                index = builder.index == null ? Range.valueOf("*") : builder.index;
+                if (builder.index == null) {
+                    index = Range.defaultParameterIndex(typeInfo);
+                } else {
+                    index = builder.index;
+                }
                 builderCapacity = builder.capacity;
                 initCapacity();
                 if (toString == null) { toString = "positional parameter[" + index() + "]"; }
@@ -11836,9 +11858,6 @@ public class CommandLine {
             for (int i = 0; i < commandSpec.positionalParameters().size(); i++) {
                 PositionalParamSpec positionalParam = commandSpec.positionalParameters().get(i);
                 Range indexRange = positionalParam.index();
-                if (indexRange.isRelative()) {
-                    indexRange = new Range(i, i, false, false, indexRange.originalValue);
-                }
                 int localPosition = getPosition(positionalParam);
                 if (positionalParam.group() != null) { // does the positionalParam's index range contain the current position in the currently matching group
                     GroupMatchContainer groupMatchContainer = parseResultBuilder.groupMatchContainer.findOrCreateMatchingGroup(positionalParam, commandSpec.commandLine());
@@ -11852,10 +11871,10 @@ public class CommandLine {
                 }
                 Stack<String> argsCopy = copy(args);
                 Range arity = positionalParam.arity();
-                if (tracer.isDebug()) {tracer.debug("Position %s is in index range %s. Trying to assign args to %s, arity=%s%n", positionDesc(positionalParam), indexRange, positionalParam, arity);}
+                if (tracer.isDebug()) {tracer.debug("Position %s is in index range %s. Trying to assign args to %s, arity=%s%n", positionDesc(positionalParam), indexRange.internalToString(), positionalParam, arity);}
                 if (!assertNoMissingParameters(positionalParam, arity, argsCopy)) { break; } // #389 collectErrors parsing
                 int originalSize = argsCopy.size();
-                int actuallyConsumed = applyOption(positionalParam, false, LookBehind.SEPARATE, alreadyUnquoted, arity, argsCopy, initialized, "args[" + indexRange + "] at position " + localPosition);
+                int actuallyConsumed = applyOption(positionalParam, false, LookBehind.SEPARATE, alreadyUnquoted, arity, argsCopy, initialized, "args[" + indexRange.internalToString() + "] at position " + localPosition);
                 int count = originalSize - argsCopy.size();
                 if (count > 0 || actuallyConsumed > 0) {
                     required.remove(positionalParam);
@@ -11884,7 +11903,22 @@ public class CommandLine {
                 }
             }
             if (consumedByGroup == 0 && argsConsumed == 0 && interactiveConsumed == 0 && !args.isEmpty()) {
-                handleUnmatchedArgument(args);
+                handleUnmatchedArgument(args); // this gives error msg: "Unmatched argument at index 1: 'val2'"
+//                // instead, we want a "positional parameter at index 0..* (<str>) should be specified only once"
+//                List<String> unmatched = new ArrayList<String>();
+//                while (!args.isEmpty()) {unmatched.add(args.pop());}
+//                // positional parameter at index 0..* (<str>) should be specified only once
+//                String msg = null; // FIXME report which positional has been fully filled and cannot take more args
+//                for (int i = 0; i < commandSpec.positionalParameters().size(); i++) {
+//                    PositionalParamSpec positionalParam = commandSpec.positionalParameters().get(i);
+//                    Range indexRange = positionalParam.index();
+//                    if (indexRange.contains(position - 1) && positionalParam.typedValueAtPosition.get(position - 1) == null) {
+//                        aaaaa;
+//                    }
+//                }
+//                if (!isUnmatchedArgumentsAllowed()) {
+//                    maybeThrow(new UnmatchedArgumentException(CommandLine.this, unmatched, msg));
+//                }
             }
         }
 
@@ -12661,24 +12695,27 @@ public class CommandLine {
                                 optionDescription("", argSpec, 0)));
                         return false;
                     }
-                    Range indexRange = ((PositionalParamSpec) argSpec).index();
                     String sep = "";
                     String names = ": ";
+                    String indices = "";
+                    String infix = " at index ";
                     int count = 0;
                     List<PositionalParamSpec> positionalParameters = commandSpec.positionalParameters();
-                    for (int i = indexRange.min; i < positionalParameters.size(); i++) {
-                        if (positionalParameters.get(i).arity().min > 0) {
+                    for (int i = positionalParameters.indexOf(argSpec); i < positionalParameters.size(); i++) {
+                        if (i >= 0 && positionalParameters.get(i).arity().min > 0) {
                             names += sep + positionalParameters.get(i).paramLabel();
+                            indices += sep + positionalParameters.get(i).index();
                             sep = ", ";
                             count++;
                         }
                     }
                     String msg = "Missing required parameter";
-                    Range paramArity = argSpec.arity();
                     if (count > 1 || arity.min - available > 1) {
                         msg += "s";
                     }
-                    maybeThrow(new MissingParameterException(CommandLine.this, argSpec, msg + names));
+                    if (count > 1) { infix = " at indices "; }
+                    String desc = System.getProperty("picocli.verbose.errors") != null ? msg + names + infix + indices : msg + names;
+                    maybeThrow(new MissingParameterException(CommandLine.this, argSpec, desc));
                 } else if (args.isEmpty()) {
                     maybeThrow(new MissingParameterException(CommandLine.this, argSpec, optionDescription("", argSpec, 0) +
                             " requires at least " + arity.min + " values, but none were specified."));
@@ -15914,8 +15951,9 @@ public class CommandLine {
         private List<String> unmatched = Collections.<String>emptyList();
         public UnmatchedArgumentException(CommandLine commandLine, String msg) { super(commandLine, msg); }
         public UnmatchedArgumentException(CommandLine commandLine, Stack<String> args) { this(commandLine, new ArrayList<String>(reverse(args))); }
-        public UnmatchedArgumentException(CommandLine commandLine, List<String> args) {
-            this(commandLine, describe(Assert.notNull(args, "unmatched list"), commandLine) + ": " + quoteElements(args));
+        public UnmatchedArgumentException(CommandLine commandLine, List<String> args)  { this(commandLine, args, ""); }
+        public UnmatchedArgumentException(CommandLine commandLine, List<String> args, String extraMsg) {
+            this(commandLine, describe(Assert.notNull(args, "unmatched list"), commandLine) + ": " + quoteElements(args) + extraMsg);
             unmatched = new ArrayList<String>(args);
         }
         /** Returns {@code true} and prints suggested solutions to the specified stream if such solutions exist, otherwise returns {@code false}.

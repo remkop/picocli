@@ -1693,14 +1693,15 @@ public class CommandLineTest {
         }
         try {
             CommandLine.populateCommand(new SingleValue(),"val1", "val2");
-            fail("Expected OverwrittenOptionException");
-        } catch (OverwrittenOptionException ex) {
-            assertEquals("positional parameter at index 0..* (<str>) should be specified only once", ex.getMessage());
+            fail("Expected exception");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument at index 1: 'val2'", ex.getMessage());
         }
         setTraceLevel("OFF");
-        CommandLine cmd = new CommandLine(new SingleValue()).setOverwrittenOptionsAllowed(true);
+        CommandLine cmd = new CommandLine(new SingleValue()).setUnmatchedArgumentsAllowed(true);
         cmd.parseArgs("val1", "val2");
-        assertEquals("val2", ((SingleValue) cmd.getCommand()).str);
+        assertEquals("val1", ((SingleValue) cmd.getCommand()).str);
+        assertEquals(Arrays.asList("val2"), cmd.getUnmatchedArguments());
     }
 
     @SuppressWarnings("deprecation")
@@ -2340,6 +2341,21 @@ public class CommandLineTest {
         }
     }
     @Test
+    public void testUnmatchedArgumentDoesNotUseLabel() {
+        class App {
+            @Parameters(arity = "1", paramLabel = "IN_FILE", description = "The input file")
+            File foo;
+            @Option(names = "-o", paramLabel = "OUT_FILE", description = "The output file", required = true)
+            File bar;
+        }
+        try {
+            CommandLine.populateCommand(new App(), "a", "b", "-o=1");
+            fail("UnmatchedArgumentException expected");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched argument at index 1: 'b'", ex.getMessage());
+        }
+    }
+    @Test
     public void test185MissingOptionsShouldUseLabel() {
         class App {
             @Parameters(arity = "1", paramLabel = "IN_FILE", description = "The input file")
@@ -2351,7 +2367,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App());
             fail("MissingParameterException expected");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required options [-o=OUT_FILE, params[0..*]=IN_FILE]", ex.getMessage());
+            assertEquals("Missing required options [-o=OUT_FILE, params[0]=IN_FILE]", ex.getMessage());
         }
     }
     @Test

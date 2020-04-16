@@ -1705,13 +1705,13 @@ public class HelpTest {
         }
         String actual = new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF);
         String expected = String.format("" +
-                "Usage: <main class> [<multiSplit>[,<multiSplit>...]...] <multiHideSplit>%n" +
-                "                    <single> <singleHide> (<multi> <multi>)... <multiHide>%n" +
+                "Usage: <main class> <single> <singleHide> [<multiSplit>[,<multiSplit>...]...]%n" +
+                "                    <multiHideSplit> (<multi> <multi>)... <multiHide>%n" +
+                "      <single>%n" +
+                "      <singleHide>%n" +
                 "      [<multiSplit>[,<multiSplit>...]...]%n" +
                 "%n" +
                 "      <multiHideSplit>%n" +
-                "      <single>%n" +
-                "      <singleHide>%n" +
                 "      (<multi> <multi>)...%n" +
                 "      <multiHide>%n");
         assertEquals(expected, actual);
@@ -2688,7 +2688,7 @@ public class HelpTest {
         spec.addPositional(PositionalParamSpec.builder().paramLabel("b").build());
         Help help = new Help(spec, new ColorScheme.Builder(Help.Ansi.OFF).build());
         String actual = help.abbreviatedSynopsis();
-        assertEquals(String.format("<main class> b...%n"), actual);
+        assertEquals(String.format("<main class> b%n"), actual);
     }
 
     @SuppressWarnings("deprecation")

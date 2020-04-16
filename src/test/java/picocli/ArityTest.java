@@ -179,13 +179,27 @@ public class ArityTest {
     }
 
     @Test
-    public void testParameterIndex_WhenUndefined() throws Exception {
+    public void testParameterIndex_WhenUndefinedSingleValue() throws Exception {
         class ImplicitBoolField { @Parameters boolean boolSingleValue; }
-        Range arity = Range.parameterIndex(ImplicitBoolField.class.getDeclaredField("boolSingleValue"));
-        assertEquals(Integer.MAX_VALUE, arity.max());
-        assertEquals(0, arity.min());
-        assertEquals(true, arity.isVariable());
-        assertEquals("0..*", arity.toString());
+        Range index = Range.parameterIndex(ImplicitBoolField.class.getDeclaredField("boolSingleValue"));
+        assertEquals(0, index.max());
+        assertEquals(0, index.min());
+        assertEquals(false, index.isVariable());
+        assertEquals("0", index.toString());
+        assertEquals("0+ (0)", index.internalToString());
+        assertEquals(true, index.isRelative());
+        assertEquals(true, index.isRelativeToAnchor());
+        assertEquals(0, index.anchor());
+    }
+
+    @Test
+    public void testParameterIndex_WhenUndefinedMultiValue() throws Exception {
+        class ImplicitBoolArrayField { @Parameters boolean[] boolMultiValue; }
+        Range index = Range.parameterIndex(ImplicitBoolArrayField.class.getDeclaredField("boolMultiValue"));
+        assertEquals(Integer.MAX_VALUE, index.max());
+        assertEquals(0, index.min());
+        assertEquals(true, index.isVariable());
+        assertEquals("0..*", index.toString());
     }
 
     @Test

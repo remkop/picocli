@@ -204,7 +204,7 @@ function _picocli_picocompletion-demo_sub2() {
       return $?
       ;;
   esac
-  local possibilities_pos_param_args="Aaa Bbb Ccc" # 0-2147483647 values
+  local possibilities_pos_param_args="Aaa Bbb Ccc" # 0-0 values
 
   if [[ "${curr_word}" == -* ]]; then
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
@@ -212,7 +212,7 @@ function _picocli_picocompletion-demo_sub2() {
     local positionals=""
     local currIndex
     currIndex=$(currentPositionalIndex "sub2" "${arg_opts}" "${flag_opts}")
-    if (( currIndex >= 0 && currIndex <= 2147483647 )); then
+    if (( currIndex >= 0 && currIndex <= 0 )); then
       positionals=$( compgen -W "$possibilities_pos_param_args" -- "${curr_word}" )
     fi
     COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )
@@ -269,7 +269,7 @@ function _picocli_picocompletion-demo_sub2_subsub2() {
       return
       ;;
   esac
-  local str2_pos_param_args="aaa bbb ccc" # 0-2147483647 values
+  local str2_pos_param_args="aaa bbb ccc" # 0-0 values
 
   if [[ "${curr_word}" == -* ]]; then
     COMPREPLY=( $(compgen -W "${flag_opts} ${arg_opts}" -- "${curr_word}") )
@@ -277,7 +277,7 @@ function _picocli_picocompletion-demo_sub2_subsub2() {
     local positionals=""
     local currIndex
     currIndex=$(currentPositionalIndex "subsub2" "${arg_opts}" "${flag_opts}")
-    if (( currIndex >= 0 && currIndex <= 2147483647 )); then
+    if (( currIndex >= 0 && currIndex <= 0 )); then
       positionals=$( compgen -W "$str2_pos_param_args" -- "${curr_word}" )
     fi
     COMPREPLY=( $(compgen -W "${commands} ${positionals}" -- "${curr_word}") )

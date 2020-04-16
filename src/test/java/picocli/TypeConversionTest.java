@@ -676,7 +676,7 @@ public class TypeConversionTest {
         try {
             commandLine.parseArgs("anything");
         } catch (CommandLine.ParameterException ex) {
-            assertEquals("Invalid value for positional parameter at index 0..* (<sqlTypeParam>): cannot convert 'anything' to int (java.lang.IllegalStateException: bad converter)", ex.getMessage());
+            assertEquals("Invalid value for positional parameter at index 0 (<sqlTypeParam>): cannot convert 'anything' to int (java.lang.IllegalStateException: bad converter)", ex.getMessage());
         }
     }
     static class CustomConverter implements ITypeConverter<Integer> {

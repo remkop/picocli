@@ -788,7 +788,7 @@ public class AtFileTest {
             @Parameters(arity = "1", description = "The file.")
             private File file;
 
-            @Option(names = {"-x"}, arity="0..*", description = "Option with multiple params.")
+            @Option(names = {"-x", "--long"}, arity="0..*", description = "Option with multiple params.")
             private String params;
         }
 
@@ -802,4 +802,14 @@ public class AtFileTest {
                 "  -x=[<params>...]       Option with multiple params.%n");
         assertEquals(expected, actual);
     }
+
+@Test
+public void test() {
+    String txt = "?String" + '\uD800';
+    System.out.println(txt); // prints ?String?
+    for (byte b : txt.getBytes()) {
+        System.out.print(" 0x" + Integer.toHexString(b));
+    } // gives  0x3f 0x53 0x74 0x72 0x69 0x6e 0x67 0x3f
+    System.out.println();
+}
 }

@@ -67,8 +67,8 @@ public class ModelUsageMessageSpecTest {
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, CommandLine.Help.Ansi.OFF);
         String expected = String.format("" +
-                "Usage: <main class> PARAM...%n" +
-                "      PARAM...%n");
+                "Usage: <main class> PARAM%n" +
+                "      PARAM%n");
         assertEquals(expected, actual);
     }
 
@@ -79,8 +79,8 @@ public class ModelUsageMessageSpecTest {
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, CommandLine.Help.Ansi.OFF);
         String expected = String.format("" +
-                "Usage: <main class> PARAM...%n" +
-                "      PARAM...   positional param%n");
+                "Usage: <main class> PARAM%n" +
+                "      PARAM   positional param%n");
         assertEquals(expected, actual);
     }
 
@@ -116,12 +116,12 @@ public class ModelUsageMessageSpecTest {
                 "Header heading%n" +
                 "header line 1%n" +
                 "header line 2%n" +
-                "Usage: the awesome util [-hV] PARAM...%n" +
+                "Usage: the awesome util [-hV] PARAM%n" +
                 "Description heading%n" +
                 "description line 1%n" +
                 "description line 2%n" +
                 "Positional Parameters%n" +
-                "      PARAM...    positional param%n" +
+                "      PARAM       positional param%n" +
                 "Options%n" +
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n" +
@@ -153,9 +153,9 @@ public class ModelUsageMessageSpecTest {
         CommandLine commandLine = new CommandLine(spec);
         String actual = usageString(commandLine, CommandLine.Help.Ansi.OFF);
         String expected = String.format("" +
-                "Usage: <main class> [OPTIONS] POSITIONAL...%n" +
-                "!     POSITIONAL...   positional%n" +
-                "! -x                  required%n");
+                "Usage: <main class> [OPTIONS] POSITIONAL%n" +
+                "!     POSITIONAL   positional%n" +
+                "! -x               required%n");
         assertEquals(expected, actual);
     }
 

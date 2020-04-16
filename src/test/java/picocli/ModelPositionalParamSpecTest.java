@@ -3,11 +3,9 @@ package picocli;
 import org.junit.Test;
 import picocli.CommandLine.Help.Visibility;
 import picocli.CommandLine.ITypeConverter;
-import picocli.CommandLine.Option;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.IGetter;
 import picocli.CommandLine.Model.ISetter;
-import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Range;
@@ -16,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertFalse;
 
 public class ModelPositionalParamSpecTest {
 
@@ -116,8 +113,30 @@ public class ModelPositionalParamSpecTest {
     }
 
     @Test
-    public void testPositionalDefaultIndexIsAll() {
-        assertEquals(Range.valueOf("*"), PositionalParamSpec.builder().build().index());
+    public void testRelativeIndexToString() {
+        assertEquals("+", Range.valueOf("+").toString());
+        assertEquals("+ (+)", Range.valueOf("+").internalToString());
+    }
+
+    @Test
+    public void testRelativeAnchoredIndexToString() {
+        assertEquals("0", Range.valueOf("0+").toString());
+        assertEquals("0+ (0)", Range.valueOf("0+").internalToString());
+    }
+
+    @Test
+    public void testPositionalDefaultIndexIsNext() {
+        assertEquals(Range.valueOf("0+"), PositionalParamSpec.builder().build().index());
+    }
+
+    @Test
+    public void testPositionalDefaultIndexForSingleValueIsNext() {
+        assertEquals(Range.valueOf("0+"), PositionalParamSpec.builder().type(String.class).build().index());
+    }
+
+    @Test
+    public void testPositionalDefaultIndexForMultiValueIsAll() {
+        assertEquals(Range.valueOf("*"), PositionalParamSpec.builder().type(List.class).build().index());
     }
 
     @Test

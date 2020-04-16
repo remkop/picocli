@@ -1,6 +1,5 @@
 package picocli;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -8,9 +7,6 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.MissingParameterException;
-import picocli.CommandLine.ParseResult;
-import picocli.CommandLine.Mixin;
-import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Option;
 
 import static org.junit.Assert.*;
@@ -344,46 +340,6 @@ public class InterpolatedModelTest {
                 System.getProperty("user.home"));
 
         String actual = new CommandLine(new Issue723()).getUsageMessage(CommandLine.Help.Ansi.OFF);
-        assertEquals(expected, actual);
-    }
-
-    static class CommonMixinOne {
-        @Parameters(index = "0+", paramLabel = "COMMON-PARAM-ONE")
-        private String commonMixinOneParam;
-    }
-
-    static class CommonMixinTwo {
-        @Parameters(index = "2+", paramLabel = "COMMON-PARAM-TWO")
-        private String commonMixinTwoParam;
-    }
-
-    @Test
-    // test for https://github.com/remkop/picocli/issues/564
-    public void testMixinsWithVariableIndex() {
-        @Command(name = "testCommand", description = "Example for issue 564")
-        class TestCommand {
-
-            @Mixin
-            private CommonMixinOne myCommonMixinOne;
-
-            @Parameters(index = "1", paramLabel = "TEST-COMMAND-PARAM")
-            private String testCommandParam;
-
-            @Mixin
-            private CommonMixinTwo myCommonMixinTwo;
-        }
-
-        CommandLine cmd = new CommandLine(new TestCommand());
-        //ParseResult result = cmd.parseArgs(args);
-        // ...
-
-        String expected = String.format("" +
-                "Usage: testCommand COMMON-PARAM-ONE TEST-COMMAND-PARAM COMMON-PARAM-TWO%n" +
-                "Example for issue 564%n" +
-                "      COMMON-PARAM-ONE%n" +
-                "      TEST-COMMAND-PARAM%n" +
-                "      COMMON-PARAM-TWO%n");
-        String actual = cmd.getUsageMessage();
         assertEquals(expected, actual);
     }
 }
