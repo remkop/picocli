@@ -6679,7 +6679,9 @@ public class CommandLine {
                                 txt += " " + line;
                             }
                             tracer.debug("getTerminalWidth() parsing output: %s%n", txt);
-                            Pattern pattern = Pattern.compile(".*olumns(:)?\\s+(\\d+)\\D.*", Pattern.DOTALL);
+                            Pattern pattern = (Help.Ansi.isWindows() && !Help.Ansi.isPseudoTTY())
+                                    ? Pattern.compile(".*?:\\s*(\\d+)\\D.*?:\\s*(\\d+)\\D.*", Pattern.DOTALL)
+                            		: Pattern.compile(".*olumns(:)?\\s+(\\d+)\\D.*", Pattern.DOTALL);
                             Matcher matcher = pattern.matcher(txt);
                             if (matcher.matches()) {
                                 size.set(Integer.parseInt(matcher.group(2)));
@@ -6697,7 +6699,7 @@ public class CommandLine {
                 do {
                     if (size.intValue() >= 0) { break; }
                     try { Thread.sleep(25); } catch (InterruptedException ignored) {}
-                } while (System.currentTimeMillis() < now + 2000);
+                } while (System.currentTimeMillis() < now + 2000 && t.isAlive());
                 double duration = (System.nanoTime() - start) / 1000000.0;
                 tracer.debug("getTerminalWidth() returning: %s in %,.1fms%n", size, duration);
                 return size.intValue();
