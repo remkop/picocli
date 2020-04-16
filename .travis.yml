@@ -32,6 +32,8 @@ matrix:
   - jdk: openjdk7
   - jdk: oraclejdk8
   - jdk: oraclejdk11
+  - jdk: openjdk15
+  - jdk: openjdk-ea
     #  - openjdk7 # Disabled to avoid error java.security.NoSuchProviderException: no such provider: SunEC...
 
 before_script:
