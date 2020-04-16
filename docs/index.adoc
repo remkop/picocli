@@ -5526,7 +5526,7 @@ class Unanchored {
 }
 ----
 
-==== Cannot Combine Unanchored and Open-ended Indexes
+==== Do Not Combine Unanchored Indexes with Open-ended Indexes
 
 It is not possible to combine unanchored indexes (`+`) with open-ended explicit indexes (`*`):
 the parameter with the open-ended index will capture all arguments, and there is no position "after the other indexes" that can be assigned.

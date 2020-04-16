@@ -7,7 +7,7 @@ This release contains bugfixes and enhancements.
 
 This release adds support for "inherited" options. Options defined with `scope = ScopeType.INHERIT` are shared with all subcommands (and sub-subcommands, to any level of depth). Applications can define an inherited option on the top-level command, in one place, to allow end users to specify this option anywhere: not only on the top-level command, but also on any of the subcommands and nested sub-subcommands.
 
-Additionally, this release adds support for relative indices for positional parameters. Single-value positional parameters now have a relative index by default. This is useful for positional parameters that are used in multiple places like in mixins or inherited positional parameters.
+Additionally, this release improves support for automatic indexes for positional parameters. Single-value positional parameters without an explicit `index = "..."` attribute are now automatically assigned an index based on the other positional parameters in the command. One use case is mixins with positional parameters.
 
 Also, from this release, mixins are more powerful. Mixin classes can declare a `@Spec(MIXEE)`-annotated field, and picocli will inject the `CommandSpec` of the command _receiving_ this mixin (the "mixee") into this field. This is useful for mixins containing shared logic, in addition to shared options and parameters. 
 
@@ -21,7 +21,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 ## <a name="4.3.0-toc"></a> Table of Contents
 * [New and noteworthy](#4.3.0-new)
   * [Inherited Options](#4.3.0-inherited-options)
-  * [Relative Index for Positional Parameters](#4.3.0-relative-index)
+  * [Automatic Indexes for Positional Parameters](#4.3.0-auto-index)
   * [`@Spec(MIXEE)` Annotation](#4.3.0-mixee)
 * [Fixed issues](#4.3.0-fixes)
 * [Deprecations](#4.3.0-deprecated)
@@ -84,13 +84,58 @@ NOTE: Subcommands don't need to do anything to receive inherited options, but a 
 Subcommands that need to inspect the value of an inherited option can use the `@ParentCommand` annotation to get a reference to their parent command, and access the inherited option via the parent reference.
 Alternatively, for such subcommands, sharing options via mixins may be a more suitable mechanism.
 
-### <a name="4.3.0-relative-index"></a> Relative Index for Positional Parameters
-Additionally, this release adds support for relative indices for positional parameters. Single-value positional parameters now have a relative index by default. This is useful for positional parameters that are used in multiple places like in mixins or inherited positional parameters.
+### <a name="4.3.0-auto-index"></a> Automatic Indexes for Positional Parameters
 
-From this release, positional parameters can use a relative index.
+From this release, when the `index = "..."` attribute is omitted, the default index is `index = "0+"`, which tells picocli to assign an index automatically, starting from zero, based on the other positional parameters defined in the same command.
 
-This allows positional parameters to be used as inherited options.
+A simple example can look like this:
 
+```java
+class AutomaticIndex {
+    @Parameters(hidden = true)  // "hidden": don't show this parameter in usage help message
+    List<String> allParameters; // no "index" attribute: captures _all_ arguments
+
+    @Parameters String group;    // assigned index = "0"
+    @Parameters String artifact; // assigned index = "1"
+    @Parameters String version;  // assigned index = "2"
+}
+```
+
+Picocli initializes fields with the values at the specified index in the arguments array.
+
+```java
+String[] args = { "info.picocli", "picocli", "4.3.0" };
+AutomaticIndex auto = CommandLine.populateCommand(new AutomaticIndex(), args);
+
+assert auto.group.equals("info.picocli");
+assert auto.artifact.equals("picocli");
+assert auto.version.equals("4.3.0");
+assert auto.allParameters.equals(Arrays.asList(args));
+```
+
+The default automatic index (`index = "0+"`) for single-value positional parameters is "anchored at zero": it starts at zero, and is increased with each additional positional parameter.
+
+Sometimes you want to have indexes assigned automatically from a different starting point than zero. This can be useful when defining Mixins with positional parameters.
+
+To accomplish this, specify an index with the anchor point and a `+` character to indicate that picocli should start to automatically assign indexes from that anchor point. For example:
+
+```java
+class Anchored {
+    @Parameters(index = "1+") String p1; // assigned index = "1" or higher
+    @Parameters(index = "1+") String p2; // assigned index = "2" or higher
+}
+```
+
+Finally, sometimes you want to have indexes assigned automatically to come at the end. Again, this can be useful when defining Mixins with positional parameters.
+
+To accomplish this, specify an index with a `+` character to indicate that picocli should automatically assign indexes that come at the end. For example:
+
+```java
+class Unanchored {
+    @Parameters(index = "+") String penultimate; // assigned the penultimate index in the command
+    @Parameters(index = "+") String last;        // assigned the last index in the command
+}
+```
 
 
 ### <a name="4.3.0-mixee"></a>  `@Spec(MIXEE)` Annotation
@@ -161,50 +206,75 @@ No features were deprecated in this release.
 
 ## <a name="4.3.0-breaking-changes"></a> Potential breaking changes
 
-### Default index now depends on type
-The picocli 4.3.0 release introduces support for relative indices for positional parameters. This only matters for single-value parameters.
+### Default index for single-value positional parameters
 
-Prior to this release, the default index of a positional parameter was always `0..*`. For a single-value parameter, only one value can actually be captured, so the effective index was actually `0` (zero).
+Prior to picocli 4.3.0, if your application defines any single-value positional parameters without explicit `index`, these parameters would all point to index zero.
+From picocli 4.3.0, picocli automatically assigns an index, so the first such parameter gets index `0` (zero), the next parameter gets index `1` (one), the next parameter gets index `2` (two), etc.
 
-If an application defined multiple `@Parameters`-annotated fields without explicitly defining their index, they would all capture only the first positional parameter. This has changed in this release.
+This may break applications that have multiple single-value positional parameters without explicit `index`, that expect to capture the first argument in all of these parameters.
 
-#### Single-value positional parameters
-The default index has changed for single-value positional parameters: `@Parameters`-annotated fields whose type is a primitive or a single-value object (not an array, collection or a map).
+### Different error when user specifies too many parameters
 
-For **single-value** positional parameters, the default index is `+` from picocli 4.3.0 onwards: this means that if an application defines multiple positional parameters, they will now by default capture different indices. For example:
+The error message has changed when a user specifies more positional parameters than the program can accept. For example:
 
 ```java
-class SingleValuePositionals {
-    @Parameters String s1; // relative index is resolved to index = "0"
-    @Parameters String s2; // relative index is resolved to index = "1"
-    @Parameters String s3; // relative index is resolved to index = "2"
+class SingleValue {
+    @Parameters String str;
 }
 ```
 
-Single-value positional parameters with an **explicit** index are not impacted, these work as before. For example:
+This program only accepts one parameter. What happens when this program is invoked incorrectly with two parameters, like this:
 
 ```java
-class ExplicitIndexPositionals {
-    @Parameters(index = "0") String s1; // absolute index, captures value at index 0
-    @Parameters(index = "1") String s2; // absolute index, captures value at index 1
-    @Parameters(index = "2") String s3; // absolute index, captures value at index 2
-}
+java SingleValue val1 val2
 ```
 
+Before this release, picocli would throw an `OverwrittenOptionException` with message `"positional parameter at index 0..* (<str>) should be specified only once"`.
 
+From picocli 4.3, picocli throws an `UnmatchedArgumentException` with message `"Unmatched argument at index 1: 'val2'"`.
 
-#### Multi-Value positional parameters
-This change does not impact multi-value positional parameters: `@Parameters`-annotated fields whose type is an array, collection or a map.
+This may break applications that have error handling that depends on an `OverwrittenOptionException` being thrown.
 
-For multi-value positional parameters, the default index is still `0..*`, as it was before: this captures all positional parameters. Example:
+### Different mechanism for dealing with too many parameters
+
+Continuing with the previous example, before this release, applications could deal with this by allowing single-value options to be overwritten:
 
 ```java
-class MultiValuePositionals {
-    @Parameters List<String> list; // default index = "0..*": all positional params
-    @Parameters String[] array;    // default index = "0..*": also captures all positional params
-}
-``` 
+// before
+CommandLine cmd = new CommandLine(new SingleValue());
+cmd.setOverwrittenOptionsAllowed(true);
+// ...
+```
 
+From picocli 4.3, applications need to allow unmatched arguments instead:
+
+```java
+// after
+CommandLine cmd = new CommandLine(new SingleValue());
+cmd.setUnmatchedArgumentsAllowed(true);
+// ...
+// get the invalid values
+cmd.getUnmatchedArguments();
+```
+
+### Usage help message for single-value positional parameters
+Before picocli 4.3.0, single-value positional parameters would incorrectly show an ellipsis (`...`) after their parameter label. This ellipsis is incorrect because it indicates that multiple values can be specified. The ellipsis is no longer shown for single-value positional parameters from picocli 4.3.0.
+
+Before:
+
+```
+Usage: <main class> PARAM...
+      PARAM...   Param description.
+```
+
+After:
+
+```
+Usage: <main class> PARAM
+      PARAM   Param description.
+```
+
+This may break application tests that expect a specific usage help message format.
 
 
 # <a name="4.2.0"></a> Picocli 4.2.0
