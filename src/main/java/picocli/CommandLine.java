@@ -5559,7 +5559,9 @@ public class CommandLine {
 
                 for (ArgSpec arg : args()) {
                     if (arg.scopeType() == ScopeType.INHERIT) {
-                        subSpec.add(arg);
+                        subSpec.add(arg.isOption()
+                                ? OptionSpec.builder((OptionSpec) arg).inherited(true).build()
+                                : PositionalParamSpec.builder((PositionalParamSpec) arg).inherited(true).build());
                     }
                 }
                 return this;
@@ -5679,7 +5681,7 @@ public class CommandLine {
                     Set<CommandLine> done = new HashSet<CommandLine>();
                     for (CommandLine sub : subcommands().values()) {
                         if (!done.contains(sub)) {
-                            sub.getCommandSpec().addOption(OptionSpec.builder(option).build());
+                            sub.getCommandSpec().addOption(OptionSpec.builder(option).inherited(true).build());
                             done.add(sub);
                         }
                     }
@@ -5735,7 +5737,7 @@ public class CommandLine {
                 if (positional.scopeType() == ScopeType.INHERIT) {
                     Set<CommandLine> subCmds = new HashSet<CommandLine>(subcommands().values());// subcommands may be registered multiple times with different aliases
                     for (CommandLine sub : subCmds) {
-                        sub.getCommandSpec().addPositional(PositionalParamSpec.builder(positional).build());
+                        sub.getCommandSpec().addPositional(PositionalParamSpec.builder(positional).inherited(true).build());
                     }
                 }
                 return this;
@@ -7426,6 +7428,8 @@ public class CommandLine {
             static final String DESCRIPTION_VARIABLE_COMPLETION_CANDIDATES = "${COMPLETION-CANDIDATES}";
             private static final String NO_DEFAULT_VALUE = "__no_default_value__";
 
+            private final boolean inherited;
+
             // help-related fields
             private final boolean hidden;
             private final String paramLabel;
@@ -7474,6 +7478,7 @@ public class CommandLine {
                 parameterConsumer = builder.parameterConsumer;
                 showDefaultValue = builder.showDefaultValue == null ? Help.Visibility.ON_DEMAND : builder.showDefaultValue;
                 hidden = builder.hidden;
+                inherited = builder.inherited;
                 interactive = builder.interactive;
                 initialValue = builder.initialValue;
                 hasInitialValue = builder.hasInitialValue;
@@ -7645,6 +7650,11 @@ public class CommandLine {
             /** Returns whether this option should be excluded from the usage message.
              * @see Option#hidden() */
             public boolean hidden()        { return hidden; }
+
+            /** Returns whether this option is inherited from a parent command.
+             * @see Option#scope()
+             * @since 4.3.0 */
+            public boolean inherited() { return inherited; }
 
             /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value. */
             public Class<?> type()         { return typeInfo.getType(); }
@@ -7939,6 +7949,7 @@ public class CommandLine {
                 boolean result = Assert.equals(this.defaultValue, other.defaultValue)
                         && Assert.equals(this.arity, other.arity)
                         && Assert.equals(this.hidden, other.hidden)
+                        && Assert.equals(this.inherited, other.inherited)
                         && Assert.equals(this.paramLabel, other.paramLabel)
                         && Assert.equals(this.hideParamSyntax, other.hideParamSyntax)
                         && Assert.equals(this.required, other.required)
@@ -7956,6 +7967,7 @@ public class CommandLine {
                         + 37 * Assert.hashCode(defaultValue)
                         + 37 * Assert.hashCode(arity)
                         + 37 * Assert.hashCode(hidden)
+                        + 37 * Assert.hashCode(inherited)
                         + 37 * Assert.hashCode(paramLabel)
                         + 37 * Assert.hashCode(hideParamSyntax)
                         + 37 * Assert.hashCode(required)
@@ -8004,6 +8016,7 @@ public class CommandLine {
                 private boolean hideParamSyntax;
                 private String splitRegex;
                 private boolean hidden;
+                private boolean inherited;
                 private Class<?> type;
                 private Class<?>[] auxiliaryTypes;
                 private ITypeInfo typeInfo;
@@ -8034,6 +8047,7 @@ public class CommandLine {
                     hideParamSyntax = original.hideParamSyntax;
                     splitRegex = original.splitRegex;
                     hidden = original.hidden;
+                    inherited = original.inherited;
                     setTypeInfo(original.typeInfo);
                     converters = original.converters;
                     defaultValue = original.defaultValue;
@@ -8077,6 +8091,7 @@ public class CommandLine {
                     defaultValue = option.defaultValue();
                     showDefaultValue = option.showDefaultValue();
                     scopeType = option.scope();
+                    inherited = false;
                     if (factory != null) {
                         converters = DefaultFactory.createConverter(factory, option.converter());
                         if (!NoCompletionCandidates.class.equals(option.completionCandidates())) {
@@ -8107,6 +8122,7 @@ public class CommandLine {
                         defaultValue = parameters.defaultValue();
                         showDefaultValue = parameters.showDefaultValue();
                         scopeType = parameters.scope();
+                        inherited = false;
                         if (factory != null) { // annotation processors will pass a null factory
                             converters = DefaultFactory.createConverter(factory, parameters.converter());
                             if (!NoCompletionCandidates.class.equals(parameters.completionCandidates())) {
@@ -8180,6 +8196,11 @@ public class CommandLine {
                 /** Returns whether this option should be excluded from the usage message.
                  * @see Option#hidden() */
                 public boolean hidden()        { return hidden; }
+
+                /** Returns whether this option is inherited from a parent command.
+                 * @see Option#scope()
+                 * @since 4.3.0 */
+                public boolean inherited() { return inherited; }
 
                 /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value. */
                 public Class<?> type()         { return type; }
@@ -8285,6 +8306,10 @@ public class CommandLine {
 
                 /** Sets whether this option should be excluded from the usage message, and returns this builder. */
                 public T hidden(boolean hidden)              { this.hidden = hidden; return self(); }
+
+                /** Sets whether this option is inherited from a parent command, and returns this builder.
+                 * @since 4.3.0 */
+                public T inherited(boolean inherited)        { this.inherited = inherited; return self(); }
 
                 /** Sets the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value, and returns this builder.
                  * @param propertyType the type of this option or parameter. For multi-value options and positional parameters this can be an array, or a (sub-type of) Collection or Map. */

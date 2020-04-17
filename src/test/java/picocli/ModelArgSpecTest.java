@@ -154,7 +154,9 @@ public class ModelArgSpecTest {
                 .description("desc")
                 .descriptionKey("key")
                 .type(Map.class)
-                .auxiliaryTypes(Integer.class, Double.class);
+                .auxiliaryTypes(Integer.class, Double.class)
+                .inherited(true)
+                .scopeType(CommandLine.ScopeType.INHERIT);
 
         PositionalParamSpec p1 = positional.build();
         assertEquals(p1, p1);
@@ -168,6 +170,10 @@ public class ModelArgSpecTest {
         assertNotEquals(p1, positional.descriptionKey("key").type(List.class).build());
         assertNotEquals(p1, positional.type(Map.class).auxiliaryTypes(Short.class).build());
         assertEquals(p1, positional.auxiliaryTypes(Integer.class, Double.class).build());
+        assertNotEquals(p1, positional.inherited(false).build());
+        assertEquals(p1, positional.inherited(true).build());
+        assertNotEquals(p1, positional.scopeType(CommandLine.ScopeType.LOCAL).build());
+        assertEquals(p1, positional.scopeType(CommandLine.ScopeType.INHERIT).build());
     }
 
     @Test

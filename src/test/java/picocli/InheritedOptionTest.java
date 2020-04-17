@@ -177,14 +177,35 @@ public class InheritedOptionTest {
     }
 
     @Test
+    public void testProgrammaticOptionBuilderInheritedFalseByDefault() {
+        assertFalse(OptionSpec.builder("-a").inherited());
+    }
+
+    @Test
+    public void testProgrammaticOptionBuilderInheritedMutable() {
+        assertTrue(OptionSpec.builder("-a").inherited(true).inherited());
+        assertTrue(OptionSpec.builder("-a").inherited(true).build().inherited());
+    }
+
+    @Test
+    public void testProgrammaticOptionInheritedFalseByDefault() {
+        assertFalse(OptionSpec.builder("-a").build().inherited());
+    }
+
+    @Test
     public void testProgrammaticAddOptionBeforeSub() {
         OptionSpec optA = OptionSpec.builder("-a").scopeType(INHERIT).build();
         CommandSpec spec = CommandSpec.create();
         spec.add(optA);
+        assertFalse(optA.inherited());
+
         CommandSpec sub = CommandSpec.create();
         spec.addSubcommand("sub", sub);
         assertNotNull(spec.findOption("-a"));
         assertNotNull(sub.findOption("-a"));
+
+        assertFalse(spec.findOption("-a").inherited());
+        assertTrue(sub.findOption("-a").inherited());
     }
 
     @Test
@@ -194,8 +215,13 @@ public class InheritedOptionTest {
         CommandSpec sub = CommandSpec.create();
         spec.addSubcommand("sub", sub);
         spec.add(optA);
+        assertFalse(optA.inherited());
+
         assertNotNull(spec.findOption("-a"));
         assertNotNull(sub.findOption("-a"));
+
+        assertFalse(spec.findOption("-a").inherited());
+        assertTrue(sub.findOption("-a").inherited());
     }
 
     @Test
@@ -215,14 +241,35 @@ public class InheritedOptionTest {
     }
 
     @Test
+    public void testProgrammaticPositionalParamBuilderInheritedFalseByDefault() {
+        assertFalse(PositionalParamSpec.builder().inherited());
+    }
+
+    @Test
+    public void testProgrammaticPositionalParamBuilderInheritedMutable() {
+        assertTrue(PositionalParamSpec.builder().inherited(true).inherited());
+        assertTrue(PositionalParamSpec.builder().inherited(true).build().inherited());
+    }
+
+    @Test
+    public void testProgrammaticPositionalParamInheritedFalseByDefault() {
+        assertFalse(PositionalParamSpec.builder().build().inherited());
+    }
+
+    @Test
     public void testProgrammaticAddPositionalParamBeforeSub() {
-        PositionalParamSpec optA = PositionalParamSpec.builder().scopeType(INHERIT).build();
+        PositionalParamSpec positional = PositionalParamSpec.builder().scopeType(INHERIT).build();
         CommandSpec spec = CommandSpec.create();
-        spec.add(optA);
+        spec.add(positional);
+        assertFalse(positional.inherited());
+
         CommandSpec sub = CommandSpec.create();
         spec.addSubcommand("sub", sub);
         assertFalse(spec.positionalParameters().isEmpty());
         assertFalse(sub.positionalParameters().isEmpty());
+
+        assertFalse(spec.positionalParameters().get(0).inherited());
+        assertTrue(sub.positionalParameters().get(0).inherited());
     }
 
     @Test
@@ -232,7 +279,12 @@ public class InheritedOptionTest {
         CommandSpec sub = CommandSpec.create();
         spec.addSubcommand("sub", sub);
         spec.add(positional);
+        assertFalse(positional.inherited());
+
         assertFalse(spec.positionalParameters().isEmpty());
         assertFalse(sub.positionalParameters().isEmpty());
+
+        assertFalse(spec.positionalParameters().get(0).inherited());
+        assertTrue(sub.positionalParameters().get(0).inherited());
     }
 }
