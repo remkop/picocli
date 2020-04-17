@@ -2181,4 +2181,36 @@ public class SubcommandTests {
                 "Commands:%n" +
                 "  foo  I am playpico foo. I don't do much.%n"), out.toString());
     }
+
+    @Command(name = "top", subcommands = Sub990.class)
+    static class Top990 {
+        @Option(names = "-a") int a = -11;
+    }
+    @Command(name = "sub", subcommands = SubSub990.class)
+    static class Sub990 {
+        @Option(names = "-b") int b = -22;
+    }
+    @Command(name = "subsub")
+    static class SubSub990 {
+        @Option(names = "-c") int c = -33;
+    }
+
+    @Ignore("Needs fix for https://github.com/remkop/picocli/issues/990")
+    @Test // https://github.com/remkop/picocli/issues/990
+    public void testIssue990_OptionsInSubcommandsNotResetToTheirInitialValue() {
+        CommandLine cmd = new CommandLine(new Top990());
+        ParseResult result1 = cmd.parseArgs("-a=1 sub -b=2 subsub -c=3".split(" "));
+        assertEquals(Integer.valueOf(1), result1.matchedOptionValue("-a", 0));
+        assertEquals(Integer.valueOf(2), result1.subcommand().matchedOptionValue("-b", 0));
+        assertEquals(Integer.valueOf(3), result1.subcommand().subcommand().matchedOptionValue("-c", 0));
+        assertEquals(1, ((Top990)result1.commandSpec().userObject()).a);
+        assertEquals(2, ((Sub990)result1.subcommand().commandSpec().userObject()).b);
+        assertEquals(3, ((SubSub990)result1.subcommand().subcommand().commandSpec().userObject()).c);
+
+        // now check that option values are reset to their default on the 2nd invocation
+        ParseResult result2 = cmd.parseArgs("sub subsub".split(" "));
+        assertEquals(-11, ((Top990)result2.commandSpec().userObject()).a);
+        assertEquals(-22, ((Sub990)result2.subcommand().commandSpec().userObject()).b);
+        assertEquals(-33, ((SubSub990)result2.subcommand().subcommand().commandSpec().userObject()).c);
+    }
 }
