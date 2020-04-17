@@ -46,6 +46,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -209,6 +210,50 @@ public class CommandLineTest {
         new CommandLine(params).parseArgs("3", "2", "1");
         assertNotSame(list, params.list);
         assertEquals(Arrays.asList(3, 2, 1), params.list);
+    }
+    @Test
+    public void testListPositionalParametersAreClearedOnReuse() {
+        ListPositionalParams params = new ListPositionalParams();
+        CommandLine cmd = new CommandLine(params);
+
+        cmd.parseArgs("3", "2", "1");
+        assertEquals(Arrays.asList(3, 2, 1), params.list);
+
+        cmd.parseArgs();
+        assertNull(params.list);
+    }
+    private class ListPositionalParamsWithInitialValue {
+        @Parameters(type = Integer.class) List<Integer> list = new ArrayList<Integer>();
+    }
+    @Test
+    public void testListPositionalParametersWithInitialValueAreReusedIfNonNull() {
+        ListPositionalParamsWithInitialValue params = new ListPositionalParamsWithInitialValue();
+        params.list = new ArrayList<Integer>();
+        List<Integer> list = params.list;
+        new CommandLine(params).parseArgs("3", "2", "1");
+        assertSame(list, params.list);
+        assertEquals(Arrays.asList(3, 2, 1), params.list);
+    }
+    @Test
+    public void testListPositionalParametersWithInitialValueAreReplacedIfNonNull() {
+        ListPositionalParamsWithInitialValue params = new ListPositionalParamsWithInitialValue();
+        params.list = new ArrayList<Integer>();
+        params.list.add(234);
+        List<Integer> list = params.list;
+        new CommandLine(params).parseArgs("3", "2", "1");
+        assertNotSame(list, params.list);
+        assertEquals(Arrays.asList(3, 2, 1), params.list);
+    }
+    @Test
+    public void testListPositionalParametersWithInitialValueAreClearedOnReuse() {
+        ListPositionalParamsWithInitialValue params = new ListPositionalParamsWithInitialValue();
+        CommandLine cmd = new CommandLine(params);
+
+        cmd.parseArgs("3", "2", "1");
+        assertEquals(Arrays.asList(3, 2, 1), params.list);
+
+        cmd.parseArgs();
+        assertEquals(Collections.emptyList(), params.list);
     }
     class SortedSetPositionalParams {
         @Parameters(type = Integer.class) SortedSet<Integer> sortedSet;
