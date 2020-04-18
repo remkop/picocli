@@ -252,6 +252,17 @@ public class CommandLineTest {
         cmd.parseArgs("3", "2", "1");
         assertEquals(Arrays.asList(3, 2, 1), params.list);
 
+        cmd.parseArgs("4", "5", "6");
+        assertEquals(Arrays.asList(4, 5, 6), params.list);
+
+        /* Related to https://github.com/remkop/picocli/issues/990
+
+        Picocli currently clears (actually creates a new instance of) collections and arrays:
+        see comment "existing values are default values if `initialized` does NOT contain argsSpec"  ::applyValuesToArrayField
+
+        But only if the user actually specifies a value...
+        The original default value is not preserved and applied if the user input omits the option/positional.
+         */
         cmd.parseArgs();
         assertEquals(Collections.emptyList(), params.list);
     }
