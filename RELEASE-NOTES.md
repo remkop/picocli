@@ -184,10 +184,12 @@ class AdvancedMixin {
 * [#956] Enhancement: Default ParameterExceptionHandler should show stack trace when tracing is set to DEBUG level.
 * [#952] Enhancement: Make annotation processor quiet by default; add `-Averbose` annotation processor option to enable printing NOTE-level diagnostic messages to the console.
 * [#974] Enhancement/Bugfix: Add support for `@ArgGroup` argument groups in `@Command`-annotated methods. Thanks to [Usman Saleem](https://github.com/usmansaleem) for raising this.
+* [#962][#961] Enhancement/Bugfix: Default value should only be applied if value is missing. Thanks to [粟嘉逸](https://github.com/sjyMystery) and [chirlo](https://github.com/chirlo) for raising this.
 * [#991][#993] Enhancement/Bugfix: Detecting terminal width fails on non-English Windows versions. Thanks to [Stefan Gärtner](https://github.com/S-Gaertner) for the pull request.
 * [#987] Bugfix: Bump JLine to 3.14.1 and fix [#969] autocompletion in Picocli Shell JLine3. Thanks to [mattirn](https://github.com/mattirn) for the pull request.
 * [#969] Bugfix: Fixed broken autocompletion for nested subcommands in Picocli Shell JLine3. Thanks to [niklas97](https://github.com/niklas97) for raising this.
 * [#968] Bugfix: Avoid creating user object in Help constructor. Thanks to [Immueggpain](https://github.com/Immueggpain) for raising this.
+* [#990] Bugfix: Options in subcommands were not reset to their initial value between invocations when the `CommandLine` object is reused. Thanks to [marinier](https://github.com/marinier) for [pointing this out](https://stackoverflow.com/questions/61191211).
 * [#957] Bugfix: Debug tracing now shows variable value instead of variable name.
 * [#955] Bugfix: TargetInvocationMessage handling in `MethodBinding.set` methods should use `getTargetException` not `getCause`; better error reporting.
 * [#963] DOC: Fixed broken link in README. Thanks to [vladimirf7](https://github.com/vladimirf7) for the pull request.

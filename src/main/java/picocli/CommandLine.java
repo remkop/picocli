@@ -5358,7 +5358,10 @@ public class CommandLine {
             private Integer exitCodeOnInvalidInput;
             private Integer exitCodeOnExecutionException;
 
-            private CommandSpec(CommandUserObject userObject) { this.userObject = userObject; }
+            private CommandSpec(CommandUserObject userObject) {
+                this.userObject = userObject;
+                this.userObject.commandSpec = this;
+            }
 
             /** Creates and returns a new {@code CommandSpec} without any associated user object. */
             public static CommandSpec create() { return wrapWithoutInspection(null); }
@@ -7420,6 +7423,9 @@ public class CommandLine {
                 splitQuotedStrings = settings.splitQuotedStrings;
             }
         }
+        static enum InitialValueState {CACHED, POSTPONED, UNAVAILABLE;
+            public boolean available() { return this != UNAVAILABLE; }
+        }
         /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
          * @since 3.0 */
         public abstract static class ArgSpec {
@@ -7453,7 +7459,7 @@ public class CommandLine {
             private final String defaultValue;
             private       Object initialValue;
             private final boolean hasInitialValue;
-            private       boolean isInitialValueCached;
+            private       InitialValueState initialValueState;
             protected final IAnnotatedElement annotatedElement;
             private final IGetter getter;
             private final ISetter setter;
@@ -7482,7 +7488,7 @@ public class CommandLine {
                 interactive = builder.interactive;
                 initialValue = builder.initialValue;
                 hasInitialValue = builder.hasInitialValue;
-                isInitialValueCached = builder.isInitialValueCached;
+                initialValueState = builder.initialValueState;
                 annotatedElement = builder.annotatedElement;
                 defaultValue = NO_DEFAULT_VALUE.equals(builder.defaultValue) ? null : builder.defaultValue;
                 required = builder.required;
@@ -7679,19 +7685,20 @@ public class CommandLine {
              * @see OptionSpec#fallbackValue()
              */
             public String defaultValue()   { return interpolate(defaultValue); }
-            /** Returns the initial value this option or positional parameter. If {@link #hasInitialValue()} is true,
-             * the option will be reset to the initial value before parsing (regardless of whether a default value exists),
+            /** Returns the initial value of this option or positional parameter: the value that, if {@link #hasInitialValue()} is true,
+             * the option will be reset to before parsing (regardless of whether a default value exists),
              * to clear values that would otherwise remain from parsing previous input. */
             public Object initialValue()   {
-                if (!isInitialValueCached && annotatedElement != null) {
+                // not not initialize if already CACHED, or UNAVAILABLE, or if annotatedElement==null
+                if (initialValueState == InitialValueState.POSTPONED && annotatedElement != null) {
                     try { initialValue = annotatedElement.getter().get(); } catch (Exception ex) { }
-                    isInitialValueCached = true;
+                    initialValueState = InitialValueState.CACHED;
                 }
                 return initialValue;
             }
             /** Determines whether the option or positional parameter will be reset to the {@link #initialValue()}
              * before parsing new input.*/
-            public boolean hasInitialValue() { return hasInitialValue; }
+            public boolean hasInitialValue() { return hasInitialValue || initialValueState.available(); }
 
             /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
             public Help.Visibility showDefaultValue() { return showDefaultValue; }
@@ -8024,7 +8031,7 @@ public class CommandLine {
                 private String defaultValue;
                 private Object initialValue;
                 private boolean hasInitialValue = true;
-                private boolean isInitialValueCached;
+                private InitialValueState initialValueState = InitialValueState.UNAVAILABLE;
                 private Help.Visibility showDefaultValue;
                 private Iterable<String> completionCandidates;
                 private IParameterConsumer parameterConsumer;
@@ -8053,7 +8060,7 @@ public class CommandLine {
                     defaultValue = original.defaultValue;
                     annotatedElement = original.annotatedElement;
                     initialValue = original.initialValue;
-                    isInitialValueCached = original.isInitialValueCached;
+                    initialValueState = original.initialValueState;
                     hasInitialValue = original.hasInitialValue;
                     showDefaultValue = original.showDefaultValue;
                     completionCandidates = original.completionCandidates;
@@ -8073,7 +8080,9 @@ public class CommandLine {
                     setter = annotatedElement.setter();
                     scope = annotatedElement.scope();
                     hasInitialValue = annotatedElement.hasInitialValue();
-                    isInitialValueCached = false;
+                    if (annotatedElement instanceof IExtensible) {
+                        initialValueState = ((IExtensible) annotatedElement).getExtension(InitialValueState.class);
+                    }
                 }
                 Builder(Option option, IAnnotatedElement annotatedElement, IFactory factory) {
                     this(annotatedElement);
@@ -8343,7 +8352,9 @@ public class CommandLine {
                 /** Sets the initial value of this option or positional parameter to the specified value, and returns this builder.
                  * If {@link #hasInitialValue()} is true, the option will be reset to the initial value before parsing (regardless
                  * of whether a default value exists), to clear values that would otherwise remain from parsing previous input. */
-                public T initialValue(Object initialValue)   { this.initialValue = initialValue; isInitialValueCached = true; return self(); }
+                // TODO test ModelCommandSpecTest.testDontClearScalarOptionOldValueBeforeParseIfInitialValueFalse and Groovy CliBuilder before setting state to CACHED
+                //   testDontClearListOptionOldValueBeforeParseIfInitialValueFalse and testDontClearArrayOptionOldValueBeforeParse
+                public T initialValue(Object initialValue)   { this.initialValue = initialValue; /*initialValueState = InitialValueState.CACHED;*/ return self(); }
 
                 /** Determines whether the option or positional parameter will be reset to the {@link #initialValue()}
                  * before parsing new input.*/
@@ -9677,11 +9688,29 @@ public class CommandLine {
             String getToString();
         }
 
-        static class TypedMember implements IAnnotatedElement {
+        /** Interface to allow extending the capabilities of other interface without Java 8 default methods.
+         * <p>Example usage:</p><pre>
+         * // suppose we want to add a method `getInitialValueState` to `IAnnotatedElement`
+         * IAnnotatedElement element = getAnnotatedElement();
+         * if (element instanceof IExtensible) {
+         *     InitialValueState state = ((IExtensible) element).getExtension(InitialValueState.class);
+         *     if (state != null) {
+         *         // ...
+         *     }
+         * }
+         * </pre>
+         * @since 4.3 */
+        public interface IExtensible {
+            /** Returns an instance of the specified class, or {@code null} if this extension is not supported.
+             * @param cls class of the desired extension */
+            <T> T getExtension(Class<T> cls);
+        }
+
+        static class TypedMember implements IAnnotatedElement, IExtensible {
             final AccessibleObject accessible;
             final String name;
             final ITypeInfo typeInfo;
-            boolean hasInitialValue;
+            private final InitialValueState initialValueState;
             private IScope scope;
             private IGetter getter;
             private ISetter setter;
@@ -9703,7 +9732,7 @@ public class CommandLine {
                 accessible.setAccessible(true);
                 name = field.getName();
                 typeInfo = createTypeInfo(field.getType(), field.getGenericType());
-                hasInitialValue = true;
+                initialValueState = InitialValueState.POSTPONED;
             }
             private TypedMember(Field field, IScope scope) {
                 this(field);
@@ -9713,7 +9742,6 @@ public class CommandLine {
                 FieldBinding binding = new FieldBinding(scope, field);
                 getter = binding; setter = binding;
                 this.scope = scope;
-                hasInitialValue &= ObjectScope.hasInstance(scope);
             }
             static TypedMember createIfAnnotated(Method method, IScope scope, CommandSpec spec) {
                 return isAnnotated(method) ? new TypedMember(method, scope, spec) : null;
@@ -9728,24 +9756,24 @@ public class CommandLine {
                 boolean isSetter = parameterTypes.length > 0;
                 if (isSetter == isGetter) { throw new InitializationException("Invalid method, must be either getter or setter: " + method); }
                 if (isGetter) {
-                    hasInitialValue = true;
                     typeInfo = createTypeInfo(method.getReturnType(), method.getGenericReturnType());
                     if (ObjectScope.isProxyClass(scope)) {
                         Object proxy = ObjectScope.tryGet(scope);
                         PicocliInvocationHandler handler = (PicocliInvocationHandler) Proxy.getInvocationHandler(proxy);
                         PicocliInvocationHandler.ProxyBinding binding = handler.new ProxyBinding(method);
                         getter = binding; setter = binding;
-                        initializeInitialValue(method);
+                        initializeInitialValue(method); // arg is an interface method; we have to create initial values ourselves
                     } else {
                         //throw new IllegalArgumentException("Getter method but not a proxy: " + scope + ": " + method);
                         MethodBinding binding = new MethodBinding(scope, method, spec);
                         getter = binding; setter = binding;
                     }
+                    initialValueState = InitialValueState.POSTPONED; // the initial value can be obtained from the getter
                 } else {
-                    hasInitialValue = false;
                     typeInfo = createTypeInfo(parameterTypes[0], method.getGenericParameterTypes()[0]);
                     MethodBinding binding = new MethodBinding(scope, method, spec);
                     getter = binding; setter = binding;
+                    initialValueState = InitialValueState.UNAVAILABLE; // arg is setter method;
                 }
             }
             TypedMember(MethodParam param, IScope scope) {
@@ -9757,8 +9785,8 @@ public class CommandLine {
                 // bind parameter
                 ObjectBinding binding = new ObjectBinding();
                 getter = binding; setter = binding;
-                initializeInitialValue(param);
-                hasInitialValue = true;
+                initializeInitialValue(param); // arg is a method param; we have to create initial values ourselves
+                initialValueState = InitialValueState.POSTPONED; // the initial value can be obtained from the getter
             }
 
             private ITypeInfo createTypeInfo(Class<?> type, Type genericType) {
@@ -9823,7 +9851,7 @@ public class CommandLine {
                 return (accessible instanceof Field ? "field " : accessible instanceof Method ? "method " : accessible.getClass().getSimpleName() + " ") + abbreviate(toGenericString());
             }
             public String toGenericString() { return accessible instanceof Field ? ((Field) accessible).toGenericString() : accessible instanceof Method ? ((Method) accessible).toGenericString() : ((MethodParam)accessible).toString(); }
-            public boolean hasInitialValue()    { return hasInitialValue; }
+            public boolean hasInitialValue()    { return initialValueState.available(); }
             public boolean isMethodParameter()  { return accessible instanceof MethodParam; }
             public int getMethodParamPosition() { return isMethodParameter() ? ((MethodParam) accessible).position : -1; }
             public String getMixinName()    {
@@ -9845,6 +9873,10 @@ public class CommandLine {
                         .replace("protected ", "")
                         .replace("public ", "")
                         .replace("java.lang.", "");
+            }
+            public <T> T getExtension(Class<T> cls) {
+                if (cls == InitialValueState.class) { return cls.cast(initialValueState); }
+                return null;
             }
         }
 
@@ -10043,7 +10075,7 @@ public class CommandLine {
                 t.debug("Creating CommandSpec for object %s of class %s with factory %s%n", Integer.toHexString(System.identityHashCode(command)), clsName, factory.getClass().getName());
                 if (command instanceof CommandSpec) { return (CommandSpec) command; }
 
-                CommandUserObject userObject = new CommandUserObject(command, factory);
+                CommandUserObject userObject = CommandUserObject.create(command, factory);
                 CommandSpec result = CommandSpec.wrapWithoutInspection(userObject);
 
                 boolean hasCommandAnnotation = false;
@@ -10450,8 +10482,9 @@ public class CommandLine {
             private Object instance;
             private Class<?> type;
             private String description;
+            private CommandSpec commandSpec; // initialized in CommandSpec constructor
 
-            public CommandUserObject(Object objectOrClass, IFactory factory) {
+            private CommandUserObject(Object objectOrClass, IFactory factory) {
                 this.factory = Assert.notNull(factory, "factory");
                 type = objectOrClass == null ? null : objectOrClass.getClass();
                 instance = objectOrClass;
@@ -10496,6 +10529,13 @@ public class CommandLine {
                             t.debug("Created Proxy instance (%s)%n", Integer.toHexString(System.identityHashCode(instance)));
                         } else {
                             throw ex;
+                        }
+                    }
+                    if (commandSpec != null) { // now initialize initial values: this CUO _is_ the IScope for the command's args
+                        for (ArgSpec arg : commandSpec.args()) {
+                            if (arg.group() == null && !arg.hasInitialValue()) {
+                                arg.initialValue(); // initializes isInitialValueCached
+                            }
                         }
                     }
                 }
@@ -11608,9 +11648,10 @@ public class CommandLine {
             endOfOptions = false;
             isHelpRequested = false;
             parseResultBuilder = ParseResult.builder(getCommandSpec());
-            for (OptionSpec option : getCommandSpec().options())                           { clear(option); }
-            for (PositionalParamSpec positional : getCommandSpec().positionalParameters()) { clear(positional); }
-            for (ArgGroupSpec group : getCommandSpec().argGroups())                        { clear(group); }
+            for (OptionSpec option : getCommandSpec().options())                            { clear(option); }
+            for (PositionalParamSpec positional : getCommandSpec().positionalParameters())  { clear(positional); }
+            for (ArgGroupSpec group : getCommandSpec().argGroups())                         { clear(group); }
+            for (UnmatchedArgsBinding unmatched : getCommandSpec().unmatchedArgsBindings()) { unmatched.clear(); }
         }
         private void clear(ArgSpec argSpec) {
             argSpec.resetStringValues();
@@ -11648,8 +11689,8 @@ public class CommandLine {
             do {
                 int stackSize = argumentStack.size();
                 try {
-                    applyDefaultValues(required);
                     processArguments(parsedCommands, argumentStack, required, initialized, originalArgs, nowProcessing);
+                    applyDefaultValues(required, initialized);
                 } catch (InitializationException ex) {
                     maybeThrow(ex);
                 } catch (ParameterException ex) {
@@ -11692,29 +11733,26 @@ public class CommandLine {
             pr.validateGroups();
         }
 
-        private void applyDefaultValues(List<ArgSpec> required) throws Exception {
+        private void applyDefaultValues(List<ArgSpec> required, Set<ArgSpec> initialized) throws Exception {
             parseResultBuilder.isInitializingDefaultValues = true;
             for (ArgSpec arg : commandSpec.args()) {
-                if (arg.group() == null) {
+                if (arg.group() == null && !initialized.contains(arg)) {
                     if (applyDefault(commandSpec.defaultValueProvider(), arg)) { required.remove(arg); }
                 }
             }
             for (ArgGroupSpec group : commandSpec.argGroups()) {
-                applyGroupDefaults(commandSpec.defaultValueProvider(), group, required);
-            }
-            for (UnmatchedArgsBinding unmatched : commandSpec.unmatchedArgsBindings()) {
-                unmatched.clear();
+                applyGroupDefaults(commandSpec.defaultValueProvider(), group, required, initialized);
             }
             parseResultBuilder.isInitializingDefaultValues = false;
         }
-        private void applyGroupDefaults(IDefaultValueProvider defaultValueProvider, ArgGroupSpec group, List<ArgSpec> required) throws Exception {
+        private void applyGroupDefaults(IDefaultValueProvider defaultValueProvider, ArgGroupSpec group, List<ArgSpec> required, Set<ArgSpec> initialized) throws Exception {
             for (ArgSpec arg : group.args()) {
-                if (arg.scope().get() != null) {
+                if (arg.scope().get() != null && !initialized.contains(arg)) {
                     if (applyDefault(defaultValueProvider, arg)) { required.remove(arg); }
                 }
             }
             for (ArgGroupSpec sub : group.subgroups()) {
-                applyGroupDefaults(defaultValueProvider, sub, required);
+                applyGroupDefaults(defaultValueProvider, sub, required, initialized);
             }
         }
         private boolean applyDefault(IDefaultValueProvider defaultValueProvider, ArgSpec arg) throws Exception {
@@ -11729,6 +11767,8 @@ public class CommandLine {
                 if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s)%s to %s on %s%n", defaultValue, provider, arg, arg.scopeString());}
                 Range arity = arg.arity().min(Math.max(1, arg.arity().min));
                 applyOption(arg, false, LookBehind.SEPARATE, false, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
+            } else {
+                tracer.debug("defaultValue not defined for %s%n", arg);
             }
             return defaultValue != null;
         }

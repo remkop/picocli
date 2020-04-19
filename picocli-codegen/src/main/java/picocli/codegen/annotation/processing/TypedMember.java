@@ -13,7 +13,7 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Locale;
 
-class TypedMember implements CommandLine.Model.IAnnotatedElement {
+class TypedMember implements CommandLine.Model.IAnnotatedElement, CommandLine.Model.IExtensible {
     final Element element;
     final String name;
     final CommandLine.Model.ITypeInfo typeInfo;
@@ -133,4 +133,8 @@ class TypedMember implements CommandLine.Model.IAnnotatedElement {
                 .replace("java.lang.", "");
     }
     static boolean empty(String str) { return str == null || str.trim().length() == 0; }
+
+    public <T> T getExtension(Class<T> cls) {
+        return null;
+    }
 }

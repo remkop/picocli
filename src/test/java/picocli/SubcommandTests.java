@@ -2195,7 +2195,7 @@ public class SubcommandTests {
         @Option(names = "-c") int c = -33;
     }
 
-    @Ignore("Needs fix for https://github.com/remkop/picocli/issues/990")
+    //@Ignore("Needs fix for https://github.com/remkop/picocli/issues/990")
     @Test // https://github.com/remkop/picocli/issues/990
     public void testIssue990_OptionsInSubcommandsNotResetToTheirInitialValue() {
         CommandLine cmd = new CommandLine(new Top990());

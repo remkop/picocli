@@ -12,6 +12,9 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.PropertiesDefaultProvider;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 public class DefaultProviderTest {
@@ -291,4 +294,44 @@ public class DefaultProviderTest {
         String value = defaultProvider.defaultValue(CommandLine.Model.OptionSpec.builder("-x").build());
         assertEquals("xvalue", value);
     }
+
+    @Test
+    public void testIssue962DefaultNotUsedIfArgumentSpecifiedOnCommandLine() {
+        class App {
+            List<Integer> specified = new ArrayList<Integer>();
+
+            @Option(names = "--port", defaultValue = "${sys:TEST_PORT_962}", required = true)
+            void setPort(Integer port) {
+                specified.add(port);
+            }
+
+            @Option(names = "--field", defaultValue = "${sys:TEST_A_962}", required = true)
+            Integer a;
+        }
+        System.setProperty("TEST_PORT_962", "xxx");
+        System.setProperty("TEST_A_962", "xxx");
+
+        App app1 = CommandLine.populateCommand(new App(), "--port=123", "--field=987");
+        assertEquals((Integer) 987, app1.a);
+        assertEquals(Arrays.asList(123), app1.specified);
+    }
+
+    @Test
+    public void testIssue961DefaultNotUsedIfArgumentSpecifiedOnCommandLine() {
+        class App {
+            List<String> specified = new ArrayList<String>();
+
+            @Option(names = "--option", defaultValue = "DEFAULT", required = true)
+            void setValue(String value) {
+                specified.add(value);
+            }
+
+            @Option(names = "--num", defaultValue = "INVALID", required = true)
+            Integer a;
+        }
+        App app1 = CommandLine.populateCommand(new App(), "--option=123", "--num=987");
+        assertEquals((Integer) 987, app1.a);
+        assertEquals(Arrays.asList("123"), app1.specified);
+    }
+
 }

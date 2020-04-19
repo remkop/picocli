@@ -244,8 +244,10 @@ public class CommandLineTest {
         assertNotSame(list, params.list);
         assertEquals(Arrays.asList(3, 2, 1), params.list);
     }
+
+    @Ignore("Requires https://github.com/remkop/picocli/issues/995")
     @Test
-    public void testListPositionalParametersWithInitialValueAreClearedOnReuse() {
+    public void testIssue995ListPositionalParametersWithInitialValueAreClearedOnReuse() {
         ListPositionalParamsWithInitialValue params = new ListPositionalParamsWithInitialValue();
         CommandLine cmd = new CommandLine(params);
 
@@ -934,7 +936,9 @@ public class CommandLineTest {
                         "[picocli DEBUG] [5] Processing next arg as a positional parameter. Command-local position=3. Remainder=[p2]%n" +
                         "[picocli DEBUG] Position 3 (command-local) is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
                         "[picocli INFO] Adding [p2] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 3%n" +
-                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 4.%n",
+                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 4.%n" +
+                        "[picocli DEBUG] defaultValue not defined for field boolean picocli.CommandLineTest$CompactFields.verbose%n" +
+                        "[picocli DEBUG] defaultValue not defined for field boolean picocli.CommandLineTest$CompactFields.recursive%n",
                 CommandLineTest.class.getName(),
                 new File("/home/rpopma/picocli"),
                 CommandLine.versionString());
@@ -1914,7 +1918,16 @@ public class CommandLineTest {
                         "[picocli DEBUG] [7] Processing next arg as a positional parameter. Command-local position=2. Remainder=[src3.java]%n" +
                         "[picocli DEBUG] Position 2 (command-local) is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
                         "[picocli INFO] Adding [src3.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 2%n" +
-                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 3.%n",
+                        "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 3.%n" +
+                        "[picocli DEBUG] defaultValue not defined for field boolean picocli.Demo$GitCommit.all%n" +
+                        "[picocli DEBUG] defaultValue not defined for field boolean picocli.Demo$GitCommit.patch%n" +
+                        "[picocli DEBUG] defaultValue not defined for field String picocli.Demo$GitCommit.reuseMessageCommit%n" +
+                        "[picocli DEBUG] defaultValue not defined for field String picocli.Demo$GitCommit.reEditMessageCommit%n" +
+                        "[picocli DEBUG] defaultValue not defined for field String picocli.Demo$GitCommit.fixupCommit%n" +
+                        "[picocli DEBUG] defaultValue not defined for field String picocli.Demo$GitCommit.squashCommit%n" +
+                        "[picocli DEBUG] defaultValue not defined for field java.io.File picocli.Demo$GitCommit.file%n" +
+                        "[picocli DEBUG] defaultValue not defined for field boolean picocli.CommandLine$AutoHelpMixin.helpRequested%n" +
+                        "[picocli DEBUG] defaultValue not defined for field boolean picocli.CommandLine$AutoHelpMixin.versionRequested%n",
                 Demo.class.getName(),
                 new File("/home/rpopma/picocli"),
                 CommandLine.versionString());
