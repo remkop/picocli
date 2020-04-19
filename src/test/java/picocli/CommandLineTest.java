@@ -181,7 +181,7 @@ public class CommandLineTest {
         new CommandLine(params).parseArgs("-s", "foo", "-s", "bar", "-s", "baz");
         assertEquals("foobarbaz", params.string);
     }
-    private class ListPositionalParams {
+    private static class ListPositionalParams {
         @Parameters(type = Integer.class) List<Integer> list;
     }
     @Test
@@ -222,7 +222,7 @@ public class CommandLineTest {
         cmd.parseArgs();
         assertNull(params.list);
     }
-    private class ListPositionalParamsWithInitialValue {
+    private static class ListPositionalParamsWithInitialValue {
         @Parameters(type = Integer.class) List<Integer> list = new ArrayList<Integer>();
     }
     @Test
@@ -266,7 +266,7 @@ public class CommandLineTest {
         cmd.parseArgs();
         assertEquals(Collections.emptyList(), params.list);
     }
-    class SortedSetPositionalParams {
+    static class SortedSetPositionalParams {
         @Parameters(type = Integer.class) SortedSet<Integer> sortedSet;
     }
     @Test
@@ -296,7 +296,7 @@ public class CommandLineTest {
         assertNotSame(list, params.sortedSet);
         assertEquals(Arrays.asList(1, 2, 3), new ArrayList<Integer>(params.sortedSet));
     }
-    class SetPositionalParams {
+    static class SetPositionalParams {
         @Parameters(type = Integer.class) Set<Integer> set;
     }
     @Test
@@ -326,7 +326,7 @@ public class CommandLineTest {
         assertNotSame(list, params.set);
         assertEquals(new HashSet<Integer>(Arrays.asList(3, 2, 1)), params.set);
     }
-    class QueuePositionalParams {
+    static class QueuePositionalParams {
         @Parameters(type = Integer.class) Queue<Integer> queue;
     }
     @Test
@@ -356,7 +356,7 @@ public class CommandLineTest {
         assertNotSame(list, params.queue);
         assertEquals(new LinkedList<Integer>(Arrays.asList(3, 2, 1)), params.queue);
     }
-    class CollectionPositionalParams {
+    static class CollectionPositionalParams {
         @Parameters(type = Integer.class) Collection<Integer> collection;
     }
     @Test
@@ -1073,7 +1073,7 @@ public class CommandLineTest {
         }
     }
 
-    class VariousPrefixCharacters {
+    static class VariousPrefixCharacters {
         @Option(names = {"-d", "--dash"}) int dash;
         @Option(names = {"/S"}) int slashS;
         @Option(names = {"/T"}) int slashT;
