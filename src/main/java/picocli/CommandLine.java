@@ -7423,9 +7423,7 @@ public class CommandLine {
                 splitQuotedStrings = settings.splitQuotedStrings;
             }
         }
-        static enum InitialValueState {CACHED, POSTPONED, UNAVAILABLE;
-            public boolean available() { return this != UNAVAILABLE; }
-        }
+        static enum InitialValueState {CACHED, POSTPONED, UNAVAILABLE}
         /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
          * @since 3.0 */
         public abstract static class ArgSpec {
@@ -7698,7 +7696,7 @@ public class CommandLine {
             }
             /** Determines whether the option or positional parameter will be reset to the {@link #initialValue()}
              * before parsing new input.*/
-            public boolean hasInitialValue() { return hasInitialValue || initialValueState.available(); }
+            public boolean hasInitialValue() { return hasInitialValue || initialValueState == InitialValueState.CACHED || initialValueState == InitialValueState.POSTPONED; }
 
             /** Returns whether this option or positional parameter's default value should be shown in the usage help. */
             public Help.Visibility showDefaultValue() { return showDefaultValue; }
@@ -9851,7 +9849,7 @@ public class CommandLine {
                 return (accessible instanceof Field ? "field " : accessible instanceof Method ? "method " : accessible.getClass().getSimpleName() + " ") + abbreviate(toGenericString());
             }
             public String toGenericString() { return accessible instanceof Field ? ((Field) accessible).toGenericString() : accessible instanceof Method ? ((Method) accessible).toGenericString() : ((MethodParam)accessible).toString(); }
-            public boolean hasInitialValue()    { return initialValueState.available(); }
+            public boolean hasInitialValue()    { return initialValueState == InitialValueState.CACHED || initialValueState == InitialValueState.POSTPONED; }
             public boolean isMethodParameter()  { return accessible instanceof MethodParam; }
             public int getMethodParamPosition() { return isMethodParameter() ? ((MethodParam) accessible).position : -1; }
             public String getMixinName()    {
