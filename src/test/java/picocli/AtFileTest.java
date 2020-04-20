@@ -756,7 +756,6 @@ public class AtFileTest {
         assertEquals(expected, actual);
     }
 
-    @Ignore("Requires #984 Parameters heading not shown when `@filename` is the only parameter")
     @Test
     public void testAtFileParameterListHeadingShownIfNoOtherPositionalParameters() {
         @Command(name = "A", mixinStandardHelpOptions = true,
