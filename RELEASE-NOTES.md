@@ -190,6 +190,7 @@ class AdvancedMixin {
 * [#969] Bugfix: Fixed broken autocompletion for nested subcommands in Picocli Shell JLine3. Thanks to [niklas97](https://github.com/niklas97) for raising this.
 * [#968] Bugfix: Avoid creating user object in Help constructor. Thanks to [Immueggpain](https://github.com/Immueggpain) for raising this.
 * [#990] Bugfix: Options in subcommands were not reset to their initial value between invocations when the `CommandLine` object is reused. Thanks to [marinier](https://github.com/marinier) for [pointing this out](https://stackoverflow.com/questions/61191211).
+* [#984][#997] Bugfix: Parameters heading is now shown in the usage help message when `@filename` is the only parameter. Thanks to [Wycer](https://github.com/Wycers) for the pull request.
 * [#957] Bugfix: Debug tracing now shows variable value instead of variable name.
 * [#955] Bugfix: TargetInvocationMessage handling in `MethodBinding.set` methods should use `getTargetException` not `getCause`; better error reporting.
 * [#963] DOC: Fixed broken link in README. Thanks to [vladimirf7](https://github.com/vladimirf7) for the pull request.

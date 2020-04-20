@@ -13774,11 +13774,9 @@ public class CommandLine {
             return layout.toString();
         }
 
-        /**
-         * Returns true if has file parameter in the list, otherwise false.
-         * @return
-         */
-        public boolean hasAtFileParameterList() {
+        /** Returns true if the usage help should show the at file parameter in the parameter list, otherwise false.
+         * @since 4.3 */
+        public boolean hasAtFileParameter() {
             return commandSpec.parser.expandAtFiles() && commandSpec.usageMessage.showAtFileInUsageHelp();
         }
 
@@ -13787,7 +13785,7 @@ public class CommandLine {
          * @return the section of the usage help message that lists the @-file and its description
          */
         public String atFileParameterList() {
-            if (hasAtFileParameterList()) {
+            if (hasAtFileParameter()) {
                 AT_FILE_POSITIONAL_PARAM.messages(commandSpec.usageMessage().messages());
                 Layout layout = createDefaultLayout();
                 layout.addPositionalParameter(AT_FILE_POSITIONAL_PARAM, parameterLabelRenderer());
@@ -13907,7 +13905,7 @@ public class CommandLine {
          * @param params the parameters to use to format the parameter list heading
          * @return the formatted parameter list heading */
         public String parameterListHeading(Object... params) {
-            if (hasAtFileParameterList() || !commandSpec.positionalParameters().isEmpty()) {
+            if (hasAtFileParameter() || !commandSpec.positionalParameters().isEmpty()) {
                 return createHeading(commandSpec.usageMessage().parameterListHeading(), params);
             }
             return "";
