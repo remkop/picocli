@@ -11,6 +11,8 @@ Additionally, this release improves support for automatic indexes for positional
 
 Also, from this release, mixins are more powerful. Mixin classes can declare a `@Spec(MIXEE)`-annotated field, and picocli will inject the `CommandSpec` of the command _receiving_ this mixin (the "mixee") into this field. This is useful for mixins containing shared logic, in addition to shared options and parameters. 
 
+From this release, picocli makes it easy to make subcommands mandatory by making the top-level command a class that does not implement `Runnable` or `Callable`.
+
 Notable bugfixes:
 
 * Fixed broken autocompletion for nested sub-subcommands in Picocli Shell JLine3.
@@ -183,6 +185,7 @@ class AdvancedMixin {
 * [#564] Add support for relative indices for positional parameters. Useful in mixins and inherited positional parameters. Thanks to [krisleonard-mcafee](https://github.com/krisleonard-mcafee) for raising this topic.
 * [#956] Enhancement: Default ParameterExceptionHandler should show stack trace when tracing is set to DEBUG level.
 * [#952] Enhancement: Make annotation processor quiet by default; add `-Averbose` annotation processor option to enable printing NOTE-level diagnostic messages to the console.
+* [#959] Enhancement: Print "Missing required subcommand" instead of throwing exception if command with subcommands does not implement `Runnable` or `Callable`. Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for the suggestion.
 * [#974] Enhancement/Bugfix: Add support for `@ArgGroup` argument groups in `@Command`-annotated methods. Thanks to [Usman Saleem](https://github.com/usmansaleem) for raising this.
 * [#962][#961] Enhancement/Bugfix: Default value should only be applied if value is missing. Thanks to [粟嘉逸](https://github.com/sjyMystery) and [chirlo](https://github.com/chirlo) for raising this.
 * [#991][#993] Enhancement/Bugfix: Detecting terminal width fails on non-English Windows versions. Thanks to [Stefan Gärtner](https://github.com/S-Gaertner) for the pull request.

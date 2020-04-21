@@ -93,6 +93,23 @@ public class ExecuteTest {
     }
 
     @Test
+    public void testExecutionStrategyRunXxxWithSubcommandsFailsWithMissingSubcommandIfNotRunnableOrCallable() {
+        @Command class App {
+            @Parameters String[] params;
+            @Command void sub() {}
+        }
+        int exitCode = new CommandLine(new App()).execute("abc");
+        assertEquals(2, exitCode);
+        String expected = String.format("" +
+                "Missing required subcommand%n" +
+                "Usage: <main class> [<params>...] [COMMAND]%n" +
+                "      [<params>...]%n" +
+                "Commands:%n" +
+                "  sub%n");
+        assertEquals(expected, systemErrRule.getLog());
+    }
+
+    @Test
     public void testExecutionStrategyRunXxxCatchesAndRethrowsExceptionFromRunnable() {
         @Command class App implements Runnable {
             @Parameters String[] params;

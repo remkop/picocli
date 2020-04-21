@@ -1823,7 +1823,11 @@ public class CommandLine {
                 throw new ExecutionException(parsed, "Unhandled error while calling command (" + command + "): " + ex, ex);
             }
         }
-        throw new ExecutionException(parsed, "Parsed command (" + command + ") is not a Method, Runnable or Callable");
+        if (parsed.getSubcommands().isEmpty()) {
+            throw new ExecutionException(parsed, "Parsed command (" + command + ") is not a Method, Runnable or Callable");
+        } else {
+            throw new ParameterException(parsed, "Missing required subcommand");
+        }
     }
 
     /**

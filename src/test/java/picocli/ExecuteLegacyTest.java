@@ -61,6 +61,33 @@ public class ExecuteLegacyTest {
     }
 
     @Test
+    public void testParseWithHandlerRunXxxWithSubcommandFailsWithMissingSubcommandIfNotRunnableOrCallable() {
+        @Command class App {
+            @Parameters String[] params;
+            @Command void sub() {}
+        }
+        Factory factory = new Factory() {
+            public Object create() {return new App();}
+        };
+        String expected = String.format("" +
+                "Missing required subcommand%n" +
+                "Usage: <main class> [<params>...] [COMMAND]%n" +
+                "      [<params>...]%n" +
+                "Commands:%n" +
+                "  sub%n");
+
+        IParseResultHandler[] handlers = new IParseResultHandler[] {
+                new RunFirst(), new RunLast(), new RunAll()
+        };
+        for (IParseResultHandler handler : handlers) {
+            String[] args = { "abc" };
+            this.systemErrRule.clearLog();
+            new CommandLine(factory.create()).parseWithHandler(handler, System.err, args);
+            assertEquals(expected, systemErrRule.getLog());
+        }
+    }
+
+    @Test
     public void testParseWithHandlerRunXxxCatchesAndRethrowsExceptionFromRunnable() {
         @Command class App implements Runnable {
             @Parameters String[] params;
@@ -86,8 +113,12 @@ public class ExecuteLegacyTest {
                 "): java.lang.IllegalStateException: TEST EXCEPTION2", new String[0]);
     }
 
-    @SuppressWarnings("deprecation")
     private void verifyAllFail(Factory factory, String prefix, String suffix, String[] args) {
+        verifyAllFail(factory, prefix, suffix, args, ExecutionException.class);
+    }
+
+    @SuppressWarnings("deprecation")
+    private void verifyAllFail(Factory factory, String prefix, String suffix, String[] args, Class<? extends Exception> xClass) {
         IParseResultHandler[] handlers = new IParseResultHandler[] {
                 new RunFirst(), new RunLast(), new RunAll()
         };
@@ -96,7 +127,8 @@ public class ExecuteLegacyTest {
             try {
                 new CommandLine(factory.create()).parseWithHandler(handler, System.out, args);
                 fail(descr + ": expected exception");
-            } catch (ExecutionException ex) {
+            } catch (Exception ex) {
+                assertTrue("Exception class " + ex.getClass().getSimpleName(), xClass.isAssignableFrom(ex.getClass()));
                 String actual = ex.getMessage();
                 assertTrue(descr + ": " + actual, actual.startsWith(prefix));
                 assertTrue(descr + ": " + actual, actual.endsWith(suffix));
