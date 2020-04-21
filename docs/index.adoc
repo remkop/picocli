@@ -4524,9 +4524,9 @@ See <<Custom Help Subcommands>> for more details on creating help subcommands.
 
 For some command suites, it does not make sense to invoke the top-level command by itself, and the user is required to specify a subcommand.
 
-From picocli 4.3, picocli makes it easy to accomplish this: simply make the top-level command a class that does not implement `Runnable` or `Callable`.
+From version 4.3, picocli makes it easy to accomplish this: simply use the the <<Executing Subcommands,`execute` method>> to start your application, and make the top-level command a class that does not implement `Runnable` or `Callable`.
 
-When the <<Executing Subcommands,`execute` method>> is used and picocli detects that the top-level command does not implement `Runnable` or `Callable`, picocli internally throws a `ParameterException` with the error message `"Missing required subcommand"`. This will cause the <<Invalid User Input, `IParameterExceptionHandler`>> to be called, which will display this message to the user.
+Then, when the user specifies only the top-level command, without a subcommand, while this top-level command does not implement `Runnable` or `Callable`, picocli internally throws a `ParameterException` with the error message `"Missing required subcommand"`. This will cause the <<Invalid User Input, `IParameterExceptionHandler`>> to be called, which will display this message to the user.
 
 Prior to picocli 4.3, applications could indicate that subcommands are required by letting the top-level command throw a `ParameterException`. For example:
 
