@@ -315,7 +315,7 @@ Hi user123, your passphrase is hashed to 75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PUR
 ==== Optionally Interactive
 Interactive options by default cause the application to wait for input on stdin. For commands that need to be run interactively as well as in batch mode, it is useful if the option can optionally consume an argument from the command line.
 
-The default <<Arity,arity>> for interactive options is zero, meaning that the option takes no parameters. From picocli 3.9.6, interactive options can also take a value from the command line if configured with `arity = "0..1"`.
+The default <<Arity,arity>> for interactive options is zero, meaning that the option takes no parameters. From picocli 3.9.6, interactive options can also take a value from the command line if configured with `arity = "0..1"`. (See <<Optional Values>>.)
 
 For example, if an application has these options:
 
@@ -1088,7 +1088,7 @@ git.commit.cleanup = strip
 [#fallbackValue-annotation]
 === `fallbackValue` Annotation
 
-If an option is defined with `arity = "0..1"`, it may or not have a parameter value.
+If an option is defined with `arity = "0..1"`, it <<Optional Values,may or may not have a parameter value>>.
 If such an option is specified without a value on the command line, it is assigned the fallback value.
 
 The `fallbackValue` annotation attribute was introduced in picocli 4.0; prior to this, (from picocli 2.3) an empty String was assigned.
@@ -1243,6 +1243,40 @@ ArityDemo -s A B C -f 1.0 2.0 /file1 /file2
 Option `-s` has arity `"1..*"` but instead of consuming all parameters,
 the `-f` argument is recognized as a separate option.
 
+
+=== Variable Arity Limitations
+Be careful when defining commands that have both an option with variable arity (like `arity = "0..*"`) and a positional parameter.
+
+[WARNING]
+====
+The picocli parser is "greedy" when it handles option parameters for options with variable arity: it looks at the value following the option name, and if that value can be taken as a parameter (not another option or subcommand, and max arity is not reached yet) then it will process the value as a parameter for that option. This may not always be what you want.
+====
+
+For example:
+
+[source,java]
+----
+class Ambiguous {
+    @Parameters(description = "The file (required).")
+    File file;
+
+    @Option(names = "-y", arity = "0..*",
+      description = "Option with optional parameters")
+    List<String> values;
+}
+----
+
+When `-y a b c path/to/file` is specified on the command line, this results in an error: `Missing required parameter: <file>`.
+
+Users can use the <<Double dash (`--`),end-of-options delimiter>> and disambiguate the input with
+`-y a b c &dash;&dash; VALUE`, but this may not be obvious to many users.
+
+A better alternative may be to redesign your command to avoid the ambiguity altogether.
+One idea is to use the <<Default Arity,default arity>> (`arity = "1"` in our example) and use the <<Split Regex,split>> attribute to allow users to specify multiple values in a single argument like `a,b,c`.
+If `-y` takes only a single parameter, then user input like `-y a,b,c path/to/file` is no longer ambiguous.
+
+
+
 === Default Arity
 If no `arity` is specified, the number of parameters depends on the field's type.
 
@@ -1269,7 +1303,7 @@ If your application relies on the previous behaviour, you need to explicitly spe
 | @Parameters Field Type | Default Arity | Notes
 | boolean      | 1 |Positional parameters of type `boolean` or `Boolean` require a value. Only `true` or `false` (case insensitive) are valid values.
 | Single-valued type (e.g., `int`, `String`, `File`) | 1 | One parameter required for each position.
-| Multi-valued type (arrays, collections or maps) | 0..1 | For multi-valued positional parameters (arrays, collections or maps), values are optional, not required.
+| Multi-valued type (arrays, collections or maps) | 0..1 | For multi-valued positional parameters (arrays, collections or maps), values are optional, not <<Required Parameters,required>>.
 |===
 
 
@@ -1280,8 +1314,59 @@ A `@Parameters` field with `index = "*"` is applied multiple times: once for eac
 When a `@Parameters` field is applied (because its index matches the index of the positional parameter), the field may consume zero, one or more arguments, depending on its arity.
 
 === Optional Values
-If an option is defined with `arity = "0..1"`, it may or not have a parameter value.
-If such an option is specified without a value on the command line, it is assigned the <<fallbackValue-annotation,fallback value>>.
+
+==== Optional Option Parameters
+When an option is defined with `arity = "0..1"`, it may or not have a parameter value.
+
+The <<fallbackValue-annotation,fallback value>> determines what value is assigned when the option is specified without a value, while the <<defaultValue-annotation,default value>> determines what value is assigned when the option is not specified at all.
+
+==== Optional Parameter Use Cases
+This feature is commonly used when an application wants to combine two options into one:
+the presence or absence of the option can be used like a boolean flag to trigger some behaviour, and the option value can be used to modify this behaviour.
+
+An example use case is an option that switches on logging when present, with an optional value to set the log level. For example:
+
+[source,java]
+----
+@Option(names = "--syslog", defaultValue = "OFF", fallbackValue = "INFO",
+  description = {
+        "When specified without arguments, start sending syslog messages at INFO level.",
+        "If absent, no messages are sent to syslog.",
+        "Optionally specify a severity value. Valid values: ${COMPLETION-CANDIDATES}."})
+MyLogLevel syslogLevel;
+----
+
+Another example use case is <<Optionally Interactive,password options>>.
+
+==== Optional Parameter Limitations
+Be careful when defining commands that have both an option with an optional parameter and a positional parameter.
+
+[WARNING]
+====
+The picocli parser is "greedy" when it handles optional parameters: it looks at the value following the option name, and if that value is likely to be a parameter (not another option or subcommand) then it will process the value as a parameter for that option. This may not always be what you want.
+====
+
+For example:
+
+[source,java]
+----
+class Ambiguous {
+    @Parameters(description = "The file (required).")
+    File file;
+
+    @Option(names = "-x", arity = "0..1",
+      description = "Option with optional parameter")
+    String value;
+}
+----
+
+When `-x VALUE` is specified on the command line, this results in an error: `Missing required parameter: <file>`.
+
+Users can use the <<Double dash (`--`),end-of-options delimiter>> and disambiguate the input with
+`-x &dash;&dash; VALUE`, but this may not be obvious to many users.
+
+An alternative is to avoid the use of optional parameters and use the default arity in this scenario to elimitate the ambiguity altogether.
+
 
 == Required Arguments
 === Required Options
@@ -1333,43 +1418,7 @@ The following command line arguments would be accepted:
 ----
 
 === Options with an Optional Parameter
-
-Options with `arity = "0..1"` have an optional parameter.
-This can be useful for <<Optionally Interactive,password options>> and in some other cases.
-
-The <<fallbackValue-annotation,fallback value>> determines what value is assigned when the option is specified without a value, while the <<defaultValue-annotation,default value>> determines what value is assigned when the option is not specified at all.
-
-[WARNING]
-====
-Be careful when defining commands that have both an option with an optional parameter and a positional parameter.
-
-The picocli parser is "greedy" when it handles optional parameters: it looks at the value following the option name, and if that value is likely to be a parameter (not another option or subcommand) then it will process the value as a parameter for that option. This may not always be what you want.
-
-For example:
-
-[source,java]
-----
-class Ambiguous {
-    @Parameters(description = "The file (required).")
-    File file;
-
-    @Option(names = "-x", arity = "0..1",
-      description = "Option with optional parameter")
-    String value;
-
-    @Option(names = "-y", arity = "0..*",
-      description = "Option with optional parameters")
-    List<String> values;
-}
-----
-
-When `-x VALUE` is specified on the command line, this results in an error: `Missing required parameter: <file>`. Similarly, when `-y a b c path/to/file` is specified.
-
-Users can use the <<Double dash (`--`),end-of-options delimiter>> and disambiguate the input with
- `-x &dash;&dash; VALUE` or `-y a b c &dash;&dash; VALUE`, but this may not be obvious to many users.
-
-A better alternative may be to redesign your command to avoid the ambiguity altogether.
-====
+See <<Optional Values>>.
 
 == Argument Groups
 Picocli 4.0 introduces a new `@ArgGroup` annotation and its `ArgGroupSpec` programmatic equivalent.
