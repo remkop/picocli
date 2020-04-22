@@ -332,4 +332,36 @@ public class InheritedOptionTest {
         assertEquals(Arrays.asList("xxx", "xxx", "xxx"), bean.xvalues); // setters cannot be initialized
         assertEquals("yyy", bean.y);
     }
+
+    @Ignore("Requires https://github.com/remkop/picocli/issues/1001")
+    @Test // https://github.com/remkop/picocli/issues/1001
+    public void testInheritedRequiredArgs() {
+        System.setProperty("picocli.trace", "DEBUG");
+        @Command
+        class App {
+            @Option(names = "-x", required = true, scope = INHERIT) int x;
+            @Command void sub() {}
+        }
+        CommandLine cmd0 = new CommandLine(new App());
+        cmd0.parseArgs("-x=2");
+
+        CommandLine cmd1 = new CommandLine(new App());
+        cmd1.parseArgs("sub", "-x=2");
+
+        CommandLine cmd2 = new CommandLine(new App());
+        try {
+            cmd2.parseArgs();
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertEquals("Missing required option -x", ex.getMessage());
+        }
+
+        CommandLine cmd3 = new CommandLine(new App());
+        try {
+            cmd3.parseArgs("sub");
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertEquals("Missing required option -x", ex.getMessage());
+        }
+    }
 }
