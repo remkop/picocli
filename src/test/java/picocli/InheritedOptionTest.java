@@ -12,8 +12,9 @@ import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParameterException;
 
-import java.util.ListResourceBundle;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static picocli.CommandLine.ScopeType.INHERIT;
@@ -286,5 +287,49 @@ public class InheritedOptionTest {
 
         assertFalse(spec.positionalParameters().get(0).inherited());
         assertTrue(sub.positionalParameters().get(0).inherited());
+    }
+
+
+    @Command(name = "TopWithDefault", subcommands = SubWithDefault.class)
+    static class TopWithDefault {
+        List<String> xvalues = new ArrayList<String>();
+        @Option(names = "-x", defaultValue = "xxx", scope = INHERIT)
+        public void setX(String x) {
+            xvalues.add(x);
+        }
+
+        @Option(names = "-y", scope = INHERIT)
+        String y = "yyy";
+
+        @Option(names = "-z", defaultValue = "zzz", scope = INHERIT)
+        String z;
+    }
+    @Command(name = "sub", subcommands = SubSubWithDefault.class)
+    static class SubWithDefault { }
+
+    @Command(name = "subsub")
+    static class SubSubWithDefault { }
+
+    @Test
+    public void testInheritedOptionsWithDefault() {
+        TopWithDefault bean = new TopWithDefault();
+        CommandLine cmd = new CommandLine(bean);
+        cmd.parseArgs();
+
+        assertEquals(Arrays.asList("xxx"), bean.xvalues);
+        assertEquals("yyy", bean.y);
+        assertEquals("zzz", bean.z);
+
+        cmd.parseArgs("-y=1", "-z=2", "sub");
+
+        assertEquals("1", bean.y);
+        assertEquals("2", bean.z);
+        assertEquals(Arrays.asList("xxx", "xxx"), bean.xvalues); // setters cannot be initialized
+
+        cmd.parseArgs("sub", "subsub");
+
+        assertEquals("zzz", bean.z);
+        assertEquals(Arrays.asList("xxx", "xxx", "xxx"), bean.xvalues); // setters cannot be initialized
+        assertEquals("yyy", bean.y);
     }
 }
