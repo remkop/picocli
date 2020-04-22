@@ -13708,6 +13708,30 @@ public class CommandLine {
             return max + 3;
         }
 
+        private void addOptions(ArgGroupSpec group, List<OptionSpec> options, Comparator<OptionSpec> optionSort) {
+            if (group == null)
+                return;
+            List<OptionSpec> res = new ArrayList<OptionSpec>(group.options());
+            if (optionSort != null) {
+                Collections.sort(res, optionSort);
+            }
+            if (res.size() == 0)
+                return;
+            options.addAll(res);
+            for (ArgGroupSpec subGroup : group.subgroups()) {
+                addOptions(subGroup, options, optionSort);
+            }
+        }
+
+        private void removeOptions(ArgGroupSpec group, List<OptionSpec> options) {
+            if (group == null)
+                return;
+            options.removeAll(group.options());
+            for (ArgGroupSpec subGroup : group.subgroups()) {
+                removeOptions(subGroup, options);
+            }
+        }
+
         /** Sorts all {@code Options} with the specified {@code comparator} (if the comparator is non-{@code null}),
          * then {@linkplain Layout#addOption(CommandLine.Model.OptionSpec, CommandLine.Help.IParamLabelRenderer) adds} all non-hidden options to the
          * specified TextTable and returns the result of TextTable.toString().
@@ -13721,7 +13745,9 @@ public class CommandLine {
                 Collections.sort(options, optionSort); // default: sort options ABC
             }
             List<ArgGroupSpec> groups = optionListGroups();
-            for (ArgGroupSpec group : groups) { options.removeAll(group.options()); }
+            for (ArgGroupSpec group : groups) {
+                removeOptions(group, options);
+            }
 
             StringBuilder sb = new StringBuilder();
             layout.addOptions(options, valueLabelRenderer);
@@ -13733,10 +13759,8 @@ public class CommandLine {
 
                 Layout groupLayout = createDefaultLayout();
                 groupLayout.addPositionalParameters(group.positionalParameters(), valueLabelRenderer);
-                List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.options());
-                if (optionSort != null) {
-                    Collections.sort(groupOptions, optionSort);
-                }
+                List<OptionSpec> groupOptions = new ArrayList<OptionSpec>();
+                addOptions(group, groupOptions, optionSort);
                 groupLayout.addOptions(groupOptions, valueLabelRenderer);
                 sb.append(groupLayout);
             }

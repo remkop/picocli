@@ -3389,7 +3389,7 @@ public class ArgGroupTest {
         }
     }
 
-    @Ignore("Requires fix for https://github.com/remkop/picocli/issues/988")
+//    @Ignore("Requires fix for https://github.com/remkop/picocli/issues/988")
     @Test //https://github.com/remkop/picocli/issues/988
     public void testIssue988OptionGroupSectionsShouldIncludeSubgroupOptions() {
         String expected = String.format("" +
