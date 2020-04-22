@@ -13708,6 +13708,12 @@ public class CommandLine {
             return max + 3;
         }
 
+        /**
+         * Add options recursively
+         * @param group current group to deal with
+         * @param options global result where options of current group will be added to
+         * @param optionSort comparator for options
+         */
         private void addOptions(ArgGroupSpec group, List<OptionSpec> options, Comparator<OptionSpec> optionSort) {
             if (group == null)
                 return;
@@ -13723,6 +13729,11 @@ public class CommandLine {
             }
         }
 
+        /**
+         * Remove options recursively
+         * @param group current group to deal with
+         * @param options global result where options of current group will be removed from
+         */
         private void removeOptions(ArgGroupSpec group, List<OptionSpec> options) {
             if (group == null)
                 return;
