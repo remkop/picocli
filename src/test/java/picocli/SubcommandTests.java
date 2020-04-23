@@ -563,7 +563,7 @@ public class SubcommandTests {
             new CommandLine(new MainCommand(), new InnerClassFactory(this));
             fail("Expected exception");
         } catch (InitializationException ex) {
-            String expected = String.format("%s is not a command: it has no @Command, @Option, @Parameters or @Unmatched annotations", MissingCommandAnnotation.class.getName());
+            String expected = String.format("%s is not a command: it has no @Command, @Option, @Parameters or @Unmatched annotations", MissingCommandAnnotation.class.toString());
             assertEquals(expected, ex.getMessage());
         }
     }

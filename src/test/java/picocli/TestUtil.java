@@ -167,4 +167,19 @@ public class TestUtil {
         return interpreter;
     }
 
+    public static String stripHashcodes(String original) {
+        StringBuilder result = new StringBuilder();
+        int pos = original.indexOf('@');
+        int start = 0;
+        while (pos >= 0) {
+            result.append(original.substring(start, pos + 1));
+            start = pos + 1;
+            while (Character.isJavaIdentifierPart(original.charAt(start))) { start++; }
+            pos = original.indexOf('@', start);
+        }
+        if (start >= 0) {
+            result.append(original.substring(start));
+        }
+        return result.toString();
+    }
 }

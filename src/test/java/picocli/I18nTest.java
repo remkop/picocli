@@ -35,6 +35,7 @@ import java.util.ResourceBundle;
 
 import static org.junit.Assert.*;
 import static picocli.TestUtil.stripAnsiTrace;
+import static picocli.TestUtil.stripHashcodes;
 
 /**
  * Tests internationalization (i18n) and localization (l12n)-related functionality.
@@ -701,28 +702,30 @@ public class I18nTest {
         TestUtil.setTraceLevel("DEBUG");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
         PrintStream oldErr = System.err;
+
+        I18nCommand userObject = new I18nCommand();
         try {
             System.setErr(new PrintStream(err));
-            CommandLine cl = new CommandLine(new I18nCommand());
+            CommandLine cl = new CommandLine(userObject);
         } finally {
             System.setErr(oldErr);
         }
 
         String expected = String.format("" +
-                "[picocli DEBUG] Creating CommandSpec for object of class picocli.I18nCommand with factory picocli.CommandLine$DefaultFactory%n" +
-                "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'i18n-top' (picocli.I18nCommand)%n" +
-                "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLine$HelpCommand with factory picocli.CommandLine$DefaultFactory%n" +
+                "[picocli DEBUG] Creating CommandSpec for picocli.I18nCommand@6bcae9 with factory picocli.CommandLine$DefaultFactory%n" +
+                "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'i18n-top' (command 'i18n-top' (user object: picocli.I18nCommand@6bcae9))%n" +
+                "[picocli DEBUG] Creating CommandSpec for class picocli.CommandLine$HelpCommand with factory picocli.CommandLine$DefaultFactory%n" +
                 "[picocli DEBUG] Adding subcommand 'help' to 'i18n-top'%n" +
-                "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'help' (picocli.CommandLine$HelpCommand)%n" +
-                "[picocli DEBUG] Creating CommandSpec for object of class picocli.I18nSubcommand with factory picocli.CommandLine$DefaultFactory%n" +
-                "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLine$HelpCommand with factory picocli.CommandLine$DefaultFactory%n" +
+                "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'help' (command 'help' (user object: class picocli.CommandLine$HelpCommand))%n" +
+                "[picocli DEBUG] Creating CommandSpec for class picocli.I18nSubcommand with factory picocli.CommandLine$DefaultFactory%n" +
+                "[picocli DEBUG] Creating CommandSpec for class picocli.CommandLine$HelpCommand with factory picocli.CommandLine$DefaultFactory%n" +
                 "[picocli DEBUG] Adding subcommand 'help' to 'i18n-sub'%n" +
-                "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLine$AutoHelpMixin with factory picocli.CommandLine$DefaultFactory%n" +
+                "[picocli DEBUG] Creating CommandSpec for picocli.CommandLine$AutoHelpMixin@7db40fd5 with factory picocli.CommandLine$DefaultFactory%n" +
                 "[picocli DEBUG] Adding subcommand 'i18n-sub' to 'i18n-top'%n" +
-                "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'i18n-sub' (picocli.I18nSubcommand)%n" +
-                "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'help' (picocli.CommandLine$HelpCommand)%n" +
-                "[picocli DEBUG] Creating CommandSpec for object of class picocli.CommandLine$AutoHelpMixin with factory picocli.CommandLine$DefaultFactory%n" +
+                "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'i18n-sub' (command 'i18n-sub' (user object: class picocli.I18nSubcommand))%n" +
+                "[picocli DEBUG] Created Messages from resourceBundle[base=picocli.SharedMessages] for command 'help' (command 'help' (user object: class picocli.CommandLine$HelpCommand))%n" +
+                "[picocli DEBUG] Creating CommandSpec for picocli.CommandLine$AutoHelpMixin@34c53688 with factory picocli.CommandLine$DefaultFactory%n" +
                 "");
-        assertEquals(stripAnsiTrace(expected), stripAnsiTrace(err.toString()));
+        assertEquals(stripAnsiTrace(stripHashcodes(expected)), stripAnsiTrace(stripHashcodes(err.toString())));
     }
 }

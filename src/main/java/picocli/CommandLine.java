@@ -5778,7 +5778,7 @@ public class CommandLine {
                     arg.arity = Range.valueOf(interpolator.interpolate(arg.arity().originalValue));
                 }
                 // do this last: arg.required() needs to resolve variables in arg.defaultValue()
-                if (arg.required() && arg.group() == null) { requiredArgs.add(arg); }
+                if (arg.required() && arg.group() == null && !arg.inherited()) { requiredArgs.add(arg); }
                 return this;
             }
 
@@ -6132,7 +6132,7 @@ public class CommandLine {
             public boolean subcommandsRepeatable() { return (subcommandsRepeatable == null) ? DEFAULT_SUBCOMMANDS_REPEATABLE : subcommandsRepeatable; }
 
             /** Returns a string representation of this command, used in error messages and trace messages. */
-            public String toString() { return toString == null ? userObject.toString() : toString; }
+            public String toString() { return toString == null ? "command '" + name + "' (user object: " + String.valueOf(userObject) + ")" : toString; }
 
             /** Sets the String to use as the program name in the synopsis line of the help message.
              * @return this CommandSpec for method chaining */
@@ -8844,7 +8844,7 @@ public class CommandLine {
 
                 args      = Collections.unmodifiableSet(new LinkedHashSet<ArgSpec>(builder.args()));
                 subgroups = Collections.unmodifiableList(new ArrayList<ArgGroupSpec>(builder.subgroups()));
-                if (args.isEmpty() && subgroups.isEmpty()) { throw new InitializationException("ArgGroup has no options or positional parameters, and no subgroups: " + scope + " " + (getter == null ? setter : getter)); }
+                if (args.isEmpty() && subgroups.isEmpty()) { throw new InitializationException("ArgGroup has no options or positional parameters, and no subgroups: " + (getter == null ? setter : getter) + " in " + scope); }
 
                 int i = 1;
                 for (ArgGroupSpec sub : subgroups) { sub.parentGroup = this; sub.id = id + "." + i++; }
@@ -10072,12 +10072,15 @@ public class CommandLine {
                 return result;
             }
             static CommandSpec extractCommandSpec(Object command, IFactory factory, boolean annotationsAreMandatory) {
+                Assert.notNull(command, "command user object");
                 Tracer t = new Tracer();
-                String clsName = (command instanceof Class) ? ((Class<?>) command).getName() : command.getClass().getName();
-                t.debug("Creating CommandSpec for object %s of class %s with factory %s%n", Integer.toHexString(System.identityHashCode(command)), clsName, factory.getClass().getName());
-                if (command instanceof CommandSpec) { return (CommandSpec) command; }
+                if (command instanceof CommandSpec) {
+                    t.debug("extractCommandSpec returning existing CommandSpec instance %s%n", command);
+                    return (CommandSpec) command;
+                }
 
                 CommandUserObject userObject = CommandUserObject.create(command, factory);
+                t.debug("Creating CommandSpec for %s with factory %s%n", userObject, factory.getClass().getName());
                 CommandSpec result = CommandSpec.wrapWithoutInspection(userObject);
 
                 boolean hasCommandAnnotation = false;
@@ -10125,7 +10128,7 @@ public class CommandLine {
                 result.updateArgSpecMessages();
 
                 if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, userObject.toString()); }
-                result.withToString(userObject.toString()).validate();
+                result.validate();
                 return result;
             }
 
@@ -10483,22 +10486,24 @@ public class CommandLine {
             private final IFactory factory;
             private Object instance;
             private Class<?> type;
-            private String description;
             private CommandSpec commandSpec; // initialized in CommandSpec constructor
 
             private CommandUserObject(Object objectOrClass, IFactory factory) {
                 this.factory = Assert.notNull(factory, "factory");
                 type = objectOrClass == null ? null : objectOrClass.getClass();
                 instance = objectOrClass;
-                description = type == null ? "null" : type.getName();
                 if (objectOrClass instanceof Class) {
                     type = (Class<?>) objectOrClass;
-                    description = type.getName();
                     instance = null;
                 } else if (objectOrClass instanceof Method) {
                     type = null; // don't mix in options/positional params from outer class @Command
-                    description = objectOrClass.toString();
                 }
+            }
+            @Override public String toString() {
+                if (type == null && instance == null) { return "null"; }
+                if (type == null) { return String.valueOf(instance); }
+                if (instance == null) { return String.valueOf(type); }
+                return type.getName() + "@" + Integer.toHexString(System.identityHashCode(instance));
             }
 
             public CommandUserObject copy() {
@@ -10519,11 +10524,10 @@ public class CommandLine {
                         return null;
                     }
                     try {
-                        t.debug("Getting a %s instance from the factory%n", type.getName());
+                        t.debug("Getting a %s instance from factory %s%n", type.getName(), factory);
                         instance = DefaultFactory.create(factory, type);
                         type = instance.getClass(); // potentially change interface name to impl type name
-                        description = type.getName();
-                        t.debug("Factory returned a %s instance (%s)%n", description, Integer.toHexString(System.identityHashCode(instance)));
+                        t.debug("Factory returned a %s instance (%s)%n", type.getName(), Integer.toHexString(System.identityHashCode(instance)));
                     } catch (InitializationException ex) {
                         if (type.isInterface()) {
                             t.debug("%s. Creating Proxy for interface %s%n", ex.getCause(), type.getName());
@@ -10545,7 +10549,6 @@ public class CommandLine {
             }
             public Class<?> getType() { return type; }
             public boolean isMethod() { return instance instanceof Method; }
-            @Override public String toString() { return description; }
 
             @SuppressWarnings("unchecked") public <T> T get() { return (T) getInstance(); }
             public <T> T set(T value) { throw new UnsupportedOperationException(); }
@@ -11660,7 +11663,11 @@ public class CommandLine {
             argSpec.resetOriginalStringValues();
             argSpec.typedValues.clear();
             argSpec.typedValueAtPosition.clear();
-            if (argSpec.group() == null) { argSpec.applyInitialValue(tracer); } // groups do their own initialization
+            if (argSpec.inherited()) { //inherited args are cleared only at their origin
+                tracer.debug("Not applying initial value for inherited %s%n", optionDescription("", argSpec, -1));
+            } else { // groups do their own initialization;
+                if (argSpec.group() == null) { argSpec.applyInitialValue(tracer); }
+            }
         }
         private void clear(ArgGroupSpec group) {
             for (ArgSpec arg : group.args()) { clear(arg); }
@@ -11676,13 +11683,13 @@ public class CommandLine {
         }
 
         private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs, List<Object> nowProcessing) {
-            clear(); // first reset any state in case this CommandLine instance is being reused
             if (tracer.isDebug()) {
                 tracer.debug("Initializing %s: %d options, %d positional parameters, %d required, %d groups, %d subcommands.%n",
                         commandSpec.toString(), new HashSet<ArgSpec>(commandSpec.optionsMap().values()).size(),
                         commandSpec.positionalParameters().size(), commandSpec.requiredArgs().size(),
                         commandSpec.argGroups().size(), commandSpec.subcommands().size());
             }
+            clear(); // first reset any state in case this CommandLine instance is being reused
             parsedCommands.add(CommandLine.this);
             List<ArgSpec> required = new ArrayList<ArgSpec>(commandSpec.requiredArgs());
             Set<ArgSpec> initialized = new LinkedHashSet<ArgSpec>();
@@ -11737,9 +11744,14 @@ public class CommandLine {
 
         private void applyDefaultValues(List<ArgSpec> required, Set<ArgSpec> initialized) throws Exception {
             parseResultBuilder.isInitializingDefaultValues = true;
+            tracer.debug("Applying default values for command '%s'%n", CommandLine.this.commandSpec.qualifiedName());
             for (ArgSpec arg : commandSpec.args()) {
                 if (arg.group() == null && !initialized.contains(arg)) {
-                    if (applyDefault(commandSpec.defaultValueProvider(), arg)) { required.remove(arg); }
+                    if (arg.inherited()) {
+                        tracer.debug("Not applying default value for inherited %s%n", optionDescription("", arg, -1));
+                    } else {
+                        if (applyDefault(commandSpec.defaultValueProvider(), arg)) { required.remove(arg); }
+                    }
                 }
             }
             for (ArgGroupSpec group : commandSpec.argGroups()) {
@@ -11748,9 +11760,14 @@ public class CommandLine {
             parseResultBuilder.isInitializingDefaultValues = false;
         }
         private void applyGroupDefaults(IDefaultValueProvider defaultValueProvider, ArgGroupSpec group, List<ArgSpec> required, Set<ArgSpec> initialized) throws Exception {
+            tracer.debug("Applying default values for group '%s'%n", group.synopsis());
             for (ArgSpec arg : group.args()) {
                 if (arg.scope().get() != null && !initialized.contains(arg)) {
-                    if (applyDefault(defaultValueProvider, arg)) { required.remove(arg); }
+                    if (arg.inherited()) {
+                        tracer.debug("Not applying default value for inherited %s%n", optionDescription("", arg, -1));
+                    } else {
+                        if (applyDefault(defaultValueProvider, arg)) { required.remove(arg); }
+                    }
                 }
             }
             for (ArgGroupSpec sub : group.subgroups()) {

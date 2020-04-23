@@ -487,11 +487,12 @@ public class ModelCommandSpecTest {
 
     @Test
     public void testCommandSpec_forAnnotatedObject_requiresPicocliAnnotation() {
+        Object userObject = new Object();
         try {
-            CommandSpec.forAnnotatedObject(new Object());
+            CommandSpec.forAnnotatedObject(userObject);
             fail("Expected error");
         } catch (InitializationException ok) {
-            assertEquals("java.lang.Object is not a command: it has no @Command, @Option, @Parameters or @Unmatched annotations", ok.getMessage());
+            assertEquals(userObject + " is not a command: it has no @Command, @Option, @Parameters or @Unmatched annotations", ok.getMessage());
         }
     }
 

@@ -556,11 +556,12 @@ public class CommandMethodTest {
 
     @Test
     public void testMethodCommandsAreNotSubcommandsOfNonAnnotatedClass() {
+        Object userObject = new UnAnnotatedClassWithoutAnnotatedFields();
         try {
-            new CommandLine(new UnAnnotatedClassWithoutAnnotatedFields());
+            new CommandLine(userObject);
             fail("expected exception");
         } catch (CommandLine.InitializationException ex) {
-            assertEquals("picocli.CommandMethodTest$UnAnnotatedClassWithoutAnnotatedFields " +
+            assertEquals(userObject + " " +
                             "is not a command: it has no @Command, @Option, " +
                             "@Parameters or @Unmatched annotations", ex.getMessage());
         }

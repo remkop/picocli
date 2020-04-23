@@ -179,7 +179,8 @@ class AdvancedMixin {
 ```
 
 ## <a name="4.3.0-fixes"></a> Fixed issues
-* [#649][#948] Provide convenience API for global options, also known as: Feature request: inheriting mixins in subcommands. Thanks to [Garret Wilson](https://github.com/garretwilson) for the request and subsequent discussion (and patience!). 
+* [#649][#948] Provide convenience API for inherited/global options (was: Feature request: inheriting mixins in subcommands). Thanks to [Garret Wilson](https://github.com/garretwilson) for the request and subsequent discussion (and patience!).
+* [#996] Default values should not be applied to inherited options. 
 * [#958] API: Add `@Spec(Spec.Target.MIXEE)` annotation element to allow mixins to get a reference to the command they are mixed into.
 * [#960] API: Add method `CommandSpec::root` to return the `CommandSpec` of the top-level command.
 * [#564] Add support for relative indices for positional parameters. Useful in mixins and inherited positional parameters. Thanks to [krisleonard-mcafee](https://github.com/krisleonard-mcafee) for raising this topic.
