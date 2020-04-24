@@ -1200,8 +1200,10 @@ Similarly for <<Maps>>:
 Map<Integer, String> message;
 ----
 With the above option, command line arguments like the following are interpreted as a set of key-value pairs instead of a single string:
+
+.Note: the quotes are needed in this example to prevent the vertical bar `|` characters from being interpreted by the shell as "pipe" directives to connect processes.
 ----
--fix 8=FIX.4.4|9=69|35=A|49=MBT|56=TargetCompID|34=9|52=20130625-04:05:32.682|98=0|108=30|10=052
+-fix "8=FIX.4.4|9=69|35=A|49=MBT|56=TargetCompID|34=9|52=20130625-04:05:32.682|98=0|108=30|10=052"
 ----
 
 The above input results in the `message` field being assigned a `LinkedHashMap` with the following key-value pairs:

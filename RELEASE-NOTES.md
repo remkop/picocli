@@ -207,6 +207,7 @@ class AdvancedMixin {
 * [#976] DOC: Update user manual Testing section; add subsection on [Testing Environment Variables](file:///C:/Users/remko/IdeaProjects/picocli3/build/docs/html5/index.html#_testing_environment_variables). Thanks to [David M. Carr](https://github.com/davidmc24) for raising this and providing a [sample project](https://github.com/remkop/picocli/files/4359943/bulk-scripts-public.zip).
 * [#979][#981] DOC: Update user manual: add section [Options with an Optional Parameter](https://picocli.info/#_options_with_an_optional_parameter). Thanks to [razvanh](https://github.com/razvanh), [Jake](https://github.com/kyeo138) and [mohdpasha](https://github.com/mohdpasha) for raising this.
 * [#989] DOC: Update examples for `picocli-shell-jline3` prior to and after the [#987][#969] bugfix. Thanks to [Ralf D. Müller](https://github.com/rdmueller) for raising this.
+* [#998] DOC: Update manual: quote option parameter containing pipe characters in `split` regex for FIX message example. Thanks to [Galder Zamarreño](https://github.com/galderz) and [Max Rydahl Andersen](https://github.com/maxandersen) for raising this and subsequent discussion.
 * [#965] Dependency Upgrade: in `picocli-examples`, bump `hibernate-validator` from 6.0.2 to 6.1.2 to deal with [CVE-2019-10219](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-10219). Thanks to [https://github.com/Security3rd](Security3rd) for raising this.
 
 ## <a name="4.3.0-deprecated"></a> Deprecations
