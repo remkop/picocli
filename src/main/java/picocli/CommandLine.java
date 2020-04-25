@@ -13727,37 +13727,33 @@ public class CommandLine {
         }
 
         /**
-         * Add options recursively
+         * Add options in the specified group (or in its subgroup) recursively to the specified option list.
          * @param group current group to deal with
          * @param options global result where options of current group will be added to
          * @param optionSort comparator for options
          */
-        private void addOptions(ArgGroupSpec group, List<OptionSpec> options, Comparator<OptionSpec> optionSort) {
-            if (group == null)
-                return;
-            List<OptionSpec> res = new ArrayList<OptionSpec>(group.options());
+        private void addGroupOptionsToListRecursively(ArgGroupSpec group, List<OptionSpec> options, Comparator<OptionSpec> optionSort) {
+            if (group == null) { return; }
+            List<OptionSpec> tmp = new ArrayList<OptionSpec>(group.options());
             if (optionSort != null) {
-                Collections.sort(res, optionSort);
+                Collections.sort(tmp, optionSort);
             }
-            if (res.size() == 0)
-                return;
-            options.addAll(res);
+            options.addAll(tmp);
             for (ArgGroupSpec subGroup : group.subgroups()) {
-                addOptions(subGroup, options, optionSort);
+                addGroupOptionsToListRecursively(subGroup, options, optionSort);
             }
         }
 
         /**
-         * Remove options recursively
+         * Remove options in the specified group (or in its subgroup) recursively from the specified option list.
          * @param group current group to deal with
          * @param options global result where options of current group will be removed from
          */
-        private void removeOptions(ArgGroupSpec group, List<OptionSpec> options) {
-            if (group == null)
-                return;
+        private void removeGroupOptionsFromListRecursively(ArgGroupSpec group, List<OptionSpec> options) {
+            if (group == null) { return; }
             options.removeAll(group.options());
             for (ArgGroupSpec subGroup : group.subgroups()) {
-                removeOptions(subGroup, options);
+                removeGroupOptionsFromListRecursively(subGroup, options);
             }
         }
 
@@ -13775,13 +13771,14 @@ public class CommandLine {
             }
             List<ArgGroupSpec> groups = optionListGroups();
             for (ArgGroupSpec group : groups) {
-                removeOptions(group, options);
+                removeGroupOptionsFromListRecursively(group, options);
             }
 
             StringBuilder sb = new StringBuilder();
             layout.addOptions(options, valueLabelRenderer);
             sb.append(layout.toString());
 
+            Set<ArgSpec> done = new HashSet<ArgSpec>();
             Collections.sort(groups, new SortByOrder<ArgGroupSpec>());
             for (ArgGroupSpec group : groups) {
                 sb.append(createHeading(group.heading()));
@@ -13789,7 +13786,9 @@ public class CommandLine {
                 Layout groupLayout = createDefaultLayout();
                 groupLayout.addPositionalParameters(group.positionalParameters(), valueLabelRenderer);
                 List<OptionSpec> groupOptions = new ArrayList<OptionSpec>();
-                addOptions(group, groupOptions, optionSort);
+                addGroupOptionsToListRecursively(group, groupOptions, optionSort);
+                groupOptions.removeAll(done);
+                done.addAll(groupOptions);
                 groupLayout.addOptions(groupOptions, valueLabelRenderer);
                 sb.append(groupLayout);
             }
