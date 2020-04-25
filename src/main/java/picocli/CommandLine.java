@@ -12113,6 +12113,9 @@ public class CommandLine {
                                 Set<ArgSpec> initialized,
                                 String argDescription) throws Exception {
             updateHelpRequested(argSpec);
+
+            parseResultBuilder.beforeMatchingGroupElement(argSpec); //#1004 ensure groups are initialized before calling parameter consumer
+
             if (argSpec.parameterConsumer() != null) {
                 int originalSize = args.size();
                 argSpec.parameterConsumer().consumeParameters(args, argSpec, commandSpec);
@@ -12125,8 +12128,6 @@ public class CommandLine {
             } else {
                 if (!assertNoMissingParameters(argSpec, arity, args)) { return 0; } // #389 collectErrors parsing
             }
-
-            parseResultBuilder.beforeMatchingGroupElement(argSpec);
 
             int result;
             if (argSpec.type().isArray() && !(argSpec.interactive() && argSpec.type() == char[].class)) {

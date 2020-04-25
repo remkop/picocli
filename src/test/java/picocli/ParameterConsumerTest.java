@@ -1,6 +1,8 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Test;
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.IParameterConsumer;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
@@ -113,5 +115,31 @@ public class ParameterConsumerTest {
         IParameterConsumer provider = CommandLine.defaultFactory().create(c);
         assertNotNull(provider);
         provider.consumeParameters(new Stack<String>(), CommandLine.Model.PositionalParamSpec.builder().build(), CommandSpec.create());
+    }
+
+    static class Issue1004Command {
+        @ArgGroup
+        Group group;
+
+        static class Group {
+            @Option(names = "-foo", parameterConsumer = TestConsumer.class)
+            String foo;
+        }
+
+        static class TestConsumer implements IParameterConsumer {
+            public void consumeParameters(Stack<String> args, ArgSpec argSpec, CommandSpec commandSpec) {
+                argSpec.setValue(args.pop());
+            }
+        }
+    }
+
+    @Test //https://github.com/remkop/picocli/issues/1004
+    public void testParameterConsumerInArgGroup() {
+        Issue1004Command cmd = new Issue1004Command();
+        assertNull(cmd.group);
+        new CommandLine(cmd).parseArgs("-foo", "value");
+
+        assertNotNull("Group was initialized", cmd.group);
+        assertEquals("value", cmd.group.foo);
     }
 }
