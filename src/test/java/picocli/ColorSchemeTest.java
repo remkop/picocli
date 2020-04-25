@@ -18,7 +18,10 @@ public class ColorSchemeTest {
                 .commands(Help.Ansi.Style.bold)
                 .options(Help.Ansi.Style.fg_yellow)
                 .parameters(Help.Ansi.Style.fg_yellow)
-                .optionParams(Help.Ansi.Style.italic).build();
+                .optionParams(Help.Ansi.Style.italic)
+                .errors(Help.Ansi.Style.fg_red, Help.Ansi.Style.bold)
+                .stackTraces(Help.Ansi.Style.italic)
+                .build();
         assertEquals(expect, defaultScheme);
     }
 
@@ -35,14 +38,16 @@ public class ColorSchemeTest {
                 .commands(Help.Ansi.Style.bold)
                 .options(Help.Ansi.Style.fg_yellow)
                 .parameters(Help.Ansi.Style.fg_yellow)
-                .optionParams(Help.Ansi.Style.italic).build();
+                .optionParams(Help.Ansi.Style.italic)
+                .errors(Help.Ansi.Style.fg_red, Help.Ansi.Style.bold)
+                .stackTraces(Help.Ansi.Style.italic).build();
         assertEquals(expect.hashCode(), defaultScheme.hashCode());
     }
 
     @Test
     public void testToString() {
         ColorScheme defaultScheme = Help.defaultColorScheme(Help.Ansi.AUTO);
-        assertEquals("ColorScheme[ansi=AUTO, commands=[bold], optionStyles=[fg_yellow], parameterStyles=[fg_yellow], optionParamStyles=[italic], customMarkupMap=null]", defaultScheme.toString());
+        assertEquals("ColorScheme[ansi=AUTO, commands=[bold], optionStyles=[fg_yellow], parameterStyles=[fg_yellow], optionParamStyles=[italic], errorStyles=[fg_red, bold], stackTraceStyles=[italic], customMarkupMap=null]", defaultScheme.toString());
     }
     @Test
     public void testColorScheme_customMarkupMapEmptyByDefault() {

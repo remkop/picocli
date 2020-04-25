@@ -392,6 +392,9 @@ public class ExecuteTest {
             "  @|yellow -V|@, @|yellow --version|@   Print version information and exit.%n" +
             "  @|yellow -x|@=@|italic <option>|@     this is an option%n")).toString();
 
+    private static final String INVALID_INPUT_ANSI = Help.Ansi.ON.new Text(format("" +
+            "@|fg(red),bold Unmatched argument at index 0: 'invalid input'|@%n")).toString();
+
     @Test
     public void testExecuteWithInvalidInput() {
         int exitCode = new CommandLine(new MyCallable()).execute("invalid input");
@@ -404,7 +407,7 @@ public class ExecuteTest {
     public void testExecuteWithInvalidInput_Ansi_ON() {
         new CommandLine(new MyCallable())
                 .setColorScheme(Help.defaultColorScheme(Help.Ansi.ON)).execute("invalid input");
-        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
+        assertEquals(INVALID_INPUT_ANSI + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
         assertEquals("", systemOutRule.getLog());
     }
 
@@ -414,7 +417,7 @@ public class ExecuteTest {
                 .setErr(new PrintWriter(System.out, true))
                 .setColorScheme(Help.defaultColorScheme(Help.Ansi.ON)).execute("invalid input");
         assertEquals("", systemErrRule.getLog());
-        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
+        assertEquals(INVALID_INPUT_ANSI + MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
     }
 
     @Test
