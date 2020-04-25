@@ -1653,7 +1653,7 @@ public class CommandLine {
             internalHandleParseException(ex, new PrintWriter(err(), true), colorScheme()); return returnResultOrExit(null); }
 
         static void internalHandleParseException(ParameterException ex, PrintWriter writer, Help.ColorScheme colorScheme) {
-            writer.println(ex.getMessage());
+            writer.println(colorScheme.errorText(ex.getMessage()));
             if (!UnmatchedArgumentException.printSuggestions(ex, writer)) {
                 ex.getCommandLine().usage(writer, colorScheme);
             }
@@ -1929,8 +1929,28 @@ public class CommandLine {
         }
     }
     private static int handleUnhandled(Exception ex, CommandLine cmd, int defaultExitCode) {
-        ex.printStackTrace(cmd.getErr());
+        cmd.getErr().print(exceptionToColorString(ex, cmd.getColorScheme()));
+        cmd.getErr().flush();
         return mappedExitCode(ex, cmd.getExitCodeExceptionMapper(), defaultExitCode);
+    }
+
+    /**
+     * Convert an {@code Exception} to a {@code String} , with message and stack traces extracted and colored
+     * according to {@code ColorScheme}.
+     * @param ex the {@code Exception} to be converted
+     * @param colorScheme the {@code ColorScheme} to use
+     * @return converted and colored {@code String}
+     */
+    private static String exceptionToColorString(Exception ex, Help.ColorScheme existingColorScheme){
+        Help.ColorScheme colorScheme = new Help.ColorScheme.Builder(existingColorScheme).applySystemProperties().build();
+        String newLine = String.format("%n");
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(colorScheme.errorText(ex.toString()));
+        stringBuilder.append(newLine);
+        for (StackTraceElement traceElement : ex.getStackTrace()) {
+            stringBuilder.append(colorScheme.stackTraceText("\tat " + traceElement + newLine));
+        }
+        return stringBuilder.toString();
     }
 
     private <T> T enrichForBackwardsCompatibility(T obj) {
@@ -15040,6 +15060,8 @@ public class CommandLine {
             private final List<IStyle> optionStyles;
             private final List<IStyle> parameterStyles;
             private final List<IStyle> optionParamStyles;
+            private final List<IStyle> errorStyles;
+            private final List<IStyle> stackTraceStyles;
             private final Ansi ansi;
             private final Map<String, IStyle> markupMap;
 
@@ -15054,6 +15076,8 @@ public class CommandLine {
                 optionStyles      = Collections.unmodifiableList(new ArrayList<IStyle>(builder.optionStyles()));
                 parameterStyles   = Collections.unmodifiableList(new ArrayList<IStyle>(builder.parameterStyles()));
                 optionParamStyles = Collections.unmodifiableList(new ArrayList<IStyle>(builder.optionParamStyles()));
+                errorStyles       = Collections.unmodifiableList(new ArrayList<IStyle>(builder.errorStyles()));
+                stackTraceStyles  = Collections.unmodifiableList(new ArrayList<IStyle>(builder.stackTraceStyles()));
                 markupMap         = builder.markupMap == null ? null : Collections.unmodifiableMap(new HashMap<String, IStyle>(builder.markupMap));
             }
             /** Returns a Text with all command styles applied to the specified command string.
@@ -15072,6 +15096,14 @@ public class CommandLine {
              * @param optionParam the option parameter string to apply the registered option parameter styles to
              * @return a Text with all option parameter styles applied to the specified option parameter string */
             public Ansi.Text optionParamText(String optionParam) { return apply(optionParam, optionParamStyles); }
+            /** Returns a Text with all error styles applied to the specified error string.
+             * @param error the error string to apply the registered error styles to
+             * @return a Text with all error styles applied to the specified error string */
+            public Ansi.Text errorText(String error) {return apply(error, errorStyles); }
+            /** Returns a Text with all stackTrace styles applied to the specified stackTrace string.
+             * @param stackTrace the stack trace string to apply the registered stack trace styles to
+             * @return a Text with all stack trace styles applied to the specified stack trace string */
+            public Ansi.Text stackTraceText(String stackTrace) {return apply(stackTrace, stackTraceStyles); }
 
             /** Returns the {@code Ansi} setting of this color scheme. */
             public Ansi ansi() { return ansi; }
@@ -15087,6 +15119,13 @@ public class CommandLine {
             /** Returns the registered styles for option parameters in this color scheme.
              * @since 4.0 */
             public List<IStyle> optionParamStyles() { return optionParamStyles; }
+            /** Returns the registered styles for errors in this color scheme.
+             * @since 4.3 */
+            public List<IStyle> errorStyles() {return errorStyles; }
+            /** Returns the registered styles for stack traces in this color scheme.
+             * @since 4.3 */
+            public List<IStyle> stackTraceStyles() {return stackTraceStyles;}
+
             /** Returns the custom mapping from markup names (the names of the {@link Style} enum constants, like bold, italic, fg_blue, bg_green, etc) to {@link IStyle} objects in this color scheme.
              * By default this returns an empty map, unless a custom map was configured.
              * @since 4.2 */
@@ -15131,6 +15170,8 @@ public class CommandLine {
                         && optionStyles.equals(other.optionStyles)
                         && parameterStyles.equals(other.parameterStyles)
                         && optionParamStyles.equals(other.optionParamStyles)
+                        && errorStyles.equals(other.errorStyles)
+                        && stackTraceStyles.equals(other.stackTraceStyles)
                         && markupMap == null ? other.markupMap == null : markupMap.equals(other.markupMap);
             }
             @Override public int hashCode() {
@@ -15140,6 +15181,8 @@ public class CommandLine {
                 result = result * 37 + optionStyles.hashCode();
                 result = result * 37 + parameterStyles.hashCode();
                 result = result * 37 + optionParamStyles.hashCode();
+                result = result * 37 + errorStyles.hashCode();
+                result = result * 37 + stackTraceStyles.hashCode();
                 result = result * 37 + (markupMap == null ? 0 : markupMap.hashCode());
                 return result;
             }
@@ -15149,6 +15192,8 @@ public class CommandLine {
                         ", optionStyles=" + optionStyles +
                         ", parameterStyles=" + parameterStyles +
                         ", optionParamStyles=" + optionParamStyles +
+                        ", errorStyles=" + errorStyles +
+                        ", stackTraceStyles=" + stackTraceStyles +
                         ", customMarkupMap=" + markupMap +
                 "]";
             }
@@ -15201,6 +15246,8 @@ public class CommandLine {
                 private final List<IStyle> optionStyles = new ArrayList<IStyle>();
                 private final List<IStyle> parameterStyles = new ArrayList<IStyle>();
                 private final List<IStyle> optionParamStyles = new ArrayList<IStyle>();
+                private final List<IStyle> errorStyles = new ArrayList<IStyle>();
+                private final List<IStyle> stackTraceStyles = new ArrayList<IStyle>();
                 private Ansi ansi = Ansi.AUTO;
                 private Map<String, IStyle> markupMap;
 
@@ -15216,6 +15263,8 @@ public class CommandLine {
                     this.optionStyles.addAll(existing.optionStyles());
                     this.parameterStyles.addAll(existing.parameterStyles());
                     this.optionParamStyles.addAll(existing.optionParamStyles());
+                    this.errorStyles.addAll(existing.errorStyles());
+                    this.stackTraceStyles.addAll(existing.stackTraceStyles());
                     if (existing.markupMap != null) {
                         this.markupMap = new HashMap<String, IStyle>(existing.markupMap);
                     }
@@ -15232,6 +15281,10 @@ public class CommandLine {
                 public List<IStyle> parameterStyles()   { return parameterStyles; }
                 /** Returns the registered styles for option parameters in this color scheme builder. */
                 public List<IStyle> optionParamStyles() { return optionParamStyles; }
+                /** Returns the registered styles for errors in this color scheme builder. */
+                public List<IStyle> errorStyles() { return errorStyles; }
+                /** Returns the registered styles for stack traces in this color scheme builder. */
+                public List<IStyle> stackTraceStyles() { return stackTraceStyles; }
                 /** Returns the custom mapping from markup names (the names of the {@link Style} enum constants, like bold, italic, fg_blue, bg_green, etc) to {@link IStyle} objects in this color scheme.
                  * By default this returns {@code null}, unless a custom map was configured.
                  * @since 4.2 */
@@ -15257,6 +15310,14 @@ public class CommandLine {
                  * @param styles the styles to add to the registered styles for option parameters in this color scheme builder
                  * @return this color scheme builder to enable method chaining for a more fluent API */
                 public ColorScheme.Builder optionParams(IStyle... styles) { return addAll(optionParamStyles, styles);}
+                /** Adds the specified styles to the registered styles for errors in this color scheme builder and returns this builder.
+                 * @param styles the styles to add to the registered styles for errors in this color scheme builder
+                 * @return this color scheme builder to enable method chaining for a more fluent API */
+                public ColorScheme.Builder errors(IStyle... styles) { return addAll(errorStyles, styles);}
+                /** Adds the specified styles to the registered styles for stack traces in this color scheme builder and returns this builder.
+                 * @param styles the styles to add to the registered styles for stack traces in this color scheme builder
+                 * @return this color scheme builder to enable method chaining for a more fluent API */
+                public ColorScheme.Builder stackTraces(IStyle... styles) { return addAll(stackTraceStyles, styles);}
 
                 /** Replaces colors and styles in this scheme builder with ones specified in system properties, and returns this builder.
                  * Supported property names:<ul>
@@ -15264,6 +15325,8 @@ public class CommandLine {
                  *     <li>{@code picocli.color.options}</li>
                  *     <li>{@code picocli.color.parameters}</li>
                  *     <li>{@code picocli.color.optionParams}</li>
+                 *     <li>{@code picocli.color.errors}</li>
+                 *     <li>{@code picocli.color.stackTraces}</li>
                  * </ul><p>Property values can be anything that {@link Help.Ansi.Style#parse(String)} can handle.</p>
                  * @return this ColorScheme builder
                  */
@@ -15272,6 +15335,8 @@ public class CommandLine {
                     replace(optionStyles,      System.getProperty("picocli.color.options"));
                     replace(parameterStyles,   System.getProperty("picocli.color.parameters"));
                     replace(optionParamStyles, System.getProperty("picocli.color.optionParams"));
+                    replace(errorStyles,       System.getProperty("picocli.color.errors"));
+                    replace(stackTraceStyles,  System.getProperty("picocli.color.stackTraces"));
                     return this;
                 }
                 private void replace(List<IStyle> styles, String property) {
@@ -15299,7 +15364,9 @@ public class CommandLine {
                     .commands(Style.bold)
                     .options(Style.fg_yellow)
                     .parameters(Style.fg_yellow)
-                    .optionParams(Style.italic).build();
+                    .optionParams(Style.italic)
+                    .errors(Style.fg_red, Style.bold)
+                    .stackTraces(Style.italic).build();
         }
 
         /** Provides methods and inner classes to support using ANSI escape codes in usage help messages. */
