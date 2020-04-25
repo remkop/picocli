@@ -3565,11 +3565,14 @@ The below code snippet shows how a custom color scheme can be specified to confi
 [source,java]
 ----
 // see also CommandLine.Help.defaultColorScheme()
-ColorScheme colorScheme = new ColorScheme()
+ColorScheme colorScheme = new ColorScheme.Builder()
         .commands    (Style.bold, Style.underline)    // combine multiple styles
         .options     (Style.fg_yellow)                // yellow foreground color
         .parameters  (Style.fg_yellow)
-        .optionParams(Style.italic);
+        .optionParams(Style.italic)
+        .errors      (Style.fg_red, Style.bold)
+        .stackTraces (Style.italic)
+        .build();
 
 CommandLine.usage(annotatedObject, System.out, colorScheme);
 ...
@@ -3598,6 +3601,8 @@ picocli.color.commands
 picocli.color.options
 picocli.color.parameters
 picocli.color.optionParams
+picocli.color.errors
+picocli.color.stackTraces
 ----
 
 For example:

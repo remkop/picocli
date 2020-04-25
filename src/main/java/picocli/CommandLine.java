@@ -1938,17 +1938,16 @@ public class CommandLine {
      * Convert an {@code Exception} to a {@code String} , with message and stack traces extracted and colored
      * according to {@code ColorScheme}.
      * @param ex the {@code Exception} to be converted
-     * @param colorScheme the {@code ColorScheme} to use
+     * @param existingColorScheme the {@code ColorScheme} to use
      * @return converted and colored {@code String}
      */
     private static String exceptionToColorString(Exception ex, Help.ColorScheme existingColorScheme){
         Help.ColorScheme colorScheme = new Help.ColorScheme.Builder(existingColorScheme).applySystemProperties().build();
-        String newLine = String.format("%n");
+        String newLine = System.getProperty("line.separator");
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(colorScheme.errorText(ex.toString()));
-        stringBuilder.append(newLine);
+        stringBuilder.append(colorScheme.errorText(ex.toString())).append(newLine);
         for (StackTraceElement traceElement : ex.getStackTrace()) {
-            stringBuilder.append(colorScheme.stackTraceText("\tat " + traceElement + newLine));
+            stringBuilder.append(colorScheme.stackTraceText("\tat " + traceElement)).append(newLine);
         }
         return stringBuilder.toString();
     }
@@ -15281,9 +15280,11 @@ public class CommandLine {
                 public List<IStyle> parameterStyles()   { return parameterStyles; }
                 /** Returns the registered styles for option parameters in this color scheme builder. */
                 public List<IStyle> optionParamStyles() { return optionParamStyles; }
-                /** Returns the registered styles for errors in this color scheme builder. */
+                /** Returns the registered styles for errors in this color scheme builder.
+                 * @since 4.3 */
                 public List<IStyle> errorStyles() { return errorStyles; }
-                /** Returns the registered styles for stack traces in this color scheme builder. */
+                /** Returns the registered styles for stack traces in this color scheme builder.
+                 * @since 4.3 */
                 public List<IStyle> stackTraceStyles() { return stackTraceStyles; }
                 /** Returns the custom mapping from markup names (the names of the {@link Style} enum constants, like bold, italic, fg_blue, bg_green, etc) to {@link IStyle} objects in this color scheme.
                  * By default this returns {@code null}, unless a custom map was configured.
@@ -15312,11 +15313,13 @@ public class CommandLine {
                 public ColorScheme.Builder optionParams(IStyle... styles) { return addAll(optionParamStyles, styles);}
                 /** Adds the specified styles to the registered styles for errors in this color scheme builder and returns this builder.
                  * @param styles the styles to add to the registered styles for errors in this color scheme builder
-                 * @return this color scheme builder to enable method chaining for a more fluent API */
+                 * @return this color scheme builder to enable method chaining for a more fluent API
+                 * @since 4.3 */
                 public ColorScheme.Builder errors(IStyle... styles) { return addAll(errorStyles, styles);}
                 /** Adds the specified styles to the registered styles for stack traces in this color scheme builder and returns this builder.
                  * @param styles the styles to add to the registered styles for stack traces in this color scheme builder
-                 * @return this color scheme builder to enable method chaining for a more fluent API */
+                 * @return this color scheme builder to enable method chaining for a more fluent API
+                 * @since 4.3 */
                 public ColorScheme.Builder stackTraces(IStyle... styles) { return addAll(stackTraceStyles, styles);}
 
                 /** Replaces colors and styles in this scheme builder with ones specified in system properties, and returns this builder.
