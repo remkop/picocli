@@ -522,6 +522,9 @@ public class ExecuteLegacyTest {
             "  @|yellow -V|@, @|yellow --version|@   Print version information and exit.%n" +
             "  @|yellow -x|@=@|italic <option>|@     this is an option%n")).toString();
 
+    private static final String INVALID_INPUT_ANSI = Help.Ansi.ON.new Text(format("" +
+            "@|fg(red),bold Unmatched argument at index 0: 'invalid input'|@%n")).toString();
+
     @Test
     public void testCall1WithInvalidInput() {
         CommandLine.call(new MyCallable(), "invalid input");
@@ -539,14 +542,14 @@ public class ExecuteLegacyTest {
     @Test
     public void testCall3WithInvalidInput() {
         CommandLine.call(new MyCallable(), System.out, Help.Ansi.ON, "invalid input");
-        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
+        assertEquals(INVALID_INPUT_ANSI + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
         assertEquals("", systemOutRule.getLog());
     }
 
     @Test
     public void testCall4WithInvalidInput() {
         CommandLine.call(new MyCallable(), System.out, System.err, Help.Ansi.ON, "invalid input");
-        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
+        assertEquals(INVALID_INPUT_ANSI + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
         assertEquals("", systemOutRule.getLog());
     }
 
@@ -554,7 +557,7 @@ public class ExecuteLegacyTest {
     public void testCall4WithInvalidInput_ToStdout() {
         CommandLine.call(new MyCallable(), System.out, System.out, Help.Ansi.ON, "invalid input");
         assertEquals("", systemErrRule.getLog());
-        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
+        assertEquals(INVALID_INPUT_ANSI + MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
     }
 
     @Test
@@ -650,14 +653,14 @@ public class ExecuteLegacyTest {
     @Test
     public void testRun3WithInvalidInput() {
         CommandLine.run(new MyRunnable(), System.out, Help.Ansi.ON, "invalid input");
-        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
+        assertEquals(INVALID_INPUT_ANSI + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
         assertEquals("", systemOutRule.getLog());
     }
 
     @Test
     public void testRun4WithInvalidInput() {
         CommandLine.run(new MyRunnable(), System.out, System.err, Help.Ansi.ON, "invalid input");
-        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
+        assertEquals(INVALID_INPUT_ANSI + MYCALLABLE_USAGE_ANSI, systemErrRule.getLog());
         assertEquals("", systemOutRule.getLog());
     }
 
@@ -665,7 +668,7 @@ public class ExecuteLegacyTest {
     public void testRun4WithInvalidInput_ToStdout() {
         CommandLine.run(new MyRunnable(), System.out, System.out, Help.Ansi.ON, "invalid input");
         assertEquals("", systemErrRule.getLog());
-        assertEquals(INVALID_INPUT + MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
+        assertEquals(INVALID_INPUT_ANSI + MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());
     }
 
     @Test
