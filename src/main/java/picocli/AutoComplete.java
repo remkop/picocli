@@ -24,9 +24,11 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import picocli.CommandLine.*;
@@ -602,7 +604,19 @@ public class AutoComplete {
         String flagOptionNames = optionNames(filter(commandSpec.options(), new BooleanArgFilter()));
         List<OptionSpec> argOptionFields = filter(commandSpec.options(), negate(new BooleanArgFilter()));
         String argOptionNames = optionNames(argOptionFields);
-        String commands = concat(" ", new ArrayList<String>(commandLine.getSubcommands().keySet())).trim();
+
+        Set<String> subCommands = commandLine.getSubcommands().keySet();
+        // If the command is a HelpCommand, append parent subcommands to the autocompletion list.
+        if (commandLine.getParent() != null && commandLine.getCommand() instanceof HelpCommand) {
+            subCommands = new HashSet<String>(subCommands);
+            for (CommandLine subCommandLine : commandLine.getParent().getSubcommands().values()) {
+                if (!subCommandLine.getCommandSpec().usageMessage().hidden()) { // #887 skip hidden subcommands
+                    subCommands.add(subCommandLine.getCommandName());
+                }
+            }
+            subCommands.remove("help"); // No need for 'help' in help
+        }
+        String commands = concat(" ", new ArrayList<String>(subCommands)).trim();
 
         // Generate the header: the function declaration, CURR_WORD, PREV_WORD and COMMANDS, FLAG_OPTS and ARG_OPTS.
         StringBuilder buff = new StringBuilder(1024);
