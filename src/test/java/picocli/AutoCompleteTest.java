@@ -187,6 +187,22 @@ public class AutoCompleteTest {
         assertEquals(expected, script);
     }
 
+    @Test
+    public void helpCommand() {
+        CommandLine hierarchy = new CommandLine(new AutoCompleteTest.TopLevel())
+                .addSubcommand("sub1", new AutoCompleteTest.Sub1())
+                .addSubcommand("sub2", new CommandLine(new AutoCompleteTest.Sub2())
+                        .addSubcommand("subsub1", new AutoCompleteTest.Sub2Child1())
+                        .addSubcommand("subsub2", new AutoCompleteTest.Sub2Child2())
+                        .addSubcommand("subsub3", new AutoCompleteTest.Sub2Child3())
+                )
+                .addSubcommand(new CommandLine.HelpCommand());
+        String script = AutoComplete.bash("picocompletion-demo-help", hierarchy);
+        String expected = format(loadTextFromClasspath("/picocompletion-demo-help_completion.bash"),
+                CommandLine.VERSION, spaced(TimeUnit.values()));
+        assertEquals(expected, script);
+    }
+
     private static String spaced(Object[] values) {
         StringBuilder result = new StringBuilder();
         for (Object value : values) {
