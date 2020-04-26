@@ -227,20 +227,17 @@ public class CommandLine {
     }
 
     private CommandLine copy() {
-        CommandUserObject cuo = getCommandSpec().userObject;
-        Object command = cuo.type == null ? cuo.instance : cuo.type;
-        CommandLine result = new CommandLine(command, factory); // create a new sub-hierarchy
-        result.colorScheme = colorScheme;
+        CommandLine result = new CommandLine(commandSpec.copy(), factory); // create a new sub-hierarchy
         result.err = err;
         result.out = out;
-        result.executionExceptionHandler = executionExceptionHandler;
+        result.colorScheme = colorScheme;
         result.executionStrategy = executionStrategy;
         result.exitCodeExceptionMapper = exitCodeExceptionMapper;
+        result.executionExceptionHandler = executionExceptionHandler;
         result.parameterExceptionHandler = parameterExceptionHandler;
+
         result.interpreter.converterRegistry.clear();
         result.interpreter.converterRegistry.putAll(interpreter.converterRegistry);
-        result.commandSpec.usageMessage.initFrom(commandSpec.usageMessage, commandSpec);
-        result.commandSpec.parser(commandSpec.parser);
         return result;
     }
 
@@ -5402,6 +5399,40 @@ public class CommandLine {
             private CommandSpec(CommandUserObject userObject) {
                 this.userObject = userObject;
                 this.userObject.commandSpec = this;
+            }
+
+            private CommandSpec copy() {
+                Object obj = userObject.type == null ? userObject.instance : userObject.type;
+                CommandSpec result = obj == null ? CommandSpec.create() : CommandSpec.forAnnotatedObject(obj);
+                result.commandLine = commandLine;
+                result.parent = parent;
+                result.methodParams = methodParams;
+                result.isAddMethodSubcommands = isAddMethodSubcommands;
+                result.interpolateVariables = interpolateVariables;
+                result.name = name;
+                result.aliases = aliases;
+                result.isHelpCommand = isHelpCommand;
+                result.versionProvider = versionProvider;
+                result.defaultValueProvider = defaultValueProvider;
+                result.negatableOptionTransformer = negatableOptionTransformer;
+                result.subcommandsRepeatable = subcommandsRepeatable;
+                result.version = version;
+                result.toString = toString;
+
+                result.exitCodeOnSuccess = exitCodeOnSuccess;
+                result.exitCodeOnUsageHelp = exitCodeOnUsageHelp;
+                result.exitCodeOnVersionHelp = exitCodeOnVersionHelp;
+                result.exitCodeOnInvalidInput = exitCodeOnInvalidInput;
+                result.exitCodeOnExecutionException = exitCodeOnExecutionException;
+
+                result.usageMessage.initFrom(usageMessage, this);
+                result.parser(parser);
+
+                // TODO if this CommandSpec was created/modified via the programmatic API,
+                //   we need to copy all attributes that are modifiable via the programmatic API
+                //   and point them to this CommandSpec instance.
+
+                return result;
             }
 
             /** Creates and returns a new {@code CommandSpec} without any associated user object. */
