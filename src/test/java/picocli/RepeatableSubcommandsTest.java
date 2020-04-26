@@ -711,4 +711,36 @@ public class RepeatableSubcommandsTest {
         spec.subcommandsRepeatable(true);
         assertTrue("after", spec.subcommandsRepeatable());
     }
+
+    @Command(name = "issue1007", subcommandsRepeatable = true)
+    static class Issue1007CommandWithCustomConverter {
+        public int count;
+
+        @Command
+        public void sub(@Option(names = "-x") final MyBean bean) {
+            count++;
+        }
+
+        static class CustomConverter implements CommandLine.ITypeConverter<MyBean> {
+            public MyBean convert(String value) throws Exception {
+                return new MyBean(value);
+            }
+        }
+
+        static class MyBean {
+            String value;
+            public MyBean(String value) {this.value = value;}
+        }
+    }
+
+    @Test
+    public void testCustomConverter() {
+        Issue1007CommandWithCustomConverter cmd = new Issue1007CommandWithCustomConverter();
+        CommandLine line = new CommandLine(cmd);
+        line.registerConverter(Issue1007CommandWithCustomConverter.MyBean.class, new Issue1007CommandWithCustomConverter.CustomConverter());
+        assertEquals(0, cmd.count);
+        int exitCode = line.execute("sub -x=abc sub -x=xyz".split(" "));
+        assertEquals(0, exitCode);
+        assertEquals(2, cmd.count);
+    }
 }

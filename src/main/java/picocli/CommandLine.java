@@ -226,6 +226,24 @@ public class CommandLine {
         if (commandSpec.unmatchedArgsBindings().size() > 0) { setUnmatchedArgumentsAllowed(true); }
     }
 
+    private CommandLine copy() {
+        CommandUserObject cuo = getCommandSpec().userObject;
+        Object command = cuo.type == null ? cuo.instance : cuo.type;
+        CommandLine result = new CommandLine(command, factory); // create a new sub-hierarchy
+        result.colorScheme = colorScheme;
+        result.err = err;
+        result.out = out;
+        result.executionExceptionHandler = executionExceptionHandler;
+        result.executionStrategy = executionStrategy;
+        result.exitCodeExceptionMapper = exitCodeExceptionMapper;
+        result.parameterExceptionHandler = parameterExceptionHandler;
+        result.interpreter.converterRegistry.clear();
+        result.interpreter.converterRegistry.putAll(interpreter.converterRegistry);
+        result.commandSpec.usageMessage.initFrom(commandSpec.usageMessage, commandSpec);
+        result.commandSpec.parser(commandSpec.parser);
+        return result;
+    }
+
     /**
      * Returns the {@code CommandSpec} model that this {@code CommandLine} was constructed with.
      * @return the {@code CommandSpec} model
@@ -11865,9 +11883,7 @@ public class CommandLine {
                     CommandLine subcommand = commandSpec.parent().subcommands().get(arg);
                     if (subcommand.interpreter.parseResultBuilder != null) {
                         tracer.debug("Subcommand '%s' has been matched before. Making a copy...%n", subcommand.getCommandName());
-                        CommandUserObject cuo = subcommand.getCommandSpec().userObject;
-                        Object command = cuo.type == null ? cuo.instance : cuo.type;
-                        subcommand = new CommandLine(command, factory); // create a new sub-hierarchy
+                        subcommand = subcommand.copy();
                         subcommand.getCommandSpec().parent(commandSpec.parent()); // hook it up with its parent
                     }
                     processSubcommand(subcommand, getParent().interpreter.parseResultBuilder, parsedCommands, args, required, originalArgs, nowProcessing, separator, arg);
