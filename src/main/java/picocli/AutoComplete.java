@@ -24,8 +24,8 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -608,7 +608,7 @@ public class AutoComplete {
         Set<String> subCommands = commandLine.getSubcommands().keySet();
         // If the command is a HelpCommand, append parent subcommands to the autocompletion list.
         if (commandLine.getParent() != null && commandLine.getCommand() instanceof HelpCommand) {
-            subCommands = new HashSet<String>(subCommands);
+            subCommands = new LinkedHashSet<String>(subCommands);
             for (CommandLine subCommandLine : commandLine.getParent().getSubcommands().values()) {
                 if (!subCommandLine.getCommandSpec().usageMessage().hidden()) { // #887 skip hidden subcommands
                     subCommands.add(subCommandLine.getCommandName());

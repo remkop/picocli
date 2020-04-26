@@ -226,7 +226,7 @@ function _picocli_picocompletion-demo-help_help() {
   # Get completion data
   local curr_word=${COMP_WORDS[COMP_CWORD]}
 
-  local commands="sub2 sub1"
+  local commands="sub1 sub2"
   local flag_opts="-h --help"
   local arg_opts=""
 
