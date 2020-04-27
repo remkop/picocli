@@ -40,7 +40,7 @@ setup
 
     # Try completion without args
 set cmd "picocompletion-demo "
-set test "Tab should should show sub1 and sub2 for '${cmd}'"
+set test "Tab should show sub1 and sub2 for '${cmd}'"
 set candidates "sub1\\s*sub2\r\n/@${cmd}sub"
 run_completion_test $cmd $test $candidates
 
