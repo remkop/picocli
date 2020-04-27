@@ -610,11 +610,10 @@ public class AutoComplete {
         if (commandLine.getParent() != null && commandLine.getCommand() instanceof HelpCommand) {
             subCommands = new LinkedHashSet<String>(subCommands);
             for (CommandLine subCommandLine : commandLine.getParent().getSubcommands().values()) {
-                if (!subCommandLine.getCommandSpec().usageMessage().hidden()) { // #887 skip hidden subcommands
-                    subCommands.add(subCommandLine.getCommandName());
-                }
+                if (commandLine == subCommandLine) { continue; }  // Skip the HelpCommand itself
+                if (subCommandLine.getCommandSpec().usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
+                subCommands.add(subCommandLine.getCommandName());
             }
-            subCommands.remove("help"); // No need for 'help' in help
         }
         String commands = concat(" ", new ArrayList<String>(subCommands)).trim();
 
