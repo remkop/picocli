@@ -14,7 +14,7 @@
 # 3. executes the dejagnu.tests/lib/completions/$cmd.exp script.
 #    This lib/completions/$cmd.exp script is where the completions are verified.
 
-set test "TAB completion"
+set test "TAB completion of help command"
 set script "$srcdir/../resources/picocompletion-demo-help_completion.bash"
 #set script "/mnt/c/Users/remko/IdeaProjects/picocli3/src/test/resources/picocompletion-demo-help_completion.bash"
 
