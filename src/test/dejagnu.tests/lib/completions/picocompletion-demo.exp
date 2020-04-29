@@ -86,8 +86,8 @@ run_completion_test $cmd $test $candidates
 
     # Try completion for sub2 Aaa
 set cmd "picocompletion-demo sub2 Aaa "
-set test "Tab should show positionals and subcommands for '${cmd}'"
-set candidates "Aaa\\s*Bbb\\s*Ccc\\s*subsub1\\s*subsub2\\s*subsub3\r\n/@${cmd}"
+set test "Tab should show subcommands for '${cmd}'"
+set candidates "subsub1\\s*subsub2\\s*subsub3\r\n/@${cmd}subsub"
 run_completion_test $cmd $test $candidates
 
     # Try completion for sub2 Aaa s

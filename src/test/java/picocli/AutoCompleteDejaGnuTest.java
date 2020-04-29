@@ -76,7 +76,7 @@ public class AutoCompleteDejaGnuTest {
         File runCompletionScript = new File(testDir, "runCompletion");
         assertTrue(runCompletionScript.getAbsolutePath() + " should exist", runCompletionScript.exists());
 
-        final int TIMEOUT_RUNTEST_COMPLETION = 15; // how many seconds to wait for the `./runCompletion` process to complete
+        final int TIMEOUT_RUNTEST_COMPLETION = 60; // how many seconds to wait for the `./runCompletion` process to complete
         final AtomicInteger runtestExitStatus = new AtomicInteger(Integer.MIN_VALUE);
         final AtomicReference<Process> process = new AtomicReference<Process>();
         final AtomicReference<Exception> exception = new AtomicReference<Exception>();
@@ -118,7 +118,7 @@ public class AutoCompleteDejaGnuTest {
         if (exception.get() != null) {
             throw exception.get();
         }
-        assertTrue("runCompletion completed within 15 seconds", done);
+        assertTrue("runCompletion completed within " + TIMEOUT_RUNTEST_COMPLETION + " seconds", done);
         assertEquals("runCompletion exit code", 0, runtestExitStatus.get());
         String msg = "Expected completion test output to end with '# of expected passes', but got:" + System.getProperty("line.separator");
         assertTrue(msg + sw.toString(), lastLine.get() != null && lastLine.get().contains("# of expected passes"));
