@@ -6325,6 +6325,7 @@ This https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&speed=2[asc
 Picocli may be used in other JVM languages that support annotations.
 
 === Groovy
+==== Groovy Annotation Syntax
 In Groovy, use `[` and `]` to surround array values, instead of the `{` and `}` used in Java.
 
 [source,groovy]
@@ -6348,6 +6349,7 @@ class MyApp implements Runnable {
 }
 ----
 
+==== Groovy Scripts
 Picocli 2.0 introduced special support for Groovy scripts. (From picocli 4.0 this was moved into a separate module, `picocli-groovy`.)
 
 Scripts annotated with `@picocli.groovy.PicocliScript` are automatically transformed to use
@@ -6361,6 +6363,7 @@ The script body is executed if the user input was valid and did not request usag
 [source,groovy]
 ----
 @Grab('info.picocli:picocli-groovy:4.2.1-SNAPSHOT')
+@GrabConfig(systemClassLoader=true)
 @Command(name = "myScript",
         mixinStandardHelpOptions = true, // add --help and --version options
         description = "@|bold Groovy script|@ @|underline picocli|@ example")
@@ -6384,7 +6387,7 @@ WARNING: When upgrading scripts to picocli 4.0, just changing the version number
 Scripts should use `@Grab('info.picocli:picocli-groovy:4.2.1-SNAPSHOT')`. The old artifact id `@Grab('info.picocli:picocli:4.2.1-SNAPSHOT')` will not work,
 because the `@picocli.groovy.PicocliScript` annotation class and supporting classes have been moved into a separate module, `picocli-groovy`.
 
-
+==== Older Versions of Groovy
 NOTE: When using a Groovy version older than 2.4.7, use this workaround for the https://issues.apache.org/jira/browse/GROOVY-7613[Grape bug] that causes this error:
 `java.lang.ClassNotFoundException: # Licensed to the Apache Software Foundation (ASF) under one or more`.
 
@@ -6399,6 +6402,7 @@ In order to get you started quickly, you may have a look at the https://github.c
 
 === Kotlin
 
+==== Kotlin Annotation Syntax
 Kotlin 1.2 (released Nov 28, 2017) officially supports http://kotlinlang.org/docs/reference/whatsnew12.html#array-literals-in-annotations[array literals in annotations], allowing a more compact notation:
 
 [source,kotlin]
@@ -6437,6 +6441,7 @@ class SubCmd { // ...
 }
 ----
 
+==== Older Versions of Kotlin
 Kotlin versions prior to 1.2 did not allow the https://kotlinlang.org/docs/reference/annotations.html[array literal syntax in annotations], so with older versions of Kotlin you will have to write `arrayOf(...)` for the `names`, `description` and `type` attributes.
 
 [source,kotlin]
