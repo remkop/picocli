@@ -5431,7 +5431,20 @@ public class CommandLine {
                 // TODO if this CommandSpec was created/modified via the programmatic API,
                 //   we need to copy all attributes that are modifiable via the programmatic API
                 //   and point them to this CommandSpec instance.
-
+//                result.commands.clear();                result.commands.putAll(this.commands);
+//                result.optionsByNameMap.clear();        result.optionsByNameMap.putAll(this.optionsByNameMap);
+//                result.negatedOptionsByNameMap.clear(); result.negatedOptionsByNameMap.putAll(this.negatedOptionsByNameMap);
+//                result.posixOptionsByKeyMap.clear();    result.posixOptionsByKeyMap.putAll(this.posixOptionsByKeyMap);
+//                result.mixins.clear();                  result.mixins.putAll(this.mixins);
+//                result.mixinAnnotatedElements.clear();  result.mixinAnnotatedElements.putAll(this.mixinAnnotatedElements);
+//                result.requiredArgs.clear();            result.requiredArgs.addAll(requiredArgs);
+//                result.args.clear();                    result.args.addAll(args);
+//                result.options.clear();                 result.options.addAll(options);
+//                result.positionalParameters.clear();    result.positionalParameters.addAll(positionalParameters);
+//                result.unmatchedArgs.clear();           result.unmatchedArgs.addAll(unmatchedArgs);
+//                result.specElements.clear();            result.specElements.addAll(specElements);
+//                result.parentCommandElements.clear();   result.parentCommandElements.addAll(parentCommandElements);
+//                result.groups.clear();                  result.groups.addAll(groups);
                 return result;
             }
 
