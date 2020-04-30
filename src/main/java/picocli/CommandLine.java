@@ -8177,7 +8177,7 @@ public class CommandLine {
                     description = option.description();
                     descriptionKey = option.descriptionKey();
                     splitRegex = option.split();
-                    usageSplitRegex = option.usageSplit().equals("") ? splitRegex : option.usageSplit();
+                    usageSplitRegex = option.usageSplit().isEmpty() ? splitRegex : option.usageSplit();
                     hidden = option.hidden();
                     defaultValue = option.defaultValue();
                     showDefaultValue = option.showDefaultValue();
@@ -8385,7 +8385,7 @@ public class CommandLine {
                 /** Sets a regular expression to split option parameter values or {@code ""} if the value should not be split, and returns this builder. */
                 public T splitRegex(String splitRegex)  {
                     this.splitRegex = Assert.notNull(splitRegex, "splitRegex");
-                    if (this.usageSplitRegex == null || this.usageSplitRegex.equals(""))
+                    if (this.usageSplitRegex == null || this.usageSplitRegex.isEmpty())
                         this.usageSplitRegex = this.splitRegex;
                     return self();
                 }
