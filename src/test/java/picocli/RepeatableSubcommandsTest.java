@@ -12,14 +12,8 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.ParseResult;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -742,5 +736,138 @@ public class RepeatableSubcommandsTest {
         int exitCode = line.execute("sub -x=abc sub -x=xyz".split(" "));
         assertEquals(0, exitCode);
         assertEquals(2, cmd.count);
+    }
+
+    @Test
+    public void testCommandLinePublicSetter() throws IOException {
+        PrintWriter ERR = new PrintWriter(new StringWriter());
+        PrintWriter OUT = new PrintWriter(new StringWriter());
+        CommandLine.IExecutionExceptionHandler xxh = new CommandLine.IExecutionExceptionHandler() {
+            public int handleExecutionException(Exception ex, CommandLine commandLine, ParseResult parseResult) throws Exception {
+                ex.printStackTrace();
+                return 0;
+            }
+        };
+        CommandLine.IExitCodeExceptionMapper xcxm = new CommandLine.IExitCodeExceptionMapper() {
+            public int getExitCode(Throwable exception) {
+                return 0;
+            }
+        };
+        CommandLine.IHelpFactory helpFactory = new CommandLine.IHelpFactory() {
+            public CommandLine.Help create(CommandLine.Model.CommandSpec commandSpec, CommandLine.Help.ColorScheme colorScheme) {
+                return null;
+            }
+        };
+        List<String> helpKeys = Arrays.asList("A", "B", "C");
+        CommandLine.INegatableOptionTransformer transformer = new CommandLine.INegatableOptionTransformer() {
+            public String makeNegative(String optionName, CommandLine.Model.CommandSpec cmd) {
+                return null;
+            }
+
+            public String makeSynopsis(String optionName, CommandLine.Model.CommandSpec cmd) {
+                return null;
+            }
+        };
+        CommandLine.IParameterExceptionHandler pex = new CommandLine.IParameterExceptionHandler() {
+            public int handleParseException(CommandLine.ParameterException ex, String[] args) throws Exception {
+                ex.printStackTrace();
+                return 0;
+            }
+        };
+        ResourceBundle rb = new PropertyResourceBundle(new ByteArrayInputStream(new byte[0]));
+
+        //TestUtil.setTraceLevel("DEBUG");
+
+        Issue1007CommandWithCustomConverter cmd = new Issue1007CommandWithCustomConverter();
+        CommandLine line = new CommandLine(cmd);
+        line.registerConverter(Issue1007CommandWithCustomConverter.MyBean.class, new Issue1007CommandWithCustomConverter.CustomConverter());
+        line.setAdjustLineBreaksForWideCJKCharacters(false);
+        line.setAtFileCommentChar('!');
+        line.setCaseInsensitiveEnumValuesAllowed(true);
+        line.setColorScheme(new CommandLine.Help.ColorScheme.Builder().commands(CommandLine.Help.Ansi.Style.fg_cyan).build());
+        line.setCommandName("abcdefg");
+        line.setDefaultValueProvider(new CommandLine.PropertiesDefaultProvider());
+        line.setEndOfOptionsDelimiter("EOF");
+        line.setErr(ERR);
+        line.setExecutionExceptionHandler(xxh);
+
+        final CommandLine.IExecutionStrategy original = line.getExecutionStrategy();
+        CommandLine.IExecutionStrategy xs = new CommandLine.IExecutionStrategy() {
+            public int execute(ParseResult parseResult) throws CommandLine.ExecutionException, CommandLine.ParameterException {
+                return original.execute(parseResult);
+            }
+        };
+        line.setExecutionStrategy(xs);
+
+        line.setExitCodeExceptionMapper(xcxm);
+        line.setExpandAtFiles(false);
+        line.setHelpFactory(helpFactory);
+        line.setHelpSectionKeys(helpKeys);
+        line.setHelpSectionMap(Collections.<String, CommandLine.IHelpSectionRenderer>emptyMap());
+        line.setInterpolateVariables(false);
+        line.setNegatableOptionTransformer(transformer);
+        line.setOut(OUT);
+        line.setOverwrittenOptionsAllowed(true);
+        line.setParameterExceptionHandler(pex);
+        line.setPosixClusteredShortOptionsAllowed(false);
+        line.setResourceBundle(rb);
+        line.setSeparator(":");
+        line.setSplitQuotedStrings(true);
+        line.setStopAtPositional(true);
+        line.setStopAtUnmatched(true);
+        line.setToggleBooleanFlags(true);
+        line.setTrimQuotes(true);
+        line.setUnmatchedArgumentsAllowed(true);
+        line.setUnmatchedOptionsArePositionalParams(true);
+        line.setUsageHelpAutoWidth(true);
+        line.setUsageHelpLongOptionsMaxWidth(55);
+        line.setUsageHelpWidth(99);
+        line.setUseSimplifiedAtFiles(true);
+
+        assertEquals(0, cmd.count);
+        int exitCode = line.execute("sub -x:abc sub -x:xyz".split(" "));
+        assertEquals(0, exitCode);
+        assertEquals(2, cmd.count);
+
+        assertEquals(2, line.getParseResult().subcommands().size());
+        for (int i = 0; i < line.getParseResult().subcommands().size(); i++) {
+            checkEquals(line, line.getParseResult().subcommands().get(i).commandSpec().commandLine());
+        }
+    }
+
+    private void checkEquals(CommandLine line, CommandLine other) {
+        assertSame(line.getAtFileCommentChar(), other.getAtFileCommentChar());
+        assertSame(line.isCaseInsensitiveEnumValuesAllowed(), other.isCaseInsensitiveEnumValuesAllowed());
+        assertSame(line.getColorScheme(), other.getColorScheme());
+        //assertSame(line.getCommandName(), other.getCommandName());
+        assertSame(line.getDefaultValueProvider(), other.getDefaultValueProvider());
+        assertSame(line.getEndOfOptionsDelimiter(), other.getEndOfOptionsDelimiter());
+        assertSame(line.getErr(), other.getErr());
+        assertSame(line.getExecutionExceptionHandler(), other.getExecutionExceptionHandler());
+        assertSame(line.getExecutionStrategy(), other.getExecutionStrategy());
+        assertSame(line.getExitCodeExceptionMapper(), other.getExitCodeExceptionMapper());
+        //assertSame(line.isExpandAtFiles(), other.isExpandAtFiles());
+        assertSame(line.getHelpFactory(), other.getHelpFactory());
+        assertEquals(line.getHelpSectionKeys(), other.getHelpSectionKeys());
+        assertEquals(line.getHelpSectionMap(), other.getHelpSectionMap());
+        assertSame(line.isInterpolateVariables(), other.isInterpolateVariables());
+        assertSame(line.getNegatableOptionTransformer(), other.getNegatableOptionTransformer());
+        assertSame(line.getOut(), other.getOut());
+        assertSame(line.isOverwrittenOptionsAllowed(), other.isOverwrittenOptionsAllowed());
+        assertSame(line.getParameterExceptionHandler(), other.getParameterExceptionHandler());
+        assertSame(line.isPosixClusteredShortOptionsAllowed(), other.isPosixClusteredShortOptionsAllowed());
+        assertSame(line.getResourceBundle(), other.getResourceBundle());
+        assertSame(line.getSeparator(), other.getSeparator());
+        assertSame(line.isSplitQuotedStrings(), other.isSplitQuotedStrings());
+        assertSame(line.isStopAtPositional(), other.isStopAtPositional());
+        assertSame(line.isStopAtUnmatched(), other.isStopAtUnmatched());
+        assertSame(line.isToggleBooleanFlags(), other.isToggleBooleanFlags());
+        assertSame(line.isTrimQuotes(), other.isTrimQuotes());
+        assertSame(line.isUnmatchedArgumentsAllowed(), other.isUnmatchedArgumentsAllowed());
+        assertSame(line.isUnmatchedOptionsArePositionalParams(), other.isUnmatchedOptionsArePositionalParams());
+        assertSame(line.isUsageHelpAutoWidth(), other.isUsageHelpAutoWidth());
+        assertSame(line.getUsageHelpLongOptionsMaxWidth(), other.getUsageHelpLongOptionsMaxWidth());
+        assertSame(line.getUsageHelpWidth(), other.getUsageHelpWidth());
+        //assertSame(line.isUseSimplifiedAtFiles(), other.isUseSimplifiedAtFiles());
     }
 }
