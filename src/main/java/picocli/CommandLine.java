@@ -3657,7 +3657,7 @@ public class CommandLine {
 
         /**
          * Specify a string to show the split option parameter values in usage
-         * @Since 4.3
+         * @since 4.3
          */
         String usageSplit() default "";
 
@@ -7757,8 +7757,9 @@ public class CommandLine {
 
             /**
              * Returns a regular expression to split option parameter for usage information.
-             * @Since 4.3
-             * @see Option#usageSplit() */
+             * @see Option#usageSplit()
+             * @since 4.3
+             * */
             public String usageSplitRegex() { return interpolate(usageSplitRegex); }
 
             /** Returns whether this option should be excluded from the usage message.
@@ -8318,8 +8319,8 @@ public class CommandLine {
 
                 /**
                  * Returns a regular expression to split option parameter for usage information.
-                 * @Since 4.3
-                 * @see Option#usageSplit() */
+                 * @see Option#usageSplit()
+                 * @since 4.3 */
                 public String usageSplitRegex() { return usageSplitRegex; }
                 /** Returns whether this option should be excluded from the usage message.
                  * @see Option#hidden() */
