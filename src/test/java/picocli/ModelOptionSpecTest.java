@@ -10,6 +10,7 @@ import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.IGetter;
 import picocli.CommandLine.Model.ISetter;
 import picocli.CommandLine.Model.OptionSpec;
+import picocli.CommandLine.Model.OptionSpec.Builder;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Range;
 
@@ -413,5 +414,28 @@ public class ModelOptionSpecTest {
             .usageSplitRegex("|");
         assertEquals("\\|", builder.splitRegex());
         assertEquals("|", builder.usageSplitRegex());
+    }
+
+    @Test
+    public void testUsageSplitEquals() {
+        OptionSpec.Builder option = OptionSpec.builder("-x")
+            .arity("1")
+            .hideParamSyntax(true)
+            .required(true)
+            .splitRegex("\\|")
+            .usageSplitRegex("|")
+            .description("desc")
+            .descriptionKey("key")
+            .type(Map.class)
+            .auxiliaryTypes(Integer.class, Double.class)
+            .help(true)
+            .usageHelp(true)
+            .versionHelp(true)
+            .order(123);
+
+        OptionSpec p1 = option.build();
+        assertEquals(p1, p1);
+        assertEquals(p1, option.build());
+        assertNotEquals(p1, option.usageSplitRegex("\\\\?").build());
     }
 }
