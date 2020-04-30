@@ -1802,8 +1802,15 @@ When a `@Parameters` positional parameter is part of a group, its `index` is the
 
 === Argument Group Limitations
 
-* Options with the same name cannot be defined in multiple groups. Similarly, it is not possible to define an option outside of a group with the same name as a different option that is part of a group.
-* Positional parameters in a single group work fine, but take care (or avoid) defining positional parameters in multiple groups or positional parameters in a group as well as outside a group. Positional parameters are matched by index, and while the index of a group is reset when a new group multiple is encountered, the index of positional parameters outside a group only increases and is never reset.
+* Options with the same name cannot be defined in multiple groups.
+  Similarly, it is not possible to define an option outside of a group with the same name as a different option that is part of a group.
+* Positional parameters in a single group work fine, but take care (or avoid) defining positional parameters in multiple groups or positional parameters in a group as well as outside a group.
+  Positional parameters are matched by index, and while the index of a group is reset when a new group multiple is encountered, the index of positional parameters outside a group only increases and is never reset.
+* Some relationships between options cannot be expressed with picocli argument groups.
+  In general, picocli argument groups can only express relationship for which you can write a command line synopsis with every option occurring only once.
+  For example, it is not possible to use argument groups to create a relationship with exclusive options `[-a | -b]`,
+  where `-a` requires another option `-c`: `[[-a] -c]`, while at the same time `-b` is independent of `-c`: `[-b] [-c]`.
+  The application may need to do some programmatic validation in such cases.
 
 
 
