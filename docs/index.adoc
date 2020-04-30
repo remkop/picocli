@@ -1247,6 +1247,14 @@ the `-f` argument is recognized as a separate option.
 
 
 === Variable Arity Limitations
+==== Variable Arity Options and Unknown Options
+As mentioned in the <<Arity,previous section>>, while processing parameters for an option with variable arity, when a known option, a subcommand, or the <<Double dash (`--`),end-of-options delimiter>> is encountered, picocli will stop adding parameters to the variable arity option.
+
+However, the picocli parser currently does not give special treatment to <<Unknown Options,unknown options>> (values that "look like" an option) when processing parameters for an option with variable arity.
+Such values are simply consumed by the option with variable arity. This may change in a future version of picocli.
+
+
+==== Variable Arity Options and Positional Parameters
 Be careful when defining commands that have both an option with variable arity (like `arity = "0..*"`) and a positional parameter.
 
 [WARNING]
