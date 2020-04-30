@@ -399,4 +399,19 @@ public class ModelOptionSpecTest {
         OptionSpec.Builder builder = OptionSpec.builder("-x").fallbackValue("fallback");
         assertEquals("fallback", builder.fallbackValue());
     }
+
+    @Test
+    public void testEmptyUsageSplit() {
+        assertEquals("", OptionSpec.builder("-x").build().usageSplitRegex());
+    }
+
+    @Test
+    public void testGetterAndSetterOfUsageSplit() {
+        OptionSpec.Builder builder = OptionSpec.builder("-x");
+        builder.auxiliaryTypes(Integer.class, Integer.TYPE)
+            .splitRegex("\\|")
+            .usageSplitRegex("|");
+        assertEquals("\\|", builder.splitRegex());
+        assertEquals("|", builder.usageSplitRegex());
+    }
 }
