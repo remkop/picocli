@@ -333,10 +333,10 @@ public class InheritedOptionTest {
         assertEquals("yyy", bean.y);
     }
 
-    @Ignore("Requires https://github.com/remkop/picocli/issues/1001")
+    //@Ignore("Requires https://github.com/remkop/picocli/issues/1001")
     @Test // https://github.com/remkop/picocli/issues/1001
     public void testInheritedRequiredArgs() {
-        System.setProperty("picocli.trace", "DEBUG");
+        //System.setProperty("picocli.trace", "DEBUG");
         @Command
         class App {
             @Option(names = "-x", required = true, scope = INHERIT) int x;
@@ -353,7 +353,7 @@ public class InheritedOptionTest {
             cmd2.parseArgs();
             fail("Expected exception");
         } catch (ParameterException ex) {
-            assertEquals("Missing required option -x", ex.getMessage());
+            assertEquals("Missing required option '-x=<x>'", ex.getMessage());
         }
 
         CommandLine cmd3 = new CommandLine(new App());
@@ -361,7 +361,7 @@ public class InheritedOptionTest {
             cmd3.parseArgs("sub");
             fail("Expected exception");
         } catch (ParameterException ex) {
-            assertEquals("Missing required option -x", ex.getMessage());
+            assertEquals("Missing required option '-x=<x>'", ex.getMessage());
         }
     }
 }

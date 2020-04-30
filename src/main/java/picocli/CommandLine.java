@@ -11673,7 +11673,7 @@ public class CommandLine {
             Stack<String> arguments = new Stack<String>();
             arguments.addAll(reverseList(expanded));
             List<CommandLine> result = new ArrayList<CommandLine>();
-            parse(result, arguments, args, new ArrayList<Object>());
+            parse(result, arguments, args, new ArrayList<Object>(), new HashSet<ArgSpec>());
             return result;
         }
 
@@ -11771,7 +11771,7 @@ public class CommandLine {
             }
         }
 
-        private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs, List<Object> nowProcessing) {
+        private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs, List<Object> nowProcessing, Set<ArgSpec> inheritedRequired) {
             if (tracer.isDebug()) {
                 tracer.debug("Initializing %s: %d options, %d positional parameters, %d required, %d groups, %d subcommands.%n",
                         commandSpec.toString(), new HashSet<ArgSpec>(commandSpec.optionsMap().values()).size(),
@@ -11781,6 +11781,7 @@ public class CommandLine {
             clear(); // first reset any state in case this CommandLine instance is being reused
             parsedCommands.add(CommandLine.this);
             List<ArgSpec> required = new ArrayList<ArgSpec>(commandSpec.requiredArgs());
+            addPostponedRequiredArgs(inheritedRequired, required);
             Set<ArgSpec> initialized = new LinkedHashSet<ArgSpec>();
             Collections.sort(required, new PositionalParametersSorter());
             boolean continueOnError = commandSpec.parser().collectErrors();
@@ -11805,6 +11806,34 @@ public class CommandLine {
 
             if (!isAnyHelpRequested()) {
                 validateConstraints(argumentStack, required, initialized);
+            }
+        }
+
+        private void addPostponedRequiredArgs(Set<ArgSpec> inheritedRequired, List<ArgSpec> required) {
+            for (ArgSpec postponed : inheritedRequired) {
+                if (postponed.isOption()) {
+                    OptionSpec inherited = commandSpec.findOption(((OptionSpec) postponed).longestName());
+                    Assert.notNull(inherited, "inherited option " + postponed);
+                    required.add(inherited);
+                } else {
+                    PositionalParamSpec positional = (PositionalParamSpec) postponed;
+                    for (PositionalParamSpec existing : commandSpec.positionalParameters()) {
+                        if (existing.inherited()
+                                && existing.index().equals(positional.index())
+                                && existing.arity().equals(positional.arity())
+                                && existing.typeInfo().equals(positional.typeInfo())
+                                && Assert.equals(existing.paramLabel(), positional.paramLabel())
+                                && Assert.equals(existing.hideParamSyntax(), positional.hideParamSyntax())
+                                && Assert.equals(existing.required(), positional.required())
+                                && Assert.equals(existing.splitRegex(), positional.splitRegex())
+                                && Arrays.equals(existing.description(), positional.description())
+                                && Assert.equals(existing.descriptionKey(), positional.descriptionKey())
+                                && Assert.equals(existing.parameterConsumer(), positional.parameterConsumer())
+                        ) {
+                            required.add(existing);
+                        }
+                    }
+                }
             }
         }
 
@@ -11986,13 +12015,24 @@ public class CommandLine {
         }
 
         private void processSubcommand(CommandLine subcommand, ParseResult.Builder builder, List<CommandLine> parsedCommands, Stack<String> args, Collection<ArgSpec> required, String[] originalArgs, List<Object> nowProcessing, String separator, String arg) {
+            if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, subcommand.commandSpec.toString());}
             nowProcessing.add(subcommand.commandSpec);
             updateHelpRequested(subcommand.commandSpec);
+            Set<ArgSpec> inheritedRequired = new HashSet<ArgSpec>();
+            if (tracer.isDebug()) {tracer.debug("Checking required args for parent %s...%n", subcommand.commandSpec.parent());}
+            Iterator<ArgSpec> requiredIter = required.iterator();
+            while (requiredIter.hasNext()) {
+                ArgSpec requiredArg = requiredIter.next();
+                if (requiredArg.scopeType() == ScopeType.INHERIT || requiredArg.inherited()) {
+                    if (tracer.isDebug()) {tracer.debug("Postponing validation for required %s: scopeType=%s, inherited=%s%n", optionDescription("", requiredArg, -1), requiredArg.scopeType(), requiredArg.inherited());}
+                    inheritedRequired.add(requiredArg);
+                    requiredIter.remove();
+                }
+            }
             if (!isAnyHelpRequested() && !required.isEmpty()) { // ensure current command portion is valid
                 throw MissingParameterException.create(CommandLine.this, required, separator);
             }
-            if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, subcommand.commandSpec.toString());}
-            subcommand.interpreter.parse(parsedCommands, args, originalArgs, nowProcessing);
+            subcommand.interpreter.parse(parsedCommands, args, originalArgs, nowProcessing, inheritedRequired);
             builder.subcommand(subcommand.interpreter.parseResultBuilder.build());
         }
 
