@@ -3652,9 +3652,13 @@ public class CommandLine {
          * @return a regular expression to split option parameter values or {@code ""} if the value should not be split
          * @see String#split(String)
          */
+
         String split() default "";
 
-        /**
+
+        String usageSplit() default "";
+
+      /**
          * Set {@code hidden=true} if this option should not be included in the usage help message.
          * @return whether this option should be excluded from the usage documentation
          */
@@ -3903,6 +3907,8 @@ public class CommandLine {
          * @see String#split(String)
          */
         String split() default "";
+
+        String usageSplit() default "";
 
         /**
          * Set {@code hidden=true} if this parameter should not be included in the usage message.
@@ -7522,6 +7528,7 @@ public class CommandLine {
             private boolean required;
             private final boolean interactive;
             private final String splitRegex;
+            private final String usageSplitRegex;
             protected final ITypeInfo typeInfo;
             private final ITypeConverter<?>[] converters;
             private final Iterable<String> completionCandidates;
@@ -7548,6 +7555,7 @@ public class CommandLine {
                 description = builder.description == null ? new String[0] : builder.description;
                 descriptionKey = builder.descriptionKey;
                 splitRegex = builder.splitRegex == null ? "" : builder.splitRegex;
+                usageSplitRegex = builder.splitRegex == null ? "" : builder.usageSplitRegex;
                 paramLabel = empty(builder.paramLabel) ? "PARAM" : builder.paramLabel;
                 hideParamSyntax = builder.hideParamSyntax;
                 converters = builder.converters == null ? new ITypeConverter<?>[0] : builder.converters;
@@ -7723,6 +7731,7 @@ public class CommandLine {
              * @see Option#split() */
             public String splitRegex()     { return interpolate(splitRegex); }
 
+            public String usageSplitRegex() { return interpolate(usageSplitRegex); }
             /** Returns whether this option should be excluded from the usage message.
              * @see Option#hidden() */
             public boolean hidden()        { return hidden; }
@@ -8092,6 +8101,7 @@ public class CommandLine {
                 private String paramLabel;
                 private boolean hideParamSyntax;
                 private String splitRegex;
+                private String usageSplitRegex;
                 private boolean hidden;
                 private boolean inherited;
                 private Class<?> type;
@@ -8123,6 +8133,7 @@ public class CommandLine {
                     paramLabel = original.paramLabel;
                     hideParamSyntax = original.hideParamSyntax;
                     splitRegex = original.splitRegex;
+                    usageSplitRegex = original.usageSplitRegex;
                     hidden = original.hidden;
                     inherited = original.inherited;
                     setTypeInfo(original.typeInfo);
@@ -8166,6 +8177,7 @@ public class CommandLine {
                     description = option.description();
                     descriptionKey = option.descriptionKey();
                     splitRegex = option.split();
+                    usageSplitRegex = option.usageSplit().equals("") ? splitRegex : option.usageSplit();
                     hidden = option.hidden();
                     defaultValue = option.defaultValue();
                     showDefaultValue = option.showDefaultValue();
@@ -8197,6 +8209,7 @@ public class CommandLine {
                         description = parameters.description();
                         descriptionKey = parameters.descriptionKey();
                         splitRegex = parameters.split();
+                        usageSplitRegex = parameters.usageSplit().equals("") ? splitRegex : parameters.usageSplit();
                         hidden = parameters.hidden();
                         defaultValue = parameters.defaultValue();
                         showDefaultValue = parameters.showDefaultValue();
@@ -8370,7 +8383,12 @@ public class CommandLine {
                 public T converters(ITypeConverter<?>... cs) { this.converters = Assert.notNull(cs, "type converters").clone(); return self(); }
 
                 /** Sets a regular expression to split option parameter values or {@code ""} if the value should not be split, and returns this builder. */
-                public T splitRegex(String splitRegex)       { this.splitRegex = Assert.notNull(splitRegex, "splitRegex"); return self(); }
+                public T splitRegex(String splitRegex)  {
+                    this.splitRegex = Assert.notNull(splitRegex, "splitRegex");
+                    if (this.usageSplitRegex == null || this.usageSplitRegex.equals(""))
+                        this.usageSplitRegex = this.splitRegex;
+                    return self();
+                }
 
                 /** Sets whether this option or positional parameter's default value should be shown in the usage help, and returns this builder. */
                 public T showDefaultValue(Help.Visibility visibility) { showDefaultValue = Assert.notNull(visibility, "visibility"); return self(); }
@@ -14510,7 +14528,7 @@ public class CommandLine {
                 if (argSpec.hideParamSyntax()) { return colorScheme.apply((argSpec.isOption() ? separator() : "") + argSpec.paramLabel(), styles); }
 
                 Text paramName = colorScheme.apply(argSpec.paramLabel(), styles);
-                String split = argSpec.splitRegex();
+                String split = argSpec.usageSplitRegex();
                 String mandatorySep = empty(split) ? " "  : split;
                 String optionalSep  = empty(split) ? " [" : "[" + split;
 

@@ -870,7 +870,7 @@ public class ExecuteTest {
         //        "\tat picocli.CommandLine$Interpreter.parse(CommandLine.java:11349)%n" +
         //        "\tat picocli.CommandLine.parseArgs(CommandLine.java:1311)%n" +
         //        "\tat picocli.CommandLine.execute(CommandLine.java:1907)%n" +
-        //        "\tat picocli.ExecuteTest.testParameterExceptionHandler_ShowsStacktraceIfTracingDebug(ExecuteTest.java:826)%n" +
+        //        "\tat picocli.ExecuteTest.testParameterExceptionHandler_ShowsStacktraceIfTracingDebug(UsageSplitTest.java:826)%n" +
         //        "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)%n" +
         //        "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)%n" +
         //        "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)%n" +
