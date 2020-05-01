@@ -20,7 +20,7 @@ public class OptionCaseInsensitiveTest
         public boolean help;
         @CommandLine.Option(names = {"-a", "--take_abs"}, arity = "0..1", description = "take abs vals and add, default disabled")
         public boolean abs;
-        @CommandLine.Option(names = {"-t", "--test_flag"}, arity = "0..1", description = "just for test")
+        @CommandLine.Option(names = {"-t", "--test_flag"}, arity = "0..1", description = "just for test",negatable = true,caseInsensitive = true)
         public boolean flag;
 
 
@@ -49,6 +49,20 @@ public class OptionCaseInsensitiveTest
         assertTrue(a.help);
     }
 
+    @Test
+    public void testCaseInsensitiveNegatble()
+    {
+        Adder a = new Adder();
+        CommandLine cmd = new CommandLine(a);
+        cmd.execute("-t","1","2");
+        assertTrue(a.flag);
+        cmd.execute("--no-test_flag","1","2");
+        assertFalse(a.flag);
+        cmd.execute("-t","1","2");
+        assertTrue(a.flag);
+        cmd.execute("--nO-tEst_fLag","1","2");
+        assertFalse(a.flag);
+    }
     @Test
     public void testMixCaseSensitivityPosixOptions1()
     {
