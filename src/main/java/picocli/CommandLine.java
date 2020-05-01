@@ -3524,6 +3524,17 @@ public class CommandLine {
         boolean versionHelp() default false;
 
         /**
+         *
+         * Set whether to allow an option to be used regardless of cases.
+         * <p>If an option is case-insensitive, for example {@code @Option(names = "option", case-insensitive = true) boolean option;}
+         * then names like "OptiOn" or "opTIoN" are acceptable</p>
+         * <p>However, a {@link DuplicateOptionAnnotationsException} will be thrown when defining multiple options(and at least one is set to case-insensitive) with the same name(regardless cases)</p>
+         * @return whether an option can be called regardless cases.
+         * @since 4.2.1
+         */
+        boolean caseInsensitive() default false;
+
+        /**
          * Description of this option, used when generating the usage documentation. Each element of the array is rendered on a separate line.
          * <p>May contain embedded {@linkplain java.util.Formatter format specifiers} like {@code %n} line separators. Literal percent {@code '%'} characters must be escaped with another {@code %}.
          * </p><p>
@@ -5355,10 +5366,203 @@ public class CommandLine {
 
             static final Boolean DEFAULT_SUBCOMMANDS_REPEATABLE = false;
 
+            /**
+             * A proxy class for {@code Map<Character, OptionSpec>} handling case-insensitive option names[issue #9]
+             * @since 4.2.1
+             */
+            private static class CaseInsensitiveCharOptionMap implements Map<Character, OptionSpec>
+            {
+                Map<Character, OptionSpec> delegatedMap = new HashMap<Character, OptionSpec>();
+
+                private static Character toUpper(Object c) { return c == null ? null : Character.toUpperCase((Character) c); }
+
+                public int size() { return delegatedMap.size(); }
+
+                public boolean isEmpty() { return delegatedMap.isEmpty(); }
+
+                public boolean containsKey(Object key)
+                {
+                    if (key == null)
+                        return delegatedMap.containsKey(key);
+                    if (delegatedMap.containsKey(key))
+                        return true;
+                    else
+                        return delegatedMap.containsKey(toUpper(key)) && delegatedMap.get(toUpper(key)).caseInsensitive();
+                }
+
+                public boolean containsValue(Object value) { return delegatedMap.containsValue(value); }
+
+                public OptionSpec get(Object key)
+                {
+                    if (key == null)
+                        return delegatedMap.get(key);
+                    if (delegatedMap.containsKey(key))
+                        return delegatedMap.get(key);
+                    else
+                    {
+                        if (delegatedMap.containsKey(toUpper(key)))
+                        {
+                            OptionSpec optionSpec = delegatedMap.get(toUpper(key));
+                            return optionSpec.caseInsensitive() ? optionSpec : null;
+                        }
+                        return null;
+                    }
+                }
+
+                private static boolean equalIgnoreCase(Character c1, Character c2)
+                {
+                    if(c1==null||c2==null)
+                        return c1==c2;
+                    else
+                        return ((char)(toUpper(c1)) == (char)(toUpper(c2)));
+                }
+                public OptionSpec put(Character key, OptionSpec value)
+                {
+                    if(delegatedMap.containsKey(key))
+                        return delegatedMap.put(key,value);
+                    for (Entry<Character, OptionSpec> entry : delegatedMap.entrySet())
+                    {
+                        if (equalIgnoreCase(entry.getKey(),key) && (entry.getValue().caseInsensitive() || (value != null && value.caseInsensitive())))
+                            return entry.getValue();
+                    }
+                    // no case-insensitive conflict
+                    delegatedMap.put(key, value);
+                    if (value != null && value.caseInsensitive())
+                        delegatedMap.put(toUpper(key), value);
+                    return null;
+                }
+
+                public OptionSpec remove(Object key)
+                {
+                    OptionSpec previous = delegatedMap.remove(key);
+                    if (previous != null && previous.caseInsensitive())
+                        delegatedMap.remove(toUpper(key));
+                    return previous;
+                }
+
+                public void putAll(Map<? extends Character, ? extends OptionSpec> m)
+                {
+                    delegatedMap.putAll(m);
+                    for (Entry<? extends Character, ? extends OptionSpec> e : m.entrySet())
+                    {
+                        OptionSpec optionSpec = e.getValue();
+                        if (optionSpec.caseInsensitive())
+                            delegatedMap.put(e.getKey(), optionSpec);
+                    }
+                }
+
+                public void clear() { delegatedMap.clear(); }
+
+                public Set<Character> keySet() { return delegatedMap.keySet(); }
+
+                public Collection<OptionSpec> values() { return delegatedMap.values(); }
+
+                public Set<Entry<Character, OptionSpec>> entrySet() { return delegatedMap.entrySet(); }
+
+            }
+
+            /**
+             * A proxy class for {@code Map<String, OptionSpec>} handling case-insensitive option names[issue #9]
+             * @since 4.2.1
+             */
+            private static class CaseInsensitiveStringOptionMap implements Map<String, OptionSpec>
+            {
+                Map<String, OptionSpec> delegatedMap = new HashMap<String, OptionSpec>();
+
+                private static String toUpper(Object s) { return s == null ? null : ((String) s).toUpperCase(); }
+
+                public int size() { return delegatedMap.size(); }
+
+                public boolean isEmpty() { return delegatedMap.isEmpty(); }
+
+                public boolean containsKey(Object key)
+                {
+                    if (key == null)
+                        return delegatedMap.containsKey(key);
+                    if (delegatedMap.containsKey(key))
+                        return true;
+                    else
+                        return delegatedMap.containsKey(toUpper(key)) && delegatedMap.get(toUpper(key)).caseInsensitive();
+                }
+
+                public boolean containsValue(Object value) { return delegatedMap.containsValue(value); }
+
+                public OptionSpec get(Object key)
+                {
+                    if (key == null)
+                        return delegatedMap.get(key);
+                    if (delegatedMap.containsKey(key))
+                        return delegatedMap.get(key);
+                    else
+                    {
+                        if (delegatedMap.containsKey(toUpper(key)))
+                        {
+                            OptionSpec optionSpec = delegatedMap.get(toUpper(key));
+                            return optionSpec.caseInsensitive() ? optionSpec : null;
+                        }
+                        return null;
+                    }
+                }
+
+                public OptionSpec put(String key, OptionSpec value)
+                {
+                    if(delegatedMap.containsKey(key))
+                        return delegatedMap.put(key,value);
+                    for (Entry<String, OptionSpec> entry : delegatedMap.entrySet())
+                    {
+                        if (key.equalsIgnoreCase(entry.getKey()) && (entry.getValue().caseInsensitive() || (value != null && value.caseInsensitive())))
+                            return entry.getValue();
+                    }
+                    // no case-insensitive conflict
+                    delegatedMap.put(key, value);
+                    if (value != null && value.caseInsensitive())
+                        delegatedMap.put(toUpper(key), value);
+                    return null;
+                }
+
+                public OptionSpec remove(Object key)
+                {
+                    OptionSpec previous = delegatedMap.remove(key);
+                    if (previous != null && previous.caseInsensitive())
+                        delegatedMap.remove(toUpper(key));
+                    return previous;
+                }
+
+                public void putAll(Map<? extends String, ? extends OptionSpec> m)
+                {
+                    delegatedMap.putAll(m);
+                    for (Entry<? extends String, ? extends OptionSpec> e : m.entrySet())
+                    {
+                        OptionSpec optionSpec = e.getValue();
+                        if (optionSpec.caseInsensitive())
+                            delegatedMap.put(e.getKey(), optionSpec);
+                    }
+                }
+
+                public void clear()
+                {
+                    delegatedMap.clear();
+                }
+
+                public Set<String> keySet()
+                {
+                    return delegatedMap.keySet();
+                }
+
+                public Collection<OptionSpec> values()
+                {
+                    return delegatedMap.values();
+                }
+
+                public Set<Entry<String, OptionSpec>> entrySet()
+                {
+                    return delegatedMap.entrySet();
+                }
+            }
             private final Map<String, CommandLine> commands = new LinkedHashMap<String, CommandLine>();
-            private final Map<String, OptionSpec> optionsByNameMap = new LinkedHashMap<String, OptionSpec>();
-            private final Map<String, OptionSpec> negatedOptionsByNameMap = new LinkedHashMap<String, OptionSpec>();
-            private final Map<Character, OptionSpec> posixOptionsByKeyMap = new LinkedHashMap<Character, OptionSpec>();
+            private final Map<String, OptionSpec> optionsByNameMap = new CaseInsensitiveStringOptionMap();
+            private final Map<String, OptionSpec> negatedOptionsByNameMap = new CaseInsensitiveStringOptionMap();
+            private final Map<Character, OptionSpec> posixOptionsByKeyMap = new CaseInsensitiveCharOptionMap();
             private final Map<String, CommandSpec> mixins = new LinkedHashMap<String, CommandSpec>();
             private final Map<String, IAnnotatedElement> mixinAnnotatedElements = new LinkedHashMap<String, IAnnotatedElement>();
             private final List<ArgSpec> requiredArgs = new ArrayList<ArgSpec>();
@@ -8514,6 +8718,7 @@ public class CommandLine {
             private boolean usageHelp;
             private boolean versionHelp;
             private boolean negatable;
+            private boolean caseInsensitive; //[#9]
             private String fallbackValue;
             private int order;
 
@@ -8542,6 +8747,7 @@ public class CommandLine {
                 order = builder.order;
                 negatable = builder.negatable;
                 fallbackValue = builder.fallbackValue;
+                caseInsensitive = builder.caseInsensitive;
 
                 if (names.length == 0 || Arrays.asList(names).contains("")) {
                     throw new InitializationException("Invalid names: " + Arrays.toString(names));
@@ -8577,6 +8783,12 @@ public class CommandLine {
             /** Returns one or more option names. The returned array will contain at least one option name.
              * @see Option#names() */
             public String[] names() { return interpolate(names.clone()); }
+
+            /**
+             * @since 4.2.1
+             * @return whether this option is case-insensitive.
+             */
+            public boolean caseInsensitive() {return caseInsensitive;}
 
             /** Returns the longest {@linkplain #names() option name}. */
             public String longestName() { return Help.ShortestFirst.longestFirst(names())[0]; }
@@ -8626,6 +8838,7 @@ public class CommandLine {
                         && usageHelp == other.usageHelp
                         && versionHelp == other.versionHelp
                         && order == other.order
+                        && caseInsensitive == other.caseInsensitive
                         && negatable == other.negatable
                         && Assert.equals(fallbackValue, other.fallbackValue)
                         && new HashSet<String>(Arrays.asList(names)).equals(new HashSet<String>(Arrays.asList(other.names)));
@@ -8639,6 +8852,7 @@ public class CommandLine {
                         + 37 * Arrays.hashCode(names)
                         + 37 * Assert.hashCode(negatable)
                         + 37 * Assert.hashCode(fallbackValue)
+                        + 37 * Assert.hashCode(caseInsensitive)
                         + 37 * order;
             }
 
@@ -8651,6 +8865,7 @@ public class CommandLine {
                 private boolean usageHelp;
                 private boolean versionHelp;
                 private boolean negatable;
+                private boolean caseInsensitive;
                 private String fallbackValue = DEFAULT_FALLBACK_VALUE;
                 private int order = DEFAULT_ORDER;
 
@@ -8664,6 +8879,7 @@ public class CommandLine {
                     negatable = original.negatable;
                     fallbackValue = original.fallbackValue;
                     order = original.order;
+                    caseInsensitive = original.caseInsensitive;
                 }
                 private Builder(IAnnotatedElement member, IFactory factory) {
                     super(member.getAnnotation(Option.class), member, factory);
@@ -8675,6 +8891,7 @@ public class CommandLine {
                     negatable = option.negatable();
                     fallbackValue = option.fallbackValue();
                     order = option.order();
+                    caseInsensitive = option.caseInsensitive();
                 }
 
                 /** Returns a valid {@code OptionSpec} instance. */
@@ -8743,6 +8960,13 @@ public class CommandLine {
                 /** Sets the position in the options list in the usage help message at which this option should be shown, and returns this builder.
                  * @since 3.9 */
                 public Builder order(int order) { this.order = order; return self(); }
+
+                /** Sets whether an option is case-insensitive
+                 * @see OptionSpec#caseInsensitive
+                 * @see Option#caseInsensitive()
+                 * @since 4.2.1
+                 */
+                public Builder caseInsensitive(boolean caseInsensitive) {this.caseInsensitive = caseInsensitive; return self();}
             }
         }
         /** The {@code PositionalParamSpec} class models aspects of a <em>positional parameter</em> of a {@linkplain CommandSpec command}, including whether
