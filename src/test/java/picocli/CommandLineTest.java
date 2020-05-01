@@ -1893,6 +1893,7 @@ public class CommandLineTest {
                         "[picocli INFO] Setting field java.io.File picocli.Demo$Git.gitDir to '%2$s' (was 'null') for option --git-dir%n" +
                         "[picocli DEBUG] [1] Processing argument 'commit'. Remainder=[-m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Found subcommand 'commit' (command 'git-commit' (user object: picocli.Demo$GitCommit@22ff4249))%n" +
+                        "[picocli DEBUG] Checking required args for parent command 'git' (user object: picocli.Demo$Git@00000000)...%n" +
                         "[picocli DEBUG] Initializing command 'git-commit' (user object: picocli.Demo$GitCommit@22ff4249): 8 options, 1 positional parameters, 0 required, 0 groups, 0 subcommands.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.Demo$GitCommit.all of type boolean to false.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.Demo$GitCommit.patch of type boolean to false.%n" +
