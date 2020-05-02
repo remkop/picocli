@@ -187,7 +187,7 @@ class AdvancedMixin {
 * [#958] API: Add `@Spec(Spec.Target.MIXEE)` annotation element to allow mixins to get a reference to the command they are mixed into.
 * [#960] API: Add method `CommandSpec::root` to return the `CommandSpec` of the top-level command.
 * [#845][#1008] API: Error handlers now use ANSI colors and styles. Added methods `errors` and `stackTraces` to `Help.ColorScheme`. Thanks to [Neko Null](https://github.com/jerrylususu) for the pull request.
-* [#765][#1017] API: Added `usageSplit` for controlling how `split` regular expressions are displayed in the synopsis. Thanks to [Murphy Han](https://github.com/Hannnnnn) for the pull request and thanks to [deining](https://github.com/deining) for raising this.
+* [#765][#1017] API: Added `@Option::splitSynopsisLabel` and `@Parameters::splitSynopsisLabel` for controlling how `split` regular expressions are displayed in the synopsis. Thanks to [Murphy Han](https://github.com/Hannnnnn) for the pull request and thanks to [deining](https://github.com/deining) for raising this.
 * [#564] Add support for relative indices for positional parameters. Useful in mixins and inherited positional parameters. Thanks to [krisleonard-mcafee](https://github.com/krisleonard-mcafee) for raising this topic.
 * [#956] Enhancement: Default ParameterExceptionHandler should show stack trace when tracing is set to DEBUG level.
 * [#952] Enhancement: Make annotation processor quiet by default; add `-Averbose` annotation processor option to enable printing NOTE-level diagnostic messages to the console.

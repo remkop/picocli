@@ -3652,14 +3652,12 @@ public class CommandLine {
          * @return a regular expression to split option parameter values or {@code ""} if the value should not be split
          * @see String#split(String)
          */
-
         String split() default "";
 
         /**
-         * Specify a string to show the split option parameter values in usage
-         * @since 4.3
-         */
-        String usageSplit() default "";
+         * Specify the string to display for the {@link #split split} regular expression in the usage help synopsis.
+         * @since 4.3 */
+        String splitSynopsisLabel() default "";
 
       /**
          * Set {@code hidden=true} if this option should not be included in the usage help message.
@@ -3911,7 +3909,11 @@ public class CommandLine {
          */
         String split() default "";
 
-        String usageSplit() default "";
+        /**
+         * Specify a string to show the split option parameter values in usage
+         * @since 4.3
+         */
+        String splitSynopsisLabel() default "";
 
         /**
          * Set {@code hidden=true} if this parameter should not be included in the usage message.
@@ -7552,7 +7554,7 @@ public class CommandLine {
             private boolean required;
             private final boolean interactive;
             private final String splitRegex;
-            private final String usageSplitRegex;
+            private final String splitRegexSynopsisLabel;
             protected final ITypeInfo typeInfo;
             private final ITypeConverter<?>[] converters;
             private final Iterable<String> completionCandidates;
@@ -7579,7 +7581,7 @@ public class CommandLine {
                 description = builder.description == null ? new String[0] : builder.description;
                 descriptionKey = builder.descriptionKey;
                 splitRegex = builder.splitRegex == null ? "" : builder.splitRegex;
-                usageSplitRegex = builder.splitRegex == null ? "" : builder.usageSplitRegex;
+                splitRegexSynopsisLabel = builder.splitRegex == null ? "" : builder.splitRegexSynopsisLabel;
                 paramLabel = empty(builder.paramLabel) ? "PARAM" : builder.paramLabel;
                 hideParamSyntax = builder.hideParamSyntax;
                 converters = builder.converters == null ? new ITypeConverter<?>[0] : builder.converters;
@@ -7757,10 +7759,10 @@ public class CommandLine {
 
             /**
              * Returns a regular expression to split option parameter for usage information.
-             * @see Option#usageSplit()
+             * @see Option#splitSynopsisLabel()
              * @since 4.3
              * */
-            public String usageSplitRegex() { return interpolate(usageSplitRegex); }
+            public String splitRegexSynopsisLabel() { return interpolate(splitRegexSynopsisLabel); }
 
             /** Returns whether this option should be excluded from the usage message.
              * @see Option#hidden() */
@@ -8070,7 +8072,7 @@ public class CommandLine {
                         && Assert.equals(this.hideParamSyntax, other.hideParamSyntax)
                         && Assert.equals(this.required, other.required)
                         && Assert.equals(this.splitRegex, other.splitRegex)
-                        && Assert.equals(this.usageSplitRegex, other.usageSplitRegex)
+                        && Assert.equals(this.splitRegexSynopsisLabel, other.splitRegexSynopsisLabel)
                         && Arrays.equals(this.description, other.description)
                         && Assert.equals(this.descriptionKey, other.descriptionKey)
                         && Assert.equals(this.parameterConsumer, other.parameterConsumer)
@@ -8089,7 +8091,7 @@ public class CommandLine {
                         + 37 * Assert.hashCode(hideParamSyntax)
                         + 37 * Assert.hashCode(required)
                         + 37 * Assert.hashCode(splitRegex)
-                        + 37 * Assert.hashCode(usageSplitRegex)
+                        + 37 * Assert.hashCode(splitRegexSynopsisLabel)
                         + 37 * Arrays.hashCode(description)
                         + 37 * Assert.hashCode(descriptionKey)
                         + 37 * Assert.hashCode(parameterConsumer)
@@ -8133,7 +8135,7 @@ public class CommandLine {
                 private String paramLabel;
                 private boolean hideParamSyntax;
                 private String splitRegex;
-                private String usageSplitRegex;
+                private String splitRegexSynopsisLabel;
                 private boolean hidden;
                 private boolean inherited;
                 private Class<?> type;
@@ -8165,7 +8167,7 @@ public class CommandLine {
                     paramLabel = original.paramLabel;
                     hideParamSyntax = original.hideParamSyntax;
                     splitRegex = original.splitRegex;
-                    usageSplitRegex = original.usageSplitRegex;
+                    splitRegexSynopsisLabel = original.splitRegexSynopsisLabel;
                     hidden = original.hidden;
                     inherited = original.inherited;
                     setTypeInfo(original.typeInfo);
@@ -8209,7 +8211,7 @@ public class CommandLine {
                     description = option.description();
                     descriptionKey = option.descriptionKey();
                     splitRegex = option.split();
-                    usageSplitRegex = option.usageSplit();
+                    splitRegexSynopsisLabel = option.splitSynopsisLabel();
                     hidden = option.hidden();
                     defaultValue = option.defaultValue();
                     showDefaultValue = option.showDefaultValue();
@@ -8241,7 +8243,7 @@ public class CommandLine {
                         description = parameters.description();
                         descriptionKey = parameters.descriptionKey();
                         splitRegex = parameters.split();
-                        usageSplitRegex = parameters.usageSplit();
+                        splitRegexSynopsisLabel = parameters.splitSynopsisLabel();
                         hidden = parameters.hidden();
                         defaultValue = parameters.defaultValue();
                         showDefaultValue = parameters.showDefaultValue();
@@ -8319,9 +8321,9 @@ public class CommandLine {
 
                 /**
                  * Returns a regular expression to split option parameter for usage information.
-                 * @see Option#usageSplit()
+                 * @see Option#splitSynopsisLabel()
                  * @since 4.3 */
-                public String usageSplitRegex() { return usageSplitRegex; }
+                public String splitRegexSynopsisLabel() { return splitRegexSynopsisLabel; }
                 /** Returns whether this option should be excluded from the usage message.
                  * @see Option#hidden() */
                 public boolean hidden()        { return hidden; }
@@ -8423,7 +8425,7 @@ public class CommandLine {
                 public T splitRegex(String splitRegex)  { this.splitRegex = Assert.notNull(splitRegex, "splitRegex"); return self(); }
 
                 /** Sets a regular expression to split option parameter for usage information. */
-                public T usageSplitRegex(String usageSplitRegex) { this.usageSplitRegex = Assert.notNull(usageSplitRegex, "usageSplitRegex"); return self(); }
+                public T splitRegexSynopsisLabel(String splitRegexSynopsisLabel) { this.splitRegexSynopsisLabel = Assert.notNull(splitRegexSynopsisLabel, "splitRegexSynopsisLabel"); return self(); }
                 /** Sets whether this option or positional parameter's default value should be shown in the usage help, and returns this builder. */
                 public T showDefaultValue(Help.Visibility visibility) { showDefaultValue = Assert.notNull(visibility, "visibility"); return self(); }
 
@@ -14602,7 +14604,7 @@ public class CommandLine {
                 if (argSpec.hideParamSyntax()) { return colorScheme.apply((argSpec.isOption() ? separator() : "") + argSpec.paramLabel(), styles); }
 
                 Text paramName = colorScheme.apply(argSpec.paramLabel(), styles);
-                String split = argSpec.usageSplitRegex().isEmpty() ? argSpec.splitRegex() : argSpec.usageSplitRegex();
+                String split = argSpec.splitRegexSynopsisLabel().isEmpty() ? argSpec.splitRegex() : argSpec.splitRegexSynopsisLabel();
                 String mandatorySep = empty(split) ? " "  : split;
                 String optionalSep  = empty(split) ? " [" : "[" + split;
 

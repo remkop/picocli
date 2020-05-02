@@ -2,7 +2,6 @@ package picocli;
 
 import org.junit.Test;
 
-import picocli.CommandLine.Command;
 import picocli.CommandLine.Help.Visibility;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.InitializationException;
@@ -10,7 +9,6 @@ import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.IGetter;
 import picocli.CommandLine.Model.ISetter;
 import picocli.CommandLine.Model.OptionSpec;
-import picocli.CommandLine.Model.OptionSpec.Builder;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Range;
 
@@ -403,7 +401,7 @@ public class ModelOptionSpecTest {
 
     @Test
     public void testEmptyUsageSplit() {
-        assertEquals("", OptionSpec.builder("-x").build().usageSplitRegex());
+        assertEquals("", OptionSpec.builder("-x").build().splitRegexSynopsisLabel());
     }
 
     @Test
@@ -411,9 +409,9 @@ public class ModelOptionSpecTest {
         OptionSpec.Builder builder = OptionSpec.builder("-x");
         builder.auxiliaryTypes(Integer.class, Integer.TYPE)
             .splitRegex("\\|")
-            .usageSplitRegex("|");
+            .splitRegexSynopsisLabel("|");
         assertEquals("\\|", builder.splitRegex());
-        assertEquals("|", builder.usageSplitRegex());
+        assertEquals("|", builder.splitRegexSynopsisLabel());
     }
 
     @Test
@@ -423,7 +421,7 @@ public class ModelOptionSpecTest {
             .hideParamSyntax(true)
             .required(true)
             .splitRegex("\\|")
-            .usageSplitRegex("|")
+            .splitRegexSynopsisLabel("|")
             .description("desc")
             .descriptionKey("key")
             .type(Map.class)
@@ -436,6 +434,6 @@ public class ModelOptionSpecTest {
         OptionSpec p1 = option.build();
         assertEquals(p1, p1);
         assertEquals(p1, option.build());
-        assertNotEquals(p1, option.usageSplitRegex("\\\\?").build());
+        assertNotEquals(p1, option.splitRegexSynopsisLabel("\\\\?").build());
     }
 }
