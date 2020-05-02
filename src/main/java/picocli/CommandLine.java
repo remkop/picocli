@@ -6595,7 +6595,7 @@ public class CommandLine {
                         for (String name : option.names()) {
                             if (name.length() == 2 && name.charAt(0) == '-' && (name.charAt(1) == lower||name.charAt(1) == upper))
                                 return option;
-                            if (name.length() == 1 && (name.charAt(1) == lower||name.charAt(1) == upper))
+                            if (name.length() == 1 && (name.charAt(0) == lower || name.charAt(0)==upper))
                                 return option;
                         }
                     }else
