@@ -5347,14 +5347,14 @@ public class CommandLine {
             private boolean caseInsensitive = false;
 
             /**
-             * Constructs an empty LinkedCaseAwareMap instance with default Locale.
+             * Constructs an empty LinkedCaseAwareMap instance with default {@link java.util.Locale}.
              */
             public LinkedCaseAwareMap() {
                 this(Locale.getDefault());
             }
 
             /**
-             * Constructs an empty LinkedCaseAwareMap instance with the specified Locale.
+             * Constructs an empty LinkedCaseAwareMap instance with the specified {@link java.util.Locale}.
              * @param locale the locale to convert character cases
              */
             public LinkedCaseAwareMap(Locale locale) {
