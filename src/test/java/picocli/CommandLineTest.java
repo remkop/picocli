@@ -3595,6 +3595,40 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testBuildCaseInsensitiveDuplicateOptions() {
+        class App {
+            @Option(names = "-h")
+            boolean helpMessage;
+        }
+        CommandLine commandLine = new CommandLine(new App());
+        commandLine.getCommandSpec().caseInsensitiveOptions(true);
+        try {
+            commandLine.getCommandSpec().addOption(OptionSpec.builder("-H").build());
+            fail("Expected exception");
+        } catch (Exception ex) {
+            assertTrue(ex.getMessage().startsWith("Option name '-H' is used by both option -H and field boolean "));
+        }
+    }
+
+    @Test
+    public void testToggleCaseInsensitiveDuplicateOptions() {
+        class App {
+            @Option(names = "-h")
+            boolean helpMessage;
+
+            @Option(names = "-H")
+            boolean highlight;
+        }
+        CommandLine commandLine = new CommandLine(new App());
+        try {
+            commandLine.getCommandSpec().caseInsensitiveOptions(true);
+            fail("Expected exception");
+        } catch (Exception ex) {
+            assertEquals(ex.getMessage(), "Duplicated keys: -h and -H");
+        }
+    }
+
+    @Test
     public void testClose() {
         setTraceLevel("WARN");
         CommandLine.close(new Closeable() {
