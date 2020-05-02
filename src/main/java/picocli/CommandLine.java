@@ -6588,17 +6588,41 @@ public class CommandLine {
 
             static OptionSpec findOption(char shortName, Iterable<OptionSpec> options) {
                 for (OptionSpec option : options) {
-                    for (String name : option.names()) {
-                        if (name.length() == 2 && name.charAt(0) == '-' && name.charAt(1) == shortName) { return option; }
-                        if (name.length() == 1 && name.charAt(0) == shortName) { return option; }
+                    if(option.caseInsensitive())
+                    {
+                        char lower = Character.toLowerCase(shortName);
+                        char upper = Character.toUpperCase(shortName);
+                        for (String name : option.names()) {
+                            if (name.length() == 2 && name.charAt(0) == '-' && (name.charAt(1) == lower||name.charAt(1) == upper))
+                                return option;
+                            if (name.length() == 1 && (name.charAt(1) == lower||name.charAt(1) == upper))
+                                return option;
+                        }
+                    }else
+                    {
+                        for (String name : option.names()) {
+                            if (name.length() == 2 && name.charAt(0) == '-' && name.charAt(1) == shortName)
+                                return option;
+                            if (name.length() == 1 && name.charAt(0) == shortName)
+                                return option;
+                        }
                     }
                 }
                 return null;
             }
             static OptionSpec findOption(String name, List<OptionSpec> options) {
                 for (OptionSpec option : options) {
-                    for (String prefixed : option.names()) {
-                        if (prefixed.equals(name) || stripPrefix(prefixed).equals(name)) { return option; }
+                    if(option.caseInsensitive()) {
+                        for (String prefixed : option.names()) {
+                            if (prefixed.equalsIgnoreCase(name) || stripPrefix(prefixed).equalsIgnoreCase(name))
+                                return option;
+                        }
+                    }
+                    else {
+                        for (String prefixed : option.names()) {
+                            if (prefixed.equals(name) || stripPrefix(prefixed).equals(name))
+                                return option;
+                        }
                     }
                 }
                 return null;
