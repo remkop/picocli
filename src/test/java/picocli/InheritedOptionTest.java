@@ -13,6 +13,7 @@ import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.Parameters;
 
 import java.util.*;
 
@@ -34,10 +35,19 @@ public class InheritedOptionTest {
         boolean verbose;
     }
     @Command(name = "sub", subcommands = SubSub.class)
-    static class Sub { }
+    static class Sub implements Runnable {
+        public void run() {
+        }
+    }
 
     @Command(name = "subsub")
-    static class SubSub { }
+    static class SubSub implements Runnable {
+        public void run() {
+        }
+        @Command
+        public void subsubsub() {
+        }
+    }
 
     @Test
     public void testGlobalOptionIsAddedToSubcommand() {
@@ -333,7 +343,6 @@ public class InheritedOptionTest {
         assertEquals("yyy", bean.y);
     }
 
-    //@Ignore("Requires https://github.com/remkop/picocli/issues/1001")
     @Test // https://github.com/remkop/picocli/issues/1001
     public void testInheritedRequiredArgs() {
         //System.setProperty("picocli.trace", "DEBUG");
@@ -362,6 +371,76 @@ public class InheritedOptionTest {
             fail("Expected exception");
         } catch (ParameterException ex) {
             assertEquals("Missing required option '-x=<x>'", ex.getMessage());
+        }
+    }
+
+    @Command(subcommands = Sub.class)
+    static class TopWithRequiredArg implements Runnable {
+        @Option(names = "-x", required = true, scope = INHERIT)
+        int x;
+
+        @Parameters(index = "0", scope = INHERIT)
+        String p0;
+
+        @Parameters(index = "1", scope = INHERIT)
+        String p1;
+
+        @Parameters(index = "2..*", scope = INHERIT)
+        String[] remainder;
+
+        public void run() {
+        }
+    }
+    @Test // https://github.com/remkop/picocli/issues/1001
+    public void testInheritedRequiredArgsDeepNesting() {
+        //System.setProperty("picocli.trace", "DEBUG");
+        CommandLine cmdx = new CommandLine(new TopWithRequiredArg());
+        cmdx.parseArgs("-x=2", "0", "1");
+
+        CommandLine cmdSubX = new CommandLine(new TopWithRequiredArg());
+        cmdSubX.parseArgs("sub", "-x=2", "0", "1");
+
+        CommandLine cmdSubSubX = new CommandLine(new TopWithRequiredArg());
+        cmdSubSubX.parseArgs("sub", "subsub", "-x=2", "0", "1");
+
+        TopWithRequiredArg top4 = new TopWithRequiredArg();
+        CommandLine cmdSubSubSubX = new CommandLine(top4);
+        cmdSubSubSubX.parseArgs("sub", "subsub", "subsubsub", "-x=2", "0", "1", "2", "3");
+        assertEquals(2, top4.x);
+        assertEquals("0", top4.p0);
+        assertEquals("1", top4.p1);
+        assertArrayEquals(new String[]{"2", "3"}, top4.remainder);
+
+        CommandLine cmd2 = new CommandLine(new TopWithRequiredArg());
+        try {
+            cmd2.parseArgs();
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertEquals("Missing required options [-x=<x>, params[0]=<p0>, params[1]=<p1>]", ex.getMessage());
+        }
+
+        CommandLine cmd3 = new CommandLine(new TopWithRequiredArg());
+        try {
+            cmd3.parseArgs("sub");
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertEquals("Missing required options [-x=<x>, params[0]=<p0>, params[1]=<p1>]", ex.getMessage());
+        }
+
+        CommandLine cmd4 = new CommandLine(new TopWithRequiredArg());
+        try {
+            cmd4.parseArgs("sub", "subsub");
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertEquals("Missing required options [-x=<x>, params[0]=<p0>, params[1]=<p1>]", ex.getMessage());
+        }
+
+        CommandLine cmd5 = new CommandLine(new TopWithRequiredArg());
+        try {
+            cmd5.parseArgs("sub", "subsub", "subsubsub");
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertEquals("Missing required options [-x=<x>, params[0]=<p0>, params[1]=<p1>]", ex.getMessage());
         }
     }
 }
