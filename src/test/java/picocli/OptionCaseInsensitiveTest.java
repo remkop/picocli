@@ -6,8 +6,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.concurrent.Callable;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class OptionCaseInsensitiveTest
 {
@@ -20,8 +19,20 @@ public class OptionCaseInsensitiveTest
         public boolean help;
         @CommandLine.Option(names = {"-a", "--take_abs"}, arity = "0..1", description = "take abs vals and add, default disabled")
         public boolean abs;
-        @CommandLine.Option(names = {"-t", "--test_flag"}, arity = "0..1", description = "just for test",negatable = true,caseInsensitive = true)
+        @CommandLine.Option(names = {"-t", "--test_flag"}, arity = "0..1", description = "just for test", negatable = true, caseInsensitive = true)
         public boolean flag;
+        @CommandLine.ArgGroup(exclusive = true, multiplicity = "1")
+        Exclusive exclusive;
+
+        static class Exclusive
+        {
+            @CommandLine.Option(names = "-x", required = true, caseInsensitive = true)
+            int x;
+            @CommandLine.Option(names = "-y", required = true)
+            int y;
+            @CommandLine.Option(names = "-z", required = true)
+            int z;
+        }
 
 
         public Integer call() throws Exception
@@ -54,15 +65,16 @@ public class OptionCaseInsensitiveTest
     {
         Adder a = new Adder();
         CommandLine cmd = new CommandLine(a);
-        cmd.execute("-t","1","2");
+        cmd.execute("-t", "1", "2");
         assertTrue(a.flag);
-        cmd.execute("--no-test_flag","1","2");
+        cmd.execute("--no-test_flag", "1", "2");
         assertFalse(a.flag);
-        cmd.execute("-t","1","2");
+        cmd.execute("-t", "1", "2");
         assertTrue(a.flag);
-        cmd.execute("--nO-tEst_fLag","1","2");
+        cmd.execute("--nO-tEst_fLag", "1", "2");
         assertFalse(a.flag);
     }
+
     @Test
     public void testMixCaseSensitivityPosixOptions1()
     {
@@ -98,6 +110,15 @@ public class OptionCaseInsensitiveTest
             public int value2;
         }
         new CommandLine(new DuplicateOptions());
+    }
+
+    @Test
+    public void argGroupTest()
+    {
+        Adder a = new Adder();
+        CommandLine cmd = new CommandLine(a);
+        cmd.execute("-X=1","1","2");
+        assertEquals(1, a.exclusive.x);
     }
 
 //    @Test
