@@ -5693,17 +5693,25 @@ public class CommandLine {
             /** Initializes the usageMessage specification for this command from the specified settings and returns this commandSpec.*/
             public CommandSpec usageMessage(UsageMessageSpec settings) { usageMessage.initFrom(settings, this); return this; }
 
+            /** Returns whether commands, options and mixins are all case-insensitive.
+             * @since 4.3 */
+            public boolean caseInsensitive() { return caseInsensitiveCommands() && caseInsensitiveOptions() && caseInsensitiveMixins(); }
+            /** Sets the case-insensitivity of commands, options and mixins.
+             * @since 4.3 */
+            public CommandSpec caseInsensitive(boolean caseInsensitive) { caseInsensitiveCommands(caseInsensitive); caseInsensitiveOptions(caseInsensitive); caseInsensitiveMixins(caseInsensitive); return this; }
+            
+
             /** Returns whether the commands is case-insensitive.
              * @since 4.3 */
             public boolean caseInsensitiveCommands() { return commands.isCaseInsensitive(); }
-            /** Set the case-insensitivity of commands.
+            /** Sets the case-insensitivity of commands.
              * @since 4.3 */
             public CommandSpec caseInsensitiveCommands(boolean caseInsensitiveCommands) { commands.setCaseInsensitive(caseInsensitiveCommands);  return this; }
 
             /** Returns whether the options is case-insensitive.
              * @since 4.3 */
             public boolean caseInsensitiveOptions() { return optionsByNameMap.isCaseInsensitive(); }
-            /** Set the case-insensitivity of options.
+            /** Sets the case-insensitivity of options.
              * @since 4.3 */
             public CommandSpec caseInsensitiveOptions(boolean caseInsensitiveOptions) { optionsByNameMap.setCaseInsensitive(caseInsensitiveOptions); negatedOptionsByNameMap.setCaseInsensitive(caseInsensitiveOptions);  return this; }
 
