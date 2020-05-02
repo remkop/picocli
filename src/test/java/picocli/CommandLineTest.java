@@ -3629,6 +3629,21 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testCaseInsensitiveParseResult() {
+        class App {
+            @Option(names = "-h")
+            boolean helpMessage;
+        }
+        CommandLine commandLine = new CommandLine(new App());
+        commandLine.getCommandSpec().caseInsensitiveOptions(true);
+        ParseResult result = commandLine.parseArgs("-H");
+
+        // Should use original names to query the ParseResult.
+        assertTrue(result.hasMatchedOption("-h"));
+        assertFalse(result.hasMatchedOption("-H"));
+    }
+
+    @Test
     public void testClose() {
         setTraceLevel("WARN");
         CommandLine.close(new Closeable() {
