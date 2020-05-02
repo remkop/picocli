@@ -5336,6 +5336,134 @@ public class CommandLine {
             <T> T set(T value) throws Exception;
         }
 
+        /**
+         * This class provides a case-aware Linked HashMap. Supports both case-sensitive and case-insensitive modes.
+         * @param <V> type of the value
+         */
+        private static class LinkedCaseAwareMap<V> implements Map<String, V> {
+            private final LinkedHashMap<String, V> targetMap = new LinkedHashMap<String, V>();
+            private final HashMap<String, String> keyMap = new HashMap<String, String>();
+            private final Locale locale;
+            private boolean caseInsensitive = false;
+
+            /**
+             * Constructs an empty LinkedCaseAwareMap instance with default Locale.
+             */
+            public LinkedCaseAwareMap() {
+                this(Locale.getDefault());
+            }
+
+            /**
+             * Constructs an empty LinkedCaseAwareMap instance with the specified Locale.
+             * @param locale the locale to convert character cases
+             */
+            public LinkedCaseAwareMap(Locale locale) {
+                this.locale = locale;
+            }
+
+            /** Returns the case-insensitivity of the map. */
+            public boolean isCaseInsensitive() {
+                return caseInsensitive;
+            }
+
+            /** Sets the case-insensitivity of the map. */
+            public void setCaseInsensitive(boolean caseInsensitive) {
+                if (caseInsensitive) {
+                    for (String key : targetMap.keySet()) {
+                        String duplicatedKey = keyMap.put(key.toLowerCase(locale), key);
+                        if (duplicatedKey != null) {
+                            throw new IllegalStateException("Duplicated keys: " + duplicatedKey + " and " + key);
+                        }
+                    }
+                } else {
+                    keyMap.clear();
+                }
+                this.caseInsensitive = caseInsensitive;
+            }
+
+            public int size() {
+                return targetMap.size();
+            }
+
+            public boolean isEmpty() {
+                return targetMap.isEmpty();
+            }
+
+            public boolean containsKey(Object key) {
+                if (key != null && caseInsensitive) {
+                    if (!(key instanceof String)) {
+                        return false;
+                    }
+                    return keyMap.containsKey(((String) key).toLowerCase(locale));
+                } else {
+                    return targetMap.containsKey(key);
+                }
+            }
+
+            public boolean containsValue(Object value) {
+                return targetMap.containsValue(value);
+            }
+
+            public V get(Object key) {
+                if (key instanceof String && caseInsensitive) {
+                    String caseSensitiveKey = keyMap.get(((String) key).toLowerCase(locale));
+                    if (caseSensitiveKey == null) {
+                        return null;
+                    }
+                    return targetMap.get(caseSensitiveKey);
+                } else {
+                    return targetMap.get(key);
+                }
+            }
+
+            public V put(String key, V value) {
+                if (key != null && caseInsensitive) {
+                    String caseSensitiveKey = keyMap.put(key.toLowerCase(locale), key);
+                    if (caseSensitiveKey != null) {
+                        V removedValue = targetMap.remove(caseSensitiveKey);
+                        targetMap.put(key, value);
+                        return removedValue;
+                    }
+                }
+                return targetMap.put(key, value);
+            }
+
+            public V remove(Object key) {
+                if (key != null && caseInsensitive) {
+                    String caseSensitiveKey = keyMap.remove(key);
+                    if (caseSensitiveKey == null) {
+                        return null;
+                    }
+                    return targetMap.remove(caseSensitiveKey);
+                } else {
+                    return targetMap.remove(key);
+                }
+            }
+
+            public void putAll(Map<? extends String, ? extends V> m) {
+                for (Entry<? extends String, ? extends V> entry : m.entrySet()) {
+                    put(entry.getKey(), entry.getValue());
+                }
+            }
+
+            public void clear() {
+                targetMap.clear();
+                keyMap.clear();
+            }
+
+            public Set<String> keySet() {
+                return targetMap.keySet();
+            }
+
+            public Collection<V> values() {
+                return targetMap.values();
+            }
+
+            public Set<Entry<String, V>> entrySet() {
+                return targetMap.entrySet();
+            }
+        }
+
         /** The {@code CommandSpec} class models a command specification, including the options, positional parameters and subcommands
          * supported by the command, as well as attributes for the version help message and the usage help message of the command.
          * <p>
@@ -5366,12 +5494,12 @@ public class CommandLine {
 
             static final Boolean DEFAULT_SUBCOMMANDS_REPEATABLE = false;
 
-            private final Map<String, CommandLine> commands = new LinkedHashMap<String, CommandLine>();
-            private final Map<String, OptionSpec> optionsByNameMap = new LinkedHashMap<String, OptionSpec>();
-            private final Map<String, OptionSpec> negatedOptionsByNameMap = new LinkedHashMap<String, OptionSpec>();
+            private final LinkedCaseAwareMap<CommandLine> commands = new LinkedCaseAwareMap<CommandLine>();
+            private final LinkedCaseAwareMap<OptionSpec> optionsByNameMap = new LinkedCaseAwareMap<OptionSpec>();
+            private final LinkedCaseAwareMap<OptionSpec> negatedOptionsByNameMap = new LinkedCaseAwareMap<OptionSpec>();
             private final Map<Character, OptionSpec> posixOptionsByKeyMap = new LinkedHashMap<Character, OptionSpec>();
-            private final Map<String, CommandSpec> mixins = new LinkedHashMap<String, CommandSpec>();
-            private final Map<String, IAnnotatedElement> mixinAnnotatedElements = new LinkedHashMap<String, IAnnotatedElement>();
+            private final LinkedCaseAwareMap<CommandSpec> mixins = new LinkedCaseAwareMap<CommandSpec>();
+            private final LinkedCaseAwareMap<IAnnotatedElement> mixinAnnotatedElements = new LinkedCaseAwareMap<IAnnotatedElement>();
             private final List<ArgSpec> requiredArgs = new ArrayList<ArgSpec>();
             private final List<ArgSpec> args = new ArrayList<ArgSpec>();
             private final List<OptionSpec> options = new ArrayList<OptionSpec>();
@@ -5564,6 +5692,27 @@ public class CommandLine {
             public UsageMessageSpec usageMessage() { return usageMessage; }
             /** Initializes the usageMessage specification for this command from the specified settings and returns this commandSpec.*/
             public CommandSpec usageMessage(UsageMessageSpec settings) { usageMessage.initFrom(settings, this); return this; }
+
+            /** Returns whether the commands is case-insensitive.
+             * @since 4.3 */
+            public boolean caseInsensitiveCommands() { return commands.isCaseInsensitive(); }
+            /** Set the case-insensitivity of commands.
+             * @since 4.3 */
+            public CommandSpec caseInsensitiveCommands(boolean caseInsensitiveCommands) { commands.setCaseInsensitive(caseInsensitiveCommands);  return this; }
+
+            /** Returns whether the options is case-insensitive.
+             * @since 4.3 */
+            public boolean caseInsensitiveOptions() { return optionsByNameMap.isCaseInsensitive(); }
+            /** Set the case-insensitivity of options.
+             * @since 4.3 */
+            public CommandSpec caseInsensitiveOptions(boolean caseInsensitiveOptions) { optionsByNameMap.setCaseInsensitive(caseInsensitiveOptions); negatedOptionsByNameMap.setCaseInsensitive(caseInsensitiveOptions);  return this; }
+
+            /** Returns whether the mixins is case-insensitive.
+             * @since 4.3 */
+            public boolean caseInsensitiveMixins() { return mixins.isCaseInsensitive(); }
+            /** Set the case-insensitivity of mixins.
+             * @since 4.3 */
+            public CommandSpec caseInsensitiveMixins(boolean caseInsensitiveMixins) { mixins.setCaseInsensitive(caseInsensitiveMixins); mixinAnnotatedElements.setCaseInsensitive(caseInsensitiveMixins); return this; }
 
             /** Returns the resource bundle base name for this command.
              * @return the resource bundle base name from the {@linkplain UsageMessageSpec#messages()}
