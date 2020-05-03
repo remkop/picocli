@@ -3633,13 +3633,20 @@ public class CommandLineTest {
         class App {
             @Option(names = "-h")
             boolean helpMessage;
+
+            @Option(names = "-hElLo")
+            boolean helloWorld;
         }
         CommandLine commandLine = new CommandLine(new App());
         commandLine.setCaseInsensitive(true);
-        ParseResult result = commandLine.parseArgs("-H");
+        ParseResult result = commandLine.parseArgs("-h", "-HeLLO");
 
         assertTrue(result.hasMatchedOption("-h"));
+        assertTrue(result.hasMatchedOption("-hElLo"));
         assertFalse(result.hasMatchedOption("-H"));
+        assertFalse(result.hasMatchedOption("-hello"));
+        assertFalse(result.hasMatchedOption("-HELLO"));
+        assertFalse(result.hasMatchedOption("-HeLLO"));
     }
 
     @Test
