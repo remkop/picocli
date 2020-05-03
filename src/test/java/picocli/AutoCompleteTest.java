@@ -339,7 +339,7 @@ public class AutoCompleteTest {
         exit.expectSystemExitWithStatus(AutoComplete.EXIT_CODE_INVALID_INPUT);
         exit.checkAssertionAfterwards(new Assertion() {
             public void checkAssertion() {
-                String expected = String.format("Missing required parameter: <commandLineFQCN>%n") + AUTO_COMPLETE_APP_USAGE;
+                String expected = String.format("Missing required parameter: '<commandLineFQCN>'%n") + AUTO_COMPLETE_APP_USAGE;
                 assertEquals(expected, systemErrRule.getLog());
             }
         });
@@ -350,7 +350,7 @@ public class AutoCompleteTest {
     @Test
     public void testAutoCompleteRequiresCommandLineFQCN_NoSystemExit() {
         AutoComplete.main();
-        String expected = String.format("Missing required parameter: <commandLineFQCN>%n") + AUTO_COMPLETE_APP_USAGE;
+        String expected = String.format("Missing required parameter: '<commandLineFQCN>'%n") + AUTO_COMPLETE_APP_USAGE;
         assertEquals(expected, systemErrRule.getLog());
     }
 

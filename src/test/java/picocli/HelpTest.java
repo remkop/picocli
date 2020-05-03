@@ -3380,7 +3380,7 @@ public class HelpTest {
                 .execute(args);
 
         String expected = format("" +
-                "Missing required parameter: FILES%n" +
+                "Missing required parameter: 'FILES'%n" +
                 "Usage: <main class> FILES...%n" +
                 "      FILES...   List of files%n");
         assertEquals(expected, sw.toString());
@@ -3405,7 +3405,7 @@ public class HelpTest {
                 .execute(args);
 
         String expected = format("" +
-                "Missing required parameter: FILES%n" +
+                "Missing required parameter: 'FILES'%n" +
                 "Usage: <main class> [-v] FILES...%n" +
                 "      FILES...   List of files%n" +
                 "  -v             Print output%n");

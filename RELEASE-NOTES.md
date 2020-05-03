@@ -297,6 +297,51 @@ Usage: <main class> PARAM
 
 This may break application tests that expect a specific usage help message format.
 
+### Different error for missing required options or parameters
+
+#### Missing options list now starts with colon, no more square brackets
+Before:
+
+```
+Missing required option '--required=<required>'
+Missing required options [-a=<first>, -b=<second>, -c=<third>]
+```
+
+After:
+
+```
+Missing required option: '--required=<required>'
+Missing required options: '-a=<first>', '-b=<second>', '-c=<third>'
+```
+
+#### Better message when both options and positional parameters are missing
+Before:
+
+```
+Missing required options [-x=<x>, params[0]=<p0>, params[1]=<p1>]
+```
+
+After:
+
+```
+Missing required options and parameters: '-x=<x>', '<p0>', '<p1>'
+```
+
+#### Missing positional parameters are now quoted
+Before:
+
+```
+Missing required parameter: <mandatory>
+Missing required parameters: <mandatory>, <anotherMandatory>
+```
+
+After:
+
+```
+Missing required parameter: '<mandatory>'
+Missing required parameters: '<mandatory>', '<anotherMandatory>'
+```
+
 
 # <a name="4.2.0"></a> Picocli 4.2.0
 The picocli community is pleased to announce picocli 4.2.0.

@@ -362,7 +362,7 @@ public class InheritedOptionTest {
             cmd2.parseArgs();
             fail("Expected exception");
         } catch (ParameterException ex) {
-            assertEquals("Missing required option '-x=<x>'", ex.getMessage());
+            assertEquals("Missing required option: '-x=<x>'", ex.getMessage());
         }
 
         CommandLine cmd3 = new CommandLine(new App());
@@ -370,7 +370,7 @@ public class InheritedOptionTest {
             cmd3.parseArgs("sub");
             fail("Expected exception");
         } catch (ParameterException ex) {
-            assertEquals("Missing required option '-x=<x>'", ex.getMessage());
+            assertEquals("Missing required option: '-x=<x>'", ex.getMessage());
         }
     }
 
@@ -416,7 +416,7 @@ public class InheritedOptionTest {
             cmd2.parseArgs();
             fail("Expected exception");
         } catch (ParameterException ex) {
-            assertEquals("Missing required options [-x=<x>, params[0]=<p0>, params[1]=<p1>]", ex.getMessage());
+            assertEquals("Missing required options and parameters: '-x=<x>', '<p0>', '<p1>'", ex.getMessage());
         }
 
         CommandLine cmd3 = new CommandLine(new TopWithRequiredArg());
@@ -424,7 +424,7 @@ public class InheritedOptionTest {
             cmd3.parseArgs("sub");
             fail("Expected exception");
         } catch (ParameterException ex) {
-            assertEquals("Missing required options [-x=<x>, params[0]=<p0>, params[1]=<p1>]", ex.getMessage());
+            assertEquals("Missing required options and parameters: '-x=<x>', '<p0>', '<p1>'", ex.getMessage());
         }
 
         CommandLine cmd4 = new CommandLine(new TopWithRequiredArg());
@@ -432,7 +432,7 @@ public class InheritedOptionTest {
             cmd4.parseArgs("sub", "subsub");
             fail("Expected exception");
         } catch (ParameterException ex) {
-            assertEquals("Missing required options [-x=<x>, params[0]=<p0>, params[1]=<p1>]", ex.getMessage());
+            assertEquals("Missing required options and parameters: '-x=<x>', '<p0>', '<p1>'", ex.getMessage());
         }
 
         CommandLine cmd5 = new CommandLine(new TopWithRequiredArg());
@@ -440,7 +440,7 @@ public class InheritedOptionTest {
             cmd5.parseArgs("sub", "subsub", "subsubsub");
             fail("Expected exception");
         } catch (ParameterException ex) {
-            assertEquals("Missing required options [-x=<x>, params[0]=<p0>, params[1]=<p1>]", ex.getMessage());
+            assertEquals("Missing required options and parameters: '-x=<x>', '<p0>', '<p1>'", ex.getMessage());
         }
     }
 }

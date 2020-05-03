@@ -186,16 +186,16 @@ public class ArgSplitTest {
             assertTrue(ex.getMissing().get(0).toString(), ex.getMissing().get(0) instanceof CommandLine.Model.PositionalParamSpec);
         }
         try {
-            CommandLine.populateCommand(new Args()); // 0 arg: should fail
-            fail("MissingParameterException expected");
-        } catch (MissingParameterException ex) {
-            assertEquals("positional parameter at index 0..* (<values>) requires at least 2 values, but none were specified.", ex.getMessage());
-        }
-        try {
             CommandLine.populateCommand(new Args(), "a,b,c", "B,C", "d", "e", "f,g"); // 5 args
             fail("MissingParameterException expected");
         } catch (MissingParameterException ex) {
             assertEquals("positional parameter at index 0..* (<values>) requires at least 2 values, but only 1 were specified: [f,g]", ex.getMessage());
+        }
+        try {
+            CommandLine.populateCommand(new Args()); // 0 arg: should fail
+            fail("MissingParameterException expected");
+        } catch (MissingParameterException ex) {
+            assertEquals("positional parameter at index 0..* (<values>) requires at least 2 values, but none were specified.", ex.getMessage());
         }
     }
 

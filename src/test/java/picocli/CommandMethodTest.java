@@ -114,7 +114,7 @@ public class CommandMethodTest {
             CommandLine.populateCommand(m);
             fail("Missing required field should have thrown exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter: <arg0>", ex.getMessage());
+            assertEquals("Missing required parameter: '<arg0>'", ex.getMessage());
         }
 
         // test execute
@@ -403,7 +403,7 @@ public class CommandMethodTest {
             CommandLine.populateCommand(m, "0");
             fail("Missing required option should have thrown exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required option '-b=<arg1>'", ex.getMessage());
+            assertEquals("Missing required option: '-b=<arg1>'", ex.getMessage());
         }
 
         // test execute

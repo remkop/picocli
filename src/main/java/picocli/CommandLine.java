@@ -8100,12 +8100,27 @@ public class CommandLine {
                         ;
             }
 
-            private static String describe(Collection<ArgSpec> args) { return describe(args, ", "); }
-            private static String describe(Collection<ArgSpec> args, String separator) {
+            private static String describeTypes(Collection<ArgSpec> args) {
+                if (args.isEmpty()) { return ""; }
+                int optionCount = 0;
+                int paramCount = 0;
+                for (ArgSpec arg : args) { if (arg.isOption()) {optionCount++;} else {paramCount++;} }
+                if (optionCount == 0) { return paramCount == 1 ? "parameter" : "parameters"; }
+                if (paramCount == 0) { return optionCount == 1 ? "option" : "options"; }
+                return "options and parameters";
+            }
+            private static String describe(Collection<ArgSpec> args) { return describe(args, ", ", "=", "", ""); }
+            private static String describe(Collection<ArgSpec> args, String separator, String optionParamSeparator, String openingQuote, String closingQuote) {
                 StringBuilder sb = new StringBuilder();
                 for (ArgSpec arg : args) {
                     if (sb.length() > 0) { sb.append(separator); }
-                    sb.append(describe(arg, "="));
+                    if (arg.isPositional()) {
+                        sb.append(openingQuote).append(arg.paramLabel()).append(closingQuote);
+                    } else {
+                        sb.append(openingQuote).append(((OptionSpec) arg).longestName());
+                        if (arg.arity().min() > 0) { sb.append(optionParamSeparator).append(arg.paramLabel()); }
+                        sb.append(closingQuote);
+                    }
                 }
                 return sb.toString();
             }
@@ -11804,7 +11819,7 @@ public class CommandLine {
             }
         }
 
-        private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs, List<Object> nowProcessing, Set<ArgSpec> inheritedRequired) {
+        private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs, List<Object> nowProcessing, Collection<ArgSpec> inheritedRequired) {
             if (tracer.isDebug()) {
                 tracer.debug("Initializing %s: %d options, %d positional parameters, %d required, %d groups, %d subcommands.%n",
                         commandSpec.toString(), new HashSet<ArgSpec>(commandSpec.optionsMap().values()).size(),
@@ -11842,7 +11857,7 @@ public class CommandLine {
             }
         }
 
-        private void addPostponedRequiredArgs(Set<ArgSpec> inheritedRequired, List<ArgSpec> required) {
+        private void addPostponedRequiredArgs(Collection<ArgSpec> inheritedRequired, List<ArgSpec> required) {
             for (ArgSpec postponed : inheritedRequired) {
                 if (postponed.isOption()) {
                     OptionSpec inherited = commandSpec.findOption(((OptionSpec) postponed).longestName());
@@ -12051,14 +12066,14 @@ public class CommandLine {
             if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, subcommand.commandSpec.toString());}
             nowProcessing.add(subcommand.commandSpec);
             updateHelpRequested(subcommand.commandSpec);
-            Set<ArgSpec> inheritedRequired = new HashSet<ArgSpec>();
+            List<ArgSpec> inheritedRequired = new ArrayList<ArgSpec>();
             if (tracer.isDebug()) {tracer.debug("Checking required args for parent %s...%n", subcommand.commandSpec.parent());}
             Iterator<ArgSpec> requiredIter = required.iterator();
             while (requiredIter.hasNext()) {
                 ArgSpec requiredArg = requiredIter.next();
                 if (requiredArg.scopeType() == ScopeType.INHERIT || requiredArg.inherited()) {
                     if (tracer.isDebug()) {tracer.debug("Postponing validation for required %s: scopeType=%s, inherited=%s%n", optionDescription("", requiredArg, -1), requiredArg.scopeType(), requiredArg.inherited());}
-                    inheritedRequired.add(requiredArg);
+                    if (!inheritedRequired.contains(requiredArg)) {inheritedRequired.add(requiredArg);}
                     requiredIter.remove();
                 }
             }
@@ -12831,22 +12846,6 @@ public class CommandLine {
             }
         }
 
-        private String optionDescription(String prefix, ArgSpec argSpec, int index) {
-            String desc = "";
-            if (argSpec.isOption()) {
-                desc = prefix + "option '" + ((OptionSpec) argSpec).longestName() + "'";
-                if (index >= 0) {
-                    if (argSpec.arity().max > 1) {
-                        desc += " at index " + index;
-                    }
-                    desc += " (" + argSpec.paramLabel() + ")";
-                }
-            } else {
-                desc = prefix + "positional parameter at index " + ((PositionalParamSpec) argSpec).index() + " (" + argSpec.paramLabel() + ")";
-            }
-            return desc;
-        }
-
         private boolean isAnyHelpRequested() { return isHelpRequested || parseResultBuilder.versionHelpRequested || parseResultBuilder.usageHelpRequested; }
 
         private void updateHelpRequested(CommandSpec command) {
@@ -12936,40 +12935,13 @@ public class CommandLine {
                 available += argSpec.splitValue(args.peek(), commandSpec.parser(), arity, 0).length - 1;
             }
             if (arity.min > available) {
-                if (arity.min == 1) {
-                    if (argSpec.isOption()) {
-                        maybeThrow(new MissingParameterException(CommandLine.this, argSpec, "Missing required parameter for " +
-                                optionDescription("", argSpec, 0)));
-                        return false;
-                    }
-                    String sep = "";
-                    String names = ": ";
-                    String indices = "";
-                    String infix = " at index ";
-                    int count = 0;
-                    List<PositionalParamSpec> positionalParameters = commandSpec.positionalParameters();
-                    for (int i = positionalParameters.indexOf(argSpec); i < positionalParameters.size(); i++) {
-                        if (i >= 0 && positionalParameters.get(i).arity().min > 0) {
-                            names += sep + positionalParameters.get(i).paramLabel();
-                            indices += sep + positionalParameters.get(i).index();
-                            sep = ", ";
-                            count++;
-                        }
-                    }
-                    String msg = "Missing required parameter";
-                    if (count > 1 || arity.min - available > 1) {
-                        msg += "s";
-                    }
-                    if (count > 1) { infix = " at indices "; }
-                    String desc = System.getProperty("picocli.verbose.errors") != null ? msg + names + infix + indices : msg + names;
-                    maybeThrow(new MissingParameterException(CommandLine.this, argSpec, desc));
-                } else if (args.isEmpty()) {
-                    maybeThrow(new MissingParameterException(CommandLine.this, argSpec, optionDescription("", argSpec, 0) +
-                            " requires at least " + arity.min + " values, but none were specified."));
-                } else {
-                    maybeThrow(new MissingParameterException(CommandLine.this, argSpec, optionDescription("", argSpec, 0) +
-                            " requires at least " + arity.min + " values, but only " + available + " were specified: " + reverse(args)));
+                List<PositionalParamSpec> missingList = Collections.emptyList();
+                List<PositionalParamSpec> positionals = commandSpec.positionalParameters();
+                if (argSpec.isPositional() && positionals.contains(argSpec)) {
+                    missingList = positionals.subList(positionals.indexOf(argSpec), positionals.size());
                 }
+                String msg = createMissingParameterMessage(argSpec, arity, missingList, args, available);
+                maybeThrow(new MissingParameterException(CommandLine.this, argSpec, msg));
                 return false;
             }
             return true;
@@ -13009,6 +12981,57 @@ public class CommandLine {
         String positionDesc(ArgSpec arg) {
             int pos = getPosition(arg);
             return (arg.group() == null) ? pos + " (command-local)" : pos + " (in group " + arg.group().synopsis() + ")";
+        }
+    }
+
+    private static String optionDescription(String prefix, ArgSpec argSpec, int optionParamIndex) {
+        String desc = "";
+        if (argSpec.isOption()) {
+            desc = prefix + "option '" + ((OptionSpec) argSpec).longestName() + "'";
+            if (optionParamIndex >= 0) { // we are describing an option parameter
+                if (argSpec.arity().max > 1) {
+                    desc += " at index " + optionParamIndex;
+                }
+                desc += " (" + argSpec.paramLabel() + ")";
+            }
+        } else {
+            desc = prefix + "positional parameter at index " + ((PositionalParamSpec) argSpec).index() + " (" + argSpec.paramLabel() + ")";
+        }
+        return desc;
+    }
+
+    private static String createMissingParameterMessage(ArgSpec argSpec, Range arity, List<PositionalParamSpec> missingList, Stack<String> args, int available) {
+        if (arity.min == 1) {
+            if (argSpec.isOption()) {
+                String msg = "Missing required parameter for " + optionDescription("", argSpec, 0);
+                return msg;
+            }
+            String sep = "";
+            String names = ": ";
+            String indices = "";
+            String infix = " at index ";
+            int count = 0;
+            for (PositionalParamSpec missing : missingList) {
+                if (missing.arity().min > 0) {
+                    names += sep + "'" + missing.paramLabel() + "'";
+                    indices += sep + missing.index();
+                    sep = ", ";
+                    count++;
+                }
+            }
+            String msg = "Missing required parameter";
+            if (count > 1 || arity.min - available > 1) {
+                msg += "s";
+            }
+            if (count > 1) { infix = " at indices "; }
+            String desc = System.getProperty("picocli.verbose.errors") != null ? msg + names + infix + indices : msg + names;
+            return desc;
+        } else if (args.isEmpty()) {
+            return optionDescription("", argSpec, 0) +
+                    " requires at least " + arity.min + " values, but none were specified.";
+        } else {
+            return optionDescription("", argSpec, 0) +
+                    " requires at least " + arity.min + " values, but only " + available + " were specified: " + reverse(args);
         }
     }
 
@@ -16244,15 +16267,9 @@ public class CommandLine {
         }
         public List<ArgSpec> getMissing() { return missing; }
         private static MissingParameterException create(CommandLine cmd, Collection<ArgSpec> missing, String separator) {
-            if (missing.size() == 1) {
-                return new MissingParameterException(cmd, missing, "Missing required option '"
-                        + ArgSpec.describe(missing.iterator().next(), separator) + "'");
-            }
-            List<String> names = new ArrayList<String>(missing.size());
-            for (ArgSpec argSpec : missing) {
-                names.add(ArgSpec.describe(argSpec, separator));
-            }
-            return new MissingParameterException(cmd, missing, "Missing required options " + names.toString());
+            String missingArgs = ArgSpec.describe(missing, ", ", separator, "'", "'");
+            String types = ArgSpec.describeTypes(missing);
+            return new MissingParameterException(cmd, missing, "Missing required " + types + ": " + missingArgs);
         }
     }
     /** Exception indicating that the user input included multiple arguments from a mutually exclusive group.

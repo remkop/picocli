@@ -280,7 +280,7 @@ public class InterpolatedModelTest {
             cmd.parseArgs();
             fail("Expected exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required option '--mypath=<path>'", ex.getMessage());
+            assertEquals("Missing required option: '--mypath=<path>'", ex.getMessage());
         }
 
         System.setProperty("MYPATH", "abc");

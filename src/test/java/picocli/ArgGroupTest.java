@@ -342,7 +342,7 @@ public class ArgGroupTest {
         builder.addSubgroup(ArgGroupSpec.builder().addSubgroup(b).addArg(OPTION_A).build());
         builder.addArg(PositionalParamSpec.builder().index("0..1").paramLabel("FILE").build());
 
-        String expected2 = "ArgGroup[exclusive=false, multiplicity=1, validate=false, order=123, args=[params[0..1]=FILE], headingKey='my headingKey', heading='my heading'," +
+        String expected2 = "ArgGroup[exclusive=false, multiplicity=1, validate=false, order=123, args=[FILE], headingKey='my headingKey', heading='my heading'," +
                 " subgroups=[ArgGroup[exclusive=true, multiplicity=0..1, validate=true, order=-1, args=[-a], headingKey=null, heading=null," +
                 " subgroups=[ArgGroup[exclusive=true, multiplicity=0..1, validate=true, order=-1, args=[-x], headingKey=null, heading=null, subgroups=[]]]" +
                 "]]" +

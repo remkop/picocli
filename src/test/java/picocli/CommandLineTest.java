@@ -512,7 +512,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new RequiredField(), "arg1", "arg2");
             fail("Missing required field should have thrown exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required option '--required=<required>'", ex.getMessage());
+            assertEquals("Missing required option: '--required=<required>'", ex.getMessage());
         }
     }
     @Test
@@ -570,7 +570,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(requiredField, "arg1", "arg2");
             fail("Missing required field should have thrown exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required option '--required=<required>'", ex.getMessage());
+            assertEquals("Missing required option: '--required=<required>'", ex.getMessage());
         }
     }
     @Test
@@ -587,7 +587,7 @@ public class CommandLineTest {
             commandLine.parseArgs("arg1", "arg2");
             fail("Missing required field should have thrown exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required option '--required=<required>'", ex.getMessage());
+            assertEquals("Missing required option: '--required=<required>'", ex.getMessage());
         }
     }
 
@@ -1075,7 +1075,7 @@ public class CommandLineTest {
         try {
             CommandLine.populateCommand(new WithParams(), new String[0]);
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameters: <param0>, <param1>", ex.getMessage());
+            assertEquals("Missing required parameters: '<param0>', '<param1>'", ex.getMessage());
         }
     }
 
@@ -1134,7 +1134,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "--opt=abc");
             fail("Expected failure with unknown separator");
         } catch (MissingParameterException ok) {
-            assertEquals("Missing required option '--opt:<opt>'", ok.getMessage());
+            assertEquals("Missing required option: '--opt:<opt>'", ok.getMessage());
         }
     }
     @Test
@@ -1147,7 +1147,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "--opt=abc");
             fail("Expected failure with unknown separator");
         } catch (MissingParameterException ok) {
-            assertEquals("Missing required option '--opt:<opt>'", ok.getMessage());
+            assertEquals("Missing required option: '--opt:<opt>'", ok.getMessage());
         }
     }
     @Test
@@ -1162,7 +1162,7 @@ public class CommandLineTest {
             cmd.parseArgs("--opt=abc");
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ok) {
-            assertEquals("Missing required option '--opt:<opt>'", ok.getMessage());
+            assertEquals("Missing required option: '--opt:<opt>'", ok.getMessage());
             assertEquals(Arrays.asList("--opt=abc"), cmd.getUnmatchedArguments());
         }
     }
@@ -1516,7 +1516,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "000");
             fail("Should fail with missingParamException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter: <file1>", ex.getMessage());
+            assertEquals("Missing required parameter: '<file1>'", ex.getMessage());
         }
     }
 
@@ -1565,7 +1565,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App());
             fail("Should fail with missingParamException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter: <file0_1>", ex.getMessage());
+            assertEquals("Missing required parameter: '<file0_1>'", ex.getMessage());
         }
     }
 
@@ -2166,7 +2166,7 @@ public class CommandLineTest {
             commandLine.parseArgs("-u", "foo");
             fail("expected exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required option '--password=<password>'", ex.getLocalizedMessage());
+            assertEquals("Missing required option: '--password=<password>'", ex.getLocalizedMessage());
         }
         commandLine.parseArgs("-u", "foo", "-p", "abc");
     }
@@ -2412,7 +2412,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App());
             fail("MissingParameterException expected");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required options [-a=<first>, -b=<second>, -c=<third>]", ex.getMessage());
+            assertEquals("Missing required options: '-a=<first>', '-b=<second>', '-c=<third>'", ex.getMessage());
         }
     }
     @Test
@@ -2442,7 +2442,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App());
             fail("MissingParameterException expected");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required options [-o=OUT_FILE, params[0]=IN_FILE]", ex.getMessage());
+            assertEquals("Missing required options and parameters: '-o=OUT_FILE', 'IN_FILE'", ex.getMessage());
         }
     }
     @Test
@@ -2459,7 +2459,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App());
             fail("MissingParameterException expected");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required options [-o=<String=String>, -x=KEY=VAL, params[0..*]=<Long=File>]", ex.getMessage());
+            assertEquals("Missing required options and parameters: '-o=<String=String>', '-x=KEY=VAL', '<Long=File>'", ex.getMessage());
         }
     }
     @Test
@@ -2809,7 +2809,7 @@ public class CommandLineTest {
             new CommandLine(new Example()).parseArgs("-o /tmp");
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter: <inputFiles>", ex.getMessage());
+            assertEquals("Missing required parameter: '<inputFiles>'", ex.getMessage());
         }
         try {
             // Comment from AshwinJay : "Should've failed as inputFiles were not provided"
@@ -2819,14 +2819,14 @@ public class CommandLineTest {
             new CommandLine(new Example()).parseArgs("-o", " /tmp");
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required parameter: <inputFiles>", ex.getMessage());
+            assertEquals("Missing required parameter: '<inputFiles>'", ex.getMessage());
         }
         try {
             // a MissingParameterException is thrown for missing required option -o, as expected
             new CommandLine(new Example()).parseArgs("inputfile1", "inputfile2");
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required option '--out-dir=<outputDir>'", ex.getMessage());
+            assertEquals("Missing required option: '--out-dir=<outputDir>'", ex.getMessage());
         }
 
         // a single empty string parameter was specified: this becomes an <inputFile> value
@@ -2834,7 +2834,7 @@ public class CommandLineTest {
             new CommandLine(new Example()).parseArgs("");
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required option '--out-dir=<outputDir>'", ex.getMessage());
+            assertEquals("Missing required option: '--out-dir=<outputDir>'", ex.getMessage());
         }
 
         // no parameters were specified
@@ -2842,7 +2842,7 @@ public class CommandLineTest {
             new CommandLine(new Example()).parseArgs();
             fail("Expected MissingParameterException");
         } catch (MissingParameterException ex) {
-            assertEquals("Missing required options [--out-dir=<outputDir>, params[0..*]=<inputFiles>]", ex.getMessage());
+            assertEquals("Missing required options and parameters: '--out-dir=<outputDir>', '<inputFiles>'", ex.getMessage());
         }
 
         // finally, let's test the success scenario
@@ -3504,7 +3504,7 @@ public class CommandLineTest {
         ParseResult parseResult = cmd.parseArgs();
         List<Exception> errors = parseResult.errors();
         assertEquals(1, errors.size());
-        assertEquals("Missing required parameter: <x>", errors.get(0).getMessage());
+        assertEquals("Missing required parameter: '<x>'", errors.get(0).getMessage());
     }
 
     @Test

@@ -592,7 +592,7 @@ public class RangeTest {
             CommandLine.populateCommand(new UnanchoredAfterOpenEndedIndex(), "a", "b", "c");
             fail("Expected exception");
         } catch (CommandLine.MissingParameterException ex) {
-            assertEquals("Missing required parameter: <last>", ex.getMessage());
+            assertEquals("Missing required parameter: '<last>'", ex.getMessage());
         }
     }
 

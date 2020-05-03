@@ -83,7 +83,7 @@ public class LenientParsingTest {
         cmd.parseArgs(new String[0]);
 
         assertEquals(1, cmd.getParseResult().errors().size());
-        assertEquals("Missing required parameter: <mandatory>", cmd.getParseResult().errors().get(0).getMessage());
+        assertEquals("Missing required parameter: '<mandatory>'", cmd.getParseResult().errors().get(0).getMessage());
     }
     @Test
     public void testMissingRequiredParams1() {
@@ -97,12 +97,13 @@ public class LenientParsingTest {
 
         cmd.parseArgs(new String[0]);
         assertEquals(2, cmd.getParseResult().errors().size());
-        assertEquals("Missing required parameters: <mandatory>, <anotherMandatory>", cmd.getParseResult().errors().get(0).getMessage());
-        assertEquals("Missing required parameter: <anotherMandatory>", cmd.getParseResult().errors().get(1).getMessage());
+        assertEquals("Missing required parameters: '<mandatory>', '<anotherMandatory>'", cmd.getParseResult().errors().get(0).getMessage());
+//        assertEquals("Missing required parameters: '<mandatory>', '<anotherMandatory>'", cmd.getParseResult().errors().get(1).getMessage());
+        assertEquals("Missing required parameter: '<anotherMandatory>'", cmd.getParseResult().errors().get(1).getMessage());
 
         cmd.parseArgs(new String[] {"firstonly"});
         assertEquals(1, cmd.getParseResult().errors().size());
-        assertEquals("Missing required parameter: <anotherMandatory>", cmd.getParseResult().errors().get(0).getMessage());
+        assertEquals("Missing required parameter: '<anotherMandatory>'", cmd.getParseResult().errors().get(0).getMessage());
     }
     @Test
     public void testMissingRequiredParams2() {
@@ -116,7 +117,7 @@ public class LenientParsingTest {
 
         cmd.parseArgs(new String[0]);
         assertEquals(1, cmd.getParseResult().errors().size());
-        assertEquals("Missing required parameter: <mandatory>", cmd.getParseResult().errors().get(0).getMessage());
+        assertEquals("Missing required parameter: '<mandatory>'", cmd.getParseResult().errors().get(0).getMessage());
     }
     @Test
     public void testMissingRequiredParamsWithOptions() {
@@ -131,13 +132,15 @@ public class LenientParsingTest {
 
         cmd.parseArgs(new String[] {"-t", "-v", "mandatory"});
         assertEquals(1, cmd.getParseResult().errors().size());
-        assertEquals("Missing required parameter: <alsoMandatory>", cmd.getParseResult().errors().get(0).getMessage());
+        assertEquals("Missing required parameter: '<alsoMandatory>'", cmd.getParseResult().errors().get(0).getMessage());
 
         cmd.parseArgs(new String[] {"-t"});
         assertEquals(3, cmd.getParseResult().errors().size());
-        assertEquals("Missing required options [-v, params[0]=<mandatory>, params[1]=<alsoMandatory>]", cmd.getParseResult().errors().get(0).getMessage());
-        assertEquals("Missing required parameters: <mandatory>, <alsoMandatory>", cmd.getParseResult().errors().get(1).getMessage());
-        assertEquals("Missing required parameter: <alsoMandatory>", cmd.getParseResult().errors().get(2).getMessage());
+        assertEquals("Missing required options and parameters: '-v', '<mandatory>', '<alsoMandatory>'", cmd.getParseResult().errors().get(0).getMessage());
+//        assertEquals("Missing required options and parameters: '-v', '<mandatory>', '<alsoMandatory>'", cmd.getParseResult().errors().get(1).getMessage());
+//        assertEquals("Missing required options and parameters: '-v', '<mandatory>', '<alsoMandatory>'", cmd.getParseResult().errors().get(2).getMessage());
+        assertEquals("Missing required parameters: '<mandatory>', '<alsoMandatory>'", cmd.getParseResult().errors().get(1).getMessage());
+        assertEquals("Missing required parameter: '<alsoMandatory>'", cmd.getParseResult().errors().get(2).getMessage());
     }
     @Test
     public void testMissingRequiredParamWithOption() {
@@ -150,7 +153,7 @@ public class LenientParsingTest {
 
         cmd.parseArgs(new String[] {"-t"});
         assertEquals(1, cmd.getParseResult().errors().size());
-        assertEquals("Missing required parameter: <mandatory>", cmd.getParseResult().errors().get(0).getMessage());
+        assertEquals("Missing required parameter: '<mandatory>'", cmd.getParseResult().errors().get(0).getMessage());
     }
 
     @Test
