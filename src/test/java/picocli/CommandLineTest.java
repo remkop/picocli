@@ -3601,7 +3601,7 @@ public class CommandLineTest {
             boolean helpMessage;
         }
         CommandLine commandLine = new CommandLine(new App());
-        commandLine.getCommandSpec().caseInsensitiveOptions(true);
+        commandLine.setCaseInsensitive(true);
         try {
             commandLine.getCommandSpec().addOption(OptionSpec.builder("-H").build());
             fail("Expected exception");
@@ -3621,7 +3621,7 @@ public class CommandLineTest {
         }
         CommandLine commandLine = new CommandLine(new App());
         try {
-            commandLine.getCommandSpec().caseInsensitiveOptions(true);
+            commandLine.setCaseInsensitive(true);
             fail("Expected exception");
         } catch (Exception ex) {
             assertEquals(ex.getMessage(), "Duplicated keys: -h and -H");
@@ -3635,10 +3635,9 @@ public class CommandLineTest {
             boolean helpMessage;
         }
         CommandLine commandLine = new CommandLine(new App());
-        commandLine.getCommandSpec().caseInsensitiveOptions(true);
+        commandLine.setCaseInsensitive(true);
         ParseResult result = commandLine.parseArgs("-H");
 
-        // Should use original names to query the ParseResult.
         assertTrue(result.hasMatchedOption("-h"));
         assertFalse(result.hasMatchedOption("-H"));
     }

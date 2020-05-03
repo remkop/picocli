@@ -759,6 +759,30 @@ public class CommandLine {
         return this;
     }
 
+    /** Returns whether the command should be case-insensitive in commands and options. The default is {@code false}.
+     * @return {@code true} if commands and options can be specified that don't match the {@code toString()} value of the registered ones, {@code false} otherwise;
+     * e.g., for an option of names -h, inputs like -h and -H are both recognized as it if {@code true}.
+     * @since 4.3 */
+    public boolean isCaseInsensitive() { return getCommandSpec().caseInsensitive(); }
+
+    /** Sets whether the command should be case-insensitive in commands and options. The default is {@code false}.
+     * When set to true, for example, for an option of names -h, inputs like -h and -H are both recognized as it if {@code true}.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue the new setting
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 4.3
+     */
+    public CommandLine setCaseInsensitive(boolean newValue) {
+        getCommandSpec().caseInsensitive(newValue);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setCaseInsensitive(newValue);
+        }
+        return this;
+    }
+
     /** Returns the default value provider for the command, or {@code null} if none has been set.
      * @return the default value provider for this command, or {@code null}
      * @since 3.6
