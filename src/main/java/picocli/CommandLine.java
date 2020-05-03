@@ -5469,10 +5469,12 @@ public class CommandLine {
                 this.caseInsensitive = caseInsensitive;
             }
 
+            @Override
             public int size() {
                 return targetMap.size();
             }
 
+            @Override
             public boolean containsKey(Object key) {
                 if (key != null && caseInsensitive) {
                     if (!isCaseConvertible(key.getClass())) {
@@ -5484,10 +5486,12 @@ public class CommandLine {
                 }
             }
 
+            @Override
             public boolean containsValue(Object value) {
                 return targetMap.containsValue(value);
             }
 
+            @Override
             public V get(Object key) {
                 if (isCaseConvertible(key.getClass()) && caseInsensitive) {
                     K caseSensitiveKey = keyMap.get(toLowerCase(key));
@@ -5500,6 +5504,7 @@ public class CommandLine {
                 }
             }
 
+            @Override
             public V put(K key, V value) {
                 if (key != null && caseInsensitive) {
                     K caseSensitiveKey = keyMap.put(toLowerCase(key), key);
@@ -5512,6 +5517,7 @@ public class CommandLine {
                 return targetMap.put(key, value);
             }
 
+            @Override
             public V remove(Object key) {
                 if (key != null && caseInsensitive) {
                     K caseSensitiveKey = keyMap.remove(key);
@@ -5524,19 +5530,23 @@ public class CommandLine {
                 }
             }
 
+            @Override
             public void clear() {
                 targetMap.clear();
                 keyMap.clear();
             }
 
+            @Override
             public Set<K> keySet() {
                 return targetMap.keySet();
             }
 
+            @Override
             public Collection<V> values() {
                 return targetMap.values();
             }
 
+            @Override
             public Set<Entry<K, V>> entrySet() {
                 return targetMap.entrySet();
             }
