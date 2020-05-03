@@ -5421,10 +5421,10 @@ public class CommandLine {
             private boolean caseInsensitive = false;
 
             /**
-             * Constructs an empty LinkedCaseAwareMap instance with {@link java.util.Locale#getDefault}.
+             * Constructs an empty LinkedCaseAwareMap instance with {@link java.util.Locale#ENGLISH}.
              */
             public LinkedCaseAwareMap() {
-                this(Locale.getDefault());
+                this(ENGLISH);
             }
 
             /**
