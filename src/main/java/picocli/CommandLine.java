@@ -5406,14 +5406,14 @@ public class CommandLine {
 
             /** Sets the case-insensitivity of the map. */
             public void setCaseInsensitive(boolean caseInsensitive) {
-                if (caseInsensitive) {
+                if (!isCaseInsensitive() && caseInsensitive) {
                     for (K key : targetMap.keySet()) {
                         K duplicatedKey = keyMap.put(toLowerCase(key), key);
                         if (duplicatedKey != null) {
                             throw new IllegalStateException("Duplicated keys: " + duplicatedKey + " and " + key);
                         }
                     }
-                } else {
+                } else if (isCaseInsensitive()) {
                     keyMap.clear();
                 }
                 this.caseInsensitive = caseInsensitive;
