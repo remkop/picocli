@@ -761,12 +761,14 @@ public class CommandLine {
 
     /** Returns whether the command should be case-insensitive in subcommands and options. The default is {@code false}.
      * @return {@code true} if commands and options can be specified that don't match the {@code names()} value of the registered ones, {@code false} otherwise;
-     * e.g., for an option of names -h, inputs like -h and -H are both recognized as it if {@code true}.
+     * e.g., for a subcommand of names help, inputs like help, hElp and HELP are all recognized as it,
+     * and for an option of names -h, inputs like -h and -H are both recognized as it if {@code true}.
      * @since 4.3 */
     public boolean isCaseInsensitive() { return getCommandSpec().caseInsensitive(); }
 
     /** Sets whether the command should be case-insensitive in subcommands and options. The default is {@code false}.
-     * When set to true, for example, for an option of names -h, inputs like -h and -H are both recognized as it if {@code true}.
+     * When set to true, for example, for a subcommand of names help, inputs like help, hElp and HELP are all recognized,
+     * and for an option of names -h, inputs like -h and -H are both recognized as it if {@code true}.
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
