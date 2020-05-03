@@ -5479,10 +5479,10 @@ public class CommandLine {
 
             public boolean containsKey(Object key) {
                 if (key != null && caseInsensitive) {
-                    if (!(key instanceof String)) {
+                    if (!isCaseConvertible(key.getClass())) {
                         return false;
                     }
-                    return keyMap.containsKey(((String) key).toLowerCase(locale));
+                    return keyMap.containsKey(toLowerCase(key));
                 } else {
                     return targetMap.containsKey(key);
                 }
