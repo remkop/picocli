@@ -219,6 +219,7 @@ class AdvancedMixin {
 * [#998] DOC: Update manual: quote option parameter containing pipe characters in `split` regex for FIX message example. Thanks to [Galder Zamarreño](https://github.com/galderz) and [Max Rydahl Andersen](https://github.com/maxandersen) for raising this and subsequent discussion.
 * [#1012] DOC: Update user manual: add to ArgGroup limitations. Thanks to [masupilami](https://github.com/masupilami) and [patric-r](https://github.com/patric-r) for raising this and subsequent discussion.
 * [#1015] DOC: Update user manual: added section Variable Arity Options and Unknown Options. Thanks to [Chris Smowton](https://github.com/smowton) for raising this.
+* [#1019] DOC: Fix PrintExceptionMessageHandler example. Thanks to [Adam Hosman](https://github.com/hosmanadam) for the pull request.
 * [#965] Dependency Upgrade: in `picocli-examples`, bump `hibernate-validator` from 6.0.2 to 6.1.2 to deal with [CVE-2019-10219](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-10219). Thanks to [https://github.com/Security3rd](Security3rd) for raising this.
 
 ## <a name="4.3.0-deprecated"></a> Deprecations
