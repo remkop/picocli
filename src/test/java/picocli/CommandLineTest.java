@@ -3602,7 +3602,7 @@ public class CommandLineTest {
             public void helpCommand() { }
         }
         CommandLine commandLine = new CommandLine(new App());
-        commandLine.setCaseInsensitive(true);
+        commandLine.setCaseInsensitiveCommands(true);
         try {
             commandLine.getCommandSpec().addSubcommand("HELP", CommandSpec.create());
             fail("Expected exception");
@@ -3623,7 +3623,7 @@ public class CommandLineTest {
         }
         CommandLine commandLine = new CommandLine(new App());
         try {
-            commandLine.setCaseInsensitive(true);
+            commandLine.setCaseInsensitiveCommands(true);
             fail("Expected exception");
         } catch (Exception ex) {
             assertEquals("Duplicated keys: help and HELP", ex.getMessage());
@@ -3638,7 +3638,7 @@ public class CommandLineTest {
             boolean helpMessage;
         }
         CommandLine commandLine = new CommandLine(new App());
-        commandLine.setCaseInsensitive(true);
+        commandLine.setCaseInsensitiveOptions(true);
         try {
             commandLine.getCommandSpec().addOption(OptionSpec.builder("-H").build());
             fail("Expected exception");
@@ -3658,7 +3658,7 @@ public class CommandLineTest {
         }
         CommandLine commandLine = new CommandLine(new App());
         try {
-            commandLine.setCaseInsensitive(true);
+            commandLine.setCaseInsensitiveOptions(true);
             fail("Expected exception");
         } catch (Exception ex) {
             assertEquals("Duplicated keys: -h and -H", ex.getMessage());
@@ -3679,7 +3679,8 @@ public class CommandLineTest {
             public int versionCommand() { return 42; }
         }
         CommandLine commandLine = new CommandLine(new App());
-        commandLine.setCaseInsensitive(true);
+        commandLine.setCaseInsensitiveCommands(true);
+        commandLine.setCaseInsensitiveOptions(true);
         ParseResult result = commandLine.parseArgs("-h", "-HeLLO");
 
         assertTrue(result.hasMatchedOption("-h"));
