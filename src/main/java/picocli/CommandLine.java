@@ -5414,7 +5414,7 @@ public class CommandLine {
          * This class provides a case-aware Linked HashMap. Supports both case-sensitive and case-insensitive modes.
          * @param <V> type of the value
          */
-        private static class LinkedCaseAwareMap<K, V> implements Map<K, V> {
+        private static class LinkedCaseAwareMap<K, V> extends AbstractMap<K, V> {
             private final LinkedHashMap<K, V> targetMap = new LinkedHashMap<K, V>();
             private final HashMap<K, K> keyMap = new HashMap<K, K>();
             private final Locale locale;
@@ -5473,10 +5473,6 @@ public class CommandLine {
                 return targetMap.size();
             }
 
-            public boolean isEmpty() {
-                return targetMap.isEmpty();
-            }
-
             public boolean containsKey(Object key) {
                 if (key != null && caseInsensitive) {
                     if (!isCaseConvertible(key.getClass())) {
@@ -5525,12 +5521,6 @@ public class CommandLine {
                     return targetMap.remove(caseSensitiveKey);
                 } else {
                     return targetMap.remove(key);
-                }
-            }
-
-            public void putAll(Map<? extends K, ? extends V> m) {
-                for (Entry<? extends K, ? extends V> entry : m.entrySet()) {
-                    put(entry.getKey(), entry.getValue());
                 }
             }
 
