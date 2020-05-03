@@ -2234,16 +2234,16 @@ new CommandLine(new MyApp())
 Where the `IExecutionExceptionHandler` implementation could look something like this:
 [source,java]
 ----
-class PrintExceptionMessageHandler implements IExecutionExceptionHandler() {
+class PrintExceptionMessageHandler implements IExecutionExceptionHandler {
     public int handleExecutionException(Exception ex,
                                         CommandLine commandLine,
                                         ParseResult parseResult) {
 
         commandLine.getErr().println(ex.getMessage());
 
-        return cmd.getExitCodeExceptionMapper() != null
-                    ? cmd.getExitCodeExceptionMapper().getExitCode(ex)
-                    : cmd.getCommandSpec().exitCodeOnExecutionException();
+        return commandLine.getExitCodeExceptionMapper() != null
+                    ? commandLine.getExitCodeExceptionMapper().getExitCode(ex)
+                    : commandLine.getCommandSpec().exitCodeOnExecutionException();
     }
 }
 ----
