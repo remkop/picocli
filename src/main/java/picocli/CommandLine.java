@@ -5340,9 +5340,9 @@ public class CommandLine {
          * This class provides a case-aware Linked HashMap. Supports both case-sensitive and case-insensitive modes.
          * @param <V> type of the value
          */
-        private static class LinkedCaseAwareMap<V> implements Map<String, V> {
-            private final LinkedHashMap<String, V> targetMap = new LinkedHashMap<String, V>();
-            private final HashMap<String, String> keyMap = new HashMap<String, String>();
+        private static class LinkedCaseAwareMap<K, V> implements Map<K, V> {
+            private final LinkedHashMap<K, V> targetMap = new LinkedHashMap<K, V>();
+            private final HashMap<K, K> keyMap = new HashMap<K, K>();
             private final Locale locale;
             private boolean caseInsensitive = false;
 
@@ -5361,6 +5361,20 @@ public class CommandLine {
                 this.locale = locale;
             }
 
+            private boolean isCaseConvertible(Class<?> clazz) {
+                return clazz == String.class || clazz == Character.class;
+            }
+
+            private K toLowerCase(Object caseSensitiveKey) {
+                if (caseSensitiveKey instanceof String) {
+                    return (K) ((String) caseSensitiveKey).toLowerCase(locale);
+                } else if (caseSensitiveKey instanceof Character) {
+                    return (K) (Character) Character.toLowerCase((Character) caseSensitiveKey);
+                } else {
+                    throw new UnsupportedOperationException("Unsupported case-conversion for class " + caseSensitiveKey.getClass());
+                }
+            }
+
             /** Returns the case-insensitivity of the map. */
             public boolean isCaseInsensitive() {
                 return caseInsensitive;
@@ -5369,8 +5383,8 @@ public class CommandLine {
             /** Sets the case-insensitivity of the map. */
             public void setCaseInsensitive(boolean caseInsensitive) {
                 if (caseInsensitive) {
-                    for (String key : targetMap.keySet()) {
-                        String duplicatedKey = keyMap.put(key.toLowerCase(locale), key);
+                    for (K key : targetMap.keySet()) {
+                        K duplicatedKey = keyMap.put(toLowerCase(key), key);
                         if (duplicatedKey != null) {
                             throw new IllegalStateException("Duplicated keys: " + duplicatedKey + " and " + key);
                         }
@@ -5405,8 +5419,8 @@ public class CommandLine {
             }
 
             public V get(Object key) {
-                if (key instanceof String && caseInsensitive) {
-                    String caseSensitiveKey = keyMap.get(((String) key).toLowerCase(locale));
+                if (isCaseConvertible(key.getClass()) && caseInsensitive) {
+                    K caseSensitiveKey = keyMap.get(toLowerCase(key));
                     if (caseSensitiveKey == null) {
                         return null;
                     }
@@ -5416,9 +5430,9 @@ public class CommandLine {
                 }
             }
 
-            public V put(String key, V value) {
+            public V put(K key, V value) {
                 if (key != null && caseInsensitive) {
-                    String caseSensitiveKey = keyMap.put(key.toLowerCase(locale), key);
+                    K caseSensitiveKey = keyMap.put(toLowerCase(key), key);
                     if (caseSensitiveKey != null) {
                         V removedValue = targetMap.remove(caseSensitiveKey);
                         targetMap.put(key, value);
@@ -5430,7 +5444,7 @@ public class CommandLine {
 
             public V remove(Object key) {
                 if (key != null && caseInsensitive) {
-                    String caseSensitiveKey = keyMap.remove(key);
+                    K caseSensitiveKey = keyMap.remove(key);
                     if (caseSensitiveKey == null) {
                         return null;
                     }
@@ -5440,8 +5454,8 @@ public class CommandLine {
                 }
             }
 
-            public void putAll(Map<? extends String, ? extends V> m) {
-                for (Entry<? extends String, ? extends V> entry : m.entrySet()) {
+            public void putAll(Map<? extends K, ? extends V> m) {
+                for (Entry<? extends K, ? extends V> entry : m.entrySet()) {
                     put(entry.getKey(), entry.getValue());
                 }
             }
@@ -5451,7 +5465,7 @@ public class CommandLine {
                 keyMap.clear();
             }
 
-            public Set<String> keySet() {
+            public Set<K> keySet() {
                 return targetMap.keySet();
             }
 
@@ -5459,7 +5473,7 @@ public class CommandLine {
                 return targetMap.values();
             }
 
-            public Set<Entry<String, V>> entrySet() {
+            public Set<Entry<K, V>> entrySet() {
                 return targetMap.entrySet();
             }
         }
@@ -5494,12 +5508,12 @@ public class CommandLine {
 
             static final Boolean DEFAULT_SUBCOMMANDS_REPEATABLE = false;
 
-            private final LinkedCaseAwareMap<CommandLine> commands = new LinkedCaseAwareMap<CommandLine>();
-            private final LinkedCaseAwareMap<OptionSpec> optionsByNameMap = new LinkedCaseAwareMap<OptionSpec>();
-            private final LinkedCaseAwareMap<OptionSpec> negatedOptionsByNameMap = new LinkedCaseAwareMap<OptionSpec>();
-            private final Map<Character, OptionSpec> posixOptionsByKeyMap = new LinkedHashMap<Character, OptionSpec>();
-            private final LinkedCaseAwareMap<CommandSpec> mixins = new LinkedCaseAwareMap<CommandSpec>();
-            private final LinkedCaseAwareMap<IAnnotatedElement> mixinAnnotatedElements = new LinkedCaseAwareMap<IAnnotatedElement>();
+            private final LinkedCaseAwareMap<String, CommandLine> commands = new LinkedCaseAwareMap<String, CommandLine>();
+            private final LinkedCaseAwareMap<String, OptionSpec> optionsByNameMap = new LinkedCaseAwareMap<String, OptionSpec>();
+            private final LinkedCaseAwareMap<String, OptionSpec> negatedOptionsByNameMap = new LinkedCaseAwareMap<String, OptionSpec>();
+            private final LinkedCaseAwareMap<Character, OptionSpec> posixOptionsByKeyMap = new LinkedCaseAwareMap<Character, OptionSpec>();
+            private final Map<String, CommandSpec> mixins = new LinkedHashMap<String, CommandSpec>();
+            private final Map<String, IAnnotatedElement> mixinAnnotatedElements = new LinkedHashMap<String, IAnnotatedElement>();
             private final List<ArgSpec> requiredArgs = new ArrayList<ArgSpec>();
             private final List<ArgSpec> args = new ArrayList<ArgSpec>();
             private final List<OptionSpec> options = new ArrayList<OptionSpec>();
@@ -5693,12 +5707,12 @@ public class CommandLine {
             /** Initializes the usageMessage specification for this command from the specified settings and returns this commandSpec.*/
             public CommandSpec usageMessage(UsageMessageSpec settings) { usageMessage.initFrom(settings, this); return this; }
 
-            /** Returns whether commands, options and mixins are all case-insensitive.
+            /** Returns whether commands and options are both case-insensitive.
              * @since 4.3 */
-            public boolean caseInsensitive() { return caseInsensitiveCommands() && caseInsensitiveOptions() && caseInsensitiveMixins(); }
-            /** Sets the case-insensitivity of commands, options and mixins.
+            public boolean caseInsensitive() { return caseInsensitiveCommands() && caseInsensitiveOptions(); }
+            /** Sets the case-insensitivity of both commands and options.
              * @since 4.3 */
-            public CommandSpec caseInsensitive(boolean caseInsensitive) { caseInsensitiveCommands(caseInsensitive); caseInsensitiveOptions(caseInsensitive); caseInsensitiveMixins(caseInsensitive); return this; }
+            public CommandSpec caseInsensitive(boolean caseInsensitive) { caseInsensitiveCommands(caseInsensitive); caseInsensitiveOptions(caseInsensitive); return this; }
             
 
             /** Returns whether the commands is case-insensitive.
@@ -5713,14 +5727,7 @@ public class CommandLine {
             public boolean caseInsensitiveOptions() { return optionsByNameMap.isCaseInsensitive(); }
             /** Sets the case-insensitivity of options.
              * @since 4.3 */
-            public CommandSpec caseInsensitiveOptions(boolean caseInsensitiveOptions) { optionsByNameMap.setCaseInsensitive(caseInsensitiveOptions); negatedOptionsByNameMap.setCaseInsensitive(caseInsensitiveOptions);  return this; }
-
-            /** Returns whether the mixins is case-insensitive.
-             * @since 4.3 */
-            public boolean caseInsensitiveMixins() { return mixins.isCaseInsensitive(); }
-            /** Set the case-insensitivity of mixins.
-             * @since 4.3 */
-            public CommandSpec caseInsensitiveMixins(boolean caseInsensitiveMixins) { mixins.setCaseInsensitive(caseInsensitiveMixins); mixinAnnotatedElements.setCaseInsensitive(caseInsensitiveMixins); return this; }
+            public CommandSpec caseInsensitiveOptions(boolean caseInsensitiveOptions) { optionsByNameMap.setCaseInsensitive(caseInsensitiveOptions); negatedOptionsByNameMap.setCaseInsensitive(caseInsensitiveOptions); posixOptionsByKeyMap.setCaseInsensitive(caseInsensitiveOptions);  return this; }
 
             /** Returns the resource bundle base name for this command.
              * @return the resource bundle base name from the {@linkplain UsageMessageSpec#messages()}
