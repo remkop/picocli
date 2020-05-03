@@ -763,7 +763,7 @@ public class CommandLine {
      * @return {@code true} if subcommands can be specified that don't match the {@code names()} value of the registered ones, {@code false} otherwise;
      * e.g., for a subcommand of names help, inputs like help, hElp and HELP are all recognized as it if {@code true}.
      * @since 4.3 */
-    public boolean isCaseInsensitiveCommands() { return getCommandSpec().caseInsensitiveCommands(); }
+    public boolean isCaseInsensitiveSubcommands() { return getCommandSpec().caseInsensitiveSubcommands(); }
 
     /** Sets whether the command should be case-insensitive in subcommands. The default is {@code false}.
      * When set to true, for example, for a subcommand of names help, inputs like help, hElp and HELP are all recognized as it if {@code true}.
@@ -775,10 +775,10 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 4.3
      */
-    public CommandLine setCaseInsensitiveCommands(boolean newValue) {
-        getCommandSpec().caseInsensitiveCommands(newValue);
+    public CommandLine setCaseInsensitiveSubcommands(boolean newValue) {
+        getCommandSpec().caseInsensitiveSubcommands(newValue);
         for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setCaseInsensitiveCommands(newValue);
+            command.setCaseInsensitiveSubcommands(newValue);
         }
         return this;
     }
@@ -5755,12 +5755,12 @@ public class CommandLine {
             /** Initializes the usageMessage specification for this command from the specified settings and returns this commandSpec.*/
             public CommandSpec usageMessage(UsageMessageSpec settings) { usageMessage.initFrom(settings, this); return this; }
 
-            /** Returns whether the commands is case-insensitive.
+            /** Returns whether the subcommands is case-insensitive.
              * @since 4.3 */
-            public boolean caseInsensitiveCommands() { return commands.isCaseInsensitive(); }
-            /** Sets the case-insensitivity of commands.
+            public boolean caseInsensitiveSubcommands() { return commands.isCaseInsensitive(); }
+            /** Sets the case-insensitivity of subcommands.
              * @since 4.3 */
-            public CommandSpec caseInsensitiveCommands(boolean caseInsensitiveCommands) { commands.setCaseInsensitive(caseInsensitiveCommands);  return this; }
+            public CommandSpec caseInsensitiveSubcommands(boolean caseInsensitiveSubcommands) { commands.setCaseInsensitive(caseInsensitiveSubcommands);  return this; }
 
             /** Returns whether the options is case-insensitive.
              * @since 4.3 */
