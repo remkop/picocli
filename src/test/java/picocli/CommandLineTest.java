@@ -3603,7 +3603,7 @@ public class CommandLineTest {
             public void helpCommand() { }
         }
         CommandLine commandLine = new CommandLine(new App());
-        commandLine.setCaseInsensitiveCommands(true);
+        commandLine.setCaseInsensitiveSubcommands(true);
         try {
             commandLine.getCommandSpec().addSubcommand("HELP", CommandSpec.create());
             fail("Expected exception");
@@ -3624,7 +3624,7 @@ public class CommandLineTest {
         }
         CommandLine commandLine = new CommandLine(new App());
         try {
-            commandLine.setCaseInsensitiveCommands(true);
+            commandLine.setCaseInsensitiveSubcommands(true);
             fail("Expected exception");
         } catch (Exception ex) {
             assertEquals("Duplicated keys: help and HELP", ex.getMessage());
@@ -3685,7 +3685,7 @@ public class CommandLineTest {
         }
         CommandLine commandLine = new CommandLine(new App());
         commandLine.getSubcommands().get("help").addSubcommand("ver", new VerCommand());
-        commandLine.setCaseInsensitiveCommands(true);
+        commandLine.setCaseInsensitiveSubcommands(true);
         commandLine.setCaseInsensitiveOptions(true);
         ParseResult result = commandLine.parseArgs("-h", "-HeLLO");
 
