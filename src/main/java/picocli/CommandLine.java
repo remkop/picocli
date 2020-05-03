@@ -5421,7 +5421,7 @@ public class CommandLine {
             private boolean caseInsensitive = false;
 
             /**
-             * Constructs an empty LinkedCaseAwareMap instance with default {@link java.util.Locale}.
+             * Constructs an empty LinkedCaseAwareMap instance with {@link java.util.Locale#getDefault}.
              */
             public LinkedCaseAwareMap() {
                 this(Locale.getDefault());
