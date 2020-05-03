@@ -5440,9 +5440,9 @@ public class CommandLine {
             }
 
             private K toLowerCase(Object caseSensitiveKey) {
-                if (caseSensitiveKey instanceof String) {
+                if (caseSensitiveKey.getClass() == String.class) {
                     return (K) ((String) caseSensitiveKey).toLowerCase(locale);
-                } else if (caseSensitiveKey instanceof Character) {
+                } else if (caseSensitiveKey.getClass() == Character.class) {
                     return (K) (Character) Character.toLowerCase((Character) caseSensitiveKey);
                 } else {
                     throw new UnsupportedOperationException("Unsupported case-conversion for class " + caseSensitiveKey.getClass());
