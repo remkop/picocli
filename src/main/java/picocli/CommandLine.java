@@ -813,7 +813,7 @@ public class CommandLine {
      * @return {@code true} if options can be specified that don't match the {@code names()} value of the registered ones, {@code false} otherwise;
      * e.g., for an option of names -h, inputs like -h and -H are both recognized as it if {@code true}.
      * @since 4.3 */
-    public boolean isCaseInsensitiveOptions() { return getCommandSpec().caseInsensitive(); }
+    public boolean isCaseInsensitiveOptions() { return getCommandSpec().caseInsensitiveOptions(); }
 
     /** Sets whether the command should be case-insensitive in options. The default is {@code false}.
      * When set to true, for example, for an option of names -h, inputs like -h and -H are both recognized as it if {@code true}.
