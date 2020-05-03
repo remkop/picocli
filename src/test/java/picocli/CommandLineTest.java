@@ -61,6 +61,7 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
@@ -3675,10 +3676,15 @@ public class CommandLineTest {
             @Option(names = "-hElLo")
             boolean helloWorld;
 
-            @Command(name = "ver")
-            public int versionCommand() { return 42; }
+            @Command(name = "help")
+            public int helpCommand() { return 0; }
+        }
+        @Command(name = "ver")
+        class VerCommand implements Callable<Integer> {
+            public Integer call() { return 42; }
         }
         CommandLine commandLine = new CommandLine(new App());
+        commandLine.getSubcommands().get("help").addSubcommand("ver", new VerCommand());
         commandLine.setCaseInsensitiveCommands(true);
         commandLine.setCaseInsensitiveOptions(true);
         ParseResult result = commandLine.parseArgs("-h", "-HeLLO");
@@ -3690,7 +3696,7 @@ public class CommandLineTest {
         assertFalse(result.hasMatchedOption("-HELLO"));
         assertFalse(result.hasMatchedOption("-HeLLO"));
 
-        int returnCode = commandLine.execute("VER");
+        int returnCode = commandLine.execute("HeLp", "VER");
         assertEquals(42, returnCode);
     }
 
