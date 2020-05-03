@@ -3600,7 +3600,7 @@ public class CommandLineTest {
         @Command
         class App {
             @Command(name = "help")
-            public void helpCommand() { }
+            public void helpCommand() {}
         }
         CommandLine commandLine = new CommandLine(new App());
         commandLine.setCaseInsensitiveSubcommands(true);
