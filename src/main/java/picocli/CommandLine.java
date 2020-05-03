@@ -5755,14 +5755,14 @@ public class CommandLine {
             /** Initializes the usageMessage specification for this command from the specified settings and returns this commandSpec.*/
             public CommandSpec usageMessage(UsageMessageSpec settings) { usageMessage.initFrom(settings, this); return this; }
 
-            /** Returns whether the subcommands is case-insensitive.
+            /** Returns whether the subcommands are case-insensitive.
              * @since 4.3 */
             public boolean caseInsensitiveSubcommands() { return commands.isCaseInsensitive(); }
             /** Sets the case-insensitivity of subcommands.
              * @since 4.3 */
             public CommandSpec caseInsensitiveSubcommands(boolean caseInsensitiveSubcommands) { commands.setCaseInsensitive(caseInsensitiveSubcommands);  return this; }
 
-            /** Returns whether the options is case-insensitive.
+            /** Returns whether the options are case-insensitive.
              * @since 4.3 */
             public boolean caseInsensitiveOptions() { return optionsByNameMap.isCaseInsensitive(); }
             /** Sets the case-insensitivity of options.
