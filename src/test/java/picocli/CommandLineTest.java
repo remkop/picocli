@@ -3595,7 +3595,44 @@ public class CommandLineTest {
     }
 
     @Test
-    public void testBuildCaseInsensitiveDuplicateOptions() {
+    public void testAddCaseInsensitiveDuplicateSubcommands() {
+        @Command
+        class App {
+            @Command(name = "help")
+            public void helpCommand() { }
+        }
+        CommandLine commandLine = new CommandLine(new App());
+        commandLine.setCaseInsensitive(true);
+        try {
+            commandLine.getCommandSpec().addSubcommand("HELP", CommandSpec.create());
+            fail("Expected exception");
+        } catch (Exception ex) {
+            assertEquals("Another subcommand named 'help' already exists for command '<main class>'", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testToggleCaseInsensitiveDuplicateSubcommands() {
+        @Command
+        class App {
+            @Command(name = "help")
+            public void helpCommand() {}
+
+            @Command(name = "HELP")
+            public void helpCommand2() {}
+        }
+        CommandLine commandLine = new CommandLine(new App());
+        try {
+            commandLine.setCaseInsensitive(true);
+            fail("Expected exception");
+        } catch (Exception ex) {
+            assertEquals("Duplicated keys: help and HELP", ex.getMessage());
+        }
+    }
+
+
+    @Test
+    public void testAddCaseInsensitiveDuplicateOptions() {
         class App {
             @Option(names = "-h")
             boolean helpMessage;
@@ -3624,18 +3661,22 @@ public class CommandLineTest {
             commandLine.setCaseInsensitive(true);
             fail("Expected exception");
         } catch (Exception ex) {
-            assertEquals(ex.getMessage(), "Duplicated keys: -h and -H");
+            assertEquals("Duplicated keys: -h and -H", ex.getMessage());
         }
     }
 
     @Test
     public void testCaseInsensitiveParseResult() {
+        @Command
         class App {
             @Option(names = "-h")
             boolean helpMessage;
 
             @Option(names = "-hElLo")
             boolean helloWorld;
+
+            @Command(name = "ver")
+            public int versionCommand() { return 42; }
         }
         CommandLine commandLine = new CommandLine(new App());
         commandLine.setCaseInsensitive(true);
@@ -3647,6 +3688,9 @@ public class CommandLineTest {
         assertFalse(result.hasMatchedOption("-hello"));
         assertFalse(result.hasMatchedOption("-HELLO"));
         assertFalse(result.hasMatchedOption("-HeLLO"));
+
+        int returnCode = commandLine.execute("VER");
+        assertEquals(42, returnCode);
     }
 
     @Test
