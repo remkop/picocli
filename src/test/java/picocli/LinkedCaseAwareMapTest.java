@@ -20,6 +20,17 @@ public class LinkedCaseAwareMapTest {
         }
     }
 
+    private boolean isCaseConvertible(Class<?> clazzToTest) {
+        try {
+            Class<?> clazz = getLinkedCaseAwareMapClass();
+            Method isCaseInsensitive = clazz.getDeclaredMethod("isCaseConvertible", Class.class);
+            isCaseInsensitive.setAccessible(true);
+            return (Boolean) isCaseInsensitive.invoke(null, clazzToTest);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private boolean isCaseInsensitive(Object map) {
         try {
             Class<?> clazz = getLinkedCaseAwareMapClass();
@@ -35,6 +46,16 @@ public class LinkedCaseAwareMapTest {
             Class<?> clazz = getLinkedCaseAwareMapClass();
             Method setCaseInsensitive = clazz.getMethod("setCaseInsensitive", boolean.class);
             setCaseInsensitive.invoke(map, caseInsensitive);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Object getCaseSensitiveKey(Object map, Object caseInsensitiveKey) {
+        try {
+            Class<?> clazz = getLinkedCaseAwareMapClass();
+            Method getCaseSensitiveKey = clazz.getMethod("getCaseSensitiveKey", Object.class);
+            return getCaseSensitiveKey.invoke(map, caseInsensitiveKey);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -202,17 +223,20 @@ public class LinkedCaseAwareMapTest {
         setCaseInsensitive(map, false);
         assertNull(get(map, null));
         assertFalse(containsKey(map, null));
+        assertNull(getCaseSensitiveKey(map, null));
 
         put(map, null, "value");
         assertTrue(containsKey(map, null));
         assertTrue(containsValue(map, "value"));
         assertEquals(1, size(map));
         assertEquals("value", get(map, null));
+        assertNull(getCaseSensitiveKey(map, null));
         setCaseInsensitive(map, true);
         assertEquals(1, size(map));
         assertEquals("value", get(map, null));
         assertTrue(containsKey(map, null));
         assertTrue(containsValue(map, "value"));
+        assertNull(getCaseSensitiveKey(map, null));
 
         assertEquals("value", put(map, null, "value2"));
         assertTrue(containsKey(map, null));
@@ -226,5 +250,30 @@ public class LinkedCaseAwareMapTest {
         assertNull(get(map, null));
         assertFalse(containsKey(map, null));
         assertFalse(containsKey(map, "value2"));
+        assertNull(getCaseSensitiveKey(map, null));
+    }
+
+    @Test
+    public void testInconvertibleClass() {
+        assertTrue(isCaseConvertible(String.class));
+        assertTrue(isCaseConvertible(Character.class));
+        assertFalse(isCaseConvertible(Object.class));
+
+        Object map = constructMap();
+        Object dummy = new Object();
+        setCaseInsensitive(map, false);
+        assertNull(get(map, dummy));
+        assertFalse(containsKey(map, dummy));
+
+        setCaseInsensitive(map, true);
+        assertNull(get(map, dummy));
+        assertFalse(containsKey(map, dummy));
+
+        try {
+            getCaseSensitiveKey(map, dummy);
+            fail("Expected exception");
+        } catch (Exception ex) {
+            assertEquals("Unsupported case-conversion for class class java.lang.Object", ex.getCause().getCause().getMessage());
+        }
     }
 }
