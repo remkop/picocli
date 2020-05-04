@@ -5863,22 +5863,13 @@ public class CommandLine {
                 if (t.isDebug()) {t.debug("Adding subcommand '%s' to '%s'%n", actualName, this.qualifiedName());}
                 String previousName = commands.getCaseSensitiveKey(actualName);
                 CommandLine previous = commands.put(actualName, subCommandLine);
-                if (previous != null && previous != subCommandLine) {
-                    throw new InitializationException(
-                            "Another subcommand named '" + previousName + "' already exists for command '" + this.name()
-                                    + "'");
-                }
-                if (subSpec.name == null) {
-                    subSpec.name(actualName);
-                }
+                if (previous != null && previous != subCommandLine) { throw new InitializationException("Another subcommand named '" + previousName + "' already exists for command '" + this.name() + "'"); }
+                if (subSpec.name == null) { subSpec.name(actualName); }
                 subSpec.parent(this);
                 for (String alias : subSpec.aliases()) {
                     if (t.isDebug()) {t.debug("Adding alias '%s' for '%s'%n", (parent == null ? "" : parent.qualifiedName() + " ") + alias, this.qualifiedName());}
                     previous = commands.put(alias, subCommandLine);
-                    if (previous != null && previous != subCommandLine) {
-                        throw new InitializationException("Alias '" + alias + "' for subcommand '" + previousName
-                                + "' is already used by another subcommand of '" + this.name() + "'");
-                    }
+                    if (previous != null && previous != subCommandLine) { throw new InitializationException("Alias '" + alias + "' for subcommand '" + previousName + "' is already used by another subcommand of '" + this.name() + "'"); }
                 }
                 subSpec.initCommandHierarchyWithResourceBundle(resourceBundleBaseName(), resourceBundle());
 
