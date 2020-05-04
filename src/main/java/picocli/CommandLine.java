@@ -12391,6 +12391,15 @@ public class CommandLine {
                 throw new MissingParameterException(CommandLine.this, argSpec, "Expected parameter " + desc + "for " + optionDescription("", argSpec, -1) + " but found '" + args.peek() + "'");
             }
         }
+        private void fixInitialValueIfSetted(Stack<String> args, Set<ArgSpec> initialized,Collection<Object> collection) {
+            if(args.empty()) {
+                List<ArgSpec> list = new ArrayList<ArgSpec>(initialized);
+                if(!initialized.isEmpty() && list.get(0).initialValue == collection) {
+                    initialized.iterator().next().initialValue = new ArrayList<Integer>();
+                }
+            }
+        }
+
         private int applyValuesToArrayField(ArgSpec argSpec,
                                             boolean negated,
                                             LookBehind lookBehind,
@@ -12455,6 +12464,8 @@ public class CommandLine {
             }
             parseResultBuilder.add(argSpec, pos);
             argSpec.setValue(collection);
+            fixInitialValueIfSetted(args, initialized, collection);
+
             return converted.size();
         }
 
