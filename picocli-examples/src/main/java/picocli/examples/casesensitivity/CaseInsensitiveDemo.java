@@ -23,7 +23,7 @@ public class CaseInsensitiveDemo implements Runnable {
 
     public static void main(String... args){
         new CommandLine(new CaseInsensitiveDemo())
-                .setOptionsCaseInsensitive(true)     // accepts `-H`, `--nAmE`
+                .setOptionsCaseInsensitive(true)     // accepts `-N`, `--nAmE`
                 .setSubcommandsCaseInsensitive(true) // accepts `gREET`, `GREET`
                 .execute(args);
     }
