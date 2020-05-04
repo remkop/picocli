@@ -5409,7 +5409,7 @@ public class CommandLine {
                 this.locale = locale;
             }
 
-            private boolean isCaseConvertible(Class<?> clazz) {
+            private static boolean isCaseConvertible(Class<?> clazz) {
                 return clazz == String.class || clazz == Character.class;
             }
 
