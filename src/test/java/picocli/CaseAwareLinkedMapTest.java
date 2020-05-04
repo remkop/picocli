@@ -3,8 +3,6 @@ package picocli;
 import org.junit.Test;
 import picocli.CommandLine.Model.CaseAwareLinkedMap;
 
-import java.lang.reflect.Method;
-
 import static org.junit.Assert.*;
 
 public class CaseAwareLinkedMapTest {
