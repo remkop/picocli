@@ -20,6 +20,26 @@ public class LinkedCaseAwareMapTest {
         }
     }
 
+    private boolean isCaseInsensitive(Object map) {
+        try {
+            Class<?> clazz = getLinkedCaseAwareMapClass();
+            Method isCaseInsensitive = clazz.getMethod("isCaseInsensitive");
+            return (Boolean) isCaseInsensitive.invoke(map);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setCaseInsensitive(Object map, boolean caseInsensitive) {
+        try {
+            Class<?> clazz = getLinkedCaseAwareMapClass();
+            Method setCaseInsensitive = clazz.getMethod("setCaseInsensitive", boolean.class);
+            setCaseInsensitive.invoke(map, caseInsensitive);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private Object get(Object map, Object key) {
         try {
             Class<?> clazz = getLinkedCaseAwareMapClass();
@@ -50,21 +70,21 @@ public class LinkedCaseAwareMapTest {
         }
     }
 
-    private boolean isCaseInsensitive(Object map) {
+    private boolean containsKey(Object map, Object key) {
         try {
             Class<?> clazz = getLinkedCaseAwareMapClass();
-            Method isCaseInsensitive = clazz.getMethod("isCaseInsensitive");
-            return (Boolean) isCaseInsensitive.invoke(map);
+            Method containsKey = clazz.getMethod("containsKey", Object.class);
+            return (Boolean) containsKey.invoke(map, key);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void setCaseInsensitive(Object map, boolean caseInsensitive) {
+    private boolean containsValue(Object map, Object value) {
         try {
             Class<?> clazz = getLinkedCaseAwareMapClass();
-            Method setCaseInsensitive = clazz.getMethod("setCaseInsensitive", boolean.class);
-            setCaseInsensitive.invoke(map, caseInsensitive);
+            Method containsValue = clazz.getMethod("containsValue", Object.class);
+            return (Boolean) containsValue.invoke(map, value);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -91,12 +111,24 @@ public class LinkedCaseAwareMapTest {
         setCaseInsensitive(map, false);
         put(map, "key", "value");
         assertEquals(1, size(map));
+        assertTrue(containsKey(map, "key"));
+        assertFalse(containsKey(map, "KEY"));
+        assertTrue(containsValue(map, "value"));
         Object replacedValue = put(map, "Key", "VALUE");
         assertNull(replacedValue);
         assertEquals(2, size(map));
+        assertTrue(containsKey(map, "key"));
+        assertTrue(containsKey(map, "Key"));
+        assertFalse(containsKey(map, "KEY"));
+        assertTrue(containsValue(map, "value"));
         replacedValue = put(map, "key", "VALUE");
         assertEquals("value", replacedValue);
         assertEquals(2, size(map));
+        assertTrue(containsKey(map, "key"));
+        assertTrue(containsKey(map, "Key"));
+        assertFalse(containsKey(map, "KEY"));
+        assertFalse(containsValue(map, "value"));
+        assertTrue(containsValue(map, "VALUE"));
     }
 
     @Test
@@ -105,8 +137,12 @@ public class LinkedCaseAwareMapTest {
         setCaseInsensitive(map, false);
         put(map, "key", "value");
         put(map, "kee", "value");
+        assertTrue(containsKey(map, "key"));
+        assertFalse(containsKey(map, "KEY"));
         assertEquals(2, size(map));
         setCaseInsensitive(map, true);
+        assertTrue(containsKey(map, "key"));
+        assertTrue(containsKey(map, "KEY"));
         assertEquals(2, size(map));
     }
 
@@ -165,20 +201,30 @@ public class LinkedCaseAwareMapTest {
         Object map = constructMap();
         setCaseInsensitive(map, false);
         assertNull(get(map, null));
+        assertFalse(containsKey(map, null));
 
         put(map, null, "value");
+        assertTrue(containsKey(map, null));
+        assertTrue(containsValue(map, "value"));
         assertEquals(1, size(map));
         assertEquals("value", get(map, null));
         setCaseInsensitive(map, true);
         assertEquals(1, size(map));
         assertEquals("value", get(map, null));
+        assertTrue(containsKey(map, null));
+        assertTrue(containsValue(map, "value"));
 
         assertEquals("value", put(map, null, "value2"));
+        assertTrue(containsKey(map, null));
+        assertFalse(containsValue(map, "value"));
+        assertTrue(containsValue(map, "value2"));
         assertEquals(1, size(map));
         assertEquals("value2", get(map, null));
 
         assertEquals("value2", remove(map, null));
         assertEquals(0, size(map));
         assertNull(get(map, null));
+        assertFalse(containsKey(map, null));
+        assertFalse(containsKey(map, "value2"));
     }
 }
