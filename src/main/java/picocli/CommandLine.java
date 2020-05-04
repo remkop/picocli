@@ -5869,7 +5869,7 @@ public class CommandLine {
                 for (String alias : subSpec.aliases()) {
                     if (t.isDebug()) {t.debug("Adding alias '%s' for '%s'%n", (parent == null ? "" : parent.qualifiedName() + " ") + alias, this.qualifiedName());}
                     previous = commands.put(alias, subCommandLine);
-                    if (previous != null && previous != subCommandLine) { throw new InitializationException("Alias '" + alias + "' for subcommand '" + previousName + "' is already used by another subcommand of '" + this.name() + "'"); }
+                    if (previous != null && previous != subCommandLine) { throw new InitializationException("Alias '" + alias + "' for subcommand '" + actualName + "' is already used by another subcommand of '" + this.name() + "'"); }
                 }
                 subSpec.initCommandHierarchyWithResourceBundle(resourceBundleBaseName(), resourceBundle());
 
