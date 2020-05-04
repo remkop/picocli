@@ -5414,9 +5414,7 @@ public class CommandLine {
             }
 
             private K toLowerCase(Object caseSensitiveKey) {
-                if (caseSensitiveKey == null) {
-                    return null;
-                } else if (caseSensitiveKey.getClass() == String.class) {
+                if (caseSensitiveKey.getClass() == String.class) {
                     return (K) ((String) caseSensitiveKey).toLowerCase(locale);
                 } else if (caseSensitiveKey.getClass() == Character.class) {
                     return (K) (Character) Character.toLowerCase((Character) caseSensitiveKey);
@@ -5434,7 +5432,7 @@ public class CommandLine {
             public void setCaseInsensitive(boolean caseInsensitive) {
                 if (!isCaseInsensitive() && caseInsensitive) {
                     for (K key : targetMap.keySet()) {
-                        K duplicatedKey = keyMap.put(toLowerCase(key), key);
+                        K duplicatedKey = keyMap.put(key != null ? toLowerCase(key) : null, key);
                         if (duplicatedKey != null) {
                             throw new IllegalStateException("Duplicated keys: " + duplicatedKey + " and " + key);
                         }
@@ -5450,7 +5448,7 @@ public class CommandLine {
              * Otherwise, the specified case-insensitive key is returned.
              */
             public K getCaseSensitiveKey(K caseInsensitiveKey) {
-                if (caseInsensitive) {
+                if (caseInsensitiveKey != null && caseInsensitive) {
                     return keyMap.get(toLowerCase(caseInsensitiveKey));
                 } else {
                     return caseInsensitiveKey;
