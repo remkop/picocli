@@ -759,14 +759,14 @@ public class CommandLine {
         return this;
     }
 
-    /** Returns whether the command should be case-insensitive in subcommands. The default is {@code false}.
-     * @return {@code true} if subcommands can be specified that don't match the {@code names()} value of the registered ones, {@code false} otherwise;
-     * e.g., for a subcommand of names help, inputs like help, HeLp and HELP are all recognized as it if {@code true}.
+    /** Returns whether upper case and lower case should be ignored when matching subcommands. The default is {@code false}.
+     * @return {@code true} if subcommands can be matched when they differ only in case from the {@code names()} value of a registered one, {@code false} otherwise.
+     *       For example, if true, for a subcommand with name {@code help}, inputs like {@code help}, {@code HeLp} and {@code HELP} are all recognized.
      * @since 4.3 */
-    public boolean isCaseInsensitiveSubcommands() { return getCommandSpec().caseInsensitiveSubcommands(); }
+    public boolean isSubcommandsCaseInsensitive() { return getCommandSpec().subcommandsCaseInsensitive(); }
 
-    /** Sets whether the command should be case-insensitive in subcommands. The default is {@code false}.
-     * When set to true, for example, for a subcommand of names help, inputs like help, HeLp and HELP are all recognized as it if {@code true}.
+    /** Sets whether upper case and lower case should be ignored when matching subcommands. The default is {@code false}.
+     * For example, when set to {@code true}, for a subcommand with name {@code help}, inputs like {@code help}, {@code HeLp} and {@code HELP} are all recognized.
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
@@ -775,22 +775,22 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 4.3
      */
-    public CommandLine setCaseInsensitiveSubcommands(boolean newValue) {
-        getCommandSpec().caseInsensitiveSubcommands(newValue);
+    public CommandLine setSubcommandsCaseInsensitive(boolean newValue) {
+        getCommandSpec().subcommandsCaseInsensitive(newValue);
         for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setCaseInsensitiveSubcommands(newValue);
+            command.setSubcommandsCaseInsensitive(newValue);
         }
         return this;
     }
 
-    /** Returns whether the command should be case-insensitive in options. The default is {@code false}.
-     * @return {@code true} if options can be specified that don't match the {@code names()} value of the registered ones, {@code false} otherwise;
-     * e.g., for an option of names -h, inputs like -h and -H are both recognized as it if {@code true}.
+    /** Returns whether upper case and lower case should be ignored when matching option names. The default is {@code false}.
+     * @return {@code true} if options can be matched when they differ only in case from the {@code names()} value of a registered one, {@code false} otherwise;
+     *       For example, if true, for an option with name {@code -h}, inputs like {@code -h}, {@code -H} are both recognized.
      * @since 4.3 */
-    public boolean isCaseInsensitiveOptions() { return getCommandSpec().caseInsensitiveOptions(); }
+    public boolean isOptionsCaseInsensitive() { return getCommandSpec().optionsCaseInsensitive(); }
 
-    /** Sets whether the command should be case-insensitive in options. The default is {@code false}.
-     * When set to true, for example, for an option of names -h, inputs like -h and -H are both recognized as it if {@code true}.
+    /** Sets whether upper case and lower case should be ignored when matching option names. The default is {@code false}.
+     * For example, when set to {@code true}, for an option with name {@code -h}, inputs like {@code -h}, {@code -H} are both recognized.
      * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
@@ -799,10 +799,10 @@ public class CommandLine {
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 4.3
      */
-    public CommandLine setCaseInsensitiveOptions(boolean newValue) {
-        getCommandSpec().caseInsensitiveOptions(newValue);
+    public CommandLine setOptionsCaseInsensitive(boolean newValue) {
+        getCommandSpec().optionsCaseInsensitive(newValue);
         for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setCaseInsensitiveOptions(newValue);
+            command.setOptionsCaseInsensitive(newValue);
         }
         return this;
     }
@@ -5769,17 +5769,22 @@ public class CommandLine {
 
             /** Returns whether the subcommands are case-insensitive.
              * @since 4.3 */
-            public boolean caseInsensitiveSubcommands() { return commands.isCaseInsensitive(); }
+            public boolean subcommandsCaseInsensitive() { return commands.isCaseInsensitive(); }
             /** Sets the case-insensitivity of subcommands.
              * @since 4.3 */
-            public CommandSpec caseInsensitiveSubcommands(boolean caseInsensitiveSubcommands) { commands.setCaseInsensitive(caseInsensitiveSubcommands);  return this; }
+            public CommandSpec subcommandsCaseInsensitive(boolean caseInsensitiveSubcommands) { commands.setCaseInsensitive(caseInsensitiveSubcommands);  return this; }
 
             /** Returns whether the options are case-insensitive.
              * @since 4.3 */
-            public boolean caseInsensitiveOptions() { return optionsByNameMap.isCaseInsensitive(); }
+            public boolean optionsCaseInsensitive() { return optionsByNameMap.isCaseInsensitive(); }
             /** Sets the case-insensitivity of options.
              * @since 4.3 */
-            public CommandSpec caseInsensitiveOptions(boolean caseInsensitiveOptions) { optionsByNameMap.setCaseInsensitive(caseInsensitiveOptions); negatedOptionsByNameMap.setCaseInsensitive(caseInsensitiveOptions); posixOptionsByKeyMap.setCaseInsensitive(caseInsensitiveOptions);  return this; }
+            public CommandSpec optionsCaseInsensitive(boolean caseInsensitiveOptions) {
+                optionsByNameMap.setCaseInsensitive(caseInsensitiveOptions);
+                negatedOptionsByNameMap.setCaseInsensitive(caseInsensitiveOptions);
+                posixOptionsByKeyMap.setCaseInsensitive(caseInsensitiveOptions);
+                return this;
+            }
 
             /** Returns the resource bundle base name for this command.
              * @return the resource bundle base name from the {@linkplain UsageMessageSpec#messages()}

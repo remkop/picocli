@@ -3607,22 +3607,22 @@ public class CommandLineTest {
         }
         CommandLine commandLine = new CommandLine(new App());
         // Assert default behaviour. (defaults to false)
-        assertFalse(commandLine.isCaseInsensitiveSubcommands());
-        assertFalse(commandLine.isCaseInsensitiveOptions());
-        commandLine.setCaseInsensitiveSubcommands(true);
+        assertFalse(commandLine.isSubcommandsCaseInsensitive());
+        assertFalse(commandLine.isOptionsCaseInsensitive());
+        commandLine.setSubcommandsCaseInsensitive(true);
         // Test set case-insensitivity twice.
-        commandLine.setCaseInsensitiveSubcommands(true);
-        assertTrue(commandLine.isCaseInsensitiveSubcommands());
-        assertFalse(commandLine.isCaseInsensitiveOptions());
-        commandLine.setCaseInsensitiveOptions(true);
+        commandLine.setSubcommandsCaseInsensitive(true);
+        assertTrue(commandLine.isSubcommandsCaseInsensitive());
+        assertFalse(commandLine.isOptionsCaseInsensitive());
+        commandLine.setOptionsCaseInsensitive(true);
         // Test set case-insensitivity twice.
-        commandLine.setCaseInsensitiveOptions(true);
-        assertTrue(commandLine.isCaseInsensitiveSubcommands());
-        assertTrue(commandLine.isCaseInsensitiveOptions());
-        commandLine.setCaseInsensitiveSubcommands(false);
-        commandLine.setCaseInsensitiveOptions(false);
-        assertFalse(commandLine.isCaseInsensitiveSubcommands());
-        assertFalse(commandLine.isCaseInsensitiveOptions());
+        commandLine.setOptionsCaseInsensitive(true);
+        assertTrue(commandLine.isSubcommandsCaseInsensitive());
+        assertTrue(commandLine.isOptionsCaseInsensitive());
+        commandLine.setSubcommandsCaseInsensitive(false);
+        commandLine.setOptionsCaseInsensitive(false);
+        assertFalse(commandLine.isSubcommandsCaseInsensitive());
+        assertFalse(commandLine.isOptionsCaseInsensitive());
     }
 
     @Test
@@ -3633,7 +3633,7 @@ public class CommandLineTest {
             public void helpCommand() {}
         }
         CommandLine commandLine = new CommandLine(new App());
-        commandLine.setCaseInsensitiveSubcommands(true);
+        commandLine.setSubcommandsCaseInsensitive(true);
         try {
             commandLine.getCommandSpec().addSubcommand("HELP", CommandSpec.create());
             fail("Expected exception");
@@ -3654,7 +3654,7 @@ public class CommandLineTest {
         }
         CommandLine commandLine = new CommandLine(new App());
         try {
-            commandLine.setCaseInsensitiveSubcommands(true);
+            commandLine.setSubcommandsCaseInsensitive(true);
             fail("Expected exception");
         } catch (Exception ex) {
             assertEquals("Duplicated keys: help and HELP", ex.getMessage());
@@ -3669,7 +3669,7 @@ public class CommandLineTest {
             boolean helpMessage;
         }
         CommandLine commandLine = new CommandLine(new App());
-        commandLine.setCaseInsensitiveOptions(true);
+        commandLine.setOptionsCaseInsensitive(true);
         try {
             commandLine.getCommandSpec().addOption(OptionSpec.builder("-H").build());
             fail("Expected exception");
@@ -3689,7 +3689,7 @@ public class CommandLineTest {
         }
         CommandLine commandLine = new CommandLine(new App());
         try {
-            commandLine.setCaseInsensitiveOptions(true);
+            commandLine.setOptionsCaseInsensitive(true);
             fail("Expected exception");
         } catch (Exception ex) {
             assertEquals("Duplicated keys: -h and -H", ex.getMessage());
@@ -3715,8 +3715,8 @@ public class CommandLineTest {
         }
         CommandLine commandLine = new CommandLine(new App());
         commandLine.getSubcommands().get("help").addSubcommand("ver", new VerCommand());
-        commandLine.setCaseInsensitiveSubcommands(true);
-        commandLine.setCaseInsensitiveOptions(true);
+        commandLine.setSubcommandsCaseInsensitive(true);
+        commandLine.setOptionsCaseInsensitive(true);
         ParseResult result = commandLine.parseArgs("-h", "-HeLLO");
 
         assertTrue(result.hasMatchedOption("-h"));
