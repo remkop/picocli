@@ -2578,65 +2578,26 @@ class ExecParameterConsumer implements IParameterConsumer {
 ```
 
 === Case Sensitivity
-By deafult, all options and subcommands are case senstive.  Case Sensitivity can be toggled globally, with `CommandLine.setSubcommandsCaseInsensitive` and `CommandLine.setOptionsCaseInsensitive`.
+By default, all options and subcommands are case sensitive.
+Case sensitivity can be switched off globally, as well as on a per-command basis.
 
-The following example shows setting a case insensitive parse config. With such settings, `help`, `HELP`, `HElp` will all be resolved to `helpCommand`. Similarly, `-h` and `-H` will both be resolved to `helpMessage`.
-[source,java]
-----
-@Command
-class App {
-    @Command(name = "help")
-    public void helpCommand() {}
+To toggle case sensitivity for all commands, use the `CommandLine::setSubcommandsCaseInsensitive` and `CommandLine::setOptionsCaseInsensitive` methods.
+Use the `CommandSpec::subcommandsCaseInsensitive` and `CommandSpec::optionsCaseInsensitive` methods to give some commands a different case sensitivity than others.
 
-    @Option(names = "-h")
-    public boolean helpMessage;
-}
-CommandLine commandLine = new CommandLine(new App());
-commandLine.setSubcommandsCaseInsensitive(true);
-commandLine.setOptionsCaseInsensitive(true);
-----
+Where possible, picocli will try to prevent ambiguity: when multiple options with the same name are registered in a command, a `DuplicateOptionAnnotationsException` is thrown.
+When multiple subcommands with the same name are registered in a command, a `DuplicateNameException` is thrown.
 
-Finer controls of case sensitivity in the scope of a given `CommandSpec` is also possible. This enables some SubCommands to exhibit different case sensitivty to others.
-
-The following example shows setting the `strict` subcommand to case sensitive, while leaving others case insensitive.
-[source,java]
-----
-// From examples.casesensitivity.ScopedCaseSensitivityDemo
-
-CommandLine commandLine = new CommandLine(new ScopedCaseSensitivityDemo());
-commandLine.addSubcommand("strict", new StrictGreet());
-// globally case insensitive
-commandLine.setOptionsCaseInsensitive(true);
-commandLine.setSubcommandsCaseInsensitive(true);
-// specifically case sensitive
-// accepts `strict GrEET`
-// rejects `strict greet`, `strict GREET`...
-commandLine.getSubcommands().get("strict").setSubcommandsCaseInsensitive(false);
-commandLine.execute(args);
-----
-
-With case-insensitive enabled, Subcommands and Options having the same letters but with different cases can not be used at the same time, and will throw exception with messages indicting duplicate keys. Other operations that might lead to ambiguity will also throw exceptions.
-
-The following example shows a failure of adding two options with the same letter `h` but differnt cases.
-
-[source,java]
-----
-class App {
-    @Option(names = "-h")
-    boolean helpMessage;
-
-    @Option(names = "-H")
-    boolean highlight;
-}
-CommandLine commandLine = new CommandLine(new App());
-commandLine.setCaseInsensitiveOptions(true); // won't work
-// IllegalStateException: Duplicated keys: -h and -H
-----
+With case sensitivity switched off, the same principle applies: multiple options whose names differ only in case cannot be registered in a command.
+Similarly, multiple subcommands cannot be registered when their names differ only in case.
 
 [WARNING]
 ====
-Combination of POSIX options might resemble a long option. In such cases, Picocli will prioritize the long option. For example, if there are POSIX options `-a`, `-b`, `-c` and `-d`, and a long option `-abcd`, and user specifies `-abcd`, Picocli will recognize it as the long option `-abcd`, not any of the POSIX options. `examples.casesensitivity.POSIXOptionResembleDemo` illustrates such a problem. 
+When a combination of POSIX options resembles a long option, picocli will prioritize the long option.
+This is the case regardless of case sensitivity, but be aware that with case sensitivity switched off, the chance of such collisions increases.
+For example, if a command has POSIX options `-a`, `-b`, and `-c`, and a long option `-ABC`, then, when the user specifies `-abc`, picocli will recognize it as the long option `-ABC`, not as the POSIX options.
 ====
+
+See the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/casesensitivity[casesensitivity] package in `picocli-examples` for some examples.
 
 
 == Help
