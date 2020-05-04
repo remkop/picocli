@@ -3596,6 +3596,36 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testCaseInsensitiveToggle() {
+        @Command
+        class App {
+            @Command(name = "help")
+            public void helpCommand() {}
+
+            @Option(names = "-h")
+            public boolean helpMessage;
+        }
+        CommandLine commandLine = new CommandLine(new App());
+        // Assert default behaviour. (defaults to false)
+        assertFalse(commandLine.isCaseInsensitiveSubcommands());
+        assertFalse(commandLine.isCaseInsensitiveOptions());
+        commandLine.setCaseInsensitiveSubcommands(true);
+        // Test set case-insensitivity twice.
+        commandLine.setCaseInsensitiveSubcommands(true);
+        assertTrue(commandLine.isCaseInsensitiveSubcommands());
+        assertFalse(commandLine.isCaseInsensitiveOptions());
+        commandLine.setCaseInsensitiveOptions(true);
+        // Test set case-insensitivity twice.
+        commandLine.setCaseInsensitiveOptions(true);
+        assertTrue(commandLine.isCaseInsensitiveSubcommands());
+        assertTrue(commandLine.isCaseInsensitiveOptions());
+        commandLine.setCaseInsensitiveSubcommands(false);
+        commandLine.setCaseInsensitiveOptions(false);
+        assertFalse(commandLine.isCaseInsensitiveSubcommands());
+        assertFalse(commandLine.isCaseInsensitiveOptions());
+    }
+
+    @Test
     public void testAddCaseInsensitiveDuplicateSubcommands() {
         @Command
         class App {
