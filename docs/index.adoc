@@ -2577,6 +2577,68 @@ class ExecParameterConsumer implements IParameterConsumer {
 }
 ```
 
+=== Case Sensitivity
+By deafult, all options and subcommands are case senstive.  Case Sensitivity can be toggled globally, with `CommandLine.setSubcommandsCaseInsensitive` and `CommandLine.setOptionsCaseInsensitive`.
+
+The following example shows setting a case insensitive parse config. With such settings, `help`, `HELP`, `HElp` will all be resolved to `helpCommand`. Similarly, `-h` and `-H` will both be resolved to `helpmessage`.
+[source,java]
+----
+@Command
+class App {
+    @Command(name = "help")
+    public void helpCommand() {}
+
+    @Option(names = "-h")
+    public boolean helpMessage;
+}
+CommandLine commandLine = new CommandLine(new App());
+commandLine.setSubcommandsCaseInsensitive(true);
+commandLine.setOptionsCaseInsensitive(true);
+----
+
+Finer controls of case sensitivity in the scope of a given `CommandSpec` is also possible. This enables some SubCommands to exhibit different case sensitivty to others.
+
+The following example shows setting the `strict` subcommand to case sensitive, while leaving others case insensitive.
+[source,java]
+----
+// From examples.casesensitivity.ScopedCaseSensitivityDemo
+
+CommandLine commandLine = new CommandLine(new ScopedCaseSensitivityDemo());
+commandLine.addSubcommand("strict", new StrictGreet());
+// globally case insensitive
+commandLine.setOptionsCaseInsensitive(true);
+commandLine.setSubcommandsCaseInsensitive(true);
+// specifically case sensitive
+// accepts `strict GrEET`
+// rejects `strict greet`, `strict GREET`...
+commandLine.getSubcommands().get("strict").setSubcommandsCaseInsensitive(false);
+commandLine.execute(args);
+----
+
+With case-insensitive enabled, Subcommands and Options having the same letters but with different cases can not be used at the same time, and will throw exception with messages indicting duplicate keys. Other operations that might lead to ambiguity will also throw exceptions.
+
+The following example shows a failure of adding two options with the same letter `h` but differnt cases.
+
+[source,java]
+----
+class App {
+    @Option(names = "-h")
+    boolean helpMessage;
+
+    @Option(names = "-H")
+    boolean highlight;
+}
+CommandLine commandLine = new CommandLine(new App());
+commandLine.setCaseInsensitiveOptions(true); // won't work
+// IllegalStateException: Duplicated keys: -h and -H
+----
+
+[WARNING]
+====
+Combination of POSIX options might resemble a long option. In such cases, Picocli will prioritize the long option. For example, if there are POSIX options `-a`, `-b`, `-c` and `-d`, and a long option `-abcd`, and user specifies `-abcd`, Picocli will recognize it as the long option `-abcd`, not any of the POSIX options. `examples.casesensitivity.POSIXOptionResembleDemo` illustrates such a problem. 
+====
+
+
 == Help
 
 === Help Options
