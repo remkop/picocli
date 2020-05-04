@@ -2580,7 +2580,7 @@ class ExecParameterConsumer implements IParameterConsumer {
 === Case Sensitivity
 By deafult, all options and subcommands are case senstive.  Case Sensitivity can be toggled globally, with `CommandLine.setSubcommandsCaseInsensitive` and `CommandLine.setOptionsCaseInsensitive`.
 
-The following example shows setting a case insensitive parse config. With such settings, `help`, `HELP`, `HElp` will all be resolved to `helpCommand`. Similarly, `-h` and `-H` will both be resolved to `helpmessage`.
+The following example shows setting a case insensitive parse config. With such settings, `help`, `HELP`, `HElp` will all be resolved to `helpCommand`. Similarly, `-h` and `-H` will both be resolved to `helpMessage`.
 [source,java]
 ----
 @Command
