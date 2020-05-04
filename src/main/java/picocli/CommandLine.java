@@ -5388,7 +5388,7 @@ public class CommandLine {
          * This class provides a case-aware Linked HashMap. Supports both case-sensitive and case-insensitive modes.
          * @param <V> type of the value
          */
-        private static class LinkedCaseAwareMap<K, V> extends AbstractMap<K, V> {
+        static class CaseAwareLinkedMap<K, V> extends AbstractMap<K, V> {
             private final LinkedHashMap<K, V> targetMap = new LinkedHashMap<K, V>();
             private final HashMap<K, K> keyMap = new HashMap<K, K>();
             private final Locale locale;
@@ -5397,7 +5397,7 @@ public class CommandLine {
             /**
              * Constructs an empty LinkedCaseAwareMap instance with {@link java.util.Locale#ENGLISH}.
              */
-            public LinkedCaseAwareMap() {
+            public CaseAwareLinkedMap() {
                 this(ENGLISH);
             }
 
@@ -5405,11 +5405,11 @@ public class CommandLine {
              * Constructs an empty LinkedCaseAwareMap instance with the specified {@link java.util.Locale}.
              * @param locale the locale to convert character cases
              */
-            public LinkedCaseAwareMap(Locale locale) {
+            public CaseAwareLinkedMap(Locale locale) {
                 this.locale = locale;
             }
 
-            private static boolean isCaseConvertible(Class<?> clazz) {
+            static boolean isCaseConvertible(Class<?> clazz) {
                 return clazz == String.class || clazz == Character.class;
             }
 
@@ -5420,7 +5420,7 @@ public class CommandLine {
                 } else if (caseSensitiveKey.getClass() == Character.class) {
                     return (K) (Character) Character.toLowerCase((Character) caseSensitiveKey);
                 } else {
-                    throw new UnsupportedOperationException("Unsupported case-conversion for class " + caseSensitiveKey.getClass());
+                    throw new UnsupportedOperationException("Unsupported case-conversion for key " + caseSensitiveKey.getClass());
                 }
             }
 
@@ -5569,10 +5569,10 @@ public class CommandLine {
 
             static final Boolean DEFAULT_SUBCOMMANDS_REPEATABLE = false;
 
-            private final LinkedCaseAwareMap<String, CommandLine> commands = new LinkedCaseAwareMap<String, CommandLine>();
-            private final LinkedCaseAwareMap<String, OptionSpec> optionsByNameMap = new LinkedCaseAwareMap<String, OptionSpec>();
-            private final LinkedCaseAwareMap<String, OptionSpec> negatedOptionsByNameMap = new LinkedCaseAwareMap<String, OptionSpec>();
-            private final LinkedCaseAwareMap<Character, OptionSpec> posixOptionsByKeyMap = new LinkedCaseAwareMap<Character, OptionSpec>();
+            private final CaseAwareLinkedMap<String, CommandLine> commands = new CaseAwareLinkedMap<String, CommandLine>();
+            private final CaseAwareLinkedMap<String, OptionSpec> optionsByNameMap = new CaseAwareLinkedMap<String, OptionSpec>();
+            private final CaseAwareLinkedMap<String, OptionSpec> negatedOptionsByNameMap = new CaseAwareLinkedMap<String, OptionSpec>();
+            private final CaseAwareLinkedMap<Character, OptionSpec> posixOptionsByKeyMap = new CaseAwareLinkedMap<Character, OptionSpec>();
             private final Map<String, CommandSpec> mixins = new LinkedHashMap<String, CommandSpec>();
             private final Map<String, IAnnotatedElement> mixinAnnotatedElements = new LinkedHashMap<String, IAnnotatedElement>();
             private final List<ArgSpec> requiredArgs = new ArrayList<ArgSpec>();
