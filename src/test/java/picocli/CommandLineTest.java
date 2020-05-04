@@ -245,7 +245,7 @@ public class CommandLineTest {
         assertEquals(Arrays.asList(3, 2, 1), params.list);
     }
 
-    @Ignore("Requires https://github.com/remkop/picocli/issues/995")
+//    @Ignore("Requires https://github.com/remkop/picocli/issues/995")
     @Test
     public void testIssue995ListPositionalParametersWithInitialValueAreClearedOnReuse() {
         ListPositionalParamsWithInitialValue params = new ListPositionalParamsWithInitialValue();
@@ -267,6 +267,17 @@ public class CommandLineTest {
          */
         cmd.parseArgs();
         assertEquals(Collections.emptyList(), params.list);
+
+        params.list = new ArrayList<Integer>();
+        params.list.add(233);
+        params.list.add(666);
+        cmd = new CommandLine(params);
+
+        cmd.parseArgs("3", "2", "1");
+        assertEquals(Arrays.asList(3, 2, 1), params.list);
+
+        cmd.parseArgs();
+        assertEquals(Arrays.asList(233,666), params.list);
     }
     static class SortedSetPositionalParams {
         @Parameters(type = Integer.class) SortedSet<Integer> sortedSet;
