@@ -5414,7 +5414,9 @@ public class CommandLine {
             }
 
             private K toLowerCase(Object caseSensitiveKey) {
-                if (caseSensitiveKey.getClass() == String.class) {
+                if (caseSensitiveKey == null) {
+                    return null;
+                } else if (caseSensitiveKey.getClass() == String.class) {
                     return (K) ((String) caseSensitiveKey).toLowerCase(locale);
                 } else if (caseSensitiveKey.getClass() == Character.class) {
                     return (K) (Character) Character.toLowerCase((Character) caseSensitiveKey);
@@ -5479,7 +5481,7 @@ public class CommandLine {
 
             @Override
             public V get(Object key) {
-                if (isCaseConvertible(key.getClass()) && caseInsensitive) {
+                if (key != null && isCaseConvertible(key.getClass()) && caseInsensitive) {
                     K caseSensitiveKey = keyMap.get(toLowerCase(key));
                     if (caseSensitiveKey == null) {
                         return null;
@@ -5506,7 +5508,7 @@ public class CommandLine {
             @Override
             public V remove(Object key) {
                 if (key != null && caseInsensitive) {
-                    K caseSensitiveKey = keyMap.remove(key);
+                    K caseSensitiveKey = keyMap.remove(toLowerCase(key));
                     if (caseSensitiveKey == null) {
                         return null;
                     }
