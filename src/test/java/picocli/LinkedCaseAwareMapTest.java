@@ -121,6 +121,16 @@ public class LinkedCaseAwareMapTest {
         }
     }
 
+    private void clear(Object map) {
+        try {
+            Class<?> clazz = getLinkedCaseAwareMapClass();
+            Method clear = clazz.getMethod("clear");
+            clear.invoke(map);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Test
     public void testDefaultCaseSensitivity() {
         assertFalse(isCaseInsensitive(constructMap()));
@@ -251,6 +261,44 @@ public class LinkedCaseAwareMapTest {
         assertFalse(containsKey(map, null));
         assertFalse(containsKey(map, "value2"));
         assertNull(getCaseSensitiveKey(map, null));
+    }
+
+    @Test
+    public void testClearMap() {
+        Object map = constructMap();
+
+        clear(map);
+        setCaseInsensitive(map, false);
+        put(map, "key", "value");
+        clear(map);
+        assertEquals(0, size(map));
+        assertNull(get(map, "key"));
+        assertFalse(containsKey(map, "key"));
+
+        clear(map);
+        setCaseInsensitive(map, true);
+        put(map, "key", "value");
+        clear(map);
+        assertEquals(0, size(map));
+        assertNull(get(map, "key"));
+        assertFalse(containsKey(map, "key"));
+    }
+
+    @Test
+    public void testNonExistentKey() {
+        Object map = constructMap();
+
+        setCaseInsensitive(map, false);
+        assertNull(get(map, "key"));
+        assertNull(put(map, "key2", "value"));
+        assertNull(remove(map, "key"));
+
+        clear(map);
+
+        setCaseInsensitive(map, true);
+        assertNull(get(map, "key"));
+        assertNull(put(map, "key2", "value"));
+        assertNull(remove(map, "key"));
     }
 
     @Test
