@@ -3608,7 +3608,7 @@ public class CommandLineTest {
             commandLine.getCommandSpec().addSubcommand("HELP", CommandSpec.create());
             fail("Expected exception");
         } catch (Exception ex) {
-            assertEquals("Another subcommand named 'HELP' already exists for command '<main class>'", ex.getMessage());
+            assertEquals("Another subcommand named 'help' already exists for command '<main class>'", ex.getMessage());
         }
     }
 
@@ -3644,7 +3644,7 @@ public class CommandLineTest {
             commandLine.getCommandSpec().addOption(OptionSpec.builder("-H").build());
             fail("Expected exception");
         } catch (Exception ex) {
-            assertTrue(ex.getMessage().startsWith("Option name '-H' is used by both option -H and field boolean "));
+            assertTrue(ex.getMessage().startsWith("Option name '-h' is used by both option -H and field boolean "));
         }
     }
 

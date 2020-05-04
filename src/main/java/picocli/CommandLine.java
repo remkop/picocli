@@ -5443,6 +5443,18 @@ public class CommandLine {
                 this.caseInsensitive = caseInsensitive;
             }
 
+            /**
+             * Returns the case-sensitive key of the specified case-insensitive key if {@code isCaseSensitive()}.
+             * Otherwise, the specified case-insensitive key is returned.
+             */
+            public K getCaseSensitiveKey(K caseInsensitiveKey) {
+                if (caseInsensitive) {
+                    return keyMap.get(toLowerCase(caseInsensitiveKey));
+                } else {
+                    return caseInsensitiveKey;
+                }
+            }
+
             @Override
             public int size() {
                 return targetMap.size();
@@ -5849,10 +5861,11 @@ public class CommandLine {
                 String actualName = validateSubcommandName(name, subSpec);
                 Tracer t = new Tracer();
                 if (t.isDebug()) {t.debug("Adding subcommand '%s' to '%s'%n", actualName, this.qualifiedName());}
+                String previousName = commands.getCaseSensitiveKey(actualName);
                 CommandLine previous = commands.put(actualName, subCommandLine);
                 if (previous != null && previous != subCommandLine) {
                     throw new InitializationException(
-                            "Another subcommand named '" + actualName + "' already exists for command '" + this.name()
+                            "Another subcommand named '" + previousName + "' already exists for command '" + this.name()
                                     + "'");
                 }
                 if (subSpec.name == null) {
@@ -5863,7 +5876,7 @@ public class CommandLine {
                     if (t.isDebug()) {t.debug("Adding alias '%s' for '%s'%n", (parent == null ? "" : parent.qualifiedName() + " ") + alias, this.qualifiedName());}
                     previous = commands.put(alias, subCommandLine);
                     if (previous != null && previous != subCommandLine) {
-                        throw new InitializationException("Alias '" + alias + "' for subcommand '" + actualName
+                        throw new InitializationException("Alias '" + alias + "' for subcommand '" + previousName
                                 + "' is already used by another subcommand of '" + this.name() + "'");
                     }
                 }
@@ -5981,9 +5994,10 @@ public class CommandLine {
             public CommandSpec addOption(OptionSpec option) {
                 Tracer tracer = new Tracer();
                 for (String name : interpolator.interpolate(option.names())) { // cannot be null or empty
+                    String existingName = optionsByNameMap.getCaseSensitiveKey(name);
                     OptionSpec existing = optionsByNameMap.put(name, option);
                     if (existing != null) { /* was: && !existing.equals(option)) {*/ // since 4.0 ArgGroups: an option cannot be in multiple groups
-                        throw DuplicateOptionAnnotationsException.create(name, option, existing);
+                        throw DuplicateOptionAnnotationsException.create(existingName, option, existing);
                     }
                     if (name.length() == 2 && name.startsWith("-")) { posixOptionsByKeyMap.put(name.charAt(1), option); }
                 }
@@ -6012,10 +6026,11 @@ public class CommandLine {
                             tracer.debug("Option %s is negatable, but has no negative form.%n", name);
                         } else {
                             tracer.debug("Option %s is negatable, registering negative name %s.%n", name, negatedName);
+                            String existingName = optionsByNameMap.getCaseSensitiveKey(negatedName);
                             OptionSpec existing = negatedOptionsByNameMap.put(negatedName, option);
                             if (existing == null) { existing = optionsByNameMap.get(negatedName); }
                             if (existing != null) {
-                                throw DuplicateOptionAnnotationsException.create(negatedName, option, existing);
+                                throw DuplicateOptionAnnotationsException.create(existingName, option, existing);
                             }
                         }
                     }
