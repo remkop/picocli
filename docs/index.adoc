@@ -1196,12 +1196,12 @@ A single command line argument like the following will be split up and three `in
 Similarly for <<Maps>>:
 [source,java]
 ----
-@Option(names = "-fix", split = "\\|")
+@Option(names = "-fix", split = "\\|", splitSynopsisLabel = "|")
 Map<Integer, String> message;
 ----
 With the above option, command line arguments like the following are interpreted as a set of key-value pairs instead of a single string:
 
-.Note: the quotes are needed in this example to prevent the vertical bar `|` characters from being interpreted by the shell as "pipe" directives to connect processes.
+.Note: end users need to quote the option parameter to prevent the vertical bar `|` characters from being interpreted by the shell as "pipe" directives to connect processes.
 ----
 -fix "8=FIX.4.4|9=69|35=A|49=MBT|56=TargetCompID|34=9|52=20130625-04:05:32.682|98=0|108=30|10=052"
 ----
@@ -1212,8 +1212,10 @@ The above input results in the `message` field being assigned a `LinkedHashMap` 
 {8=FIX.4.4, 9=69, 35=A, 49=MBT, 56=TargetCompID, 34=9, 52=20130625-04:05:32.682, 98=0, 108=30, 10=052}
 ----
 
-
 See <<Quoted Values>> for details on handling more complex cases.
+
+Picocli 4.3 introduced the `splitSynopsisLabel` attribute to control what is shown in the synopsis of the usage help message.
+See <<Split Synopsis Label>> for details.
 
 === Arity
 Sometimes you want to define an option that requires more than one option parameter _for each option occurrence_ on the command line.
@@ -3003,6 +3005,32 @@ When mixing `@Option` methods and `@Option` fields, options do not reliably appe
 The `@Option(order = <int>)` attribute can be used to explicitly control the position in the usage help message at which the option should be shown.
 Options with a lower number are shown before options with a higher number.
 
+
+=== Split Synopsis Label
+Options and parameters may have a <<Split Regex, `split`>> attribute to split each parameter into smaller substrings.
+Regular expressions may contain literal text, but may also contain https://www.regular-expressions.info/characters.html[special characters].
+The regular expression in the `split` attribute may be quite different from what end users need to type.
+
+The example below uses the plus (`+`) character as a separator.
+The regular expression in the `split` attribute uses backslash (`\`) characters to make sure that the plus character is treated as a literal.
+
+[source,java]
+----
+@Parameters(split = "\\+", splitSynopsisLabel = "+", paramLabel = "VALUE")
+List<String> values;
+----
+
+However, end users can type simply  `A+B+C` (using the plus character separator), not  `A\+B\+C`.
+We want the usage help message to show this.
+
+The `splitSynopsisLabel` attribute, introduced in picocli 4.3, controls what is shown in the synopsis of the usage help message.
+
+With the example above, the synopsis of the usage help looks like this:
+
+----
+Usage: cmd [VALUE[+VALUE...]...]
+----
+
 === Abbreviated Synopsis
 If a command is very complex and has many options, it is sometimes desirable to suppress details from the synopsis with the `abbreviateSynopsis` attribute. For example:
 ----
@@ -3018,7 +3046,6 @@ class App {
     ....
 }
 ----
-
 
 === Custom Synopsis
 For even more control of the synopsis, use the `customSynopsis` attribute to specify one ore more synopsis lines. For example:
