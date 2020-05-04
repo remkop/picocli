@@ -3608,7 +3608,7 @@ public class CommandLineTest {
             commandLine.getCommandSpec().addSubcommand("HELP", CommandSpec.create());
             fail("Expected exception");
         } catch (Exception ex) {
-            assertEquals("Another subcommand named 'help' already exists for command '<main class>'", ex.getMessage());
+            assertEquals("Another subcommand named 'HELP' already exists for command '<main class>'", ex.getMessage());
         }
     }
 
