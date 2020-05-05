@@ -25,6 +25,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -143,6 +145,46 @@ public class TestUtil {
     public static <T> Set<T> setOf(T... elements) {
         Set<T> result = new HashSet<T>();
         for (T t : elements) { result.add(t); }
+        return result;
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1) {
+        Map<K, V> result = new LinkedHashMap<K, V>();
+        result.put(k1, v1);
+        return result;
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2) {
+        Map<K, V> result = new LinkedHashMap<K, V>();
+        result.put(k1, v1);
+        result.put(k2, v2);
+        return result;
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2, K k3, V v3) {
+        Map<K, V> result = new LinkedHashMap<K, V>();
+        result.put(k1, v1);
+        result.put(k2, v2);
+        result.put(k3, v3);
+        return result;
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4) {
+        Map<K, V> result = new LinkedHashMap<K, V>();
+        result.put(k1, v1);
+        result.put(k2, v2);
+        result.put(k3, v3);
+        result.put(k4, v4);
+        return result;
+    }
+
+    public static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5) {
+        Map<K, V> result = new LinkedHashMap<K, V>();
+        result.put(k1, v1);
+        result.put(k2, v2);
+        result.put(k3, v3);
+        result.put(k4, v4);
+        result.put(k5, v5);
         return result;
     }
 
