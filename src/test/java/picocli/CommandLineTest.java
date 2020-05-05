@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -224,12 +225,12 @@ public class CommandLineTest {
         cmd.parseArgs();
         assertNull(params.list);
     }
-    private static class ListPositionalParamsWithInitialValue {
+    private static class PositionalParamsListWithInitialValue {
         @Parameters(type = Integer.class) List<Integer> list = new ArrayList<Integer>();
     }
     @Test
     public void testListPositionalParametersWithInitialValueAreReusedIfNonNull() {
-        ListPositionalParamsWithInitialValue params = new ListPositionalParamsWithInitialValue();
+        PositionalParamsListWithInitialValue params = new PositionalParamsListWithInitialValue();
         params.list = new ArrayList<Integer>();
         List<Integer> list = params.list;
         new CommandLine(params).parseArgs("3", "2", "1");
@@ -238,7 +239,7 @@ public class CommandLineTest {
     }
     @Test
     public void testListPositionalParametersWithInitialValueAreReplacedIfNonNull() {
-        ListPositionalParamsWithInitialValue params = new ListPositionalParamsWithInitialValue();
+        PositionalParamsListWithInitialValue params = new PositionalParamsListWithInitialValue();
         params.list = new ArrayList<Integer>();
         params.list.add(234);
         List<Integer> list = params.list;
@@ -250,7 +251,7 @@ public class CommandLineTest {
     @Ignore("Requires https://github.com/remkop/picocli/issues/995")
     @Test
     public void testIssue995ListPositionalParametersWithInitialValueAreClearedOnReuse() {
-        ListPositionalParamsWithInitialValue params = new ListPositionalParamsWithInitialValue();
+        PositionalParamsListWithInitialValue params = new PositionalParamsListWithInitialValue();
         CommandLine cmd = new CommandLine(params);
 
         cmd.parseArgs("3", "2", "1");
@@ -269,7 +270,166 @@ public class CommandLineTest {
          */
         cmd.parseArgs();
         assertEquals(Collections.emptyList(), params.list);
+
+        params.list = new ArrayList<Integer>();
+        params.list.add(233);
+        params.list.add(666);
+        cmd = new CommandLine(params);
+
+        cmd.parseArgs("3", "2", "1");
+        assertEquals(Arrays.asList(3, 2, 1), params.list);
+
+        cmd.parseArgs();
+        assertEquals(Arrays.asList(233,666), params.list);
     }
+
+    static class PositionalParamsListWithNonEmptyInitialValue {
+        @Parameters
+        List<Integer> list = new ArrayList<Integer>(Arrays.asList(3, 4, 5));
+    }
+    @Test
+    public void testIssue995PositionalParamsListWithNonEmptyInitialValueAreResetOnReuse() {
+        PositionalParamsListWithNonEmptyInitialValue params = new PositionalParamsListWithNonEmptyInitialValue();
+        CommandLine cmd = new CommandLine(params);
+
+        cmd.parseArgs("3", "2", "1");
+        assertEquals(Arrays.asList(3, 2, 1), params.list);
+
+        cmd.parseArgs(); // should be reset to original initial value
+        assertEquals(Arrays.asList(3, 4, 5), params.list);
+    }
+
+    static class PositionalParametersArrayWithEmptyInitialValue {
+        @Parameters
+        int[] array = new int[0];
+    }
+    @Test
+    public void testIssue995PositionalParametersArrayWithEmptyInitialValueAreResetOnReuse() {
+        PositionalParametersArrayWithEmptyInitialValue params = new PositionalParametersArrayWithEmptyInitialValue();
+        CommandLine cmd = new CommandLine(params);
+
+        cmd.parseArgs("3", "2", "1");
+        assertArrayEquals(new int[] {3, 2, 1}, params.array);
+
+        cmd.parseArgs(); // should be reset to original empty initial value
+        assertArrayEquals(new int[0], params.array);
+    }
+
+    static class PositionalParametersArrayWithNonEmptyInitialValue {
+        @Parameters
+        int[] array = new int[] {3, 4, 5};
+    }
+    @Test
+    public void testIssue995PositionalParametersArrayWithNonEmptyInitialValueAreResetOnReuse() {
+        PositionalParametersArrayWithNonEmptyInitialValue params = new PositionalParametersArrayWithNonEmptyInitialValue();
+        CommandLine cmd = new CommandLine(params);
+
+        cmd.parseArgs("3", "2", "1");
+        assertArrayEquals(new int[] {3, 2, 1}, params.array);
+
+        cmd.parseArgs(); // should be reset to original initial value
+        assertArrayEquals(new int[] {3, 4, 5}, params.array);
+    }
+
+    static class PositionalParametersSetWithEmptyInitialValue {
+        @Parameters
+        Set<Integer> set = new TreeSet<Integer>();
+    }
+    @Ignore("Requires https://github.com/remkop/picocli/issues/995")
+    @Test
+    public void testIssue995PositionalParametersSetWithEmptyInitialValueAreResetOnReuse() {
+        PositionalParametersSetWithEmptyInitialValue params = new PositionalParametersSetWithEmptyInitialValue();
+        CommandLine cmd = new CommandLine(params);
+
+        cmd.parseArgs("3", "2", "1");
+        assertEquals(new HashSet<Integer>(Arrays.asList(3, 2, 1)), params.set);
+
+        cmd.parseArgs(); // should be reset to original empty initial value
+        assertEquals(new HashSet<Integer>(), params.set);
+    }
+
+    static class PositionalParametersSetWithNonEmptyInitialValue {
+        @Parameters
+        Set<Integer> set = new TreeSet<Integer>(Arrays.asList(3, 4, 5));
+    }
+    @Test
+    public void testIssue995PositionalParametersSetWithNonEmptyInitialValueAreResetOnReuse() {
+        PositionalParametersSetWithNonEmptyInitialValue params = new PositionalParametersSetWithNonEmptyInitialValue();
+        CommandLine cmd = new CommandLine(params);
+
+        cmd.parseArgs("3", "2", "1");
+        assertEquals(new HashSet<Integer>(Arrays.asList(3, 2, 1)), params.set);
+
+        cmd.parseArgs(); // should be reset to original initial value
+        assertEquals(new HashSet<Integer>(Arrays.asList(3, 4, 5)), params.set);
+    }
+
+    static class PositionalParametersEnumSetWithEmptyInitialValue {
+        @Parameters
+        EnumSet<TimeUnit> enumSet = EnumSet.noneOf(TimeUnit.class);
+    }
+    @Ignore("Requires https://github.com/remkop/picocli/issues/995")
+    @Test
+    public void testIssue995PositionalParametersEnumSetWithEmptyInitialValueAreResetOnReuse() {
+        PositionalParametersEnumSetWithEmptyInitialValue params = new PositionalParametersEnumSetWithEmptyInitialValue();
+        CommandLine cmd = new CommandLine(params);
+
+        cmd.parseArgs("HOURS", "MINUTES");
+        assertEquals(EnumSet.of(TimeUnit.HOURS, TimeUnit.MINUTES), params.enumSet);
+
+        cmd.parseArgs(); // should be reset to original empty initial value
+        assertEquals(EnumSet.noneOf(TimeUnit.class), params.enumSet);
+    }
+
+    static class PositionalParametersEnumSetWithNonEmptyInitialValue {
+        @Parameters
+        EnumSet<TimeUnit> enumSet = EnumSet.of(TimeUnit.MICROSECONDS, TimeUnit.MILLISECONDS);
+    }
+    @Test
+    public void testIssue995PositionalParametersEnumSetWithNonEmptyInitialValueAreResetOnReuse() {
+        PositionalParametersEnumSetWithNonEmptyInitialValue params = new PositionalParametersEnumSetWithNonEmptyInitialValue();
+        CommandLine cmd = new CommandLine(params);
+
+        cmd.parseArgs("HOURS", "MINUTES");
+        assertEquals(EnumSet.of(TimeUnit.HOURS, TimeUnit.MINUTES), params.enumSet);
+
+        cmd.parseArgs(); // should be reset to original initial value
+        assertEquals(EnumSet.of(TimeUnit.MICROSECONDS, TimeUnit.MILLISECONDS), params.enumSet);
+    }
+
+    static class PositionalParametersMapWithEmptyInitialValue {
+        @Parameters
+        Map<Integer, Integer> map = new LinkedHashMap<Integer, Integer>();
+    }
+    @Ignore("Requires https://github.com/remkop/picocli/issues/995")
+    @Test
+    public void testIssue995PositionalParametersMapWithEmptyInitialValueAreResetOnReuse() {
+        PositionalParametersMapWithEmptyInitialValue params = new PositionalParametersMapWithEmptyInitialValue();
+        CommandLine cmd = new CommandLine(params);
+
+        cmd.parseArgs("1=1", "2=2", "3=3");
+        assertEquals(TestUtil.mapOf(1, 1, 2, 2, 3, 3), params.map);
+
+        cmd.parseArgs(); // should be reset to original initial value
+        assertEquals(new LinkedHashMap<Integer, Integer>(), params.map);
+    }
+
+    static class PositionalParametersMapWithNonEmptyInitialValue {
+        @Parameters
+        Map<Integer, Integer> map = TestUtil.mapOf(5, 5, 6, 6, 7, 7);
+    }
+    @Test
+    public void testIssue995PositionalParametersMapWithNonEmptyInitialValueAreResetOnReuse() {
+        PositionalParametersMapWithNonEmptyInitialValue params = new PositionalParametersMapWithNonEmptyInitialValue();
+        CommandLine cmd = new CommandLine(params);
+
+        cmd.parseArgs("1=1", "2=2", "3=3");
+        assertEquals(TestUtil.mapOf(1, 1, 2, 2, 3, 3), params.map);
+
+        cmd.parseArgs(); // should be reset to original initial value
+        assertEquals(TestUtil.mapOf(5, 5, 6, 6, 7, 7), params.map);
+    }
+
     static class SortedSetPositionalParams {
         @Parameters(type = Integer.class) SortedSet<Integer> sortedSet;
     }
