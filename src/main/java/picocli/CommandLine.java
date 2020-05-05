@@ -12391,6 +12391,13 @@ public class CommandLine {
                 throw new MissingParameterException(CommandLine.this, argSpec, "Expected parameter " + desc + "for " + optionDescription("", argSpec, -1) + " but found '" + args.peek() + "'");
             }
         }
+
+        /**
+         * Checks whether the initial value for the collection is changed while collection is changed. Recover the initial value if is changed unexpectedly.
+         * @param args the command line arguments
+         * @param initialized set of initialized that parsed from the CommandLine
+         * @param collection collection that parsed from consumeArguments
+         */
         private void fixInitialValueIfSetted(Stack<String> args, Set<ArgSpec> initialized,Collection<Object> collection) {
             if(args.empty()) {
                 List<ArgSpec> list = new ArrayList<ArgSpec>(initialized);
