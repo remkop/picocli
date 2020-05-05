@@ -12,7 +12,7 @@ import java.util.Map;
 @Command(name = "grades", mixinStandardHelpOptions = true, version = "grades 1.0")
 public class Grades implements Runnable {
 
-    // unfortunately this does not work
+    // unfortunately this does not work, see https://github.com/remkop/picocli/issues/1027
 //    static class StudentGrade {
 //        @Parameters(index = "0") String name;
 //        @Parameters(index = "1") BigDecimal grade;

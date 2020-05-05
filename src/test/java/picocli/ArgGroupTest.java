@@ -34,6 +34,7 @@ import picocli.test.Execution;
 import picocli.test.Supplier;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -3389,7 +3390,6 @@ public class ArgGroupTest {
         }
     }
 
-//    @Ignore("Requires fix for https://github.com/remkop/picocli/issues/988")
     @Test //https://github.com/remkop/picocli/issues/988
     public void testIssue988OptionGroupSectionsShouldIncludeSubgroupOptions() {
         String expected = String.format("" +
@@ -3412,5 +3412,37 @@ public class ArgGroupTest {
                 "  -n, --inputname=PATH       User's basename for input files (e.g.%n" +
                 "                               foo/bar/<basename>.png) or directories.%n");
         assertEquals(expected, new CommandLine(new Issue988()).getUsageMessage());
+    }
+
+    static class StudentGrade {
+        @Parameters(index = "0") String name;
+        @Parameters(index = "1") BigDecimal grade;
+
+        public StudentGrade() {}
+        public StudentGrade(String name, String grade) {
+            this(name, new BigDecimal(grade));
+        }
+        public StudentGrade(String name, BigDecimal grade) {
+            this.name = name;
+            this.grade = grade;
+        }
+    }
+
+    @Ignore("requires https://github.com/remkop/picocli/issues/1027")
+    @Test // https://github.com/remkop/picocli/issues/1027
+    public void testIssue1027RepeatingPositionalParams() {
+        class Issue1027 {
+            @ArgGroup(exclusive = false, multiplicity = "1..*")
+            List<StudentGrade> gradeList;
+        }
+
+        Issue1027 bean = new Issue1027();
+        new CommandLine(bean).parseArgs("Abby 4.0 Billy 3.5 Caily 3.5 Danny 4.0".split(" "));
+
+        assertEquals(4, bean.gradeList.size());
+        assertEquals(new StudentGrade("Abby", "4.0"), bean.gradeList.get(0));
+        assertEquals(new StudentGrade("Billy", "3.5"), bean.gradeList.get(1));
+        assertEquals(new StudentGrade("Caily", "3.5"), bean.gradeList.get(2));
+        assertEquals(new StudentGrade("Danny", "4.0"), bean.gradeList.get(3));
     }
 }
