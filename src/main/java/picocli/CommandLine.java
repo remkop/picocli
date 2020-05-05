@@ -14114,6 +14114,7 @@ public class CommandLine {
             boolean cjk = commandSpec.usageMessage().adjustLineBreaksForWideCJKCharacters();
             int longOptionsColWidth = commandSpec.usageMessage().longOptionsMaxWidth() + 1; // add 1 space for indentation
             for (OptionSpec option : commandSpec.options()) {
+                if (option.hidden()) { continue; }
                 Text[][] values = optionRenderer.render(option, parameterLabelRenderer(), colorScheme);
                 int len = cjk ? values[0][3].getCJKAdjustedLength() : values[0][3].length;
                 if (len < longOptionsColWidth) { max = Math.max(max, len); }
@@ -14125,6 +14126,7 @@ public class CommandLine {
             }
             //IParameterRenderer paramRenderer = new DefaultParameterRenderer(false, " ");
             for (PositionalParamSpec positional : positionals) {
+                if (positional.hidden()) { continue; }
                 //Text[][] values = paramRenderer.render(positional, parameterLabelRenderer(), colorScheme); // values[0][3]; //
                 Text label = parameterLabelRenderer().renderParameterLabel(positional, colorScheme.ansi(), colorScheme.parameterStyles);
                 int len = cjk ? label.getCJKAdjustedLength() : label.length;

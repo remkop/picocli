@@ -4450,4 +4450,30 @@ public class HelpTest {
             assertEquals("Invalid usage long options max width 61. Value must not exceed width(80) - 20", ok.getMessage());
         }
     }
+
+    @Test
+    public void testHiddenOptionsDoNotImpactSpacing() {
+        @Command(name = "cmd", mixinStandardHelpOptions = true)
+        class App {
+            @Option(names = "--long-option", hidden = true) int x;
+        }
+        String expected = String.format("" +
+                "Usage: cmd [-hV]%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n");
+        assertEquals(expected, new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF));
+    }
+
+    @Test
+    public void testHiddenPositionalsDoNotImpactSpacing() {
+        @Command(name = "cmd", mixinStandardHelpOptions = true)
+        class App {
+            @Parameters(paramLabel = "long-param-name", hidden = true) int x;
+        }
+        String expected = String.format("" +
+                "Usage: cmd [-hV]%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n");
+        assertEquals(expected, new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF));
+    }
 }
