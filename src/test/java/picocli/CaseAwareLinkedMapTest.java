@@ -197,7 +197,7 @@ public class CaseAwareLinkedMapTest {
             map.getCaseSensitiveKey(dummy);
             fail("Expected exception");
         } catch (UnsupportedOperationException ex) {
-            assertEquals("Unsupported case-conversion for class class java.lang.Object", ex.getMessage());
+            assertEquals("Unsupported case-conversion for key class java.lang.Object", ex.getMessage());
         }
     }
 }
