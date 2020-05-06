@@ -4823,6 +4823,60 @@ Mixins added with the `@Mixin` annotation can also be accessed via the map retur
 
 The GitHub project has a https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/mixin[full working example].
 
+==== Mixin Example: Logger
+
+Here is an example mixin class `MyLogger`.
+It has an option `-v` that can be specified multiple times to increase verbosity.
+The `MyLogger` class also provides some methods like `debug` and `trace` that can be used to print messages to the standard error stream.
+
+[source,java]
+----
+public class MyLogger {
+
+    @Option(names = {"-v", "--verbose"},
+            description = "Increase verbosity. Specify multiple times to increase (-vvv).")
+    boolean[] verbosity = new boolean[0];
+
+    public void info(String pattern, Object... params) {
+        log(0, pattern, params);
+    }
+
+    public void debug(String pattern, Object... params) {
+        log(1, pattern, params);
+    }
+
+    public void trace(String pattern, Object... params) {
+        log(2, pattern, params);
+    }
+
+    private void log(int level, String pattern, Object... params) {
+        if (verbosity.length > level) {
+            System.err.printf(pattern, params);
+        }
+    }
+}
+----
+
+An application could use the mixin like this:
+
+[source,java]
+----
+class MyApp implements Runnable {
+
+    @Mixin MyLogger myLogger;
+
+    public void run() {
+        myLogger.info("Hello info%n");
+        myLogger.debug("Hello debug%n");
+        myLogger.trace("Hello trace%n");
+    }
+
+    public static void main(String[] args) {
+        System.exit(new CommandLine(new MyApp()).execute(args));
+    }
+}
+----
+
 ==== Accessing the Mixee from a Mixin
 
 Sometimes you need to write a Mixin class that accesses the mixee (the command where it is mixed in).
