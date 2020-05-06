@@ -5789,6 +5789,9 @@ public class CommandLine {
                 optionsByNameMap.setCaseInsensitive(caseInsensitiveOptions);
                 negatedOptionsByNameMap.setCaseInsensitive(caseInsensitiveOptions);
                 posixOptionsByKeyMap.setCaseInsensitive(caseInsensitiveOptions);
+                if (caseInsensitiveOptions) {
+                    validateCaseInsensitiveOptions();
+                }
                 return this;
             }
 
@@ -6005,7 +6008,7 @@ public class CommandLine {
                     String existingNegatedName = optionsByNameMap.getCaseSensitiveKey(negatedName);
                     OptionSpec existingNegated = negatedOptionsByNameMap.get(negatedName);
                     if (existingNegated == null) { existingNegated = optionsByNameMap.get(negatedName); }
-                    if (existingNegated != null && existingNegated != option && existingNegated.negatable()) {
+                    if (existingNegated != null && existingNegated != option) {
                         throw DuplicateOptionAnnotationsException.create(existingNegatedName, option, existingNegated);
                     }
                     if (name.length() == 2 && name.startsWith("-")) { posixOptionsByKeyMap.put(name.charAt(1), option); }
@@ -6052,6 +6055,18 @@ public class CommandLine {
                 negatedOptionsByNameMap.clear();
                 for (OptionSpec option : options) {
                     addOptionNegative(option, tracer);
+                }
+            }
+
+            private void validateCaseInsensitiveOptions() {
+                for (Map.Entry<String, OptionSpec> negatedOptionEntry : negatedOptionsByNameMap.entrySet()) {
+                    String negatedOptionName = negatedOptionEntry.getKey();
+                    OptionSpec negatedOption = negatedOptionEntry.getValue();
+                    String optionName = optionsByNameMap.getCaseSensitiveKey(negatedOptionName);
+                    OptionSpec option = optionsByNameMap.get(optionName);
+                    if (option != null && option != negatedOption) {
+                        throw DuplicateOptionAnnotationsException.create(optionName, option, negatedOptionEntry.getValue());
+                    }
                 }
             }
 
