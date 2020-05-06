@@ -724,7 +724,6 @@ public class AtFileTest {
                 "      [@<filename>...]   One or more argument files containing options.%n" +
                 "");
         assertEquals(expected, actual);
-        commandLine.usage(System.out);
     }
 
     @Test
