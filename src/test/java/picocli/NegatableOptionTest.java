@@ -429,4 +429,19 @@ public class NegatableOptionTest {
             assertEquals("Option name '--verbose' is used by both field boolean " + cls + ".noVerbose and field boolean " + cls + ".verbose", ex.getMessage());
         }
     }
+
+    @Test
+    public void testDuplicateNegatableOption2() {
+        class NegOptDupli {
+            @Option(names = "--verbose", negatable = true) boolean verbose;
+            @Option(names = "--no-verbose") boolean noVerbose;
+        }
+        try {
+            new CommandLine(new NegOptDupli());
+            fail("Expected Exception");
+        } catch (CommandLine.DuplicateOptionAnnotationsException ex) {
+            String cls = NegOptDupli.class.getName();
+            assertEquals("Option name '--verbose' is used by both field boolean " + cls + ".noVerbose and field boolean " + cls + ".verbose", ex.getMessage());
+        }
+    }
 }
