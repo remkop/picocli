@@ -184,6 +184,7 @@ class AdvancedMixin {
 * [#649][#948] Provide convenience API for inherited/global options (was: Feature request: inheriting mixins in subcommands). Thanks to [Garret Wilson](https://github.com/garretwilson) for the request and subsequent discussion (and patience!).
 * [#996] Default values should not be applied to inherited options.
 * [#1001] Support required inherited options.
+* [#985] API: Show end-of-options `--` in usage help options list.
 * [#958] API: Add `@Spec(Spec.Target.MIXEE)` annotation element to allow mixins to get a reference to the command they are mixed into.
 * [#960] API: Add method `CommandSpec::root` to return the `CommandSpec` of the top-level command.
 * [#845][#1008] API: Error handlers now use ANSI colors and styles. Added methods `errors` and `stackTraces` to `Help.ColorScheme`. Thanks to [Neko Null](https://github.com/jerrylususu) for the pull request.

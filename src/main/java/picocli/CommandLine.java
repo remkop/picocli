@@ -4408,6 +4408,11 @@ public class CommandLine {
          * @since 4.2 */
         boolean showAtFileInUsageHelp() default false;
 
+        /** Specify {@code true} to show a {@code [--]} "End of options" entry
+         * in the synopsis and option list of the usage help message.
+         * @since 4.3 */
+        boolean showEndOfOptionsDelimiterInUsageHelp() default false;
+
         /** Set the heading preceding the subcommands list. The default heading is {@code "Commands:%n"} (with a line break at the end).
          * <p>May contain embedded {@linkplain java.util.Formatter format specifiers} like {@code %n} line separators. Literal percent {@code '%'} characters must be escaped with another {@code %}.</p>
          * @return the heading preceding the subcommands list
@@ -6800,6 +6805,11 @@ public class CommandLine {
              * @since 3.9 */
             public static final String SECTION_KEY_OPTION_LIST = "optionList";
 
+            /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the {@code --} End of Options list section.
+             * The default renderer for this section calls {@link Help#endOfOptionsList()}.
+             * @since 4.3 */
+            public static final String SECTION_KEY_END_OF_OPTIONS = "endOfOptionsList";
+
             /** {@linkplain #sectionKeys() Section key} to {@linkplain #sectionMap() control} the {@linkplain IHelpSectionRenderer section renderer} for the Subcommand List Heading section.
              * The default renderer for this section calls {@link Help#commandListHeading(Object...)}.
              * @since 3.9 */
@@ -6862,6 +6872,9 @@ public class CommandLine {
             /** Constant Boolean holding the default setting for whether to show an entry for @-files in the usage help message.*/
             static final Boolean DEFAULT_SHOW_AT_FILE = Boolean.FALSE;
 
+            /** Constant Boolean holding the default setting for whether to show an entry for the {@code --} End of Options delimiter in the usage help message.*/
+            static final Boolean DEFAULT_SHOW_END_OF_OPTIONS = Boolean.FALSE;
+
             /** Constant Boolean holding the default setting for whether to show default values in the usage help message: <code>{@value}</code>.*/
             static final Boolean DEFAULT_SHOW_DEFAULT_VALUES = Boolean.FALSE;
 
@@ -6888,6 +6901,7 @@ public class CommandLine {
                     SECTION_KEY_PARAMETER_LIST,
                     SECTION_KEY_OPTION_LIST_HEADING,
                     SECTION_KEY_OPTION_LIST,
+                    SECTION_KEY_END_OF_OPTIONS,
                     SECTION_KEY_COMMAND_LIST_HEADING,
                     SECTION_KEY_COMMAND_LIST,
                     SECTION_KEY_EXIT_CODE_LIST_HEADING,
@@ -6905,6 +6919,7 @@ public class CommandLine {
             private Boolean sortOptions;
             private Boolean showDefaultValues;
             private Boolean showAtFileInUsageHelp;
+            private Boolean showEndOfOptionsDelimiterInUsageHelp;
             private Boolean hidden;
             private Boolean autoWidth;
             private Character requiredOptionMarker;
@@ -7127,6 +7142,8 @@ public class CommandLine {
                 result.put(SECTION_KEY_OPTION_LIST_HEADING,    new IHelpSectionRenderer() { public String render(Help help) { return help.optionListHeading(); } });
                 //e.g. -h, --help   displays this help and exits
                 result.put(SECTION_KEY_OPTION_LIST,            new IHelpSectionRenderer() { public String render(Help help) { return help.optionList(); } });
+                //e.g. [--] This option can be used to separate command-line options from the list of positional parameters.
+                result.put(SECTION_KEY_END_OF_OPTIONS,      new IHelpSectionRenderer() { public String render(Help help) { return help.endOfOptionsList(); } });
                 //e.g. %nCommands:%n%n
                 result.put(SECTION_KEY_COMMAND_LIST_HEADING,   new IHelpSectionRenderer() { public String render(Help help) { return help.commandListHeading(); } });
                 //e.g.    add       adds the frup to the frooble
@@ -7153,6 +7170,7 @@ public class CommandLine {
              *   <li>{@link UsageMessageSpec#SECTION_KEY_PARAMETER_LIST SECTION_KEY_PARAMETER_LIST}</li>
              *   <li>{@link UsageMessageSpec#SECTION_KEY_OPTION_LIST_HEADING SECTION_KEY_OPTION_LIST_HEADING}</li>
              *   <li>{@link UsageMessageSpec#SECTION_KEY_OPTION_LIST SECTION_KEY_OPTION_LIST}</li>
+             *   <li>{@link UsageMessageSpec#SECTION_KEY_END_OF_OPTIONS SECTION_KEY_END_OF_OPTIONS}</li>
              *   <li>{@link UsageMessageSpec#SECTION_KEY_COMMAND_LIST_HEADING SECTION_KEY_COMMAND_LIST_HEADING}</li>
              *   <li>{@link UsageMessageSpec#SECTION_KEY_COMMAND_LIST SECTION_KEY_COMMAND_LIST}</li>
              *   <li>{@link UsageMessageSpec#SECTION_KEY_EXIT_CODE_LIST_HEADING SECTION_KEY_EXIT_CODE_LIST_HEADING}</li>
@@ -7290,7 +7308,10 @@ public class CommandLine {
              * @see Command#showAtFileInUsageHelp()
              * @since 4.2*/
             public boolean showAtFileInUsageHelp() {return (showAtFileInUsageHelp == null) ? DEFAULT_SHOW_AT_FILE : showAtFileInUsageHelp; }
-
+            /** Sets whether to show a {@code [--]} (End of Options) entry in the synopsis and options list of the usage help message.
+             * @see Command#showEndOfOptionsDelimiterInUsageHelp()
+             * @since 4.3*/
+            public boolean showEndOfOptionsDelimiterInUsageHelp() {return (showEndOfOptionsDelimiterInUsageHelp == null) ? DEFAULT_SHOW_END_OF_OPTIONS : showEndOfOptionsDelimiterInUsageHelp; }
             /**
              * Returns whether this command should be hidden from the usage help message of the parent command.
              * @return {@code true} if this command should not appear in the usage help message of the parent command
@@ -7435,6 +7456,13 @@ public class CommandLine {
              * @return this UsageMessageSpec for method chaining
              * @since 4.2*/
             public UsageMessageSpec showAtFileInUsageHelp(boolean newValue) {showAtFileInUsageHelp = newValue; return this;}
+
+            /** Sets whether to show a {@code [--]} (End of Options) entry in the synopsis and options list of the usage help message.
+             * @see Command#showEndOfOptionsDelimiterInUsageHelp()
+             * @return this UsageMessageSpec for method chaining
+             * @since 4.3*/
+            public UsageMessageSpec showEndOfOptionsDelimiterInUsageHelp(boolean newValue) {showEndOfOptionsDelimiterInUsageHelp = newValue; return this;}
+
             /**
              * Set the hidden flag on this command to control whether to show or hide it in the help usage text of the parent command.
              * @param value enable or disable the hidden flag
@@ -7516,6 +7544,7 @@ public class CommandLine {
                 if (isNonDefault(cmd.requiredOptionMarker(), DEFAULT_REQUIRED_OPTION_MARKER)) {requiredOptionMarker = cmd.requiredOptionMarker();}
                 if (isNonDefault(cmd.showAtFileInUsageHelp(), DEFAULT_SHOW_AT_FILE))          {showAtFileInUsageHelp = cmd.showAtFileInUsageHelp();}
                 if (isNonDefault(cmd.showDefaultValues(), DEFAULT_SHOW_DEFAULT_VALUES))       {showDefaultValues = cmd.showDefaultValues();}
+                if (isNonDefault(cmd.showEndOfOptionsDelimiterInUsageHelp(), DEFAULT_SHOW_END_OF_OPTIONS)) {showEndOfOptionsDelimiterInUsageHelp = cmd.showEndOfOptionsDelimiterInUsageHelp();}
                 if (isNonDefault(cmd.sortOptions(), DEFAULT_SORT_OPTIONS))                    {sortOptions = cmd.sortOptions();}
                 if (isNonDefault(cmd.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))            {synopsisHeading = cmd.synopsisHeading();}
                 if (isNonDefault(cmd.synopsisSubcommandLabel(), DEFAULT_SYNOPSIS_SUBCOMMANDS)){synopsisSubcommandLabel = cmd.synopsisSubcommandLabel();}
@@ -7542,6 +7571,7 @@ public class CommandLine {
                 if (initializable(requiredOptionMarker, mixin.requiredOptionMarker(), DEFAULT_REQUIRED_OPTION_MARKER)) {requiredOptionMarker = mixin.requiredOptionMarker();}
                 if (initializable(showAtFileInUsageHelp, mixin.showAtFileInUsageHelp(), DEFAULT_SHOW_AT_FILE))         {showAtFileInUsageHelp = mixin.showAtFileInUsageHelp();}
                 if (initializable(showDefaultValues, mixin.showDefaultValues(), DEFAULT_SHOW_DEFAULT_VALUES))          {showDefaultValues = mixin.showDefaultValues();}
+                if (initializable(showEndOfOptionsDelimiterInUsageHelp, mixin.showEndOfOptionsDelimiterInUsageHelp(), DEFAULT_SHOW_END_OF_OPTIONS)) {showEndOfOptionsDelimiterInUsageHelp = mixin.showEndOfOptionsDelimiterInUsageHelp();}
                 if (initializable(sortOptions, mixin.sortOptions(), DEFAULT_SORT_OPTIONS))                             {sortOptions = mixin.sortOptions();}
                 if (initializable(synopsisHeading, mixin.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))                 {synopsisHeading = mixin.synopsisHeading();}
                 if (initializable(synopsisSubcommandLabel, mixin.synopsisSubcommandLabel(), DEFAULT_SYNOPSIS_SUBCOMMANDS)) {synopsisHeading = mixin.synopsisHeading();}
@@ -7574,6 +7604,7 @@ public class CommandLine {
                 sectionKeys = settings.sectionKeys;
                 showAtFileInUsageHelp = settings.showAtFileInUsageHelp;
                 showDefaultValues = settings.showDefaultValues;
+                showEndOfOptionsDelimiterInUsageHelp = settings.showEndOfOptionsDelimiterInUsageHelp;
                 sortOptions = settings.sortOptions;
                 synopsisAutoIndentThreshold = settings.synopsisAutoIndentThreshold;
                 synopsisHeading = settings.synopsisHeading;
@@ -7588,10 +7619,11 @@ public class CommandLine {
 
             /** Constant String holding the default separator between options and option parameters: <code>{@value}</code>.*/
             static final String DEFAULT_SEPARATOR = "=";
+            static final String DEFAULT_END_OF_OPTIONS_DELIMITER = "--";
             private String separator;
             private boolean stopAtUnmatched = false;
             private boolean stopAtPositional = false;
-            private String endOfOptionsDelimiter = "--";
+            private String endOfOptionsDelimiter = DEFAULT_END_OF_OPTIONS_DELIMITER;
             private boolean toggleBooleanFlags = false;
             private boolean overwrittenOptionsAllowed = false;
             private boolean unmatchedArgumentsAllowed = false;
@@ -13718,6 +13750,10 @@ public class CommandLine {
                 .paramLabel("${picocli.atfile.label:-@<filename>}").description("${picocli.atfile.description:-One or more argument files containing options.}").arity("0..*")
                 .descriptionKey("picocli.atfile").build();
 
+        public final OptionSpec END_OF_OPTIONS_OPTION = OptionSpec.builder("${picocli.endofoptions.name:---}")
+                .description("${picocli.endofoptions.description:-This option can be used to separate command-line options from the list of positional parameters.}").arity("0")
+                .descriptionKey("picocli.endofoptions").build();
+
         private final CommandSpec commandSpec;
         private final ColorScheme colorScheme;
         private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
@@ -13925,10 +13961,11 @@ public class CommandLine {
             Set<ArgSpec> argsInGroups = new HashSet<ArgSpec>();
             Text groupsText = createDetailedSynopsisGroupsText(argsInGroups);
             Text optionText = createDetailedSynopsisOptionsText(argsInGroups, optionSort, clusterBooleanOptions);
+            Text endOfOptionsText = createDetailedSynopsisEndOfOptionsText();
             Text positionalParamText = createDetailedSynopsisPositionalsText(argsInGroups);
             Text commandText = createDetailedSynopsisCommandText();
 
-            Text text = groupsText.concat(optionText).concat(positionalParamText).concat(commandText);
+            Text text = groupsText.concat(optionText).concat(endOfOptionsText).concat(positionalParamText).concat(commandText);
 
             return insertSynopsisCommandName(synopsisHeadingLength, text);
         }
@@ -14014,6 +14051,26 @@ public class CommandLine {
             return optionText;
         }
 
+        /** Returns a Text object containing a partial detailed synopsis showing only the end of options delimiter (if enabled), starting with a {@code " "} space.
+         * Follows the unix convention of showing optional options and parameters in square brackets ({@code [ ]}).
+         * @return the formatted end of options delimiter, starting with a {@code " "} space, or an empty Text if the end of options delimiter should not be shown
+         * @since 4.3 */
+        protected Text createDetailedSynopsisEndOfOptionsText() {
+            if (!commandSpec.usageMessage.showEndOfOptionsDelimiterInUsageHelp()) {
+                return ansi().new Text(0);
+            }
+            if (!ParserSpec.DEFAULT_END_OF_OPTIONS_DELIMITER.equals(commandSpec.parser().endOfOptionsDelimiter())) {
+                return ansi().new Text(0).concat(" [").concat(colorScheme.optionText(commandSpec.parser().endOfOptionsDelimiter())).concat("]");
+            }
+            END_OF_OPTIONS_OPTION.commandSpec = this.commandSpec; // needed for interpolation
+            try {
+                END_OF_OPTIONS_OPTION.messages(commandSpec.usageMessage().messages());
+                return ansi().new Text(0).concat(" [").concat(colorScheme.optionText(END_OF_OPTIONS_OPTION.shortestName())).concat("]");
+            } finally {
+                END_OF_OPTIONS_OPTION.commandSpec = null;
+            }
+        }
+
         /** Returns a Text object containing a partial detailed synopsis showing only the positional parameters, starting with a {@code " "} space.
          * Follows the unix convention of showing optional options and parameters in square brackets ({@code [ ]}).
          * @param done the list of options and positional parameters for which a synopsis was already generated. Positional parameters in this set should be excluded.
@@ -14022,7 +14079,7 @@ public class CommandLine {
         protected Text createDetailedSynopsisPositionalsText(Collection<ArgSpec> done) {
             Text positionalParamText = ansi().new Text(0);
             List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(commandSpec.positionalParameters()); // iterate in declaration order
-            if (commandSpec.parser.expandAtFiles() && commandSpec.usageMessage.showAtFileInUsageHelp()) {
+            if (hasAtFileParameter()) {
                 positionals.add(0, AT_FILE_POSITIONAL_PARAM);
                 AT_FILE_POSITIONAL_PARAM.messages(commandSpec.usageMessage().messages());
             }
@@ -14120,7 +14177,7 @@ public class CommandLine {
                 if (len < longOptionsColWidth) { max = Math.max(max, len); }
             }
             List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(commandSpec.positionalParameters()); // iterate in declaration order
-            if (commandSpec.parser.expandAtFiles() && commandSpec.usageMessage.showAtFileInUsageHelp()) {
+            if (hasAtFileParameter()) {
                 positionals.add(0, AT_FILE_POSITIONAL_PARAM);
                 AT_FILE_POSITIONAL_PARAM.messages(commandSpec.usageMessage().messages());
             }
@@ -14249,6 +14306,7 @@ public class CommandLine {
         /**
          * Returns the section of the usage help message that lists the @-file and its description.
          * @return the section of the usage help message that lists the @-file and its description
+         * @since 4.2
          */
         public String atFileParameterList() {
             if (hasAtFileParameter()) {
@@ -14256,6 +14314,26 @@ public class CommandLine {
                 Layout layout = createDefaultLayout();
                 layout.addPositionalParameter(AT_FILE_POSITIONAL_PARAM, parameterLabelRenderer());
                 return layout.toString();
+            }
+            return "";
+        }
+
+        /**
+         * Returns the section of the usage help message that lists the {@code --} End of Options delimiter and its description.
+         * @return the section of the usage help message that lists the {@code --} End of Options delimiter and its description.
+         * @since 4.3
+         */
+        public String endOfOptionsList() {
+            if (commandSpec.usageMessage.showEndOfOptionsDelimiterInUsageHelp()) {
+                END_OF_OPTIONS_OPTION.commandSpec = this.commandSpec; // needed for interpolation
+                try {
+                    END_OF_OPTIONS_OPTION.messages(commandSpec.usageMessage().messages());
+                    Layout layout = createDefaultLayout();
+                    layout.addOption(END_OF_OPTIONS_OPTION, parameterLabelRenderer());
+                    return layout.toString();
+                } finally {
+                    END_OF_OPTIONS_OPTION.commandSpec = null;
+                }
             }
             return "";
         }
@@ -14382,7 +14460,10 @@ public class CommandLine {
          * @param params the parameters to use to format the option list heading
          * @return the formatted option list heading */
         public String optionListHeading(Object... params) {
-            return commandSpec.optionsMap().isEmpty() ? "" : createHeading(commandSpec.usageMessage().optionListHeading(), params);
+            if (commandSpec.usageMessage().showEndOfOptionsDelimiterInUsageHelp() || !commandSpec.optionsMap().isEmpty()) {
+                return createHeading(commandSpec.usageMessage().optionListHeading(), params);
+            }
+            return "";
         }
 
         /** Returns the text displayed before the command list; an empty string if there are no commands,

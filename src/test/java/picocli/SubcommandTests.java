@@ -2011,7 +2011,7 @@ public class SubcommandTests {
 
         final List<String> DEFAULT_LIST = Arrays.asList("headerHeading", "header", "synopsisHeading", "synopsis",
                 "descriptionHeading", "description", "parameterListHeading", "atFileParameterList", "parameterList", "optionListHeading",
-                "optionList", "commandListHeading", "commandList", "exitCodeListHeading", "exitCodeList", "footerHeading", "footer");
+                "optionList", "endOfOptionsList", "commandListHeading", "commandList", "exitCodeListHeading", "exitCodeList", "footerHeading", "footer");
         assertEquals(DEFAULT_LIST, commandLine.getHelpSectionKeys());
 
         final List<String> NEW_LIST = Arrays.asList("a", "b", "c");
@@ -2042,7 +2042,7 @@ public class SubcommandTests {
         
         final List<String> DEFAULT_LIST = Arrays.asList("headerHeading", "header", "synopsisHeading", "synopsis",
                 "descriptionHeading", "description", "parameterListHeading", "atFileParameterList", "parameterList", "optionListHeading",
-                "optionList", "commandListHeading", "commandList", "exitCodeListHeading", "exitCodeList", "footerHeading", "footer");
+                "optionList", "endOfOptionsList", "commandListHeading", "commandList", "exitCodeListHeading", "exitCodeList", "footerHeading", "footer");
         assertEquals(DEFAULT_LIST, commandLine.getHelpSectionKeys());
 
         final List<String> NEW_LIST = Arrays.asList("a", "b", "c");
@@ -2069,7 +2069,7 @@ public class SubcommandTests {
         class TopLevel {}
         CommandLine commandLine = new CommandLine(new TopLevel());
 
-        final Set<String> DEFAULT_KEYS = new HashSet<String>(Arrays.asList("headerHeading", "header", "synopsisHeading", "synopsis",
+        final Set<String> DEFAULT_KEYS = new HashSet<String>(Arrays.asList("headerHeading", "header", "synopsisHeading", "synopsis", "endOfOptionsList",
                 "descriptionHeading", "description", "parameterListHeading", "atFileParameterList", "parameterList", "optionListHeading",
                 "optionList", "commandListHeading", "commandList", "exitCodeListHeading", "exitCodeList", "footerHeading", "footer"));
         assertEquals(DEFAULT_KEYS, commandLine.getHelpSectionMap().keySet());
@@ -2103,7 +2103,7 @@ public class SubcommandTests {
         CommandLine commandLine = new CommandLine(new TopLevel());
         commandLine.addSubcommand("main", createNestedCommand());
 
-        final Set<String> DEFAULT_KEYS = new HashSet<String>(Arrays.asList("headerHeading", "header", "synopsisHeading", "synopsis",
+        final Set<String> DEFAULT_KEYS = new HashSet<String>(Arrays.asList("headerHeading", "header", "synopsisHeading", "synopsis", "endOfOptionsList",
                 "descriptionHeading", "description", "parameterListHeading", "atFileParameterList", "parameterList", "optionListHeading",
                 "optionList", "commandListHeading", "commandList", "exitCodeListHeading", "exitCodeList", "footerHeading", "footer"));
         assertEquals(DEFAULT_KEYS, commandLine.getHelpSectionMap().keySet());
