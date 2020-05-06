@@ -1287,6 +1287,7 @@ When `-y a b c path/to/file` is specified on the command line, this results in a
 
 Users can use the <<Double dash (`--`),end-of-options delimiter>> and disambiguate the input with
 `-y a b c &dash;&dash; VALUE`, but this may not be obvious to many users.
+One idea is to <<Show End of Options,show the end-of-options>> delimiter in the usage help.
 
 A better alternative may be to redesign your command to avoid the ambiguity altogether.
 One idea is to use the <<Default Arity,default arity>> (`arity = "1"` in our example) and use the <<Split Regex,split>> attribute to allow users to specify multiple values in a single argument like `a,b,c`.
@@ -1381,6 +1382,7 @@ When `-x VALUE` is specified on the command line, this results in an error: `Mis
 
 Users can use the <<Double dash (`--`),end-of-options delimiter>> and disambiguate the input with
 `-x &dash;&dash; VALUE`, but this may not be obvious to many users.
+One idea is to <<Show End of Options,show the end-of-options>> delimiter in the usage help.
 
 An alternative is to avoid the use of optional parameters and use the default arity in this scenario to elimitate the ambiguity altogether.
 
