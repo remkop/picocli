@@ -6005,10 +6005,8 @@ public class CommandLine {
                         throw DuplicateOptionAnnotationsException.create(existingName, option, existing);
                     }
                     // #1022 checks if negated option exists with the same name
-                    String negatedName = negatableOptionTransformer().makeNegative(name, this);
-                    String existingNegatedName = optionsByNameMap.getCaseSensitiveKey(negatedName);
-                    OptionSpec existingNegated = negatedOptionsByNameMap.get(negatedName);
-                    if (existingNegated == null) { existingNegated = optionsByNameMap.get(negatedName); }
+                    String existingNegatedName = negatedOptionsByNameMap.getCaseSensitiveKey(name);
+                    OptionSpec existingNegated = negatedOptionsByNameMap.get(name);
                     if (existingNegated != null && existingNegated != option) {
                         throw DuplicateOptionAnnotationsException.create(existingNegatedName, option, existingNegated);
                     }
@@ -6039,7 +6037,7 @@ public class CommandLine {
                             tracer.debug("Option %s is negatable, but has no negative form.%n", name);
                         } else {
                             tracer.debug("Option %s is negatable, registering negative name %s.%n", name, negatedName);
-                            String existingName = optionsByNameMap.getCaseSensitiveKey(negatedName);
+                            String existingName = negatedOptionsByNameMap.getCaseSensitiveKey(negatedName);
                             OptionSpec existing = negatedOptionsByNameMap.put(negatedName, option);
                             if (existing == null) { existing = optionsByNameMap.get(negatedName); }
                             if (existing != null) {
