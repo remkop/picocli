@@ -6001,6 +6001,13 @@ public class CommandLine {
                     if (existing != null) { /* was: && !existing.equals(option)) {*/ // since 4.0 ArgGroups: an option cannot be in multiple groups
                         throw DuplicateOptionAnnotationsException.create(existingName, option, existing);
                     }
+                    String negatedName = negatableOptionTransformer().makeNegative(name, this);
+                    String existingNegatedName = optionsByNameMap.getCaseSensitiveKey(negatedName);
+                    OptionSpec existingNegated = negatedOptionsByNameMap.get(negatedName);
+                    if (existingNegated == null) { existingNegated = optionsByNameMap.get(negatedName); }
+                    if (existingNegated != null) {
+                        throw DuplicateOptionAnnotationsException.create(existingNegatedName, option, existingNegated);
+                    }
                     if (name.length() == 2 && name.startsWith("-")) { posixOptionsByKeyMap.put(name.charAt(1), option); }
                 }
                 options.add(option);
