@@ -6065,7 +6065,7 @@ public class CommandLine {
                     String optionName = optionsByNameMap.getCaseSensitiveKey(negatedOptionName);
                     OptionSpec option = optionsByNameMap.get(optionName);
                     if (option != null && option != negatedOption) {
-                        throw DuplicateOptionAnnotationsException.create(optionName, option, negatedOptionEntry.getValue());
+                        throw DuplicateOptionAnnotationsException.create(optionName, option, negatedOption);
                     }
                 }
             }
