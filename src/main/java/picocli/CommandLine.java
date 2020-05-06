@@ -6004,6 +6004,7 @@ public class CommandLine {
                     if (existing != null) { /* was: && !existing.equals(option)) {*/ // since 4.0 ArgGroups: an option cannot be in multiple groups
                         throw DuplicateOptionAnnotationsException.create(existingName, option, existing);
                     }
+                    // #1022 checks if negated option exists with the same name
                     String negatedName = negatableOptionTransformer().makeNegative(name, this);
                     String existingNegatedName = optionsByNameMap.getCaseSensitiveKey(negatedName);
                     OptionSpec existingNegated = negatedOptionsByNameMap.get(negatedName);
@@ -6059,6 +6060,7 @@ public class CommandLine {
             }
 
             private void validateCaseInsensitiveOptions() {
+                // #1022 checks if negated option exists with the same name, after activate case-insensitivity
                 for (Map.Entry<String, OptionSpec> negatedOptionEntry : negatedOptionsByNameMap.entrySet()) {
                     String negatedOptionName = negatedOptionEntry.getKey();
                     OptionSpec negatedOption = negatedOptionEntry.getValue();
