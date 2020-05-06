@@ -6005,7 +6005,7 @@ public class CommandLine {
                     String existingNegatedName = optionsByNameMap.getCaseSensitiveKey(negatedName);
                     OptionSpec existingNegated = negatedOptionsByNameMap.get(negatedName);
                     if (existingNegated == null) { existingNegated = optionsByNameMap.get(negatedName); }
-                    if (existingNegated != null) {
+                    if (existingNegated != null && existingNegated != option && existingNegated.negatable()) {
                         throw DuplicateOptionAnnotationsException.create(existingNegatedName, option, existingNegated);
                     }
                     if (name.length() == 2 && name.startsWith("-")) { posixOptionsByKeyMap.put(name.charAt(1), option); }
