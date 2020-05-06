@@ -578,6 +578,10 @@ assert demo.params.equals(Arrays.asList("-files", "file1", "file2"));
 
 A custom delimiter can be configured with `CommandLine.setEndOfOptionsDelimiter(String)`.
 
+From picocli 4.3, an entry for `--` can be shown in the options list of the usage help message of a command with the `@Command(showEndOfOptionsDelimiterInUsageHelp = true)` annotation.
+See <<Show End of Options>> for details.
+
+
 [[AtFiles]]
 === @-files
 ==== Argument Files for Long Command Lines
@@ -636,7 +640,8 @@ The documentation for these tools shows further examples.
 
 ==== @-files Usage Help
 
-From picocli 4.2, an entry for `@<filename>` can be shown in the options and parameters list of the usage help message of a command with the `@Command(showAtFileInUsageHelp = true)` annotation. See <<Show At Files>> for details.
+From picocli 4.2, an entry for `@<filename>` can be shown in the options and parameters list of the usage help message of a command with the `@Command(showAtFileInUsageHelp = true)` annotation.
+See <<Show At Files>> for details.
 
 
 ==== Simplified Format
@@ -3376,6 +3381,102 @@ Example command.
       <file>            A file.
   -h, --help            Show this help message and exit.
   -V, --version         Print version information and exit.
+----
+
+=== Show End of Options
+
+From picocli 4.3, an entry for the `--` <<Double dash (`--`),End of Options delimiter>> can be shown in the options list of the usage help message of a command with the `@Command(showEndOfOptionsDelimiterInUsageHelp = true)` annotation.
+
+==== Example
+
+Example command:
+
+[source,java]
+----
+@Command(name = "myapp", showEndOfOptionsDelimiterInUsageHelp = true,
+        mixinStandardHelpOptions = true, description = "Example command.")
+class MyApp {
+    @Parameters(description = "A file.") File file;
+}
+----
+
+The usage help message for this command looks like this:
+
+----
+Usage: myapp [-hV] [--] <file>
+Example command.
+      <file>      A file.
+  -h, --help      Show this help message and exit.
+  -V, --version   Print version information and exit.
+  --              This option can be used to separate command-line options from
+                    the list of positional parameters.
+----
+
+==== Changing the End of Options Entry Location
+
+By default, the `--` End of Options entry is shown between the options and the positional parameters in the synopsis, and at the end of the options list.
+
+This can be changed with the <<Usage Help API,Help API>> for reordering sections. For example:
+
+[source,java]
+----
+import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_END_OF_OPTIONS;
+import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_OPTION_LIST;
+import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_OPTION_LIST_HEADING;
+
+@Command(name = "myapp", showEndOfOptionsDelimiterInUsageHelp = true,
+        mixinStandardHelpOptions = true, description = "Example command.")
+class MyApp {
+    @Parameters(description = "A file.") File file;
+
+    public static void main(String... args) {
+        CommandLine cmd = new CommandLine(new MyApp());
+        List<String> copy = new ArrayList<>(cmd.getHelpSectionKeys());
+        copy.remove(SECTION_KEY_END_OF_OPTIONS);
+        copy.add(copy.indexOf(SECTION_KEY_OPTION_LIST), SECTION_KEY_END_OF_OPTIONS);
+        cmd.setHelpSectionKeys(copy);
+
+        cmd.usage(System.out);
+    }
+}
+----
+
+The resulting usage help message shows the `--` End of Options entry has moved up, to the beginning the options list:
+
+----
+Usage: myapp [-hV] [--] <file>
+Example command.
+      <file>      A file.
+  --              This option can be used to separate command-line options from
+                    the list of positional parameters.
+  -h, --help      Show this help message and exit.
+  -V, --version   Print version information and exit.
+----
+
+==== Changing the End of Options Entry Text
+
+The description of the `--` End of Options delimiter entry has been defined with a <<Custom Variables,custom variable>>, to allow applications to change the text. The variable is:
+
+* `picocli.endofoptions.description`
+
+By setting the above variable in either system properties, environment variables or the <<Internationalization,resource bundle>> for a command, the text can be customized.
+
+For example, if we define this system property:
+
+[source,java]
+----
+System.setProperty("picocli.endofoptions.description", "End of options. Remainder are positional parameters.");
+----
+
+then the usage help for our above example changes to this:
+
+----
+Usage: myapp [-hV] [--] <file>
+Example command.
+      <file>      A file.
+  -h, --help      Show this help message and exit.
+  -V, --version   Print version information and exit.
+  --              End of options. Remainder are positional parameters.
 ----
 
 === Show Default Values

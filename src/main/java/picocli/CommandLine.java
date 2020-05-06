@@ -13750,9 +13750,14 @@ public class CommandLine {
                 .paramLabel("${picocli.atfile.label:-@<filename>}").description("${picocli.atfile.description:-One or more argument files containing options.}").arity("0..*")
                 .descriptionKey("picocli.atfile").build();
 
-        public final OptionSpec END_OF_OPTIONS_OPTION = OptionSpec.builder("${picocli.endofoptions.name:---}")
-                .description("${picocli.endofoptions.description:-This option can be used to separate command-line options from the list of positional parameters.}").arity("0")
-                .descriptionKey("picocli.endofoptions").build();
+        public final OptionSpec END_OF_OPTIONS_OPTION = createEndOfOptionsOption(ParserSpec.DEFAULT_END_OF_OPTIONS_DELIMITER);
+
+        private OptionSpec createEndOfOptionsOption(String name) {
+            return OptionSpec.builder(name)
+                    .description("${picocli.endofoptions.description:-This option can be used to separate command-line options from the list of positional parameters.}").arity("0")
+                    .descriptionKey("picocli.endofoptions")
+                    .build();
+        }
 
         private final CommandSpec commandSpec;
         private final ColorScheme colorScheme;
@@ -14059,16 +14064,7 @@ public class CommandLine {
             if (!commandSpec.usageMessage.showEndOfOptionsDelimiterInUsageHelp()) {
                 return ansi().new Text(0);
             }
-            if (!ParserSpec.DEFAULT_END_OF_OPTIONS_DELIMITER.equals(commandSpec.parser().endOfOptionsDelimiter())) {
-                return ansi().new Text(0).concat(" [").concat(colorScheme.optionText(commandSpec.parser().endOfOptionsDelimiter())).concat("]");
-            }
-            END_OF_OPTIONS_OPTION.commandSpec = this.commandSpec; // needed for interpolation
-            try {
-                END_OF_OPTIONS_OPTION.messages(commandSpec.usageMessage().messages());
-                return ansi().new Text(0).concat(" [").concat(colorScheme.optionText(END_OF_OPTIONS_OPTION.shortestName())).concat("]");
-            } finally {
-                END_OF_OPTIONS_OPTION.commandSpec = null;
-            }
+            return ansi().new Text(0).concat(" [").concat(colorScheme.optionText(commandSpec.parser().endOfOptionsDelimiter())).concat("]");
         }
 
         /** Returns a Text object containing a partial detailed synopsis showing only the positional parameters, starting with a {@code " "} space.
@@ -14324,18 +14320,21 @@ public class CommandLine {
          * @since 4.3
          */
         public String endOfOptionsList() {
-            if (commandSpec.usageMessage.showEndOfOptionsDelimiterInUsageHelp()) {
-                END_OF_OPTIONS_OPTION.commandSpec = this.commandSpec; // needed for interpolation
-                try {
-                    END_OF_OPTIONS_OPTION.messages(commandSpec.usageMessage().messages());
-                    Layout layout = createDefaultLayout();
-                    layout.addOption(END_OF_OPTIONS_OPTION, parameterLabelRenderer());
-                    return layout.toString();
-                } finally {
-                    END_OF_OPTIONS_OPTION.commandSpec = null;
-                }
+            if (!commandSpec.usageMessage.showEndOfOptionsDelimiterInUsageHelp()) {
+                return "";
             }
-            return "";
+            OptionSpec endOfOptionsOption = ParserSpec.DEFAULT_END_OF_OPTIONS_DELIMITER.equals(commandSpec.parser().endOfOptionsDelimiter())
+                    ? END_OF_OPTIONS_OPTION
+                    : createEndOfOptionsOption(commandSpec.parser().endOfOptionsDelimiter());
+            endOfOptionsOption.commandSpec = this.commandSpec; // needed for interpolation
+            try {
+                endOfOptionsOption.messages(commandSpec.usageMessage().messages());
+                Layout layout = createDefaultLayout();
+                layout.addOption(endOfOptionsOption, parameterLabelRenderer());
+                return layout.toString();
+            } finally {
+                endOfOptionsOption.commandSpec = null;
+            }
         }
 
         private static String heading(Ansi ansi, int usageWidth, boolean adjustCJK, String values, Object... params) {

@@ -90,17 +90,16 @@ public class EndOfOptionsDelimiterTest {
             @Parameters(description = "A file.") File file;
         }
 
-        System.setProperty("picocli.endofoptions.name", "-!");
         System.setProperty("picocli.endofoptions.description", "End of options -- rock!");
 
         String actual = new CommandLine(new MyApp()).getUsageMessage();
         String expected = String.format("" +
-                "Usage: myapp [-hV] [-!] <file>%n" +
+                "Usage: myapp [-hV] [--] <file>%n" +
                 "Example command.%n" +
                 "      <file>      A file.%n" +
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n" +
-                "  -!              End of options -- rock!%n" +
+                "  --              End of options -- rock!%n" +
                 "");
         assertEquals(expected, actual);
     }
@@ -109,31 +108,9 @@ public class EndOfOptionsDelimiterTest {
         protected Object[][] getContents() {
             return new Object[][] {
                     {"picocli.endofoptions", "hi! I am the -- end-of-options description from a file"},
-                    {"picocli.endofoptions.name", "@@@"},
-                    {"picocli.endofoptions.description", "BUNDLE -- DESCRIPTION"},
+                    //{"picocli.endofoptions.description", "BUNDLE -- DESCRIPTION"},
             };
         }
-    }
-
-    @Test
-    public void testShowEndOfOptionsDelimiterInUsageHelpResourceBundleWithSystemProps() {
-        @Command(name = "A", mixinStandardHelpOptions = true, resourceBundle = "picocli.EndOfOptionsDelimiterTest$MyResourceBundle",
-                showEndOfOptionsDelimiterInUsageHelp = true, description = "... description ...")
-        class A { }
-
-        System.setProperty("picocli.endofoptions.name", "my--endOfOpts");
-        System.setProperty("picocli.endofoptions.description", "EndOfOptions rock!");
-
-        String actual = new CommandLine(new A()).setResourceBundle(new AtFileTest.MyResourceBundle()).getUsageMessage();
-        String expected = String.format("" +
-                "Usage: A [-hV] [my--endOfOpts]%n" +
-                "... description ...%n" +
-                "  -h, --help      Show this help message and exit.%n" +
-                "  -V, --version   Print version information and exit.%n" +
-                "      my--endOfOpts%n" +
-                "                  EndOfOptions rock!%n" +
-                "");
-        assertEquals(expected, actual);
     }
 
     @Test
@@ -144,15 +121,138 @@ public class EndOfOptionsDelimiterTest {
 
         String actual = new CommandLine(new A()).getUsageMessage();
         String expected = String.format("" +
-                "Usage: A [-hV] [@@@]%n" +
+                "Usage: A [-hV] [--]%n" +
                 "... description ...%n" +
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n" +
-                "      @@@         hi! I am the -- end-of-options description from a file%n" +
+                "  --              hi! I am the -- end-of-options description from a file%n" +
                 "");
         assertEquals(expected, actual);
     }
 
+    @Test
+    public void testShowEndOfOptionsDelimiterInUsageHelpResourceBundleWithSystemProps() {
+        @Command(name = "A", mixinStandardHelpOptions = true, resourceBundle = "picocli.EndOfOptionsDelimiterTest$MyResourceBundle",
+                showEndOfOptionsDelimiterInUsageHelp = true, description = "... description ...")
+        class A { }
+
+        System.setProperty("picocli.endofoptions.description", "EndOfOptions rock!");
+
+        String actual = new CommandLine(new A()).setResourceBundle(new AtFileTest.MyResourceBundle()).getUsageMessage();
+        String expected = String.format("" +
+                "Usage: A [-hV] [--]%n" +
+                "... description ...%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "  --              EndOfOptions rock!%n" +
+                "");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testShowEndOfOptionsDelimiterInUsageHelpResourceBundleWithDescriptionKey() {
+        @Command(name = "A", mixinStandardHelpOptions = true, resourceBundle = "picocli.EndOfOptionsDelimiterTest$MyResourceBundle",
+                showEndOfOptionsDelimiterInUsageHelp = true, description = "... description ...")
+        class A { }
+
+        System.setProperty("picocli.endofoptions", "EndOfOptions SHORT KEY!");
+
+        String actual = new CommandLine(new A()).setResourceBundle(new AtFileTest.MyResourceBundle()).getUsageMessage();
+        String expected = String.format("" +
+                "Usage: A [-hV] [--]%n" +
+                "... description ...%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "  --              This option can be used to separate command-line options from%n" +
+                "                    the list of positional parameters.%n" +
+                "");
+        assertEquals(expected, actual);
+    }
+
+    public static class MyResourceBundleWithLongKey extends ListResourceBundle {
+        protected Object[][] getContents() {
+            return new Object[][] {
+                    //{"picocli.endofoptions", "hi! I am the -- end-of-options description from a file"},
+                    {"picocli.endofoptions.description", "BUNDLE -- DESCRIPTION"},
+            };
+        }
+    }
+
+    @Test
+    public void testShowEndOfOptionsDelimiterInUsageHelpResourceBundle2WithoutSystemProps() {
+        @Command(name = "A", mixinStandardHelpOptions = true, resourceBundle = "picocli.EndOfOptionsDelimiterTest$MyResourceBundleWithLongKey",
+                showEndOfOptionsDelimiterInUsageHelp = true, description = "... description ...")
+        class A { }
+
+        String actual = new CommandLine(new A()).getUsageMessage();
+        String expected = String.format("" +
+                "Usage: A [-hV] [--]%n" +
+                "... description ...%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "  --              BUNDLE -- DESCRIPTION%n" +
+                "");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testShowEndOfOptionsDelimiterInUsageHelpResourceBundle2WithSystemPropDescriptionKey() {
+        @Command(name = "A", mixinStandardHelpOptions = true, resourceBundle = "picocli.EndOfOptionsDelimiterTest$MyResourceBundleWithLongKey",
+                showEndOfOptionsDelimiterInUsageHelp = true, description = "... description ...")
+        class A { }
+
+        System.setProperty("picocli.endofoptions", "EndOfOptions2 DESCRIPTION KEY!"); //ignored
+
+        String actual = new CommandLine(new A()).getUsageMessage();
+        String expected = String.format("" +
+                "Usage: A [-hV] [--]%n" +
+                "... description ...%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "  --              BUNDLE -- DESCRIPTION%n" +
+                "");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testShowEndOfOptionsDelimiterInUsageHelpResourceBundle2WithSystemPropLongKey() {
+        @Command(name = "A", mixinStandardHelpOptions = true, resourceBundle = "picocli.EndOfOptionsDelimiterTest$MyResourceBundleWithLongKey",
+                showEndOfOptionsDelimiterInUsageHelp = true, description = "... description ...")
+        class A { }
+
+        System.setProperty("picocli.endofoptions.description", "EndOfOptions2 LONG KEY!");
+
+        String actual = new CommandLine(new A()).getUsageMessage();
+        String expected = String.format("" +
+                "Usage: A [-hV] [--]%n" +
+                "... description ...%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "  --              EndOfOptions2 LONG KEY!%n" +
+                "");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testShowEndOfOptionsDelimiterInUsageHelpWithCustomEndOfOptionsDelimiter() {
+        @Command(name = "A", mixinStandardHelpOptions = true,
+                showEndOfOptionsDelimiterInUsageHelp = true, description = "... description ...")
+        class A { }
+
+        String actual = new CommandLine(new A())
+                .setEndOfOptionsDelimiter("@+@")
+                .getUsageMessage();
+
+        String expected = String.format("" +
+                "Usage: A [-hV] [@+@]%n" +
+                "... description ...%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "      @+@         This option can be used to separate command-line options from%n" +
+                "                    the list of positional parameters.%n" +
+                "");
+        assertEquals(expected, actual);
+    }
 
     @Test
     public void testEndOfOptionsListSectionAsFirstOption() {
@@ -179,7 +279,7 @@ public class EndOfOptionsDelimiterTest {
                 "  -V, --version   Print version information and exit.%n" +
                 "");
         assertEquals(expected, actual);
-        commandLine.usage(System.out);
+        //commandLine.usage(System.out);
     }
 
     @Test

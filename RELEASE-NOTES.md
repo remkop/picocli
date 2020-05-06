@@ -9,9 +9,11 @@ This release adds support for "inherited" options. Options defined with `scope =
 
 Additionally, this release improves support for automatic indexes for positional parameters. Single-value positional parameters without an explicit `index = "..."` attribute are now automatically assigned an index based on the other positional parameters in the command. One use case is mixins with positional parameters.
 
-Also, from this release, mixins are more powerful. Mixin classes can declare a `@Spec(MIXEE)`-annotated field, and picocli will inject the `CommandSpec` of the command _receiving_ this mixin (the "mixee") into this field. This is useful for mixins containing shared logic, in addition to shared options and parameters. 
+Also, mixins are now more powerful. Mixin classes can declare a `@Spec(MIXEE)`-annotated field, and picocli will inject the `CommandSpec` of the command _receiving_ this mixin (the "mixee") into this field. This is useful for mixins containing shared logic, in addition to shared options and parameters. 
 
 From this release, picocli makes it easy to make subcommands mandatory by making the top-level command a class that does not implement `Runnable` or `Callable`.
+
+Additionally, an entry for `--` can be shown in the options list of the usage help message of a command with the `@Command(showEndOfOptionsDelimiterInUsageHelp = true)` annotation.
 
 Error handlers now use ANSI colors and styles. The default styles are bold red for the error message, and italic for stack traces. Applications can customize with the new `Help.ColorScheme` methods `errors` and `stackTraces`.
 
@@ -27,12 +29,14 @@ Picocli follows [semantic versioning](http://semver.org/).
   * [Inherited Options](#4.3.0-inherited-options)
   * [Automatic Indexes for Positional Parameters](#4.3.0-auto-index)
   * [`@Spec(MIXEE)` Annotation](#4.3.0-mixee)
+  * [Showing `--` End of Options in usage help](#4.3.0-end-of-options)
 * [Fixed issues](#4.3.0-fixes)
 * [Deprecations](#4.3.0-deprecated)
 * [Potential breaking changes](#4.3.0-breaking-changes)
 
 ## <a name="4.3.0-new"></a> New and Noteworthy
 ### <a name="4.3.0-inherited-options"></a> Inherited Options
+
 This release adds support for "inherited" options. Options defined with `scope = ScopeType.INHERIT` are shared with all subcommands (and sub-subcommands, to any level of depth). Applications can define an inherited option on the top-level command, in one place, to allow end users to specify this option anywhere: not only on the top-level command, but also on any of the subcommands and nested sub-subcommands.
 
 Below is an example where an inherited option is used to configure logging.
@@ -179,6 +183,32 @@ class AdvancedMixin {
     }
 }
 ```
+
+### <a name="4.3.0-end-of-options"></a> Showing `--` End of Options in usage help
+From picocli 4.3, an entry for the `--` End of Options delimiter can be shown in the options list of the usage help message of a command with the `@Command(showEndOfOptionsDelimiterInUsageHelp = true)` annotation.
+
+Example command:
+
+```java
+@Command(name = "myapp", showEndOfOptionsDelimiterInUsageHelp = true,
+        mixinStandardHelpOptions = true, description = "Example command.")
+class MyApp {
+    @Parameters(description = "A file.") File file;
+}
+```
+
+The usage help message for this command looks like this:
+
+```
+Usage: myapp [-hV] [--] <file>
+Example command.
+      <file>      A file.
+  -h, --help      Show this help message and exit.
+  -V, --version   Print version information and exit.
+  --              This option can be used to separate command-line options from
+                    the list of positional parameters.
+```
+
 
 ## <a name="4.3.0-fixes"></a> Fixed issues
 * [#649][#948] Provide convenience API for inherited/global options (was: Feature request: inheriting mixins in subcommands). Thanks to [Garret Wilson](https://github.com/garretwilson) for the request and subsequent discussion (and patience!).
