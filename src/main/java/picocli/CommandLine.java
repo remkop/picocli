@@ -4833,16 +4833,11 @@ public class CommandLine {
          *     <th>Comment</th>
          *   </tr>
          *   <tr>
-         *     <td>^--no-(\w(-|\w)*)$</td>
-         *     <td>--$1</td>
-         *     <td>--[no-]$1</td>
+         *     <td>^--((?i)no)-(\w(-|\w)*)$</td>
+         *     <td>--$2</td>
+         *     <td>--[$1-]$2</td>
          *     <td>Converts <code>--no-force</code> to <code>--force</code></td>
-         *   </tr>
-         *   <tr>
-         *     <td>^--NO-(\w(-|\w)*)$</td>
-         *     <td>--$1</td>
-         *     <td>--[NO-]$1</td>
-         *     <td>Converts <code>--NO-force</code> to <code>--force</code></td>
+         *     <td>     and <code>--NO-force</code> to <code>--force</code></td>
          *   </tr>
          *   <tr>
          *     <td>^--(\w(-|\w)*)$</td>
