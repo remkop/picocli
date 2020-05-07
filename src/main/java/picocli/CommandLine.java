@@ -6115,7 +6115,7 @@ public class CommandLine {
                 }
             }
 
-            private void validateNegativeOptions() {
+            private void validateNegatedOptions() {
                 // #1022 checks if negated options exist with the same name, after changing negatableOptionTransformer
                 for (Map.Entry<String, OptionSpec> negatedOptionEntry : negatedOptionsByNameMap.entrySet()) {
                     String negatedOptionName = negatedOptionEntry.getKey();
@@ -6603,7 +6603,7 @@ public class CommandLine {
                 tracer.debug("Replacing negatableOptionTransformer %s with %s%n", negatableOptionTransformer, newValue);
                 negatableOptionTransformer = newValue;
                 resetNegativeOptionNames();
-                validateNegativeOptions();
+                validateNegatedOptions();
                 return this;
             }
 
