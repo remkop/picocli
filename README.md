@@ -119,6 +119,7 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 * [Интерфейсы командной строки Java: picocli](https://habr.com/ru/company/otus/blog/419401/) (2018-08-06): Russian translation by [MaxRokatansky](https://habr.com/ru/users/MaxRokatansky/) of Dustin Marx' blog post.
 
 #### Français
+* [Application mobile: Créez de superbes applications CLI natives en Java avec Graalvm et Picocli](https://seodigitalmarketing.net/application-mobile-creez-de-superbes-applications-cli-natives-en-java-avec-graalvm-et-picocli/) (2020-05-07) Translation of [Build Great Native CLI Apps in Java with Graalvm and Picocli](https://www.infoq.com/articles/java-native-cli-graalvm-picocli/) by [bouf1450](https://seodigitalmarketing.net/author/bouf1450/). 
 * [VIDEO] [Des applications en ligne de commande avec Picocli et GraalVM (N. Peters)](https://www.youtube.com/watch?v=8ENbMwkaFyk) (2019-05-07): 15 minute presentation by Nicolas Peters during Devoxx FR. Presentation slides are [available on GitHub](https://t.co/tXhtpTpAff?amp=1).
 
 #### 日本語
