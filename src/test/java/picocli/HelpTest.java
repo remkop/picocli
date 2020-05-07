@@ -4478,19 +4478,68 @@ public class HelpTest {
     }
 
     @Test
-    public void testHasAtFileParameter() {
+    public void testHasAtFileParameter_True() {
         @Command(name = "A", mixinStandardHelpOptions = true,
                 showAtFileInUsageHelp = true,
                 parameterListHeading = "Parameters:%n",
                 optionListHeading = "Options:%n",
                 description = "... description ...")
         class A { }
-        Help help_a = new Help(new A());
-        assertTrue(help_a.hasAtFileParameter());
+        Help help = new Help(new A());
+        assertTrue(help.hasAtFileParameter());
+    }
 
-        @Command(name = "B")
-        class B { }
-        Help help_b = new Help(new B());
-        assertFalse(help_b.hasAtFileParameter());
+    @Test
+    public void testHasAtFileParameter_False() {
+        @Command(name = "A")
+        class A { }
+        Help help = new Help(new A());
+        assertFalse(help.hasAtFileParameter());
+    }
+
+    @Test
+    public void testAtFileParameterList_NonEmpty() {
+        @Command(name = "A", mixinStandardHelpOptions = true,
+                showAtFileInUsageHelp = true,
+                parameterListHeading = "Parameters:%n",
+                optionListHeading = "Options:%n",
+                description = "... description ...")
+        class A { }
+
+        String actual = new Help(new A()).atFileParameterList();
+        String expected = String.format("      [@<filename>...]   One or more argument files containing options.%n");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testAtFileParameterList_Empty() {
+        @Command(name = "A")
+        class A { }
+        String actual = new Help(new A()).atFileParameterList();
+        String expected = String.format("");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testParameterListHeading_NonEmpty() {
+        @Command(name = "A", mixinStandardHelpOptions = true,
+                showAtFileInUsageHelp = true,
+                parameterListHeading = "Parameters:%n",
+                optionListHeading = "Options:%n",
+                description = "... description ...")
+        class A { }
+
+        String actual = new Help(new A()).parameterListHeading();
+        String expected = String.format("      [@<filename>...]   One or more argument files containing options.%n");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testParameterListHeading_Empty() {
+        @Command(name = "A")
+        class A { }
+        String actual = new Help(new A()).parameterListHeading();
+        String expected = String.format("");
+        assertEquals(expected, actual);
     }
 }
