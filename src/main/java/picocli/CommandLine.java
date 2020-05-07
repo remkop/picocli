@@ -4822,6 +4822,58 @@ public class CommandLine {
             return transformer;
         }
 
+        /**
+         * Returns the {@code RegexTransformer} for case-insensitive negatable options.
+         * <table border="1">
+         *   <caption>The regular expressions for case-insensitive negatable options</caption>
+         *   <tr>
+         *     <th>Regex</th>
+         *     <th>Negative Replacement</th>
+         *     <th>Synopsis Replacement</th>
+         *     <th>Comment</th>
+         *   </tr>
+         *   <tr>
+         *     <td>^--no-(\w(-|\w)*)$</td>
+         *     <td>--$1</td>
+         *     <td>--[no-]$1</td>
+         *     <td>Converts <code>--no-force</code> to <code>--force</code></td>
+         *   </tr>
+         *   <tr>
+         *     <td>^--NO-(\w(-|\w)*)$</td>
+         *     <td>--$1</td>
+         *     <td>--[NO-]$1</td>
+         *     <td>Converts <code>--NO-force</code> to <code>--force</code></td>
+         *   </tr>
+         *   <tr>
+         *     <td>^--(\w(-|\w)*)$</td>
+         *     <td>--no-$1</td>
+         *     <td>--[no-]$1</td>
+         *     <td>Converts <code>--force</code> to <code>--no-force</code></td>
+         *   </tr>
+         *   <tr>
+         *     <td>^(-|--)(\w*:)\+(\w(-|\w)*)$</td>
+         *     <td>$1$2-$3</td>
+         *     <td>$1$2(+|-)$3</td>
+         *     <td>Converts <code>-XX:+Inline</code> to <code>-XX:-Inline</code></td>
+         *   </tr>
+         *   <tr>
+         *     <td>^(-|--)(\w*:)\-(\w(-|\w)*)$</td>
+         *     <td>$1$2+$3</td>
+         *     <td>$1$2(+|-)$3</td>
+         *     <td>Converts <code>-XX:-Inline</code> to <code>-XX:+Inline</code></td>
+         *   </tr>
+         * </table>
+         */
+        public static RegexTransformer createCaseInsensitive() {
+            CommandLine.RegexTransformer transformer = new CommandLine.RegexTransformer.Builder()
+                    .addPattern("^--((?i)no)-(\\w(-|\\w)*)$", "--$2", "--[$1-]$2")
+                    .addPattern("^--(\\w(-|\\w)*)$", "--no-$1", "--[no-]$1")
+                    .addPattern("^(-|--)(\\w*:)\\+(\\w(-|\\w)*)$", "$1$2-$3", "$1$2(+|-)$3")
+                    .addPattern("^(-|--)(\\w*:)\\-(\\w(-|\\w)*)$", "$1$2+$3", "$1$2(+|-)$3")
+                    .build();
+            return transformer;
+        }
+
         /** {@inheritDoc} */
         public String makeNegative(String optionName, CommandSpec cmd) {
             for (Map.Entry<Pattern, String> entry : replacements.entrySet()) {
@@ -5786,11 +5838,14 @@ public class CommandLine {
             /** Sets the case-insensitivity of options.
              * @since 4.3 */
             public CommandSpec optionsCaseInsensitive(boolean caseInsensitiveOptions) {
+                boolean previousCaseInsensitiveOptions = optionsCaseInsensitive();
                 optionsByNameMap.setCaseInsensitive(caseInsensitiveOptions);
                 negatedOptionsByNameMap.setCaseInsensitive(caseInsensitiveOptions);
                 posixOptionsByKeyMap.setCaseInsensitive(caseInsensitiveOptions);
-                if (caseInsensitiveOptions) {
-                    validateCaseInsensitiveOptions();
+                if (previousCaseInsensitiveOptions && !caseInsensitiveOptions) {
+                    negatableOptionTransformer(RegexTransformer.createDefault());
+                } else if (!previousCaseInsensitiveOptions) {
+                    negatableOptionTransformer(RegexTransformer.createCaseInsensitive());
                 }
                 return this;
             }
@@ -6039,7 +6094,10 @@ public class CommandLine {
                             tracer.debug("Option %s is negatable, registering negative name %s.%n", name, negatedName);
                             String existingName = negatedOptionsByNameMap.getCaseSensitiveKey(negatedName);
                             OptionSpec existing = negatedOptionsByNameMap.put(negatedName, option);
-                            if (existing == null) { existing = optionsByNameMap.get(negatedName); }
+                            if (existing == null) {
+                                existingName = optionsByNameMap.getCaseSensitiveKey(negatedName);
+                                existing = optionsByNameMap.get(negatedName);
+                            }
                             if (existing != null) {
                                 throw DuplicateOptionAnnotationsException.create(existingName, option, existing);
                             }
@@ -6057,7 +6115,7 @@ public class CommandLine {
                 }
             }
 
-            private void validateCaseInsensitiveOptions() {
+            private void validateNegativeOptions() {
                 // #1022 checks if negated option exists with the same name, after activate case-insensitivity
                 for (Map.Entry<String, OptionSpec> negatedOptionEntry : negatedOptionsByNameMap.entrySet()) {
                     String negatedOptionName = negatedOptionEntry.getKey();
@@ -6545,6 +6603,7 @@ public class CommandLine {
                 tracer.debug("Replacing negatableOptionTransformer %s with %s%n", negatableOptionTransformer, newValue);
                 negatableOptionTransformer = newValue;
                 resetNegativeOptionNames();
+                validateNegativeOptions();
                 return this;
             }
 
