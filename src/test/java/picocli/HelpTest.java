@@ -4530,7 +4530,7 @@ public class HelpTest {
         class A { }
 
         String actual = new Help(new A()).parameterListHeading();
-        String expected = String.format("      [@<filename>...]   One or more argument files containing options.%n");
+        String expected = String.format("Parameters:%n");
         assertEquals(expected, actual);
     }
 
