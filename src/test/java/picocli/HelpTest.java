@@ -4476,4 +4476,21 @@ public class HelpTest {
                 "  -V, --version   Print version information and exit.%n");
         assertEquals(expected, new CommandLine(new App()).getUsageMessage(Help.Ansi.OFF));
     }
+
+    @Test
+    public void testHasAtFileParameter() {
+        @Command(name = "A", mixinStandardHelpOptions = true,
+                showAtFileInUsageHelp = true,
+                parameterListHeading = "Parameters:%n",
+                optionListHeading = "Options:%n",
+                description = "... description ...")
+        class A { }
+        Help help_a = new Help(new A());
+        assertTrue(help_a.hasAtFileParameter());
+
+        @Command(name = "B")
+        class B { }
+        Help help_b = new Help(new B());
+        assertFalse(help_b.hasAtFileParameter());
+    }
 }
