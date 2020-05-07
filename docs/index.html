@@ -8172,6 +8172,15 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 <p>When writing your command line program, you can use Java 15's new feature <code>Text Block</code>.
 The text block can be used in command and option description, headers and footers.</p>
 </div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(name = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span> }, description = <span class="string"><span class="delimiter">&quot;&quot;&quot;</span></span>
+<span class="string"><span class="delimiter">                                                    Verbose mode. Helpful for troubleshooting.</span></span>
+<span class="string"><span class="delimiter">                                                    Multiple -v options increase the verbosity.</span></span>
+<span class="string"><span class="delimiter">                                                    &quot;&quot;&quot;</span></span>) <span class="comment">// write description in text block</span>
+</code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>For more details, you can read <a href="https://www.infoq.com/articles/java-text-blocks/">Java text blocks</a>.</p>
 </div>

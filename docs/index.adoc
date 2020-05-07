@@ -5957,6 +5957,13 @@ However, picocli lets you make options required if you want to, see <<Required A
 === Text Blocks for Java 15
 
 When writing your command line program, you can use Java 15's new feature `Text Block`. The text block can be used in command and option description, headers and footers.
+[source,java]
+----
+@Option(names = { "-v", "--verbose" }, description = """
+                                                     Verbose mode. Helpful for troubleshooting.
+                                                     Multiple -v options increase the verbosity.
+                                                     """) // write description in text block
+----
 
 For more details, you can read https://www.infoq.com/articles/java-text-blocks/[Java text blocks].
 
