@@ -6115,19 +6115,6 @@ public class CommandLine {
                 }
             }
 
-            private void validateNegatedOptions() {
-                // #1022 checks if negated options exist with the same name, after changing negatableOptionTransformer
-                for (Map.Entry<String, OptionSpec> negatedOptionEntry : negatedOptionsByNameMap.entrySet()) {
-                    String negatedOptionName = negatedOptionEntry.getKey();
-                    OptionSpec negatedOption = negatedOptionEntry.getValue();
-                    String optionName = optionsByNameMap.getCaseSensitiveKey(negatedOptionName);
-                    OptionSpec option = optionsByNameMap.get(optionName);
-                    if (option != null && option != negatedOption) {
-                        throw DuplicateOptionAnnotationsException.create(optionName, option, negatedOption);
-                    }
-                }
-            }
-
             /** Adds the specified positional parameter spec to the list of configured arguments to expect.
              * The positional parameter's {@linkplain PositionalParamSpec#description()} may
              * now return Strings from this CommandSpec's {@linkplain UsageMessageSpec#messages() messages}.
@@ -6603,7 +6590,6 @@ public class CommandLine {
                 tracer.debug("Replacing negatableOptionTransformer %s with %s%n", negatableOptionTransformer, newValue);
                 negatableOptionTransformer = newValue;
                 resetNegativeOptionNames();
-                validateNegatedOptions();
                 return this;
             }
 
