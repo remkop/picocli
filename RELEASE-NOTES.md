@@ -225,6 +225,8 @@ Example command.
 * [#952] Enhancement: Make annotation processor quiet by default; add `-Averbose` annotation processor option to enable printing NOTE-level diagnostic messages to the console.
 * [#959] Enhancement: Print "Missing required subcommand" instead of throwing exception if command with subcommands does not implement `Runnable` or `Callable`. Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for the suggestion.
 * [#693][#1009][#1011] Add autocompletion for the built-in `HelpCommand`. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
+* [#1022][#1029] Duplicate negated options were incorrectly accepted. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
+* [#1030][#1029] `setOptionsCaseInsensitive` should make negatable options case insensitive. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#974] Enhancement/Bugfix: Add support for `@ArgGroup` argument groups in `@Command`-annotated methods. Thanks to [Usman Saleem](https://github.com/usmansaleem) for raising this.
 * [#962][#961] Enhancement/Bugfix: Default value should only be applied if value is missing. Thanks to [粟嘉逸](https://github.com/sjyMystery) and [chirlo](https://github.com/chirlo) for raising this.
 * [#991][#993] Enhancement/Bugfix: Detecting terminal width fails on non-English Windows versions. Thanks to [Stefan Gärtner](https://github.com/S-Gaertner) for the pull request.

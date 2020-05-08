@@ -5831,7 +5831,12 @@ public class CommandLine {
             public boolean subcommandsCaseInsensitive() { return commands.isCaseInsensitive(); }
             /** Sets the case-insensitivity of subcommands.
              * @since 4.3 */
-            public CommandSpec subcommandsCaseInsensitive(boolean caseInsensitiveSubcommands) { commands.setCaseInsensitive(caseInsensitiveSubcommands);  return this; }
+            public CommandSpec subcommandsCaseInsensitive(boolean caseInsensitiveSubcommands) {
+                if (subcommandsCaseInsensitive() == caseInsensitiveSubcommands) { return this; } // no change, no action
+                new Tracer().debug("Changing subcommandsCaseInsensitive to %s%n", caseInsensitiveSubcommands);
+                commands.setCaseInsensitive(caseInsensitiveSubcommands);
+                return this;
+            }
 
             /** Returns whether the options are case-insensitive.
              * @since 4.3 */
@@ -5842,15 +5847,15 @@ public class CommandLine {
              * version of the default transformer. To ensure your custom transformer is used, install it last, after changing case sensitivity.
              * @since 4.3 */
             public CommandSpec optionsCaseInsensitive(boolean caseInsensitiveOptions) {
-                boolean previousCaseInsensitiveOptions = optionsCaseInsensitive();
+                if (optionsCaseInsensitive() == caseInsensitiveOptions) { return this; } // no change, no action
+                new Tracer().debug("Changing optionsCaseInsensitive to %s%n", caseInsensitiveOptions);
                 optionsByNameMap.setCaseInsensitive(caseInsensitiveOptions);
                 negatedOptionsByNameMap.setCaseInsensitive(caseInsensitiveOptions);
                 posixOptionsByKeyMap.setCaseInsensitive(caseInsensitiveOptions);
-                if (previousCaseInsensitiveOptions && !caseInsensitiveOptions) {
-                    negatableOptionTransformer(RegexTransformer.createDefault());
-                } else if (!previousCaseInsensitiveOptions) {
-                    negatableOptionTransformer(RegexTransformer.createCaseInsensitive());
-                }
+                RegexTransformer transformer = caseInsensitiveOptions
+                        ? RegexTransformer.createCaseInsensitive()
+                        : RegexTransformer.createDefault();
+                negatableOptionTransformer(transformer);
                 return this;
             }
 
