@@ -795,6 +795,9 @@ public class CommandLine {
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
      * subcommands, call the setter last, after adding subcommands.</p>
+     * Note that changing case sensitivity will also change the case sensitivity of {@linkplain Option#negatable() negatable} options:
+     * any custom {@link INegatableOptionTransformer} that was previously installed will be replaced by the case-insensitive
+     * version of the default transformer. To ensure your custom transformer is used, install it last, after changing case sensitivity.
      * @param newValue the new setting
      * @return this {@code CommandLine} object, to allow method chaining
      * @since 4.3
@@ -3378,6 +3381,9 @@ public class CommandLine {
      * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
      * later will have the default setting. To ensure a setting is applied to all
      * subcommands, call the setter last, after adding subcommands.</p>
+     * Note that {@link CommandLine#setOptionsCaseInsensitive} will also change the case sensitivity of {@linkplain Option#negatable() negatable} options:
+     * any custom {@link INegatableOptionTransformer} that was previously installed will be replaced by the case-insensitive
+     * version of the default transformer. To ensure your custom transformer is used, install it last, after changing case sensitivity.
      * @param transformer the {@code INegatableOptionTransformer} used to create negative option names.
      * @return this {@code CommandLine} object, to allow method chaining
      * @see Option#negatable()
@@ -5831,6 +5837,9 @@ public class CommandLine {
              * @since 4.3 */
             public boolean optionsCaseInsensitive() { return optionsByNameMap.isCaseInsensitive(); }
             /** Sets the case-insensitivity of options.
+             * Note that changing case sensitivity will also change the case sensitivity of {@linkplain Option#negatable() negatable} options:
+             * any custom {@link INegatableOptionTransformer} that was previously installed will be replaced by the case-insensitive
+             * version of the default transformer. To ensure your custom transformer is used, install it last, after changing case sensitivity.
              * @since 4.3 */
             public CommandSpec optionsCaseInsensitive(boolean caseInsensitiveOptions) {
                 boolean previousCaseInsensitiveOptions = optionsCaseInsensitive();
@@ -6578,6 +6587,9 @@ public class CommandLine {
              * @since 4.0 */
             public CommandSpec exitCodeOnExecutionException(int newValue) { exitCodeOnExecutionException = newValue; return this; }
             /** Sets the {@code INegatableOptionTransformer} used to create the negative form of {@linkplain Option#negatable() negatable} options.
+             * Note that {@link CommandSpec#optionsCaseInsensitive()} will also change the case sensitivity of {@linkplain Option#negatable() negatable} options:
+             * any custom {@link INegatableOptionTransformer} that was previously installed will be replaced by the case-insensitive
+             * version of the default transformer. To ensure your custom transformer is used, install it last, after changing case sensitivity.
              * @see Option#negatable()
              * @since 4.0 */
             public CommandSpec negatableOptionTransformer(INegatableOptionTransformer newValue) {
