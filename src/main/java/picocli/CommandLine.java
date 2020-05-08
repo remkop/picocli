@@ -16657,6 +16657,7 @@ public class CommandLine {
                 writer.println(isUnknownOption()
                         ? "Possible solutions: " + str(suggestions)
                         : "Did you mean: " + str(suggestions).replace(", ", " or ") + "?");
+                writer.flush();
             }
             return !suggestions.isEmpty();
         }

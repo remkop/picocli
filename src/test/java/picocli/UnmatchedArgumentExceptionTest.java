@@ -8,6 +8,8 @@ import picocli.CommandLine.UnmatchedArgumentException;
 import picocli.test.Execution;
 import picocli.test.Supplier;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -91,11 +93,33 @@ public class UnmatchedArgumentExceptionTest {
     }
 
     @Test
+    public void testPrintSuggestionsPrintStreamAutoFlushes() {
+        CommandLine cmd = new CommandLine(new Demo.GitCommit());
+        UnmatchedArgumentException ex = new UnmatchedArgumentException(cmd, Arrays.asList("-fi"));
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        UnmatchedArgumentException.printSuggestions(ex, new PrintStream(new BufferedOutputStream(baos)));
+        String expected = format("" +
+                "Possible solutions: --fixup, --file%n");
+        assertEquals(expected, baos.toString());
+    }
+
+    @Test
     public void testPrintSuggestionsPrintWriter() {
         CommandLine cmd = new CommandLine(new Demo.GitCommit());
         UnmatchedArgumentException ex = new UnmatchedArgumentException(cmd, Arrays.asList("-fi"));
         StringWriter sw = new StringWriter();
         UnmatchedArgumentException.printSuggestions(ex, new PrintWriter(sw));
+        String expected = format("" +
+                "Possible solutions: --fixup, --file%n");
+        assertEquals(expected, sw.toString());
+    }
+
+    @Test
+    public void testPrintSuggestionsPrintWriterAutoFlushes() {
+        CommandLine cmd = new CommandLine(new Demo.GitCommit());
+        UnmatchedArgumentException ex = new UnmatchedArgumentException(cmd, Arrays.asList("-fi"));
+        StringWriter sw = new StringWriter();
+        UnmatchedArgumentException.printSuggestions(ex, new PrintWriter(new BufferedWriter(sw)));
         String expected = format("" +
                 "Possible solutions: --fixup, --file%n");
         assertEquals(expected, sw.toString());
