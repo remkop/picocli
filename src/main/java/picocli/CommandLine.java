@@ -12706,7 +12706,7 @@ public class CommandLine {
             ITypeConverter<?> keyConverter   = getTypeConverter(classes[0], argSpec, 0);
             ITypeConverter<?> valueConverter = getTypeConverter(classes[1], argSpec, 1);
             @SuppressWarnings("unchecked") Map<Object, Object> map = (Map<Object, Object>) argSpec.getValue();
-            if (map == null || (!map.isEmpty() && !initialized.contains(argSpec))) {
+            if (map == null || !initialized.contains(argSpec)) {
                 tracer.debug("Initializing binding for %s on %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.scopeString(), argSpec.type().getSimpleName());
                 map = createMap(argSpec.type()); // map class
                 argSpec.setValue(map);
@@ -12890,7 +12890,7 @@ public class CommandLine {
             Class<?> type = argSpec.auxiliaryTypes()[0];
             int pos = getPosition(argSpec);
             List<Object> converted = consumeArguments(argSpec, negated, lookBehind, alreadyUnquoted, alreadyUnquoted, arity, args, type, argDescription);
-            if (collection == null || (!collection.isEmpty() && !initialized.contains(argSpec))) {
+            if (collection == null ||  !initialized.contains(argSpec))  {
                 tracer.debug("Initializing binding for %s on %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.scopeString(), argSpec.type().getSimpleName());
                 collection = createCollection(argSpec.type(), type); // collection type, element type
                 argSpec.setValue(collection);

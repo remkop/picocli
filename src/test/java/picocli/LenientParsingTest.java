@@ -15,6 +15,7 @@
  */
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -326,6 +327,8 @@ public class LenientParsingTest {
         assertEquals("positional parameter at index 0..* (<all>) should be specified only once", parseResult.errors().get(4).getMessage());
         assertEquals("Unmatched arguments from index 0: 'NOT_AN_INT', '-unknown', '2', '3'", parseResult.errors().get(5).getMessage());
     }
+
+//    @Ignore("Requires https://github.com/remkop/picocli/issues/995")
     @Test
     public void testAnyExceptionWrappedInParameterException() {
         class App {
@@ -341,12 +344,11 @@ public class LenientParsingTest {
         assertEquals(1, parseResult.errors().size());
 
         assertTrue(parseResult.errors().get(0) instanceof ParameterException);
-        assertTrue(parseResult.errors().get(0).getCause() instanceof IllegalStateException);
+        assertTrue(parseResult.errors().get(0).getCause() instanceof NoSuchMethodException);
 
-        assertEquals("IllegalStateException: Queue full while processing argument " +
-                        "at or before arg[1] 'a,b,c' in [-queue, a,b,c]: java.lang.IllegalStateException: Queue full",
+        assertEquals("NoSuchMethodException: java.util.concurrent.ArrayBlockingQueue.<init>() while processing argument at or before arg[1] 'a,b,c' in [-queue, a,b,c]: java.lang.NoSuchMethodException: java.util.concurrent.ArrayBlockingQueue.<init>()",
                 parseResult.errors().get(0).getMessage());
-        assertEquals("Queue full", parseResult.errors().get(0).getCause().getMessage());
+        assertEquals("java.util.concurrent.ArrayBlockingQueue.<init>()", parseResult.errors().get(0).getCause().getMessage());
     }
 
 }
