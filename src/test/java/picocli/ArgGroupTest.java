@@ -3426,9 +3426,28 @@ public class ArgGroupTest {
             this.name = name;
             this.grade = grade;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            StudentGrade that = (StudentGrade) o;
+            return name.equals(((StudentGrade) o).name) && grade.equals(((StudentGrade) o).grade);
+        }
+
+        @Override
+        public String toString() {
+            return "StudentGrade{" +
+                    "name='" + name + '\'' +
+                    ", grade=" + grade +
+                    '}';
+        }
     }
 
-    @Ignore("requires https://github.com/remkop/picocli/issues/1027")
     @Test // https://github.com/remkop/picocli/issues/1027
     public void testIssue1027RepeatingPositionalParams() {
         class Issue1027 {
