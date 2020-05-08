@@ -628,7 +628,7 @@ public class ArgGroupTest {
         class App {
             @ArgGroup(exclusive = true, multiplicity = "0..1")
             Group1 g1;
-            
+
             @ArgGroup(exclusive = true, multiplicity = "0..1")
             Group2 g2;
         }
@@ -1704,7 +1704,7 @@ public class ArgGroupTest {
         String actual = new CommandLine(new App(), new InnerClassFactory(this)).getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
     }
-    
+
     @Test
     public void testRequiredArgsInAGroupAreNotValidated() {
         class App {
@@ -2234,7 +2234,7 @@ public class ArgGroupTest {
         public static class CreateCommand implements Runnable {
             @Option(names = "--level-0", required = true)
             private String l0;
-            
+
             @ArgGroup(exclusive = false, multiplicity = "1")
             private Level1Argument level1 = new Level1Argument();
 
@@ -3088,7 +3088,7 @@ public class ArgGroupTest {
             return anInt == other.anInt && aLong == other.aLong;
         }
     }
-    
+
     @picocli.CommandLine.Command
     static class CommandMethodsWithGroupsAndMixins {
         enum InvokedSub { withMixin, posAndMixin, posAndOptAndMixin, groupFirst}
@@ -3463,5 +3463,37 @@ public class ArgGroupTest {
         assertEquals(new StudentGrade("Billy", "3.5"), bean.gradeList.get(1));
         assertEquals(new StudentGrade("Caily", "3.5"), bean.gradeList.get(2));
         assertEquals(new StudentGrade("Danny", "4.0"), bean.gradeList.get(3));
+    }
+
+    @Test // https://github.com/remkop/picocli/issues/1027
+    public void testIssue1027RepeatingPositionalParamsWithMinMultiplicity() {
+        class Issue1027 {
+            @ArgGroup(exclusive = false, multiplicity = "4..*")
+            List<StudentGrade> gradeList;
+        }
+
+        Issue1027 bean = new Issue1027();
+        try {
+            new CommandLine(bean).parseArgs("Abby 4.0 Billy 3.5 Caily 3.5".split(" "));
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Group: (<name> <grade>) must be specified 4 times but was matched 3 times", ex.getMessage());
+        }
+    }
+
+    @Test // https://github.com/remkop/picocli/issues/1027
+    public void testIssue1027RepeatingPositionalParamsWithMaxMultiplicity() {
+        class Issue1027 {
+            @ArgGroup(exclusive = false, multiplicity = "1..3")
+            List<StudentGrade> gradeList;
+        }
+
+        Issue1027 bean = new Issue1027();
+        try {
+            new CommandLine(bean).parseArgs("Abby 4.0 Billy 3.5 Caily 3.5 Danny 4.0".split(" "));
+        } catch (MaxValuesExceededException ex) {
+            assertEquals("Error: expected only one match but got (<name> <grade>) [<name> <grade>] [<name> <grade>]="
+                    + "{params[0]=Abby params[1]=4.0 params[0]=Billy params[1]=3.5 params[0]=Caily params[1]=3.5} and (<name> <grade>) "
+                    + "[<name> <grade>] [<name> <grade>]={params[0]=Danny params[1]=4.0}", ex.getMessage());
+        }
     }
 }
