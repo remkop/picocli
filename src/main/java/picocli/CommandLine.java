@@ -12458,7 +12458,12 @@ public class CommandLine {
                 int localPosition = getPosition(positionalParam);
                 if (positionalParam.group() != null) { // does the positionalParam's index range contain the current position in the currently matching group
                     GroupMatchContainer groupMatchContainer = parseResultBuilder.groupMatchContainer.findOrCreateMatchingGroup(positionalParam, commandSpec.commandLine());
-                    if (!indexRange.contains(localPosition) || (groupMatchContainer != null && groupMatchContainer.lastMatch().hasMatchedValueAtPosition(positionalParam, localPosition))) {
+                    int argGroupPosition = localPosition;
+                    if (groupMatchContainer != null) {
+                        int groupArgCount = positionalParam.group().argCount();
+                        argGroupPosition %= groupArgCount;
+                    }
+                    if (!indexRange.contains(argGroupPosition) || (groupMatchContainer != null && groupMatchContainer.lastMatch().hasMatchedValueAtPosition(positionalParam, localPosition))) {
                         continue;
                     }
                 } else {
