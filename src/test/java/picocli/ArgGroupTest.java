@@ -3436,7 +3436,7 @@ public class ArgGroupTest {
                 return false;
             }
             StudentGrade that = (StudentGrade) o;
-            return name.equals(((StudentGrade) o).name) && grade.equals(((StudentGrade) o).grade);
+            return name.equals(that.name) && grade.equals(that.grade);
         }
 
         @Override
