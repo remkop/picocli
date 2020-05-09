@@ -224,9 +224,10 @@ Example command.
 * [#956] Enhancement: Default ParameterExceptionHandler should show stack trace when tracing is set to DEBUG level.
 * [#952] Enhancement: Make annotation processor quiet by default; add `-Averbose` annotation processor option to enable printing NOTE-level diagnostic messages to the console.
 * [#959] Enhancement: Print "Missing required subcommand" instead of throwing exception if command with subcommands does not implement `Runnable` or `Callable`. Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for the suggestion.
-* [#693][#1009][#1011] Add autocompletion for the built-in `HelpCommand`. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
-* [#1022][#1029] Duplicate negated options were incorrectly accepted. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
-* [#1030][#1029] `setOptionsCaseInsensitive` should make negatable options case insensitive. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
+* [#693][#1009][#1011] Enhancement: Add autocompletion for the built-in `HelpCommand`. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
+* [#1022][#1029] Enhancement/Bugfix: Duplicate negated options were incorrectly accepted. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
+* [#1030][#1029] Enhancement/Bugfix: `setOptionsCaseInsensitive` should make negatable options case insensitive. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
+* [#1027][#1036] Enhancement: Support repeatable ArgGroups with positional parameters. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#974] Enhancement/Bugfix: Add support for `@ArgGroup` argument groups in `@Command`-annotated methods. Thanks to [Usman Saleem](https://github.com/usmansaleem) for raising this.
 * [#962][#961] Enhancement/Bugfix: Default value should only be applied if value is missing. Thanks to [粟嘉逸](https://github.com/sjyMystery) and [chirlo](https://github.com/chirlo) for raising this.
 * [#995][#1024][#1035] Enhancement/Bugfix: Reset multi-value options/positional params to initial value when reusing `CommandLine` instances. Thanks to [Linyer-qwq](https://github.com/Linyer-qwq), [WU Jiangning](https://github.com/licia-tia), and [Wycers](https://github.com/Wycers) for the pull request.
