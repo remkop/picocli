@@ -229,6 +229,7 @@ Example command.
 * [#1030][#1029] `setOptionsCaseInsensitive` should make negatable options case insensitive. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#974] Enhancement/Bugfix: Add support for `@ArgGroup` argument groups in `@Command`-annotated methods. Thanks to [Usman Saleem](https://github.com/usmansaleem) for raising this.
 * [#962][#961] Enhancement/Bugfix: Default value should only be applied if value is missing. Thanks to [粟嘉逸](https://github.com/sjyMystery) and [chirlo](https://github.com/chirlo) for raising this.
+* [#995][#1024][#1035] Enhancement/Bugfix: Reset multi-value options/positional params to initial value when reusing `CommandLine` instances. Thanks to [Linyer-qwq](https://github.com/Linyer-qwq), [WU Jiangning](https://github.com/licia-tia), and [Wycers](https://github.com/Wycers) for the pull request.
 * [#991][#993] Enhancement/Bugfix: Detecting terminal width fails on non-English Windows versions. Thanks to [Stefan Gärtner](https://github.com/S-Gaertner) for the pull request.
 * [#987] Bugfix: Bump JLine to 3.14.1 and fix [#969] autocompletion in Picocli Shell JLine3. Thanks to [mattirn](https://github.com/mattirn) for the pull request.
 * [#969] Bugfix: Fixed broken autocompletion for nested subcommands in Picocli Shell JLine3. Thanks to [niklas97](https://github.com/niklas97) for raising this.
