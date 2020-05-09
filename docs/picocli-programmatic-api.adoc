@@ -106,7 +106,7 @@ cmd.usageMessage()
         .descriptionHeading("Description heading%n")
         .description("description line 1", "description line 2")
         .optionListHeading("Options%n")
-        .parameterListHeading("Positional Parameters%n");
+        .parameterListHeading("Positional Parameters%n")
         .footerHeading("Footer heading%n")
         .footer("footer line 1", "footer line 2");
 ----
