@@ -3466,6 +3466,40 @@ public class ArgGroupTest {
     }
 
     @Test // https://github.com/remkop/picocli/issues/1027
+    public void testIssue1027RepeatingPositionalParamsEdgeCase1() {
+        class Issue1027 {
+            @ArgGroup(exclusive = false, multiplicity = "4..*")
+            List<StudentGrade> gradeList;
+        }
+
+        Issue1027 bean = new Issue1027();
+        new CommandLine(bean).parseArgs("Abby 4.0 Billy 3.5 Caily 3.5 Danny 4.0".split(" "));
+
+        assertEquals(4, bean.gradeList.size());
+        assertEquals(new StudentGrade("Abby", "4.0"), bean.gradeList.get(0));
+        assertEquals(new StudentGrade("Billy", "3.5"), bean.gradeList.get(1));
+        assertEquals(new StudentGrade("Caily", "3.5"), bean.gradeList.get(2));
+        assertEquals(new StudentGrade("Danny", "4.0"), bean.gradeList.get(3));
+    }
+
+    @Test // https://github.com/remkop/picocli/issues/1027
+    public void testIssue1027RepeatingPositionalParamsEdgeCase2() {
+        class Issue1027 {
+            @ArgGroup(exclusive = false, multiplicity = "1..4")
+            List<StudentGrade> gradeList;
+        }
+
+        Issue1027 bean = new Issue1027();
+        new CommandLine(bean).parseArgs("Abby 4.0 Billy 3.5 Caily 3.5 Danny 4.0".split(" "));
+
+        assertEquals(4, bean.gradeList.size());
+        assertEquals(new StudentGrade("Abby", "4.0"), bean.gradeList.get(0));
+        assertEquals(new StudentGrade("Billy", "3.5"), bean.gradeList.get(1));
+        assertEquals(new StudentGrade("Caily", "3.5"), bean.gradeList.get(2));
+        assertEquals(new StudentGrade("Danny", "4.0"), bean.gradeList.get(3));
+    }
+
+    @Test // https://github.com/remkop/picocli/issues/1027
     public void testIssue1027RepeatingPositionalParamsWithMinMultiplicity() {
         class Issue1027 {
             @ArgGroup(exclusive = false, multiplicity = "4..*")
