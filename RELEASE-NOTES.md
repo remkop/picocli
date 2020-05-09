@@ -3,9 +3,11 @@
 # <a name="4.3.0"></a> Picocli 4.3.0 (UNRELEASED)
 The picocli community is pleased to announce picocli 4.3.0.
 
-This release contains bugfixes and enhancements.
+This is a fairly big release with over 30 bugfixes and enhancements. Many thanks to the picocli community who contributed 17 pull requests!
 
 This release adds support for "inherited" options. Options defined with `scope = ScopeType.INHERIT` are shared with all subcommands (and sub-subcommands, to any level of depth). Applications can define an inherited option on the top-level command, in one place, to allow end users to specify this option anywhere: not only on the top-level command, but also on any of the subcommands and nested sub-subcommands.
+
+The parser now supports case-insensitive mode for options and subcommands.
 
 Additionally, this release improves support for automatic indexes for positional parameters. Single-value positional parameters without an explicit `index = "..."` attribute are now automatically assigned an index based on the other positional parameters in the command. One use case is mixins with positional parameters.
 
@@ -17,9 +19,6 @@ Additionally, an entry for `--` can be shown in the options list of the usage he
 
 Error handlers now use ANSI colors and styles. The default styles are bold red for the error message, and italic for stack traces. Applications can customize with the new `Help.ColorScheme` methods `errors` and `stackTraces`.
 
-Notable bugfixes:
-
-* Fixed broken autocompletion for nested sub-subcommands in Picocli Shell JLine3.
  
 This is the sixty-eighth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -27,6 +26,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 ## <a name="4.3.0-toc"></a> Table of Contents
 * [New and noteworthy](#4.3.0-new)
   * [Inherited Options](#4.3.0-inherited-options)
+  * [Case-insensitive mode](#4.3.0-case-insensitive)
   * [Automatic Indexes for Positional Parameters](#4.3.0-auto-index)
   * [`@Spec(MIXEE)` Annotation](#4.3.0-mixee)
   * [Showing `--` End of Options in usage help](#4.3.0-end-of-options)
@@ -91,6 +91,12 @@ NOTE: Subcommands don't need to do anything to receive inherited options, but a 
 
 Subcommands that need to inspect the value of an inherited option can use the `@ParentCommand` annotation to get a reference to their parent command, and access the inherited option via the parent reference.
 Alternatively, for such subcommands, sharing options via mixins may be a more suitable mechanism.
+
+### <a name="4.3.0-case-insensitive"></a> Case-insensitive mode
+By default, all options and subcommands are case sensitive. Case sensitivity can be switched off globally, as well as on a per-command basis.
+
+To toggle case sensitivity for all commands, use the `CommandLine::setSubcommandsCaseInsensitive` and `CommandLine::setOptionsCaseInsensitive` methods. Use the `CommandSpec::subcommandsCaseInsensitive` and `CommandSpec::optionsCaseInsensitive` methods to give some commands a different case sensitivity than others.
+
 
 ### <a name="4.3.0-auto-index"></a> Automatic Indexes for Positional Parameters
 
@@ -212,8 +218,8 @@ Example command.
 
 ## <a name="4.3.0-fixes"></a> Fixed issues
 * [#649][#948] Provide convenience API for inherited/global options (was: Feature request: inheriting mixins in subcommands). Thanks to [Garret Wilson](https://github.com/garretwilson) for the request and subsequent discussion (and patience!).
-* [#996] Default values should not be applied to inherited options.
 * [#1001] Support required inherited options.
+* [#996] Default values should not be applied to inherited options.
 * [#985] API: Show end-of-options `--` in usage help options list.
 * [#958] API: Add `@Spec(Spec.Target.MIXEE)` annotation element to allow mixins to get a reference to the command they are mixed into.
 * [#960] API: Add method `CommandSpec::root` to return the `CommandSpec` of the top-level command.
@@ -268,6 +274,12 @@ Example command.
 No features were deprecated in this release.
 
 ## <a name="4.3.0-breaking-changes"></a> Potential breaking changes
+
+Behaviour has changed for some cases involving positional parameters.
+One example is applications that define multiple positional parameters without an explicit `index` (see next section).
+I hope these are edge cases.
+Other than that, some error messages and details of the usage help message have changed.
+See details below.
 
 ### Default index for single-value positional parameters
 
