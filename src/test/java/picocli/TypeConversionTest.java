@@ -917,7 +917,7 @@ public class TypeConversionTest {
         params.timeUnitList = list;
         new CommandLine(params).parseArgs("-timeUnitList", "SECONDS", "MICROSECONDS", "SECONDS");
         assertEquals(Arrays.asList(SECONDS, MICROSECONDS, SECONDS), params.timeUnitList);
-        assertSame(list, params.timeUnitList);
+        assertNotSame(list, params.timeUnitList);
     }
     @Test
     public void testConcreteCollectionParametersAreInstantiatedIfNull() {
