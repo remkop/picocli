@@ -9593,7 +9593,10 @@ public class CommandLine {
             private static String quote(String s) { return s == null ? "null" : "'" + s + "'"; }
 
             void initUserObject(CommandLine commandLine) {
-                if (commandLine == null) { new Tracer().debug("Could not create user object for %s with null CommandLine%n.", this); return; }
+                if (commandLine == null) {
+                    new Tracer().debug("Could not create user object for %s with null CommandLine%n.", this);
+                    return;
+                }
                 try {
                     tryInitUserObject(commandLine);
                 } catch (PicocliException ex) {
@@ -13292,7 +13295,8 @@ public class CommandLine {
                 InputStreamReader isr = new InputStreamReader(System.in);
                 BufferedReader in = new BufferedReader(isr);
                 try {
-                    return in.readLine().toCharArray();
+                    String password = in.readLine();
+                    return password == null ? new char[0] : password.toCharArray();
                 } catch (IOException ex2) {
                     throw new IllegalStateException(ex2);
                 }
