@@ -11719,10 +11719,10 @@ public class CommandLine {
 
             private void failGroupMultiplicityExceeded(List<ParseResult.GroupMatch> groupMatches, CommandLine commandLine) {
                 Map<ArgGroupSpec, List<List<ParseResult.GroupMatch>>> matchesPerGroup = new LinkedHashMap<ArgGroupSpec, List<List<GroupMatch>>>();
-                StringBuilder mesBuilder = new StringBuilder();
+                StringBuilder msgBuilder = new StringBuilder();
                 for (ParseResult.GroupMatch match : groupMatches) {
-                    if (mesBuilder.length() > 0) { mesBuilder.append(" and "); }
-                    mesBuilder.append(match);
+                    if (msgBuilder.length() > 0) { msgBuilder.append(" and "); }
+                    msgBuilder.append(match);
                     Map<ArgGroupSpec, GroupMatchContainer> subgroups = match.matchedSubgroups();
                     for (Map.Entry<ArgGroupSpec, GroupMatchContainer> groupEntry : subgroups.entrySet()) {
                         ArgGroupSpec group = groupEntry.getKey();
@@ -11733,7 +11733,7 @@ public class CommandLine {
                 }
                 if (!matchesPerGroup.isEmpty()) {
                     if (!simplifyErrorMessageForSingleGroup(matchesPerGroup, commandLine)) {
-                        commandLine.interpreter.maybeThrow(new MaxValuesExceededException(commandLine, "Error: expected only one match but got " + mesBuilder));
+                        commandLine.interpreter.maybeThrow(new MaxValuesExceededException(commandLine, "Error: expected only one match but got " + msgBuilder));
                     }
                 }
             }
