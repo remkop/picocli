@@ -15265,7 +15265,7 @@ public class CommandLine {
              * </ol>
              * @param ansi whether to emit ANSI escape codes or not
              * @param usageHelpWidth the total width of the columns combined
-             * @deprecated use {@link #forDefaultColumns(Ansi, int, int)} instead
+             * @deprecated use {@link #forDefaultColumns(CommandLine.Help.Ansi, int, int)} instead
              */
             public static TextTable forDefaultColumns(Ansi ansi, int usageHelpWidth) {
                 // TODO split out the 1 (for long column indent) and 3 (should be description indent)
@@ -15283,7 +15283,7 @@ public class CommandLine {
              * @param ansi whether to emit ANSI escape codes or not
              * @param longOptionsColumnWidth the width of the long options column
              * @param usageHelpWidth the total width of the columns combined
-             * @deprecated use {@link #forDefaultColumns(ColorScheme, int, int)} instead */
+             * @deprecated use {@link #forDefaultColumns(CommandLine.Help.ColorScheme, int, int)} instead */
             public static TextTable forDefaultColumns(Ansi ansi, int longOptionsColumnWidth, int usageHelpWidth) {
                 return forDefaultColumns(Help.defaultColorScheme(ansi), longOptionsColumnWidth, usageHelpWidth);
             }
@@ -15314,7 +15314,7 @@ public class CommandLine {
              * overflow except the last column which WRAPS to the next row.
              * @param ansi whether to emit ANSI escape codes or not
              * @param columnWidths the width of each table column (all columns have zero indent)
-             * @deprecated use {@link #forColumns(ColorScheme, Column...)} instead */
+             * @deprecated use {@link #forColumns(CommandLine.Help.ColorScheme, CommandLine.Help.Column...)} instead */
             public static TextTable forColumnWidths(Ansi ansi, int... columnWidths) {
                 return forColumnWidths(Help.defaultColorScheme(ansi), columnWidths);
             }
@@ -15333,14 +15333,14 @@ public class CommandLine {
             /** Constructs a {@code TextTable} with the specified columns.
              * @param ansi whether to emit ANSI escape codes or not
              * @param columns columns to construct this TextTable with
-             * @deprecated use {@link #forColumns(ColorScheme, Column...)} instead */
+             * @deprecated use {@link #forColumns(CommandLine.Help.ColorScheme, CommandLine.Help.Column...)} instead */
             public static TextTable forColumns(Ansi ansi, Column... columns) { return new TextTable(ansi, columns); }
             /** Constructs a {@code TextTable} with the specified columns.
              * @param colorScheme the styles and ANSI mode to use for embedded markup
              * @param columns columns to construct this TextTable with
              * @since 4.2 */
             public static TextTable forColumns(ColorScheme colorScheme, Column... columns) { return new TextTable(colorScheme, columns); }
-            /** @deprecated use {@link TextTable#TextTable(ColorScheme, Column[])} instead */
+            /** @deprecated use {@link TextTable#CommandLine.Help.TextTable(CommandLine.Help.ColorScheme, CommandLine.Help.Column[])} instead */
             protected TextTable(Ansi ansi, Column[] columns) { this(Help.defaultColorScheme(ansi), columns); }
             protected TextTable(ColorScheme colorScheme, Column[] columns) {
                 this.colorScheme = Assert.notNull(colorScheme, "ansi");
