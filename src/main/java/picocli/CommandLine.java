@@ -270,7 +270,7 @@ public class CommandLine {
     public Map<String, Object> getMixins() {
         Map<String, CommandSpec> mixins = getCommandSpec().mixins();
         Map<String, Object> result = new LinkedHashMap<String, Object>();
-        for (String name : mixins.keySet()) { result.put(name, mixins.get(name).userObject.getInstance()); }
+        for (Map.Entry<String, CommandSpec> entry : mixins.entrySet()) { result.put(entry.getKey(), entry.getValue().userObject.getInstance()); }
         return result;
     }
 
@@ -7111,10 +7111,10 @@ public class CommandLine {
                             redirectError.invoke(pb, INHERIT);
                             proc = pb.start();
                             reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-                            String line = null;
-                            String txt = "";
+                            StringBuilder txt = new StringBuilder();
+                            String line;
                             while ((line = reader.readLine()) != null) {
-                                txt += " " + line;
+                                txt.append(' ').append(line);
                             }
                             tracer.debug("getTerminalWidth() parsing output: %s%n", txt);
                             Pattern pattern = (Help.Ansi.isWindows() && !Help.Ansi.isPseudoTTY())
@@ -7419,7 +7419,7 @@ public class CommandLine {
                 String[] bundleValues = resourceArr("usage.exitCodeList");
                 if (bundleValues == null && exitCodeList != null) { return exitCodeList; }
                 Map<String, String> result = keyValuesMap(arr(bundleValues, exitCodeListStrings, DEFAULT_MULTI_LINE));
-                return result == null ? Collections.<String, String>emptyMap() : Collections.unmodifiableMap(result);
+                return Collections.unmodifiableMap(result);
             }
 
             /** Creates and returns a {@code Map} that contains an entry for each specified String that is in {@code "key:value"} format.
@@ -8930,7 +8930,7 @@ public class CommandLine {
                 if (names.length == 0 || Arrays.asList(names).contains("")) {
                     throw new InitializationException("Invalid names: " + Arrays.toString(names));
                 }
-                if (toString() == null) { toString = "option " + longestName(); }
+                if (toString == null) { toString = "option " + longestName(); }
 
                 // https://github.com/remkop/picocli/issues/511
                 //if (arity().max == 0 && !(isBoolean(type()) || (isMultiValue() && isBoolean(auxiliaryTypes()[0])))) {
@@ -9068,7 +9068,7 @@ public class CommandLine {
 
                 /** Returns one or more option names. At least one option name is required.
                  * @see Option#names() */
-                public String[] names()       { return names; }
+                public String[] names()       { return names.clone(); }
 
                 /** Returns whether this option disables validation of the other arguments.
                  * @see Option#help()
@@ -9585,15 +9585,6 @@ public class CommandLine {
             }
 
             @Override public String toString() {
-                List<String> argNames = new ArrayList<String>();
-                for (ArgSpec arg : args()) {
-                    if (arg instanceof OptionSpec) {
-                        argNames.add(((OptionSpec) arg).shortestName());
-                    } else {
-                        PositionalParamSpec p = (PositionalParamSpec) arg;
-                        argNames.add(p.index() + " (" + p.paramLabel() + ")");
-                    }
-                }
                 return "ArgGroup[exclusive=" + exclusive + ", multiplicity=" + multiplicity +
                         ", validate=" + validate + ", order=" + order + ", args=[" + ArgSpec.describe(args()) +
                         "], headingKey=" + quote(headingKey) + ", heading=" + quote(heading) +
@@ -9602,7 +9593,7 @@ public class CommandLine {
             private static String quote(String s) { return s == null ? "null" : "'" + s + "'"; }
 
             void initUserObject(CommandLine commandLine) {
-                if (commandLine == null) { new Tracer().debug("Could not create user object for %s with null CommandLine%n.", this); }
+                if (commandLine == null) { new Tracer().debug("Could not create user object for %s with null CommandLine%n.", this); return; }
                 try {
                     tryInitUserObject(commandLine);
                 } catch (PicocliException ex) {
@@ -9865,7 +9856,6 @@ public class CommandLine {
             private final IGetter getter;
             private final ISetter setter;
             private Object initialValue;
-            private boolean isStringArray;
 
             /** Creates a {@code UnmatchedArgsBinding} for a setter that consumes {@code String[]} objects.
              * @param setter consumes the String[] array with unmatched arguments. */
@@ -10520,7 +10510,6 @@ public class CommandLine {
                 Object instance = null;
                 try { instance = member.getter().get(); } catch (Exception ignored) {}
                 Class<?> cls = instance == null ? member.getTypeInfo().getType() : instance.getClass();
-                Tracer t = new Tracer();
 
                 if (member.isMultiValue()) {
                     cls = member.getTypeInfo().getAuxiliaryTypes()[0];
@@ -11083,8 +11072,9 @@ public class CommandLine {
 
             private String resolveLookups(String text, Set<String> visited, Map<String, String> resolved) {
                 if (text == null) { return null; }
-                for (String lookupKey : lookups.keySet()) {
-                    ILookup lookup = lookups.get(lookupKey);
+                for (Map.Entry<String, ILookup> lookupEntry : lookups.entrySet()) {
+                    String lookupKey = lookupEntry.getKey();
+                    ILookup lookup = lookupEntry.getValue();
                     String prefix = "${" + lookupKey;
                     int startPos = 0;
                     while ((startPos = findOpeningDollar(text, prefix, startPos)) >= 0) {
@@ -11564,7 +11554,7 @@ public class CommandLine {
                     complete(commandLine);
                 } else {
                     if (group != null) {
-                        tracer.info("Adding match to GroupMatchContainer %s (group=%s %s).%n", this, group == null ? "?" : group.id(), group == null ? "ROOT" : group.synopsisUnit());
+                        tracer.info("Adding match to GroupMatchContainer %s (group=%s %s).%n", this, group.id(), group.synopsisUnit());
                     }
                     matches.add(new GroupMatch(this));
                     if (group == null) { return; }
@@ -11726,33 +11716,34 @@ public class CommandLine {
 
             private void failGroupMultiplicityExceeded(List<ParseResult.GroupMatch> groupMatches, CommandLine commandLine) {
                 Map<ArgGroupSpec, List<List<ParseResult.GroupMatch>>> matchesPerGroup = new LinkedHashMap<ArgGroupSpec, List<List<GroupMatch>>>();
-                String msg = "";
+                StringBuilder mesBuilder = new StringBuilder();
                 for (ParseResult.GroupMatch match : groupMatches) {
-                    if (msg.length() > 0) { msg += " and "; }
-                    msg += match.toString();
+                    if (mesBuilder.length() > 0) { mesBuilder.append(" and "); }
+                    mesBuilder.append(match);
                     Map<ArgGroupSpec, GroupMatchContainer> subgroups = match.matchedSubgroups();
-                    for (ArgGroupSpec group : subgroups.keySet()) {
+                    for (Map.Entry<ArgGroupSpec, GroupMatchContainer> groupEntry : subgroups.entrySet()) {
+                        ArgGroupSpec group = groupEntry.getKey();
                         if (group.validate()) { // don't raise errors for non-validating groups: https://github.com/remkop/picocli/issues/810
-                            addValueToListInMap(matchesPerGroup, group, subgroups.get(group).matches());
+                            addValueToListInMap(matchesPerGroup, group, groupEntry.getValue().matches());
                         }
                     }
                 }
                 if (!matchesPerGroup.isEmpty()) {
                     if (!simplifyErrorMessageForSingleGroup(matchesPerGroup, commandLine)) {
-                        commandLine.interpreter.maybeThrow(new MaxValuesExceededException(commandLine, "Error: expected only one match but got " + msg));
+                        commandLine.interpreter.maybeThrow(new MaxValuesExceededException(commandLine, "Error: expected only one match but got " + mesBuilder));
                     }
                 }
             }
 
             private boolean simplifyErrorMessageForSingleGroup(Map<ArgGroupSpec, List<List<ParseResult.GroupMatch>>> matchesPerGroup, CommandLine commandLine) {
-                for (ArgGroupSpec group : matchesPerGroup.keySet()) {
-                    List<ParseResult.GroupMatch> flat = flatList(matchesPerGroup.get(group));
+                for (Map.Entry<ArgGroupSpec, List<List<CommandLine.ParseResult.GroupMatch>>> groupEntry : matchesPerGroup.entrySet()) {
+                    List<ParseResult.GroupMatch> flat = flatList(groupEntry.getValue());
                     Set<ArgSpec> matchedArgs = new LinkedHashSet<ArgSpec>();
                     for (ParseResult.GroupMatch match : flat) {
                         if (!match.matchedSubgroups().isEmpty()) { return false; }
                         matchedArgs.addAll(match.matchedValues.keySet());
                     }
-                    ParseResult.GroupValidationResult validationResult = group.validateArgs(commandLine, matchedArgs);
+                    ParseResult.GroupValidationResult validationResult = groupEntry.getKey().validateArgs(commandLine, matchedArgs);
                     if (validationResult.exception != null) {
                         commandLine.interpreter.maybeThrow(validationResult.exception); // there may be multiple failures, just throw on the first one for now
                         return true;
@@ -11861,11 +11852,11 @@ public class CommandLine {
             }
             private StringBuilder toString(StringBuilder result) {
                 int originalLength = result.length();
-                for (ArgSpec arg : originalStringValues.keySet()) {
-                    List<String> values = originalStringValues.get(arg);
+                for (Map.Entry<ArgSpec, List<String>> argEntry : originalStringValues.entrySet()) {
+                    List<String> values = argEntry.getValue();
                     for (String value : values) {
                         if (result.length() != originalLength) { result.append(" "); }
-                        result.append(ArgSpec.describe(arg, "=", value));
+                        result.append(ArgSpec.describe(argEntry.getKey(), "=", value));
                     }
                 }
                 for (GroupMatchContainer sub : matchedSubgroups.values()) {
@@ -11924,12 +11915,10 @@ public class CommandLine {
                         }
                     }
 
-                    int requiredSubgroupCount = 0;
                     for (ArgGroupSpec subgroup : group().subgroups()) {
                         if (exclusiveElements.length() > 0) { exclusiveElements += " and "; }
                         exclusiveElements += subgroup.synopsisUnit();
                         if (subgroup.multiplicity().min > 0) {
-                            requiredSubgroupCount++;
                             if (requiredElements.length() > 0) { requiredElements += " and "; }
                             requiredElements += subgroup.synopsisUnit();
                         }
@@ -12494,10 +12483,10 @@ public class CommandLine {
             for (int i = 0; i < maxConsumed; i++) { args.pop(); }
             position += argsConsumed + interactiveConsumed;
             if (tracer.isDebug()) {tracer.debug("Consumed %d arguments and %d interactive values, moving command-local position to index %d.%n", argsConsumed, interactiveConsumed, position);}
-            for (PositionalParamSpec positional : newPositions.keySet()) {
-                GroupMatchContainer inProgress = parseResultBuilder.groupMatchContainer.findOrCreateMatchingGroup(positional, commandSpec.commandLine());
+            for (Map.Entry<PositionalParamSpec, Integer> positionalEntry : newPositions.entrySet()) {
+                GroupMatchContainer inProgress = parseResultBuilder.groupMatchContainer.findOrCreateMatchingGroup(positionalEntry.getKey(), commandSpec.commandLine());
                 if (inProgress != null) {
-                    inProgress.lastMatch().position = newPositions.get(positional);
+                    inProgress.lastMatch().position = positionalEntry.getValue();
                     if (tracer.isDebug()) {tracer.debug("Updated group position to %s for group %s.%n", inProgress.lastMatch().position, inProgress);}
                 }
             }
@@ -13341,18 +13330,17 @@ public class CommandLine {
     private static String createMissingParameterMessage(ArgSpec argSpec, Range arity, List<PositionalParamSpec> missingList, Stack<String> args, int available) {
         if (arity.min == 1) {
             if (argSpec.isOption()) {
-                String msg = "Missing required parameter for " + optionDescription("", argSpec, 0);
-                return msg;
+                return "Missing required parameter for " + optionDescription("", argSpec, 0);
             }
             String sep = "";
-            String names = ": ";
-            String indices = "";
             String infix = " at index ";
+            StringBuilder names = new StringBuilder(": ");
+            StringBuilder indices = new StringBuilder();
             int count = 0;
             for (PositionalParamSpec missing : missingList) {
                 if (missing.arity().min > 0) {
-                    names += sep + "'" + missing.paramLabel() + "'";
-                    indices += sep + missing.index();
+                    names.append(sep).append('\'').append(missing.paramLabel()).append('\'');
+                    indices.append(sep).append(missing.index());
                     sep = ", ";
                     count++;
                 }
@@ -13362,8 +13350,7 @@ public class CommandLine {
                 msg += "s";
             }
             if (count > 1) { infix = " at indices "; }
-            String desc = System.getProperty("picocli.verbose.errors") != null ? msg + names + infix + indices : msg + names;
-            return desc;
+            return System.getProperty("picocli.verbose.errors") != null ? msg + names + infix + indices : msg + names;
         } else if (args.isEmpty()) {
             return optionDescription("", argSpec, 0) +
                     " requires at least " + arity.min + " values, but none were specified.";
@@ -16514,7 +16501,10 @@ public class CommandLine {
 
         private static double dotProduct(Map<String, Integer> m1, Map<String, Integer> m2) {
             double result = 0;
-            for (String key : m1.keySet()) { result += m1.get(key) * (m2.containsKey(key) ? m2.get(key) : 0); }
+            for (Map.Entry<String, Integer> entry : m1.entrySet()) {
+                Integer val1 = entry.getValue(), val2 = m2.get(entry.getKey());
+                result += val1 * (val2 == null ? 0 : val2);
+            }
             return result;
         }
     }
@@ -16718,7 +16708,7 @@ public class CommandLine {
         static List<String> stripErrorMessage(List<String> unmatched) {
             List<String> result = new ArrayList<String>();
             for (String s : unmatched) {
-                if (s == null) { result.add(null); }
+                if (s == null) { result.add(null); continue; }
                 int pos = s.indexOf(" (while processing option:");
                 result.add(pos < 0 ? s : s.substring(0, pos));
             }
@@ -16774,18 +16764,19 @@ public class CommandLine {
             return isUnknownOption(unmatch, cmd) ? "Unknown option" + plural : "Unmatched argument" + plural + at + " index " + (cmd.interpreter.parseResultBuilder == null ? "0" : cmd.interpreter.parseResultBuilder.originalArgList.indexOf(unmatch.get(0)));
         }
         static String quoteElements(List<String> list) {
-            String result = "", suffix = "";
-            int pos = 0;
+            StringBuilder result = new StringBuilder();
+            String suffix = "";
+            int pos;
             for (String element : list) {
-                if (result.length() > 0) {result += ", ";}
+                if (result.length() > 0) { result.append(", "); }
                 if (element != null && (pos = element.indexOf(" (while processing option:")) >= 0) {
                     suffix = element.substring(pos);
                     element = element.substring(0, pos);
                 }
-                result += "'" + element + "'" + suffix;
+                result.append('\'').append(element).append('\'').append(suffix);
                 suffix = "";
             }
-            return result;
+            return result.toString();
         }
     }
     /** Exception indicating that more values were specified for an option or parameter than its {@link Option#arity() arity} allows. */
