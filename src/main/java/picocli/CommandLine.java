@@ -9431,6 +9431,16 @@ public class CommandLine {
                 return result;
             }
 
+            int localPositionalParamCount() {
+                int result = 0;
+                for (ArgSpec arg : args) {
+                    if (arg.isPositional()) {
+                        result += ((PositionalParamSpec) arg).capacity().min();
+                    }
+                }
+                return result;
+            }
+
             /** Returns the options and positional parameters in this group; may be empty but not {@code null}. */
             public Set<ArgSpec> args() { return args; }
             /** Returns the required options and positional parameters in this group; may be empty but not {@code null}. */
@@ -11776,6 +11786,22 @@ public class CommandLine {
                     }
                 }
             }
+
+            boolean canMatchPositionalParam(PositionalParamSpec positionalParam) {
+                boolean mayCreateNewMatch = !matches.isEmpty() && lastMatch().matchedMinElements();
+                boolean mustCreateNewMatch = !matches.isEmpty() && lastMatch().matchedMaxElements();
+                if (mustCreateNewMatch && isMaxMultiplicityReached()) {
+                    return false;
+                }
+                int startPosition = matches.isEmpty() ? 0 : lastMatch().startPosition;
+                int accumulatedPosition = matches.isEmpty() ? 0 : lastMatch().position;
+                int localPosition = accumulatedPosition - startPosition;
+                if (mayCreateNewMatch) {
+                    int positionalParamCount = positionalParam.group().localPositionalParamCount();
+                    localPosition %= positionalParamCount;
+                }
+                return positionalParam.index().contains(localPosition) && !lastMatch().hasMatchedValueAtPosition(positionalParam, accumulatedPosition);
+            }
         }
 
         /** A group's {@linkplain ArgGroup#multiplicity() multiplicity} specifies how many matches of a group may
@@ -11785,6 +11811,7 @@ public class CommandLine {
          */
         public static class GroupMatch {
             int position;
+            final int startPosition;
             final GroupMatchContainer container;
 
             Map<ArgGroupSpec, GroupMatchContainer> matchedSubgroups = new LinkedHashMap<ArgGroupSpec, GroupMatchContainer>(2); // preserve order: used in toString()
@@ -11793,7 +11820,13 @@ public class CommandLine {
             Map<ArgSpec, Map<Integer, List<Object>>> matchedValuesAtPosition = new IdentityHashMap<ArgSpec, Map<Integer, List<Object>>>();
             private GroupValidationResult validationResult;
 
-            GroupMatch(GroupMatchContainer container) { this.container = container; }
+            GroupMatch(GroupMatchContainer container) {
+                this.container = container;
+                if (!container.matches().isEmpty()) {
+                    position = container.matches().get(container.matches().size() - 1).position;
+                }
+                startPosition = position;
+            }
 
             /** Returns {@code true} if this match has no matched arguments and no matched subgroups. */
             public boolean isEmpty() { return originalStringValues.isEmpty() && matchedSubgroups.isEmpty(); }
@@ -12441,16 +12474,14 @@ public class CommandLine {
             int argsConsumed = 0;
             int interactiveConsumed = 0;
             int originalNowProcessingSize = parseResultBuilder.nowProcessing.size();
-            Map<PositionalParamSpec, Integer> newPositions = new IdentityHashMap<PositionalParamSpec, Integer>();
+            List<Runnable> bookKeeping = new ArrayList<Runnable>();
             for (int i = 0; i < commandSpec.positionalParameters().size(); i++) {
                 PositionalParamSpec positionalParam = commandSpec.positionalParameters().get(i);
                 Range indexRange = positionalParam.index();
                 int localPosition = getPosition(positionalParam);
                 if (positionalParam.group() != null) { // does the positionalParam's index range contain the current position in the currently matching group
                     GroupMatchContainer groupMatchContainer = parseResultBuilder.groupMatchContainer.findOrCreateMatchingGroup(positionalParam, commandSpec.commandLine());
-                    int groupArgCount = positionalParam.group().argCount();
-                    int argGroupPosition = localPosition % groupArgCount;
-                    if (!indexRange.contains(argGroupPosition) || (groupMatchContainer != null && groupMatchContainer.lastMatch().hasMatchedValueAtPosition(positionalParam, localPosition))) {
+                    if (!groupMatchContainer.canMatchPositionalParam(positionalParam)) {
                         continue;
                     }
                 } else {
@@ -12472,7 +12503,16 @@ public class CommandLine {
                 if (positionalParam.group() == null) { // don't update the command-level position for group args
                     argsConsumed = Math.max(argsConsumed, count);
                 } else {
-                    newPositions.put(positionalParam, localPosition + count);
+                    final int updatedPosition = localPosition + count;
+                    final GroupMatchContainer groupMatchContainer = parseResultBuilder.groupMatchContainer.findOrCreateMatchingGroup(positionalParam, commandSpec.commandLine());
+                    bookKeeping.add(new Runnable() {
+                        public void run() {
+                            if (groupMatchContainer != null) {
+                                groupMatchContainer.lastMatch().position = updatedPosition;
+                                if (tracer.isDebug()) {tracer.debug("Updated group position to %s for group %s.%n", groupMatchContainer.lastMatch().position, groupMatchContainer);}
+                            }
+                        }
+                    });
                     consumedByGroup = Math.max(consumedByGroup, count);
                 }
                 while (parseResultBuilder.nowProcessing.size() > originalNowProcessingSize + count) {
@@ -12484,13 +12524,7 @@ public class CommandLine {
             for (int i = 0; i < maxConsumed; i++) { args.pop(); }
             position += argsConsumed + interactiveConsumed;
             if (tracer.isDebug()) {tracer.debug("Consumed %d arguments and %d interactive values, moving command-local position to index %d.%n", argsConsumed, interactiveConsumed, position);}
-            for (PositionalParamSpec positional : newPositions.keySet()) {
-                GroupMatchContainer inProgress = parseResultBuilder.groupMatchContainer.findOrCreateMatchingGroup(positional, commandSpec.commandLine());
-                if (inProgress != null) {
-                    inProgress.lastMatch().position = newPositions.get(positional);
-                    if (tracer.isDebug()) {tracer.debug("Updated group position to %s for group %s.%n", inProgress.lastMatch().position, inProgress);}
-                }
-            }
+            for (Runnable task : bookKeeping) { task.run(); }
             if (consumedByGroup == 0 && argsConsumed == 0 && interactiveConsumed == 0 && !args.isEmpty()) {
                 handleUnmatchedArgument(args); // this gives error msg: "Unmatched argument at index 1: 'val2'"
 //                // instead, we want a "positional parameter at index 0..* (<str>) should be specified only once"

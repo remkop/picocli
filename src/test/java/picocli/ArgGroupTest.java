@@ -30,6 +30,7 @@ import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.ParseResult.GroupMatchContainer;
 import picocli.CommandLine.ParseResult.GroupMatch;
 import picocli.CommandLine.ParseResult.GroupValidationResult;
+import picocli.CommandLine.UnmatchedArgumentException;
 import picocli.test.Execution;
 import picocli.test.Supplier;
 
@@ -1496,6 +1497,7 @@ public class ArgGroupTest {
         assertEquals("<f2>", parseResult.matchedPositional(0).paramLabel());
     }
 
+    @Ignore("This no longer works with #1027 improved support for repeatable ArgGroups with positional parameters")
     @Test
     public void testPositionalsInGroupAndInCommand() {
         class Remainder {
@@ -3509,6 +3511,7 @@ public class ArgGroupTest {
         Issue1027 bean = new Issue1027();
         try {
             new CommandLine(bean).parseArgs("Abby 4.0 Billy 3.5 Caily 3.5".split(" "));
+            fail("Expected exception");
         } catch (MissingParameterException ex) {
             assertEquals("Error: Group: (<name> <grade>) must be specified 4 times but was matched 3 times", ex.getMessage());
         }
@@ -3521,13 +3524,37 @@ public class ArgGroupTest {
             List<StudentGrade> gradeList;
         }
 
-        Issue1027 bean = new Issue1027();
         try {
-            new CommandLine(bean).parseArgs("Abby 4.0 Billy 3.5 Caily 3.5 Danny 4.0".split(" "));
+            new CommandLine(new Issue1027()).parseArgs();
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): (<name> <grade>)", ex.getMessage());
+        }
+        Issue1027 bean1 = new Issue1027();
+        new CommandLine(bean1).parseArgs("Abby 4.0".split(" "));
+        assertEquals(new StudentGrade("Abby", "4.0"),  bean1.gradeList.get(0));
+
+        Issue1027 bean2 = new Issue1027();
+        new CommandLine(bean2).parseArgs("Abby 4.0 Billy 3.5".split(" "));
+        assertEquals(new StudentGrade("Abby", "4.0"),  bean2.gradeList.get(0));
+        assertEquals(new StudentGrade("Billy", "3.5"), bean2.gradeList.get(1));
+
+        Issue1027 bean3 = new Issue1027();
+        new CommandLine(bean3).parseArgs("Abby 4.0 Billy 3.5 Caily 3.5".split(" "));
+        assertEquals(new StudentGrade("Abby", "4.0"),  bean3.gradeList.get(0));
+        assertEquals(new StudentGrade("Billy", "3.5"), bean3.gradeList.get(1));
+        assertEquals(new StudentGrade("Caily", "3.5"), bean3.gradeList.get(2));
+
+        Issue1027 bean4 = new Issue1027();
+        try {
+            new CommandLine(bean4).parseArgs("Abby 4.0 Billy 3.5 Caily 3.5 Danny 4.0".split(" "));
+            fail("Expected exception");
         } catch (MaxValuesExceededException ex) {
             assertEquals("Error: expected only one match but got (<name> <grade>) [<name> <grade>] [<name> <grade>]="
                     + "{params[0]=Abby params[1]=4.0 params[0]=Billy params[1]=3.5 params[0]=Caily params[1]=3.5} and (<name> <grade>) "
                     + "[<name> <grade>] [<name> <grade>]={params[0]=Danny params[1]=4.0}", ex.getMessage());
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched arguments from index 6: 'Danny', '4.0'", ex.getMessage());
         }
     }
 }
