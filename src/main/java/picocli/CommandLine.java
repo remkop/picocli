@@ -270,7 +270,7 @@ public class CommandLine {
     public Map<String, Object> getMixins() {
         Map<String, CommandSpec> mixins = getCommandSpec().mixins();
         Map<String, Object> result = new LinkedHashMap<String, Object>();
-        for (String mixin : mixins.keySet()) { result.put(mixin, mixins.get(mixin).userObject.getInstance()); }
+        for (String name : mixins.keySet()) { result.put(name, mixins.get(name).userObject.getInstance()); }
         return result;
     }
 
