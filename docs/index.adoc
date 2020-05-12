@@ -1816,6 +1816,46 @@ usage help shows the wrong default value
 
 When a `@Parameters` positional parameter is part of a group, its `index` is the index _within the group_, not within the command.
 
+Below is an example of an application that uses a repeating group of positional parameters:
+
+[source,java]
+----
+@Command(name = "grades", mixinStandardHelpOptions = true, version = "grades 1.0")
+public class Grades implements Runnable {
+
+    static class StudentGrade {
+        @Parameters(index = "0") String name;
+        @Parameters(index = "1") BigDecimal grade;
+    }
+
+    @ArgGroup(exclusive = false, multiplicity = "1..*")
+    List<StudentGrade> gradeList;
+
+    @Override
+    public void run() {
+        gradeList.forEach(e -> System.out.println(e.name + ": " + e.grade));
+    }
+
+    public static void main(String[] args) {
+        System.exit(new CommandLine(new Grades()).execute(args));
+    }
+}
+----
+
+Running the above program with this input:
+
+----
+Alice 3.1 Betty 4.0 "X Æ A-12" 3.5 Zaphod 3.4
+----
+
+Produces the following output:
+
+----
+Alice: 3.1
+Betty: 4.0
+X Æ A-12: 3.5
+Zaphod: 3.4
+----
 
 === Argument Group Limitations
 
