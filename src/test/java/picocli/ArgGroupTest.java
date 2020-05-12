@@ -3557,4 +3557,34 @@ public class ArgGroupTest {
             assertEquals("Unmatched arguments from index 6: 'Danny', '4.0'", ex.getMessage());
         }
     }
+
+    @Test
+    public void testMultipleGroupsWithPositional() {
+        class Issue1027 {
+            @ArgGroup(exclusive = false, multiplicity = "1..4")
+            List<StudentGrade> gradeList;
+
+            @ArgGroup(exclusive = false, multiplicity = "1")
+            List<StudentGrade> anotherList;
+        }
+
+        Issue1027 bean4 = new Issue1027();
+        new CommandLine(bean4).parseArgs("Abby 4.0 Billy 3.5 Caily 3.5 Danny 4.0".split(" "));
+        assertEquals(4, bean4.gradeList.size());
+        assertEquals(new StudentGrade("Abby", "4.0"),  bean4.gradeList.get(0));
+        assertEquals(new StudentGrade("Billy", "3.5"), bean4.gradeList.get(1));
+        assertEquals(new StudentGrade("Caily", "3.5"), bean4.gradeList.get(2));
+        assertEquals(new StudentGrade("Danny", "4.0"), bean4.gradeList.get(3));
+
+        assertEquals(1, bean4.anotherList.size());
+        assertEquals(new StudentGrade("Abby", "4.0"),  bean4.anotherList.get(0));
+
+        Issue1027 bean5 = new Issue1027();
+        try {
+            new CommandLine(bean5).parseArgs("Abby 4.0 Billy 3.5 Caily 3.5 Danny 4.0 Egon 3.5".split(" "));
+            fail("Expected exception");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unmatched arguments from index 8: 'Egon', '3.5'", ex.getMessage());
+        }
+    }
 }
