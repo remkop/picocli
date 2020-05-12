@@ -15,10 +15,6 @@ public class Grades implements Runnable {
     static class StudentGrade {
         @Parameters(index = "0") String name;
         @Parameters(index = "1") BigDecimal grade;
-
-        public String toString() {
-            return name + ": " + grade;
-        }
     }
 
     @ArgGroup(exclusive = false, multiplicity = "1..*")
@@ -32,7 +28,7 @@ public class Grades implements Runnable {
 
     @Override
     public void run() {
-        System.out.println(gradeList);
+        gradeList.forEach(e -> System.out.println(e.name + ": " + e.grade));
     }
 
     public static void main(String[] args) {
