@@ -3587,4 +3587,75 @@ public class ArgGroupTest {
             assertEquals("Unmatched arguments from index 8: 'Egon', '3.5'", ex.getMessage());
         }
     }
+
+    static class InnerPositional1027 {
+        @Parameters(index = "0") String param0;
+        @Parameters(index = "1") String param1;
+
+        public InnerPositional1027() {}
+        public InnerPositional1027(String param0, String param1) {
+            this.param0 = param0;
+            this.param1 = param1;
+        }
+        public boolean equals(Object obj) {
+            if (!(obj instanceof InnerPositional1027)) { return false; }
+            InnerPositional1027 other = (InnerPositional1027) obj;
+            return TestUtil.equals(this.param0, other.param0)
+                    && TestUtil.equals(this.param1, other.param1);
+        }
+    }
+    static class Inner1027 {
+        @Option(names = "-y", required = true) boolean y;
+
+        @ArgGroup(exclusive = false, multiplicity = "1")
+        InnerPositional1027 innerPositional;
+
+        public Inner1027() {}
+        public Inner1027(String param0, String param1) {
+            this.innerPositional = new InnerPositional1027(param0, param1);
+        }
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Inner1027)) { return false; }
+            Inner1027 other = (Inner1027) obj;
+            return TestUtil.equals(this.innerPositional, other.innerPositional);
+        }
+    }
+    static class Outer1027 {
+        @Option(names = "-x", required = true) boolean x;
+        @Parameters(index = "0") String param0;
+        @Parameters(index = "1") String param1;
+
+        @ArgGroup(exclusive = false, multiplicity = "0..*")
+        List<Inner1027> inners;
+
+        public Outer1027() {}
+        public Outer1027(String param0, String param1, List<Inner1027> inners) {
+            this.param0 = param0;
+            this.param1 = param1;
+            this.inners = inners;
+        }
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Outer1027)) { return false; }
+            Outer1027 other = (Outer1027) obj;
+            return TestUtil.equals(this.param0, other.param0)
+                    && TestUtil.equals(this.param1, other.param1)
+                    && TestUtil.equals(this.inners, other.inners)
+                    ;
+        }
+    }
+    @Ignore
+    @Test
+    public void testNestedPositionals() {
+        class Nested {
+            @ArgGroup(exclusive = false, multiplicity = "0..*")
+            List<Outer1027> outers;
+        }
+        Nested bean = new Nested();
+        new CommandLine(bean).parseArgs("-x 0 1 -x 00 11 -y 000 111 -y 0000 1111 -x 00000 11111".split(" "));
+        assertEquals(3, bean.outers.size());
+        assertEquals(new Outer1027("0", "1", null),  bean.outers.get(0));
+        List<Inner1027> inners = Arrays.asList(new Inner1027("000", "111"), new Inner1027("0000", "1111"));
+        assertEquals(new Outer1027("00", "11", inners), bean.outers.get(1));
+        assertEquals(new Outer1027("00000", "11111", null), bean.outers.get(2));
+    }
 }
