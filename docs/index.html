@@ -526,8 +526,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 4.2.0,</span>
-<span id="revdate">2020-02-12</span>
+<span id="revnumber">version 4.3.0,</span>
+<span id="revdate">2020-05-13</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -578,8 +578,9 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_multiple_occurrences">6.1. Multiple Occurrences</a></li>
 <li><a href="#_split_regex">6.2. Split Regex</a></li>
 <li><a href="#_arity">6.3. Arity</a></li>
-<li><a href="#_default_arity">6.4. Default Arity</a></li>
-<li><a href="#_optional_values">6.5. Optional Values</a></li>
+<li><a href="#_variable_arity_limitations">6.4. Variable Arity Limitations</a></li>
+<li><a href="#_default_arity">6.5. Default Arity</a></li>
+<li><a href="#_optional_values">6.6. Optional Values</a></li>
 </ul>
 </li>
 <li><a href="#_required_arguments">7. Required Arguments</a>
@@ -626,6 +627,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_quoted_values">10.10. Quoted Values</a></li>
 <li><a href="#_customizing_negatable_options">10.11. Customizing Negatable Options</a></li>
 <li><a href="#_custom_parameter_processing">10.12. Custom Parameter Processing</a></li>
+<li><a href="#_case_sensitivity">10.13. Case Sensitivity</a></li>
 </ul>
 </li>
 <li><a href="#_help">11. Help</a>
@@ -650,22 +652,24 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_parameter_labels">13.3. Parameter Labels</a></li>
 <li><a href="#_unsorted_option_list">13.4. Unsorted Option List</a></li>
 <li><a href="#_reordering_options">13.5. Reordering Options</a></li>
-<li><a href="#_abbreviated_synopsis">13.6. Abbreviated Synopsis</a></li>
-<li><a href="#_custom_synopsis">13.7. Custom Synopsis</a></li>
-<li><a href="#_synopsis_subcommand_label">13.8. Synopsis Subcommand Label</a></li>
-<li><a href="#_header_and_footer">13.9. Header and Footer</a></li>
-<li><a href="#_exit_code_list">13.10. Exit Code List</a></li>
-<li><a href="#_format_specifiers">13.11. Format Specifiers</a></li>
-<li><a href="#_section_headings">13.12. Section Headings</a></li>
-<li><a href="#_expanded_example">13.13. Expanded Example</a></li>
-<li><a href="#_option_parameter_separators">13.14. Option-Parameter Separators</a></li>
-<li><a href="#_hidden_options_and_parameters">13.15. Hidden Options and Parameters</a></li>
-<li><a href="#_show_at_files">13.16. Show At Files</a></li>
-<li><a href="#_show_default_values">13.17. Show Default Values</a></li>
-<li><a href="#_required_option_marker">13.18. Required-Option Marker</a></li>
-<li><a href="#_usage_width">13.19. Usage Width</a></li>
-<li><a href="#_auto_terminal_width">13.20. Auto (Terminal) Width</a></li>
-<li><a href="#_long_option_column_width">13.21. Long Option Column Width</a></li>
+<li><a href="#_split_synopsis_label">13.6. Split Synopsis Label</a></li>
+<li><a href="#_abbreviated_synopsis">13.7. Abbreviated Synopsis</a></li>
+<li><a href="#_custom_synopsis">13.8. Custom Synopsis</a></li>
+<li><a href="#_synopsis_subcommand_label">13.9. Synopsis Subcommand Label</a></li>
+<li><a href="#_header_and_footer">13.10. Header and Footer</a></li>
+<li><a href="#_exit_code_list">13.11. Exit Code List</a></li>
+<li><a href="#_format_specifiers">13.12. Format Specifiers</a></li>
+<li><a href="#_section_headings">13.13. Section Headings</a></li>
+<li><a href="#_expanded_example">13.14. Expanded Example</a></li>
+<li><a href="#_option_parameter_separators">13.15. Option-Parameter Separators</a></li>
+<li><a href="#_hidden_options_and_parameters">13.16. Hidden Options and Parameters</a></li>
+<li><a href="#_show_at_files">13.17. Show At Files</a></li>
+<li><a href="#_show_end_of_options">13.18. Show End of Options</a></li>
+<li><a href="#_show_default_values">13.19. Show Default Values</a></li>
+<li><a href="#_required_option_marker">13.20. Required-Option Marker</a></li>
+<li><a href="#_usage_width">13.21. Usage Width</a></li>
+<li><a href="#_auto_terminal_width">13.22. Auto (Terminal) Width</a></li>
+<li><a href="#_long_option_column_width">13.23. Long Option Column Width</a></li>
 </ul>
 </li>
 <li><a href="#_ansi_colors_and_styles">14. ANSI Colors and Styles</a>
@@ -694,22 +698,24 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_subcommands_as_methods">16.4. Subcommands as Methods</a></li>
 <li><a href="#_executing_subcommands">16.5. Executing Subcommands</a></li>
 <li><a href="#_initialization_before_execution">16.6. Initialization Before Execution</a></li>
-<li><a href="#_manually_parsing_subcommands">16.7. Manually Parsing Subcommands</a></li>
-<li><a href="#parentcommand-annotation">16.8. <code>@ParentCommand</code> Annotation</a></li>
-<li><a href="#_nested_sub_subcommands">16.9. Nested sub-Subcommands</a></li>
-<li><a href="#_repeatable_subcommands">16.10. Repeatable Subcommands</a></li>
-<li><a href="#_usage_help_for_subcommands">16.11. Usage Help for Subcommands</a></li>
-<li><a href="#_hidden_subcommands">16.12. Hidden Subcommands</a></li>
-<li><a href="#_help_subcommands">16.13. Help Subcommands</a></li>
-<li><a href="#_required_subcommands">16.14. Required Subcommands</a></li>
+<li><a href="#parentcommand-annotation">16.7. <code>@ParentCommand</code> Annotation</a></li>
+<li><a href="#_inherited_options">16.8. Inherited Options</a></li>
+<li><a href="#_manually_parsing_subcommands">16.9. Manually Parsing Subcommands</a></li>
+<li><a href="#_nested_sub_subcommands">16.10. Nested sub-Subcommands</a></li>
+<li><a href="#_repeatable_subcommands">16.11. Repeatable Subcommands</a></li>
+<li><a href="#_usage_help_for_subcommands">16.12. Usage Help for Subcommands</a></li>
+<li><a href="#_hidden_subcommands">16.13. Hidden Subcommands</a></li>
+<li><a href="#_help_subcommands">16.14. Help Subcommands</a></li>
+<li><a href="#_required_subcommands">16.15. Required Subcommands</a></li>
 </ul>
 </li>
 <li><a href="#_reuse">17. Reuse</a>
 <ul class="sectlevel2">
 <li><a href="#_subclassing">17.1. Subclassing</a></li>
 <li><a href="#_mixins">17.2. Mixins</a></li>
-<li><a href="#_use_case_sharing_options">17.3. Use Case: Sharing Options</a></li>
-<li><a href="#_reuse_combinations">17.4. Reuse Combinations</a></li>
+<li><a href="#_use_case_configure_log_level_with_a_global_option">17.3. Use Case: Configure Log Level with a Global Option</a></li>
+<li><a href="#_sharing_options_in_subcommands">17.4. Sharing Options in Subcommands</a></li>
+<li><a href="#_reuse_combinations">17.5. Reuse Combinations</a></li>
 </ul>
 </li>
 <li><a href="#_internationalization">18. Internationalization</a>
@@ -737,13 +743,14 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#option-parameters-methods">20.1. <code>@Option</code> and <code>@Parameters</code> Methods</a></li>
 <li><a href="#command-methods">20.2.  <code>@Command</code> Methods</a></li>
 <li><a href="#spec-annotation">20.3.  <code>@Spec</code> Annotation</a></li>
-<li><a href="#_improved_support_for_chinese_japanese_and_korean">20.4. Improved Support for Chinese, Japanese and Korean</a></li>
-<li><a href="#_custom_factory">20.5. Custom Factory</a></li>
-<li><a href="#_boolean_options_with_parameters">20.6. Boolean Options with Parameters</a></li>
-<li><a href="#_hexadecimal_values">20.7. Hexadecimal Values</a></li>
-<li><a href="#_option_parameter_separators_2">20.8. Option-Parameter Separators</a></li>
-<li><a href="#_best_practices_for_command_line_interfaces">20.9. Best Practices for Command Line Interfaces</a></li>
-<li><a href="#_text_block">20.10. Text Blocks for Java 15</a></li>
+<li><a href="#_custom_factory">20.4. Custom Factory</a></li>
+<li><a href="#_automatic_parameter_indexes">20.5. Automatic Parameter Indexes</a></li>
+<li><a href="#_improved_support_for_chinese_japanese_and_korean">20.6. Improved Support for Chinese, Japanese and Korean</a></li>
+<li><a href="#_boolean_options_with_parameters">20.7. Boolean Options with Parameters</a></li>
+<li><a href="#_hexadecimal_values">20.8. Hexadecimal Values</a></li>
+<li><a href="#_option_parameter_separators_2">20.9. Option-Parameter Separators</a></li>
+<li><a href="#_best_practices_for_command_line_interfaces">20.10. Best Practices for Command Line Interfaces</a></li>
+<li><a href="#_text_blocks_for_java_15">20.11. Text Blocks for Java 15</a></li>
 </ul>
 </li>
 <li><a href="#_dependency_injection">21. Dependency Injection</a>
@@ -925,7 +932,7 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <h4 id="_gradle">2.1.1. Gradle</h4>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.2.0'</pre>
+<pre>compile 'info.picocli:picocli:4.3.0'</pre>
 </div>
 </div>
 </div>
@@ -936,7 +943,7 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.2.0&lt;/version&gt;
+  &lt;version&gt;4.3.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -1001,7 +1008,7 @@ In most cases no further configuration is needed when generating a native image.
       &lt;path&gt;
         &lt;groupId&gt;info.picocli&lt;/groupId&gt;
         &lt;artifactId&gt;picocli-codegen&lt;/artifactId&gt;
-        &lt;version&gt;4.2.0&lt;/version&gt;
+        &lt;version&gt;4.3.0&lt;/version&gt;
       &lt;/path&gt;
     &lt;/annotationProcessorPaths&gt;
     &lt;compilerArgs&gt;
@@ -1020,8 +1027,8 @@ In most cases no further configuration is needed when generating a native image.
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code>dependencies {
-    compile 'info.picocli:picocli:4.2.0'
-    annotationProcessor 'info.picocli:picocli-codegen:4.2.0'
+    compile 'info.picocli:picocli:4.3.0'
+    annotationProcessor 'info.picocli:picocli-codegen:4.3.0'
 }</code></pre>
 </div>
 </div>
@@ -1044,7 +1051,7 @@ then replace <code>annotationProcessor</code> with <code>kapt</code>:</p>
 <pre class="CodeRay highlight"><code>apply plugin: 'kotlin-kapt' // required
 dependencies {
     // ...
-    kapt 'info.picocli:picocli-codegen:4.2.0'
+    kapt 'info.picocli:picocli-codegen:4.3.0'
 }</code></pre>
 </div>
 </div>
@@ -1225,7 +1232,7 @@ After the user enters a password value and presses enter, the <code>call()</code
 <p>Interactive options by default cause the application to wait for input on stdin. For commands that need to be run interactively as well as in batch mode, it is useful if the option can optionally consume an argument from the command line.</p>
 </div>
 <div class="paragraph">
-<p>The default <a href="#_arity">arity</a> for interactive options is zero, meaning that the option takes no parameters. From picocli 3.9.6, interactive options can also take a value from the command line if configured with <code>arity = "0..1"</code>.</p>
+<p>The default <a href="#_arity">arity</a> for interactive options is zero, meaning that the option takes no parameters. From picocli 3.9.6, interactive options can also take a value from the command line if configured with <code>arity = "0..1"</code>. (See <a href="#_optional_values">Optional Values</a>.)</p>
 </div>
 <div class="paragraph">
 <p>For example, if an application has these options:</p>
@@ -1442,9 +1449,10 @@ Short option names are not given a negative alias by default. (This is <a href="
 <p>Any command line arguments that are not subcommands or options (or option parameters) are interpreted as positional parameters.
 Positional parameters generally follow the options but from picocli 2.0, positional parameters can be mixed with options on the command line.</p>
 </div>
+<div class="sect3">
+<h4 id="_explicit_index">3.6.1. Explicit Index</h4>
 <div class="paragraph">
 <p>Use the (zero-based) <code>index</code> attribute to specify exactly which parameters to capture.
-Omitting the <code>index</code> attribute means the field captures <em>all</em> positional parameters.
 Array or collection fields can capture multiple values.</p>
 </div>
 <div class="paragraph">
@@ -1456,12 +1464,12 @@ Array or collection fields can capture multiple values.</p>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">PositionalParameters</span> {
-    <span class="annotation">@Parameters</span>(hidden = <span class="predefined-constant">true</span>)  <span class="comment">// &quot;hidden&quot;: don't show this parameter in usage help message</span>
-    <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; allParameters; <span class="comment">// no &quot;index&quot; attribute: captures _all_ arguments (as Strings)</span>
-
     <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>)    <span class="predefined-type">InetAddress</span> host;
     <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>)    <span class="type">int</span> port;
     <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">2..*</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">File</span><span class="type">[]</span> files;
+
+    <span class="annotation">@Parameters</span>(hidden = <span class="predefined-constant">true</span>)  <span class="comment">// &quot;hidden&quot;: don't show this parameter in usage help message</span>
+    <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; allParameters; <span class="comment">// no &quot;index&quot; attribute: captures _all_ arguments</span>
 }</code></pre>
 </div>
 </div>
@@ -1476,11 +1484,61 @@ PositionalParameters params = CommandLine.populateCommand(<span class="keyword">
 <span class="keyword">assert</span> params.host.getHostName().equals(<span class="string"><span class="delimiter">&quot;</span><span class="content">localhost</span><span class="delimiter">&quot;</span></span>);
 <span class="keyword">assert</span> params.port == <span class="integer">12345</span>;
 <span class="keyword">assert</span> <span class="predefined-type">Arrays</span>.equals(params.files, <span class="keyword">new</span> <span class="predefined-type">File</span><span class="type">[]</span> {<span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">file1.txt</span><span class="delimiter">&quot;</span></span>), <span class="keyword">new</span> <span class="predefined-type">File</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">file2.txt</span><span class="delimiter">&quot;</span></span>)});
-<span class="keyword">assert</span> params.allParameters.equals(<span class="predefined-type">Arrays</span>.asList(<span class="string"><span class="delimiter">&quot;</span><span class="content">localhost</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">12345</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file1.txt</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">file2.txt</span><span class="delimiter">&quot;</span></span>));</code></pre>
+
+<span class="keyword">assert</span> params.allParameters.equals(<span class="predefined-type">Arrays</span>.asList(args));</code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>See <a href="#_strongly_typed_everything">Strongly Typed Everything</a> for which types are supported out of the box and how to add custom types.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_omitting_the_index">3.6.2. Omitting the Index</h4>
+<div class="paragraph">
+<p>It is possible to omit the <code>index</code> attribute. This means different things for single-value and for multi-value positional parameters.</p>
+</div>
+<div class="paragraph">
+<p>For <strong>multi-value</strong> positional parameters (arrays or collections), omitting the <code>index</code> attribute means the field captures <em>all</em> positional parameters (the equivalent of <code>index = "0..*"</code>).</p>
+</div>
+<div class="paragraph">
+<p>For <strong>single-value</strong> positional parameters, picocli&#8217;s behaviour has changed since version 4.3:
+prior to picocli 4.3, the default index for single-value positional parameters was also <code>index = "0..*"</code>, even though only one value (usually the first argument) can be captured.
+From version 4.3, picocli assigns an index automatically, based on the other positional parameters defined in the same command.</p>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Automatic indexes depend on the ability of Java reflection and Java annotation processors to iterate over fields in declaration order in the source code.
+Officially this is not guaranteed by the Java spec.
+In practice this has worked in Oracle JVMs and OpenJDK from Java 6, but there is some risk this may not work in the future or on other JVM&#8217;s.
+In general, for single-value positional parameters, using <a href="#_explicit_index">explicit indexes</a> is the safer option.
+(Multi-value positional parameters can safely omit the <code>index</code> attribute.)</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Methods cannot be iterated over in predictable order.
+For applications with <a href="#option-parameters-methods"><code>@Parameters</code>-annotated methods</a> or combinations of <code>@Parameters</code>-annotated methods and <code>@Parameters</code>-annotated fields, we recommend using <a href="#_explicit_index">explicit indexes</a> for single-value positional parameters.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>See <a href="#_automatic_parameter_indexes">Automatic Parameter Indexes</a> for details.</p>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -1547,6 +1605,10 @@ DoubleDashDemo demo = <span class="keyword">new</span> DoubleDashDemo();
 </div>
 <div class="paragraph">
 <p>A custom delimiter can be configured with <code>CommandLine.setEndOfOptionsDelimiter(String)</code>.</p>
+</div>
+<div class="paragraph">
+<p>From picocli 4.3, an entry for <code>--</code> can be shown in the options list of the usage help message of a command with the <code>@Command(showEndOfOptionsDelimiterInUsageHelp = true)</code> annotation.
+See <a href="#_show_end_of_options">Show End of Options</a> for details.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1625,7 +1687,8 @@ The documentation for these tools shows further examples.</p>
 <div class="sect3">
 <h4 id="_files_usage_help">3.9.2. @-files Usage Help</h4>
 <div class="paragraph">
-<p>From picocli 4.2, an entry for <code>@&lt;filename&gt;</code> can be shown in the options and parameters list of the usage help message of a command with the <code>@Command(showAtFileInUsageHelp = true)</code> annotation. See <a href="#_show_at_files">Show At Files</a> for details.</p>
+<p>From picocli 4.2, an entry for <code>@&lt;filename&gt;</code> can be shown in the options and parameters list of the usage help message of a command with the <code>@Command(showAtFileInUsageHelp = true)</code> annotation.
+See <a href="#_show_at_files">Show At Files</a> for details.</p>
 </div>
 </div>
 <div class="sect3">
@@ -2295,7 +2358,7 @@ git.commit.cleanup = strip</code></pre>
 <div class="sect2">
 <h3 id="fallbackValue-annotation">5.5. <code>fallbackValue</code> Annotation</h3>
 <div class="paragraph">
-<p>If an option is defined with <code>arity = "0..1"</code>, it may or not have a parameter value.
+<p>If an option is defined with <code>arity = "0..1"</code>, it <a href="#_optional_values">may or may not have a parameter value</a>.
 If such an option is specified without a value on the command line, it is assigned the fallback value.</p>
 </div>
 <div class="paragraph">
@@ -2455,7 +2518,7 @@ Each of these substrings is converted to the type of the collection or array. Se
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-fix</span><span class="delimiter">&quot;</span></span>, split = <span class="string"><span class="delimiter">&quot;</span><span class="char">\\</span><span class="content">|</span><span class="delimiter">&quot;</span></span>)
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-fix</span><span class="delimiter">&quot;</span></span>, split = <span class="string"><span class="delimiter">&quot;</span><span class="char">\\</span><span class="content">|</span><span class="delimiter">&quot;</span></span>, splitSynopsisLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">|</span><span class="delimiter">&quot;</span></span>)
 <span class="predefined-type">Map</span>&lt;<span class="predefined-type">Integer</span>, <span class="predefined-type">String</span>&gt; message;</code></pre>
 </div>
 </div>
@@ -2463,8 +2526,9 @@ Each of these substrings is converted to the type of the collection or array. Se
 <p>With the above option, command line arguments like the following are interpreted as a set of key-value pairs instead of a single string:</p>
 </div>
 <div class="listingblock">
+<div class="title">Note: end users need to quote the option parameter to prevent the vertical bar <code>|</code> characters from being interpreted by the shell as "pipe" directives to connect processes.</div>
 <div class="content">
-<pre>-fix 8=FIX.4.4|9=69|35=A|49=MBT|56=TargetCompID|34=9|52=20130625-04:05:32.682|98=0|108=30|10=052</pre>
+<pre>-fix "8=FIX.4.4|9=69|35=A|49=MBT|56=TargetCompID|34=9|52=20130625-04:05:32.682|98=0|108=30|10=052"</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2477,6 +2541,10 @@ Each of these substrings is converted to the type of the collection or array. Se
 </div>
 <div class="paragraph">
 <p>See <a href="#_quoted_values">Quoted Values</a> for details on handling more complex cases.</p>
+</div>
+<div class="paragraph">
+<p>Picocli 4.3 introduced the <code>splitSynopsisLabel</code> attribute to control what is shown in the synopsis of the usage help message.
+See <a href="#_split_synopsis_label">Split Synopsis Label</a> for details.</p>
 </div>
 </div>
 <div class="sect2">
@@ -2522,12 +2590,73 @@ the <code>-f</code> argument is recognized as a separate option.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_default_arity">6.4. Default Arity</h3>
+<h3 id="_variable_arity_limitations">6.4. Variable Arity Limitations</h3>
+<div class="sect3">
+<h4 id="_variable_arity_options_and_unknown_options">6.4.1. Variable Arity Options and Unknown Options</h4>
+<div class="paragraph">
+<p>As mentioned in the <a href="#_arity">previous section</a>, while processing parameters for an option with variable arity, when a known option, a subcommand, or the <a href="#_double_dash">end-of-options delimiter</a> is encountered, picocli will stop adding parameters to the variable arity option.</p>
+</div>
+<div class="paragraph">
+<p>However, the picocli parser currently does not give special treatment to <a href="#_unknown_options">unknown options</a> (values that "look like" an option) when processing parameters for an option with variable arity.
+Such values are simply consumed by the option with variable arity. This may change in a future version of picocli.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_variable_arity_options_and_positional_parameters">6.4.2. Variable Arity Options and Positional Parameters</h4>
+<div class="paragraph">
+<p>Be careful when defining commands that have both an option with variable arity (like <code>arity = "0..*"</code>) and a positional parameter.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The picocli parser is "greedy" when it handles option parameters for options with variable arity: it looks at the value following the option name, and if that value can be taken as a parameter (not another option or subcommand, and max arity is not reached yet) then it will process the value as a parameter for that option. This may not always be what you want.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">Ambiguous</span> {
+    <span class="annotation">@Parameters</span>(description = <span class="string"><span class="delimiter">&quot;</span><span class="content">The file (required).</span><span class="delimiter">&quot;</span></span>)
+    <span class="predefined-type">File</span> file;
+
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-y</span><span class="delimiter">&quot;</span></span>, arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">0..*</span><span class="delimiter">&quot;</span></span>,
+      description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Option with optional parameters</span><span class="delimiter">&quot;</span></span>)
+    <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; values;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When <code>-y a b c path/to/file</code> is specified on the command line, this results in an error: <code>Missing required parameter: &lt;file&gt;</code>.</p>
+</div>
+<div class="paragraph">
+<p>Users can use the <a href="#_double_dash">end-of-options delimiter</a> and disambiguate the input with
+<code>-y a b c &dash;&dash; VALUE</code>, but this may not be obvious to many users.
+One idea is to <a href="#_show_end_of_options">show the end-of-options</a> delimiter in the usage help.</p>
+</div>
+<div class="paragraph">
+<p>A better alternative may be to redesign your command to avoid the ambiguity altogether.
+One idea is to use the <a href="#_default_arity">default arity</a> (<code>arity = "1"</code> in our example) and use the <a href="#_split_regex">split</a> attribute to allow users to specify multiple values in a single argument like <code>a,b,c</code>.
+If <code>-y</code> takes only a single parameter, then user input like <code>-y a,b,c path/to/file</code> is no longer ambiguous.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_default_arity">6.5. Default Arity</h3>
 <div class="paragraph">
 <p>If no <code>arity</code> is specified, the number of parameters depends on the field&#8217;s type.</p>
 </div>
 <div class="sect3">
-<h4 id="_option_arity">6.4.1. Option Arity</h4>
+<h4 id="_option_arity">6.5.1. Option Arity</h4>
 <table class="tableblock frame-all grid-cols stretch">
 <caption class="title">Table 1. Default <code>arity</code> for <code>@Option</code> fields</caption>
 <colgroup>
@@ -2576,7 +2705,7 @@ If your application relies on the previous behaviour, you need to explicitly spe
 </div>
 </div>
 <div class="sect3">
-<h4 id="_positional_parameter_arity">6.4.2. Positional Parameter Arity</h4>
+<h4 id="_positional_parameter_arity">6.5.2. Positional Parameter Arity</h4>
 <table class="tableblock frame-all grid-cols stretch">
 <caption class="title">Table 2. Default <code>arity</code> for <code>@Parameters</code> fields</caption>
 <colgroup>
@@ -2605,7 +2734,7 @@ If your application relies on the previous behaviour, you need to explicitly spe
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Multi-valued type (arrays, collections or maps)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">0..1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">For multi-valued positional parameters (arrays, collections or maps), values are optional, not required.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">For multi-valued positional parameters (arrays, collections or maps), values are optional, not <a href="#_required_parameters">required</a>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -2620,10 +2749,84 @@ A <code>@Parameters</code> field with <code>index = "*"</code> is applied multip
 </div>
 </div>
 <div class="sect2">
-<h3 id="_optional_values">6.5. Optional Values</h3>
+<h3 id="_optional_values">6.6. Optional Values</h3>
+<div class="sect3">
+<h4 id="_optional_option_parameters">6.6.1. Optional Option Parameters</h4>
 <div class="paragraph">
-<p>If an option is defined with <code>arity = "0..1"</code>, it may or not have a parameter value.
-If such an option is specified without a value on the command line, it is assigned the <a href="#fallbackValue-annotation">fallback value</a>.</p>
+<p>When an option is defined with <code>arity = "0..1"</code>, it may or not have a parameter value.</p>
+</div>
+<div class="paragraph">
+<p>The <a href="#fallbackValue-annotation">fallback value</a> determines what value is assigned when the option is specified without a value, while the <a href="#defaultValue-annotation">default value</a> determines what value is assigned when the option is not specified at all.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_optional_parameter_use_cases">6.6.2. Optional Parameter Use Cases</h4>
+<div class="paragraph">
+<p>This feature is commonly used when an application wants to combine two options into one:
+the presence or absence of the option can be used like a boolean flag to trigger some behaviour, and the option value can be used to modify this behaviour.</p>
+</div>
+<div class="paragraph">
+<p>An example use case is an option that switches on logging when present, with an optional value to set the log level. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">--syslog</span><span class="delimiter">&quot;</span></span>, defaultValue = <span class="string"><span class="delimiter">&quot;</span><span class="content">OFF</span><span class="delimiter">&quot;</span></span>, fallbackValue = <span class="string"><span class="delimiter">&quot;</span><span class="content">INFO</span><span class="delimiter">&quot;</span></span>,
+  description = {
+        <span class="string"><span class="delimiter">&quot;</span><span class="content">When specified without arguments, start sending syslog messages at INFO level.</span><span class="delimiter">&quot;</span></span>,
+        <span class="string"><span class="delimiter">&quot;</span><span class="content">If absent, no messages are sent to syslog.</span><span class="delimiter">&quot;</span></span>,
+        <span class="string"><span class="delimiter">&quot;</span><span class="content">Optionally specify a severity value. Valid values: ${COMPLETION-CANDIDATES}.</span><span class="delimiter">&quot;</span></span>})
+MyLogLevel syslogLevel;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Another example use case is <a href="#_optionally_interactive">password options</a>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_optional_parameter_limitations">6.6.3. Optional Parameter Limitations</h4>
+<div class="paragraph">
+<p>Be careful when defining commands that have both an option with an optional parameter and a positional parameter.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The picocli parser is "greedy" when it handles optional parameters: it looks at the value following the option name, and if that value is likely to be a parameter (not another option or subcommand) then it will process the value as a parameter for that option. This may not always be what you want.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">Ambiguous</span> {
+    <span class="annotation">@Parameters</span>(description = <span class="string"><span class="delimiter">&quot;</span><span class="content">The file (required).</span><span class="delimiter">&quot;</span></span>)
+    <span class="predefined-type">File</span> file;
+
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">0..1</span><span class="delimiter">&quot;</span></span>,
+      description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Option with optional parameter</span><span class="delimiter">&quot;</span></span>)
+    <span class="predefined-type">String</span> value;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When <code>-x VALUE</code> is specified on the command line, this results in an error: <code>Missing required parameter: &lt;file&gt;</code>.</p>
+</div>
+<div class="paragraph">
+<p>Users can use the <a href="#_double_dash">end-of-options delimiter</a> and disambiguate the input with
+<code>-x &dash;&dash; VALUE</code>, but this may not be obvious to many users.
+One idea is to <a href="#_show_end_of_options">show the end-of-options</a> delimiter in the usage help.</p>
+</div>
+<div class="paragraph">
+<p>An alternative is to avoid the use of optional parameters and use the default arity in this scenario to elimitate the ambiguity altogether.</p>
+</div>
 </div>
 </div>
 </div>
@@ -2707,57 +2910,7 @@ If such an option is specified without a value on the command line, it is assign
 <div class="sect2">
 <h3 id="_options_with_an_optional_parameter">7.3. Options with an Optional Parameter</h3>
 <div class="paragraph">
-<p>Options with <code>arity = "0..1"</code> have an optional parameter.
-This can be useful for <a href="#_optionally_interactive">password options</a> and in some other cases.</p>
-</div>
-<div class="paragraph">
-<p>The <a href="#fallbackValue-annotation">fallback value</a> determines what value is assigned when the option is specified without a value, while the <a href="#defaultValue-annotation">default value</a> determines what value is assigned when the option is not specified at all.</p>
-</div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>Be careful when defining commands that have both an option with an optional parameter and a positional parameter.</p>
-</div>
-<div class="paragraph">
-<p>The picocli parser is "greedy" when it handles optional parameters: it looks at the value following the option name, and if that value is likely to be a parameter (not another option or subcommand) then it will process the value as a parameter for that option. This may not always be what you want.</p>
-</div>
-<div class="paragraph">
-<p>For example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">Ambiguous</span> {
-    <span class="annotation">@Parameters</span>(description = <span class="string"><span class="delimiter">&quot;</span><span class="content">The file (required).</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">File</span> file;
-
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">0..1</span><span class="delimiter">&quot;</span></span>,
-      description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Option with optional parameter</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">String</span> value;
-
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-y</span><span class="delimiter">&quot;</span></span>, arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">0..*</span><span class="delimiter">&quot;</span></span>,
-      description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Option with optional parameters</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; values;
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>When <code>-x VALUE</code> is specified on the command line, this results in an error: <code>Missing required parameter: &lt;file&gt;</code>. Similarly, when <code>-y a b c path/to/file</code> is specified.</p>
-</div>
-<div class="paragraph">
-<p>Users can use the <a href="#_double_dash">end-of-options delimiter</a> and disambiguate the input with
- <code>-x &dash;&dash; VALUE</code> or <code>-y a b c &dash;&dash; VALUE</code>, but this may not be obvious to many users.</p>
-</div>
-<div class="paragraph">
-<p>A better alternative may be to redesign your command to avoid the ambiguity altogether.</p>
-</div>
-</td>
-</tr>
-</table>
+<p>See <a href="#_optional_values">Optional Values</a>.</p>
 </div>
 </div>
 </div>
@@ -3270,16 +3423,71 @@ usage help shows the wrong default value
 <div class="paragraph">
 <p>When a <code>@Parameters</code> positional parameter is part of a group, its <code>index</code> is the index <em>within the group</em>, not within the command.</p>
 </div>
+<div class="paragraph">
+<p>Below is an example of an application that uses a repeating group of positional parameters:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">grades</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">grades 1.0</span><span class="delimiter">&quot;</span></span>)
+<span class="directive">public</span> <span class="type">class</span> <span class="class">Grades</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+
+    <span class="directive">static</span> <span class="type">class</span> <span class="class">StudentGrade</span> {
+        <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> name;
+        <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">1</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">BigDecimal</span> grade;
+    }
+
+    <span class="annotation">@ArgGroup</span>(exclusive = <span class="predefined-constant">false</span>, multiplicity = <span class="string"><span class="delimiter">&quot;</span><span class="content">1..*</span><span class="delimiter">&quot;</span></span>)
+    <span class="predefined-type">List</span>&lt;StudentGrade&gt; gradeList;
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        gradeList.forEach(e -&gt; <span class="predefined-type">System</span>.out.println(e.name + <span class="string"><span class="delimiter">&quot;</span><span class="content">: </span><span class="delimiter">&quot;</span></span> + e.grade));
+    }
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        <span class="predefined-type">System</span>.exit(<span class="keyword">new</span> CommandLine(<span class="keyword">new</span> Grades()).execute(args));
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Running the above program with this input:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Alice 3.1 Betty 4.0 "X Æ A-12" 3.5 Zaphod 3.4</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Produces the following output:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Alice: 3.1
+Betty: 4.0
+X Æ A-12: 3.5
+Zaphod: 3.4</pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_argument_group_limitations">8.7. Argument Group Limitations</h3>
 <div class="ulist">
 <ul>
 <li>
-<p>Options with the same name cannot be defined in multiple groups. Similarly, it is not possible to define an option outside of a group with the same name as a different option that is part of a group.</p>
+<p>Options with the same name cannot be defined in multiple groups.
+Similarly, it is not possible to define an option outside of a group with the same name as a different option that is part of a group.</p>
 </li>
 <li>
-<p>Positional parameters in a single group work fine, but take care (or avoid) defining positional parameters in multiple groups or positional parameters in a group as well as outside a group. Positional parameters are matched by index, and while the index of a group is reset when a new group multiple is encountered, the index of positional parameters outside a group only increases and is never reset.</p>
+<p>Positional parameters in a single group work fine, but take care (or avoid) defining positional parameters in multiple groups or positional parameters in a group as well as outside a group.
+Positional parameters are matched by index, and while the index of a group is reset when a new group multiple is encountered, the index of positional parameters outside a group only increases and is never reset.</p>
+</li>
+<li>
+<p>Some relationships between options cannot be expressed with picocli argument groups.
+In general, picocli argument groups can only express relationship for which you can write a command line synopsis with every option occurring only once.
+For example, it is not possible to use argument groups to create a relationship with exclusive options <code>[-a | -b]</code>,
+where <code>-a</code> requires another option <code>-c</code>: <code>[[-a] -c]</code>, while at the same time <code>-b</code> is independent of <code>-c</code>: <code>[-b] [-c]</code>.
+The application may need to do some programmatic validation in such cases.</p>
 </li>
 </ul>
 </div>
@@ -4383,6 +4591,44 @@ options for the <code>find</code> command itself, but are interpreted as a separ
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_case_sensitivity">10.13. Case Sensitivity</h3>
+<div class="paragraph">
+<p>By default, all options and subcommands are case sensitive.
+Case sensitivity can be switched off globally, as well as on a per-command basis.</p>
+</div>
+<div class="paragraph">
+<p>To toggle case sensitivity for all commands, use the <code>CommandLine::setSubcommandsCaseInsensitive</code> and <code>CommandLine::setOptionsCaseInsensitive</code> methods.
+Use the <code>CommandSpec::subcommandsCaseInsensitive</code> and <code>CommandSpec::optionsCaseInsensitive</code> methods to give some commands a different case sensitivity than others.</p>
+</div>
+<div class="paragraph">
+<p>Where possible, picocli will try to prevent ambiguity: when multiple options with the same name are registered in a command, a <code>DuplicateOptionAnnotationsException</code> is thrown.
+When multiple subcommands with the same name are registered in a command, a <code>DuplicateNameException</code> is thrown.</p>
+</div>
+<div class="paragraph">
+<p>With case sensitivity switched off, the same principle applies: multiple options whose names differ only in case cannot be registered in a command.
+Similarly, multiple subcommands cannot be registered when their names differ only in case.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>When a combination of POSIX options resembles a long option, picocli will prioritize the long option.
+This is the case regardless of case sensitivity, but be aware that with case sensitivity switched off, the chance of such collisions increases.
+For example, if a command has POSIX options <code>-a</code>, <code>-b</code>, and <code>-c</code>, and a long option <code>-ABC</code>, then, when the user specifies <code>-abc</code>, picocli will recognize it as the long option <code>-ABC</code>, not as the POSIX options.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>See the <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/casesensitivity">casesensitivity</a> package in <code>picocli-examples</code> for some examples.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -4977,7 +5223,40 @@ Options with a lower number are shown before options with a higher number.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_abbreviated_synopsis">13.6. Abbreviated Synopsis</h3>
+<h3 id="_split_synopsis_label">13.6. Split Synopsis Label</h3>
+<div class="paragraph">
+<p>Options and parameters may have a <a href="#_split_regex"><code>split</code></a> attribute to split each parameter into smaller substrings.
+Regular expressions may contain literal text, but may also contain <a href="https://www.regular-expressions.info/characters.html">special characters</a>.
+The regular expression in the <code>split</code> attribute may be quite different from what end users need to type.</p>
+</div>
+<div class="paragraph">
+<p>The example below uses the plus (<code>+</code>) character as a separator.
+The regular expression in the <code>split</code> attribute uses backslash (<code>\</code>) characters to make sure that the plus character is treated as a literal.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Parameters</span>(split = <span class="string"><span class="delimiter">&quot;</span><span class="char">\\</span><span class="content">+</span><span class="delimiter">&quot;</span></span>, splitSynopsisLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">+</span><span class="delimiter">&quot;</span></span>, paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">VALUE</span><span class="delimiter">&quot;</span></span>)
+<span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; values;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>However, end users can type simply  <code>A+B+C</code> (using the plus character separator), not  <code>A\+B\+C</code>.
+We want the usage help message to show this.</p>
+</div>
+<div class="paragraph">
+<p>The <code>splitSynopsisLabel</code> attribute, introduced in picocli 4.3, controls what is shown in the synopsis of the usage help message.</p>
+</div>
+<div class="paragraph">
+<p>With the example above, the synopsis of the usage help looks like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: cmd [VALUE[+VALUE...]...]</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_abbreviated_synopsis">13.7. Abbreviated Synopsis</h3>
 <div class="paragraph">
 <p>If a command is very complex and has many options, it is sometimes desirable to suppress details from the synopsis with the <code>abbreviateSynopsis</code> attribute. For example:</p>
 </div>
@@ -5001,7 +5280,7 @@ Options with a lower number are shown before options with a higher number.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_custom_synopsis">13.7. Custom Synopsis</h3>
+<h3 id="_custom_synopsis">13.8. Custom Synopsis</h3>
 <div class="paragraph">
 <p>For even more control of the synopsis, use the <code>customSynopsis</code> attribute to specify one ore more synopsis lines. For example:</p>
 </div>
@@ -5029,7 +5308,7 @@ Options with a lower number are shown before options with a higher number.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_synopsis_subcommand_label">13.8. Synopsis Subcommand Label</h3>
+<h3 id="_synopsis_subcommand_label">13.9. Synopsis Subcommand Label</h3>
 <div class="paragraph">
 <p>For commands with <a href="#_usage_help_for_subcommands">subcommands</a>, the string <code>[COMMAND]</code> is appended to the end of the synopsis (whether the synopsis is <a href="#_abbreviated_synopsis">abbreviated</a> or not). This looks something like this:</p>
 </div>
@@ -5070,7 +5349,7 @@ Options with a lower number are shown before options with a higher number.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_header_and_footer">13.9. Header and Footer</h3>
+<h3 id="_header_and_footer">13.10. Header and Footer</h3>
 <div class="paragraph">
 <p>The <code>header</code> will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <a href="#_usage_help_for_subcommands">Usage Help for Subcommands</a>).</p>
 </div>
@@ -5082,7 +5361,7 @@ Options with a lower number are shown before options with a higher number.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_exit_code_list">13.10. Exit Code List</h3>
+<h3 id="_exit_code_list">13.11. Exit Code List</h3>
 <div class="paragraph">
 <p>By default, the usage help message does not display <a href="#_generating_an_exit_code">exit code</a> information.
 Applications that call <code>System.exit</code> need to configure the <code>exitCodeListHeading</code> and <code>exitCodeList</code> annotation attributes.
@@ -5119,7 +5398,7 @@ Exit Codes:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_format_specifiers">13.11. Format Specifiers</h3>
+<h3 id="_format_specifiers">13.12. Format Specifiers</h3>
 <div class="paragraph">
 <p>All usage help message elements can have embedded line separator (<code>%n</code>) format specifiers.
 These are converted to the platform-specific line separator when the usage help message is printed.</p>
@@ -5148,7 +5427,7 @@ where each element of the array is displayed on a separate line in the usage hel
 </div>
 </div>
 <div class="sect2">
-<h3 id="_section_headings">13.12. Section Headings</h3>
+<h3 id="_section_headings">13.13. Section Headings</h3>
 <div class="paragraph">
 <p>Section headers can be used to make usage message layout appear more spacious. The example below demonstrates the use of embedded line separator (<code>%n</code>) format specifiers:</p>
 </div>
@@ -5172,7 +5451,7 @@ where each element of the array is displayed on a separate line in the usage hel
 </div>
 </div>
 <div class="sect2">
-<h3 id="_expanded_example">13.13. Expanded Example</h3>
+<h3 id="_expanded_example">13.14. Expanded Example</h3>
 <div class="paragraph">
 <p>The below example demonstrates what a customized usage message can look like.
 Note how section headings with line separators can create a more spacious usage message,
@@ -5230,7 +5509,7 @@ Options:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_parameter_separators">13.14. Option-Parameter Separators</h3>
+<h3 id="_option_parameter_separators">13.15. Option-Parameter Separators</h3>
 <div class="paragraph">
 <p>The separator displayed between options and option parameters (<code>=</code> by default)
 in the synopsis and the option list can be configured with the <code>separator</code> attribute.</p>
@@ -5254,7 +5533,7 @@ the <code>@Command(separator = " ")</code> annotation also affects how picocli p
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hidden_options_and_parameters">13.15. Hidden Options and Parameters</h3>
+<h3 id="_hidden_options_and_parameters">13.16. Hidden Options and Parameters</h3>
 <div class="paragraph">
 <p>Options and Parameters with the <code>hidden</code> attribute set to <code>true</code> will not be shown in the usage help message.
 This is useful for example when a parameter at some index is captured into multiple fields:
@@ -5288,12 +5567,12 @@ by default each of these fields would be shown in the usage message, which would
 </div>
 </div>
 <div class="sect2">
-<h3 id="_show_at_files">13.16. Show At Files</h3>
+<h3 id="_show_at_files">13.17. Show At Files</h3>
 <div class="paragraph">
 <p>From picocli 4.2, an entry for <code>@&lt;filename&gt;</code> can be shown in the options and parameters list of the usage help message of a command with the <code>@Command(showAtFileInUsageHelp = true)</code> annotation.</p>
 </div>
 <div class="sect3">
-<h4 id="_example_2">13.16.1. Example</h4>
+<h4 id="_example_2">13.17.1. Example</h4>
 <div class="paragraph">
 <p>Example command:</p>
 </div>
@@ -5321,7 +5600,7 @@ Example command.
 </div>
 </div>
 <div class="sect3">
-<h4 id="_changing_the_at_file_entry_location">13.16.2. Changing the At File Entry Location</h4>
+<h4 id="_changing_the_at_file_entry_location">13.17.2. Changing the At File Entry Location</h4>
 <div class="paragraph">
 <p>By default, the <code>@&lt;filename&gt;</code> entry is shown before the positional parameters in the synopsis as well as in the parameters list.</p>
 </div>
@@ -5366,7 +5645,7 @@ Example command.
 </div>
 </div>
 <div class="sect3">
-<h4 id="_changing_the_at_file_entry_text">13.16.3. Changing the At File Entry Text</h4>
+<h4 id="_changing_the_at_file_entry_text">13.17.3. Changing the At File Entry Text</h4>
 <div class="paragraph">
 <p>Both the label and the description of the <code>@&lt;filename&gt;</code> entry have been defined with <a href="#_custom_variables">custom variables</a>, to allow applications to change the text. The variables are:</p>
 </div>
@@ -5408,9 +5687,127 @@ Example command.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_show_default_values">13.17. Show Default Values</h3>
+<h3 id="_show_end_of_options">13.18. Show End of Options</h3>
+<div class="paragraph">
+<p>From picocli 4.3, an entry for the <code>--</code> <a href="#_double_dash">End of Options delimiter</a> can be shown in the options list of the usage help message of a command with the <code>@Command(showEndOfOptionsDelimiterInUsageHelp = true)</code> annotation.</p>
+</div>
 <div class="sect3">
-<h4 id="_default_value_variable">13.17.1. <code>${DEFAULT-VALUE}</code> Variable</h4>
+<h4 id="_example_3">13.18.1. Example</h4>
+<div class="paragraph">
+<p>Example command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myapp</span><span class="delimiter">&quot;</span></span>, showEndOfOptionsDelimiterInUsageHelp = <span class="predefined-constant">true</span>,
+        mixinStandardHelpOptions = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Example command.</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">MyApp</span> {
+    <span class="annotation">@Parameters</span>(description = <span class="string"><span class="delimiter">&quot;</span><span class="content">A file.</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">File</span> file;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The usage help message for this command looks like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: myapp [-hV] [--] &lt;file&gt;
+Example command.
+      &lt;file&gt;      A file.
+  -h, --help      Show this help message and exit.
+  -V, --version   Print version information and exit.
+  --              This option can be used to separate command-line options from
+                    the list of positional parameters.</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_changing_the_end_of_options_entry_location">13.18.2. Changing the End of Options Entry Location</h4>
+<div class="paragraph">
+<p>By default, the <code>--</code> End of Options entry is shown between the options and the positional parameters in the synopsis, and at the end of the options list.</p>
+</div>
+<div class="paragraph">
+<p>This can be changed with the <a href="#_usage_help_api">Help API</a> for reordering sections. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">static</span> <span class="include">picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_END_OF_OPTIONS</span>;
+<span class="keyword">import</span> <span class="include">static</span> <span class="include">picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_OPTION_LIST</span>;
+<span class="keyword">import</span> <span class="include">static</span> <span class="include">picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_OPTION_LIST_HEADING</span>;
+
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myapp</span><span class="delimiter">&quot;</span></span>, showEndOfOptionsDelimiterInUsageHelp = <span class="predefined-constant">true</span>,
+        mixinStandardHelpOptions = <span class="predefined-constant">true</span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Example command.</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">MyApp</span> {
+    <span class="annotation">@Parameters</span>(description = <span class="string"><span class="delimiter">&quot;</span><span class="content">A file.</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">File</span> file;
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
+        CommandLine cmd = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp());
+        <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; copy = <span class="keyword">new</span> <span class="predefined-type">ArrayList</span>&lt;&gt;(cmd.getHelpSectionKeys());
+        copy.remove(SECTION_KEY_END_OF_OPTIONS);
+        copy.add(copy.indexOf(SECTION_KEY_OPTION_LIST), SECTION_KEY_END_OF_OPTIONS);
+        cmd.setHelpSectionKeys(copy);
+
+        cmd.usage(<span class="predefined-type">System</span>.out);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The resulting usage help message shows the <code>--</code> End of Options entry has moved up, to the beginning the options list:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: myapp [-hV] [--] &lt;file&gt;
+Example command.
+      &lt;file&gt;      A file.
+  --              This option can be used to separate command-line options from
+                    the list of positional parameters.
+  -h, --help      Show this help message and exit.
+  -V, --version   Print version information and exit.</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_changing_the_end_of_options_entry_text">13.18.3. Changing the End of Options Entry Text</h4>
+<div class="paragraph">
+<p>The description of the <code>--</code> End of Options delimiter entry has been defined with a <a href="#_custom_variables">custom variable</a>, to allow applications to change the text. The variable is:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>picocli.endofoptions.description</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>By setting the above variable in either system properties, environment variables or the <a href="#_internationalization">resource bundle</a> for a command, the text can be customized.</p>
+</div>
+<div class="paragraph">
+<p>For example, if we define this system property:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">System</span>.setProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">picocli.endofoptions.description</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">End of options. Remainder are positional parameters.</span><span class="delimiter">&quot;</span></span>);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>then the usage help for our above example changes to this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Usage: myapp [-hV] [--] &lt;file&gt;
+Example command.
+      &lt;file&gt;      A file.
+  -h, --help      Show this help message and exit.
+  -V, --version   Print version information and exit.
+  --              End of options. Remainder are positional parameters.</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_show_default_values">13.19. Show Default Values</h3>
+<div class="sect3">
+<h4 id="_default_value_variable">13.19.1. <code>${DEFAULT-VALUE}</code> Variable</h4>
 <div class="paragraph">
 <p>From picocli 3.2, it is possible to embed the <a href="#_default_values">default values</a> in the description for an option or positional parameter by
 specifying the <a href="#_variable_interpolation">variable</a> <code>${DEFAULT-VALUE}</code> in the description text.
@@ -5442,7 +5839,7 @@ CommandLine.usage(<span class="keyword">new</span> DefaultValues(), <span class=
 </div>
 </div>
 <div class="sect3">
-<h4 id="_completion_candidates_variable">13.17.2. <code>${COMPLETION-CANDIDATES}</code> Variable</h4>
+<h4 id="_completion_candidates_variable">13.19.2. <code>${COMPLETION-CANDIDATES}</code> Variable</h4>
 <div class="paragraph">
 <p>Similarly, it is possible to embed the completion candidates in the description for an option or positional parameter by
 specifying the <a href="#_variable_interpolation">variable</a> <code>${COMPLETION-CANDIDATES}</code> in the description text.</p>
@@ -5482,7 +5879,7 @@ CommandLine.usage(<span class="keyword">new</span> ValidValuesDemo(), <span clas
 </div>
 </div>
 <div class="sect3">
-<h4 id="_legacy_configuration_for_displaying_default_values">13.17.3. Legacy Configuration for Displaying Default Values</h4>
+<h4 id="_legacy_configuration_for_displaying_default_values">13.19.3. Legacy Configuration for Displaying Default Values</h4>
 <div class="paragraph">
 <p>Prior to picocli 3.2, you need to use the <code>@Command(showDefaultValues = true)</code> attribute to append the default value of
  all non-<code>null</code> options and positional parameters to the description column.</p>
@@ -5511,7 +5908,7 @@ This attribute accepts three values:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_required_option_marker">13.18. Required-Option Marker</h3>
+<h3 id="_required_option_marker">13.20. Required-Option Marker</h3>
 <div class="paragraph">
 <p>Required options can be marked in the option list by the character specified with the <code>requiredOptionMarker</code> attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with the <a href="#_abbreviated_synopsis"><code>abbreviateSynopsis</code></a> attribute. For example:</p>
 </div>
@@ -5536,7 +5933,7 @@ This attribute accepts three values:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_width">13.19. Usage Width</h3>
+<h3 id="_usage_width">13.21. Usage Width</h3>
 <div class="paragraph">
 <p>The default width of the usage help message is 80 characters.
 Commands defined with <code>@Command(usageHelpWidth = NUMBER)</code> in the annotations will use the specified width.</p>
@@ -5552,7 +5949,7 @@ Commands defined with <code>@Command(usageHelpWidth = NUMBER)</code> in the anno
 </div>
 </div>
 <div class="sect2">
-<h3 id="_auto_terminal_width">13.20. Auto (Terminal) Width</h3>
+<h3 id="_auto_terminal_width">13.22. Auto (Terminal) Width</h3>
 <div class="paragraph">
 <p>From 4.0, commands defined with <code>@Command(usageHelpAutoWidth = true)</code> will try to adjust the usage message help layout to the terminal width.
 There is also programmatic API to control this via the <code>CommandLine::setUsageHelpAutoWidth</code> and <code>UsageMessageSpec::autoWidth</code> methods.</p>
@@ -5565,7 +5962,7 @@ There is also programmatic API to control this via the <code>CommandLine::setUsa
 </div>
 </div>
 <div class="sect2">
-<h3 id="_long_option_column_width">13.21. Long Option Column Width</h3>
+<h3 id="_long_option_column_width">13.23. Long Option Column Width</h3>
 <div class="paragraph">
 <p>The default layout shows short options and long options in separate columns, followed by the description column.
 The width of the long options column shrinks automatically if all long options are very short,
@@ -5787,11 +6184,14 @@ There are no annotations to modify this color scheme, but it can be changed prog
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="comment">// see also CommandLine.Help.defaultColorScheme()</span>
-ColorScheme colorScheme = <span class="keyword">new</span> ColorScheme()
+ColorScheme colorScheme = <span class="keyword">new</span> ColorScheme.Builder()
         .commands    (<span class="predefined-type">Style</span>.bold, <span class="predefined-type">Style</span>.underline)    <span class="comment">// combine multiple styles</span>
         .options     (<span class="predefined-type">Style</span>.fg_yellow)                <span class="comment">// yellow foreground color</span>
         .parameters  (<span class="predefined-type">Style</span>.fg_yellow)
-        .optionParams(<span class="predefined-type">Style</span>.italic);
+        .optionParams(<span class="predefined-type">Style</span>.italic)
+        .errors      (<span class="predefined-type">Style</span>.fg_red, <span class="predefined-type">Style</span>.bold)
+        .stackTraces (<span class="predefined-type">Style</span>.italic)
+        .build();
 
 CommandLine.usage(annotatedObject, <span class="predefined-type">System</span>.out, colorScheme);
 ...</code></pre>
@@ -5823,7 +6223,9 @@ CommandLine.usage(annotatedObject, <span class="predefined-type">System</span>.o
 <pre>picocli.color.commands
 picocli.color.options
 picocli.color.parameters
-picocli.color.optionParams</pre>
+picocli.color.optionParams
+picocli.color.errors
+picocli.color.stackTraces</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -6510,9 +6912,150 @@ With a single command, you can simply do this in the beginning of the <code>run<
 <div class="paragraph">
 <p>This ensures the <code>init</code> method is called <em>after</em> the command line is parsed (so all options and positional parameters are assigned) but <em>before</em> the user-specified subcommand is executed.</p>
 </div>
+<div class="paragraph">
+<p>The <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/logging_mixin_advanced">logging example</a> in <code>picocli-examples</code> shows how this can be used to configure the Log4j log level based on a <code>--verbose</code> option, prior to execution.</p>
+</div>
 </div>
 <div class="sect2">
-<h3 id="_manually_parsing_subcommands">16.7. Manually Parsing Subcommands</h3>
+<h3 id="parentcommand-annotation">16.7. <code>@ParentCommand</code> Annotation</h3>
+<div class="paragraph">
+<p>In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.</p>
+</div>
+<div class="paragraph">
+<p>The <code>@ParentCommand</code> annotation introduced in picocli 2.2 makes it easy for subcommands to access their parent command options: subcommand fields annotated with <code>@ParentCommand</code> are initialized with a reference to the parent command. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">fileutils</span><span class="delimiter">&quot;</span></span>, subcommands = <span class="predefined-type">List</span>.class)
+<span class="type">class</span> <span class="class">FileUtils</span> {
+
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-d</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--directory</span><span class="delimiter">&quot;</span></span>},
+            description = <span class="string"><span class="delimiter">&quot;</span><span class="content">this option applies to all subcommands</span><span class="delimiter">&quot;</span></span>)
+    <span class="predefined-type">File</span> baseDirectory;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The above top-level command has a <code>--directory</code> option that applies to its subcommands.
+The <code>List</code> subcommand can use the <code>@ParentCommand</code> annotation to get a reference to the parent command, so it can easily access the parent command options.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">list</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">List</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+
+    <span class="annotation">@ParentCommand</span>
+    <span class="directive">private</span> FileUtils parent; <span class="comment">// picocli injects reference to parent command</span>
+
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-r</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--recursive</span><span class="delimiter">&quot;</span></span>},
+            description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Recursively list subdirectories</span><span class="delimiter">&quot;</span></span>)
+    <span class="directive">private</span> <span class="type">boolean</span> recursive;
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        list(<span class="keyword">new</span> <span class="predefined-type">File</span>(parent.baseDirectory, <span class="string"><span class="delimiter">&quot;</span><span class="content">.</span><span class="delimiter">&quot;</span></span>));
+    }
+
+    <span class="directive">private</span> <span class="type">void</span> list(<span class="predefined-type">File</span> dir) {
+        <span class="predefined-type">System</span>.out.println(dir.getAbsolutePath());
+        <span class="keyword">if</span> (dir.isDirectory()) {
+            <span class="keyword">for</span> (<span class="predefined-type">File</span> f : dir.listFiles()) {
+                <span class="keyword">if</span> (f.isDirectory() &amp;&amp; recursive) {
+                    list(f);
+                } <span class="keyword">else</span> {
+                    <span class="predefined-type">System</span>.out.println(f.getAbsolutePath());
+                }
+            }
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_inherited_options">16.8. Inherited Options</h3>
+<div class="paragraph">
+<p>Picocli 4.3 adds support for "inherited" options.
+Options defined with <code>scope = ScopeType.INHERIT</code> are shared with all subcommands (and sub-subcommands, to any level of depth).
+Applications can define an inherited option on the top-level command, in one place, to allow end users to specify this option anywhere: not only on the top-level command, but also on any of the subcommands and nested sub-subcommands.</p>
+</div>
+<div class="paragraph">
+<p>Below is an example where an inherited option is used to configure logging.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">app</span><span class="delimiter">&quot;</span></span>, subcommands = Sub.class)
+<span class="type">class</span> <span class="class">App</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+    <span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">Logger</span> logger = <span class="predefined-type">LogManager</span>.getLogger(App.class);
+
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, scope = ScopeType.LOCAL) <span class="comment">// option is not shared: this is the default</span>
+    <span class="type">int</span> x;
+
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, scope = ScopeType.INHERIT) <span class="comment">// option is shared with subcommands</span>
+    <span class="directive">public</span> <span class="type">void</span> setVerbose(<span class="type">boolean</span><span class="type">[]</span> verbose) {
+        <span class="comment">// Configure log4j.</span>
+        <span class="comment">// (This is a simplistic example: a real application may use more levels and</span>
+        <span class="comment">// perhaps configure only the ConsoleAppender level instead of the root log level.)</span>
+        Configurator.setRootLevel(verbose.length &gt; <span class="integer">0</span> ? <span class="predefined-type">Level</span>.DEBUG : <span class="predefined-type">Level</span>.INFO);
+    }
+
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        logger.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">-x={}</span><span class="delimiter">&quot;</span></span>, x);
+    }
+}
+
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">sub</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">Sub</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+    <span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">Logger</span> logger = <span class="predefined-type">LogManager</span>.getLogger(Sub.class);
+
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-y</span><span class="delimiter">&quot;</span></span>)
+    <span class="type">int</span> y;
+
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        logger.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">-y={}</span><span class="delimiter">&quot;</span></span>, y);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Users can specify the <code>-v</code> option on either the top-level command or on the subcommand, and it will have the same effect.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre># the -v option can be specified on the top-level command
+java App -x=3 -v sub -y=4</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Specifying the <code>-v</code> option on the subcommand will have the same effect. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre># specifying the -v option on the subcommand also changes the log level
+java App -x=3 sub -y=4 -v</pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Subcommands don&#8217;t need to do anything to receive inherited options, but a potential drawback is that subcommands do not get a reference to inherited options.</p>
+</div>
+<div class="paragraph">
+<p>Subcommands that need to inspect the value of an inherited option can use the <a href="#parentcommand-annotation"><code>@ParentCommand</code> annotation</a> to get a reference to their parent command, and access the inherited option via the parent reference.
+Alternatively, for such subcommands, sharing options via <a href="#_mixins">mixins</a> may be a more suitable mechanism.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_manually_parsing_subcommands">16.9. Manually Parsing Subcommands</h3>
 <div class="paragraph">
 <p>For the following example, we assume we created an alias <code>git</code> that invokes our Java application. This could also be a script or a function that calls our Java program:</p>
 </div>
@@ -6585,63 +7128,7 @@ See also the previous section, <a href="#_executing_subcommands">Executing Subco
 </div>
 </div>
 <div class="sect2">
-<h3 id="parentcommand-annotation">16.8. <code>@ParentCommand</code> Annotation</h3>
-<div class="paragraph">
-<p>In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.</p>
-</div>
-<div class="paragraph">
-<p>The <code>@ParentCommand</code> annotation introduced in picocli 2.2 makes it easy for subcommands to access their parent command options: subcommand fields annotated with <code>@ParentCommand</code> are initialized with a reference to the parent command. For example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">fileutils</span><span class="delimiter">&quot;</span></span>, subcommands = <span class="predefined-type">List</span>.class)
-<span class="type">class</span> <span class="class">FileUtils</span> {
-
-    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-d</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--directory</span><span class="delimiter">&quot;</span></span>},
-            description = <span class="string"><span class="delimiter">&quot;</span><span class="content">this option applies to all subcommands</span><span class="delimiter">&quot;</span></span>)
-    <span class="predefined-type">File</span> baseDirectory;
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The above top-level command has a <code>--directory</code> option that applies to its subcommands.
-The <code>List</code> subcommand can use the <code>@ParentCommand</code> annotation to get a reference to the parent command, so it can easily access the parent command options.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">list</span><span class="delimiter">&quot;</span></span>)
-<span class="type">class</span> <span class="class">List</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
-
-    <span class="annotation">@ParentCommand</span>
-    <span class="directive">private</span> FileUtils parent; <span class="comment">// picocli injects reference to parent command</span>
-
-    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-r</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--recursive</span><span class="delimiter">&quot;</span></span>},
-            description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Recursively list subdirectories</span><span class="delimiter">&quot;</span></span>)
-    <span class="directive">private</span> <span class="type">boolean</span> recursive;
-
-    <span class="annotation">@Override</span>
-    <span class="directive">public</span> <span class="type">void</span> run() {
-        list(<span class="keyword">new</span> <span class="predefined-type">File</span>(parent.baseDirectory, <span class="string"><span class="delimiter">&quot;</span><span class="content">.</span><span class="delimiter">&quot;</span></span>));
-    }
-
-    <span class="directive">private</span> <span class="type">void</span> list(<span class="predefined-type">File</span> dir) {
-        <span class="predefined-type">System</span>.out.println(dir.getAbsolutePath());
-        <span class="keyword">if</span> (dir.isDirectory()) {
-            <span class="keyword">for</span> (<span class="predefined-type">File</span> f : dir.listFiles()) {
-                <span class="keyword">if</span> (f.isDirectory() &amp;&amp; recursive) {
-                    list(f);
-                } <span class="keyword">else</span> {
-                    <span class="predefined-type">System</span>.out.println(f.getAbsolutePath());
-                }
-            }
-        }
-    }
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_nested_sub_subcommands">16.9. Nested sub-Subcommands</h3>
+<h3 id="_nested_sub_subcommands">16.10. Nested sub-Subcommands</h3>
 <div class="paragraph">
 <p>The specified object can be an annotated object or a
 <code>CommandLine</code> instance with its own nested subcommands. For example:</p>
@@ -6692,12 +7179,12 @@ The <code>picocli-examples</code> module has an <a href="https://github.com/remk
 </div>
 </div>
 <div class="sect2">
-<h3 id="_repeatable_subcommands">16.10. Repeatable Subcommands</h3>
+<h3 id="_repeatable_subcommands">16.11. Repeatable Subcommands</h3>
 <div class="paragraph">
 <p>From picocli 4.2, it is possible to specify that a command&#8217;s subcommands can be specified multiple times by marking it with <code>@Command(subcommandsRepeatable = true)</code>.</p>
 </div>
 <div class="sect3">
-<h4 id="_example_3">16.10.1. Example</h4>
+<h4 id="_example_4">16.11.1. Example</h4>
 <div class="paragraph">
 <p>Below is an example where the top-level command <code>myapp</code> is marked as <code>subcommandsRepeatable = true</code>.
 This command has three subcommands, <code>add</code>, <code>list</code> and <code>send-report</code>:</p>
@@ -6742,7 +7229,7 @@ This invocation is valid because <code>myapp</code> is marked with <code>subcomm
 </div>
 </div>
 <div class="sect3">
-<h4 id="_repeatable_subcommands_specification">16.10.2. Repeatable Subcommands Specification</h4>
+<h4 id="_repeatable_subcommands_specification">16.11.2. Repeatable Subcommands Specification</h4>
 <div class="paragraph">
 <p>Normally, <code>subcommandsRepeatable</code> is <code>false</code>, so for each command, only one of its subcommands can be specified, potentially followed by only one sub-subcommand of that subcommand, etc.
 In mathematical terms, a valid sequence of commands and subcommands can be represented by a <em>directed rooted tree</em> that starts at the top-level command. This is illustrated by the diagram below.</p>
@@ -6780,7 +7267,7 @@ myapp add -x=item1 -w=0.2 myapp</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_repeatable_subcommands_execution">16.10.3. Repeatable Subcommands Execution</h4>
+<h4 id="_repeatable_subcommands_execution">16.11.3. Repeatable Subcommands Execution</h4>
 <div class="paragraph">
 <p>The default <a href="#_executing_commands_with_subcommands"><code>IExecutionStrategy</code></a> (<code>picocli.CommandLine.RunLast</code>) only executes the last subcommands <em>with the same parent</em>. For example, if</p>
 </div>
@@ -6795,7 +7282,7 @@ myapp add -x=item1 -w=0.2 myapp</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_help_for_subcommands">16.11. Usage Help for Subcommands</h3>
+<h3 id="_usage_help_for_subcommands">16.12. Usage Help for Subcommands</h3>
 <div class="paragraph">
 <p>After registering subcommands, calling the <code>commandLine.usage</code> method will show a usage help message that includes all registered subcommands. For example:</p>
 </div>
@@ -6907,7 +7394,7 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hidden_subcommands">16.12. Hidden Subcommands</h3>
+<h3 id="_hidden_subcommands">16.13. Hidden Subcommands</h3>
 <div class="paragraph">
 <p>Commands with the <code>hidden</code> attribute set to <code>true</code> will not be shown in the usage help message of their parent command.</p>
 </div>
@@ -6938,7 +7425,7 @@ Commands:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_help_subcommands">16.13. Help Subcommands</h3>
+<h3 id="_help_subcommands">16.14. Help Subcommands</h3>
 <div class="paragraph">
 <p>Commands with the <code>helpCommand</code> attribute set to <code>true</code> are treated as help commands.
 When picocli encounters a help command on the command line, required options and required positional parameters of the parent command
@@ -6954,30 +7441,18 @@ are not validated (similar to <a href="#_help_options">help options</a>).</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_required_subcommands">16.14. Required Subcommands</h3>
+<h3 id="_required_subcommands">16.15. Required Subcommands</h3>
 <div class="paragraph">
 <p>For some command suites, it does not make sense to invoke the top-level command by itself, and the user is required to specify a subcommand.</p>
 </div>
 <div class="paragraph">
-<p>Picocli does not offer direct support for making a subcommand required, but it does provide the tools to:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>display a synopsis that indicates that subcommands are mandatory</p>
-</li>
-<li>
-<p>respond appropriately when the user input is invalid</p>
-</li>
-</ul>
+<p>From version 4.3, picocli makes it easy to accomplish this: simply use the the <a href="#_executing_subcommands"><code>execute</code> method</a> to start your application, and make the top-level command a class that does not implement <code>Runnable</code> or <code>Callable</code>.</p>
 </div>
 <div class="paragraph">
-<p>By default, the synopsis of a command with subcommands shows <code>[COMMAND]</code>, indicating that a subcommand can optionally be specified.
-To show that the subcommand is mandatory, set the <code>synopsisSubcommandLabel</code> attribute to <code>COMMAND</code>, without the <code>[</code> and <code>]</code> brackets.</p>
+<p>Then, when the user specifies only the top-level command, without a subcommand, while this top-level command does not implement <code>Runnable</code> or <code>Callable</code>, picocli internally throws a <code>ParameterException</code> with the error message <code>"Missing required subcommand"</code>. This will cause the <a href="#_invalid_user_input"><code>IParameterExceptionHandler</code></a> to be called, which will display this message to the user.</p>
 </div>
 <div class="paragraph">
-<p>If the end user invokes the top-level command without specifying a subcommand, one way to respond is to show an error message followed by the usage help of the top-level command.
-This can be accomplished by letting the top-level command throw a <code>ParameterException</code>. For example:</p>
+<p>Prior to picocli 4.3, applications could indicate that subcommands are required by letting the top-level command throw a <code>ParameterException</code>. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -6993,6 +7468,10 @@ This can be accomplished by letting the top-level command throw a <code>Paramete
 }</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>By default, the synopsis of a command with subcommands shows <code>[COMMAND]</code>, indicating that a subcommand can optionally be specified.
+To show that the subcommand is mandatory, set the <code>synopsisSubcommandLabel</code> attribute to <code>COMMAND</code>, without the <code>[</code> and <code>]</code> brackets.</p>
+</div>
 </div>
 </div>
 </div>
@@ -7001,10 +7480,16 @@ This can be accomplished by letting the top-level command throw a <code>Paramete
 <div class="sectionbody">
 <div class="paragraph">
 <p>You may find yourself defining the same options, parameters or command attributes in many command line applications.
-To reduce duplication, picocli supports both subclassing and mixins as ways to reuse such options and attributes.</p>
+To reduce duplication, picocli supports two ways to reuse such options and attributes: subclassing and mixins.</p>
+</div>
+<div class="sect2">
+<h3 id="_subclassing">17.1. Subclassing</h3>
+<div class="paragraph">
+<p>One way to reuse options and attributes is to extend the class where they are defined.
+Picocli will walk the class hierarchy to check for annotations, so <code>@Options</code>, <code>@Parameters</code> and <code>@Command</code> attributes declared on a superclass are available in all subclasses.</p>
 </div>
 <div class="paragraph">
-<p>For both mechanisms, the first step is to extract these options, parameters and command attributes into a separate class. Below is an example class, <code>ReusableOptions</code>, that we will use in example scenarios in this chapter:</p>
+<p>Below is an example class, <code>ReusableOptions</code>, that defines some usage help attributes and a <code>--verbose</code> option that we want to reuse.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -7023,15 +7508,7 @@ To reduce duplication, picocli supports both subclassing and mixins as ways to r
 </div>
 </div>
 <div class="paragraph">
-<p>This defines some usage help attributes that give a spacious layout, and a <code>verbosity</code> option that makes the operation more talkative.</p>
-</div>
-<div class="sect2">
-<h3 id="_subclassing">17.1. Subclassing</h3>
-<div class="paragraph">
-<p>One way to reuse the above option and attributes is to extend the class. Picocli will walk the class hierarchy to check for annotations, so <code>@Options</code>, <code>@Parameters</code> and <code>@Command</code> attributes declared on a superclass are available in all subclasses.</p>
-</div>
-<div class="paragraph">
-<p>For example, all commands that extend the <a href="#_reuse">above sample</a> <code>ReusableOptions</code> class will inherit the <code>--verbose</code> option, and generate a usage help message in the same spacious style. Example code:</p>
+<p>Now, any command defined in a class that extends <code>ReusableOptions</code> will inherit the <code>--verbose</code> option, and generate a usage help message in the same spacious style. Example code:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -7043,21 +7520,242 @@ To reduce duplication, picocli supports both subclassing and mixins as ways to r
 <div class="sect2">
 <h3 id="_mixins">17.2. Mixins</h3>
 <div class="paragraph">
-<p>Picocli 3.0 introduces the concept of "mixins". Mixins are a convenient alternative to subclassing:
-picocli annotations from <em>any</em> class can be added to ("mixed in" with) another command.
-This includes options, positional parameters, subcommands and command attributes.
-Picocli <a href="#_mixin_standard_help_options">mixinStandardHelpOptions</a> internally uses a mixin.</p>
+<p>Picocli 3.0 introduced the concept of "mixins".
+Mixins allow reuse without subclassing:
+picocli annotations from <em>any</em> class can be added to ("mixed in" with) a command.
+Picocli&#8217;s <a href="#_mixin_standard_help_options">mixinStandardHelpOptions</a> internally uses a mixin.</p>
 </div>
 <div class="paragraph">
-<p>A mixin is a separate class with options, positional parameters, subcommands and command attributes
-that you want to reuse in other commands.
-Mixins can be installed by calling the <code>CommandLine.addMixin</code> method with an object of this class, or annotating a field in your command with <code>@Mixin</code>.</p>
+<p>A mixin is a separate class with options, positional parameters, subcommands and command attributes that you want to reuse in one or more other commands.
+A command receiving these mixed-in options, positional parameters, and command attributes is called the "mixee".</p>
+</div>
+<div class="paragraph">
+<p>Mixins can be installed declaratively with a <code>@Mixin</code>-annotated field (or a <code>@Mixin</code>-annotated method parameter for command methods).
+Alternatively, mixins can be installed programmatically by calling the <code>CommandLine.addMixin</code> method with an instance of the mixin class.</p>
+</div>
+<div class="paragraph">
+<p>The examples below again use the sample <code>ReusableOptions</code> class as the mixin:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(synopsisHeading      = <span class="string"><span class="delimiter">&quot;</span><span class="content">%nUsage:%n%n</span><span class="delimiter">&quot;</span></span>,
+         descriptionHeading   = <span class="string"><span class="delimiter">&quot;</span><span class="content">%nDescription:%n%n</span><span class="delimiter">&quot;</span></span>,
+         parameterListHeading = <span class="string"><span class="delimiter">&quot;</span><span class="content">%nParameters:%n%n</span><span class="delimiter">&quot;</span></span>,
+         optionListHeading    = <span class="string"><span class="delimiter">&quot;</span><span class="content">%nOptions:%n%n</span><span class="delimiter">&quot;</span></span>,
+         commandListHeading   = <span class="string"><span class="delimiter">&quot;</span><span class="content">%nCommands:%n%n</span><span class="delimiter">&quot;</span></span>)
+<span class="directive">public</span> <span class="type">class</span> <span class="class">ReusableOptions</span> {
+
+    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span> }, description = {
+        <span class="string"><span class="delimiter">&quot;</span><span class="content">Specify multiple -v options to increase verbosity.</span><span class="delimiter">&quot;</span></span>,
+        <span class="string"><span class="delimiter">&quot;</span><span class="content">For example, `-v -v -v` or `-vvv`</span><span class="delimiter">&quot;</span></span> })
+    <span class="directive">protected</span> <span class="type">boolean</span><span class="type">[]</span> verbosity = <span class="keyword">new</span> <span class="type">boolean</span>[<span class="integer">0</span>];
+}</code></pre>
+</div>
 </div>
 <div class="sect3">
-<h4 id="_adding_mixins_programmatically">17.2.1. Adding Mixins Programmatically</h4>
+<h4 id="mixin-annotation">17.2.1. <code>@Mixin</code> Annotation</h4>
 <div class="paragraph">
-<p>The below example shows how a mixin can be added programmatically with the <code>CommandLine.addMixin</code> method.
-We use the sample <code>ReusableOptions</code> class <a href="#_reuse">defined above</a> as the mixin:</p>
+<p>A command defined in a class can include a mixin by annotating a field with <code>@Mixin</code>.
+Similarly, a <a href="#_subcommands_as_methods"><code>@Command</code>-annotated method</a> can include a mixin by declaring a <code>@Mixin</code>-annotated method parameter.
+All picocli annotations found in the mixin class are added to the command (the "mixee").
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">zip</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Example reuse with @Mixin annotation.</span><span class="delimiter">&quot;</span></span>)
+<span class="directive">public</span> <span class="type">class</span> <span class="class">MyCommand</span> {
+
+    <span class="comment">// adds the options defined in ReusableOptions to this command</span>
+    <span class="annotation">@Mixin</span>
+    <span class="directive">private</span> ReusableOptions myMixin;
+
+    <span class="annotation">@Command</span>
+    <span class="type">void</span> subcmd(<span class="annotation">@Mixin</span> ReusableOptions opts) {
+        <span class="comment">// ...</span>
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In addition to adding the options, subcommands and command attributes of the mixed-in object to the command,
+the mixed-in object is also injected into the field annotated with <code>@Mixin</code>, making it trivial for the command to reference the mixed-in object if necessary.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">MyCommand cmd = <span class="keyword">new</span> MyCommand();
+<span class="keyword">new</span> CommandLine(cmd).parseArgs(<span class="string"><span class="delimiter">&quot;</span><span class="content">-vvv</span><span class="delimiter">&quot;</span></span>);
+
+<span class="comment">// the options defined in ReusableOptions have been added to the `MyCommand` command</span>
+<span class="keyword">assert</span> cmd.myMixin.verbosity.length == <span class="integer">3</span>;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Mixins added with the <code>@Mixin</code> annotation can also be accessed via the map returned by <code>CommandLine.getMixins</code>.</p>
+</div>
+<div class="paragraph">
+<p>The GitHub project has a <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/mixin">full working example</a>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_mixin_example_logger">17.2.2. Mixin Example: Logger</h4>
+<div class="paragraph">
+<p>Here is an example mixin class <code>MyLogger</code>.
+It has an option <code>-v</code> that can be specified multiple times to increase verbosity.
+The <code>MyLogger</code> class also provides some methods like <code>debug</code> and <code>trace</code> that can be used to print messages to the standard error stream.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="type">class</span> <span class="class">MyLogger</span> {
+
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span>},
+            description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Increase verbosity. Specify multiple times to increase (-vvv).</span><span class="delimiter">&quot;</span></span>)
+    <span class="type">boolean</span><span class="type">[]</span> verbosity = <span class="keyword">new</span> <span class="type">boolean</span>[<span class="integer">0</span>];
+
+    <span class="directive">public</span> <span class="type">void</span> info(<span class="predefined-type">String</span> pattern, <span class="predefined-type">Object</span>... params) {
+        log(<span class="integer">0</span>, pattern, params);
+    }
+
+    <span class="directive">public</span> <span class="type">void</span> debug(<span class="predefined-type">String</span> pattern, <span class="predefined-type">Object</span>... params) {
+        log(<span class="integer">1</span>, pattern, params);
+    }
+
+    <span class="directive">public</span> <span class="type">void</span> trace(<span class="predefined-type">String</span> pattern, <span class="predefined-type">Object</span>... params) {
+        log(<span class="integer">2</span>, pattern, params);
+    }
+
+    <span class="directive">private</span> <span class="type">void</span> log(<span class="type">int</span> level, <span class="predefined-type">String</span> pattern, <span class="predefined-type">Object</span>... params) {
+        <span class="keyword">if</span> (verbosity.length &gt; level) {
+            <span class="predefined-type">System</span>.err.printf(pattern, params);
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>An application could use the mixin like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">MyApp</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+
+    <span class="annotation">@Mixin</span> MyLogger myLogger;
+
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        myLogger.info(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hello info%n</span><span class="delimiter">&quot;</span></span>);
+        myLogger.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hello debug%n</span><span class="delimiter">&quot;</span></span>);
+        myLogger.trace(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hello trace%n</span><span class="delimiter">&quot;</span></span>);
+    }
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        <span class="predefined-type">System</span>.exit(<span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MyApp()).execute(args));
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_accessing_the_mixee_from_a_mixin">17.2.3. Accessing the Mixee from a Mixin</h4>
+<div class="paragraph">
+<p>Sometimes you need to write a Mixin class that accesses the mixee (the command where it is mixed in).</p>
+</div>
+<div class="paragraph">
+<p>From picocli 4.3, this can be accomplished with the <a href="#spec-annotation"><code>@Spec(Spec.Target.MIXEE)</code> annotation</a>.</p>
+</div>
+<div class="paragraph">
+<p>By default, the <code>CommandSpec</code> of the enclosing class is injected into a <code>@Spec</code>-annotated field, but when <code>MIXEE</code> is specified in a mixin class, the <code>CommandSpec</code> of the command <em>receiving</em> this mixin (the "mixee") is injected.
+This can be useful when a mixin contains logic that is common to many commands.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">AdvancedMixin</span> {
+    <span class="annotation">@Spec</span>(Spec.Target.MIXEE) CommandSpec mixee;
+
+    <span class="comment">/**
+     * When the -x option is specified on any subcommand,
+     * multiply its value with another integer supplied by this subcommand
+     * and set the result on the top-level command.
+     * @param x the value of the -x option
+     */</span>
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>)
+    <span class="type">void</span> setValue(<span class="type">int</span> x) {
+        <span class="comment">// get another value from the command we are mixed into</span>
+        <span class="type">int</span> y = ((java.util.function.IntSupplier) mixee.userObject()).getAsInt();
+
+        <span class="type">int</span> product = x * y;
+
+        <span class="comment">// set the result on the top-level (root) command</span>
+        ((java.util.function.IntConsumer) mixee.root().userObject()).accept(product);
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_accessing_the_parent_command_from_a_mixin">17.2.4. Accessing the Parent Command from a Mixin</h4>
+<div class="paragraph">
+<p>Since picocli 4.2, <a href="#_parentcommand_annotation"><code>@ParentCommand</code>-annotated</a> fields can be used in mixins.
+This injects a reference to the parent command of the mixee into the mixin.
+Here is an example implementation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">// Define a mixin that delegates to the parent command.</span>
+<span class="type">class</span> <span class="class">MyMixin</span> {
+    <span class="annotation">@ParentCommand</span> Top top;
+
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span>})
+    <span class="directive">public</span> <span class="type">void</span> setVerbose(<span class="type">boolean</span> verbose) { top.verbose = verbose; }
+}
+
+<span class="comment">// An example Top-level command with a subcommand.</span>
+<span class="comment">// The `-v` option can be specified on the top-level command as well as its subcommands.</span>
+<span class="annotation">@Command</span>(subcommands = Sub.class)
+<span class="type">class</span> <span class="class">Top</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span>})
+    <span class="type">boolean</span> verbose;
+
+    <span class="directive">public</span> <span class="type">void</span> verbose(<span class="predefined-type">String</span> pattern, <span class="predefined-type">Object</span>... params) {
+        <span class="keyword">if</span> (verbose) {
+            <span class="predefined-type">System</span>.out.printf(pattern, params);
+        }
+    }
+
+    <span class="directive">public</span> <span class="type">void</span> run() { verbose(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hello from top%n</span><span class="delimiter">&quot;</span></span>); }
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> Top()).execute(args);
+    }
+}
+
+<span class="comment">// Subcommand classes can mix in the `-v` option with a @Mixin-annotated field.</span>
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">sub</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">Sub</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span>{
+    <span class="annotation">@Mixin</span> MyMixin mymixin;
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="type">void</span> run() { mymixin.top.verbose(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hello from sub%n</span><span class="delimiter">&quot;</span></span>); }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With this, the <code>-v</code> option can be specified on the top-level command as well as its subcommands, so all of the below are valid invocations:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>java Top -v
+java Top -v sub
+java Top sub -v</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>All of these invocations will print some output, since the <code>-v</code> option was specified.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_adding_mixins_programmatically">17.2.5. Adding Mixins Programmatically</h4>
+<div class="paragraph">
+<p>The below example shows how a mixin can be added programmatically with the <code>CommandLine.addMixin</code> method.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -7080,97 +7778,112 @@ commandline.addMixin(<span class="string"><span class="delimiter">&quot;</span><
 </div>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_mixin_annotation">17.2.2. <code>@Mixin</code> Annotation</h4>
-<div class="paragraph">
-<p>A command can also include a mixin by annotating a field with <code>@Mixin</code>. All picocli annotations found in the mixin class
-are added to the command that has a field annotated with <code>@Mixin</code>. For example, again using the sample <code>ReusableOptions</code> class <a href="#_reuse">defined above</a>:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">zip</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Example reuse with @Mixin annotation.</span><span class="delimiter">&quot;</span></span>)
-<span class="directive">public</span> <span class="type">class</span> <span class="class">MyCommand</span> {
-
-    <span class="comment">// adds the options defined in ReusableOptions to this command</span>
-    <span class="annotation">@Mixin</span>
-    <span class="directive">private</span> ReusableOptions myMixin;
-    ...
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>In addition to adding the options, subcommands and command attributes of the mixed-in object to the command,
-the mixed-in object is also injected into the field annotated with <code>@Mixin</code>, making it trivial for the command to reference the mixed-in object if necessary.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">MyCommand zip = <span class="keyword">new</span> MyCommand();
-CommandLine commandLine = <span class="keyword">new</span> CommandLine(zip);
-commandLine.parseArgs(<span class="string"><span class="delimiter">&quot;</span><span class="content">-vvv</span><span class="delimiter">&quot;</span></span>);
-
-<span class="comment">// the options defined in ReusableOptions have been added to the zip command</span>
-<span class="keyword">assert</span> zip.myMixin.verbosity.length == <span class="integer">3</span>;</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Mixins added with the <code>@Mixin</code> annotation can also be accessed via the map returned by <code>CommandLine.getMixins</code>.</p>
-</div>
-<div class="paragraph">
-<p>The GitHub project has a <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/mixin">full working example</a>.</p>
-</div>
-</div>
 </div>
 <div class="sect2">
-<h3 id="_use_case_sharing_options">17.3. Use Case: Sharing Options</h3>
+<h3 id="_use_case_configure_log_level_with_a_global_option">17.3. Use Case: Configure Log Level with a Global Option</h3>
 <div class="paragraph">
-<p>A common use case is sharing options between different levels of the command hierarchy, so that "global" options from the top-level command are also available on subcommands.</p>
+<p>For mixins that need to be reusable across more than two levels in the command hierarchy,
+declaring a <a href="#spec-annotation"><code>@Spec(MIXEE)</code>-annotated</a> field gives the mixin access to the full command hierarchy.</p>
 </div>
 <div class="paragraph">
-<p>Since picocli 4.2, <a href="#_parentcommand_annotation"><code>@ParentCommand</code>-annotated</a> fields can be used in mixins, which makes this easier. Here is an example implementation:</p>
+<p>The <code>MIXEE</code> value indicates that the <code>CommandSpec</code> to inject is not the spec of the enclosing class, but the spec of the command where the <code>@Mixin</code> is used.</p>
+</div>
+<div class="paragraph">
+<p>The example below shows a class that uses Log4j for logging, and has a "global" option <code>--verbose</code> that can be specified on any command to allow users to configure the Log4j log level.
+The <code>@Spec(MIXEE)</code>-annotated field allows the mixin to climb the command hierarchy and store the "verbosity" value in a single place.
+When the application is started, a custom execution strategy is used to configure the log level from that single value.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="comment">// Define a mixin that delegates to the parent command.</span>
-<span class="type">class</span> <span class="class">MyMixin</span> {
-    <span class="annotation">@ParentCommand</span> Top top;
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">org.apache.logging.log4j.Level</span>;
+<span class="keyword">import</span> <span class="include">org.apache.logging.log4j.LogManager</span>;
+<span class="keyword">import</span> <span class="include">org.apache.logging.log4j.Logger</span>;
+<span class="keyword">import</span> <span class="include">org.apache.logging.log4j.core.config.Configurator</span>;
 
-    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>)
-    <span class="directive">public</span> <span class="type">void</span> setVerbose(<span class="type">boolean</span><span class="type">[]</span> verbosity) { top.setVerbose(verbosity); }
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.Spec</span>;
+<span class="keyword">import</span> <span class="include">static</span> <span class="include">picocli.CommandLine.Spec.Target.MIXEE</span>;
+
+<span class="type">class</span> <span class="class">LoggingMixin</span> {
+    <span class="directive">private</span> <span class="annotation">@Spec</span>(MIXEE) CommandSpec mixee; <span class="comment">// spec of the command where the @Mixin is used</span>
+
+    <span class="type">boolean</span><span class="type">[]</span> verbosity = <span class="keyword">new</span> <span class="type">boolean</span>[<span class="integer">0</span>];
+
+    <span class="comment">/**
+     * Sets the specified verbosity on the LoggingMixin of the top-level command.
+     * @param verbosity the new verbosity value
+     */</span>
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span>}, description = {
+            <span class="string"><span class="delimiter">&quot;</span><span class="content">Specify multiple -v options to increase verbosity.</span><span class="delimiter">&quot;</span></span>,
+            <span class="string"><span class="delimiter">&quot;</span><span class="content">For example, `-v -v -v` or `-vvv`</span><span class="delimiter">&quot;</span></span>})
+    <span class="directive">public</span> <span class="type">void</span> setVerbose(<span class="type">boolean</span><span class="type">[]</span> verbosity) {
+        <span class="comment">// Each subcommand that mixes in the LoggingMixin has its own instance</span>
+        <span class="comment">// of this class, so there may be many LoggingMixin instances.</span>
+        <span class="comment">// We want to store the verbosity value in a single, central place,</span>
+        <span class="comment">// so we find the top-level command,</span>
+        <span class="comment">// and store the verbosity level on our top-level command's LoggingMixin.</span>
+        ((MyApp) mixee.root().userObject()).loggingMixin.verbosity = verbosity;
+    }
 }
 
-<span class="comment">// An example Top-level command with two subcommands.</span>
-<span class="comment">// The `-v` option can be specified on the top-level command as well as the subcommands.</span>
-<span class="annotation">@Command</span>(subcommands = Sub2.class)
-<span class="type">class</span> <span class="class">Top</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
-    <span class="directive">private</span> <span class="type">boolean</span><span class="type">[]</span> verbosity = <span class="keyword">new</span> <span class="type">boolean</span>[<span class="integer">0</span>];
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">app</span><span class="delimiter">&quot;</span></span>, subcommands = Sub.class)
+<span class="type">class</span> <span class="class">MyApp</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+    <span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">Logger</span> logger = <span class="predefined-type">LogManager</span>.getLogger(MyApp.class);
 
-    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span>})
-    <span class="directive">public</span> <span class="type">void</span> setVerbose(<span class="type">boolean</span><span class="type">[]</span> verbosity) { <span class="local-variable">this</span>.verbosity = verbosity; }
+    <span class="annotation">@Mixin</span> LoggingMixin loggingMixin;
 
-    <span class="directive">public</span> <span class="type">void</span> verbose(<span class="predefined-type">String</span> pattern, <span class="predefined-type">Object</span>... params) {
-        <span class="keyword">if</span> (verbosity.length &gt;= <span class="integer">1</span>) {
-            <span class="predefined-type">System</span>.out.printf(pattern, params);
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        logger.trace(<span class="string"><span class="delimiter">&quot;</span><span class="content">Starting... (trace) from app</span><span class="delimiter">&quot;</span></span>);
+        logger.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Starting... (debug) from app</span><span class="delimiter">&quot;</span></span>);
+        logger.info (<span class="string"><span class="delimiter">&quot;</span><span class="content">Starting... (info)  from app</span><span class="delimiter">&quot;</span></span>);
+        logger.warn (<span class="string"><span class="delimiter">&quot;</span><span class="content">Starting... (warn)  from app</span><span class="delimiter">&quot;</span></span>);
+    }
+
+    <span class="directive">private</span> <span class="predefined-type">Level</span> calcLogLevel() {
+        <span class="keyword">switch</span> (loggingMixin.verbosity.length) {
+            <span class="keyword">case</span> <span class="integer">0</span>:  <span class="keyword">return</span> <span class="predefined-type">Level</span>.WARN;
+            <span class="keyword">case</span> <span class="integer">1</span>:  <span class="keyword">return</span> <span class="predefined-type">Level</span>.INFO;
+            <span class="keyword">case</span> <span class="integer">2</span>:  <span class="keyword">return</span> <span class="predefined-type">Level</span>.DEBUG;
+            <span class="keyword">default</span>: <span class="keyword">return</span> <span class="predefined-type">Level</span>.TRACE;
         }
     }
 
-    <span class="directive">public</span> <span class="type">void</span> run() { verbose(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hello from top%n</span><span class="delimiter">&quot;</span></span>); }
-
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
-        <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> Top()).execute(args);
+    <span class="comment">// A reference to this method can be used as a custom execution strategy</span>
+    <span class="comment">// that first configures Log4j based on the specified verbosity level,</span>
+    <span class="comment">// and then delegates to the default execution strategy.</span>
+    <span class="directive">private</span> <span class="type">int</span> executionStrategy(ParseResult parseResult) {
+        Configurator.setRootLevel(calcLogLevel()); <span class="comment">// configure log4j</span>
+        <span class="keyword">return</span> <span class="keyword">new</span> CommandLine.RunLast().execute(parseResult); <span class="comment">// default execution strategy</span>
     }
 
-    <span class="comment">// The @Mixin-annotated parameter adds the `-v` option to this subcommand.</span>
-    <span class="annotation">@Command</span>
-    <span class="type">void</span> sub1(<span class="annotation">@Mixin</span> MyMixin mymixin) { verbose(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hello from sub1%n</span><span class="delimiter">&quot;</span></span>); }
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        MyApp app = <span class="keyword">new</span> MyApp();
+        <span class="keyword">new</span> CommandLine(app)
+                .setExecutionStrategy(app::executionStrategy)
+                .execute(args);
+    }
 }
 
-<span class="comment">// Subcommand classes can mix in the `-v` option with a @Mixin-annotated field.</span>
-<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">sub2</span><span class="delimiter">&quot;</span></span>)
-<span class="type">class</span> <span class="class">Sub2</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span>{
-    <span class="annotation">@Mixin</span> MyMixin mymixin;
+<span class="type">class</span> <span class="class">Sub</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+    <span class="directive">private</span> <span class="directive">static</span> <span class="predefined-type">Logger</span> logger = <span class="predefined-type">LogManager</span>.getLogger();
+
+    <span class="annotation">@Mixin</span> LoggingMixin loggingMixin;
 
     <span class="annotation">@Override</span>
-    <span class="directive">public</span> <span class="type">void</span> run() { mymixin.top.verbose(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hello from sub2%n</span><span class="delimiter">&quot;</span></span>); }
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        logger.trace(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hi (tracing)   from app sub</span><span class="delimiter">&quot;</span></span>);
+        logger.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hi (debugging) from app sub</span><span class="delimiter">&quot;</span></span>);
+        logger.info (<span class="string"><span class="delimiter">&quot;</span><span class="content">Hi (info)      from app sub</span><span class="delimiter">&quot;</span></span>);
+        logger.warn (<span class="string"><span class="delimiter">&quot;</span><span class="content">Hi (warning)   from app sub</span><span class="delimiter">&quot;</span></span>);
+    }
+
+    <span class="annotation">@Command</span>
+    <span class="type">void</span> subsubmethod(<span class="annotation">@Mixin</span> LoggingMixin loggingMixin) {
+        logger.trace(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hi (tracing)   from app sub subsubmethod</span><span class="delimiter">&quot;</span></span>);
+        logger.debug(<span class="string"><span class="delimiter">&quot;</span><span class="content">Hi (debugging) from app sub subsubmethod</span><span class="delimiter">&quot;</span></span>);
+        logger.info (<span class="string"><span class="delimiter">&quot;</span><span class="content">Hi (info)      from app sub subsubmethod</span><span class="delimiter">&quot;</span></span>);
+        logger.warn (<span class="string"><span class="delimiter">&quot;</span><span class="content">Hi (warning)   from app sub subsubmethod</span><span class="delimiter">&quot;</span></span>);
+    }
 }</code></pre>
 </div>
 </div>
@@ -7179,22 +7892,25 @@ commandLine.parseArgs(<span class="string"><span class="delimiter">&quot;</span>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>java Top -v
-java Top -v sub1
-java Top sub1 -v
-java Top -v sub2
-java Top sub2 -v</pre>
+<pre>java MyApp -v
+java MyApp -v sub
+java MyApp sub -v subsubmethod
+java MyApp sub subsubmethod -vv</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>All of these invocations will print some output, since the <code>-v</code> option was specified.</p>
-</div>
-<div class="paragraph">
-<p>For mixins that need to be reusable across more than two levels in the command hierarchy, injecting a <a href="#_spec_annotation"><code>@Spec</code>-annotated</a> field gives the mixin access to the full command hierarchy.</p>
+<p>See also the <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/logging_mixin_advanced">logging</a> example in <code>picocli-examples</code> for a way to modify only the Log4j ConsoleAppenders' log level from the specified verbosity.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_reuse_combinations">17.4. Reuse Combinations</h3>
+<h3 id="_sharing_options_in_subcommands">17.4. Sharing Options in Subcommands</h3>
+<div class="paragraph">
+<p>The above use case can also be accomplished (with less code) via <a href="#_inherited_options">Inherited Options</a>.
+Inherited options are another reuse mechanism where an application defines an option on one command, after which end users can specify this option on any of the subcommands, and it will set the value of the annotated field on the parent command.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_reuse_combinations">17.5. Reuse Combinations</h3>
 <div class="paragraph">
 <p>The above mechanisms can be combined in any way. Mixins can be nested, and there is no limitation to how deeply mixins can be nested. A mixin may also inherit options, positional parameters and command attributes from a super class.</p>
 </div>
@@ -7923,33 +8639,33 @@ This complements the <code>@ParentCommand</code> annotation;  the <code>@ParentC
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">InjectSpecExample</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
-   <span class="annotation">@Spec</span> CommandSpec commandSpec;
+    <span class="annotation">@Spec</span> CommandSpec commandSpec;
 
-   <span class="comment">//...</span>
+    <span class="comment">//...</span>
 
-   <span class="directive">public</span> <span class="type">void</span> run() {
-       <span class="comment">// do something with the injected spec</span>
-   }
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        <span class="comment">// do something with the injected spec</span>
+        <span class="predefined-type">System</span>.out.println(<span class="string"><span class="delimiter">&quot;</span><span class="content">My full name is </span><span class="delimiter">&quot;</span></span> + commandSpec.qualifiedName());
+    }
 }</code></pre>
 </div>
 </div>
+<div class="sect3">
+<h4 id="spec-mixee-annotation">20.3.1. <code>@Spec(MIXEE)</code> Annotation</h4>
+<div class="paragraph">
+<p>Since picocli 4.3, the <code>@Spec</code> annotation has a <code>value</code> element.
+The value is <code>Spec.Target.SELF</code> by default, meaning that the <code>CommandSpec</code> of the enclosing class is injected into the <code>@Spec</code>-annotated field.</p>
+</div>
+<div class="paragraph">
+<p>For classes that are used as a <a href="#_mixins">mixin</a>, there is another value that may be useful.
+When <code>@Spec(Spec.Target.MIXEE)</code> is specified in a mixin class, the <code>CommandSpec</code> of the command <em>receiving</em> this mixin (the "mixee") is injected into the <code>@Spec</code>-annotated field.
+This can be useful when a mixin contains logic that is common to many commands.
+See <a href="#_accessing_the_mixee_from_a_mixin">Accessing the Mixee from a Mixin</a> for more details.</p>
+</div>
+</div>
 </div>
 <div class="sect2">
-<h3 id="_improved_support_for_chinese_japanese_and_korean">20.4. Improved Support for Chinese, Japanese and Korean</h3>
-<div class="paragraph">
-<p>Picocli will align the usage help message to fit within some user-defined width (80 columns by default).
-A number of characters in Chinese, Japanese and Korean (CJK) are wider than others.
-If those characters are treated to have the same width as other characters, the usage help message may extend past the right margin.</p>
-</div>
-<div class="paragraph">
-<p>From 4.0, picocli will use 2 columns for these wide characters when calculating where to put line breaks, resulting in better usage help message text.</p>
-</div>
-<div class="paragraph">
-<p>This can be switched off with <code>CommandLine.setAdjustLineBreaksForWideCJKCharacters(false)</code>.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_custom_factory">20.5. Custom Factory</h3>
+<h3 id="_custom_factory">20.4. Custom Factory</h3>
 <div class="paragraph">
 <p>Declaratively registered <a href="#_registering_subcommands_declaratively">subcommands</a>, <a href="#_option_specific_type_converters">type converters</a> and <a href="#_dynamic_version_information">version providers</a> must be instantiated somehow. From picocli 2.2, a custom factory can be specified when constructing a <code>CommandLine</code> instance. This allows full control over object creation and opens possibilities for Inversion of Control and Dependency Injection (see <a href="#_dependency_injection">next section</a>). For example:</p>
 </div>
@@ -8000,7 +8716,183 @@ Previously, <code>Collection</code> objects were instantiated separately without
 </div>
 </div>
 <div class="sect2">
-<h3 id="_boolean_options_with_parameters">20.6. Boolean Options with Parameters</h3>
+<h3 id="_automatic_parameter_indexes">20.5. Automatic Parameter Indexes</h3>
+<div class="sect3">
+<h4 id="_automatic_indexes">20.5.1. Automatic Indexes</h4>
+<div class="paragraph">
+<p><a href="#_positional_parameters">Positional parameters</a> have an <code>index</code> attribute that determines which command line argument(s) are captured.
+It is possible to omit the <code>index</code> attribute and let picocli automatically assign an index.</p>
+</div>
+<div class="paragraph">
+<p>This means different things for single-value and for multi-value positional parameters.</p>
+</div>
+<div class="paragraph">
+<p>For <strong>multi-value</strong> positional parameters (arrays or collections), omitting the <code>index</code> attribute means the field captures <em>all</em> positional parameters (the equivalent of <code>index = "0..*"</code>).</p>
+</div>
+<div class="paragraph">
+<p>For <strong>single-value</strong> positional parameters, picocli&#8217;s behaviour has changed since version 4.3:
+prior to picocli 4.3, the default index for single-value positional parameters was also <code>index = "0..*"</code>, even though only one value (usually the first argument) can be captured.
+From version 4.3, the default index is <code>index = "0+"</code>, which tells picocli to assign an index automatically, starting from zero, based on the other positional parameters defined in the same command.
+A simple example can look like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">AutomaticIndex</span> {
+    <span class="annotation">@Parameters</span>(hidden = <span class="predefined-constant">true</span>)  <span class="comment">// &quot;hidden&quot;: don't show this parameter in usage help message</span>
+    <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; allParameters; <span class="comment">// no &quot;index&quot; attribute: captures _all_ arguments</span>
+
+    <span class="annotation">@Parameters</span> <span class="predefined-type">String</span> group;    <span class="comment">// assigned index = &quot;0&quot;</span>
+    <span class="annotation">@Parameters</span> <span class="predefined-type">String</span> artifact; <span class="comment">// assigned index = &quot;1&quot;</span>
+    <span class="annotation">@Parameters</span> <span class="predefined-type">String</span> version;  <span class="comment">// assigned index = &quot;2&quot;</span>
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Picocli initializes fields with the values at the specified index in the arguments array.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="predefined-type">String</span><span class="type">[]</span> args = { <span class="string"><span class="delimiter">&quot;</span><span class="content">info.picocli</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">picocli</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">4.3.0</span><span class="delimiter">&quot;</span></span> };
+AutomaticIndex auto = CommandLine.populateCommand(<span class="keyword">new</span> AutomaticIndex(), args);
+
+<span class="keyword">assert</span> auto.group.equals(<span class="string"><span class="delimiter">&quot;</span><span class="content">info.picocli</span><span class="delimiter">&quot;</span></span>);
+<span class="keyword">assert</span> auto.artifact.equals(<span class="string"><span class="delimiter">&quot;</span><span class="content">picocli</span><span class="delimiter">&quot;</span></span>);
+<span class="keyword">assert</span> auto.version.equals(<span class="string"><span class="delimiter">&quot;</span><span class="content">4.3.0</span><span class="delimiter">&quot;</span></span>);
+<span class="keyword">assert</span> auto.allParameters.equals(<span class="predefined-type">Arrays</span>.asList(args));</code></pre>
+</div>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Automatic indexes depend on the ability of Java reflection and Java annotation processors to iterate over fields in declaration order in the source code.
+Officially this is not guaranteed by the Java spec.
+In practice this has worked in Oracle JVMs and OpenJDK from Java 6, but there is some risk this may not work in the future or on other JVM&#8217;s.
+In general, for single-value positional parameters, using <a href="#_explicit_index">explicit indexes</a> is the safer option.
+(Multi-value positional parameters can safely omit the <code>index</code> attribute.)</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+Methods cannot be iterated over in predictable order.
+For applications with <a href="#option-parameters-methods"><code>@Parameters</code>-annotated methods</a> or combinations of <code>@Parameters</code>-annotated methods and <code>@Parameters</code>-annotated fields, we recommend using <a href="#_explicit_index">explicit indexes</a> for single-value positional parameters.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_anchored_automatic_index">20.5.2. Anchored Automatic Index</h4>
+<div class="paragraph">
+<p>The default automatic index (<code>index = "0+"</code>) for single-value positional parameters is "anchored at zero": it starts at zero, and is increased with each additional positional parameter.</p>
+</div>
+<div class="paragraph">
+<p>Sometimes you want to have indexes assigned automatically from a different starting point than zero.
+This can be useful when defining <a href="#_mixins">Mixins</a> with positional parameters.</p>
+</div>
+<div class="paragraph">
+<p>To accomplish this, specify an index with the anchor point and a <code>+</code> character to indicate that picocli should start to automatically assign indexes from that anchor point. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">Anchored</span> {
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">1+</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> p1; <span class="comment">// assigned index = &quot;1&quot; or higher</span>
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">1+</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> p2; <span class="comment">// assigned index = &quot;2&quot; or higher</span>
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_combining_explicit_and_automatic_indexes">20.5.3. Combining Explicit and Automatic Indexes</h4>
+<div class="paragraph">
+<p>If a command defines a positional parameter with an explicit index at the anchor point, then automatic indexes anchored at that point will start from the explicit index plus 1.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">ExplicitAndAutomaticIndexes</span> {
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> explicit0;   <span class="comment">// explicit index &quot;0&quot; at default anchor point</span>
+    <span class="annotation">@Parameters</span> <span class="predefined-type">String</span> pAuto1;                   <span class="comment">// assigned index &quot;1&quot;, anchor point + 1</span>
+    <span class="annotation">@Parameters</span> <span class="predefined-type">String</span> pAuto2;                   <span class="comment">// assigned index &quot;2&quot;</span>
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">1+</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> pAnchored1; <span class="comment">// assigned index &quot;1&quot;: no explicit index 1</span>
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">1+</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> pAnchored2; <span class="comment">// assigned index &quot;2&quot;</span>
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">2</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> explicit2;   <span class="comment">// explicit index &quot;2&quot;, matching anchor for &quot;2+&quot;</span>
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">2+</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> pAnchored3; <span class="comment">// assigned index &quot;3&quot;, anchor point + 1</span>
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">2+</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> pAnchored4; <span class="comment">// assigned index &quot;4&quot;</span>
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_unanchored_automatic_index">20.5.4. Unanchored Automatic Index</h4>
+<div class="paragraph">
+<p>Sometimes you want to have indexes assigned automatically to come at the end.
+This can be useful when defining <a href="#_mixins">Mixins</a> with positional parameters.</p>
+</div>
+<div class="paragraph">
+<p>To accomplish this, specify an index with a <code>+</code> character to indicate that picocli should automatically assign indexes that come at the end.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">Unanchored</span> {
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> p0;
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">1+</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> p1; <span class="comment">// assigned index = &quot;1&quot;</span>
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">1+</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> p2; <span class="comment">// assigned index = &quot;2&quot;</span>
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">3</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> p3;
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">+</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> p4; <span class="comment">// assigned index = &quot;4&quot; &lt;-- unanchored</span>
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">+</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> p5; <span class="comment">// assigned index = &quot;5&quot; &lt;-- unanchored</span>
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_do_not_combine_unanchored_indexes_with_open_ended_indexes">20.5.5. Do Not Combine Unanchored Indexes with Open-ended Indexes</h4>
+<div class="paragraph">
+<p>It is not possible to combine unanchored indexes (<code>+</code>) with open-ended explicit indexes (<code>*</code>):
+the parameter with the open-ended index will capture all arguments, and there is no position "after the other indexes" that can be assigned.</p>
+</div>
+<div class="paragraph">
+<p>The below example will always give a <code>Missing required parameter: &lt;last&gt;</code> error:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">BadCombination</span> {
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0..*</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">List</span>&lt;<span class="predefined-type">String</span>&gt; all;
+    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">+</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> last;
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_improved_support_for_chinese_japanese_and_korean">20.6. Improved Support for Chinese, Japanese and Korean</h3>
+<div class="paragraph">
+<p>Picocli will align the usage help message to fit within some user-defined width (80 columns by default).
+A number of characters in Chinese, Japanese and Korean (CJK) are wider than others.
+If those characters are treated to have the same width as other characters, the usage help message may extend past the right margin.</p>
+</div>
+<div class="paragraph">
+<p>From 4.0, picocli will use 2 columns for these wide characters when calculating where to put line breaks, resulting in better usage help message text.</p>
+</div>
+<div class="paragraph">
+<p>This can be switched off with <code>CommandLine.setAdjustLineBreaksForWideCJKCharacters(false)</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_boolean_options_with_parameters">20.7. Boolean Options with Parameters</h3>
 <div class="paragraph">
 <p>By default the value of a boolean field is set to the logical negative of its default value when the option is specified on the command line.</p>
 </div>
@@ -8034,7 +8926,7 @@ Previously, <code>Collection</code> objects were instantiated separately without
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hexadecimal_values">20.7. Hexadecimal Values</h3>
+<h3 id="_hexadecimal_values">20.8. Hexadecimal Values</h3>
 <div class="paragraph">
 <p>Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
 register a custom type converter that delegates to the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-">decode</a> method to convert strings to numbers.</p>
@@ -8086,9 +8978,9 @@ commandLine.registerConverter(<span class="predefined-type">Integer</span>.TYPE,
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_parameter_separators_2">20.8. Option-Parameter Separators</h3>
+<h3 id="_option_parameter_separators_2">20.9. Option-Parameter Separators</h3>
 <div class="sect3">
-<h4 id="_default_separators">20.8.1. Default Separators</h4>
+<h4 id="_default_separators">20.9.1. Default Separators</h4>
 <div class="paragraph">
 <p>Options may take an <em>option parameter</em> (also called <em>option-argument</em>).
 For POSIX-style short options (like <code>-f</code> or <code>-c</code>), the option parameter may be attached to the option,
@@ -8118,7 +9010,7 @@ That is, all of the below are equivalent:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_custom_separators">20.8.2. Custom Separators</h4>
+<h4 id="_custom_separators">20.9.2. Custom Separators</h4>
 <div class="paragraph">
 <p>The separator string can be customized programmatically or declaratively.</p>
 </div>
@@ -8156,7 +9048,7 @@ commandLine.parseArgs(<span class="string"><span class="delimiter">&quot;</span>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_best_practices_for_command_line_interfaces">20.9. Best Practices for Command Line Interfaces</h3>
+<h3 id="_best_practices_for_command_line_interfaces">20.10. Best Practices for Command Line Interfaces</h3>
 <div class="paragraph">
 <p>When designing your command line application,
 the <a href="https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces">GNU recommendations</a> for command line interfaces and <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX Utility Guidelines</a> may be useful.</p>
@@ -8167,22 +9059,22 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect2">
-<h3 id="_text_block">20.10. Text Blocks for Java 15</h3>
+<h3 id="_text_blocks_for_java_15">20.11. Text Blocks for Java 15</h3>
 <div class="paragraph">
-<p>When writing your command line program, you can use Java 15's new feature <code>Text Block</code>.
-The text block can be used in command and option description, headers and footers.</p>
+<p>When writing your command line program, you can use Java 15&#8217;s new "Text Block" feature.
+Multi-line text blocks can be used in command and option descriptions, headers and footers.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(name = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span> }, description = <span class="string"><span class="delimiter">&quot;&quot;&quot;</span></span>
-<span class="string"><span class="delimiter">                                                    Verbose mode. Helpful for troubleshooting.</span></span>
-<span class="string"><span class="delimiter">                                                    Multiple -v options increase the verbosity.</span></span>
-<span class="string"><span class="delimiter">                                                    &quot;&quot;&quot;</span></span>) <span class="comment">// write description in text block</span>
-</code></pre>
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-v</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--verbose</span><span class="delimiter">&quot;</span></span> },
+  description = <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span><span class="string"><span class="delimiter">&quot;</span><span class="content">
+                Verbose mode. Helpful for troubleshooting.
+                Multiple -v options increase the verbosity.
+                </span><span class="delimiter">&quot;</span></span><span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>) <span class="comment">// write description in text block</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>For more details, you can read <a href="https://www.infoq.com/articles/java-text-blocks/">Java text blocks</a>.</p>
+<p>For more details, see <a href="https://www.infoq.com/articles/java-text-blocks/">this article</a> by Java Language Architect Brian Goetz.</p>
 </div>
 </div>
 </div>
@@ -8267,7 +9159,7 @@ To use this custom factory, add the following dependency:</p>
 <pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
   <span class="tag">&lt;groupId&gt;</span>info.picocli<span class="tag">&lt;/groupId&gt;</span>
   <span class="tag">&lt;artifactId&gt;</span>picocli-spring-boot-starter<span class="tag">&lt;/artifactId&gt;</span>
-  <span class="tag">&lt;version&gt;</span>4.2.0<span class="tag">&lt;/version&gt;</span>
+  <span class="tag">&lt;version&gt;</span>4.3.0<span class="tag">&lt;/version&gt;</span>
 <span class="tag">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -8277,7 +9169,7 @@ To use this custom factory, add the following dependency:</p>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code>dependencies {
-    compile "info.picocli:picocli-spring-boot-starter:4.2.0"
+    compile "info.picocli:picocli-spring-boot-starter:4.3.0"
 }</code></pre>
 </div>
 </div>
@@ -8973,6 +9865,8 @@ This <a href="https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&am
 </div>
 <div class="sect2">
 <h3 id="_groovy">29.1. Groovy</h3>
+<div class="sect3">
+<h4 id="_groovy_annotation_syntax">29.1.1. Groovy Annotation Syntax</h4>
 <div class="paragraph">
 <p>In Groovy, use <code>[</code> and <code>]</code> to surround array values, instead of the <code>{</code> and <code>}</code> used in Java.</p>
 </div>
@@ -8997,6 +9891,9 @@ This <a href="https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&am
 }</code></pre>
 </div>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_groovy_scripts">29.1.2. Groovy Scripts</h4>
 <div class="paragraph">
 <p>Picocli 2.0 introduced special support for Groovy scripts. (From picocli 4.0 this was moved into a separate module, <code>picocli-groovy</code>.)</p>
 </div>
@@ -9012,7 +9909,8 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.2.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.3.0</span><span class="delimiter">'</span></span>)
+<span class="annotation">@GrabConfig</span>(systemClassLoader=<span class="predefined-constant">true</span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
         description = <span class="string"><span class="delimiter">&quot;</span><span class="content">@|bold Groovy script|@ @|underline picocli|@ example</span><span class="delimiter">&quot;</span></span>)
@@ -9040,12 +9938,15 @@ count.times {
 </td>
 <td class="content">
 When upgrading scripts to picocli 4.0, just changing the version number is not enough!
-Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.2.0')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.2.0')</code> will not work,
+Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.3.0')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.3.0')</code> will not work,
 because the <code>@picocli.groovy.PicocliScript</code> annotation class and supporting classes have been moved into a separate module, <code>picocli-groovy</code>.
 </td>
 </tr>
 </table>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_older_versions_of_groovy">29.1.3. Older Versions of Groovy</h4>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -9061,7 +9962,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.2.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.3.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -9070,8 +9971,11 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 <p>In order to get you started quickly, you may have a look at the <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/groovy/picocli/examples">Groovy examples</a> folder of the picocli code repository.</p>
 </div>
 </div>
+</div>
 <div class="sect2">
 <h3 id="_kotlin">29.2. Kotlin</h3>
+<div class="sect3">
+<h4 id="_kotlin_annotation_syntax">29.2.1. Kotlin Annotation Syntax</h4>
 <div class="paragraph">
 <p>Kotlin 1.2 (released Nov 28, 2017) officially supports <a href="http://kotlinlang.org/docs/reference/whatsnew12.html#array-literals-in-annotations">array literals in annotations</a>, allowing a more compact notation:</p>
 </div>
@@ -9112,6 +10016,9 @@ class SubCmd { // ...
 }</code></pre>
 </div>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_older_versions_of_kotlin">29.2.2. Older Versions of Kotlin</h4>
 <div class="paragraph">
 <p>Kotlin versions prior to 1.2 did not allow the <a href="https://kotlinlang.org/docs/reference/annotations.html">array literal syntax in annotations</a>, so with older versions of Kotlin you will have to write <code>arrayOf(&#8230;&#8203;)</code> for the <code>names</code>, <code>description</code> and <code>type</code> attributes.</p>
 </div>
@@ -9138,6 +10045,7 @@ fun main(args: Array&lt;String&gt;) = System.exit(CommandLine(MyApp()).execute(*
 </div>
 <div class="paragraph">
 <p>In order to get you started quickly, you may have a look at the <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin">Kotlin examples</a> folder of the picocli code repository.</p>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -9245,7 +10153,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle_3">36.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.2.0'</pre>
+<pre>compile 'info.picocli:picocli:4.3.0'</pre>
 </div>
 </div>
 </div>
@@ -9256,7 +10164,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.2.0&lt;/version&gt;
+  &lt;version&gt;4.3.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -9265,7 +10173,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">36.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "4.2.0"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "4.3.0"</pre>
 </div>
 </div>
 </div>
@@ -9273,7 +10181,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">36.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.2.0" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.3.0" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -9289,8 +10197,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.2.0<br>
-Last updated 2020-04-02 12:14:30 +0900
+Version 4.3.0<br>
+Last updated 2020-05-13 07:22:25 +0900
 </div>
 </div>
 </body>

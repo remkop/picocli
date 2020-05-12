@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="4.3.0"></a> Picocli 4.3.0 (UNRELEASED)
+# <a name="4.3.0"></a> Picocli 4.3.0
 The picocli community is pleased to announce picocli 4.3.0.
 
 This is a fairly big release with 70 [tickets closed](https://github.com/remkop/picocli/milestone/65?closed=1), and over 50 [bugfixes and enhancements](#4.3.0-fixes). Many thanks to the picocli community who contributed 21 pull requests!
