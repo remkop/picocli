@@ -3,7 +3,7 @@
 # <a name="4.3.0"></a> Picocli 4.3.0 (UNRELEASED)
 The picocli community is pleased to announce picocli 4.3.0.
 
-This is a fairly big release with over 30 bugfixes and enhancements. Many thanks to the picocli community who contributed 17 pull requests!
+This is a fairly big release with over 50 bugfixes and enhancements. Many thanks to the picocli community who contributed 21 pull requests!
 
 This release adds support for "inherited" options. Options defined with `scope = ScopeType.INHERIT` are shared with all subcommands (and sub-subcommands, to any level of depth). Applications can define an inherited option on the top-level command, in one place, to allow end users to specify this option anywhere: not only on the top-level command, but also on any of the subcommands and nested sub-subcommands.
 
@@ -238,6 +238,7 @@ Example command.
 * [#962][#961] Enhancement/Bugfix: Default value should only be applied if value is missing. Thanks to [粟嘉逸](https://github.com/sjyMystery) and [chirlo](https://github.com/chirlo) for raising this.
 * [#995][#1024][#1035] Enhancement/Bugfix: Reset multi-value options/positional params to initial value when reusing `CommandLine` instances. Thanks to [Linyer-qwq](https://github.com/Linyer-qwq), [WU Jiangning](https://github.com/licia-tia), and [Wycers](https://github.com/Wycers) for the pull request.
 * [#991][#993] Enhancement/Bugfix: Detecting terminal width fails on non-English Windows versions. Thanks to [Stefan Gärtner](https://github.com/S-Gaertner) for the pull request.
+* [#1040] Enhancement: internal code cleanup and minor fixes. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#987] Bugfix: Bump JLine to 3.14.1 and fix [#969] autocompletion in Picocli Shell JLine3. Thanks to [mattirn](https://github.com/mattirn) for the pull request.
 * [#969] Bugfix: Fixed broken autocompletion for nested subcommands in Picocli Shell JLine3. Thanks to [niklas97](https://github.com/niklas97) for raising this.
 * [#968] Bugfix: Avoid creating user object in Help constructor. Thanks to [Immueggpain](https://github.com/Immueggpain) for raising this.
