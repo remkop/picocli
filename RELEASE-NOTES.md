@@ -267,6 +267,7 @@ Example command.
 * [#1006] DOC: Add Mixin example: MyLogger to the user manual.
 * [#1028][#1031] DOC: Update user manual: added Java 15 text blocks example. Thanks to [Enderaoe](https://github.com/Lyther) for the pull request.
 * [#1037] DOC: Update user manual for programmatic API: fix typo. Thanks to [Yoshida](https://github.com/grimrose) for the pull request.
+* [#1041] DOC: Fix broken links in javaDoc. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1033] TEST: Added tests for [#984][#997]. Thanks to [WU Jiangning](https://github.com/licia-tia) for the pull request.
 * [#965] Dependency Upgrade: in `picocli-examples`, bump `hibernate-validator` from 6.0.2 to 6.1.2 to deal with [CVE-2019-10219](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-10219). Thanks to [https://github.com/Security3rd](Security3rd) for raising this.
 
