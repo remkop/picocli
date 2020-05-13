@@ -443,4 +443,31 @@ public class InheritedOptionTest {
             assertEquals("Missing required options and parameters: '-x=<x>', '<p0>', '<p1>'", ex.getMessage());
         }
     }
+
+    @Test
+    public void testIssue1042InheritedOptionsWithCommandMethods() {
+        @Command(name = "issue1042")
+        class Issue1042 implements Runnable {
+            boolean debug;
+            boolean run;
+            boolean subRun;
+
+            @Option(names = {"--debug", "-d"}, scope = INHERIT)
+            protected void setDebug(boolean debug) {
+                this.debug = debug;
+            }
+
+            public void run() { run = true; }
+
+            @Command
+            void sub() { subRun = true; }
+        }
+
+        Issue1042 bean = new Issue1042();
+        new CommandLine(bean).execute("sub", "--debug");
+        assertTrue(bean.debug);
+        assertTrue(bean.subRun);
+        assertFalse(bean.run);
+    }
+
 }

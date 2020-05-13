@@ -1,5 +1,34 @@
 # picocli Release Notes
 
+# <a name="4.3.1"></a> Picocli 4.3.1 (UNRELEASED)
+The picocli community is slightly emberrassed to announce picocli 4.3.1.
+
+This release fixes a bug where an `IllegalArgumentException: wrong number of arguments` was thrown when the `@Option(scope = INHERIT)` feature is used in a command that has subcommands defined in `@Command`-annotated methods.
+
+
+This is the sixty-nineth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.3.1-toc"></a> Table of Contents
+* [New and noteworthy](#4.3.1-new)
+* [Fixed issues](#4.3.1-fixes)
+* [Deprecations](#4.3.1-deprecated)
+* [Potential breaking changes](#4.3.1-breaking-changes)
+
+## <a name="4.3.1-new"></a> New and Noteworthy
+
+
+## <a name="4.3.1-fixes"></a> Fixed issues
+[#1042] Bugfix: "wrong number of arguments" exception when using inherited options with `@Command`-annotated methods. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
+
+## <a name="4.3.1-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.3.1-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 # <a name="4.3.0"></a> Picocli 4.3.0
 The picocli community is pleased to announce picocli 4.3.0.
 

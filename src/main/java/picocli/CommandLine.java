@@ -6424,11 +6424,6 @@ public class CommandLine {
              * @return an immutable list of all options and positional parameters for this command. */
             public List<ArgSpec> args() { return Collections.unmodifiableList(args); }
             Object[] commandMethodParamValues() {
-                if (mixins.isEmpty() && groups.isEmpty()) {
-                    Object[] values = new Object[args.size()];
-                    for (int i = 0; i < values.length; i++) { values[i] = args.get(i).getValue(); }
-                    return values;
-                }
                 Object[] values = new Object[methodParams.length];
                 int argIndex = mixins.containsKey(AutoHelpMixin.KEY) ? 2 : 0;
                 for (int i = 0; i < methodParams.length; i++) {
