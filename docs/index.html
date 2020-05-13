@@ -758,6 +758,8 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_guice_example">21.1. Guice Example</a></li>
 <li><a href="#_spring_boot_example">21.2. Spring Boot Example</a></li>
 <li><a href="#_micronaut_example">21.3. Micronaut Example</a></li>
+<li><a href="#_cdi_2_0_jsr_365">21.4. CDI 2.0 (JSR 365)</a></li>
+<li><a href="#_quarkus_example">21.5. Quarkus Example</a></li>
 </ul>
 </li>
 <li><a href="#_java_9_jpms_modules">22. Java 9 JPMS Modules</a>
@@ -9319,6 +9321,130 @@ The business logic of your command looks like any other picocli command with opt
 
     <span class="directive">public</span> <span class="type">void</span> run() {
         <span class="comment">// business logic here</span>
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cdi_2_0_jsr_365">21.4. CDI 2.0 (JSR 365)</h3>
+<div class="paragraph">
+<p>If your application runs in a dependency injection container that does not offer explicit support for picocli, it may still be possible to get dependency injection in your picocli commands, subcommands and other classes like version providers, default providers, type converters, etc.</p>
+</div>
+<div class="paragraph">
+<p>In essence, all that is needed is an implementation of the <code>picocli.CommandLine.IFactory</code> interface that gets objects from the dependency injection container instead of instantiating them directly.</p>
+</div>
+<div class="paragraph">
+<p>Below is an example CDI factory that works for any container that implements the <a href="https://docs.jboss.org/cdi/spec/2.0/cdi-spec.html">Contexts and Dependency Injection for Java 2.0</a> specification (JSR 365).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">javax.enterprise.context.ApplicationScoped</span>;
+<span class="keyword">import</span> <span class="include">javax.enterprise.inject.Instance</span>;
+<span class="keyword">import</span> <span class="include">javax.enterprise.inject.spi.CDI</span>;
+
+<span class="keyword">import</span> <span class="include">picocli.CommandLine</span>;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.IFactory</span>;
+
+<span class="comment">/**
+ * Factory used by picocli to look up subcommands and other classes
+ * in the CDI container before instantiating them directly,
+ * to support dependency injection in subcommands and other classes.
+ */</span>
+<span class="annotation">@ApplicationScoped</span>
+<span class="directive">public</span> <span class="type">class</span> <span class="class">CDIFactory</span> <span class="directive">implements</span> IFactory {
+
+    <span class="directive">private</span> <span class="directive">final</span> IFactory fallbackFactory = CommandLine.defaultFactory();
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> &lt;K&gt; K create(<span class="predefined-type">Class</span>&lt;K&gt; cls) <span class="directive">throws</span> <span class="exception">Exception</span> {
+        Instance&lt;K&gt; instance = CDI.current().select(cls);
+        <span class="keyword">if</span> (instance.isResolvable()) {
+            <span class="keyword">return</span> instance.get();
+        }
+        <span class="keyword">return</span> defaultFactory.create(cls);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>How to use the above factory depends on the specific container, but in general it would look something like the below:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">cdi-app</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>)
+<span class="type">class</span> <span class="class">MyCDIApp</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--option</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">example option</span><span class="delimiter">&quot;</span></span>)
+    <span class="type">boolean</span> flag;
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        <span class="comment">// business logic</span>
+    }
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        CDIFactory cdiFactory = CDI.current().select(CDIFactory.class).get();
+        <span class="keyword">new</span> CommandLine(MyCDIApp.class, cdiFactory).execute(args);
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_quarkus_example">21.5. Quarkus Example</h3>
+<div class="paragraph">
+<p><span class="image"><img src="https://quarkus.io/assets/images/quarkus_logo_horizontal_rgb_600px_reverse.png" alt="Quarkus Logo" width="350"></span></p>
+</div>
+<div class="paragraph">
+<p>Quarkus 1.4 added support for <a href="https://quarkus.io/guides/command-mode-reference">Command Mode</a> applications, which allows for using picoli in Quarkus applications.</p>
+</div>
+<div class="paragraph">
+<p>The example below shows how an application could use the <code>CDIFactory</code> introduced in the <a href="#_cdi_2_0_jsr_365">previous section</a> to get dependency injection in subcommands and other classes like version providers, default providers, type converters, etc.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+As of this writing, there is work in progress in the Quarkus community on a picocli extension for Quarkus that will give applications more compact code, more features, and other benefits than the example below.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">io.quarkus.runtime.Quarkus</span>;
+<span class="keyword">import</span> <span class="include">io.quarkus.runtime.QuarkusApplication</span>;
+<span class="keyword">import</span> <span class="include">io.quarkus.runtime.annotations.QuarkusMain</span>;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine</span>;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.Command</span>;
+
+<span class="keyword">import</span> <span class="include">javax.enterprise.context.ApplicationScoped</span>;
+<span class="keyword">import</span> <span class="include">javax.inject.Inject</span>;
+
+<span class="annotation">@QuarkusMain</span>
+<span class="annotation">@ApplicationScoped</span>
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">quarkus-app</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>)
+<span class="directive">public</span> <span class="type">class</span> <span class="class">MyQuarkusApp</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span>, QuarkusApplication {
+    <span class="annotation">@Inject</span>
+    CDIFactory cdiFactory; <span class="comment">// see previous section</span>
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        <span class="comment">// business logic</span>
+    }
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="type">int</span> run(<span class="predefined-type">String</span>... args) {
+        <span class="keyword">return</span> <span class="keyword">new</span> CommandLine(<span class="local-variable">this</span>, cdiFactory).execute(args);
+    }
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        <span class="predefined-type">System</span>.setProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">quarkus.banner.enabled</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span>);
+        Quarkus.run(MyQuarkusApp.class, args);
     }
 }</code></pre>
 </div>
