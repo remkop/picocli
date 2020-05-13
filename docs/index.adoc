@@ -6319,7 +6319,6 @@ public class MyQuarkusApp implements Runnable, QuarkusApplication {
     }
 
     public static void main(String[] args) {
-        System.setProperty("quarkus.banner.enabled", "false");
         Quarkus.run(MyQuarkusApp.class, args);
     }
 }
