@@ -6292,7 +6292,6 @@ NOTE: As of this writing, there is work in progress in the Quarkus community on 
 
 [source,java]
 ----
-import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.annotations.QuarkusMain;
 import picocli.CommandLine;
@@ -6316,10 +6315,6 @@ public class MyQuarkusApp implements Runnable, QuarkusApplication {
     @Override
     public int run(String... args) {
         return new CommandLine(this, cdiFactory).execute(args);
-    }
-
-    public static void main(String[] args) {
-        Quarkus.run(MyQuarkusApp.class, args);
     }
 }
 ----

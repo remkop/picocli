@@ -9416,8 +9416,7 @@ As of this writing, there is work in progress in the Quarkus community on a pico
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">io.quarkus.runtime.Quarkus</span>;
-<span class="keyword">import</span> <span class="include">io.quarkus.runtime.QuarkusApplication</span>;
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">io.quarkus.runtime.QuarkusApplication</span>;
 <span class="keyword">import</span> <span class="include">io.quarkus.runtime.annotations.QuarkusMain</span>;
 <span class="keyword">import</span> <span class="include">picocli.CommandLine</span>;
 <span class="keyword">import</span> <span class="include">picocli.CommandLine.Command</span>;
@@ -9440,10 +9439,6 @@ As of this writing, there is work in progress in the Quarkus community on a pico
     <span class="annotation">@Override</span>
     <span class="directive">public</span> <span class="type">int</span> run(<span class="predefined-type">String</span>... args) {
         <span class="keyword">return</span> <span class="keyword">new</span> CommandLine(<span class="local-variable">this</span>, cdiFactory).execute(args);
-    }
-
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
-        Quarkus.run(MyQuarkusApp.class, args);
     }
 }</code></pre>
 </div>
