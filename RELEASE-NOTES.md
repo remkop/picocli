@@ -1,7 +1,7 @@
 # picocli Release Notes
 
-# <a name="4.3.1"></a> Picocli 4.3.1 (UNRELEASED)
-The picocli community is slightly embarrassed to announce picocli 4.3.1.
+# <a name="4.3.1"></a> Picocli 4.3.1
+The picocli community is slightly embarrassed to announce picocli 4.3.1. :-)
 
 This release fixes some critical bugs:
 

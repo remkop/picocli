@@ -526,8 +526,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 4.3.0,</span>
-<span id="revdate">2020-05-13</span>
+<span id="revnumber">version 4.3.1,</span>
+<span id="revdate">2020-05-15</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -740,17 +740,18 @@ table.CodeRay td.code>pre{padding:0}
 </li>
 <li><a href="#_tips_tricks">20. Tips &amp; Tricks</a>
 <ul class="sectlevel2">
-<li><a href="#option-parameters-methods">20.1. <code>@Option</code> and <code>@Parameters</code> Methods</a></li>
-<li><a href="#command-methods">20.2.  <code>@Command</code> Methods</a></li>
-<li><a href="#spec-annotation">20.3.  <code>@Spec</code> Annotation</a></li>
-<li><a href="#_custom_factory">20.4. Custom Factory</a></li>
-<li><a href="#_automatic_parameter_indexes">20.5. Automatic Parameter Indexes</a></li>
-<li><a href="#_improved_support_for_chinese_japanese_and_korean">20.6. Improved Support for Chinese, Japanese and Korean</a></li>
-<li><a href="#_boolean_options_with_parameters">20.7. Boolean Options with Parameters</a></li>
-<li><a href="#_hexadecimal_values">20.8. Hexadecimal Values</a></li>
-<li><a href="#_option_parameter_separators_2">20.9. Option-Parameter Separators</a></li>
-<li><a href="#_best_practices_for_command_line_interfaces">20.10. Best Practices for Command Line Interfaces</a></li>
-<li><a href="#_text_blocks_for_java_15">20.11. Text Blocks for Java 15</a></li>
+<li><a href="#_programmatic_api">20.1. Programmatic API</a></li>
+<li><a href="#option-parameters-methods">20.2. <code>@Option</code> and <code>@Parameters</code> Methods</a></li>
+<li><a href="#command-methods">20.3.  <code>@Command</code> Methods</a></li>
+<li><a href="#spec-annotation">20.4.  <code>@Spec</code> Annotation</a></li>
+<li><a href="#_custom_factory">20.5. Custom Factory</a></li>
+<li><a href="#_automatic_parameter_indexes">20.6. Automatic Parameter Indexes</a></li>
+<li><a href="#_improved_support_for_chinese_japanese_and_korean">20.7. Improved Support for Chinese, Japanese and Korean</a></li>
+<li><a href="#_boolean_options_with_parameters">20.8. Boolean Options with Parameters</a></li>
+<li><a href="#_hexadecimal_values">20.9. Hexadecimal Values</a></li>
+<li><a href="#_option_parameter_separators_2">20.10. Option-Parameter Separators</a></li>
+<li><a href="#_best_practices_for_command_line_interfaces">20.11. Best Practices for Command Line Interfaces</a></li>
+<li><a href="#_text_blocks_for_java_15">20.12. Text Blocks for Java 15</a></li>
 </ul>
 </li>
 <li><a href="#_dependency_injection">21. Dependency Injection</a>
@@ -867,6 +868,18 @@ all the source code lives in a single file, to encourage application authors to 
 <p>How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed values in the fields of your class.</p>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separately from the annotations API.
+</td>
+</tr>
+</table>
+</div>
 <div id="CheckSum-application" class="listingblock">
 <div class="title">A full working example picocli-based command line application</div>
 <div class="content">
@@ -934,7 +947,7 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <h4 id="_gradle">2.1.1. Gradle</h4>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.3.0'</pre>
+<pre>compile 'info.picocli:picocli:4.3.1'</pre>
 </div>
 </div>
 </div>
@@ -945,7 +958,7 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.3.0&lt;/version&gt;
+  &lt;version&gt;4.3.1&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -1010,7 +1023,7 @@ In most cases no further configuration is needed when generating a native image.
       &lt;path&gt;
         &lt;groupId&gt;info.picocli&lt;/groupId&gt;
         &lt;artifactId&gt;picocli-codegen&lt;/artifactId&gt;
-        &lt;version&gt;4.3.0&lt;/version&gt;
+        &lt;version&gt;4.3.1&lt;/version&gt;
       &lt;/path&gt;
     &lt;/annotationProcessorPaths&gt;
     &lt;compilerArgs&gt;
@@ -1029,8 +1042,8 @@ In most cases no further configuration is needed when generating a native image.
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code>dependencies {
-    compile 'info.picocli:picocli:4.3.0'
-    annotationProcessor 'info.picocli:picocli-codegen:4.3.0'
+    compile 'info.picocli:picocli:4.3.1'
+    annotationProcessor 'info.picocli:picocli-codegen:4.3.1'
 }</code></pre>
 </div>
 </div>
@@ -1053,7 +1066,7 @@ then replace <code>annotationProcessor</code> with <code>kapt</code>:</p>
 <pre class="CodeRay highlight"><code>apply plugin: 'kotlin-kapt' // required
 dependencies {
     // ...
-    kapt 'info.picocli:picocli-codegen:4.3.0'
+    kapt 'info.picocli:picocli-codegen:4.3.1'
 }</code></pre>
 </div>
 </div>
@@ -8370,7 +8383,21 @@ A <code>$</code> character can be escaped with another <code>$</code> character.
 <h2 id="_tips_tricks">20. Tips &amp; Tricks</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="option-parameters-methods">20.1. <code>@Option</code> and <code>@Parameters</code> Methods</h3>
+<h3 id="_programmatic_api">20.1. Programmatic API</h3>
+<div class="paragraph">
+<p>Picocli also provides a <a href="picocli-programmatic-api.html">programmatic API</a>, in addition to the annotations API.</p>
+</div>
+<div class="paragraph">
+<p>The programmatic API allows applications to dynamically create command line options on the fly, where not all options are known in advance.
+It also makes it possible to use picocli in other JVM languages that do not support annotations.</p>
+</div>
+<div class="paragraph">
+<p>Another use case is creating idiomatic domain-specific languages for processing command line arguments.
+For example, Groovy&#8217;s <a href="http://groovy-lang.org/dsls.html#_clibuilder">CliBuilder DSL</a> is implemented using picocli&#8217;s programmatic API.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="option-parameters-methods">20.2. <code>@Option</code> and <code>@Parameters</code> Methods</h3>
 <div class="paragraph">
 <p>From version 3.2, <code>@Option</code> and <code>@Parameters</code> annotations can be added to methods as well as fields of a class.</p>
 </div>
@@ -8381,7 +8408,7 @@ A <code>$</code> character can be escaped with another <code>$</code> character.
 <p>Alternatively, you may annotate "getter-like" methods (methods that return a value) on an interface, and picocli will create an instance of the interface that returns the values specified on the command line, converted to the method return type.</p>
 </div>
 <div class="sect3">
-<h4 id="_annotating_methods_of_an_interface">20.1.1. Annotating Methods of an Interface</h4>
+<h4 id="_annotating_methods_of_an_interface">20.2.1. Annotating Methods of an Interface</h4>
 <div class="paragraph">
 <p>The <code>@Option</code> and <code>@Parameters</code> annotations can be used on methods of an interface that return a value. For example:</p>
 </div>
@@ -8407,7 +8434,7 @@ Counter counter = cmd.getCommand(); <span class="comment">// picocli created an 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_annotating_methods_of_a_concrete_class">20.1.2. Annotating Methods of a Concrete Class</h4>
+<h4 id="_annotating_methods_of_a_concrete_class">20.2.2. Annotating Methods of a Concrete Class</h4>
 <div class="paragraph">
 <p>The <code>@Option</code> and <code>@Parameters</code> annotations can be used on methods of a class that accept a parameter. For example:</p>
 </div>
@@ -8469,7 +8496,7 @@ cmd.parseArgs(args);
 </div>
 </div>
 <div class="sect2">
-<h3 id="command-methods">20.2. <a id="_command-methods"></a> <code>@Command</code> Methods</h3>
+<h3 id="command-methods">20.3. <a id="_command-methods"></a> <code>@Command</code> Methods</h3>
 <div class="paragraph">
 <p>From picocli 3.6, methods can be annotated with <code>@Command</code>.
 The method parameters provide the command options and parameters. For example:</p>
@@ -8530,7 +8557,7 @@ If compiled with the <code>-parameters</code> flag on Java 8 or higher, the <cod
 </table>
 </div>
 <div class="sect3">
-<h4 id="_subcommand_methods">20.2.1. Subcommand Methods</h4>
+<h4 id="_subcommand_methods">20.3.1. Subcommand Methods</h4>
 <div class="paragraph">
 <p>If the enclosing class is annotated with <code>@Command</code>, method commands are automatically added as subcommands to the class command, unless the class command has attribute <code>@Command(addMethodSubcommands = false)</code>.
 For example:</p>
@@ -8557,7 +8584,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_description_text_in_resourcebundle">20.2.2. Description Text in ResourceBundle</h4>
+<h4 id="_description_text_in_resourcebundle">20.3.2. Description Text in ResourceBundle</h4>
 <div class="paragraph">
 <p>The usage help of the above <code>git commit</code> example command is very minimal:</p>
 </div>
@@ -8603,7 +8630,7 @@ Record changes to the repository
 </div>
 </div>
 <div class="sect3">
-<h4 id="_mixin_support_in_command_methods">20.2.3. Mixin Support in <code>@Command</code> Methods</h4>
+<h4 id="_mixin_support_in_command_methods">20.3.3. Mixin Support in <code>@Command</code> Methods</h4>
 <div class="paragraph">
 <p>From picocli 3.8, <code>@Command</code> methods accept <code>@Mixin</code> parameters.
 All options and positional parameters defined in the mixin class are added to the command.</p>
@@ -8630,7 +8657,7 @@ All options and positional parameters defined in the mixin class are added to th
 </div>
 </div>
 <div class="sect2">
-<h3 id="spec-annotation">20.3. <a id="_spec-annotation"></a> <code>@Spec</code> Annotation</h3>
+<h3 id="spec-annotation">20.4. <a id="_spec-annotation"></a> <code>@Spec</code> Annotation</h3>
 <div class="paragraph">
 <p>Picocli 3.2 introduces a <code>@Spec</code> annotation for injecting the <code>CommandSpec</code> model of the command into a command field.</p>
 </div>
@@ -8653,7 +8680,7 @@ This complements the <code>@ParentCommand</code> annotation;  the <code>@ParentC
 </div>
 </div>
 <div class="sect3">
-<h4 id="spec-mixee-annotation">20.3.1. <code>@Spec(MIXEE)</code> Annotation</h4>
+<h4 id="spec-mixee-annotation">20.4.1. <code>@Spec(MIXEE)</code> Annotation</h4>
 <div class="paragraph">
 <p>Since picocli 4.3, the <code>@Spec</code> annotation has a <code>value</code> element.
 The value is <code>Spec.Target.SELF</code> by default, meaning that the <code>CommandSpec</code> of the enclosing class is injected into the <code>@Spec</code>-annotated field.</p>
@@ -8667,7 +8694,7 @@ See <a href="#_accessing_the_mixee_from_a_mixin">Accessing the Mixee from a Mixi
 </div>
 </div>
 <div class="sect2">
-<h3 id="_custom_factory">20.4. Custom Factory</h3>
+<h3 id="_custom_factory">20.5. Custom Factory</h3>
 <div class="paragraph">
 <p>Declaratively registered <a href="#_registering_subcommands_declaratively">subcommands</a>, <a href="#_option_specific_type_converters">type converters</a> and <a href="#_dynamic_version_information">version providers</a> must be instantiated somehow. From picocli 2.2, a custom factory can be specified when constructing a <code>CommandLine</code> instance. This allows full control over object creation and opens possibilities for Inversion of Control and Dependency Injection (see <a href="#_dependency_injection">next section</a>). For example:</p>
 </div>
@@ -8718,9 +8745,9 @@ Previously, <code>Collection</code> objects were instantiated separately without
 </div>
 </div>
 <div class="sect2">
-<h3 id="_automatic_parameter_indexes">20.5. Automatic Parameter Indexes</h3>
+<h3 id="_automatic_parameter_indexes">20.6. Automatic Parameter Indexes</h3>
 <div class="sect3">
-<h4 id="_automatic_indexes">20.5.1. Automatic Indexes</h4>
+<h4 id="_automatic_indexes">20.6.1. Automatic Indexes</h4>
 <div class="paragraph">
 <p><a href="#_positional_parameters">Positional parameters</a> have an <code>index</code> attribute that determines which command line argument(s) are captured.
 It is possible to omit the <code>index</code> attribute and let picocli automatically assign an index.</p>
@@ -8796,7 +8823,7 @@ For applications with <a href="#option-parameters-methods"><code>@Parameters</co
 </div>
 </div>
 <div class="sect3">
-<h4 id="_anchored_automatic_index">20.5.2. Anchored Automatic Index</h4>
+<h4 id="_anchored_automatic_index">20.6.2. Anchored Automatic Index</h4>
 <div class="paragraph">
 <p>The default automatic index (<code>index = "0+"</code>) for single-value positional parameters is "anchored at zero": it starts at zero, and is increased with each additional positional parameter.</p>
 </div>
@@ -8817,7 +8844,7 @@ This can be useful when defining <a href="#_mixins">Mixins</a> with positional p
 </div>
 </div>
 <div class="sect3">
-<h4 id="_combining_explicit_and_automatic_indexes">20.5.3. Combining Explicit and Automatic Indexes</h4>
+<h4 id="_combining_explicit_and_automatic_indexes">20.6.3. Combining Explicit and Automatic Indexes</h4>
 <div class="paragraph">
 <p>If a command defines a positional parameter with an explicit index at the anchor point, then automatic indexes anchored at that point will start from the explicit index plus 1.
 For example:</p>
@@ -8838,7 +8865,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_unanchored_automatic_index">20.5.4. Unanchored Automatic Index</h4>
+<h4 id="_unanchored_automatic_index">20.6.4. Unanchored Automatic Index</h4>
 <div class="paragraph">
 <p>Sometimes you want to have indexes assigned automatically to come at the end.
 This can be useful when defining <a href="#_mixins">Mixins</a> with positional parameters.</p>
@@ -8861,7 +8888,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_do_not_combine_unanchored_indexes_with_open_ended_indexes">20.5.5. Do Not Combine Unanchored Indexes with Open-ended Indexes</h4>
+<h4 id="_do_not_combine_unanchored_indexes_with_open_ended_indexes">20.6.5. Do Not Combine Unanchored Indexes with Open-ended Indexes</h4>
 <div class="paragraph">
 <p>It is not possible to combine unanchored indexes (<code>+</code>) with open-ended explicit indexes (<code>*</code>):
 the parameter with the open-ended index will capture all arguments, and there is no position "after the other indexes" that can be assigned.</p>
@@ -8880,7 +8907,7 @@ the parameter with the open-ended index will capture all arguments, and there is
 </div>
 </div>
 <div class="sect2">
-<h3 id="_improved_support_for_chinese_japanese_and_korean">20.6. Improved Support for Chinese, Japanese and Korean</h3>
+<h3 id="_improved_support_for_chinese_japanese_and_korean">20.7. Improved Support for Chinese, Japanese and Korean</h3>
 <div class="paragraph">
 <p>Picocli will align the usage help message to fit within some user-defined width (80 columns by default).
 A number of characters in Chinese, Japanese and Korean (CJK) are wider than others.
@@ -8894,7 +8921,7 @@ If those characters are treated to have the same width as other characters, the 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_boolean_options_with_parameters">20.7. Boolean Options with Parameters</h3>
+<h3 id="_boolean_options_with_parameters">20.8. Boolean Options with Parameters</h3>
 <div class="paragraph">
 <p>By default the value of a boolean field is set to the logical negative of its default value when the option is specified on the command line.</p>
 </div>
@@ -8928,7 +8955,7 @@ If those characters are treated to have the same width as other characters, the 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hexadecimal_values">20.8. Hexadecimal Values</h3>
+<h3 id="_hexadecimal_values">20.9. Hexadecimal Values</h3>
 <div class="paragraph">
 <p>Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
 register a custom type converter that delegates to the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-">decode</a> method to convert strings to numbers.</p>
@@ -8980,9 +9007,9 @@ commandLine.registerConverter(<span class="predefined-type">Integer</span>.TYPE,
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_parameter_separators_2">20.9. Option-Parameter Separators</h3>
+<h3 id="_option_parameter_separators_2">20.10. Option-Parameter Separators</h3>
 <div class="sect3">
-<h4 id="_default_separators">20.9.1. Default Separators</h4>
+<h4 id="_default_separators">20.10.1. Default Separators</h4>
 <div class="paragraph">
 <p>Options may take an <em>option parameter</em> (also called <em>option-argument</em>).
 For POSIX-style short options (like <code>-f</code> or <code>-c</code>), the option parameter may be attached to the option,
@@ -9012,7 +9039,7 @@ That is, all of the below are equivalent:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_custom_separators">20.9.2. Custom Separators</h4>
+<h4 id="_custom_separators">20.10.2. Custom Separators</h4>
 <div class="paragraph">
 <p>The separator string can be customized programmatically or declaratively.</p>
 </div>
@@ -9050,7 +9077,7 @@ commandLine.parseArgs(<span class="string"><span class="delimiter">&quot;</span>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_best_practices_for_command_line_interfaces">20.10. Best Practices for Command Line Interfaces</h3>
+<h3 id="_best_practices_for_command_line_interfaces">20.11. Best Practices for Command Line Interfaces</h3>
 <div class="paragraph">
 <p>When designing your command line application,
 the <a href="https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces">GNU recommendations</a> for command line interfaces and <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX Utility Guidelines</a> may be useful.</p>
@@ -9061,7 +9088,7 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect2">
-<h3 id="_text_blocks_for_java_15">20.11. Text Blocks for Java 15</h3>
+<h3 id="_text_blocks_for_java_15">20.12. Text Blocks for Java 15</h3>
 <div class="paragraph">
 <p>When writing your command line program, you can use Java 15&#8217;s new "Text Block" feature.
 Multi-line text blocks can be used in command and option descriptions, headers and footers.</p>
@@ -9161,7 +9188,7 @@ To use this custom factory, add the following dependency:</p>
 <pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
   <span class="tag">&lt;groupId&gt;</span>info.picocli<span class="tag">&lt;/groupId&gt;</span>
   <span class="tag">&lt;artifactId&gt;</span>picocli-spring-boot-starter<span class="tag">&lt;/artifactId&gt;</span>
-  <span class="tag">&lt;version&gt;</span>4.3.0<span class="tag">&lt;/version&gt;</span>
+  <span class="tag">&lt;version&gt;</span>4.3.1<span class="tag">&lt;/version&gt;</span>
 <span class="tag">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -9171,7 +9198,7 @@ To use this custom factory, add the following dependency:</p>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code>dependencies {
-    compile "info.picocli:picocli-spring-boot-starter:4.3.0"
+    compile "info.picocli:picocli-spring-boot-starter:4.3.1"
 }</code></pre>
 </div>
 </div>
@@ -10029,7 +10056,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.3.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.3.1</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabConfig</span>(systemClassLoader=<span class="predefined-constant">true</span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
@@ -10058,7 +10085,7 @@ count.times {
 </td>
 <td class="content">
 When upgrading scripts to picocli 4.0, just changing the version number is not enough!
-Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.3.0')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.3.0')</code> will not work,
+Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.3.1')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.3.1')</code> will not work,
 because the <code>@picocli.groovy.PicocliScript</code> annotation class and supporting classes have been moved into a separate module, <code>picocli-groovy</code>.
 </td>
 </tr>
@@ -10082,7 +10109,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.3.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.3.1</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -10273,7 +10300,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle_3">36.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.3.0'</pre>
+<pre>compile 'info.picocli:picocli:4.3.1'</pre>
 </div>
 </div>
 </div>
@@ -10284,7 +10311,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.3.0&lt;/version&gt;
+  &lt;version&gt;4.3.1&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -10293,7 +10320,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">36.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "4.3.0"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "4.3.1"</pre>
 </div>
 </div>
 </div>
@@ -10301,7 +10328,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">36.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.3.0" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.3.1" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -10317,8 +10344,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.3.0<br>
-Last updated 2020-05-13 07:22:25 +0900
+Version 4.3.1<br>
+Last updated 2020-05-15 07:29:29 +0900
 </div>
 </div>
 </body>

@@ -271,11 +271,11 @@ public class Example {
 }
 ```
 
-## Example for JLine 3.14.1 and Upcoming Picocli 4.3.0 (UNRELEASED)
+## Example for JLine 3.14.1 and Picocli 4.3+
 
-Picocli 4.3.0 (UNRELEASED) fixes an autocompletion issue with nested subcommands, thanks to a [pull request](https://github.com/remkop/picocli/pull/987) by one of the JLine authors.
+Picocli 4.3.0 fixes an autocompletion issue with nested subcommands, thanks to a [pull request](https://github.com/remkop/picocli/pull/987) by one of the JLine authors.
 
-This requires JLine 3.14.1, and things need to wired up differently than they were before.
+This requires JLine 3.14.1, and things need to wired up differently with the new version of the `PicocliCommands` completer.
 Here is the updated example:
 
 ```java
@@ -309,7 +309,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Example that demonstrates how to build an interactive shell with JLine3 and picocli.
- * @since 4.3.0
+ * @since 4.3.1
  */
 public class Example {
 
