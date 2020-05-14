@@ -49,6 +49,8 @@ all the source code lives in a single file, to encourage application authors to 
 How it works: annotate your class and picocli initializes it from the command line arguments,
 converting the input to strongly typed values in the fields of your class.
 
+TIP: picocli also provides a <<Programmatic API,programmatic API>>, separately from the annotations API.
+
 .A full working example picocli-based command line application
 [[CheckSum-application]]
 [source,java]
@@ -5447,6 +5449,15 @@ If these attributes have variables, and the variables get a different value afte
 
 == Tips & Tricks
 
+=== Programmatic API
+
+Picocli also provides a link:picocli-programmatic-api.html[programmatic API], in addition to the annotations API.
+
+The programmatic API allows applications to dynamically create command line options on the fly, where not all options are known in advance.
+It also makes it possible to use picocli in other JVM languages that do not support annotations.
+
+Another use case is creating idiomatic domain-specific languages for processing command line arguments.
+For example, Groovy's http://groovy-lang.org/dsls.html#_clibuilder[CliBuilder DSL] is implemented using picocli's programmatic API.
 
 [#option-parameters-methods]
 === `@Option` and `@Parameters` Methods

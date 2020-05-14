@@ -28,6 +28,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 [#1043] Bugfix: NullPointerException thrown in `DefaultParamLabelRenderer.renderParameterLabel` for programmatically built models that have a non-`null` `split` regex and do not have a `splitSynopsisLabel`.
 [#1044] Bugfix: only display `splitSynopsisLabel` in usage help message if the option has a `split` regex. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 [#1045] Bugfix: replace use of Java 6 API `String.isEmpty` with picocli-internal Java 5 equivalent.
+[#1046] DOC: mention picocli's programmatic API and link to the programmatic API documentation from the user manual.
 
 ## <a name="4.3.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
