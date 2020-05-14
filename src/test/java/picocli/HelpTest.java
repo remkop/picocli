@@ -3651,9 +3651,9 @@ public class HelpTest {
         int width = (Integer) detectTerminalWidth.invoke(null);
         TestUtil.setTraceLevel("WARN");
 
-        assertTrue(systemErrRule.getLog().startsWith("[picocli DEBUG] getTerminalWidth() executing command ["));
-        assertTrue(systemErrRule.getLog().contains("[picocli DEBUG] getTerminalWidth() parsing output: "));
-        assertTrue(systemErrRule.getLog().contains("[picocli DEBUG] getTerminalWidth() returning: "));
+        assertTrue(systemErrRule.getLog(), systemErrRule.getLog().startsWith("[picocli DEBUG] getTerminalWidth() executing command ["));
+        assertTrue(systemErrRule.getLog(), systemErrRule.getLog().contains("[picocli DEBUG] getTerminalWidth() parsing output: "));
+        assertTrue(systemErrRule.getLog(), systemErrRule.getLog().contains("[picocli DEBUG] getTerminalWidth() returning: "));
         //assertEquals(-1, width);
     }
 
