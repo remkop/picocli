@@ -145,7 +145,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
 public class CommandLine {
 
     /** This is picocli version {@value}. */
-    public static final String VERSION = "4.3.1";
+    public static final String VERSION = "4.3.2-SNAPSHOT";
 
     private final Tracer tracer = new Tracer();
     private final CommandSpec commandSpec;
@@ -4135,7 +4135,7 @@ public class CommandLine {
     @Target({ElementType.FIELD, ElementType.METHOD})
     public @interface Spec {
         /** Identifies what kind of {@code CommandSpec} should be injected.
-         * @since 4.3.1 */
+         * @since 4.3.2-SNAPSHOT */
         enum Target {
             /** Injects the {@code CommandSpec} of the command where this {@code @Spec}-annotated program element is declared. */
             SELF,
@@ -4147,7 +4147,7 @@ public class CommandLine {
         /** Whether to inject the {@code CommandSpec} of this command (the default) or the {@code CommandSpec}
          * of the "mixee" command that receives the options and other command elements defined here.
          * @see Mixin
-         * @since 4.3.1 */
+         * @since 4.3.2-SNAPSHOT */
         Target value() default Target.SELF;
     }
 
@@ -8101,7 +8101,7 @@ public class CommandLine {
 
             /** Returns whether this option is inherited from a parent command.
              * @see Option#scope()
-             * @since 4.3.1 */
+             * @since 4.3.2-SNAPSHOT */
             public boolean inherited() { return inherited; }
 
             /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value. */
@@ -8676,7 +8676,7 @@ public class CommandLine {
 
                 /** Returns whether this option is inherited from a parent command.
                  * @see Option#scope()
-                 * @since 4.3.1 */
+                 * @since 4.3.2-SNAPSHOT */
                 public boolean inherited() { return inherited; }
 
                 /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value. */
@@ -8787,7 +8787,7 @@ public class CommandLine {
                 public T hidden(boolean hidden)              { this.hidden = hidden; return self(); }
 
                 /** Sets whether this option is inherited from a parent command, and returns this builder.
-                 * @since 4.3.1 */
+                 * @since 4.3.2-SNAPSHOT */
                 public T inherited(boolean inherited)        { this.inherited = inherited; return self(); }
 
                 /** Sets the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value, and returns this builder.

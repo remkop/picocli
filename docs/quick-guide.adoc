@@ -1,7 +1,7 @@
 = Quick Guide
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.3.1
+:revnumber: 4.3.2-SNAPSHOT
 :revdate: 2020-05-15
 :toc: left
 :numbered:
