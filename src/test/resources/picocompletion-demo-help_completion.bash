@@ -275,7 +275,7 @@ function _picocli_picocompletion-demo-help_sub2_subsub2() {
   local commands=""
   local flag_opts=""
   local arg_opts="-u --timeUnit -t --timeout"
-  local timeUnit_option_args="NANOSECONDS MICROSECONDS MILLISECONDS SECONDS MINUTES HOURS DAYS" # --timeUnit values
+  local timeUnit_option_args="%2$s" # --timeUnit values
 
   compopt +o default
 
