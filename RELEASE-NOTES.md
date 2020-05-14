@@ -1,12 +1,15 @@
 # picocli Release Notes
 
 # <a name="4.3.1"></a> Picocli 4.3.1 (UNRELEASED)
-The picocli community is slightly emberrassed to announce picocli 4.3.1.
+The picocli community is slightly embarrassed to announce picocli 4.3.1.
 
-This release fixes two bugs:
+This release fixes some critical bugs:
 
 * an `IllegalArgumentException: wrong number of arguments` was thrown when the `@Option(scope = INHERIT)` feature is used in a command that has subcommands defined in `@Command`-annotated methods
 * a `NullPointerException` was thrown in `DefaultParamLabelRenderer.renderParameterLabel` for programmatically built models that have a non-`null` `split` regex and do not have a `splitSynopsisLabel`
+* removed call to a `String` method introduced in Java 6, which prevented picocli from running on Java 5
+
+See [Fixed issues](#4.3.1-fixes) for the full list of changes.
 
 This is the sixty-nineth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -24,6 +27,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 [#1042] Bugfix: "wrong number of arguments" exception when using inherited options with `@Command`-annotated methods. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
 [#1043] Bugfix: NullPointerException thrown in `DefaultParamLabelRenderer.renderParameterLabel` for programmatically built models that have a non-`null` `split` regex and do not have a `splitSynopsisLabel`.
 [#1044] Bugfix: only display `splitSynopsisLabel` in usage help message if the option has a `split` regex. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+[#1045] Bugfix: replace use of Java 6 API `String.isEmpty` with picocli-internal Java 5 equivalent.
 
 ## <a name="4.3.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
