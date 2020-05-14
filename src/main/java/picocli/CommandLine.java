@@ -7912,7 +7912,7 @@ public class CommandLine {
                 description = builder.description == null ? new String[0] : builder.description;
                 descriptionKey = builder.descriptionKey;
                 splitRegex = builder.splitRegex == null ? "" : builder.splitRegex;
-                splitRegexSynopsisLabel = builder.splitRegex == null ? "" : builder.splitRegexSynopsisLabel;
+                splitRegexSynopsisLabel = builder.splitRegexSynopsisLabel == null ? "" : builder.splitRegexSynopsisLabel;
                 paramLabel = empty(builder.paramLabel) ? "PARAM" : builder.paramLabel;
                 hideParamSyntax = builder.hideParamSyntax;
                 converters = builder.converters == null ? new ITypeConverter<?>[0] : builder.converters;

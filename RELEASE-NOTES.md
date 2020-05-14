@@ -3,8 +3,10 @@
 # <a name="4.3.1"></a> Picocli 4.3.1 (UNRELEASED)
 The picocli community is slightly emberrassed to announce picocli 4.3.1.
 
-This release fixes a bug where an `IllegalArgumentException: wrong number of arguments` was thrown when the `@Option(scope = INHERIT)` feature is used in a command that has subcommands defined in `@Command`-annotated methods.
+This release fixes two bugs:
 
+* an `IllegalArgumentException: wrong number of arguments` was thrown when the `@Option(scope = INHERIT)` feature is used in a command that has subcommands defined in `@Command`-annotated methods
+* a `NullPointerException` was thrown in `DefaultParamLabelRenderer.renderParameterLabel` for programmatically built models that have a non-`null` `split` regex and do not have a `splitSynopsisLabel`
 
 This is the sixty-nineth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -20,7 +22,9 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.3.1-fixes"></a> Fixed issues
 [#1042] Bugfix: "wrong number of arguments" exception when using inherited options with `@Command`-annotated methods. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
-
+[#1043] Bugfix: NullPointerException thrown in `DefaultParamLabelRenderer.renderParameterLabel` for programmatically built models that have a non-`null` `split` regex and do not have a `splitSynopsisLabel`.
+   
+   
 ## <a name="4.3.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
 

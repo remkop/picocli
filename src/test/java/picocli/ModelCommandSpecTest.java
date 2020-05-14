@@ -1468,4 +1468,20 @@ public class ModelCommandSpecTest {
         assertEquals("spec1", specElements.get(0).getName());
         assertEquals("spec2", specElements.get(1).getName());
     }
+
+    @Test
+    public void testUsageMessageFromProgrammaticCommandSpec() {
+        CommandSpec spec = CommandSpec.create();
+        spec.addOption(OptionSpec.builder("-x").splitRegex("").build());
+        spec.addPositional(PositionalParamSpec.builder().splitRegex("").paramLabel("PARAM").build());
+        spec.mixinStandardHelpOptions(true);
+        String actual = new CommandLine(spec).getUsageMessage(Ansi.OFF);
+        String expected = String.format("" +
+                "Usage: <main class> [-hVx] PARAM%n" +
+                "      PARAM%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "  -x%n");
+        assertEquals(expected, actual);
+    }
 }
