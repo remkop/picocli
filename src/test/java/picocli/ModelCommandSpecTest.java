@@ -1473,7 +1473,7 @@ public class ModelCommandSpecTest {
     public void testUsageMessageFromProgrammaticCommandSpec() {
         CommandSpec spec = CommandSpec.create();
         spec.addOption(OptionSpec.builder("-x").splitRegex("").build());
-        spec.addPositional(PositionalParamSpec.builder().splitRegex("").paramLabel("PARAM").build());
+        spec.addPositional(PositionalParamSpec.builder().splitRegex("").build());
         spec.mixinStandardHelpOptions(true);
         String actual = new CommandLine(spec).getUsageMessage(Ansi.OFF);
         String expected = String.format("" +
@@ -1482,6 +1482,22 @@ public class ModelCommandSpecTest {
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n" +
                 "  -x%n");
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testUsageMessageFromProgrammaticCommandSpecWithSplitRegexSynopsisLabel() {
+        CommandSpec spec = CommandSpec.create();
+        spec.addOption(OptionSpec.builder("-x").type(String[].class).splitRegex("").splitRegexSynopsisLabel(";").build());
+        spec.addPositional(PositionalParamSpec.builder().type(String[].class).splitRegex("").splitRegexSynopsisLabel(";").build());
+        spec.mixinStandardHelpOptions(true);
+        String actual = new CommandLine(spec).getUsageMessage(Ansi.OFF);
+        String expected = String.format("" +
+                "Usage: <main class> [-hV] [-x=PARAM]... PARAM...%n" +
+                "      PARAM...%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "  -x=PARAM%n");
         assertEquals(expected, actual);
     }
 }

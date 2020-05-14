@@ -15032,13 +15032,16 @@ public class CommandLine {
                 if (capacity.max == 0) { return ansi.new Text("", colorScheme); }
                 if (argSpec.hideParamSyntax()) { return colorScheme.apply((argSpec.isOption() ? separator() : "") + argSpec.paramLabel(), styles); }
 
-                Text paramName = colorScheme.apply(argSpec.paramLabel(), styles);
-                String split = argSpec.splitRegexSynopsisLabel().isEmpty() ? argSpec.splitRegex() : argSpec.splitRegexSynopsisLabel();
+                String split = argSpec.splitRegex();
+                if (!empty(split)) { // #1044 only check splitSynopsisLabel if we have a split regex
+                    split = empty(argSpec.splitRegexSynopsisLabel()) ? split : argSpec.splitRegexSynopsisLabel();
+                }
                 String mandatorySep = empty(split) ? " "  : split;
                 String optionalSep  = empty(split) ? " [" : "[" + split;
 
                 boolean unlimitedSplit = !empty(split) && !commandSpec.parser().limitSplit();
                 boolean limitedSplit =   !empty(split) &&  commandSpec.parser().limitSplit();
+                Text paramName = colorScheme.apply(argSpec.paramLabel(), styles);
                 Text repeating = paramName;
                 int paramCount = 1;
                 if (unlimitedSplit) {

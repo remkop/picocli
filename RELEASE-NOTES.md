@@ -23,8 +23,8 @@ Picocli follows [semantic versioning](http://semver.org/).
 ## <a name="4.3.1-fixes"></a> Fixed issues
 [#1042] Bugfix: "wrong number of arguments" exception when using inherited options with `@Command`-annotated methods. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
 [#1043] Bugfix: NullPointerException thrown in `DefaultParamLabelRenderer.renderParameterLabel` for programmatically built models that have a non-`null` `split` regex and do not have a `splitSynopsisLabel`.
-   
-   
+[#1044] Bugfix: only display `splitSynopsisLabel` in usage help message if the option has a `split` regex. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+
 ## <a name="4.3.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
 

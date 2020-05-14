@@ -7,7 +7,6 @@ import org.junit.Test;
 import picocli.CommandLine.Parameters;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static picocli.CommandLine.Help.Ansi.OFF;
@@ -25,6 +24,21 @@ public class SplitSynopsisLabelTest {
             "Usage: UsageSplit [v=<args>[|<args>...]]...%n" +
             "      v=<args>[|<args>...]%n");
         String actual = new CommandLine(new Simple()).getUsageMessage(OFF);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testOptionWithoutSplit() {
+        @Command(name = "WithoutSplit")
+        class WithoutSplit {
+            @Option(names = "v", splitSynopsisLabel = "|", description = "xxx yyy zzz")
+            String args[] = {};
+        }
+
+        String expected = String.format("" +
+                "Usage: WithoutSplit [v=<args>]...%n" +
+                "      v=<args>   xxx yyy zzz%n");
+        String actual = new CommandLine(new WithoutSplit()).getUsageMessage(OFF);
         assertEquals(expected, actual);
     }
 
