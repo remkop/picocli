@@ -374,8 +374,8 @@ public class CommandLineTest {
         PositionalParametersEnumSetWithEmptyInitialValue params = new PositionalParametersEnumSetWithEmptyInitialValue();
         CommandLine cmd = new CommandLine(params);
 
-        cmd.parseArgs("HOURS", "MINUTES");
-        assertEquals(EnumSet.of(TimeUnit.HOURS, TimeUnit.MINUTES), params.enumSet);
+        cmd.parseArgs("MILLISECONDS", "SECONDS");
+        assertEquals(EnumSet.of(TimeUnit.MILLISECONDS, TimeUnit.SECONDS), params.enumSet);
 
         cmd.parseArgs(); // should be reset to original empty initial value
         assertEquals(EnumSet.noneOf(TimeUnit.class), params.enumSet);
@@ -390,8 +390,8 @@ public class CommandLineTest {
         PositionalParametersEnumSetWithNonEmptyInitialValue params = new PositionalParametersEnumSetWithNonEmptyInitialValue();
         CommandLine cmd = new CommandLine(params);
 
-        cmd.parseArgs("HOURS", "MINUTES");
-        assertEquals(EnumSet.of(TimeUnit.HOURS, TimeUnit.MINUTES), params.enumSet);
+        cmd.parseArgs("MILLISECONDS", "SECONDS");
+        assertEquals(EnumSet.of(TimeUnit.MILLISECONDS, TimeUnit.SECONDS), params.enumSet);
 
         cmd.parseArgs(); // should be reset to original initial value
         assertEquals(EnumSet.of(TimeUnit.MICROSECONDS, TimeUnit.MILLISECONDS), params.enumSet);

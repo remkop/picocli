@@ -806,8 +806,8 @@ public class ArityTest {
         Sample sample2 = CommandLine.populateCommand(new Sample(), "--unit"); // no arguments
         assertEquals("optional option is empty string when specified without args", TimeUnit.SECONDS, sample2.unit);
 
-        Sample sample3 = CommandLine.populateCommand(new Sample(), "--unit", "MINUTES"); // no arguments
-        assertEquals("optional option has value when specified", TimeUnit.MINUTES, sample3.unit);
+        Sample sample3 = CommandLine.populateCommand(new Sample(), "--unit", "MILLISECONDS"); // no arguments
+        assertEquals("optional option has value when specified", TimeUnit.MILLISECONDS, sample3.unit);
     }
     @Test
     public void testListFieldOptionalParamWithFallback_280() {
