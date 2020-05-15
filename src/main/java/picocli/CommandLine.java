@@ -5471,9 +5471,27 @@ public class CommandLine {
          * @param <V> type of the value
          */
         static class CaseAwareLinkedMap<K, V> extends AbstractMap<K, V> {
+            class CaseAwareKeySet extends AbstractSet<K> {
+                @Override
+                public boolean contains(Object o) {
+                    return containsKey(o);
+                }
+
+                @Override
+                public Iterator<K> iterator() {
+                    return targetMap.keySet().iterator();
+                }
+
+                @Override
+                public int size() {
+                    return targetMap.keySet().size();
+                }
+            }
+
             private final LinkedHashMap<K, V> targetMap = new LinkedHashMap<K, V>();
             private final HashMap<K, K> keyMap = new HashMap<K, K>();
             private final Locale locale;
+            private final Set<K> keySet;
             private boolean caseInsensitive = false;
 
             /**
@@ -5489,6 +5507,7 @@ public class CommandLine {
              */
             public CaseAwareLinkedMap(Locale locale) {
                 this.locale = locale;
+                this.keySet = new CaseAwareKeySet();
             }
 
             static boolean isCaseConvertible(Class<?> clazz) {
@@ -5607,7 +5626,7 @@ public class CommandLine {
 
             @Override
             public Set<K> keySet() {
-                return targetMap.keySet();
+                return keySet;
             }
 
             @Override
