@@ -12432,10 +12432,10 @@ public class CommandLine {
                 // or an option may have one or more option parameters.
                 // A parameter may be attached to the option.
                 if (commandSpec.allowAbbrevOptions()) {
-                    arg = NameMatcher.match(commandSpec.optionsMap().keySet(), arg);
-                    if (!isStandaloneOption(arg)) {
-                        arg = NameMatcher.match(commandSpec.negatedOptionsMap().keySet(), arg);
-                    }
+                    Set<String> aggregatedOptionNames = new LinkedHashSet<String>();
+                    aggregatedOptionNames.addAll(commandSpec.optionsMap().keySet());
+                    aggregatedOptionNames.addAll(commandSpec.negatedOptionsMap().keySet());
+                    arg = NameMatcher.match(aggregatedOptionNames, arg);
                 }
                 LookBehind lookBehind = LookBehind.SEPARATE;
                 int separatorIndex = arg.indexOf(separator);
