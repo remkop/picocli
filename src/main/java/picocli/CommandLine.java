@@ -12404,7 +12404,11 @@ public class CommandLine {
 
                 // if we find another command, we are done with the current command
                 if (commandSpec.parser().abbreviatedSubcommandsAllowed()) {
-                    arg = AbbreviationMatcher.match(commandSpec.subcommands().keySet(), arg);
+                    try {
+                        arg = AbbreviationMatcher.match(commandSpec.subcommands().keySet(), arg);
+                    } catch (IllegalArgumentException ex) {
+                        throw new ParameterException(CommandLine.this, "Error: " + ex.getMessage(), ex);
+                    }
                 }
                 if (commandSpec.subcommands().containsKey(arg)) {
                     CommandLine subcommand = commandSpec.subcommands().get(arg);
@@ -12431,7 +12435,11 @@ public class CommandLine {
                     Set<String> aggregatedOptionNames = new LinkedHashSet<String>();
                     aggregatedOptionNames.addAll(commandSpec.optionsMap().keySet());
                     aggregatedOptionNames.addAll(commandSpec.negatedOptionsMap().keySet());
-                    arg = AbbreviationMatcher.match(aggregatedOptionNames, arg);
+                    try {
+                        arg = AbbreviationMatcher.match(aggregatedOptionNames, arg);
+                    } catch (IllegalArgumentException ex) {
+                        throw new ParameterException(CommandLine.this, "Error: " + ex.getMessage(), ex);
+                    }
                 }
                 LookBehind lookBehind = LookBehind.SEPARATE;
                 int separatorIndex = arg.indexOf(separator);
