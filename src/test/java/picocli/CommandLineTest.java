@@ -4005,11 +4005,11 @@ public class CommandLineTest {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(output);
         commandLine.setErr(new PrintWriter(printStream));
-        commandLine.execute("-h");
+        commandLine.execute("--h");
 
         String content = new String(output.toByteArray(), "UTF-8")
                 .replaceAll("\r\n", "\n"); // Normalize line endings.
-        assertEquals("Error: -h is not unique: it matches '-H', '--help', '--hello'\n"
+        assertEquals("Error: --h is not unique: it matches '--help', '--hello'\n"
                 + "Usage: <main class> [-H] [--[no-]another-style] [--[no-]cammelCaseOption]\n"
                 + "                    [--hello] [--version]\n"
                 + "      --[no-]another-style\n"
