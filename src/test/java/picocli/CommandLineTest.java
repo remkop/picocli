@@ -3924,7 +3924,7 @@ public class CommandLineTest {
             }
         }
         CommandLine commandLine = new CommandLine(new App());
-        commandLine.setSubcommandsAbbrevAllowed(true);
+        commandLine.setAbbreviatedSubcommandsAllowed(true);
 
         assertEquals(1, commandLine.execute("help"));
         assertEquals(2, commandLine.execute("hello"));
@@ -3979,7 +3979,7 @@ public class CommandLineTest {
             public boolean anotherStyle;
         }
         CommandLine commandLine = new CommandLine(new App());
-        commandLine.setOptionsAbbrevAllowed(true);
+        commandLine.setAbbreviatedOptionsAllowed(true);
 
         ParseResult result = commandLine.parseArgs("--help", "--hello", "--version", "--cammelCaseOption", "--another-style");
         assertTrue(result.hasMatchedOption("--help"));

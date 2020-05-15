@@ -75,6 +75,6 @@ class NameMatcher {
             throw new IllegalArgumentException(abbreviation + " is not unique: it matches '" +
                     str.substring(1, str.length() - 1).replace(", ", "', '") + "'");
         }
-        return candidates.isEmpty() ? abbreviation : candidates.get(0); // return original if fail to match
+        return candidates.isEmpty() ? abbreviation : candidates.get(0); // return the original if no match found
     }
 }

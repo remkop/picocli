@@ -810,26 +810,26 @@ public class CommandLine {
         return this;
     }
 
-    public boolean isSubcommandsAbbrevAllowed(boolean newValue) {
+    public boolean isAbbreviatedSubcommandsAllowed(boolean newValue) {
         return getCommandSpec().allowAbbrevSubcommands();
     }
 
-    public CommandLine setSubcommandsAbbrevAllowed(boolean newValue) {
+    public CommandLine setAbbreviatedSubcommandsAllowed(boolean newValue) {
         getCommandSpec().allowAbbrevSubcommands(newValue);
         for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setSubcommandsAbbrevAllowed(newValue);
+            command.setAbbreviatedSubcommandsAllowed(newValue);
         }
         return this;
     }
 
-    public boolean isOptionsAbbrevAllowed(boolean newValue) {
+    public boolean isAbbreviatedOptionsAllowed(boolean newValue) {
         return getCommandSpec().allowAbbrevOptions();
     }
 
-    public CommandLine setOptionsAbbrevAllowed(boolean newValue) {
+    public CommandLine setAbbreviatedOptionsAllowed(boolean newValue) {
         getCommandSpec().allowAbbrevOptions(newValue);
         for (CommandLine command : getCommandSpec().subcommands().values()) {
-            command.setOptionsAbbrevAllowed(newValue);
+            command.setAbbreviatedOptionsAllowed(newValue);
         }
         return this;
     }
