@@ -3917,6 +3917,11 @@ public class CommandLineTest {
             public int ccsCommand() {
                 return 4;
             }
+
+            @Command(name = "another-style")
+            public int asCommand() {
+                return 5;
+            }
         }
         CommandLine commandLine = new CommandLine(new App());
         commandLine.setSubcommandsAbbrevAllowed(true);
@@ -3925,6 +3930,7 @@ public class CommandLineTest {
         assertEquals(2, commandLine.execute("hello"));
         assertEquals(3, commandLine.execute("version"));
         assertEquals(4, commandLine.execute("cammelCaseSubcommand"));
+        assertEquals(5, commandLine.execute("another-style"));
 
         assertEquals(1, commandLine.execute("help"));
         assertEquals(2, commandLine.execute("hell"));
@@ -3932,6 +3938,8 @@ public class CommandLineTest {
         assertEquals(4, commandLine.execute("cammel"));
         assertEquals(4, commandLine.execute("cCS"));
         assertEquals(4, commandLine.execute("c-c-s"));
+        assertEquals(5, commandLine.execute("aS"));
+        assertEquals(5, commandLine.execute("a-s"));
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(output);
@@ -3944,6 +3952,7 @@ public class CommandLineTest {
                 + "java.lang.IllegalArgumentException: h is not unique: it matches 'hello', 'help'\n"
                 + "Usage: <main class> [COMMAND]\n"
                 + "Commands:\n"
+                + "  another-style\n"
                 + "  cammelCaseSubcommand\n"
                 + "  hello\n"
                 + "  help\n"
