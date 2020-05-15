@@ -33,7 +33,8 @@ class NameMatcher {
         }
         if (str.startsWith("-") && str.length() > 1) {
             int codepoint = str.codePointAt(1);
-            return ((char) Character.toUpperCase(codepoint)) + str.substring(1 + Character.charCount(codepoint));
+            char[] uppercase = Character.toChars(Character.toUpperCase(codepoint));
+            return new String(uppercase) + str.substring(1 + Character.charCount(codepoint));
         }
         return str;
     }
@@ -47,8 +48,7 @@ class NameMatcher {
         next_key:
         for (String key : set) {
             List<String> keyChunks = splitIntoChunks(key);
-            if (abbreviatedKeyChunks.size() <= keyChunks.size() && keyChunks.get(0)
-                    .startsWith(abbreviatedKeyChunks.get(0))) { // first chunk must match
+            if (abbreviatedKeyChunks.size() <= keyChunks.size() && keyChunks.get(0).startsWith(abbreviatedKeyChunks.get(0))) { // first chunk must match
                 int matchCount = 1;
                 int keyChunk = 1;
                 for (int i = 1; i < abbreviatedKeyChunks.size(); i++) {
