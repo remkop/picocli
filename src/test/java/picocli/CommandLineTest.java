@@ -35,6 +35,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -3891,6 +3892,119 @@ public class CommandLineTest {
 
         int returnCode = commandLine.execute("HeLp", "VER");
         assertEquals(42, returnCode);
+    }
+
+    @Test
+    public void testAbbrevSubcommands() throws Exception {
+        @Command
+        class App {
+            @Command(name = "help")
+            public int helpCommand() {
+                return 1;
+            }
+
+            @Command(name = "hello")
+            public int helloCommand() {
+                return 2;
+            }
+
+            @Command(name = "version")
+            public int versionCommand() {
+                return 3;
+            }
+
+            @Command(name = "cammelCaseSubcommand")
+            public int ccsCommand() {
+                return 4;
+            }
+        }
+        CommandLine commandLine = new CommandLine(new App());
+        commandLine.setSubcommandsAbbrevAllowed(true);
+
+        assertEquals(1, commandLine.execute("help"));
+        assertEquals(2, commandLine.execute("hello"));
+        assertEquals(3, commandLine.execute("version"));
+        assertEquals(4, commandLine.execute("cammelCaseSubcommand"));
+
+        assertEquals(1, commandLine.execute("help"));
+        assertEquals(2, commandLine.execute("hell"));
+        assertEquals(3, commandLine.execute("ver"));
+        assertEquals(4, commandLine.execute("cammel"));
+        assertEquals(4, commandLine.execute("cCS"));
+        assertEquals(4, commandLine.execute("c-c-s"));
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        PrintStream printStream = new PrintStream(output);
+        commandLine.setErr(new PrintWriter(printStream));
+        commandLine.execute("h");
+
+        String content = new String(output.toByteArray(), "UTF-8")
+                .replaceAll("\r\n", "\n"); // Normalize line endings.
+        assertEquals("IllegalArgumentException: h is not unique: it matches 'hello', 'help' while processing argument at or before arg[0] 'h' in [h]: "
+                + "java.lang.IllegalArgumentException: h is not unique: it matches 'hello', 'help'\n"
+                + "Usage: <main class> [COMMAND]\n"
+                + "Commands:\n"
+                + "  cammelCaseSubcommand\n"
+                + "  hello\n"
+                + "  help\n"
+                + "  version\n", content);
+    }
+
+    @Test
+    public void testAbbrevOptions() throws Exception {
+        @Command
+        class App {
+            @Option(names = {"-H", "--help"})
+            public boolean help;
+
+            @Option(names = "--hello")
+            public boolean hello;
+
+            @Option(names = "--version")
+            public boolean version;
+
+            @Option(names = "--cammelCaseOption")
+            public boolean ccOption;
+
+            @Option(names = "--another-style")
+            public boolean anotherStyle;
+        }
+        CommandLine commandLine = new CommandLine(new App());
+        commandLine.setOptionsAbbrevAllowed(true);
+
+        ParseResult result = commandLine.parseArgs("--help", "--hello", "--version", "--cammelCaseOption", "--another-style");
+        assertTrue(result.hasMatchedOption("--help"));
+        assertTrue(result.hasMatchedOption("--hello"));
+        assertTrue(result.hasMatchedOption("--version"));
+        assertTrue(result.hasMatchedOption("--cammelCaseOption"));
+        assertTrue(result.hasMatchedOption("--another-style"));
+
+        result = commandLine.parseArgs("--help", "--hell", "--ver", "--cCO", "--a-s");
+        assertTrue(result.hasMatchedOption("--help"));
+        assertTrue(result.hasMatchedOption("--hello"));
+        assertTrue(result.hasMatchedOption("--version"));
+        assertTrue(result.hasMatchedOption("--cammelCaseOption"));
+        assertTrue(result.hasMatchedOption("--another-style"));
+
+        result = commandLine.parseArgs("--c-c-o", "--aS");
+        assertTrue(result.hasMatchedOption("--cammelCaseOption"));
+        assertTrue(result.hasMatchedOption("--another-style"));
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        PrintStream printStream = new PrintStream(output);
+        commandLine.setErr(new PrintWriter(printStream));
+        commandLine.execute("-h");
+
+        String content = new String(output.toByteArray(), "UTF-8")
+                .replaceAll("\r\n", "\n"); // Normalize line endings.
+        assertEquals("IllegalArgumentException: -h is not unique: it matches '-H', '--help', '--hello' while processing argument at or before arg[0] '-h' in [-h]: java.lang.IllegalArgumentException: -h is not unique: it matches '-H', '--help', '--hello'\n"
+                + "Usage: <main class> [-H] [--another-style] [--cammelCaseOption] [--hello]\n"
+                + "                    [--version]\n"
+                + "      --another-style\n"
+                + "      --cammelCaseOption\n"
+                + "  -H, --help\n"
+                + "      --hello\n"
+                + "      --version\n", content);
     }
 
     @Test
