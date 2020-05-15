@@ -810,24 +810,24 @@ public class CommandLine {
         return this;
     }
 
-    public boolean isAbbreviatedSubcommandsAllowed(boolean newValue) {
-        return getCommandSpec().allowAbbrevSubcommands();
+    public boolean isAbbreviatedSubcommandsAllowed() {
+        return getCommandSpec().parser().abbreviatedSubcommandsAllowed();
     }
 
     public CommandLine setAbbreviatedSubcommandsAllowed(boolean newValue) {
-        getCommandSpec().allowAbbrevSubcommands(newValue);
+        getCommandSpec().parser().abbreviatedSubcommandsAllowed(newValue);
         for (CommandLine command : getCommandSpec().subcommands().values()) {
             command.setAbbreviatedSubcommandsAllowed(newValue);
         }
         return this;
     }
 
-    public boolean isAbbreviatedOptionsAllowed(boolean newValue) {
-        return getCommandSpec().allowAbbrevOptions();
+    public boolean isAbbreviatedOptionsAllowed() {
+        return getCommandSpec().parser().abbreviatedOptionsAllowed();
     }
 
     public CommandLine setAbbreviatedOptionsAllowed(boolean newValue) {
-        getCommandSpec().allowAbbrevOptions(newValue);
+        getCommandSpec().parser().abbreviatedOptionsAllowed(newValue);
         for (CommandLine command : getCommandSpec().subcommands().values()) {
             command.setAbbreviatedOptionsAllowed(newValue);
         }
@@ -5649,10 +5649,6 @@ public class CommandLine {
             /** Constant Boolean holding the default setting for whether variables should be interpolated in String values: <code>{@value}</code>.*/
             static final Boolean DEFAULT_INTERPOLATE_VARIABLES = true;
 
-            static final Boolean DEFAULT_ALLOW_ABBREV_SUBCOMMANDS = false;
-
-            static final Boolean DEFAULT_ALLOW_ABBREV_OPTIONS = false;
-
             static final Boolean DEFAULT_SUBCOMMANDS_REPEATABLE = false;
 
             private final CaseAwareLinkedMap<String, CommandLine> commands = new CaseAwareLinkedMap<String, CommandLine>();
@@ -5679,8 +5675,6 @@ public class CommandLine {
             private CommandSpec parent;
             private Boolean isAddMethodSubcommands;
             private Boolean interpolateVariables;
-            private Boolean allowAbbrevSubcommands;
-            private Boolean allowAbbrevOptions;
 
             private String name;
             private Set<String> aliases = new LinkedHashSet<String>();
@@ -5711,8 +5705,6 @@ public class CommandLine {
                 result.methodParams = methodParams;
                 result.isAddMethodSubcommands = isAddMethodSubcommands;
                 result.interpolateVariables = interpolateVariables;
-                result.allowAbbrevSubcommands = allowAbbrevSubcommands;
-                result.allowAbbrevOptions = allowAbbrevOptions;
                 result.name = name;
                 result.aliases = aliases;
                 result.isHelpCommand = isHelpCommand;
@@ -6028,12 +6020,6 @@ public class CommandLine {
             /** Sets whether whether variables should be interpolated in String values. True by default.
              * @since 4.0 */
             public CommandSpec interpolateVariables(Boolean interpolate) { interpolateVariables = interpolate; return this; }
-
-            public boolean allowAbbrevSubcommands() { return (allowAbbrevSubcommands == null) ? DEFAULT_ALLOW_ABBREV_SUBCOMMANDS : allowAbbrevSubcommands; }
-            public CommandSpec allowAbbrevSubcommands(boolean allowAbbrevSubcommands) { this.allowAbbrevSubcommands = allowAbbrevSubcommands; return this; }
-
-            public boolean allowAbbrevOptions() { return (allowAbbrevOptions == null) ? DEFAULT_ALLOW_ABBREV_OPTIONS : allowAbbrevOptions; }
-            public CommandSpec allowAbbrevOptions(boolean allowAbbrevOptions) { this.allowAbbrevOptions = allowAbbrevOptions; return this; }
 
             /** Reflects on the class of the {@linkplain #userObject() user object} and registers any command methods
              * (class methods annotated with {@code @Command}) as subcommands.
@@ -7739,6 +7725,8 @@ public class CommandLine {
             private boolean toggleBooleanFlags = false;
             private boolean overwrittenOptionsAllowed = false;
             private boolean unmatchedArgumentsAllowed = false;
+            private boolean abbreviatedSubcommandsAllowed = false;
+            private boolean abbreviatedOptionsAllowed = false;
             private boolean expandAtFiles = true;
             private boolean useSimplifiedAtFiles = false;
             private Character atFileCommentChar = '#';
@@ -7768,6 +7756,10 @@ public class CommandLine {
             public boolean overwrittenOptionsAllowed()         { return overwrittenOptionsAllowed; }
             /** @see CommandLine#isUnmatchedArgumentsAllowed() */
             public boolean unmatchedArgumentsAllowed()         { return unmatchedArgumentsAllowed; }
+            /** @see CommandLine#isAbbreviatedSubcommandsAllowed() */
+            public boolean abbreviatedSubcommandsAllowed()         { return abbreviatedSubcommandsAllowed; }
+            /** @see CommandLine#isAbbreviatedOptionsAllowed() */
+            public boolean abbreviatedOptionsAllowed()         { return abbreviatedOptionsAllowed; }
             /** @see CommandLine#isExpandAtFiles() */
             public boolean expandAtFiles()                     { return expandAtFiles; }
             /** @see CommandLine#getAtFileCommentChar()
@@ -7822,6 +7814,10 @@ public class CommandLine {
             public ParserSpec overwrittenOptionsAllowed(boolean overwrittenOptionsAllowed) { this.overwrittenOptionsAllowed = overwrittenOptionsAllowed; return this; }
             /** @see CommandLine#setUnmatchedArgumentsAllowed(boolean) */
             public ParserSpec unmatchedArgumentsAllowed(boolean unmatchedArgumentsAllowed) { this.unmatchedArgumentsAllowed = unmatchedArgumentsAllowed; return this; }
+            /** @see CommandLine#setAbbreviatedSubcommandsAllowed(boolean) */
+            public ParserSpec abbreviatedSubcommandsAllowed(boolean abbreviatedSubcommandsAllowed) { this.abbreviatedSubcommandsAllowed = abbreviatedSubcommandsAllowed; return this; }
+            /** @see CommandLine#setAbbreviatedOptionsAllowed(boolean) */
+            public ParserSpec abbreviatedOptionsAllowed(boolean abbreviatedOptionsAllowed) { this.abbreviatedOptionsAllowed = abbreviatedOptionsAllowed; return this; }
             /** @see CommandLine#setExpandAtFiles(boolean) */
             public ParserSpec expandAtFiles(boolean expandAtFiles)                         { this.expandAtFiles = expandAtFiles; return this; }
             /** @see CommandLine#setAtFileCommentChar(Character)
@@ -12394,7 +12390,7 @@ public class CommandLine {
                 }
 
                 // if we find another command, we are done with the current command
-                if (commandSpec.allowAbbrevSubcommands()) {
+                if (commandSpec.parser().abbreviatedSubcommandsAllowed()) {
                     arg = NameMatcher.match(commandSpec.subcommands().keySet(), arg);
                 }
                 if (commandSpec.subcommands().containsKey(arg)) {
@@ -12418,7 +12414,7 @@ public class CommandLine {
                 // A single option may be without option parameters, like "-v" or "--verbose" (a boolean value),
                 // or an option may have one or more option parameters.
                 // A parameter may be attached to the option.
-                if (commandSpec.allowAbbrevOptions()) {
+                if (commandSpec.parser().abbreviatedOptionsAllowed()) {
                     Set<String> aggregatedOptionNames = new LinkedHashSet<String>();
                     aggregatedOptionNames.addAll(commandSpec.optionsMap().keySet());
                     aggregatedOptionNames.addAll(commandSpec.negatedOptionsMap().keySet());
