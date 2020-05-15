@@ -3948,8 +3948,7 @@ public class CommandLineTest {
 
         String content = new String(output.toByteArray(), "UTF-8")
                 .replaceAll("\r\n", "\n"); // Normalize line endings.
-        assertEquals("IllegalArgumentException: h is not unique: it matches 'hello', 'help' while processing argument at or before arg[0] 'h' in [h]: "
-                + "java.lang.IllegalArgumentException: h is not unique: it matches 'hello', 'help'\n"
+        assertEquals("Error: h is not unique: it matches 'hello', 'help'\n"
                 + "Usage: <main class> [COMMAND]\n"
                 + "Commands:\n"
                 + "  another-style\n"
@@ -4010,7 +4009,7 @@ public class CommandLineTest {
 
         String content = new String(output.toByteArray(), "UTF-8")
                 .replaceAll("\r\n", "\n"); // Normalize line endings.
-        assertEquals("IllegalArgumentException: -h is not unique: it matches '-H', '--help', '--hello' while processing argument at or before arg[0] '-h' in [-h]: java.lang.IllegalArgumentException: -h is not unique: it matches '-H', '--help', '--hello'\n"
+        assertEquals("Error: -h is not unique: it matches '-H', '--help', '--hello'\n"
                 + "Usage: <main class> [-H] [--[no-]another-style] [--[no-]cammelCaseOption]\n"
                 + "                    [--hello] [--version]\n"
                 + "      --[no-]another-style\n"
