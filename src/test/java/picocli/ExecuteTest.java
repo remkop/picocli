@@ -481,7 +481,9 @@ public class ExecuteTest {
         int exitCode = cmd.execute();
         assertEquals(1234, exitCode);
 
-        assertThat(this.systemErrRule.getLog(), startsWith("java.io.IOException: error"));
+        assertThat(this.systemErrRule.getLog(), startsWith(Help.Ansi.ON.new Text(format(
+                "@|fg(red),bold java.io.IOException: error|@"
+        )).toString()));
         assertThat(this.systemErrRule.getLog(), containsString("java.lang.IllegalStateException: test exception"));
     }
 
@@ -489,7 +491,7 @@ public class ExecuteTest {
     public void testExecuteCallableThrowsException() {
         int exitCode = new CommandLine(new MyCallable()).execute("-x", "abc");
         String cmd = "mycmd";
-        String msg = "java.lang.IllegalStateException: this is a test";
+        String msg = EXCEPTION_MESSAGE_ANSI;
         assertTrue(systemErrRule.getLog().startsWith(msg));
         assertEquals(ExitCode.SOFTWARE, exitCode);
     }
@@ -527,13 +529,17 @@ public class ExecuteTest {
         assertEquals(MYCALLABLE_USAGE_ANSI, sw.toString());
     }
 
+    private static final String EXCEPTION_MESSAGE_ANSI = Help.Ansi.ON.new Text(format(
+            "@|fg(red),bold java.lang.IllegalStateException: this is a test|@"
+    )).toString();
+
     @Test
     public void testCallWithFactory() {
         StringWriter sw = new StringWriter();
         int exitCode = new CommandLine(MyCallable.class, new InnerClassFactory(this))
                 .setErr(new PrintWriter(sw)).execute("-x", "a");
         assertEquals(ExitCode.SOFTWARE, exitCode);
-        assertThat(sw.toString(), startsWith("java.lang.IllegalStateException: this is a test"));
+        assertThat(sw.toString(), startsWith(EXCEPTION_MESSAGE_ANSI));
     }
 
     @Test
@@ -542,7 +548,7 @@ public class ExecuteTest {
         int exitCode = new CommandLine(MyRunnable.class, new InnerClassFactory(this))
                 .setErr(new PrintWriter(sw)).execute("-x", "a");
         assertEquals(ExitCode.SOFTWARE, exitCode);
-        assertThat(sw.toString(), startsWith("java.lang.IllegalStateException: this is a test"));
+        assertThat(sw.toString(), startsWith(EXCEPTION_MESSAGE_ANSI));
     }
 
     @Test
@@ -596,7 +602,9 @@ public class ExecuteTest {
         }
         StringWriter sw = new StringWriter();
         assertEquals(ExitCode.SOFTWARE, new CommandLine(new App()).setErr(new PrintWriter(sw)).execute());
-        assertThat(sw.toString(), startsWith("picocli.CommandLine$ExecutionException: abc"));
+        assertThat(sw.toString(), startsWith(Help.Ansi.ON.new Text(format(
+                "@|fg(red),bold picocli.CommandLine$ExecutionException: abc|@"
+        )).toString()));
     }
 
     @Test
@@ -610,7 +618,9 @@ public class ExecuteTest {
         }
         StringWriter sw = new StringWriter();
         assertEquals(ExitCode.SOFTWARE, new CommandLine(new App()).setErr(new PrintWriter(sw)).execute());
-        assertThat(sw.toString(), startsWith("picocli.CommandLine$ExecutionException: abc"));
+        assertThat(sw.toString(), startsWith(Help.Ansi.ON.new Text(format(
+                "@|fg(red),bold picocli.CommandLine$ExecutionException: abc|@"
+        )).toString()));
     }
 
     @Test
@@ -646,9 +656,10 @@ public class ExecuteTest {
         CommandLine cmd = new CommandLine(new App()).setExecutionStrategy(new FailingExecutionStrategy());
         assertEquals(ExitCode.SOFTWARE, cmd.execute());
 
-        String prefix = String.format("" +
-                "java.lang.IllegalArgumentException: abc%n" +
-                "\tat picocli.ExecuteTest$1FailingExecutionStrategy.execute(ExecuteTest.java");
+        String prefix = Help.Ansi.ON.new Text(format("" +
+                "@|fg(red),bold java.lang.IllegalArgumentException: abc|@%n" +
+                "@|italic \tat picocli.ExecuteTest$1FailingExecutionStrategy.execute(ExecuteTest.java|@")).toString();
+        prefix = prefix.substring(0, prefix.length() - Help.Ansi.Style.off(new Help.Ansi.IStyle[]{Help.Ansi.Style.italic, Help.Ansi.Style.reset}).length());
         assertTrue(systemErrRule.getLog().startsWith(prefix));
     }
 
@@ -805,9 +816,11 @@ public class ExecuteTest {
         cmd.setParameterExceptionHandler(pah);
         int exitCode = cmd.execute("-x");
         assertEquals(ExitCode.USAGE, exitCode);
-        String expected = String.format("" +
-                "java.lang.IllegalStateException: blah%n" +
-                "\tat %s.handleParseException(", pah.getClass().getName());
+        String expected = String.format(Help.Ansi.ON.new Text(format("" +
+                "@|fg(red),bold java.lang.IllegalStateException: blah|@%n" +
+                "@|italic \tat %s.handleParseException(|@", pah.getClass().getName())).toString());
+        expected = expected.substring(0, expected.length() - Help.Ansi.Style.off(new Help.Ansi.IStyle[]{Help.Ansi.Style.italic, Help.Ansi.Style.reset}).length());
+
         assertTrue(systemErrRule.getLog().startsWith(expected));
         assertEquals("", systemOutRule.getLog());
     }
