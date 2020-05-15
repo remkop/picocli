@@ -4,6 +4,11 @@ import org.junit.Test;
 import picocli.CommandLine.Help;
 import picocli.CommandLine.Help.ColorScheme;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -150,6 +155,102 @@ public class ColorSchemeTest {
     }
 
     @Test
+    public void testColorScheme_singleException() throws UnsupportedEncodingException {
+        @CommandLine.Command
+        class App implements Runnable{
+            public void run() {
+                throw new RuntimeException("This is a runtime exception");
+            }
+        }
+
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
+        System.setErr(new PrintStream(baos));
+
+        final String PROPERTY = "picocli.ansi";
+        String old = System.getProperty(PROPERTY);
+        System.setProperty(PROPERTY, "true");
+
+        CommandLine commandLine = new CommandLine(new App());
+        commandLine.execute(new String[0]);
+        ColorScheme colorScheme = commandLine.getColorScheme();
+
+        System.setErr(originalErr);
+
+        String actual = new String(baos.toByteArray(), "UTF8");
+        String[] outputs = actual.split(System.getProperty("line.separator"));
+
+        final String exceptionMessage = "java.lang.RuntimeException: This is a runtime exception";
+        final String stackTraceFirstLine = "\tat picocli.ColorSchemeTest$1App.run";
+        final String stackTraceANSIStart = Help.Ansi.Style.on(colorScheme.stackTraceStyles().toArray(new Help.Ansi.Style[0]));
+        final String stackTraceFirstLineWithANSIStart = stackTraceANSIStart + stackTraceFirstLine;
+
+        assertEquals(colorScheme.errorText(exceptionMessage).toString(), outputs[0]);
+        assertEquals(stackTraceFirstLineWithANSIStart, outputs[1].substring(0, stackTraceFirstLineWithANSIStart.length()));
+
+        if(old == null){
+            System.clearProperty(PROPERTY);
+        } else {
+            System.setProperty(PROPERTY, old);
+        }
+    }
+
+    @Test
+    public void testColorScheme_nestedException() throws UnsupportedEncodingException {
+        @CommandLine.Command
+        class App implements Runnable{
+            public void run() {
+                Exception e1 = new RuntimeException("Root Cause");
+                Exception e2 = new RuntimeException("Inner Exception", e1);
+                throw new RuntimeException("Outer Exception", e2);
+            }
+        }
+
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(2500);
+        System.setErr(new PrintStream(baos));
+
+        final String PROPERTY = "picocli.ansi";
+        String old = System.getProperty(PROPERTY);
+        System.setProperty(PROPERTY, "true");
+
+        CommandLine commandLine = new CommandLine(new App());
+        commandLine.execute(new String[0]);
+        ColorScheme colorScheme = commandLine.getColorScheme();
+
+        System.setErr(originalErr);
+
+        String actual = new String(baos.toByteArray(), "UTF8");
+        String[] outputs = actual.split(System.getProperty("line.separator"));
+
+        final String[] exceptionMessages = new String[]{"java.lang.RuntimeException: Outer Exception",
+                "Caused by: java.lang.RuntimeException: Inner Exception",
+                "Caused by: java.lang.RuntimeException: Root Cause"};
+
+        final String exceptionANSIStart = Help.Ansi.Style.on(colorScheme.errorStyles().toArray(new Help.Ansi.Style[0]));
+
+        int foundExceptionMessageCount = 0;
+        for (String line : outputs) {
+            if(line.startsWith(exceptionANSIStart + exceptionMessages[foundExceptionMessageCount])){
+                foundExceptionMessageCount++;
+
+                if(foundExceptionMessageCount==3){
+                    break;
+                }
+            }
+        }
+
+        assertEquals(3, foundExceptionMessageCount);
+
+        if(old == null){
+            System.clearProperty(PROPERTY);
+        } else {
+            System.setProperty(PROPERTY, old);
+        }
+    }
+
+
+    @Test
     public void testColorSchemeBuilder_customMarkupMapInitiallyNull() {
         ColorScheme.Builder builder = new ColorScheme.Builder();
         assertNull(builder.customMarkupMap());
@@ -175,4 +276,6 @@ public class ColorSchemeTest {
         assertNotSame(original.customMarkupMap(), builder.customMarkupMap());
         assertNotSame(map, builder.customMarkupMap());
     }
+
+
 }
