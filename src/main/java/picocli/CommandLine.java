@@ -2009,7 +2009,6 @@ public class CommandLine {
      */
     private static String exceptionToColorString(Exception ex, Help.ColorScheme existingColorScheme){
         Help.ColorScheme colorScheme = new Help.ColorScheme.Builder(existingColorScheme).applySystemProperties().build();
-        String newLine = System.getProperty("line.separator");
         StringWriter stringWriter = new ColorSchemedStringWriter(colorScheme);
         ex.printStackTrace(new PrintWriter(stringWriter));
         return stringWriter.toString();
