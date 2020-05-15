@@ -3963,10 +3963,10 @@ public class CommandLineTest {
             @Option(names = "--version")
             public boolean version;
 
-            @Option(names = "--cammelCaseOption")
+            @Option(names = "--cammelCaseOption", negatable = true)
             public boolean ccOption;
 
-            @Option(names = "--another-style")
+            @Option(names = "--another-style", negatable = true)
             public boolean anotherStyle;
         }
         CommandLine commandLine = new CommandLine(new App());
@@ -3990,6 +3990,10 @@ public class CommandLineTest {
         assertTrue(result.hasMatchedOption("--cammelCaseOption"));
         assertTrue(result.hasMatchedOption("--another-style"));
 
+        result = commandLine.parseArgs("--no-c-c-o", "--no-aS");
+        assertTrue(result.hasMatchedOption("--cammelCaseOption"));
+        assertTrue(result.hasMatchedOption("--another-style"));
+
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(output);
         commandLine.setErr(new PrintWriter(printStream));
@@ -3998,10 +4002,11 @@ public class CommandLineTest {
         String content = new String(output.toByteArray(), "UTF-8")
                 .replaceAll("\r\n", "\n"); // Normalize line endings.
         assertEquals("IllegalArgumentException: -h is not unique: it matches '-H', '--help', '--hello' while processing argument at or before arg[0] '-h' in [-h]: java.lang.IllegalArgumentException: -h is not unique: it matches '-H', '--help', '--hello'\n"
-                + "Usage: <main class> [-H] [--another-style] [--cammelCaseOption] [--hello]\n"
-                + "                    [--version]\n"
-                + "      --another-style\n"
-                + "      --cammelCaseOption\n"
+                + "Usage: <main class> [-H] [--[no-]another-style] [--[no-]cammelCaseOption]\n"
+                + "                    [--hello] [--version]\n"
+                + "      --[no-]another-style\n"
+                + "      --[no-]cammelCaseOption\n"
+                + "\n"
                 + "  -H, --help\n"
                 + "      --hello\n"
                 + "      --version\n", content);
