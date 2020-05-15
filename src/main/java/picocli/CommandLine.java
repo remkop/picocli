@@ -810,6 +810,30 @@ public class CommandLine {
         return this;
     }
 
+    public boolean isSubcommandsAbbrevAllowed(boolean newValue) {
+        return getCommandSpec().allowAbbrevSubcommands();
+    }
+
+    public CommandLine setSubcommandsAbbrevAllowed(boolean newValue) {
+        getCommandSpec().allowAbbrevSubcommands(newValue);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setSubcommandsAbbrevAllowed(newValue);
+        }
+        return this;
+    }
+
+    public boolean isOptionsAbbrevAllowed(boolean newValue) {
+        return getCommandSpec().allowAbbrevOptions();
+    }
+
+    public CommandLine setOptionsAbbrevAllowed(boolean newValue) {
+        getCommandSpec().allowAbbrevOptions(newValue);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setOptionsAbbrevAllowed(newValue);
+        }
+        return this;
+    }
+
     /** Returns the default value provider for the command, or {@code null} if none has been set.
      * @return the default value provider for this command, or {@code null}
      * @since 3.6
@@ -5663,6 +5687,8 @@ public class CommandLine {
             private CommandSpec parent;
             private Boolean isAddMethodSubcommands;
             private Boolean interpolateVariables;
+            private boolean allowAbbrevSubcommands;
+            private boolean allowAbbrevOptions;
 
             private String name;
             private Set<String> aliases = new LinkedHashSet<String>();
@@ -5693,6 +5719,8 @@ public class CommandLine {
                 result.methodParams = methodParams;
                 result.isAddMethodSubcommands = isAddMethodSubcommands;
                 result.interpolateVariables = interpolateVariables;
+                result.allowAbbrevSubcommands = allowAbbrevSubcommands;
+                result.allowAbbrevOptions = allowAbbrevOptions;
                 result.name = name;
                 result.aliases = aliases;
                 result.isHelpCommand = isHelpCommand;
@@ -6008,6 +6036,12 @@ public class CommandLine {
             /** Sets whether whether variables should be interpolated in String values. True by default.
              * @since 4.0 */
             public CommandSpec interpolateVariables(Boolean interpolate) { interpolateVariables = interpolate; return this; }
+
+            public boolean allowAbbrevSubcommands() { return allowAbbrevSubcommands; }
+            public CommandSpec allowAbbrevSubcommands(boolean allowAbbrevSubcommands) { this.allowAbbrevSubcommands = allowAbbrevSubcommands; return this; }
+
+            public boolean allowAbbrevOptions() { return allowAbbrevOptions; }
+            public CommandSpec allowAbbrevOptions(boolean allowAbbrevOptions) { this.allowAbbrevOptions = allowAbbrevOptions; return this; }
 
             /** Reflects on the class of the {@linkplain #userObject() user object} and registers any command methods
              * (class methods annotated with {@code @Command}) as subcommands.
@@ -12369,6 +12403,9 @@ public class CommandLine {
                 }
 
                 // if we find another command, we are done with the current command
+                if (commandSpec.allowAbbrevSubcommands()) {
+                    arg = NameMatcher.match(commandSpec.subcommands().keySet(), arg);
+                }
                 if (commandSpec.subcommands().containsKey(arg)) {
                     CommandLine subcommand = commandSpec.subcommands().get(arg);
                     processSubcommand(subcommand, parseResultBuilder, parsedCommands, args, required, originalArgs, nowProcessing, separator, arg);
@@ -12390,6 +12427,9 @@ public class CommandLine {
                 // A single option may be without option parameters, like "-v" or "--verbose" (a boolean value),
                 // or an option may have one or more option parameters.
                 // A parameter may be attached to the option.
+                if (commandSpec.allowAbbrevOptions()) {
+                    arg = NameMatcher.match(commandSpec.optionsMap().keySet(), arg);
+                }
                 LookBehind lookBehind = LookBehind.SEPARATE;
                 int separatorIndex = arg.indexOf(separator);
                 if (separatorIndex > 0) {
