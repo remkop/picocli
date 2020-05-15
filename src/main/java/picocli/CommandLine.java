@@ -12404,7 +12404,7 @@ public class CommandLine {
 
                 // if we find another command, we are done with the current command
                 if (commandSpec.parser().abbreviatedSubcommandsAllowed()) {
-                    arg = NameMatcher.match(commandSpec.subcommands().keySet(), arg);
+                    arg = AbbreviationMatcher.match(commandSpec.subcommands().keySet(), arg);
                 }
                 if (commandSpec.subcommands().containsKey(arg)) {
                     CommandLine subcommand = commandSpec.subcommands().get(arg);
@@ -12431,7 +12431,7 @@ public class CommandLine {
                     Set<String> aggregatedOptionNames = new LinkedHashSet<String>();
                     aggregatedOptionNames.addAll(commandSpec.optionsMap().keySet());
                     aggregatedOptionNames.addAll(commandSpec.negatedOptionsMap().keySet());
-                    arg = NameMatcher.match(aggregatedOptionNames, arg);
+                    arg = AbbreviationMatcher.match(aggregatedOptionNames, arg);
                 }
                 LookBehind lookBehind = LookBehind.SEPARATE;
                 int separatorIndex = arg.indexOf(separator);

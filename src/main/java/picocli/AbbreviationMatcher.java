@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-class NameMatcher {
+class AbbreviationMatcher {
     static List<String> splitIntoChunks(String command) {
         List<String> result = new ArrayList<String>();
         int start = 0;
