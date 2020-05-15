@@ -2010,12 +2010,45 @@ public class CommandLine {
     private static String exceptionToColorString(Exception ex, Help.ColorScheme existingColorScheme){
         Help.ColorScheme colorScheme = new Help.ColorScheme.Builder(existingColorScheme).applySystemProperties().build();
         String newLine = System.getProperty("line.separator");
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(colorScheme.errorText(ex.toString())).append(newLine);
-        for (StackTraceElement traceElement : ex.getStackTrace()) {
-            stringBuilder.append(colorScheme.stackTraceText("\tat " + traceElement)).append(newLine);
+        StringWriter stringWriter = new ColorSchemedStringWriter(colorScheme);
+        ex.printStackTrace(new PrintWriter(stringWriter));
+        return stringWriter.toString();
+    }
+
+    /**
+     * Extends StringWriter to use ColorScheme. Allows separating
+     * exception messages from stack traces by intercepting write method.
+     */
+    static class ColorSchemedStringWriter extends StringWriter {
+
+        Help.ColorScheme colorScheme;
+
+        public ColorSchemedStringWriter(Help.ColorScheme colorScheme) {
+            this.colorScheme = colorScheme;
         }
-        return stringBuilder.toString();
+
+        public ColorSchemedStringWriter(int initialSize, Help.ColorScheme colorScheme) {
+            super(initialSize);
+            this.colorScheme = colorScheme;
+        }
+
+        @Override
+        public void write(String str, int off, int len) {
+            if(str.startsWith("\t")){
+                // that's stacktrace
+                super.write(Style.on(colorScheme.stackTraceStyles().toArray(new IStyle[0])));
+            } else {
+                super.write(Style.on(colorScheme.errorStyles().toArray(new IStyle[0])));
+            }
+            super.write(str, off, len);
+            if(str.startsWith("\t")){
+                super.write(Style.off(colorScheme.stackTraceStyles().toArray(new IStyle[0])));
+            } else {
+                super.write(Style.off(reverseArray(colorScheme.errorStyles().toArray(new IStyle[0]))));
+            }
+            super.write(Style.reset.off());
+        }
+
     }
 
     private <T> T enrichForBackwardsCompatibility(T obj) {
