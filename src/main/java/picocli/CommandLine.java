@@ -12433,6 +12433,9 @@ public class CommandLine {
                 // A parameter may be attached to the option.
                 if (commandSpec.allowAbbrevOptions()) {
                     arg = NameMatcher.match(commandSpec.optionsMap().keySet(), arg);
+                    if (!isStandaloneOption(arg)) {
+                        arg = NameMatcher.match(commandSpec.negatedOptionsMap().keySet(), arg);
+                    }
                 }
                 LookBehind lookBehind = LookBehind.SEPARATE;
                 int separatorIndex = arg.indexOf(separator);
