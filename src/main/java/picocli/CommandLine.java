@@ -12413,7 +12413,7 @@ public class CommandLine {
                     try {
                         arg = AbbreviationMatcher.match(commandSpec.subcommands().keySet(), arg);
                     } catch (IllegalArgumentException ex) {
-                        throw new ParameterException(CommandLine.this, "Error: " + ex.getMessage(), ex);
+                        throw new ParameterException(CommandLine.this, "Error: " + ex.getMessage());
                     }
                 }
                 if (commandSpec.subcommands().containsKey(arg)) {
@@ -12437,14 +12437,20 @@ public class CommandLine {
                 // A single option may be without option parameters, like "-v" or "--verbose" (a boolean value),
                 // or an option may have one or more option parameters.
                 // A parameter may be attached to the option.
-                if (commandSpec.parser().abbreviatedOptionsAllowed()) {
+                if (commandSpec.parser().abbreviatedOptionsAllowed() && arg.startsWith("--")) {
                     Set<String> aggregatedOptionNames = new LinkedHashSet<String>();
                     aggregatedOptionNames.addAll(commandSpec.optionsMap().keySet());
                     aggregatedOptionNames.addAll(commandSpec.negatedOptionsMap().keySet());
+                    Iterator<String> iterator = aggregatedOptionNames.iterator();
+                    while (iterator.hasNext()) {
+                        if (!iterator.next().startsWith("--")) {
+                            iterator.remove();
+                        }
+                    }
                     try {
                         arg = AbbreviationMatcher.match(aggregatedOptionNames, arg);
                     } catch (IllegalArgumentException ex) {
-                        throw new ParameterException(CommandLine.this, "Error: " + ex.getMessage(), ex);
+                        throw new ParameterException(CommandLine.this, "Error: " + ex.getMessage());
                     }
                 }
                 LookBehind lookBehind = LookBehind.SEPARATE;
