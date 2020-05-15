@@ -5649,6 +5649,10 @@ public class CommandLine {
             /** Constant Boolean holding the default setting for whether variables should be interpolated in String values: <code>{@value}</code>.*/
             static final Boolean DEFAULT_INTERPOLATE_VARIABLES = true;
 
+            static final Boolean DEFAULT_ALLOW_ABBREV_SUBCOMMANDS = false;
+
+            static final Boolean DEFAULT_ALLOW_ABBREV_OPTIONS = false;
+
             static final Boolean DEFAULT_SUBCOMMANDS_REPEATABLE = false;
 
             private final CaseAwareLinkedMap<String, CommandLine> commands = new CaseAwareLinkedMap<String, CommandLine>();
@@ -5675,8 +5679,8 @@ public class CommandLine {
             private CommandSpec parent;
             private Boolean isAddMethodSubcommands;
             private Boolean interpolateVariables;
-            private boolean allowAbbrevSubcommands;
-            private boolean allowAbbrevOptions;
+            private Boolean allowAbbrevSubcommands;
+            private Boolean allowAbbrevOptions;
 
             private String name;
             private Set<String> aliases = new LinkedHashSet<String>();
@@ -6025,10 +6029,10 @@ public class CommandLine {
              * @since 4.0 */
             public CommandSpec interpolateVariables(Boolean interpolate) { interpolateVariables = interpolate; return this; }
 
-            public boolean allowAbbrevSubcommands() { return allowAbbrevSubcommands; }
+            public boolean allowAbbrevSubcommands() { return (allowAbbrevSubcommands == null) ? DEFAULT_ALLOW_ABBREV_SUBCOMMANDS : allowAbbrevSubcommands; }
             public CommandSpec allowAbbrevSubcommands(boolean allowAbbrevSubcommands) { this.allowAbbrevSubcommands = allowAbbrevSubcommands; return this; }
 
-            public boolean allowAbbrevOptions() { return allowAbbrevOptions; }
+            public boolean allowAbbrevOptions() { return (allowAbbrevOptions == null) ? DEFAULT_ALLOW_ABBREV_OPTIONS : allowAbbrevOptions; }
             public CommandSpec allowAbbrevOptions(boolean allowAbbrevOptions) { this.allowAbbrevOptions = allowAbbrevOptions; return this; }
 
             /** Reflects on the class of the {@linkplain #userObject() user object} and registers any command methods
