@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -1449,5 +1450,55 @@ public class ExecuteTest {
     @Test(expected = NullPointerException.class)
     public void testKeyValuesMapDisallowsNullValues() {
         keyValuesMap(null, null);
+    }
+
+    @Test
+    public void testIssue1048CauseException() {
+        @Command class Issue1048 implements Runnable {
+            public void run() {
+                try {
+                    throw new IOException("Bad IO!");
+                } catch (IOException ioe) {
+                    try {
+                        throw new Exception("I may have caught something", ioe);
+                    } catch (Exception ex) {
+                        try {
+                            throw new IllegalStateException("What state is this?", ex);
+                        } catch (IllegalStateException interruptedException) {
+                            throw new RuntimeException("not running any more...", interruptedException);
+                        }
+                    }
+                }
+            }
+        }
+        //System.setProperty("picocli.ansi", "true");
+        new CommandLine(new Issue1048()).execute();
+
+        Scanner scanner = new Scanner(systemErrRule.getLog());
+        List<String> lines = new ArrayList<String>();
+        while (scanner.hasNextLine()) {
+            lines.add(scanner.nextLine()
+                    .replaceAll("java:\\d+\\)", "java)") // strip out line numbers
+                    .replaceAll("\\.\\.\\. \\d+ more", "... some more") // strip out exact line count
+            );
+        }
+
+        assertEquals("java.lang.RuntimeException: not running any more...", lines.get(0));
+        assertEquals("\tat picocli.ExecuteTest$1Issue1048.run(ExecuteTest.java)", lines.get(1));
+
+        String[] expected = {
+                "Caused by: java.lang.IllegalStateException: What state is this?",
+                "\tat picocli.ExecuteTest$1Issue1048.run(ExecuteTest.java)",
+                "\t... some more",
+                "Caused by: java.lang.Exception: I may have caught something",
+                "\tat picocli.ExecuteTest$1Issue1048.run(ExecuteTest.java)",
+                "\t... some more",
+                "Caused by: java.io.IOException: Bad IO!",
+                "\tat picocli.ExecuteTest$1Issue1048.run(ExecuteTest.java)",
+                "\t... some more",
+        };
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i], lines.get(lines.size() - (expected.length - i)));
+        }
     }
 }
