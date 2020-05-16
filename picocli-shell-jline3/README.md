@@ -309,7 +309,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Example that demonstrates how to build an interactive shell with JLine3 and picocli.
- * @since 4.3.1
+ * @since 4.3.2
  */
 public class Example {
 

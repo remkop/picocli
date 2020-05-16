@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="4.3.2"></a> Picocli 4.3.2 (UNRELEASED)
+# <a name="4.3.2"></a> Picocli 4.3.2
 The picocli community is pleased to announce picocli 4.3.2.
 
 This release fixes a bug where the stack trace of an exception in the business logic would omit nested cause exceptions.
