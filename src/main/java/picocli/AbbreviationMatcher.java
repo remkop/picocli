@@ -45,29 +45,30 @@ class AbbreviationMatcher {
         }
         List<String> abbreviatedKeyChunks = splitIntoChunks(abbreviation);
         List<String> candidates = new ArrayList<String>();
-        next_key:
         for (String key : set) {
             List<String> keyChunks = splitIntoChunks(key);
-            if (abbreviatedKeyChunks.size() <= keyChunks.size() && keyChunks.get(0).startsWith(abbreviatedKeyChunks.get(0))) { // first chunk must match
-                int matchCount = 1;
-                int keyChunk = 1;
-                for (int i = 1; i < abbreviatedKeyChunks.size(); i++) {
-                    boolean found = false;
-                    for (int j = keyChunk; j < keyChunks.size(); j++) {
-                        if (keyChunks.get(j).startsWith(abbreviatedKeyChunks.get(i))) { // first chunk must match
-                            keyChunk = j + 1;
-                            found = true;
-                            break;
-                        }
+            if (abbreviatedKeyChunks.size() > keyChunks.size()) {
+                continue;
+            } else if (!keyChunks.get(0).startsWith(abbreviatedKeyChunks.get(0))) { // first chunk must match
+                continue;
+            }
+            int matchCount = 1, keyChunk = 1;
+            for (int i = 1; i < abbreviatedKeyChunks.size(); i++) {
+                boolean found = false;
+                for (int j = keyChunk; j < keyChunks.size(); j++) {
+                    if (keyChunks.get(j).startsWith(abbreviatedKeyChunks.get(i))) {
+                        keyChunk = j + 1;
+                        found = true;
+                        break;
                     }
-                    if (!found) { // not a candidate
-                        continue next_key;
-                    }
-                    matchCount++;
                 }
-                if (matchCount == abbreviatedKeyChunks.size()) {
-                    candidates.add(key);
+                if (!found) { // not a candidate
+                    break;
                 }
+                matchCount++;
+            }
+            if (matchCount == abbreviatedKeyChunks.size()) {
+                candidates.add(key);
             }
         }
         if (candidates.size() > 1) {
