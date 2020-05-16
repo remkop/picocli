@@ -123,7 +123,7 @@ public class ManPageGenerator {
                     "",
                     "Example",
                     "-------",
-                    "  java -cp \"myapp.jar;picocli-4.3.2.jar;picocli-codegen-4.3.2.jar\" " +
+                    "  java -cp \"myapp.jar;picocli-4.3.3-SNAPSHOT.jar;picocli-codegen-4.3.3-SNAPSHOT.jar\" " +
                             "picocli.codegen.docgen.manpage.ManPageGenerator my.pkg.MyClass"
             }
     )
