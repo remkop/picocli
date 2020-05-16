@@ -2009,7 +2009,7 @@ public class CommandLine {
      */
     private static String exceptionToColorString(Exception ex, Help.ColorScheme existingColorScheme) {
         Help.ColorScheme colorScheme = new Help.ColorScheme.Builder(existingColorScheme).applySystemProperties().build();
-        StringWriter stringWriter = new ColorSchemedStringWriter(colorScheme);
+        StringWriter stringWriter = new ColoredStackTraceWriter(colorScheme);
         ex.printStackTrace(new PrintWriter(stringWriter));
         return stringWriter.toString();
     }
@@ -2018,13 +2018,10 @@ public class CommandLine {
      * Extends StringWriter to use ColorScheme. Allows separating
      * exception messages from stack traces by intercepting write method.
      */
-    static class ColorSchemedStringWriter extends StringWriter {
-
+    static class ColoredStackTraceWriter extends StringWriter {
         Help.ColorScheme colorScheme;
 
-        public ColorSchemedStringWriter(Help.ColorScheme colorScheme) {
-            this.colorScheme = colorScheme;
-        }
+        public ColoredStackTraceWriter(Help.ColorScheme colorScheme) { this.colorScheme = colorScheme; }
 
         @Override
         public void write(String str, int off, int len) {

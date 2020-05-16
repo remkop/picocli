@@ -1472,19 +1472,10 @@ public class ExecuteTest {
     }
     @Test
     public void testIssue1048CauseExceptionWithoutANSI() {
-        final String PROPERTY = "picocli.ansi";
-        String old = System.getProperty(PROPERTY);
-        System.setProperty(PROPERTY, "false");
+        System.setProperty("picocli.ansi", "false");
         new CommandLine(new Issue1048()).execute();
 
-        Scanner scanner = new Scanner(systemErrRule.getLog());
-        List<String> lines = new ArrayList<String>();
-        while (scanner.hasNextLine()) {
-            lines.add(scanner.nextLine()
-                    .replaceAll("java:\\d+\\)", "java)") // strip out line numbers
-                    .replaceAll("\\.\\.\\. \\d+ more", "... some more") // strip out exact line count
-            );
-        }
+        List<String> lines = getSystemErrLines();
 
         assertEquals("java.lang.RuntimeException: not running any more...", lines.get(0));
         assertEquals("\tat picocli.ExecuteTest$Issue1048.run(ExecuteTest.java)", lines.get(1));
@@ -1503,24 +1494,9 @@ public class ExecuteTest {
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], lines.get(lines.size() - (expected.length - i)));
         }
-
-        if(old == null){
-            System.clearProperty(PROPERTY);
-        } else {
-            System.setProperty(PROPERTY, old);
-        }
     }
 
-    @Test
-    public void testIssue1048CauseExceptionWithANSI() {
-        final String PROPERTY = "picocli.ansi";
-        String old = System.getProperty(PROPERTY);
-        System.setProperty(PROPERTY, "true");
-
-        CommandLine commandLine = new CommandLine(new Issue1048());
-        commandLine.execute();
-        Help.ColorScheme colorScheme = commandLine.getColorScheme();
-
+    private List<String> getSystemErrLines() {
         Scanner scanner = new Scanner(systemErrRule.getLog());
         List<String> lines = new ArrayList<String>();
         while (scanner.hasNextLine()) {
@@ -1529,6 +1505,18 @@ public class ExecuteTest {
                     .replaceAll("\\.\\.\\. \\d+ more", "... some more") // strip out exact line count
             );
         }
+        return lines;
+    }
+
+    @Test
+    public void testIssue1048CauseExceptionWithANSI() {
+        System.setProperty("picocli.ansi", "true");
+
+        CommandLine commandLine = new CommandLine(new Issue1048());
+        commandLine.execute();
+        Help.ColorScheme colorScheme = commandLine.getColorScheme();
+
+        List<String> lines = getSystemErrLines();
 
         assertEquals(colorScheme.errorText("java.lang.RuntimeException: not running any more..."), lines.get(0));
         assertEquals(colorScheme.stackTraceText("\tat picocli.ExecuteTest$Issue1048.run(ExecuteTest.java)"), lines.get(1));
@@ -1547,49 +1535,37 @@ public class ExecuteTest {
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], lines.get(lines.size() - (expected.length - i)));
         }
-
-        if(old == null){
-            System.clearProperty(PROPERTY);
-        } else {
-            System.setProperty(PROPERTY, old);
-        }
     }
 
     @Test
     public void testIssue1048CauseExceptionWithCustomColorScheme() {
         System.setProperty("picocli.ansi", "true");
+
         CommandLine commandLine = new CommandLine(new Issue1048());
         Help.ColorScheme existing = commandLine.getColorScheme();
-        Help.ColorScheme customed = new Help.ColorScheme.Builder(existing)
+        Help.ColorScheme customScheme = new Help.ColorScheme.Builder(existing)
                 .errors(Help.Ansi.Style.bg_magenta)
                 .stackTraces(Help.Ansi.Style.bg_blue)
                 .build();
-        commandLine.setColorScheme(customed);
+        commandLine.setColorScheme(customScheme);
 
         commandLine.execute();
 
-        Scanner scanner = new Scanner(systemErrRule.getLog());
-        List<String> lines = new ArrayList<String>();
-        while (scanner.hasNextLine()) {
-            lines.add(scanner.nextLine()
-                    .replaceAll("java:\\d+\\)", "java)") // strip out line numbers
-                    .replaceAll("\\.\\.\\. \\d+ more", "... some more") // strip out exact line count
-            );
-        }
+        List<String> lines = getSystemErrLines();
 
-        assertEquals(customed.errorText("java.lang.RuntimeException: not running any more..."), lines.get(0));
-        assertEquals(customed.stackTraceText("\tat picocli.ExecuteTest$Issue1048.run(ExecuteTest.java)"), lines.get(1));
+        assertEquals(customScheme.errorText("java.lang.RuntimeException: not running any more..."), lines.get(0));
+        assertEquals(customScheme.stackTraceText("\tat picocli.ExecuteTest$Issue1048.run(ExecuteTest.java)"), lines.get(1));
 
         String[] expected = {
-                customed.errorText("Caused by: java.lang.IllegalStateException: What state is this?").toString(),
-                customed.stackTraceText("\tat picocli.ExecuteTest$Issue1048.run(ExecuteTest.java)").toString(),
-                customed.stackTraceText("\t... some more").toString(),
-                customed.errorText("Caused by: java.lang.Exception: I may have caught something").toString(),
-                customed.stackTraceText("\tat picocli.ExecuteTest$Issue1048.run(ExecuteTest.java)").toString(),
-                customed.stackTraceText("\t... some more").toString(),
-                customed.errorText("Caused by: java.io.IOException: Bad IO!").toString(),
-                customed.stackTraceText("\tat picocli.ExecuteTest$Issue1048.run(ExecuteTest.java)").toString(),
-                customed.stackTraceText("\t... some more").toString(),
+                customScheme.errorText("Caused by: java.lang.IllegalStateException: What state is this?").toString(),
+                customScheme.stackTraceText("\tat picocli.ExecuteTest$Issue1048.run(ExecuteTest.java)").toString(),
+                customScheme.stackTraceText("\t... some more").toString(),
+                customScheme.errorText("Caused by: java.lang.Exception: I may have caught something").toString(),
+                customScheme.stackTraceText("\tat picocli.ExecuteTest$Issue1048.run(ExecuteTest.java)").toString(),
+                customScheme.stackTraceText("\t... some more").toString(),
+                customScheme.errorText("Caused by: java.io.IOException: Bad IO!").toString(),
+                customScheme.stackTraceText("\tat picocli.ExecuteTest$Issue1048.run(ExecuteTest.java)").toString(),
+                customScheme.stackTraceText("\t... some more").toString(),
         };
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], lines.get(lines.size() - (expected.length - i)));

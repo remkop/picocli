@@ -188,7 +188,7 @@ public class ColorSchemeTest {
         assertEquals(colorScheme.errorText(exceptionMessage).toString(), outputs[0]);
         assertEquals(stackTraceFirstLineWithANSIStart, outputs[1].substring(0, stackTraceFirstLineWithANSIStart.length()));
 
-        if(old == null){
+        if (old == null) {
             System.clearProperty(PROPERTY);
         } else {
             System.setProperty(PROPERTY, old);
@@ -231,10 +231,10 @@ public class ColorSchemeTest {
 
         int foundExceptionMessageCount = 0;
         for (String line : outputs) {
-            if(line.startsWith(exceptionANSIStart + exceptionMessages[foundExceptionMessageCount])){
+            if (line.startsWith(exceptionANSIStart + exceptionMessages[foundExceptionMessageCount])) {
                 foundExceptionMessageCount++;
 
-                if(foundExceptionMessageCount==3){
+                if (foundExceptionMessageCount == 3) {
                     break;
                 }
             }
@@ -242,7 +242,7 @@ public class ColorSchemeTest {
 
         assertEquals(3, foundExceptionMessageCount);
 
-        if(old == null){
+        if (old == null) {
             System.clearProperty(PROPERTY);
         } else {
             System.setProperty(PROPERTY, old);
