@@ -2026,11 +2026,6 @@ public class CommandLine {
             this.colorScheme = colorScheme;
         }
 
-        public ColorSchemedStringWriter(int initialSize, Help.ColorScheme colorScheme) {
-            super(initialSize);
-            this.colorScheme = colorScheme;
-        }
-
         @Override
         public void write(String str, int off, int len) {
             List<IStyle> styles = str.startsWith("\t") ? colorScheme.stackTraceStyles() : colorScheme.errorStyles();
