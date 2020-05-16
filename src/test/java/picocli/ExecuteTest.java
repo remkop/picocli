@@ -1452,25 +1452,26 @@ public class ExecuteTest {
         keyValuesMap(null, null);
     }
 
-    @Test
-    public void testIssue1048CauseException() {
-        @Command class Issue1048 implements Runnable {
-            public void run() {
+    @Command
+    static class Issue1048 implements Runnable {
+        public void run() {
+            try {
+                throw new IOException("Bad IO!");
+            } catch (IOException ioe) {
                 try {
-                    throw new IOException("Bad IO!");
-                } catch (IOException ioe) {
+                    throw new Exception("I may have caught something", ioe);
+                } catch (Exception ex) {
                     try {
-                        throw new Exception("I may have caught something", ioe);
-                    } catch (Exception ex) {
-                        try {
-                            throw new IllegalStateException("What state is this?", ex);
-                        } catch (IllegalStateException interruptedException) {
-                            throw new RuntimeException("not running any more...", interruptedException);
-                        }
+                        throw new IllegalStateException("What state is this?", ex);
+                    } catch (IllegalStateException interruptedException) {
+                        throw new RuntimeException("not running any more...", interruptedException);
                     }
                 }
             }
         }
+    }
+    @Test
+    public void testIssue1048CauseException() {
         //System.setProperty("picocli.ansi", "true");
         new CommandLine(new Issue1048()).execute();
 
@@ -1484,17 +1485,17 @@ public class ExecuteTest {
         }
 
         assertEquals("java.lang.RuntimeException: not running any more...", lines.get(0));
-        assertEquals("\tat picocli.ExecuteTest$1Issue1048.run(ExecuteTest.java)", lines.get(1));
+        assertEquals("\tat picocli.ExecuteTest$Issue1048.run(ExecuteTest.java)", lines.get(1));
 
         String[] expected = {
                 "Caused by: java.lang.IllegalStateException: What state is this?",
-                "\tat picocli.ExecuteTest$1Issue1048.run(ExecuteTest.java)",
+                "\tat picocli.ExecuteTest$Issue1048.run(ExecuteTest.java)",
                 "\t... some more",
                 "Caused by: java.lang.Exception: I may have caught something",
-                "\tat picocli.ExecuteTest$1Issue1048.run(ExecuteTest.java)",
+                "\tat picocli.ExecuteTest$Issue1048.run(ExecuteTest.java)",
                 "\t... some more",
                 "Caused by: java.io.IOException: Bad IO!",
-                "\tat picocli.ExecuteTest$1Issue1048.run(ExecuteTest.java)",
+                "\tat picocli.ExecuteTest$Issue1048.run(ExecuteTest.java)",
                 "\t... some more",
         };
         for (int i = 0; i < expected.length; i++) {
