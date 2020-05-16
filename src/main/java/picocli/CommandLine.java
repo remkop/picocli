@@ -2007,7 +2007,7 @@ public class CommandLine {
      * @param existingColorScheme the {@code ColorScheme} to use
      * @return converted and colored {@code String}
      */
-    private static String exceptionToColorString(Exception ex, Help.ColorScheme existingColorScheme){
+    private static String exceptionToColorString(Exception ex, Help.ColorScheme existingColorScheme) {
         Help.ColorScheme colorScheme = new Help.ColorScheme.Builder(existingColorScheme).applySystemProperties().build();
         StringWriter stringWriter = new ColorSchemedStringWriter(colorScheme);
         ex.printStackTrace(new PrintWriter(stringWriter));
@@ -2033,21 +2033,9 @@ public class CommandLine {
 
         @Override
         public void write(String str, int off, int len) {
-            if(str.startsWith("\t")){
-                // that's stacktrace
-                super.write(Style.on(colorScheme.stackTraceStyles().toArray(new IStyle[0])));
-            } else {
-                super.write(Style.on(colorScheme.errorStyles().toArray(new IStyle[0])));
-            }
-            super.write(str, off, len);
-            if(str.startsWith("\t")){
-                super.write(Style.off(colorScheme.stackTraceStyles().toArray(new IStyle[0])));
-            } else {
-                super.write(Style.off(reverseArray(colorScheme.errorStyles().toArray(new IStyle[0]))));
-            }
-            super.write(Style.reset.off());
+            List<IStyle> styles = str.startsWith("\t") ? colorScheme.stackTraceStyles() : colorScheme.errorStyles();
+            super.write(colorScheme.apply(str.substring(off, len), styles).toString());
         }
-
     }
 
     private <T> T enrichForBackwardsCompatibility(T obj) {
