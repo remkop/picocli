@@ -1,5 +1,33 @@
 # picocli Release Notes
 
+# <a name="4.3.2"></a> Picocli 4.3.2 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.3.2.
+
+This release fixes a bug where the stack trace of an exception in the business logic would omit nested cause exceptions.
+
+This is the seventieth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.3.2-toc"></a> Table of Contents
+* [New and noteworthy](#4.3.2-new)
+* [Fixed issues](#4.3.2-fixes)
+* [Deprecations](#4.3.2-deprecated)
+* [Potential breaking changes](#4.3.2-breaking-changes)
+
+## <a name="4.3.2-new"></a> New and Noteworthy
+
+
+## <a name="4.3.2-fixes"></a> Fixed issues
+[#1048][#1049] Bugfix: Cause exception not printed by default execution exception handler. Thanks to [Neko Null](https://github.com/jerrylususu) for the pull request.
+
+
+## <a name="4.3.2-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.3.2-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 # <a name="4.3.1"></a> Picocli 4.3.1
 The picocli community is slightly embarrassed to announce picocli 4.3.1. :-)
 
