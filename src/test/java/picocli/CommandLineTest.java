@@ -3913,7 +3913,7 @@ public class CommandLineTest {
                 return 3;
             }
 
-            @Command(name = "cammelCaseSubcommand")
+            @Command(name = "camelCaseSubcommand")
             public int ccsCommand() {
                 return 4;
             }
@@ -3929,13 +3929,13 @@ public class CommandLineTest {
         assertEquals(1, commandLine.execute("help"));
         assertEquals(2, commandLine.execute("hello"));
         assertEquals(3, commandLine.execute("version"));
-        assertEquals(4, commandLine.execute("cammelCaseSubcommand"));
+        assertEquals(4, commandLine.execute("camelCaseSubcommand"));
         assertEquals(5, commandLine.execute("another-style"));
 
         assertEquals(1, commandLine.execute("help"));
         assertEquals(2, commandLine.execute("hell"));
         assertEquals(3, commandLine.execute("ver"));
-        assertEquals(4, commandLine.execute("cammel"));
+        assertEquals(4, commandLine.execute("camel"));
         assertEquals(4, commandLine.execute("cCS"));
         assertEquals(4, commandLine.execute("c-c-s"));
         assertEquals(5, commandLine.execute("aS"));
@@ -3952,7 +3952,7 @@ public class CommandLineTest {
                 + "Usage: <main class> [COMMAND]\n"
                 + "Commands:\n"
                 + "  another-style\n"
-                + "  cammelCaseSubcommand\n"
+                + "  camelCaseSubcommand\n"
                 + "  hello\n"
                 + "  help\n"
                 + "  version\n", content);
@@ -3971,7 +3971,7 @@ public class CommandLineTest {
             @Option(names = "--version")
             public boolean version;
 
-            @Option(names = "--cammelCaseOption", negatable = true)
+            @Option(names = "--camelCaseOption", negatable = true)
             public boolean ccOption;
 
             @Option(names = "--another-style", negatable = true)
@@ -3980,26 +3980,26 @@ public class CommandLineTest {
         CommandLine commandLine = new CommandLine(new App());
         commandLine.setAbbreviatedOptionsAllowed(true);
 
-        ParseResult result = commandLine.parseArgs("--help", "--hello", "--version", "--cammelCaseOption", "--another-style");
+        ParseResult result = commandLine.parseArgs("--help", "--hello", "--version", "--camelCaseOption", "--another-style");
         assertTrue(result.hasMatchedOption("--help"));
         assertTrue(result.hasMatchedOption("--hello"));
         assertTrue(result.hasMatchedOption("--version"));
-        assertTrue(result.hasMatchedOption("--cammelCaseOption"));
+        assertTrue(result.hasMatchedOption("--camelCaseOption"));
         assertTrue(result.hasMatchedOption("--another-style"));
 
         result = commandLine.parseArgs("--help", "--hell", "--ver", "--cCO", "--a-s");
         assertTrue(result.hasMatchedOption("--help"));
         assertTrue(result.hasMatchedOption("--hello"));
         assertTrue(result.hasMatchedOption("--version"));
-        assertTrue(result.hasMatchedOption("--cammelCaseOption"));
+        assertTrue(result.hasMatchedOption("--camelCaseOption"));
         assertTrue(result.hasMatchedOption("--another-style"));
 
         result = commandLine.parseArgs("--c-c-o", "--aS");
-        assertTrue(result.hasMatchedOption("--cammelCaseOption"));
+        assertTrue(result.hasMatchedOption("--camelCaseOption"));
         assertTrue(result.hasMatchedOption("--another-style"));
 
         result = commandLine.parseArgs("--no-c-c-o", "--no-aS");
-        assertTrue(result.hasMatchedOption("--cammelCaseOption"));
+        assertTrue(result.hasMatchedOption("--camelCaseOption"));
         assertTrue(result.hasMatchedOption("--another-style"));
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -4010,11 +4010,10 @@ public class CommandLineTest {
         String content = new String(output.toByteArray(), "UTF-8")
                 .replaceAll("\r\n", "\n"); // Normalize line endings.
         assertEquals("Error: --h is not unique: it matches '--help', '--hello'\n"
-                + "Usage: <main class> [-H] [--[no-]another-style] [--[no-]cammelCaseOption]\n"
+                + "Usage: <main class> [-H] [--[no-]another-style] [--[no-]camelCaseOption]\n"
                 + "                    [--hello] [--version]\n"
                 + "      --[no-]another-style\n"
-                + "      --[no-]cammelCaseOption\n"
-                + "\n"
+                + "      --[no-]camelCaseOption\n"
                 + "  -H, --help\n"
                 + "      --hello\n"
                 + "      --version\n", content);
