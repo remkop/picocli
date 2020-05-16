@@ -47,27 +47,7 @@ class AbbreviationMatcher {
         List<String> candidates = new ArrayList<String>();
         for (String key : set) {
             List<String> keyChunks = splitIntoChunks(key);
-            if (abbreviatedKeyChunks.size() > keyChunks.size()) {
-                continue;
-            } else if (!keyChunks.get(0).startsWith(abbreviatedKeyChunks.get(0))) { // first chunk must match
-                continue;
-            }
-            int matchCount = 1, keyChunk = 1;
-            for (int i = 1; i < abbreviatedKeyChunks.size(); i++) {
-                boolean found = false;
-                for (int j = keyChunk; j < keyChunks.size(); j++) {
-                    if (keyChunks.get(j).startsWith(abbreviatedKeyChunks.get(i))) {
-                        keyChunk = j + 1;
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) { // not a candidate
-                    break;
-                }
-                matchCount++;
-            }
-            if (matchCount == abbreviatedKeyChunks.size()) {
+            if (matchKeyChunks(abbreviatedKeyChunks, keyChunks)) {
                 candidates.add(key);
             }
         }
@@ -77,5 +57,27 @@ class AbbreviationMatcher {
                     str.substring(1, str.length() - 1).replace(", ", "', '") + "'");
         }
         return candidates.isEmpty() ? abbreviation : candidates.get(0); // return the original if no match found
+    }
+
+    private static boolean matchKeyChunks(List<String> abbreviatedKeyChunks, List<String> keyChunks) {
+        if (abbreviatedKeyChunks.size() > keyChunks.size()) {
+            return false;
+        } else if (!keyChunks.get(0).startsWith(abbreviatedKeyChunks.get(0))) { // first chunk must match
+            return false;
+        }
+        int matchCount = 1, lastMatchChunk = 1;
+        for (int i = 1; i < abbreviatedKeyChunks.size(); i++, matchCount++) {
+            boolean found = false;
+            for (int j = lastMatchChunk; j < keyChunks.size(); j++) {
+                if (found = keyChunks.get(j).startsWith(abbreviatedKeyChunks.get(i))) {
+                    lastMatchChunk = j + 1;
+                    break;
+                }
+            }
+            if (!found) { // not a candidate
+                break;
+            }
+        }
+        return matchCount == abbreviatedKeyChunks.size();
     }
 }
