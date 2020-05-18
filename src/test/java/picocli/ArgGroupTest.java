@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 import static picocli.ArgGroupTest.CommandMethodsWithGroupsAndMixins.InvokedSub.withMixin;
@@ -2041,6 +2042,71 @@ public class ArgGroupTest {
         assertFalse(c2.exclusive.y);
         assertTrue(c2.exclusive.z);
         assertNull(c2.dependent);
+    }
+
+    static class Issue1054 {
+        @ArgGroup(exclusive = false, multiplicity = "1..*")
+        private List<Modification> modifications = null;
+
+        private static class Modification {
+            @Option(names = { "-f", "--find" }, required = true)
+            public Pattern findPattern = null;
+
+            @ArgGroup(exclusive = true, multiplicity = "1")
+            private Change  change      = null;
+        }
+
+        private static class Change {
+            @Option(names = { "-d", "--delete" }, required = true)
+            public boolean delete      = false;
+            @Option(names = { "-w", "--replace-with" }, required = true)
+            public String  replacement = null;
+        }
+    }
+    @Ignore
+    @Test // https://github.com/remkop/picocli/issues/1054
+    public void testIssue1054() {
+        //-f pattern -d --> accepted --> ok
+        Issue1054 bean1 = new Issue1054();
+        new CommandLine(bean1).parseArgs("-f pattern -d".split(" "));
+        assertEquals(1, bean1.modifications.size());
+        assertEquals("pattern", bean1.modifications.get(0).findPattern.pattern());
+        assertTrue(bean1.modifications.get(0).change.delete);
+        assertNull(bean1.modifications.get(0).change.replacement);
+
+        //-f pattern -w text --> accepted --> ok
+        Issue1054 bean2 = new Issue1054();
+        new CommandLine(bean2).parseArgs("-f pattern -w text".split(" "));
+        assertEquals(1, bean2.modifications.size());
+        assertEquals("pattern", bean2.modifications.get(0).findPattern.pattern());
+        assertFalse(bean2.modifications.get(0).change.delete);
+        assertEquals("text", bean2.modifications.get(0).change.replacement);
+
+        //-f pattern -d -w text --> error --> ok
+        try {
+            new CommandLine(new Issue1054()).parseArgs("-f pattern -d -w text".split(" "));
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): --find=<findPattern>", ex.getMessage());
+        }
+
+        //-d -f pattern -w text --> error --> ok
+        try {
+            new CommandLine(new Issue1054()).parseArgs("-d -f pattern -w text".split(" "));
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): --find=<findPattern>", ex.getMessage());
+        }
+
+        //-f pattern1 -f pattern2 -d --> accepted --> wrong: findPattern = "pattern2", "pattern1" is lost/ignored
+        try {
+            Issue1054 bean3 = new Issue1054();
+            new CommandLine(bean3).parseArgs("-f pattern1 -f pattern2 -d".split(" "));
+            System.out.println(bean3);
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: (...)", ex.getMessage()); // TODO exact error message
+        }
     }
 
     static class CompositeGroupSynopsisDemo {
