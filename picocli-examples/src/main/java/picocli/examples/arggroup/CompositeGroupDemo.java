@@ -2,17 +2,19 @@ package picocli.examples.arggroup;
 
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
+import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 import java.util.List;
 
+@Command(name = "repeating-composite-demo")
 public class CompositeGroupDemo {
 
     @ArgGroup(exclusive = false, multiplicity = "1..*")
     List<Composite> composites;
 
     static class Composite {
-        @ArgGroup(exclusive = false, multiplicity = "1")
+        @ArgGroup(exclusive = false, multiplicity = "0..1")
         Dependent dependent;
 
         @ArgGroup(exclusive = true, multiplicity = "1")

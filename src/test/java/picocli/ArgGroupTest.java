@@ -1974,7 +1974,7 @@ public class ArgGroupTest {
         List<Composite> composites;
 
         static class Composite {
-            @ArgGroup(exclusive = false, multiplicity = "1")
+            @ArgGroup(exclusive = false, multiplicity = "0..1")
             Dependent dependent;
 
             @ArgGroup(exclusive = true, multiplicity = "1")
@@ -2018,6 +2018,29 @@ public class ArgGroupTest {
         assertEquals(2, c2.dependent.a);
         assertEquals(2, c2.dependent.b);
         assertEquals(2, c2.dependent.c);
+    }
+
+    @Test
+    public void testIssue1053NPE() {
+        CompositeGroupDemo example = new CompositeGroupDemo();
+        CommandLine cmd = new CommandLine(example);
+
+        cmd.parseArgs("-a 1 -b 1 -c 1 -x -z".split(" "));
+
+        assertEquals(2, example.composites.size());
+        CompositeGroupDemo.Composite c1 = example.composites.get(0);
+        assertTrue(c1.exclusive.x);
+        assertFalse(c1.exclusive.y);
+        assertFalse(c1.exclusive.z);
+        assertEquals(1, c1.dependent.a);
+        assertEquals(1, c1.dependent.b);
+        assertEquals(1, c1.dependent.c);
+
+        CompositeGroupDemo.Composite c2 = example.composites.get(1);
+        assertFalse(c2.exclusive.x);
+        assertFalse(c2.exclusive.y);
+        assertTrue(c2.exclusive.z);
+        assertNull(c2.dependent);
     }
 
     static class CompositeGroupSynopsisDemo {
