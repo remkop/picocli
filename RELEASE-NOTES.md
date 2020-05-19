@@ -1,5 +1,33 @@
 # picocli Release Notes
 
+# <a name="4.4.0"></a> Picocli 4.4.0 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.4.0.
+
+This release contains bugfixes and enhancements.
+
+This is the seventy-first public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.4.0-toc"></a> Table of Contents
+* [New and noteworthy](#4.4.0-new)
+* [Fixed issues](#4.4.0-fixes)
+* [Deprecations](#4.4.0-deprecated)
+* [Potential breaking changes](#4.4.0-breaking-changes)
+
+## <a name="4.4.0-new"></a> New and Noteworthy
+
+
+## <a name="4.4.0-fixes"></a> Fixed issues
+[#1051][#1056] Enhancement: `GenerateCompletion` command no longer needs to be a direct subcommand of the root command. Thanks to [Philippe Charles](https://github.com/charphi) for the pull request.
+
+
+## <a name="4.4.0-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.4.0-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 # <a name="4.3.2"></a> Picocli 4.3.2
 The picocli community is pleased to announce picocli 4.3.2.
 
