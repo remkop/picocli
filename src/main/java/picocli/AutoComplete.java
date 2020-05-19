@@ -205,7 +205,7 @@ public class AutoComplete {
      * This class can be used as a subcommand for the top-level command in your application.
      * Users can then install completion for the top-level command by running the following command:
      * </p><pre>
-     * source &lt;(top-level-command [sub-commands] generate-completion)
+     * source &lt;(top-level-command [sub-command] generate-completion)
      * </pre>
      * @since 4.1
      */
