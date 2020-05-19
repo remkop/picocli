@@ -852,8 +852,8 @@ Then, when invoking the `asciidoctor` tool, specify the directory containing the
 [source,bash]
 ----
 # generate man pages in troff format in build/docs/manpage
-asciidoctor --backend=manpage --source-dir=src/docs/man-templates --destination-dir=build/docs
+asciidoctor --backend=manpage --source-dir=src/docs/man-templates --destination-dir=build/docs *.adoc
 
 # generate man pages in HTML format in build/docs/html5
-asciidoctor --backend=html5 --source-dir=src/docs/man-templates --destination-dir=build/docs
+asciidoctor --backend=html5 --source-dir=src/docs/man-templates --destination-dir=build/docs *.adoc
 ----

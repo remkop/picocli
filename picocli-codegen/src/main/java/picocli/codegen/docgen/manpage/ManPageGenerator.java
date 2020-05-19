@@ -115,7 +115,7 @@ public class ManPageGenerator {
             footerHeading = "%nConverting to Man Page Format%n%n",
             footer = {"Use the `asciidoctor` tool to convert the generated AsciiDoc files to man pages in roff format:",
                     "",
-                    "`asciidoctor --backend=manpage --source-dir=SOURCE_DIR --destination-dir=DESTINATION` ",
+                    "`asciidoctor --backend=manpage --source-dir=SOURCE_DIR --destination-dir=DESTINATION *.adoc`",
                     "",
                     "Point the SOURCE_DIR to either the `--outdir` directory or the `--template-dir` directory. Use some other directory as the DESTINATION.",
                     "See https://asciidoctor.org/docs/user-manual/#man-pages",
