@@ -19,6 +19,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.4.0-fixes"></a> Fixed issues
 [#1051][#1056] Enhancement: `GenerateCompletion` command no longer needs to be a direct subcommand of the root command. Thanks to [Philippe Charles](https://github.com/charphi) for the pull request.
+[#1058][#1059] Man page generator: fix incorrect asciidoctor call in synopsis.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 
 ## <a name="4.4.0-deprecated"></a> Deprecations
