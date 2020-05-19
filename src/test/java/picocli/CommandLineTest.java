@@ -3959,6 +3959,71 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testCaseInsensitiveAbbrevSubcommands() throws Exception {
+        @Command
+        class App {
+            @Command(name = "help")
+            public int helpCommand() {
+                return 1;
+            }
+
+            @Command(name = "hello")
+            public int helloCommand() {
+                return 2;
+            }
+
+            @Command(name = "version")
+            public int versionCommand() {
+                return 3;
+            }
+
+            @Command(name = "camelCaseSubcommand")
+            public int ccsCommand() {
+                return 4;
+            }
+
+            @Command(name = "another-style")
+            public int asCommand() {
+                return 5;
+            }
+        }
+        CommandLine commandLine = new CommandLine(new App());
+        commandLine.setAbbreviatedSubcommandsAllowed(true);
+        commandLine.setSubcommandsCaseInsensitive(true);
+
+        assertEquals(1, commandLine.execute("HELP"));
+        assertEquals(2, commandLine.execute("HELLO"));
+        assertEquals(3, commandLine.execute("VERSION"));
+        assertEquals(4, commandLine.execute("CAMELCASESUBCOMMAND"));
+        assertEquals(5, commandLine.execute("ANOTHER-STYLE"));
+
+        assertEquals(1, commandLine.execute("help"));
+        assertEquals(2, commandLine.execute("hell"));
+        assertEquals(3, commandLine.execute("ver"));
+        assertEquals(4, commandLine.execute("camel"));
+        assertEquals(4, commandLine.execute("CAMEL"));
+        assertEquals(5, commandLine.execute("a-S"));
+        assertEquals(5, commandLine.execute("A-s"));
+        assertEquals(5, commandLine.execute("ANOTHER"));
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        PrintStream printStream = new PrintStream(output);
+        commandLine.setErr(new PrintWriter(printStream));
+        commandLine.execute("h");
+
+        String content = new String(output.toByteArray(), "UTF-8")
+                .replaceAll("\r\n", "\n"); // Normalize line endings.
+        assertEquals("Error: h is not unique: it matches 'hello', 'help'\n"
+                + "Usage: <main class> [COMMAND]\n"
+                + "Commands:\n"
+                + "  another-style\n"
+                + "  camelCaseSubcommand\n"
+                + "  hello\n"
+                + "  help\n"
+                + "  version\n", content);
+    }
+
+    @Test
     public void testAbbrevOptions() throws Exception {
         @Command
         class App {

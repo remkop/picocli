@@ -12411,7 +12411,7 @@ public class CommandLine {
                 // if we find another command, we are done with the current command
                 if (commandSpec.parser().abbreviatedSubcommandsAllowed()) {
                     try {
-                        arg = AbbreviationMatcher.match(commandSpec.subcommands().keySet(), arg);
+                        arg = AbbreviationMatcher.match(commandSpec.subcommands().keySet(), arg, commandSpec.subcommandsCaseInsensitive());
                     } catch (IllegalArgumentException ex) {
                         throw new ParameterException(CommandLine.this, "Error: " + ex.getMessage());
                     }
@@ -12448,7 +12448,7 @@ public class CommandLine {
                         }
                     }
                     try {
-                        arg = AbbreviationMatcher.match(aggregatedOptionNames, arg);
+                        arg = AbbreviationMatcher.match(aggregatedOptionNames, arg, commandSpec.optionsCaseInsensitive());
                     } catch (IllegalArgumentException ex) {
                         throw new ParameterException(CommandLine.this, "Error: " + ex.getMessage());
                     }

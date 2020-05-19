@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.Set;
 
 class AbbreviationMatcher {
-    static List<String> splitIntoChunks(String command) {
+    public static List<String> splitIntoChunks(String command, boolean caseInsensitive) {
         List<String> result = new ArrayList<String>();
         int start = 0;
         for (int i = 0, codepoint; i < command.length(); i += Character.charCount(codepoint)) {
             codepoint = command.codePointAt(i);
-            if (Character.isUpperCase(codepoint) || '-' == codepoint) {
+            if ((!caseInsensitive && Character.isUpperCase(codepoint)) || '-' == codepoint) {
                 String chunk = makeCanonical(command.substring(start, i));
                 if (chunk.length() > 0) {
                     result.add(chunk);
@@ -39,15 +39,15 @@ class AbbreviationMatcher {
         return str;
     }
 
-    static String match(Set<String> set, String abbreviation) {
+    public static String match(Set<String> set, String abbreviation, boolean caseInsensitive) {
         if (set.contains(abbreviation)) { // return exact match
             return abbreviation;
         }
-        List<String> abbreviatedKeyChunks = splitIntoChunks(abbreviation);
+        List<String> abbreviatedKeyChunks = splitIntoChunks(abbreviation, caseInsensitive);
         List<String> candidates = new ArrayList<String>();
         for (String key : set) {
-            List<String> keyChunks = splitIntoChunks(key);
-            if (matchKeyChunks(abbreviatedKeyChunks, keyChunks)) {
+            List<String> keyChunks = splitIntoChunks(key, caseInsensitive);
+            if (matchKeyChunks(abbreviatedKeyChunks, keyChunks, caseInsensitive)) {
                 candidates.add(key);
             }
         }
@@ -59,17 +59,17 @@ class AbbreviationMatcher {
         return candidates.isEmpty() ? abbreviation : candidates.get(0); // return the original if no match found
     }
 
-    private static boolean matchKeyChunks(List<String> abbreviatedKeyChunks, List<String> keyChunks) {
+    private static boolean matchKeyChunks(List<String> abbreviatedKeyChunks, List<String> keyChunks, boolean caseInsensitive) {
         if (abbreviatedKeyChunks.size() > keyChunks.size()) {
             return false;
-        } else if (!keyChunks.get(0).startsWith(abbreviatedKeyChunks.get(0))) { // first chunk must match
+        } else if (!startsWith(keyChunks.get(0), abbreviatedKeyChunks.get(0), caseInsensitive)) { // first chunk must match
             return false;
         }
         int matchCount = 1, lastMatchChunk = 1;
         for (int i = 1; i < abbreviatedKeyChunks.size(); i++, matchCount++) {
             boolean found = false;
             for (int j = lastMatchChunk; j < keyChunks.size(); j++) {
-                if (found = keyChunks.get(j).startsWith(abbreviatedKeyChunks.get(i))) {
+                if (found = startsWith(keyChunks.get(j), abbreviatedKeyChunks.get(i), caseInsensitive)) {
                     lastMatchChunk = j + 1;
                     break;
                 }
@@ -79,5 +79,13 @@ class AbbreviationMatcher {
             }
         }
         return matchCount == abbreviatedKeyChunks.size();
+    }
+
+    private static boolean startsWith(String str, String prefix, boolean caseInsensitive) {
+        if (prefix.length() > str.length()) {
+            return false;
+        }
+        String strPrefix = str.substring(0, prefix.length());
+        return caseInsensitive ? strPrefix.equalsIgnoreCase(prefix) : strPrefix.equals(prefix);
     }
 }
