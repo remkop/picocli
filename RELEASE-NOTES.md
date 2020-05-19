@@ -39,7 +39,7 @@ This release fixes some critical bugs:
 
 See [Fixed issues](#4.3.1-fixes) for the full list of changes.
 
-This is the sixty-nineth public release.
+This is the sixty-ninth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.3.1-toc"></a> Table of Contents
@@ -1213,7 +1213,7 @@ The picocli community is pleased to announce picocli 4.0.2.
 
 This release contains a bugfixes and enhancements.
 
-This is the fifty-nineth public release.
+This is the fifty-ninth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.0.2"></a> Table of Contents
@@ -3363,7 +3363,7 @@ Bugfixes:
 * Method subcommands in commands that subclass another command caused `InitializationException`.
 
 
-This is the forty-nineth public release.
+This is the forty-ninth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="3.9.4"></a> Table of Contents
@@ -4020,7 +4020,7 @@ This release also contains various improvements the the bash/zsh completion scri
 
 Many thanks to the many members of the picocli community who raised issues and contributed solutions! 
 
-This is the thirty-nineth public release.
+This is the thirty-ninth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="3.6.0"></a> Table of Contents
