@@ -30,8 +30,8 @@ public class InterpolatorTest {
         CommandSpec hierarchy = createTestSpec();
         CommandSpec spec = hierarchy.subcommands().get("sub").getSubcommands().get("subsub").getCommandSpec();
         Interpolator interpolator = new Interpolator(spec);
-        String original = "This is a description for ${COMMAND-NAME}, whose fqcn is ${COMMAND-FULL-NAME}. It's parent is ${PARENT-COMMAND-NAME}, also known as ${PARENT-COMMAND-FULL-NAME}.";
-        String expected = "This is a description for subsub, whose fqcn is top sub subsub. It's parent is sub, also known as top sub.";
+        String original = "This is a description for ${COMMAND-NAME}, whose fqcn is ${COMMAND-FULL-NAME}. It's parent is ${PARENT-COMMAND-NAME}, also known as ${PARENT-COMMAND-FULL-NAME}. It's root is ${ROOT-COMMAND-NAME}.";
+        String expected = "This is a description for subsub, whose fqcn is top sub subsub. It's parent is sub, also known as top sub. It's root is top.";
         assertEquals(expected, interpolator.interpolate(original));
     }
 

@@ -200,22 +200,22 @@ public class AutoComplete {
     }
 
     /**
-     * Command that generates a Bash/ZSH completion script for its parent command (which should be the top-level command).
+     * Command that generates a Bash/ZSH completion script for its top-level command.
      * <p>
      * This class can be used as a subcommand for the top-level command in your application.
      * Users can then install completion for the top-level command by running the following command:
      * </p><pre>
-     * source &lt;(top-level-command generate-completion)
+     * source &lt;(top-level-command [sub-commands] generate-completion)
      * </pre>
      * @since 4.1
      */
     @Command(name = "generate-completion", version = "generate-completion " + CommandLine.VERSION,
             mixinStandardHelpOptions = true,
             description = {
-                "Generate bash/zsh completion script for ${PARENT-COMMAND-NAME:-the parent command of this command}.",
-                "Run the following command to give `${PARENT-COMMAND-NAME:-$PARENTCOMMAND}` TAB completion in the current shell:",
+                "Generate bash/zsh completion script for ${ROOT-COMMAND-NAME:-the root command of this command}.",
+                "Run the following command to give `${ROOT-COMMAND-NAME:-$PARENTCOMMAND}` TAB completion in the current shell:",
                 "",
-                "  source <(${PARENT-COMMAND-NAME:-$PARENTCOMMAND} ${COMMAND-NAME})",
+                "  source <(${PARENT-COMMAND-FULL-NAME:-$PARENTCOMMAND} ${COMMAND-NAME})",
                 ""},
             optionListHeading = "Options:%n",
             helpCommand = true
@@ -226,8 +226,8 @@ public class AutoComplete {
 
         public void run() {
             String script = AutoComplete.bash(
-                    spec.parent().name(),
-                    spec.parent().commandLine());
+                    spec.root().name(),
+                    spec.root().commandLine());
             // not PrintWriter.println: scripts with Windows line separators fail in strange ways!
             spec.commandLine().getOut().print(script);
             spec.commandLine().getOut().print('\n');
