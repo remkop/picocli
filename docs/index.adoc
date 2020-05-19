@@ -5388,6 +5388,7 @@ The following variables are predefined:
 |`${COMMAND-FULL-NAME}`| 4.0 | any section of the usage help message for a command| replaced with the fully qualified name of the command (that is, preceded by its parent fully qualified name)
 |`${PARENT-COMMAND-NAME}`| 4.0 | any section of the usage help message for a command| replaced with the name of its parent command
 |`${PARENT-COMMAND-FULL-NAME}`| 4.0 | any section of the usage help message for a command| replaced with the fully qualified name of its parent command (that is, preceded by the name(s) of the parent command's ancestor commands)
+|`${ROOT-COMMAND-NAME}`| 4.4 | any section of the usage help message for a command| replaced with the name of the root command
 |===
 
 === Custom Variables
