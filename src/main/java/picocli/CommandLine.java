@@ -11060,6 +11060,7 @@ public class CommandLine {
                                 : "COMMAND-FULL-NAME".equals(key) ? commandSpec.qualifiedName()
                                 : "PARENT-COMMAND-NAME".equals(key) && commandSpec.parent() != null ? commandSpec.parent().name()
                                 : "PARENT-COMMAND-FULL-NAME".equals(key) && commandSpec.parent() != null ? commandSpec.parent().qualifiedName()
+                                : "ROOT-COMMAND-NAME".equals(key) ? commandSpec.root().name()
                                 : null;
                         if (result == null) { result = System.getProperty(key); }
                         if (result == null) { result = System.getenv(key); }

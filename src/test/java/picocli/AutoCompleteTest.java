@@ -16,15 +16,9 @@
 package picocli;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.Assertion;
-import org.junit.contrib.java.lang.system.ExpectedSystemExit;
-import org.junit.contrib.java.lang.system.ProvideSystemProperty;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.contrib.java.lang.system.SystemErrRule;
-import org.junit.contrib.java.lang.system.SystemOutRule;
+import org.junit.contrib.java.lang.system.*;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
@@ -33,23 +27,12 @@ import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
@@ -1802,4 +1785,55 @@ public class AutoCompleteTest {
                 "\n", commandName, CommandLine.VERSION);
     }
 
+
+    @Test
+    public void testNestedCompletion() {
+        @Command(name="Demo", subcommands = { NestedLevel1.class } )
+        class NestedCompletionDemo implements Runnable {
+            public void run() { }
+        }
+
+        CommandLine root = new CommandLine(new NestedCompletionDemo());
+        String expectedRoot = String.format("" +
+                "Usage: Demo [COMMAND]%n" +
+                "Commands:%n" +
+                "  Level1%n");
+        assertEquals(expectedRoot, root.getUsageMessage(CommandLine.Help.Ansi.OFF));
+
+        CommandLine level2 = root
+                .getSubcommands().get("Level1")
+                .getSubcommands().get("Level2");
+        String expectedLevel2 = String.format("" +
+                "Usage: Demo Level1 Level2 [COMMAND]%n" +
+                "Commands:%n" +
+                "  generate-completion  Generate bash/zsh completion script for Demo.%n");
+        assertEquals(expectedLevel2, level2.getUsageMessage(CommandLine.Help.Ansi.OFF));
+
+        CommandLine gen = level2
+                .getSubcommands().get("generate-completion");
+        gen.getCommandSpec().usageMessage().hidden(true);
+        String expectedGen = String.format("" +
+                "Usage: Demo Level1 Level2 generate-completion [-hV]%n" +
+                "Generate bash/zsh completion script for Demo.%n" +
+                "Run the following command to give `Demo` TAB completion in the current shell:%n" +
+                "%n" +
+                "  source <(Demo Level1 Level2 generate-completion)%n" +
+                "%n" +
+                "Options:%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n");
+        assertEquals(expectedGen, gen.getUsageMessage(CommandLine.Help.Ansi.OFF));
+    }
+
+    @Command(name = "Level2", subcommands = {picocli.AutoComplete.GenerateCompletion.class})
+    static class NestedLevel2 implements Runnable {
+        public void run() {
+        }
+    }
+
+    @Command(name = "Level1", subcommands = {NestedLevel2.class})
+    static class NestedLevel1 implements Runnable {
+        public void run() {
+        }
+    }
 }
