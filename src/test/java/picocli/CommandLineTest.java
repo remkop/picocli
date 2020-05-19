@@ -3962,6 +3962,11 @@ public class CommandLineTest {
     public void testCaseInsensitiveAbbrevSubcommands() throws Exception {
         @Command
         class App {
+            @Command(name = "HACKING")
+            public int hackingCommand() {
+                return -1;
+            }
+
             @Command(name = "help")
             public int helpCommand() {
                 return 1;
@@ -4013,11 +4018,12 @@ public class CommandLineTest {
 
         String content = new String(output.toByteArray(), "UTF-8")
                 .replaceAll("\r\n", "\n"); // Normalize line endings.
-        assertEquals("Error: h is not unique: it matches 'hello', 'help'\n"
+        assertEquals("Error: h is not unique: it matches 'HACKING', 'hello', 'help'\n"
                 + "Usage: <main class> [COMMAND]\n"
                 + "Commands:\n"
                 + "  another-style\n"
                 + "  camelCaseSubcommand\n"
+                + "  HACKING\n"
                 + "  hello\n"
                 + "  help\n"
                 + "  version\n", content);
