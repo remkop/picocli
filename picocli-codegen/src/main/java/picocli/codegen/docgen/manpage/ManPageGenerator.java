@@ -121,9 +121,12 @@ public class ManPageGenerator {
                     "See https://asciidoctor.org/docs/user-manual/#man-pages",
                     "See http://man7.org/linux/man-pages/man7/roff.7.html",
                     "",
+                    "In order to generate localized man pages, set the target locale by specifying the user.language, user.country, and user.variant system properties.",
+                    "The generated usage help will then contain information retrieved from the resource bundle based on the user locale.",
+                    "",
                     "Example",
                     "-------",
-                    "  java -cp \"myapp.jar;picocli-4.3.3-SNAPSHOT.jar;picocli-codegen-4.3.3-SNAPSHOT.jar\" " +
+                    "  java -Duser.language=de -cp \"myapp.jar;picocli-4.3.3-SNAPSHOT.jar;picocli-codegen-4.3.3-SNAPSHOT.jar\" " +
                             "picocli.codegen.docgen.manpage.ManPageGenerator my.pkg.MyClass"
             }
     )
