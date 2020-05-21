@@ -196,7 +196,7 @@ public class ManPageGenerator {
             // recursively create man pages for subcommands
             for (CommandLine sub : spec.subcommands().values()) {
                 CommandSpec subSpec = sub.getCommandSpec();
-                if (done.contains(subSpec)) {continue;}
+                if (done.contains(subSpec) || subSpec.usageMessage().hidden()) {continue;}
                 done.add(subSpec);
                 result = generateManPage(config, subSpec);
                 if (result != CommandLine.ExitCode.OK) {
@@ -384,6 +384,14 @@ public class ManPageGenerator {
         IParameterRenderer parameterRenderer = spec.commandLine().getHelp().createDefaultParameterRenderer();
 
         List<OptionSpec> options = new ArrayList<OptionSpec>(spec.options()); // options are stored in order of declaration
+
+        // remove hidden options
+        for (Iterator<OptionSpec> iter = options.iterator(); iter.hasNext();) {
+            if (iter.next().hidden()) {
+                iter.remove();
+            }
+        }
+
         List<ArgGroupSpec> groups = optionListGroups(spec);
         for (ArgGroupSpec group : groups) { options.removeAll(group.options()); }
 
@@ -444,12 +452,14 @@ public class ManPageGenerator {
     }
 
     private static void writePositional(PrintWriter pw, PositionalParamSpec positional, IParameterRenderer parameterRenderer, IParamLabelRenderer paramLabelRenderer) {
-        pw.println();
-        Text[][] rows = parameterRenderer.render(positional, paramLabelRenderer, COLOR_SCHEME);
-        pw.printf("%s::%n", join(", ", rows[0][1], rows[0][3]));
-        pw.printf("  %s%n", rows[0][4]);
-        for (int i = 1; i < rows.length; i++) {
-            pw.printf("+%n%s%n", rows[i][4]);
+        if (!positional.hidden()) {
+            pw.println();
+            Text[][] rows = parameterRenderer.render(positional, paramLabelRenderer, COLOR_SCHEME);
+            pw.printf("%s::%n", join(", ", rows[0][1], rows[0][3]));
+            pw.printf("  %s%n", rows[0][4]);
+            for (int i = 1; i < rows.length; i++) {
+                pw.printf("+%n%s%n", rows[i][4]);
+            }
         }
     }
 
@@ -484,6 +494,15 @@ public class ManPageGenerator {
     }
 
     static void genCommands(PrintWriter pw, CommandSpec spec) {
+
+        // remove hidden subcommands
+        Map<String, CommandLine> subCommands = new LinkedHashMap<String, CommandLine>(spec.subcommands());
+        for (Iterator<Map.Entry<String, CommandLine>> iter = subCommands.entrySet().iterator(); iter.hasNext();) {
+            if (iter.next().getValue().getCommandSpec().usageMessage().hidden()) {
+                iter.remove();
+            }
+        }
+
         if (spec.subcommands().isEmpty()) {
             return;
         }

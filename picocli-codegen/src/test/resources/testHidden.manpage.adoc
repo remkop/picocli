@@ -1,0 +1,60 @@
+// tag::picocli-generated-full-manpage[]
+// tag::picocli-generated-man-section-header[]
+:doctype: manpage
+:revnumber: Versioned Command 1.0
+:manmanual: TestHidden Manual
+:mansource: Versioned Command 1.0
+:man-linkstyle: pass:[blue R < >]
+= testHidden(1)
+
+// end::picocli-generated-man-section-header[]
+
+// tag::picocli-generated-man-section-name[]
+== Name
+
+testHidden - This app does great things.
+
+// end::picocli-generated-man-section-name[]
+
+// tag::picocli-generated-man-section-synopsis[]
+== Synopsis
+
+*testHidden* [*-hV*] [*-o*=_<outputFolder>_] [COMMAND]
+
+// end::picocli-generated-man-section-synopsis[]
+
+// tag::picocli-generated-man-section-description[]
+== Description
+
+This app does great things.
+
+// end::picocli-generated-man-section-description[]
+
+// tag::picocli-generated-man-section-options[]
+== Options
+
+*-h*, *--help*::
+  Show this help message and exit.
+
+*-o*, *--output*=_<outputFolder>_::
+  Output location full path.
+
+*-V*, *--version*::
+  Print version information and exit.
+
+// end::picocli-generated-man-section-options[]
+
+// tag::picocli-generated-man-section-arguments[]
+== Arguments
+
+// end::picocli-generated-man-section-arguments[]
+
+// tag::picocli-generated-man-section-commands[]
+== Commands
+
+*a-sub*::
+  A sub command
+
+// end::picocli-generated-man-section-commands[]
+
+// end::picocli-generated-full-manpage[]
