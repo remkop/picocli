@@ -12450,16 +12450,11 @@ public class CommandLine {
                 // A single option may be without option parameters, like "-v" or "--verbose" (a boolean value),
                 // or an option may have one or more option parameters.
                 // A parameter may be attached to the option.
-                if (commandSpec.parser().abbreviatedOptionsAllowed() && arg.startsWith("--")) {
+                if (commandSpec.parser().abbreviatedOptionsAllowed()) {
                     Set<String> aggregatedOptionNames = new LinkedHashSet<String>();
                     aggregatedOptionNames.addAll(commandSpec.optionsMap().keySet());
                     aggregatedOptionNames.addAll(commandSpec.negatedOptionsMap().keySet());
                     Iterator<String> iterator = aggregatedOptionNames.iterator();
-                    while (iterator.hasNext()) {
-                        if (!iterator.next().startsWith("--")) {
-                            iterator.remove();
-                        }
-                    }
                     try {
                         arg = AbbreviationMatcher.match(aggregatedOptionNames, arg, commandSpec.optionsCaseInsensitive());
                     } catch (IllegalArgumentException ex) {
