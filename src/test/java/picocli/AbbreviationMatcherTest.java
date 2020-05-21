@@ -9,6 +9,7 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 import static picocli.AbbreviationMatcher.*;
+import static picocli.CommandLine.*;
 
 public class AbbreviationMatcherTest {
     private Set<String> createSet() {
@@ -78,7 +79,7 @@ public class AbbreviationMatcherTest {
 
     @Test
     public void testDefaultValues() {
-        @CommandLine.Command
+        @Command
         class App {}
         CommandLine commandLine = new CommandLine(new App());
         assertFalse(commandLine.isAbbreviatedSubcommandsAllowed());
@@ -93,29 +94,29 @@ public class AbbreviationMatcherTest {
 
     @Test
     public void testAbbrevSubcommands() throws Exception {
-        @CommandLine.Command
+        @Command
         class App {
-            @CommandLine.Command(name = "help")
+            @Command(name = "help")
             public int helpCommand() {
                 return 1;
             }
 
-            @CommandLine.Command(name = "hello")
+            @Command(name = "hello")
             public int helloCommand() {
                 return 2;
             }
 
-            @CommandLine.Command(name = "version")
+            @Command(name = "version")
             public int versionCommand() {
                 return 3;
             }
 
-            @CommandLine.Command(name = "camelCaseSubcommand")
+            @Command(name = "camelCaseSubcommand")
             public int ccsCommand() {
                 return 4;
             }
 
-            @CommandLine.Command(name = "another-style")
+            @Command(name = "another-style")
             public int asCommand() {
                 return 5;
             }
@@ -157,34 +158,34 @@ public class AbbreviationMatcherTest {
 
     @Test
     public void testCaseInsensitiveAbbrevSubcommands() throws Exception {
-        @CommandLine.Command
+        @Command
         class App {
-            @CommandLine.Command(name = "HACKING")
+            @Command(name = "HACKING")
             public int hackingCommand() {
                 return -1;
             }
 
-            @CommandLine.Command(name = "help")
+            @Command(name = "help")
             public int helpCommand() {
                 return 1;
             }
 
-            @CommandLine.Command(name = "hello")
+            @Command(name = "hello")
             public int helloCommand() {
                 return 2;
             }
 
-            @CommandLine.Command(name = "version")
+            @Command(name = "version")
             public int versionCommand() {
                 return 3;
             }
 
-            @CommandLine.Command(name = "camelCaseSubcommand")
+            @Command(name = "camelCaseSubcommand")
             public int ccsCommand() {
                 return 4;
             }
 
-            @CommandLine.Command(name = "another-style")
+            @Command(name = "another-style")
             public int asCommand() {
                 return 5;
             }
@@ -228,30 +229,30 @@ public class AbbreviationMatcherTest {
 
     @Test
     public void testAbbrevOptions() throws Exception {
-        @CommandLine.Command
+        @Command
         class App {
-            @CommandLine.Option(names = {"-H", "--help"})
+            @Option(names = {"-H", "--help"})
             public boolean help;
 
-            @CommandLine.Option(names = "--hello")
+            @Option(names = "--hello")
             public boolean hello;
 
-            @CommandLine.Option(names = "--version")
+            @Option(names = "--version")
             public boolean version;
 
-            @CommandLine.Option(names = "--camelCaseOption", negatable = true)
+            @Option(names = "--camelCaseOption", negatable = true)
             public boolean ccOption;
 
-            @CommandLine.Option(names = "--another-style", negatable = true)
+            @Option(names = "--another-style", negatable = true)
             public boolean anotherStyle;
 
-            @CommandLine.Option(names = "---hi-triple-hyphens", negatable = true)
+            @Option(names = "---hi-triple-hyphens", negatable = true)
             public boolean tripleHyphens;
         }
         CommandLine commandLine = new CommandLine(new App());
         commandLine.setAbbreviatedOptionsAllowed(true);
 
-        CommandLine.ParseResult result = commandLine.parseArgs("--help", "--hello", "--version", "--camelCaseOption", "--another-style", "---hi-triple-hyphens");
+        ParseResult result = commandLine.parseArgs("--help", "--hello", "--version", "--camelCaseOption", "--another-style", "---hi-triple-hyphens");
         assertTrue(result.hasMatchedOption("--help"));
         assertTrue(result.hasMatchedOption("--hello"));
         assertTrue(result.hasMatchedOption("--version"));
@@ -277,7 +278,7 @@ public class AbbreviationMatcherTest {
         try {
             commandLine.parseArgs("--hi-triple-hyphens");
             fail("Expected exception");
-        } catch (CommandLine.UnmatchedArgumentException ex) {
+        } catch (UnmatchedArgumentException ex) {
             assertEquals("Unknown option: '--hi-triple-hyphens'", ex.getMessage());
         }
 
@@ -302,20 +303,20 @@ public class AbbreviationMatcherTest {
     @Test
     public void testAbbrevOptionsCaseInsensitive1() {
         class App {
-            @CommandLine.Option(names = {"-CamelCaseOption"}) boolean camelCaseOption;
+            @Option(names = {"-CamelCaseOption"}) boolean camelCaseOption;
         }
 
         try {
             new CommandLine(new App()).setAbbreviatedOptionsAllowed(true).setOptionsCaseInsensitive(true).parseArgs("-CCO");
             fail("Expected exception");
-        } catch (CommandLine.UnmatchedArgumentException ex) {
+        } catch (UnmatchedArgumentException ex) {
             assertEquals("Unknown option: '-CCO'", ex.getMessage());
         }
 
         try {
             new CommandLine(new App()).setAbbreviatedOptionsAllowed(true).setOptionsCaseInsensitive(true).parseArgs("-c-c-o");
             fail("Expected exception");
-        } catch (CommandLine.UnmatchedArgumentException ex) {
+        } catch (UnmatchedArgumentException ex) {
             assertEquals("Unknown option: '-c-c-o'", ex.getMessage());
         }
         App app = new App();
@@ -326,13 +327,13 @@ public class AbbreviationMatcherTest {
     @Test
     public void testAbbrevOptionsCaseInsensitive2() {
         class App {
-            @CommandLine.Option(names = {"-kebab-case-option"}) boolean kebabCaseOption;
+            @Option(names = {"-kebab-case-option"}) boolean kebabCaseOption;
         }
 
         try {
             new CommandLine(new App()).setAbbreviatedOptionsAllowed(true).setOptionsCaseInsensitive(true).parseArgs("-KCO");
             fail("Expected exception");
-        } catch (CommandLine.UnmatchedArgumentException ex) {
+        } catch (UnmatchedArgumentException ex) {
             assertEquals("Unknown option: '-KCO'", ex.getMessage());
         }
         App app = new App();
@@ -342,5 +343,33 @@ public class AbbreviationMatcherTest {
         app = new App();
         new CommandLine(app).setAbbreviatedOptionsAllowed(true).setOptionsCaseInsensitive(true).parseArgs("-kebab");
         assertTrue(app.kebabCaseOption);
+    }
+
+    @Test
+    public void testPOSIXClusterOptionsWithAbbrevOptions() {
+        @Command
+        class App {
+            @Option(names = "-A")
+            public boolean a;
+
+            @Option(names = "-B")
+            public boolean b;
+
+            @Option(names = "-AB")
+            public boolean ab;
+        }
+
+        CommandLine commandLine = new CommandLine(new App());
+        commandLine.setAbbreviatedOptionsAllowed(true);
+
+        ParseResult result = commandLine.parseArgs("-AB");
+        assertFalse(result.hasMatchedOption("-A"));
+        assertFalse(result.hasMatchedOption("-B"));
+        assertTrue(result.hasMatchedOption("-AB"));
+
+        result = commandLine.parseArgs("-A");
+        assertTrue(result.hasMatchedOption("-A"));
+        assertFalse(result.hasMatchedOption("-B"));
+        assertFalse(result.hasMatchedOption("-AB"));
     }
 }
