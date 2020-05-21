@@ -77,6 +77,21 @@ public class AbbreviationMatcherTest {
     }
 
     @Test
+    public void testDefaultValues() {
+        @CommandLine.Command
+        class App {}
+        CommandLine commandLine = new CommandLine(new App());
+        assertFalse(commandLine.isAbbreviatedSubcommandsAllowed());
+        assertFalse(commandLine.isAbbreviatedOptionsAllowed());
+        commandLine.setAbbreviatedSubcommandsAllowed(true);
+        assertTrue(commandLine.isAbbreviatedSubcommandsAllowed());
+        assertFalse(commandLine.isAbbreviatedOptionsAllowed());
+        commandLine.setAbbreviatedOptionsAllowed(true);
+        assertTrue(commandLine.isAbbreviatedSubcommandsAllowed());
+        assertTrue(commandLine.isAbbreviatedOptionsAllowed());
+    }
+
+    @Test
     public void testAbbrevSubcommands() throws Exception {
         @CommandLine.Command
         class App {
