@@ -8,8 +8,8 @@ import java.io.PrintWriter;
 import java.util.*;
 
 import static org.junit.Assert.*;
-import static picocli.AbbreviationMatcher.*;
 import static picocli.CommandLine.*;
+import static picocli.CommandLine.AbbreviationMatcher.*;
 
 public class AbbreviationMatcherTest {
     private Set<String> createSet() {
@@ -371,5 +371,37 @@ public class AbbreviationMatcherTest {
         assertTrue(result.hasMatchedOption("-A"));
         assertFalse(result.hasMatchedOption("-B"));
         assertFalse(result.hasMatchedOption("-AB"));
+    }
+
+    @Test
+    public void testAbbrevOptionsAmbiguous() {
+        @Command
+        class App {
+            @Option(names = "--a-B")
+            public boolean a_b;
+
+            @Option(names = "--aB")
+            public boolean aB;
+
+            @Option(names = "-a")
+            public boolean a;
+
+            @Option(names = "-B")
+            public boolean B;
+        }
+
+        App app = new App();
+        new CommandLine(app).setAbbreviatedOptionsAllowed(true).parseArgs("-aB");
+        assertFalse(app.a_b);
+        assertFalse(app.aB);
+        assertTrue(app.a);
+        assertTrue(app.B);
+
+        app = new App();
+        new CommandLine(app).setAbbreviatedOptionsAllowed(true).parseArgs("--aB");
+        assertFalse(app.a_b);
+        assertTrue(app.aB);
+        assertFalse(app.a);
+        assertFalse(app.B);
     }
 }
