@@ -17187,9 +17187,8 @@ public class CommandLine {
                 return "";
             }
             if (str.startsWith("-") && str.length() > 1) {
-                int codepoint = str.codePointAt(1);
-                char[] uppercase = Character.toChars(Character.toUpperCase(codepoint));
-                return new String(uppercase) + str.substring(1 + Character.charCount(codepoint));
+                String uppercase = String.valueOf(Character.toChars(Character.toUpperCase(str.codePointAt(1))));
+                return uppercase + str.substring(1 + uppercase.length());
             }
             return str;
         }
@@ -17217,11 +17216,19 @@ public class CommandLine {
         private static boolean matchKeyChunks(List<String> abbreviatedKeyChunks, List<String> keyChunks, boolean caseInsensitive) {
             if (abbreviatedKeyChunks.size() > keyChunks.size()) {
                 return false;
-            } else if (!startsWith(keyChunks.get(0), abbreviatedKeyChunks.get(0), caseInsensitive)) { // first chunk must match
+            }
+            int matchCount = 0;
+            if (isNonAlphabetic(keyChunks.get(0))) {
+                if (!keyChunks.get(0).equals(abbreviatedKeyChunks.get(0))) {
+                    return false;
+                }
+                matchCount++;
+            }
+            if (!startsWith(keyChunks.get(matchCount), abbreviatedKeyChunks.get(matchCount), caseInsensitive)) {
                 return false;
             }
-            int matchCount = 1, lastMatchChunk = 1;
-            for (int i = 1; i < abbreviatedKeyChunks.size(); i++, matchCount++) {
+            matchCount++;
+            for (int i = matchCount, lastMatchChunk = matchCount; i < abbreviatedKeyChunks.size(); i++, matchCount++) {
                 boolean found = false;
                 for (int j = lastMatchChunk; j < keyChunks.size(); j++) {
                     if (found = startsWith(keyChunks.get(j), abbreviatedKeyChunks.get(i), caseInsensitive)) {
