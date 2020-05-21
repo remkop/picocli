@@ -1543,6 +1543,102 @@ public class SubcommandTests {
     }
 
     @Test
+    public void testAbbrevSubcommands_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals(false, commandLine.isAbbreviatedSubcommandsAllowed());
+        commandLine.setAbbreviatedSubcommandsAllowed(true);
+        assertEquals(true, commandLine.isAbbreviatedSubcommandsAllowed());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", false, sub.isAbbreviatedSubcommandsAllowed());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", false, subsub.isAbbreviatedSubcommandsAllowed());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testAbbrevSubcommands_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertEquals(false, commandLine.isAbbreviatedSubcommandsAllowed());
+        commandLine.setAbbreviatedSubcommandsAllowed(true);
+        assertEquals(true, commandLine.isAbbreviatedSubcommandsAllowed());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", true, sub.isAbbreviatedSubcommandsAllowed());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", true, sub.isAbbreviatedSubcommandsAllowed());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testAbbrevOptions_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertEquals(false, commandLine.isAbbreviatedOptionsAllowed());
+        commandLine.setAbbreviatedOptionsAllowed(true);
+        assertEquals(true, commandLine.isAbbreviatedOptionsAllowed());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", false, sub.isAbbreviatedOptionsAllowed());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", false, subsub.isAbbreviatedOptionsAllowed());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testAbbrevOptions_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertEquals(false, commandLine.isAbbreviatedOptionsAllowed());
+        commandLine.setAbbreviatedOptionsAllowed(true);
+        assertEquals(true, commandLine.isAbbreviatedOptionsAllowed());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", true, sub.isAbbreviatedOptionsAllowed());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", true, sub.isAbbreviatedOptionsAllowed());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
     public void testParserTrimQuotes_BeforeSubcommandsAdded() {
         @Command
         class TopLevel {}
