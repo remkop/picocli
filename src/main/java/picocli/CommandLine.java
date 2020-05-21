@@ -17233,8 +17233,6 @@ public class CommandLine {
         private static boolean startsWith(String str, String prefix, boolean caseInsensitive) {
             if (prefix.length() > str.length()) {
                 return false;
-            } else if (isNonAlphabetic(str)) {
-                return str.equals(prefix);
             }
             String strPrefix = str.substring(0, prefix.length());
             return caseInsensitive ? strPrefix.equalsIgnoreCase(prefix) : strPrefix.equals(prefix);
