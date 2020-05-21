@@ -4047,16 +4047,20 @@ public class CommandLineTest {
 
             @Option(names = "--another-style", negatable = true)
             public boolean anotherStyle;
+
+            @Option(names = "---hi-triple-hyphens", negatable = true)
+            public boolean tripleHyphens;
         }
         CommandLine commandLine = new CommandLine(new App());
         commandLine.setAbbreviatedOptionsAllowed(true);
 
-        ParseResult result = commandLine.parseArgs("--help", "--hello", "--version", "--camelCaseOption", "--another-style");
+        ParseResult result = commandLine.parseArgs("--help", "--hello", "--version", "--camelCaseOption", "--another-style", "---hi-triple-hyphens");
         assertTrue(result.hasMatchedOption("--help"));
         assertTrue(result.hasMatchedOption("--hello"));
         assertTrue(result.hasMatchedOption("--version"));
         assertTrue(result.hasMatchedOption("--camelCaseOption"));
         assertTrue(result.hasMatchedOption("--another-style"));
+        assertTrue(result.hasMatchedOption("---hi-triple-hyphens"));
 
         result = commandLine.parseArgs("--help", "--hell", "--ver", "--cCO", "--a-s");
         assertTrue(result.hasMatchedOption("--help"));
@@ -4073,6 +4077,13 @@ public class CommandLineTest {
         assertTrue(result.hasMatchedOption("--camelCaseOption"));
         assertTrue(result.hasMatchedOption("--another-style"));
 
+        try {
+            commandLine.parseArgs("--hi-triple-hyphens");
+            fail("Expected exception");
+        } catch (UnmatchedArgumentException ex) {
+            assertEquals("Unknown option: '--hi-triple-hyphens'", ex.getMessage());
+        }
+
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         PrintStream printStream = new PrintStream(output);
         commandLine.setErr(new PrintWriter(printStream));
@@ -4082,11 +4093,12 @@ public class CommandLineTest {
                 .replaceAll("\r\n", "\n"); // Normalize line endings.
         assertEquals("Error: --h is not unique: it matches '--help', '--hello'\n"
                 + "Usage: <main class> [-H] [--[no-]another-style] [--[no-]camelCaseOption]\n"
-                + "                    [--hello] [--version]\n"
+                + "                    [--hello] [---hi-triple-hyphens] [--version]\n"
                 + "      --[no-]another-style\n"
                 + "      --[no-]camelCaseOption\n"
                 + "  -H, --help\n"
                 + "      --hello\n"
+                + "      ---hi-triple-hyphens\n"
                 + "      --version\n", content);
     }
 
