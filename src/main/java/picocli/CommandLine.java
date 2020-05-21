@@ -17147,7 +17147,7 @@ public class CommandLine {
             if (nonAlphabeticPrefix.length() > 0) {
                 result.add(nonAlphabeticPrefix.toString());
                 if (command.codePointBefore(start) == '-') {
-                    start--;
+                    start--; // hint makeCanonical() to canonicalize the first chunk
                 }
             }
             for (int i = start; i < command.length(); i += Character.charCount(codepoint)) {
@@ -17205,13 +17205,13 @@ public class CommandLine {
                 return false;
             }
             int matchCount = 0;
-            if (isNonAlphabetic(keyChunks.get(0))) {
+            if (isNonAlphabetic(keyChunks.get(0))) { // non-alphabetic prefix must be exactly the same
                 if (!keyChunks.get(0).equals(abbreviatedKeyChunks.get(0))) {
                     return false;
                 }
                 matchCount++;
             }
-            if (!startsWith(keyChunks.get(matchCount), abbreviatedKeyChunks.get(matchCount), caseInsensitive)) {
+            if (!startsWith(keyChunks.get(matchCount), abbreviatedKeyChunks.get(matchCount), caseInsensitive)) { // first alphabetic chunk must match
                 return false;
             }
             matchCount++;
