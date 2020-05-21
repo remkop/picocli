@@ -1,6 +1,10 @@
 package picocli;
 
 import org.junit.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -70,5 +74,258 @@ public class AbbreviationMatcherTest {
         assertEquals(Arrays.asList("very", "Long", "Kebab", "Case"), splitIntoChunks("very-long-kebab-case", false));
         assertEquals(Arrays.asList("camel", "Case"), splitIntoChunks("camelCase", false));
         assertEquals(Arrays.asList("very", "Long", "Camel", "Case"), splitIntoChunks("veryLongCamelCase", false));
+    }
+
+    @Test
+    public void testAbbrevSubcommands() throws Exception {
+        @CommandLine.Command
+        class App {
+            @CommandLine.Command(name = "help")
+            public int helpCommand() {
+                return 1;
+            }
+
+            @CommandLine.Command(name = "hello")
+            public int helloCommand() {
+                return 2;
+            }
+
+            @CommandLine.Command(name = "version")
+            public int versionCommand() {
+                return 3;
+            }
+
+            @CommandLine.Command(name = "camelCaseSubcommand")
+            public int ccsCommand() {
+                return 4;
+            }
+
+            @CommandLine.Command(name = "another-style")
+            public int asCommand() {
+                return 5;
+            }
+        }
+        CommandLine commandLine = new CommandLine(new App());
+        commandLine.setAbbreviatedSubcommandsAllowed(true);
+
+        assertEquals(1, commandLine.execute("help"));
+        assertEquals(2, commandLine.execute("hello"));
+        assertEquals(3, commandLine.execute("version"));
+        assertEquals(4, commandLine.execute("camelCaseSubcommand"));
+        assertEquals(5, commandLine.execute("another-style"));
+
+        assertEquals(1, commandLine.execute("help"));
+        assertEquals(2, commandLine.execute("hell"));
+        assertEquals(3, commandLine.execute("ver"));
+        assertEquals(4, commandLine.execute("camel"));
+        assertEquals(4, commandLine.execute("cCS"));
+        assertEquals(4, commandLine.execute("c-c-s"));
+        assertEquals(5, commandLine.execute("aS"));
+        assertEquals(5, commandLine.execute("a-s"));
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        PrintStream printStream = new PrintStream(output);
+        commandLine.setErr(new PrintWriter(printStream));
+        commandLine.execute("h");
+
+        String content = new String(output.toByteArray(), "UTF-8")
+                .replaceAll("\r\n", "\n"); // Normalize line endings.
+        assertEquals("Error: h is not unique: it matches 'hello', 'help'\n"
+                + "Usage: <main class> [COMMAND]\n"
+                + "Commands:\n"
+                + "  another-style\n"
+                + "  camelCaseSubcommand\n"
+                + "  hello\n"
+                + "  help\n"
+                + "  version\n", content);
+    }
+
+    @Test
+    public void testCaseInsensitiveAbbrevSubcommands() throws Exception {
+        @CommandLine.Command
+        class App {
+            @CommandLine.Command(name = "HACKING")
+            public int hackingCommand() {
+                return -1;
+            }
+
+            @CommandLine.Command(name = "help")
+            public int helpCommand() {
+                return 1;
+            }
+
+            @CommandLine.Command(name = "hello")
+            public int helloCommand() {
+                return 2;
+            }
+
+            @CommandLine.Command(name = "version")
+            public int versionCommand() {
+                return 3;
+            }
+
+            @CommandLine.Command(name = "camelCaseSubcommand")
+            public int ccsCommand() {
+                return 4;
+            }
+
+            @CommandLine.Command(name = "another-style")
+            public int asCommand() {
+                return 5;
+            }
+        }
+        CommandLine commandLine = new CommandLine(new App());
+        commandLine.setAbbreviatedSubcommandsAllowed(true);
+        commandLine.setSubcommandsCaseInsensitive(true);
+
+        assertEquals(1, commandLine.execute("HELP"));
+        assertEquals(2, commandLine.execute("HELLO"));
+        assertEquals(3, commandLine.execute("VERSION"));
+        assertEquals(4, commandLine.execute("CAMELCASESUBCOMMAND"));
+        assertEquals(5, commandLine.execute("ANOTHER-STYLE"));
+
+        assertEquals(1, commandLine.execute("help"));
+        assertEquals(2, commandLine.execute("hell"));
+        assertEquals(3, commandLine.execute("ver"));
+        assertEquals(4, commandLine.execute("camel"));
+        assertEquals(4, commandLine.execute("CAMEL"));
+        assertEquals(5, commandLine.execute("a-S"));
+        assertEquals(5, commandLine.execute("A-s"));
+        assertEquals(5, commandLine.execute("ANOTHER"));
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        PrintStream printStream = new PrintStream(output);
+        commandLine.setErr(new PrintWriter(printStream));
+        commandLine.execute("h");
+
+        String content = new String(output.toByteArray(), "UTF-8")
+                .replaceAll("\r\n", "\n"); // Normalize line endings.
+        assertEquals("Error: h is not unique: it matches 'HACKING', 'hello', 'help'\n"
+                + "Usage: <main class> [COMMAND]\n"
+                + "Commands:\n"
+                + "  another-style\n"
+                + "  camelCaseSubcommand\n"
+                + "  HACKING\n"
+                + "  hello\n"
+                + "  help\n"
+                + "  version\n", content);
+    }
+
+    @Test
+    public void testAbbrevOptions() throws Exception {
+        @CommandLine.Command
+        class App {
+            @CommandLine.Option(names = {"-H", "--help"})
+            public boolean help;
+
+            @CommandLine.Option(names = "--hello")
+            public boolean hello;
+
+            @CommandLine.Option(names = "--version")
+            public boolean version;
+
+            @CommandLine.Option(names = "--camelCaseOption", negatable = true)
+            public boolean ccOption;
+
+            @CommandLine.Option(names = "--another-style", negatable = true)
+            public boolean anotherStyle;
+
+            @CommandLine.Option(names = "---hi-triple-hyphens", negatable = true)
+            public boolean tripleHyphens;
+        }
+        CommandLine commandLine = new CommandLine(new App());
+        commandLine.setAbbreviatedOptionsAllowed(true);
+
+        CommandLine.ParseResult result = commandLine.parseArgs("--help", "--hello", "--version", "--camelCaseOption", "--another-style", "---hi-triple-hyphens");
+        assertTrue(result.hasMatchedOption("--help"));
+        assertTrue(result.hasMatchedOption("--hello"));
+        assertTrue(result.hasMatchedOption("--version"));
+        assertTrue(result.hasMatchedOption("--camelCaseOption"));
+        assertTrue(result.hasMatchedOption("--another-style"));
+        assertTrue(result.hasMatchedOption("---hi-triple-hyphens"));
+
+        result = commandLine.parseArgs("--help", "--hell", "--ver", "--cCO", "--a-s");
+        assertTrue(result.hasMatchedOption("--help"));
+        assertTrue(result.hasMatchedOption("--hello"));
+        assertTrue(result.hasMatchedOption("--version"));
+        assertTrue(result.hasMatchedOption("--camelCaseOption"));
+        assertTrue(result.hasMatchedOption("--another-style"));
+
+        result = commandLine.parseArgs("--c-c-o", "--aS");
+        assertTrue(result.hasMatchedOption("--camelCaseOption"));
+        assertTrue(result.hasMatchedOption("--another-style"));
+
+        result = commandLine.parseArgs("--no-c-c-o", "--no-aS");
+        assertTrue(result.hasMatchedOption("--camelCaseOption"));
+        assertTrue(result.hasMatchedOption("--another-style"));
+
+        try {
+            commandLine.parseArgs("--hi-triple-hyphens");
+            fail("Expected exception");
+        } catch (CommandLine.UnmatchedArgumentException ex) {
+            assertEquals("Unknown option: '--hi-triple-hyphens'", ex.getMessage());
+        }
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        PrintStream printStream = new PrintStream(output);
+        commandLine.setErr(new PrintWriter(printStream));
+        commandLine.execute("--h");
+
+        String content = new String(output.toByteArray(), "UTF-8")
+                .replaceAll("\r\n", "\n"); // Normalize line endings.
+        assertEquals("Error: --h is not unique: it matches '--help', '--hello'\n"
+                + "Usage: <main class> [-H] [--[no-]another-style] [--[no-]camelCaseOption]\n"
+                + "                    [--hello] [---hi-triple-hyphens] [--version]\n"
+                + "      --[no-]another-style\n"
+                + "      --[no-]camelCaseOption\n"
+                + "  -H, --help\n"
+                + "      --hello\n"
+                + "      ---hi-triple-hyphens\n"
+                + "      --version\n", content);
+    }
+
+    @Test
+    public void testAbbrevOptionsCaseInsensitive1() {
+        class App {
+            @CommandLine.Option(names = {"-CamelCaseOption"}) boolean camelCaseOption;
+        }
+
+        try {
+            new CommandLine(new App()).setAbbreviatedOptionsAllowed(true).setOptionsCaseInsensitive(true).parseArgs("-CCO");
+            fail("Expected exception");
+        } catch (CommandLine.UnmatchedArgumentException ex) {
+            assertEquals("Unknown option: '-CCO'", ex.getMessage());
+        }
+
+        try {
+            new CommandLine(new App()).setAbbreviatedOptionsAllowed(true).setOptionsCaseInsensitive(true).parseArgs("-c-c-o");
+            fail("Expected exception");
+        } catch (CommandLine.UnmatchedArgumentException ex) {
+            assertEquals("Unknown option: '-c-c-o'", ex.getMessage());
+        }
+        App app = new App();
+        new CommandLine(app).setAbbreviatedOptionsAllowed(true).setOptionsCaseInsensitive(true).parseArgs("-came");
+        assertTrue(app.camelCaseOption);
+    }
+
+    @Test
+    public void testAbbrevOptionsCaseInsensitive2() {
+        class App {
+            @CommandLine.Option(names = {"-kebab-case-option"}) boolean kebabCaseOption;
+        }
+
+        try {
+            new CommandLine(new App()).setAbbreviatedOptionsAllowed(true).setOptionsCaseInsensitive(true).parseArgs("-KCO");
+            fail("Expected exception");
+        } catch (CommandLine.UnmatchedArgumentException ex) {
+            assertEquals("Unknown option: '-KCO'", ex.getMessage());
+        }
+        App app = new App();
+        new CommandLine(app).setAbbreviatedOptionsAllowed(true).setOptionsCaseInsensitive(true).parseArgs("-k-c-o");
+        assertTrue(app.kebabCaseOption);
+
+        app = new App();
+        new CommandLine(app).setAbbreviatedOptionsAllowed(true).setOptionsCaseInsensitive(true).parseArgs("-kebab");
+        assertTrue(app.kebabCaseOption);
     }
 }
