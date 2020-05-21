@@ -17136,8 +17136,8 @@ public class CommandLine {
             List<String> result = new ArrayList<String>();
             int start = 0, codepoint;
             StringBuilder nonAlphabeticPrefix = new StringBuilder();
-            for (int i = start; i < command.length(); i += Character.charCount(codepoint)) {
-                codepoint = command.codePointAt(i);
+            while (start < command.length()) {
+                codepoint = command.codePointAt(start);
                 if (Character.isLetterOrDigit(codepoint)) {
                     break;
                 }
@@ -17146,6 +17146,9 @@ public class CommandLine {
             }
             if (nonAlphabeticPrefix.length() > 0) {
                 result.add(nonAlphabeticPrefix.toString());
+                if (command.codePointBefore(start) == '-') {
+                    start--;
+                }
             }
             for (int i = start; i < command.length(); i += Character.charCount(codepoint)) {
                 codepoint = command.codePointAt(i);
