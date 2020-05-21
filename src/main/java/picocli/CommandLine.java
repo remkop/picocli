@@ -760,7 +760,7 @@ public class CommandLine {
     }
 
     /** Returns whether upper case and lower case should be ignored when matching subcommands. The default is {@code false}.
-     * @return {@code true} if subcommands can be matched when they differ only in case from the {@code names()} value of a registered one, {@code false} otherwise.
+     * @return {@code true} if subcommands can be matched when they differ only in case from the {@code getCommandName()} value of a registered one, {@code false} otherwise.
      *       For example, if true, for a subcommand with name {@code help}, inputs like {@code help}, {@code HeLp} and {@code HELP} are all recognized.
      * @since 4.3 */
     public boolean isSubcommandsCaseInsensitive() { return getCommandSpec().subcommandsCaseInsensitive(); }
@@ -810,10 +810,24 @@ public class CommandLine {
         return this;
     }
 
+    /** Returns whether abbreviation of subcommands should be allowed when matching subcommands. The default is {@code false}.
+     * @return {@code true} if subcommands can be matched when they are abbrevations of the {@code getCommandName()} value of a registered one, {@code false} otherwise.
+     *       For example, if true, for a subcommand with name {@code helpCommand}, inputs like {@code h}, {@code h-c} and {@code hC} are all recognized.
+     * @since 4.4 */
     public boolean isAbbreviatedSubcommandsAllowed() {
         return getCommandSpec().parser().abbreviatedSubcommandsAllowed();
     }
 
+    /** Sets whether abbreviated subcommands should be matched. The default is {@code false}.
+     * For example, when set to {@code true}, for a subcommand {@code helpCommand}, inputs like {@code h}, {@code h-c} and {@code hC} are all recognized.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue the new setting
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 4.4
+     */
     public CommandLine setAbbreviatedSubcommandsAllowed(boolean newValue) {
         getCommandSpec().parser().abbreviatedSubcommandsAllowed(newValue);
         for (CommandLine command : getCommandSpec().subcommands().values()) {
@@ -822,10 +836,24 @@ public class CommandLine {
         return this;
     }
 
+    /** Returns whether abbreviation of option names should be allowed when matching options. The default is {@code false}.
+     * @return {@code true} if options can be matched when they are abbrevations of the {@code names()} value of a registered one, {@code false} otherwise.
+     *       For example, if true, for a subcommand with name {@code --helpMe}, inputs like {@code --h}, {@code --h-m} and {@code --hM} are all recognized.
+     * @since 4.4 */
     public boolean isAbbreviatedOptionsAllowed() {
         return getCommandSpec().parser().abbreviatedOptionsAllowed();
     }
 
+    /** Sets whether abbreviated option names should be matched. The default is {@code false}.
+     * For example, when set to {@code true}, for an option with name {@code --helpMe}, inputs like {@code --h}, {@code --h-m} and {@code --hM} are all recognized.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue the new setting
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 4.4
+     */
     public CommandLine setAbbreviatedOptionsAllowed(boolean newValue) {
         getCommandSpec().parser().abbreviatedOptionsAllowed(newValue);
         for (CommandLine command : getCommandSpec().subcommands().values()) {
