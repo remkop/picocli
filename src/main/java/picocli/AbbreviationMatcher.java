@@ -92,16 +92,16 @@ class AbbreviationMatcher {
     private static boolean startsWith(String str, String prefix, boolean caseInsensitive) {
         if (prefix.length() > str.length()) {
             return false;
-        } else if (isHyphenPrefix(str)) {
+        } else if (isNonAlphabetic(str)) {
             return str.equals(prefix);
         }
         String strPrefix = str.substring(0, prefix.length());
         return caseInsensitive ? strPrefix.equalsIgnoreCase(prefix) : strPrefix.equals(prefix);
     }
 
-    private static boolean isHyphenPrefix(String prefix) {
-        for (char ch : prefix.toCharArray()) {
-            if (ch != '-') { return false; }
+    private static boolean isNonAlphabetic(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            if (Character.isLetterOrDigit(str.codePointAt(i))) { return false; }
         }
         return true;
     }
