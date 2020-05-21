@@ -75,6 +75,9 @@ public class AbbreviationMatcherTest {
         assertEquals(Arrays.asList("very", "Long", "Kebab", "Case"), splitIntoChunks("very-long-kebab-case", false));
         assertEquals(Arrays.asList("camel", "Case"), splitIntoChunks("camelCase", false));
         assertEquals(Arrays.asList("very", "Long", "Camel", "Case"), splitIntoChunks("veryLongCamelCase", false));
+        assertEquals(Arrays.asList("a", "B"), splitIntoChunks("aB", false));
+        assertEquals(Arrays.asList("a", "B"), splitIntoChunks("a-B", false));
+        assertEquals(Arrays.asList("A", "B"), splitIntoChunks("AB", false));
     }
 
     @Test
@@ -410,6 +413,14 @@ public class AbbreviationMatcherTest {
         assertTrue(app.aB);
         assertFalse(app.a);
         assertFalse(app.B);
+
+        app = new App();
+        try {
+            new CommandLine(app).setAbbreviatedOptionsAllowed(true).parseArgs("--AB");
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertEquals("Error: --AB is not unique: it matches '--a-B', '--aB'", ex.getMessage());
+        }
 
         app = new App();
         try {
