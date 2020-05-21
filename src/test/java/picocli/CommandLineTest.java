@@ -4103,6 +4103,51 @@ public class CommandLineTest {
     }
 
     @Test
+    public void testAbbrevOptionsCaseInsensitive1() {
+        class App {
+            @Option(names = {"-CamelCaseOption"}) boolean camelCaseOption;
+        }
+
+        try {
+            new CommandLine(new App()).setAbbreviatedOptionsAllowed(true).setOptionsCaseInsensitive(true).parseArgs("-CCO");
+            fail("Expected exception");
+        } catch (CommandLine.UnmatchedArgumentException ex) {
+            assertEquals("Unknown option: '-CCO'", ex.getMessage());
+        }
+
+        try {
+            new CommandLine(new App()).setAbbreviatedOptionsAllowed(true).setOptionsCaseInsensitive(true).parseArgs("-c-c-o");
+            fail("Expected exception");
+        } catch (CommandLine.UnmatchedArgumentException ex) {
+            assertEquals("Unknown option: '-c-c-o'", ex.getMessage());
+        }
+        App app = new App();
+        new CommandLine(app).setAbbreviatedOptionsAllowed(true).setOptionsCaseInsensitive(true).parseArgs("-came");
+        assertTrue(app.camelCaseOption);
+    }
+
+    @Test
+    public void testAbbrevOptionsCaseInsensitive2() {
+        class App {
+            @Option(names = {"-kebab-case-option"}) boolean kebabCaseOption;
+        }
+
+        try {
+            new CommandLine(new App()).setAbbreviatedOptionsAllowed(true).setOptionsCaseInsensitive(true).parseArgs("-KCO");
+            fail("Expected exception");
+        } catch (CommandLine.UnmatchedArgumentException ex) {
+            assertEquals("Unknown option: '-KCO'", ex.getMessage());
+        }
+        App app = new App();
+        new CommandLine(app).setAbbreviatedOptionsAllowed(true).setOptionsCaseInsensitive(true).parseArgs("-k-c-o");
+        assertTrue(app.kebabCaseOption);
+
+        app = new App();
+        new CommandLine(app).setAbbreviatedOptionsAllowed(true).setOptionsCaseInsensitive(true).parseArgs("-kebab");
+        assertTrue(app.kebabCaseOption);
+    }
+
+    @Test
     public void testClose() {
         setTraceLevel("WARN");
         CommandLine.close(new Closeable() {
