@@ -17227,8 +17227,9 @@ public class CommandLine {
         }
 
         private static boolean isNonAlphabetic(String str) {
-            for (int i = 0; i < str.length(); i++) {
-                if (Character.isLetterOrDigit(str.codePointAt(i))) { return false; }
+            for (int i = 0, codepoint; i < str.length(); i += Character.charCount(codepoint)) {
+                codepoint = str.codePointAt(i);
+                if (Character.isLetterOrDigit(codepoint)) { return false; }
             }
             return true;
         }
