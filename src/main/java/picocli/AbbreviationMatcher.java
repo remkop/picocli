@@ -8,7 +8,15 @@ class AbbreviationMatcher {
     public static List<String> splitIntoChunks(String command, boolean caseInsensitive) {
         List<String> result = new ArrayList<String>();
         int start = 0;
-        for (int i = 0, codepoint; i < command.length(); i += Character.charCount(codepoint)) {
+        StringBuilder nonAlphabeticPrefix = new StringBuilder();
+        while (start < command.length() && !Character.isLetterOrDigit(command.codePointAt(start))) {
+            nonAlphabeticPrefix.appendCodePoint(command.codePointAt(start));
+            start++;
+        }
+        if (nonAlphabeticPrefix.length() > 0) {
+            result.add(nonAlphabeticPrefix.toString());
+        }
+        for (int i = start, codepoint; i < command.length(); i += Character.charCount(codepoint)) {
             codepoint = command.codePointAt(i);
             if ((!caseInsensitive && Character.isUpperCase(codepoint)) || '-' == codepoint) {
                 String chunk = makeCanonical(command.substring(start, i));
@@ -84,8 +92,17 @@ class AbbreviationMatcher {
     private static boolean startsWith(String str, String prefix, boolean caseInsensitive) {
         if (prefix.length() > str.length()) {
             return false;
+        } else if (isHyphenPrefix(str)) {
+            return str.equals(prefix);
         }
         String strPrefix = str.substring(0, prefix.length());
         return caseInsensitive ? strPrefix.equalsIgnoreCase(prefix) : strPrefix.equals(prefix);
+    }
+
+    private static boolean isHyphenPrefix(String prefix) {
+        for (char ch : prefix.toCharArray()) {
+            if (ch != '-') { return false; }
+        }
+        return true;
     }
 }
