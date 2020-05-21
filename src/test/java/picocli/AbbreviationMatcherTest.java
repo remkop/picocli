@@ -71,13 +71,19 @@ public class AbbreviationMatcherTest {
     public void testSplitIntoChunks() {
         assertEquals(Arrays.asList("k", "C"), splitIntoChunks("kC", false));
         assertEquals(Arrays.asList("k", "C"), splitIntoChunks("k-c", false));
+        assertEquals(Arrays.asList("K", "C"), splitIntoChunks("KC", false));
         assertEquals(Arrays.asList("kebab", "Case"), splitIntoChunks("kebab-case", false));
         assertEquals(Arrays.asList("very", "Long", "Kebab", "Case"), splitIntoChunks("very-long-kebab-case", false));
         assertEquals(Arrays.asList("camel", "Case"), splitIntoChunks("camelCase", false));
         assertEquals(Arrays.asList("very", "Long", "Camel", "Case"), splitIntoChunks("veryLongCamelCase", false));
-        assertEquals(Arrays.asList("a", "B"), splitIntoChunks("aB", false));
-        assertEquals(Arrays.asList("a", "B"), splitIntoChunks("a-B", false));
-        assertEquals(Arrays.asList("A", "B"), splitIntoChunks("AB", false));
+
+        assertEquals(Arrays.asList("--", "K", "C"), splitIntoChunks("--kC", false));
+        assertEquals(Arrays.asList("--", "K", "C"), splitIntoChunks("--k-c", false));
+        assertEquals(Arrays.asList("--", "K", "C"), splitIntoChunks("--KC", false));
+        assertEquals(Arrays.asList("--", "Kebab", "Case"), splitIntoChunks("--kebab-case", false));
+        assertEquals(Arrays.asList("--", "Very", "Long", "Kebab", "Case"), splitIntoChunks("--very-long-kebab-case", false));
+        assertEquals(Arrays.asList("--", "Camel", "Case"), splitIntoChunks("--camelCase", false));
+        assertEquals(Arrays.asList("--", "Very", "Long", "Camel", "Case"), splitIntoChunks("--veryLongCamelCase", false));
     }
 
     @Test
