@@ -403,5 +403,20 @@ public class AbbreviationMatcherTest {
         assertTrue(app.aB);
         assertFalse(app.a);
         assertFalse(app.B);
+
+        app = new App();
+        new CommandLine(app).setAbbreviatedOptionsAllowed(true).parseArgs("--aB", "--a-B");
+        assertTrue(app.a_b);
+        assertTrue(app.aB);
+        assertFalse(app.a);
+        assertFalse(app.B);
+
+        app = new App();
+        try {
+            new CommandLine(app).setAbbreviatedOptionsAllowed(true).parseArgs("--a-b");
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            assertEquals("Error: --a-b is not unique: it matches '--a-B', '--aB'", ex.getMessage());
+        }
     }
 }
