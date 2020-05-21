@@ -17147,16 +17147,20 @@ public class CommandLine {
     static class AbbreviationMatcher {
         public static List<String> splitIntoChunks(String command, boolean caseInsensitive) {
             List<String> result = new ArrayList<String>();
-            int start = 0;
+            int start = 0, codepoint;
             StringBuilder nonAlphabeticPrefix = new StringBuilder();
-            while (start < command.length() && !Character.isLetterOrDigit(command.codePointAt(start))) {
-                nonAlphabeticPrefix.appendCodePoint(command.codePointAt(start));
-                start++;
+            for (int i = start; i < command.length(); i += Character.charCount(codepoint)) {
+                codepoint = command.codePointAt(i);
+                if (Character.isLetterOrDigit(codepoint)) {
+                    break;
+                }
+                nonAlphabeticPrefix.appendCodePoint(codepoint);
+                start += Character.charCount(codepoint);
             }
             if (nonAlphabeticPrefix.length() > 0) {
                 result.add(nonAlphabeticPrefix.toString());
             }
-            for (int i = start, codepoint; i < command.length(); i += Character.charCount(codepoint)) {
+            for (int i = start; i < command.length(); i += Character.charCount(codepoint)) {
                 codepoint = command.codePointAt(i);
                 if ((!caseInsensitive && Character.isUpperCase(codepoint)) || '-' == codepoint) {
                     String chunk = makeCanonical(command.substring(start, i));
