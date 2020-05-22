@@ -14,6 +14,9 @@ What it does provide is a tokenizer for splitting a single command line String i
 Given an array of Strings, picocli can execute a command or subcommand.
 Combining these two libraries makes it easy to build powerful interactive shell applications.
 
+Here is an example of what can be achieved:
+
+[![asciicast](https://asciinema.org/a/284482.svg)](https://asciinema.org/a/284482)
 
 ## About JLine 3
 
