@@ -212,8 +212,7 @@ See the https://github.com/remkop/picocli/tree/master/picocli-codegen[`picocli-c
 
 == Options and Parameters
 Command line arguments can be separated into _options_  and _positional parameters_.
-Options have a name, positional parameters are usually the values that follow the options,
-but they may be mixed.
+Options have a name, positional parameters are usually the values that follow the options, but they may be mixed.
 
 image:OptionsAndParameters2.png[Example command with annotated @Option and @Parameters]
 
@@ -222,6 +221,7 @@ Picocli has separate annotations for options and positional parameters.
 === Options
 An option must have one or more `names`.
 Picocli lets you use any option name you want.
+Option names are case-sensitive by default, but this is <<Case Sensitivity,customizable>>.
 
 TIP: You may be interested in this http://catb.org/~esr/writings/taoup/html/ch10s05.html#id2948149[list of common option names]. Following these conventions may make your application more intuitive to use for experienced users.
 
@@ -2302,6 +2302,28 @@ class PrintExceptionMessageHandler implements IExecutionExceptionHandler {
 
 == Parser Configuration
 
+=== Case Sensitivity
+By default, all options and subcommands are case sensitive.
+Case sensitivity can be switched off globally, as well as on a per-command basis.
+
+To toggle case sensitivity for all commands, use the `CommandLine::setSubcommandsCaseInsensitive` and `CommandLine::setOptionsCaseInsensitive` methods.
+Use the `CommandSpec::subcommandsCaseInsensitive` and `CommandSpec::optionsCaseInsensitive` methods to give some commands a different case sensitivity than others.
+
+Where possible, picocli will try to prevent ambiguity: when multiple options with the same name are registered in a command, a `DuplicateOptionAnnotationsException` is thrown.
+When multiple subcommands with the same name are registered in a command, a `DuplicateNameException` is thrown.
+
+With case sensitivity switched off, the same principle applies: multiple options whose names differ only in case cannot be registered in a command.
+Similarly, multiple subcommands cannot be registered when their names differ only in case.
+
+[WARNING]
+====
+When a combination of POSIX options resembles a long option, picocli will prioritize the long option.
+This is the case regardless of case sensitivity, but be aware that with case sensitivity switched off, the chance of such collisions increases.
+For example, if a command has POSIX options `-a`, `-b`, and `-c`, and a long option `-ABC`, then, when the user specifies `-abc`, picocli will recognize it as the long option `-ABC`, not as the POSIX options.
+====
+
+See the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/casesensitivity[casesensitivity] package in `picocli-examples` for some examples.
+
 === Overwriting Single Options
 
 When a single-value option is specified multiple times on the command line, the default parser behaviour is
@@ -2420,7 +2442,7 @@ By default, the picocli parser allows POSIX clustered short options, so short op
 From picocli 3.0, applications can call `CommandLine.setPosixClusteredShortOptionsAllowed(false)` to enforce that options must be separated with whitespace on the command line.
 (This also means that option parameters must be separated from the option name by whitespace or the `=` <<Option-Parameter Separators,separator>> character, so `-D key=value` and `-D=key=value` will be recognized but `-Dkey=value` will not.)
 
-=== Lenient Mode (Incubating)
+=== Lenient Mode
 From picocli 3.2, the parser can be configured to continue parsing invalid input to the end.
 When `collectErrors` is set to `true`, and a problem occurs during parsing, an `Exception` is added to the `ParseResult.errors()` list and parsing continues. The default behaviour (when `collectErrors` is `false`) is to abort parsing by throwing the `Exception`.
 
@@ -2625,29 +2647,6 @@ class ExecParameterConsumer implements IParameterConsumer {
     }
 }
 ```
-
-=== Case Sensitivity
-By default, all options and subcommands are case sensitive.
-Case sensitivity can be switched off globally, as well as on a per-command basis.
-
-To toggle case sensitivity for all commands, use the `CommandLine::setSubcommandsCaseInsensitive` and `CommandLine::setOptionsCaseInsensitive` methods.
-Use the `CommandSpec::subcommandsCaseInsensitive` and `CommandSpec::optionsCaseInsensitive` methods to give some commands a different case sensitivity than others.
-
-Where possible, picocli will try to prevent ambiguity: when multiple options with the same name are registered in a command, a `DuplicateOptionAnnotationsException` is thrown.
-When multiple subcommands with the same name are registered in a command, a `DuplicateNameException` is thrown.
-
-With case sensitivity switched off, the same principle applies: multiple options whose names differ only in case cannot be registered in a command.
-Similarly, multiple subcommands cannot be registered when their names differ only in case.
-
-[WARNING]
-====
-When a combination of POSIX options resembles a long option, picocli will prioritize the long option.
-This is the case regardless of case sensitivity, but be aware that with case sensitivity switched off, the chance of such collisions increases.
-For example, if a command has POSIX options `-a`, `-b`, and `-c`, and a long option `-ABC`, then, when the user specifies `-abc`, picocli will recognize it as the long option `-ABC`, not as the POSIX options.
-====
-
-See the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/casesensitivity[casesensitivity] package in `picocli-examples` for some examples.
-
 
 == Help
 
@@ -4113,7 +4112,9 @@ From v0.9.8, picocli supports registering subcommands declaratively with the `@C
 public class Git { ... }
 ----
 
-Subcommands referenced in a `subcommands` attribute _must_ have a `@Command` annotation with a `name` attribute, or an exception is thrown from the `CommandLine` constructor. This name will be used both for generating usage help and for recognizing subcommands when parsing the command line.
+Subcommands referenced in a `subcommands` attribute _must_ have a `@Command` annotation with a `name` attribute, or an exception is thrown from the `CommandLine` constructor.
+This name will be used both for generating usage help and for recognizing subcommands when parsing the command line.
+Command names are case-sensitive by default, but this is <<Case Sensitivity,customizable>>.
 
 Custom type converters registered on a `CommandLine` instance will apply to all subcommands that were declared on the main command with the `subcommands` annotation.
 
