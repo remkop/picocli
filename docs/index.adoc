@@ -2304,6 +2304,7 @@ class PrintExceptionMessageHandler implements IExecutionExceptionHandler {
 
 === Case Sensitivity
 By default, all options and subcommands are case sensitive.
+From picocli 4.3, case sensitivity is configurable.
 Case sensitivity can be switched off globally, as well as on a per-command basis.
 
 To toggle case sensitivity for all commands, use the `CommandLine::setSubcommandsCaseInsensitive` and `CommandLine::setOptionsCaseInsensitive` methods.
@@ -2323,6 +2324,62 @@ For example, if a command has POSIX options `-a`, `-b`, and `-c`, and a long opt
 ====
 
 See the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/casesensitivity[casesensitivity] package in `picocli-examples` for some examples.
+
+=== Abbreviated Options and Subcommands
+
+Since picocli 4.4, the parser can recognize abbreviated options and subcommands.
+This needs to be enabled explicitly with `CommandLine::setAbbreviatedOptionsAllowed` and `CommandLine::setAbbreviatedSubcommandsAllowed`.
+
+==== Recognized Abbreviations
+When abbreviations are enabled, users can specify the initial letter(s) of the first component and optionally the initial letter(s) of one or more subsequent components of an option or subcommand name.
+
+"Components" are separated by `-` dash characters or by case, so for example, both `--CamelCase` and `--kebab-case` have two components.
+
+[NOTE]
+====
+When case sensitivity is <<Case Sensitivity,disabled>> only the `-` dash character can be used to separate components.
+====
+
+.Examples of valid abbreviations
+[options="header"]
+|===
+|Option or subcommand|Recognized Abbreviations
+|`--veryLongCamelCase` | `--very`, `--vLCC`, `--vCase`
+|`--super-long-option` | `--sup`, `--sLO`, `--s-l-o`, `--s-lon`, `--s-opt`, `--sOpt`
+|`some-long-command` | `so`, `sLC`, `s-l-c`, `soLoCo`, `someCom`
+|===
+
+==== Ambiguous Abbreviations
+When the user specifies input that can match multiple options or subcommands, the parser throws a `ParameterException`.
+When applications use the `execute` method, a <<Invalid User Input,short error message>> and the usage help is displayed to the user.
+
+For example, given a command with subcommands `help` and `hello`, then ambiguous user input like `hel` will show this error message:
+
+----
+Error: hel is not unique: it matches 'hello', 'help'
+----
+
+==== Abbreviated Long Options and POSIX Clustered Short Options
+
+When an argument can match both a long option and a set of <<Short (POSIX) Options,clustered short options>>, picocli matches the long option.
+
+For example:
+
+[source,java]
+----
+class AbbreviationsAndPosix {
+    @Option(names = "-A") boolean a;
+    @Option(names = "-B") boolean b;
+    @Option(names = "-AaaBbb") boolean aaaBbb;
+}
+AbbreviationsAndPosix app = CommandLine.populateCommand(new AbbreviationsAndPosix(), "-AB");
+assertTrue(app.aaaBbb);
+assertFalse(app.a);
+assertFalse(app.b);
+----
+
+When abbreviated options are enabled, user input `-AB` will match the long `-AaaBbb` option, but not the `-A` and `-B` options.
+
 
 === Overwriting Single Options
 
