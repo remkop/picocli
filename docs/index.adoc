@@ -2331,7 +2331,7 @@ Since picocli 4.4, the parser can recognize abbreviated options and subcommands.
 This needs to be enabled explicitly with `CommandLine::setAbbreviatedOptionsAllowed` and `CommandLine::setAbbreviatedSubcommandsAllowed`.
 
 ==== Recognized Abbreviations
-When abbreviations are enabled, users can specify the initial letter(s) of the first component and optionally the initial letter(s) of one or more subsequent components of an option or subcommand name.
+When abbreviations are enabled, users can specify the initial letter(s) of the first component and optionally of one or more subsequent components of an option or subcommand name.
 
 "Components" are separated by `-` dash characters or by case, so for example, both `--CamelCase` and `--kebab-case` have two components.
 
@@ -2372,7 +2372,8 @@ class AbbreviationsAndPosix {
     @Option(names = "-B") boolean b;
     @Option(names = "-AaaBbb") boolean aaaBbb;
 }
-AbbreviationsAndPosix app = CommandLine.populateCommand(new AbbreviationsAndPosix(), "-AB");
+AbbreviationsAndPosix app = new AbbreviationsAndPosix();
+new CommandLine(app).setAbbreviatedOptionsAllowed(true).parseArgs("-AB");
 assertTrue(app.aaaBbb);
 assertFalse(app.a);
 assertFalse(app.b);

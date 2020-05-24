@@ -448,7 +448,7 @@ public class AbbreviationMatcherTest {
             public boolean b;
 
             @Option(names = "-AaaBbb")
-            public boolean ab;
+            public boolean aaaBbb;
         }
 
         CommandLine commandLine = new CommandLine(new App());
@@ -463,6 +463,12 @@ public class AbbreviationMatcherTest {
         assertTrue(result.hasMatchedOption("-A"));
         assertFalse(result.hasMatchedOption("-B"));
         assertFalse(result.hasMatchedOption("-AaaBbb"));
+
+        App app = new App();
+        new CommandLine(app).setAbbreviatedOptionsAllowed(true).parseArgs("-AB");
+        assertTrue(app.aaaBbb);
+        assertFalse(app.a);
+        assertFalse(app.b);
     }
 
     @Test
