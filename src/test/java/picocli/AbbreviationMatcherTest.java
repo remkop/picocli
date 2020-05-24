@@ -1,5 +1,6 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -21,6 +22,8 @@ public class AbbreviationMatcherTest {
         result.add("very-long-kebab-case");
         result.add("camelCase");
         result.add("veryLongCamelCase");
+        result.add("super-long-option");
+        result.add("extremely-long-option-with-many-components");
         return result;
     }
 
@@ -37,34 +40,82 @@ public class AbbreviationMatcherTest {
         assertEquals("camelCase", match(set, "cC", false));
         assertEquals("camelCase", match(set, "c-c", false));
         assertEquals("camelCase", match(set, "camC", false));
+        assertEquals("camelCase", match(set, "camel", false));
+        assertEquals("camelCase", match(set, "ca", false));
+        assertEquals("super-long-option", match(set, "s-l-o", false));
+        assertEquals("super-long-option", match(set, "s-long-opt", false));
+        assertEquals("super-long-option", match(set, "super", false));
+        assertEquals("super-long-option", match(set, "sup", false));
+        assertEquals("super-long-option", match(set, "sup-long", false));
+        assertNotEquals("super-long-option", match(set, "SLO", false));
+        assertEquals   ("super-long-option", match(set, "sLO", false));
+        assertEquals("super-long-option", match(set, "s-opt", false));
         assertEquals("veryLongCamelCase", match(set, "veryLongCamelCase", false));
         assertEquals("veryLongCamelCase", match(set, "vLCC", false));
         assertEquals("veryLongCamelCase", match(set, "v-l-c-c", false));
+        assertEquals("extremely-long-option-with-many-components", match(set, "extr-opt-comp", false));
+        assertEquals("extremely-long-option-with-many-components", match(set, "extr-long-opt-comp", false));
+        assertEquals("extremely-long-option-with-many-components", match(set, "extr-comp", false));
+        assertNotEquals("extremely-long-option-with-many-components", match(set, "extr-opt-long-comp", false));
+        assertNotEquals("extremely-long-option-with-many-components", match(set, "long", false));
 
         try {
             match(set, "vLC", false);
             fail("Expected exception");
         } catch (IllegalArgumentException ex) {
-            assertEquals("vLC is not unique: it matches 'very-long-kebab-case', 'veryLongCamelCase'", ex.getMessage());
+            assertEquals("'vLC' is not unique: it matches 'very-long-kebab-case', 'veryLongCamelCase'", ex.getMessage());
         }
         try {
             match(set, "k-c", false);
             fail("Expected exception");
         } catch (IllegalArgumentException ex) {
-            assertEquals("k-c is not unique: it matches 'kebab-case-extra', 'kebab-case-extra-extra', 'kebab-case'", ex.getMessage());
+            assertEquals("'k-c' is not unique: it matches 'kebab-case-extra', 'kebab-case-extra-extra', 'kebab-case'", ex.getMessage());
         }
         try {
             match(set, "kC", false);
             fail("Expected exception");
         } catch (IllegalArgumentException ex) {
-            assertEquals("kC is not unique: it matches 'kebab-case-extra', 'kebab-case-extra-extra', 'kebab-case'", ex.getMessage());
+            assertEquals("'kC' is not unique: it matches 'kebab-case-extra', 'kebab-case-extra-extra', 'kebab-case'", ex.getMessage());
         }
         try {
             match(set, "keb-ca", false);
             fail("Expected exception");
         } catch (IllegalArgumentException ex) {
-            assertEquals("keb-ca is not unique: it matches 'kebab-case-extra', 'kebab-case-extra-extra', 'kebab-case'", ex.getMessage());
+            assertEquals("'keb-ca' is not unique: it matches 'kebab-case-extra', 'kebab-case-extra-extra', 'kebab-case'", ex.getMessage());
         }
+    }
+
+    //|`--veryLongCamelCase` | `--very`, `--VLCC`, `--vCase`
+    //|`--super-long-option` | `--sup`, `--sLO`, `--s-l-o`, `--s-lon`, `--s-opt`, `--sOpt`
+    //|`some-long-command` | `so`, sLC`, `s-l-c`, `soLoCo`, `someCom`
+    @Test
+    @Ignore
+    public void testUserManualExamples() {
+        Set<String> original = new LinkedHashSet<String>();
+        original.add("--veryLongCamelCase");
+        original.add("--super-long-option");
+        original.add("some-long-command");
+
+        assertEquals("--veryLongCamelCase", match(original, "--very", false));
+        assertEquals("--veryLongCamelCase", match(original, "--vLCC", false));
+        assertEquals("--veryLongCamelCase", match(original, "--vCase", false));
+        assertNotEquals("--veryLongCamelCase", match(original, "--VLCC", false));
+
+        assertEquals("--super-long-option", match(original, "--sup", false));
+        assertNotEquals("--super-long-option", match(original, "--Sup", false));
+        assertEquals("--super-long-option", match(original, "--sLO", false));
+        assertEquals("--super-long-option", match(original, "--s-l-o", false));
+        assertEquals("--super-long-option", match(original, "--s-lon", false));
+        assertEquals("--super-long-option", match(original, "--s-opt", false));
+        assertEquals("--super-long-option", match(original, "--sOpt", false));
+
+        assertNotEquals("some-long-command", match(original, "So", false));
+        assertEquals("some-long-command", match(original, "so", false));
+        assertEquals("some-long-command", match(original, "sLC", false));
+        assertEquals("some-long-command", match(original, "s-l-c", false));
+        assertEquals("some-long-command", match(original, "soLoCo", false));
+        assertNotEquals("some-long-command", match(original, "SoLoCo", false));
+        assertEquals("some-long-command", match(original, "someCom", false));
     }
 
     @Test
@@ -155,7 +206,7 @@ public class AbbreviationMatcherTest {
 
         String content = new String(output.toByteArray(), "UTF-8")
                 .replaceAll("\r\n", "\n"); // Normalize line endings.
-        assertEquals("Error: h is not unique: it matches 'hello', 'help'\n"
+        assertEquals("Error: 'h' is not unique: it matches 'hello', 'help'\n"
                 + "Usage: <main class> [COMMAND]\n"
                 + "Commands:\n"
                 + "  another-style\n"
@@ -225,7 +276,7 @@ public class AbbreviationMatcherTest {
 
         String content = new String(output.toByteArray(), "UTF-8")
                 .replaceAll("\r\n", "\n"); // Normalize line endings.
-        assertEquals("Error: h is not unique: it matches 'HACKING', 'hello', 'help'\n"
+        assertEquals("Error: 'h' is not unique: it matches 'HACKING', 'hello', 'help'\n"
                 + "Usage: <main class> [COMMAND]\n"
                 + "Commands:\n"
                 + "  another-style\n"
@@ -298,7 +349,7 @@ public class AbbreviationMatcherTest {
 
         String content = new String(output.toByteArray(), "UTF-8")
                 .replaceAll("\r\n", "\n"); // Normalize line endings.
-        assertEquals("Error: --h is not unique: it matches '--help', '--hello'\n"
+        assertEquals("Error: '--h' is not unique: it matches '--help', '--hello'\n"
                 + "Usage: <main class> [-H] [--[no-]another-style] [--[no-]camelCaseOption]\n"
                 + "                    [--hello] [---hi-triple-hyphens] [--version]\n"
                 + "      --[no-]another-style\n"
@@ -380,6 +431,39 @@ public class AbbreviationMatcherTest {
         assertTrue(result.hasMatchedOption("-A"));
         assertFalse(result.hasMatchedOption("-B"));
         assertFalse(result.hasMatchedOption("-AB"));
+
+        App app = CommandLine.populateCommand(new App(), "-AB");
+        assertTrue(app.ab);
+        assertFalse(app.a);
+        assertFalse(app.b);
+    }
+
+    @Test
+    public void testPOSIXClusterOptionsWithAbbrevOptions2() {
+        @Command
+        class App {
+            @Option(names = "-A")
+            public boolean a;
+
+            @Option(names = "-B")
+            public boolean b;
+
+            @Option(names = "-AaaBbb")
+            public boolean ab;
+        }
+
+        CommandLine commandLine = new CommandLine(new App());
+        commandLine.setAbbreviatedOptionsAllowed(true);
+
+        ParseResult result = commandLine.parseArgs("-AB");
+        assertFalse(result.hasMatchedOption("-A"));
+        assertFalse(result.hasMatchedOption("-B"));
+        assertTrue(result.hasMatchedOption("-AaaBbb"));
+
+        result = commandLine.parseArgs("-A");
+        assertTrue(result.hasMatchedOption("-A"));
+        assertFalse(result.hasMatchedOption("-B"));
+        assertFalse(result.hasMatchedOption("-AaaBbb"));
     }
 
     @Test
@@ -425,7 +509,7 @@ public class AbbreviationMatcherTest {
             new CommandLine(app).setAbbreviatedOptionsAllowed(true).parseArgs("--AB");
             fail("Expected exception");
         } catch (ParameterException ex) {
-            assertEquals("Error: --AB is not unique: it matches '--a-B', '--aB'", ex.getMessage());
+            assertEquals("Error: '--AB' is not unique: it matches '--a-B', '--aB'", ex.getMessage());
         }
 
         app = new App();
@@ -433,7 +517,7 @@ public class AbbreviationMatcherTest {
             new CommandLine(app).setAbbreviatedOptionsAllowed(true).parseArgs("--a-b");
             fail("Expected exception");
         } catch (ParameterException ex) {
-            assertEquals("Error: --a-b is not unique: it matches '--a-B', '--aB'", ex.getMessage());
+            assertEquals("Error: '--a-b' is not unique: it matches '--a-B', '--aB'", ex.getMessage());
         }
     }
 }

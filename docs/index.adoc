@@ -2356,7 +2356,7 @@ When applications use the `execute` method, a <<Invalid User Input,short error m
 For example, given a command with subcommands `help` and `hello`, then ambiguous user input like `hel` will show this error message:
 
 ----
-Error: hel is not unique: it matches 'hello', 'help'
+Error: 'hel' is not unique: it matches 'hello', 'help'
 ----
 
 ==== Abbreviated Long Options and POSIX Clustered Short Options

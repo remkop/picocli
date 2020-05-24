@@ -17207,7 +17207,7 @@ public class CommandLine {
             }
             if (candidates.size() > 1) {
                 String str = candidates.toString();
-                throw new IllegalArgumentException(abbreviation + " is not unique: it matches '" +
+                throw new IllegalArgumentException("'" + abbreviation + "' is not unique: it matches '" +
                         str.substring(1, str.length() - 1).replace(", ", "', '") + "'");
             }
             return candidates.isEmpty() ? abbreviation : candidates.get(0); // return the original if no match found
