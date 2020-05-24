@@ -3653,4 +3653,84 @@ public class ArgGroupTest {
         assertEquals(new Outer1027("00", "11", inners), bean.outers.get(1));
         assertEquals(new Outer1027("00000", "11111", null), bean.outers.get(2));
     }
+
+    @Command(name = "MyApp")
+    static class Issue1065 {
+
+        @ArgGroup(exclusive = false)
+        MyGroup myGroup;
+
+        static class MyGroup {
+            @Option(names="-A", paramLabel="N", split=",") List<Long> A;
+        }
+    }
+    //https://stackoverflow.com/questions/61964838/picocli-list-option-used-in-arggroup-duplicated-in-short-usage-string
+    @Test
+    public void testIssue1065DuplicateSynopsis() {
+        String expected = String.format("" +
+                "Usage: MyApp [[-A=N[,N...]]...]%n" +
+                "  -A=N[,N...]%n");
+        String actual = new CommandLine(new Issue1065()).getUsageMessage(Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+
+    @Command(name = "MyApp")
+    static class Issue1065ExclusiveGroup {
+
+        @ArgGroup(exclusive = true)
+        MyGroup myGroup;
+
+        static class MyGroup {
+            @Option(names="-A", paramLabel="N", split=",") List<Long> A;
+        }
+    }
+    //https://stackoverflow.com/questions/61964838/picocli-list-option-used-in-arggroup-duplicated-in-short-usage-string
+    @Test
+    public void testIssue1065ExclusiveGroupDuplicateSynopsis() {
+        String expected = String.format("" +
+                "Usage: MyApp [-A=N[,N...] [-A=N[,N...]]...]%n" +
+                "  -A=N[,N...]%n");
+        String actual = new CommandLine(new Issue1065ExclusiveGroup()).getUsageMessage(Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+
+    @Command(name = "MyApp")
+    static class Issue1065NoSplit {
+
+        @ArgGroup(exclusive = false)
+        MyGroup myGroup;
+
+        static class MyGroup {
+            @Option(names="-A", paramLabel="N") List<Long> A;
+        }
+    }
+    //https://stackoverflow.com/questions/61964838/picocli-list-option-used-in-arggroup-duplicated-in-short-usage-string
+    @Test
+    public void testIssue1065DuplicateSynopsisVariant() {
+        String expected = String.format("" +
+                "Usage: MyApp [[-A=N]...]%n" +
+                "  -A=N%n");
+        String actual = new CommandLine(new Issue1065NoSplit()).getUsageMessage(Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
+
+    @Command(name = "MyApp")
+    static class Issue1065ExclusiveGroupNoSplit {
+
+        @ArgGroup(exclusive = true)
+        MyGroup myGroup;
+
+        static class MyGroup {
+            @Option(names="-A", paramLabel="N") List<Long> A;
+        }
+    }
+    //https://stackoverflow.com/questions/61964838/picocli-list-option-used-in-arggroup-duplicated-in-short-usage-string
+    @Test
+    public void testIssue1065ExclusiveGroupNoSplitDuplicateSynopsisVariant() {
+        String expected = String.format("" +
+                "Usage: MyApp [-A=N [-A=N]...]%n" +
+                "  -A=N%n");
+        String actual = new CommandLine(new Issue1065ExclusiveGroupNoSplit()).getUsageMessage(Help.Ansi.OFF);
+        assertEquals(expected, actual);
+    }
 }
