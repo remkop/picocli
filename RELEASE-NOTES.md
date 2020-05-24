@@ -79,8 +79,9 @@ When abbreviated options are enabled, user input `-AB` will match the long `-Aaa
 ## <a name="4.4.0-fixes"></a> Fixed issues
 * [#10][#732][#1047] API: Support abbreviated options and commands. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#1051][#1056] Enhancement: `GenerateCompletion` command no longer needs to be a direct subcommand of the root command. Thanks to [Philippe Charles](https://github.com/charphi) for the pull request.
-* [#1058][#1059] Man page generator: fix incorrect asciidoctor call in synopsis.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-* [#1058][#1060] Man page generator: add documentation about creating language variants.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [1065] Bugfix: With a `List<>` option in `@ArgGroup`, group incorrectly appears twice in the synopsis. Thanks to [kap4lin](https://github.com/kap4lin) for raising this.
+* [#1058][#1059] DOC: Man page generator: fix incorrect asciidoctor call in synopsis.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1058][#1060] DOC: Man page generator: add documentation about creating language variants.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 
 ## <a name="4.4.0-deprecated"></a> Deprecations
