@@ -7777,26 +7777,26 @@ public class CommandLine {
             /** Constant String holding the default separator between options and option parameters: <code>{@value}</code>.*/
             static final String DEFAULT_SEPARATOR = "=";
             static final String DEFAULT_END_OF_OPTIONS_DELIMITER = "--";
-            private String separator;
-            private boolean stopAtUnmatched = false;
-            private boolean stopAtPositional = false;
-            private String endOfOptionsDelimiter = DEFAULT_END_OF_OPTIONS_DELIMITER;
-            private boolean toggleBooleanFlags = false;
-            private boolean overwrittenOptionsAllowed = false;
-            private boolean unmatchedArgumentsAllowed = false;
-            private boolean abbreviatedSubcommandsAllowed = false;
             private boolean abbreviatedOptionsAllowed = false;
-            private boolean expandAtFiles = true;
-            private boolean useSimplifiedAtFiles = false;
-            private Character atFileCommentChar = '#';
-            private boolean posixClusteredShortOptionsAllowed = true;
-            private boolean unmatchedOptionsArePositionalParams = false;
-            private boolean limitSplit = false;
+            private boolean abbreviatedSubcommandsAllowed = false;
             private boolean aritySatisfiedByAttachedOptionParam = false;
-            private boolean collectErrors = false;
+            private Character atFileCommentChar = '#';
             private boolean caseInsensitiveEnumValuesAllowed = false;
-            private boolean trimQuotes = shouldTrimQuotes();
+            private boolean collectErrors = false;
+            private String endOfOptionsDelimiter = DEFAULT_END_OF_OPTIONS_DELIMITER;
+            private boolean expandAtFiles = true;
+            private boolean limitSplit = false;
+            private boolean overwrittenOptionsAllowed = false;
+            private boolean posixClusteredShortOptionsAllowed = true;
+            private String separator;
             private boolean splitQuotedStrings = false;
+            private boolean stopAtPositional = false;
+            private boolean stopAtUnmatched = false;
+            private boolean toggleBooleanFlags = false;
+            private boolean trimQuotes = shouldTrimQuotes();
+            private boolean unmatchedArgumentsAllowed = false;
+            private boolean unmatchedOptionsArePositionalParams = false;
+            private boolean useSimplifiedAtFiles = false;
 
             /** Returns the String to use as the separator between options and option parameters. {@code "="} by default,
              * initialized from {@link Command#separator()} if defined.*/
@@ -7919,36 +7919,41 @@ public class CommandLine {
             void initSeparator(String value)   { if (initializable(separator, value, DEFAULT_SEPARATOR)) {separator = value;} }
             void updateSeparator(String value) { if (isNonDefault(value, DEFAULT_SEPARATOR))             {separator = value;} }
             public String toString() {
-                return String.format("posixClusteredShortOptionsAllowed=%s, stopAtPositional=%s, stopAtUnmatched=%s, " +
-                                "separator=%s, overwrittenOptionsAllowed=%s, unmatchedArgumentsAllowed=%s, expandAtFiles=%s, " +
-                                "atFileCommentChar=%s, useSimplifiedAtFiles=%s, endOfOptionsDelimiter=%s, limitSplit=%s, aritySatisfiedByAttachedOptionParam=%s, " +
-                                "toggleBooleanFlags=%s, unmatchedOptionsArePositionalParams=%s, collectErrors=%s," +
-                                "caseInsensitiveEnumValuesAllowed=%s, trimQuotes=%s, splitQuotedStrings=%s",
-                        posixClusteredShortOptionsAllowed, stopAtPositional, stopAtUnmatched,
-                        separator, overwrittenOptionsAllowed, unmatchedArgumentsAllowed, expandAtFiles,
-                        atFileCommentChar, useSimplifiedAtFiles, endOfOptionsDelimiter, limitSplit, aritySatisfiedByAttachedOptionParam,
-                        toggleBooleanFlags, unmatchedOptionsArePositionalParams, collectErrors,
-                        caseInsensitiveEnumValuesAllowed, trimQuotes, splitQuotedStrings);
+                return String.format("abbreviatedOptionsAllowed=%s, abbreviatedSubcommandsAllowed=%s, aritySatisfiedByAttachedOptionParam=%s, atFileCommentChar=%s, " +
+                                "caseInsensitiveEnumValuesAllowed=%s, collectErrors=%s, endOfOptionsDelimiter=%s, expandAtFiles=%s, " +
+                                "limitSplit=%s, overwrittenOptionsAllowed=%s, posixClusteredShortOptionsAllowed=%s, " +
+                                "separator=%s, splitQuotedStrings=%s, stopAtPositional=%s, stopAtUnmatched=%s, " +
+                                "toggleBooleanFlags=%s, trimQuotes=%s, " +
+                                "unmatchedArgumentsAllowed=%s, unmatchedOptionsArePositionalParams=%s, useSimplifiedAtFiles=%s",
+                        abbreviatedOptionsAllowed, abbreviatedSubcommandsAllowed, aritySatisfiedByAttachedOptionParam, atFileCommentChar,
+                        caseInsensitiveEnumValuesAllowed, collectErrors, endOfOptionsDelimiter, expandAtFiles,
+                        limitSplit, overwrittenOptionsAllowed, posixClusteredShortOptionsAllowed,
+                        separator, splitQuotedStrings, stopAtPositional, stopAtUnmatched,
+                        toggleBooleanFlags, trimQuotes,
+                        unmatchedArgumentsAllowed, unmatchedOptionsArePositionalParams, useSimplifiedAtFiles);
             }
 
             void initFrom(ParserSpec settings) {
-                separator = settings.separator;
-                stopAtUnmatched = settings.stopAtUnmatched;
-                stopAtPositional = settings.stopAtPositional;
-                endOfOptionsDelimiter = settings.endOfOptionsDelimiter;
-                toggleBooleanFlags = settings.toggleBooleanFlags;
-                overwrittenOptionsAllowed = settings.overwrittenOptionsAllowed;
-                unmatchedArgumentsAllowed = settings.unmatchedArgumentsAllowed;
-                expandAtFiles = settings.expandAtFiles;
-                atFileCommentChar = settings.atFileCommentChar;
-                posixClusteredShortOptionsAllowed = settings.posixClusteredShortOptionsAllowed;
-                unmatchedOptionsArePositionalParams = settings.unmatchedOptionsArePositionalParams;
-                limitSplit = settings.limitSplit;
+                abbreviatedOptionsAllowed = settings.abbreviatedOptionsAllowed;
+                abbreviatedSubcommandsAllowed = settings.abbreviatedSubcommandsAllowed;
                 aritySatisfiedByAttachedOptionParam = settings.aritySatisfiedByAttachedOptionParam;
-                collectErrors = settings.collectErrors;
+                atFileCommentChar = settings.atFileCommentChar;
                 caseInsensitiveEnumValuesAllowed = settings.caseInsensitiveEnumValuesAllowed;
-                trimQuotes = settings.trimQuotes;
+                collectErrors = settings.collectErrors;
+                endOfOptionsDelimiter = settings.endOfOptionsDelimiter;
+                expandAtFiles = settings.expandAtFiles;
+                limitSplit = settings.limitSplit;
+                overwrittenOptionsAllowed = settings.overwrittenOptionsAllowed;
+                posixClusteredShortOptionsAllowed = settings.posixClusteredShortOptionsAllowed;
+                separator = settings.separator;
                 splitQuotedStrings = settings.splitQuotedStrings;
+                stopAtPositional = settings.stopAtPositional;
+                stopAtUnmatched = settings.stopAtUnmatched;
+                toggleBooleanFlags = settings.toggleBooleanFlags;
+                trimQuotes = settings.trimQuotes;
+                unmatchedArgumentsAllowed = settings.unmatchedArgumentsAllowed;
+                unmatchedOptionsArePositionalParams = settings.unmatchedOptionsArePositionalParams;
+                useSimplifiedAtFiles = settings.useSimplifiedAtFiles;
             }
         }
         static enum InitialValueState {CACHED, POSTPONED, UNAVAILABLE}
@@ -12143,7 +12148,7 @@ public class CommandLine {
             Assert.notNull(args, "argument array");
             if (tracer.isInfo()) {tracer.info("Picocli version: %s%n", versionString());}
             if (tracer.isInfo()) {tracer.info("Parsing %d command line args %s%n", args.length, Arrays.toString(args));}
-            if (tracer.isDebug()){tracer.debug("Parser configuration: %s%n", config());}
+            if (tracer.isDebug()){tracer.debug("Parser configuration: optionsCaseInsensitive=%s, subcommandsCaseInsensitive=%s, %s%n", commandSpec.optionsCaseInsensitive(), commandSpec.subcommandsCaseInsensitive(), config());}
             if (tracer.isDebug()){tracer.debug("(ANSI is %s by default: systemproperty[picocli.ansi]=%s, isatty=%s, TERM=%s, OSTYPE=%s, isWindows=%s, JansiConsoleInstalled=%s, ANSICON=%s, ConEmuANSI=%s, NO_COLOR=%s, CLICOLOR=%s, CLICOLOR_FORCE=%s)%n",
                     Help.Ansi.AUTO.enabled() ? "enabled" : "disabled", System.getProperty("picocli.ansi"), Help.Ansi.isTTY(), System.getenv("TERM"), System.getenv("OSTYPE"), Help.Ansi.isWindows(), Help.Ansi.isJansiConsoleInstalled(), System.getenv("ANSICON"), System.getenv("ConEmuANSI"), System.getenv("NO_COLOR"), System.getenv("CLICOLOR"), System.getenv("CLICOLOR_FORCE"));}
             List<String> expanded = new ArrayList<String>();
