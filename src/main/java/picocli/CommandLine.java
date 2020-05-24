@@ -9598,11 +9598,11 @@ public class CommandLine {
                 String infix = exclusive() ? " | " : " ";
                 Text synopsis = colorScheme.ansi().new Text(0);
                 for (ArgSpec arg : args()) {
-                    if (synopsis.length > 0) { synopsis = synopsis.concat(infix); }
+                    String prefix = synopsis.length > 0 ? infix : "";
                     if (arg instanceof OptionSpec) {
-                        synopsis = concatOptionText(synopsis, colorScheme, (OptionSpec) arg);
+                        synopsis = concatOptionText(prefix, synopsis, colorScheme, (OptionSpec) arg);
                     } else {
-                        synopsis = concatPositionalText(synopsis, colorScheme, (PositionalParamSpec) arg);
+                        synopsis = concatPositionalText(prefix, synopsis, colorScheme, (PositionalParamSpec) arg);
                     }
                     outparam_groupArgs.add(arg);
                 }
@@ -9613,31 +9613,13 @@ public class CommandLine {
                 return synopsis;
             }
 
-            private Text concatOptionText(Text text, Help.ColorScheme colorScheme, OptionSpec option) {
-                if (!option.hidden()) {
-                    Text name = option.negatable()
-                            ? colorScheme.optionText(
-                                    (option.commandSpec == null ? RegexTransformer.createDefault() : option.commandSpec.negatableOptionTransformer())
-                                            .makeSynopsis(option.shortestName(), option.commandSpec))
-                            : colorScheme.optionText(option.shortestName());
-                    Text param = createLabelRenderer(option.commandSpec).renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
-                    text = text.concat(open(option)).concat(name).concat(param).concat(close(option));
-                    if (option.isMultiValue()) { // e.g., -x=VAL [-x=VAL]...
-                        text = text.concat(" [").concat(name).concat(param).concat("]...");
-                    }
-                }
-                return text;
+            private Text concatOptionText(String prefix, Text text, Help.ColorScheme colorScheme, OptionSpec option) {
+                return Help.concatOptionText(prefix, text, colorScheme, option, createLabelRenderer(option.commandSpec));
             }
 
-            private Text concatPositionalText(Text text, Help.ColorScheme colorScheme, PositionalParamSpec positionalParam) {
-                if (!positionalParam.hidden()) {
-                    Text label = createLabelRenderer(positionalParam.commandSpec).renderParameterLabel(positionalParam, colorScheme.ansi(), colorScheme.parameterStyles);
-                    text = text.concat(open(positionalParam)).concat(label).concat(close(positionalParam));
-                }
-                return text;
+            private Text concatPositionalText(String prefix, Text text, Help.ColorScheme colorScheme, PositionalParamSpec positionalParam) {
+                return Help.concatPositionalText(prefix, text, colorScheme, positionalParam, createLabelRenderer(positionalParam.commandSpec));
             }
-            private String open(ArgSpec argSpec)  { return argSpec.required() ? "" : "["; }
-            private String close(ArgSpec argSpec) { return argSpec.required() ? "" : "]"; }
 
             public Help.IParamLabelRenderer createLabelRenderer(CommandSpec commandSpec) {
                 return new Help.DefaultParamLabelRenderer(commandSpec == null ? CommandSpec.create() : commandSpec);
@@ -14246,25 +14228,34 @@ public class CommandLine {
                 }
             }
             for (OptionSpec option : options) {
-                if (!option.hidden()) {
-                    Text name = option.negatable()
-                            ? colorScheme.optionText(option.commandSpec.negatableOptionTransformer().makeSynopsis(option.shortestName(), option.commandSpec))
-                            : colorScheme.optionText(option.shortestName());
-                    Text param = parameterLabelRenderer().renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
-                    if (option.required()) { // e.g., -x=VAL
-                        optionText = optionText.concat(" ").concat(name).concat(param).concat("");
-                        if (option.isMultiValue()) { // e.g., -x=VAL [-x=VAL]...
-                            optionText = optionText.concat(" [").concat(name).concat(param).concat("]...");
-                        }
-                    } else {
-                        optionText = optionText.concat(" [").concat(name).concat(param).concat("]");
-                        if (option.isMultiValue()) { // add ellipsis to show option is repeatable
-                            optionText = optionText.concat("...");
-                        }
+                optionText = concatOptionText(" ", optionText, colorScheme, option, parameterLabelRenderer());
+            }
+            return optionText;
+        }
+
+        static Text concatOptionText(String prefix, Text text, Help.ColorScheme colorScheme, OptionSpec option, Help.IParamLabelRenderer parameterLabelRenderer) {
+            if (!option.hidden()) {
+                String nameString = option.shortestName();
+                if (option.negatable) {
+                    INegatableOptionTransformer trans = option.commandSpec == null ? RegexTransformer.createDefault() : option.commandSpec.negatableOptionTransformer();
+                    nameString = trans.makeSynopsis(option.shortestName(), option.commandSpec);
+                }
+                Text name = colorScheme.optionText(nameString);
+                Text param = parameterLabelRenderer.renderParameterLabel(option, colorScheme.ansi(), colorScheme.optionParamStyles);
+                text = text.concat(prefix);
+                if (option.required()) { // e.g., -x=VAL
+                    text = text.concat(name).concat(param).concat("");
+                    if (option.isMultiValue()) { // e.g., -x=VAL [-x=VAL]...
+                        text = text.concat(" [").concat(name).concat(param).concat("]...");
+                    }
+                } else {
+                    text = text.concat("[").concat(name).concat(param).concat("]");
+                    if (option.isMultiValue()) { // add ellipsis to show option is repeatable
+                        text = text.concat("...");
                     }
                 }
             }
-            return optionText;
+            return text;
         }
 
         /** Returns a Text object containing a partial detailed synopsis showing only the end of options delimiter (if enabled), starting with a {@code " "} space.
@@ -14292,13 +14283,16 @@ public class CommandLine {
             }
             positionals.removeAll(done);
             for (PositionalParamSpec positionalParam : positionals) {
-                if (!positionalParam.hidden()) {
-                    positionalParamText = positionalParamText.concat(" ");
-                    Text label = parameterLabelRenderer().renderParameterLabel(positionalParam, colorScheme.ansi(), colorScheme.parameterStyles);
-                    positionalParamText = positionalParamText.concat(label);
-                }
+                positionalParamText = concatPositionalText(" ", positionalParamText, colorScheme, positionalParam, parameterLabelRenderer());
             }
             return positionalParamText;
+        }
+        static Text concatPositionalText(String prefix, Text text, Help.ColorScheme colorScheme, PositionalParamSpec positionalParam, IParamLabelRenderer parameterLabelRenderer) {
+            if (!positionalParam.hidden()) {
+                Text label = parameterLabelRenderer.renderParameterLabel(positionalParam, colorScheme.ansi(), colorScheme.parameterStyles);
+                text = text.concat(prefix).concat(label);
+            }
+            return text;
         }
 
         /** Returns a Text object containing a partial detailed synopsis showing only the subcommands, starting with a {@code " "} space.
