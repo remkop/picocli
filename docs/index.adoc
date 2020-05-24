@@ -2343,7 +2343,7 @@ When case sensitivity is <<Case Sensitivity,disabled>> only the `-` dash charact
 .Examples of valid abbreviations
 [options="header"]
 |===
-|Option or subcommand|Recognized Abbreviations
+|Option or Subcommand|Recognized Abbreviations
 |`--veryLongCamelCase` | `--very`, `--vLCC`, `--vCase`
 |`--super-long-option` | `--sup`, `--sLO`, `--s-l-o`, `--s-lon`, `--s-opt`, `--sOpt`
 |`some-long-command` | `so`, `sLC`, `s-l-c`, `soLoCo`, `someCom`

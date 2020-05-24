@@ -5,23 +5,82 @@ The picocli community is pleased to announce picocli 4.4.0.
 
 This release contains bugfixes and enhancements.
 
+From this release, picocli supports abbreviated options and subcommands. When abbreviations are enabled, users can specify the initial letter(s) of the first component and optionally of one or more subsequent components of an option or subcommand name.
+"Components" are separated by `-` dash characters or by case, so for example, both `--CamelCase` and `--kebab-case` have two components.
+
+
 This is the seventy-first public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.4.0-toc"></a> Table of Contents
 * [New and noteworthy](#4.4.0-new)
+  * [Abbreviated Options and Subcommands](#4.4.0-abbreviated-options-and-commands)
 * [Fixed issues](#4.4.0-fixes)
 * [Deprecations](#4.4.0-deprecated)
 * [Potential breaking changes](#4.4.0-breaking-changes)
 
 ## <a name="4.4.0-new"></a> New and Noteworthy
 
+### <a name="4.4.0-abbreviated-options-and-commands"></a> Abbreviated Options and Subcommands
+
+Since picocli 4.4, the parser can recognize abbreviated options and subcommands.
+This needs to be enabled explicitly with `CommandLine::setAbbreviatedOptionsAllowed` and `CommandLine::setAbbreviatedSubcommandsAllowed`.
+
+#### Recognized Abbreviations
+When abbreviations are enabled, users can specify the initial letter(s) of the first component and optionally of one or more subsequent components of an option or subcommand name.
+
+"Components" are separated by `-` dash characters or by case, so for example, both `--CamelCase` and `--kebab-case` have two components.
+
+NOTE: When case sensitivity is disabled, only the `-` dash character can be used to separate components.
+
+Examples of valid abbreviations:
+
+```
+Option or Subcommand | Recognized Abbreviations
+-------------------- | ------------------------
+--veryLongCamelCase  | --very, --vLCC  --vCase
+--super-long-option  | --sup, --sLO, --s-l-o, --s-lon, --s-opt, --sOpt
+some-long-command    | so, sLC, s-l-c, soLoCo, someCom
+```
+
+#### Ambiguous Abbreviations
+When the user specifies input that can match multiple options or subcommands, the parser throws a `ParameterException`.
+When applications use the `execute` method, a short error message and the usage help is displayed to the user.
+
+For example, given a command with subcommands `help` and `hello`, then ambiguous user input like `hel` will show this error message:
+
+```
+Error: 'hel' is not unique: it matches 'hello', 'help'
+```
+
+#### Abbreviated Long Options and POSIX Clustered Short Options
+
+When an argument can match both a long option and a set of clustered short options, picocli matches the long option.
+
+For example:
+
+```java
+class AbbreviationsAndPosix {
+    @Option(names = "-A") boolean a;
+    @Option(names = "-B") boolean b;
+    @Option(names = "-AaaBbb") boolean aaaBbb;
+}
+AbbreviationsAndPosix app = new AbbreviationsAndPosix();
+new CommandLine(app).setAbbreviatedOptionsAllowed(true).parseArgs("-AB");
+assertTrue(app.aaaBbb);
+assertFalse(app.a);
+assertFalse(app.b);
+```
+
+When abbreviated options are enabled, user input `-AB` will match the long `-AaaBbb` option, but not the `-A` and `-B` options.
+
+
 
 ## <a name="4.4.0-fixes"></a> Fixed issues
-[#10][#732][#1047] API: Support abbreviated options and commands. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
-[#1051][#1056] Enhancement: `GenerateCompletion` command no longer needs to be a direct subcommand of the root command. Thanks to [Philippe Charles](https://github.com/charphi) for the pull request.
-[#1058][#1059] Man page generator: fix incorrect asciidoctor call in synopsis.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-[#1058][#1060] Man page generator: add documentation about creating language variants.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#10][#732][#1047] API: Support abbreviated options and commands. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
+* [#1051][#1056] Enhancement: `GenerateCompletion` command no longer needs to be a direct subcommand of the root command. Thanks to [Philippe Charles](https://github.com/charphi) for the pull request.
+* [#1058][#1059] Man page generator: fix incorrect asciidoctor call in synopsis.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1058][#1060] Man page generator: add documentation about creating language variants.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 
 ## <a name="4.4.0-deprecated"></a> Deprecations
@@ -49,7 +108,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.3.2-fixes"></a> Fixed issues
-[#1048][#1049] Bugfix: Cause exception not printed by default execution exception handler. Thanks to [Neko Null](https://github.com/jerrylususu) for the pull request.
+* [#1048][#1049] Bugfix: Cause exception not printed by default execution exception handler. Thanks to [Neko Null](https://github.com/jerrylususu) for the pull request.
 
 
 ## <a name="4.3.2-deprecated"></a> Deprecations
@@ -83,11 +142,11 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.3.1-fixes"></a> Fixed issues
-[#1042] Bugfix: "wrong number of arguments" exception when using inherited options with `@Command`-annotated methods. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
-[#1043] Bugfix: NullPointerException thrown in `DefaultParamLabelRenderer.renderParameterLabel` for programmatically built models that have a non-`null` `split` regex and do not have a `splitSynopsisLabel`.
-[#1044] Bugfix: only display `splitSynopsisLabel` in usage help message if the option has a `split` regex. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
-[#1045] Bugfix: replace use of Java 6 API `String.isEmpty` with picocli-internal Java 5 equivalent.
-[#1046] DOC: mention picocli's programmatic API and link to the programmatic API documentation from the user manual.
+* [#1042] Bugfix: "wrong number of arguments" exception when using inherited options with `@Command`-annotated methods. Thanks to [Garret Wilson](https://github.com/garretwilson) for raising this.
+* [#1043] Bugfix: NullPointerException thrown in `DefaultParamLabelRenderer.renderParameterLabel` for programmatically built models that have a non-`null` `split` regex and do not have a `splitSynopsisLabel`.
+* [#1044] Bugfix: only display `splitSynopsisLabel` in usage help message if the option has a `split` regex. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
+* [#1045] Bugfix: replace use of Java 6 API `String.isEmpty` with picocli-internal Java 5 equivalent.
+* [#1046] DOC: mention picocli's programmatic API and link to the programmatic API documentation from the user manual.
 
 ## <a name="4.3.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
