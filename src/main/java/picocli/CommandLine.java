@@ -17159,9 +17159,9 @@ public class CommandLine {
             }
             if (nonAlphabeticPrefix.length() > 0) {
                 result.add(nonAlphabeticPrefix.toString());
-                if (command.codePointBefore(start) == '-') {
-                    start--; // hint makeCanonical() to canonicalize the first chunk
-                }
+//                if (command.codePointBefore(start) == '-') {
+//                    start--; // hint makeCanonical() to canonicalize the first chunk
+//                }
             }
             for (int i = start; i < command.length(); i += Character.charCount(codepoint)) {
                 codepoint = command.codePointAt(i);

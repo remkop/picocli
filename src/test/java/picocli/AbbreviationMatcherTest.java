@@ -89,17 +89,16 @@ public class AbbreviationMatcherTest {
     //|`--super-long-option` | `--sup`, `--sLO`, `--s-l-o`, `--s-lon`, `--s-opt`, `--sOpt`
     //|`some-long-command` | `so`, sLC`, `s-l-c`, `soLoCo`, `someCom`
     @Test
-    @Ignore
     public void testUserManualExamples() {
         Set<String> original = new LinkedHashSet<String>();
         original.add("--veryLongCamelCase");
         original.add("--super-long-option");
         original.add("some-long-command");
 
+        assertNotEquals("--veryLongCamelCase", match(original, "--VLCC", false));
         assertEquals("--veryLongCamelCase", match(original, "--very", false));
         assertEquals("--veryLongCamelCase", match(original, "--vLCC", false));
         assertEquals("--veryLongCamelCase", match(original, "--vCase", false));
-        assertNotEquals("--veryLongCamelCase", match(original, "--VLCC", false));
 
         assertEquals("--super-long-option", match(original, "--sup", false));
         assertNotEquals("--super-long-option", match(original, "--Sup", false));
@@ -128,13 +127,13 @@ public class AbbreviationMatcherTest {
         assertEquals(Arrays.asList("camel", "Case"), splitIntoChunks("camelCase", false));
         assertEquals(Arrays.asList("very", "Long", "Camel", "Case"), splitIntoChunks("veryLongCamelCase", false));
 
-        assertEquals(Arrays.asList("--", "K", "C"), splitIntoChunks("--kC", false));
-        assertEquals(Arrays.asList("--", "K", "C"), splitIntoChunks("--k-c", false));
+        assertEquals(Arrays.asList("--", "k", "C"), splitIntoChunks("--kC", false));
+        assertEquals(Arrays.asList("--", "k", "C"), splitIntoChunks("--k-c", false));
         assertEquals(Arrays.asList("--", "K", "C"), splitIntoChunks("--KC", false));
-        assertEquals(Arrays.asList("--", "Kebab", "Case"), splitIntoChunks("--kebab-case", false));
-        assertEquals(Arrays.asList("--", "Very", "Long", "Kebab", "Case"), splitIntoChunks("--very-long-kebab-case", false));
-        assertEquals(Arrays.asList("--", "Camel", "Case"), splitIntoChunks("--camelCase", false));
-        assertEquals(Arrays.asList("--", "Very", "Long", "Camel", "Case"), splitIntoChunks("--veryLongCamelCase", false));
+        assertEquals(Arrays.asList("--", "kebab", "Case"), splitIntoChunks("--kebab-case", false));
+        assertEquals(Arrays.asList("--", "very", "Long", "Kebab", "Case"), splitIntoChunks("--very-long-kebab-case", false));
+        assertEquals(Arrays.asList("--", "camel", "Case"), splitIntoChunks("--camelCase", false));
+        assertEquals(Arrays.asList("--", "very", "Long", "Camel", "Case"), splitIntoChunks("--veryLongCamelCase", false));
     }
 
     @Test
@@ -506,18 +505,19 @@ public class AbbreviationMatcherTest {
 
         app = new App();
         try {
-            new CommandLine(app).setAbbreviatedOptionsAllowed(true).parseArgs("--AB");
-            fail("Expected exception");
-        } catch (ParameterException ex) {
-            assertEquals("Error: '--AB' is not unique: it matches '--a-B', '--aB'", ex.getMessage());
-        }
-
-        app = new App();
-        try {
             new CommandLine(app).setAbbreviatedOptionsAllowed(true).parseArgs("--a-b");
             fail("Expected exception");
         } catch (ParameterException ex) {
             assertEquals("Error: '--a-b' is not unique: it matches '--a-B', '--aB'", ex.getMessage());
+        }
+
+        app = new App();
+        try {
+            new CommandLine(app).setAbbreviatedOptionsAllowed(true).parseArgs("--AB");
+            fail("Expected exception");
+        } catch (ParameterException ex) {
+            //assertEquals("Error: '--AB' is not unique: it matches '--a-B', '--aB'", ex.getMessage());
+            assertEquals("Unknown option: '--AB'", ex.getMessage());
         }
     }
 }
