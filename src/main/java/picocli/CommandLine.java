@@ -5133,8 +5133,9 @@ public class CommandLine {
                 return cls.cast(new LinkedHashMap<Object, Object>());
             }
             try {
-                // Class.newInstance is deprecated in Java 9
-                return cls.newInstance();
+                @SuppressWarnings("deprecation") // Class.newInstance is deprecated in Java 9
+                T result = cls.newInstance();
+                return result;
             } catch (Exception ex) {
                 Constructor<T> constructor = cls.getDeclaredConstructor();
                 constructor.setAccessible(true);
@@ -10078,7 +10079,7 @@ public class CommandLine {
             }
 
             static ITypeInfo createForAuxType(Class<?> type) {
-                return create(type, new Class[0], (Type) null, Range.valueOf("1"), String.class, false);
+                return create(type, new Class<?>[0], (Type) null, Range.valueOf("1"), String.class, false);
             }
             public static ITypeInfo create(Class<?> type,
                                            Class<?>[] annotationTypes,
@@ -10383,7 +10384,7 @@ public class CommandLine {
             private Class<?>[] annotationTypes() {
                 if (isOption())    { return getAnnotation(Option.class).type(); }
                 if (isParameter()) { return getAnnotation(Parameters.class).type(); }
-                return new Class[0];
+                return new Class<?>[0];
             }
             public String toString() { return accessible.toString(); }
             public String getToString()  {
@@ -13331,7 +13332,7 @@ public class CommandLine {
                         try { return Enum.valueOf((Class<Enum>) type, value); }
                         catch (IllegalArgumentException ex) {
                             boolean insensitive = commandSpec.parser().caseInsensitiveEnumValuesAllowed();
-                            for (Enum enumConstant : ((Class<Enum>) type).getEnumConstants()) {
+                            for (Enum<?> enumConstant : ((Class<Enum<?>>) type).getEnumConstants()) {
                                 String str = enumConstant.toString();
                                 String name = enumConstant.name();
                                 if (value.equals(str) || value.equals(name) || insensitive && (value.equalsIgnoreCase(str) || value.equalsIgnoreCase(name))) {
