@@ -2063,18 +2063,28 @@ public class ArgGroupTest {
             public String  replacement = null;
         }
     }
-    @Ignore
+    //@Ignore
     @Test // https://github.com/remkop/picocli/issues/1054
     public void testIssue1054() {
         //-f pattern1 -f pattern2 -d --> accepted --> wrong: findPattern = "pattern2", "pattern1" is lost/ignored
         try {
-            TestUtil.setTraceLevel("DEBUG");
+            //TestUtil.setTraceLevel("DEBUG");
             Issue1054 bean3 = new Issue1054();
             new CommandLine(bean3).parseArgs("-f pattern1 -f pattern2 -d".split(" "));
-            System.out.println(bean3);
+            //System.out.println(bean3);
             fail("Expected exception");
         } catch (MissingParameterException ex) {
-            assertEquals("Error: (...)", ex.getMessage()); // TODO exact error message
+            assertEquals("Error: Missing required argument(s): (-d | -w=<replacement>)", ex.getMessage());
+        }
+    }
+    @Test
+    public void testIssue1054Variation() {
+        try {
+            Issue1054 bean3 = new Issue1054();
+            new CommandLine(bean3).parseArgs("-f pattern1 -f pattern2".split(" "));
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: Missing required argument(s): (-d | -w=<replacement>)", ex.getMessage());
         }
     }
     @Test // https://github.com/remkop/picocli/issues/1054

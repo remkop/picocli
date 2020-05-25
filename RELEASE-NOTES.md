@@ -8,6 +8,7 @@ This release contains bugfixes and enhancements.
 From this release, picocli supports abbreviated options and subcommands. When abbreviations are enabled, users can specify the initial letter(s) of the first component and optionally of one or more subsequent components of an option or subcommand name.
 "Components" are separated by `-` dash characters or by case, so for example, both `--CamelCase` and `--kebab-case` have two components.
 
+Fixed a bug in argument group parsing where incorrect input with missing mandatory elements was accepted when an option was specified multiple times.
 
 This is the seventy-first public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -83,6 +84,7 @@ When abbreviated options are enabled, user input `-AB` will match the long `-Aaa
 * [#1069] Enhancement: Debug output should show `optionsCaseInsensitive` and `subcommandsCaseInsensitive` settings.
 * [#1065] Bugfix: With a `List<>` option in `@ArgGroup`, group incorrectly appears twice in the synopsis. Thanks to [kap4lin](https://github.com/kap4lin) for raising this.
 * [#1067] Bugfix: `ParserSpec::initFrom` was not copying `useSimplifiedAtFiles`.
+* [#1054] Bugfix: option-parameter gets lost in Argument Groups. Thanks to [waacc-gh](https://github.com/waacc-gh) for raising this.
 * [#1058][#1059] DOC: Man page generator: fix incorrect asciidoctor call in synopsis.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1058][#1060] DOC: Man page generator: add documentation about creating language variants.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
