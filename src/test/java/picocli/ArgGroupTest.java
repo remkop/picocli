@@ -2066,6 +2066,19 @@ public class ArgGroupTest {
     @Ignore
     @Test // https://github.com/remkop/picocli/issues/1054
     public void testIssue1054() {
+        //-f pattern1 -f pattern2 -d --> accepted --> wrong: findPattern = "pattern2", "pattern1" is lost/ignored
+        try {
+            TestUtil.setTraceLevel("DEBUG");
+            Issue1054 bean3 = new Issue1054();
+            new CommandLine(bean3).parseArgs("-f pattern1 -f pattern2 -d".split(" "));
+            System.out.println(bean3);
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Error: (...)", ex.getMessage()); // TODO exact error message
+        }
+    }
+    @Test // https://github.com/remkop/picocli/issues/1054
+    public void testIssue1054RegressionTest() {
         //-f pattern -d --> accepted --> ok
         Issue1054 bean1 = new Issue1054();
         new CommandLine(bean1).parseArgs("-f pattern -d".split(" "));
@@ -2096,16 +2109,6 @@ public class ArgGroupTest {
             fail("Expected exception");
         } catch (MissingParameterException ex) {
             assertEquals("Error: Missing required argument(s): --find=<findPattern>", ex.getMessage());
-        }
-
-        //-f pattern1 -f pattern2 -d --> accepted --> wrong: findPattern = "pattern2", "pattern1" is lost/ignored
-        try {
-            Issue1054 bean3 = new Issue1054();
-            new CommandLine(bean3).parseArgs("-f pattern1 -f pattern2 -d".split(" "));
-            System.out.println(bean3);
-            fail("Expected exception");
-        } catch (MissingParameterException ex) {
-            assertEquals("Error: (...)", ex.getMessage()); // TODO exact error message
         }
     }
 
