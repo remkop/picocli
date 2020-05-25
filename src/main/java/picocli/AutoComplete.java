@@ -235,7 +235,7 @@ public class AutoComplete {
         }
     }
 
-    private static interface Function<T, V> {
+    private interface Function<T, V> {
         V apply(T t);
     }
 
@@ -264,7 +264,7 @@ public class AutoComplete {
         public String apply(CharSequence value) { return value.toString(); }
     }
 
-    private static interface Predicate<T> {
+    private interface Predicate<T> {
         boolean test(T t);
     }
     private static class BooleanArgFilter implements Predicate<ArgSpec> {
@@ -720,14 +720,12 @@ public class AutoComplete {
             return "";
         }
 
-        StringBuilder buff = new StringBuilder(1024);
-        buff.append("\n");
-        buff.append("  compopt +o default\n");
-        buff.append("\n");
-        buff.append("  case ${prev_word} in\n");
-        buff.append(optionsCases);
-        buff.append("  esac\n");
-        return buff.toString();
+        return "\n"
+                + "  compopt +o default\n"
+                + "\n"
+                + "  case ${prev_word} in\n"
+                + optionsCases
+                + "  esac\n";
     }
 
     private static String generateOptionsCases(List<OptionSpec> argOptionFields, String indent, String currWord) {
