@@ -1875,8 +1875,7 @@ public class CommandLine {
                 if (parsed.getCommand() instanceof IHelpCommandInitializable2) {
                     ((IHelpCommandInitializable2) parsed.getCommand()).init(parsed, colorScheme, out, err);
                 } else if (parsed.getCommand() instanceof IHelpCommandInitializable) {
-                    ((IHelpCommandInitializable) parsed.getCommand())
-                            .init(parsed, colorScheme.ansi, System.out, System.err);
+                    ((IHelpCommandInitializable) parsed.getCommand()).init(parsed, colorScheme.ansi, System.out, System.err);
                 }
                 executeUserObject(parsed, new ArrayList<Object>());
                 return parsed.getCommandSpec().exitCodeOnUsageHelp();
@@ -10391,8 +10390,7 @@ public class CommandLine {
                 if (isMixin()) { return abbreviate("mixin from member " + toGenericString()); }
                 return (accessible instanceof Field ? "field " : accessible instanceof Method ? "method " : accessible.getClass().getSimpleName() + " ") + abbreviate(toGenericString());
             }
-            public String toGenericString() { return accessible instanceof Field ? ((Field) accessible).toGenericString() : accessible instanceof Method ? ((Method) accessible).toGenericString() : accessible
-                    .toString(); }
+            public String toGenericString() { return accessible instanceof Field ? ((Field) accessible).toGenericString() : accessible instanceof Method ? ((Method) accessible).toGenericString() : accessible.toString(); }
             public boolean hasInitialValue()    { return initialValueState == InitialValueState.CACHED || initialValueState == InitialValueState.POSTPONED; }
             public boolean isMethodParameter()  { return accessible instanceof MethodParam; }
             public int getMethodParamPosition() { return isMethodParameter() ? ((MethodParam) accessible).position : -1; }
@@ -10883,8 +10881,7 @@ public class CommandLine {
             private static UnmatchedArgsBinding buildUnmatchedForMember(final IAnnotatedElement member) {
                 ITypeInfo info = member.getTypeInfo();
                 if (!(info.getClassName().equals(String[].class.getName()) ||
-                        (info.isCollection() && info.getActualGenericTypeArguments().equals(
-                                Collections.singletonList(String.class.getName()))))) {
+                        (info.isCollection() && info.getActualGenericTypeArguments().equals(Collections.singletonList(String.class.getName()))))) {
                     throw new InitializationException("Invalid type for " + member + ": must be either String[] or List<String>");
                 }
                 if (info.getClassName().equals(String[].class.getName())) {
@@ -13208,8 +13205,7 @@ public class CommandLine {
                 Object stronglyTypedValue = tryConvert(argSpec, index, converter, value, type);
                 result.add(stronglyTypedValue);
                 if (tracer.isInfo()) {
-                    tracer.info("Adding [%s] to %s for %s on %s%n", String.valueOf(result.get(result.size() - 1)),
-                            argSpec.toString(), argDescription, argSpec.scopeString());
+                    tracer.info("Adding [%s] to %s for %s on %s%n", String.valueOf(result.get(result.size() - 1)), argSpec.toString(), argDescription, argSpec.scopeString());
                 }
                 parseResultBuilder.addStringValue(argSpec, value);
             }
@@ -16768,8 +16764,7 @@ public class CommandLine {
     public static class MissingParameterException extends ParameterException {
         private static final long serialVersionUID = 5075678535706338753L;
         private final List<ArgSpec> missing;
-        public MissingParameterException(CommandLine commandLine, ArgSpec missing, String msg) { this(commandLine,
-                Collections.singletonList(missing), msg); }
+        public MissingParameterException(CommandLine commandLine, ArgSpec missing, String msg) { this(commandLine, Collections.singletonList(missing), msg); }
         public MissingParameterException(CommandLine commandLine, Collection<ArgSpec> missing, String msg) {
             super(commandLine, msg);
             this.missing = Collections.unmodifiableList(new ArrayList<ArgSpec>(missing));
