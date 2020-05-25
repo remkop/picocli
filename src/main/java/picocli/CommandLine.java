@@ -13765,7 +13765,7 @@ public class CommandLine {
 
         @Parameters(paramLabel = "COMMAND", descriptionKey = "helpCommand.command",
                 description = "The COMMAND to display the usage help message for.")
-        private final String[] commands = new String[0];
+        private String[] commands = new String[0];
 
         private CommandLine self;
         private PrintStream out;
