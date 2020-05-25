@@ -7993,7 +7993,7 @@ public class CommandLine {
             private List<String> stringValues = new ArrayList<String>();
             private List<String> originalStringValues = new ArrayList<String>();
             protected String toString;
-            private List<Object> typedValues = new ArrayList<Object>();
+            private final List<Object> typedValues = new ArrayList<Object>();
             Map<Integer, Object> typedValueAtPosition = new TreeMap<Integer, Object>();
 
             /** Constructs a new {@code ArgSpec}. */
@@ -8976,13 +8976,13 @@ public class CommandLine {
         public static class OptionSpec extends ArgSpec implements IOrdered {
             public static final String DEFAULT_FALLBACK_VALUE = "";
             static final int DEFAULT_ORDER = -1;
-            private String[] names;
-            private boolean help;
-            private boolean usageHelp;
-            private boolean versionHelp;
-            private boolean negatable;
-            private String fallbackValue;
-            private int order;
+            private final String[] names;
+            private final boolean help;
+            private final boolean usageHelp;
+            private final boolean versionHelp;
+            private final boolean negatable;
+            private final String fallbackValue;
+            private final int order;
 
             public static OptionSpec.Builder builder(String name, String... names) {
                 String[] copy = new String[Assert.notNull(names, "names").length + 1];
@@ -9255,7 +9255,7 @@ public class CommandLine {
         public static class PositionalParamSpec extends ArgSpec {
             private Range index;
             private Range capacity;
-            private Range builderCapacity;
+            private final Range builderCapacity;
 
             /** Ensures all attributes of this {@code PositionalParamSpec} have a valid value; throws an {@link InitializationException} if this cannot be achieved. */
             private PositionalParamSpec(Builder builder) {
@@ -9788,12 +9788,12 @@ public class CommandLine {
                 private Range multiplicity = Range.valueOf("0..1");
                 private boolean validate   = true;
                 private int order          = DEFAULT_ORDER;
-                private List<ArgSpec> args = new ArrayList<ArgSpec>();
-                private List<ArgGroupSpec> subgroups = new ArrayList<ArgGroupSpec>();
+                private final List<ArgSpec> args = new ArrayList<ArgSpec>();
+                private final List<ArgGroupSpec> subgroups = new ArrayList<ArgGroupSpec>();
 
                 // for topological sorting; private only
                 private Boolean topologicalSortDone;
-                private List<Builder> compositesReferencingMe = new ArrayList<Builder>();
+                private final List<Builder> compositesReferencingMe = new ArrayList<Builder>();
 
                 Builder() { }
                 Builder(IAnnotatedElement source) {
@@ -11455,9 +11455,9 @@ public class CommandLine {
             private boolean usageHelpRequested;
             private boolean versionHelpRequested;
             boolean isInitializingDefaultValues;
-            private List<Exception> errors = new ArrayList<Exception>(1);
+            private final List<Exception> errors = new ArrayList<Exception>(1);
             private List<Object> nowProcessing;
-            private GroupMatchContainer groupMatchContainer = new GroupMatchContainer(null, null);
+            private final GroupMatchContainer groupMatchContainer = new GroupMatchContainer(null, null);
 
             private Builder(CommandSpec spec) { commandSpec = Assert.notNull(spec, "commandSpec"); }
             /** Creates and returns a new {@code ParseResult} instance for this builder's configuration. */
@@ -11609,8 +11609,8 @@ public class CommandLine {
         public static class GroupMatchContainer {
             private final ArgGroupSpec group;
             private GroupMatchContainer parentContainer;
-            private List<ArgGroupSpec> unmatchedSubgroups = new ArrayList<ArgGroupSpec>();
-            private List<GroupMatch> matches = new ArrayList<GroupMatch>();
+            private final List<ArgGroupSpec> unmatchedSubgroups = new ArrayList<ArgGroupSpec>();
+            private final List<GroupMatch> matches = new ArrayList<GroupMatch>();
             private GroupValidationResult validationResult;
 
             GroupMatchContainer(ArgGroupSpec group, CommandLine cmd) { this.group = group; addMatch(cmd);}
@@ -13701,7 +13701,7 @@ public class CommandLine {
         static Set<String> traced = new HashSet<String>();
         static class ReflectionConverter implements ITypeConverter<Object> {
             private final Method method;
-            private Class<?>[] paramTypes;
+            private final Class<?>[] paramTypes;
 
             public ReflectionConverter(Method method, Class<?>... paramTypes) {
                 this.method = Assert.notNull(method, "method");
@@ -13765,7 +13765,7 @@ public class CommandLine {
 
         @Parameters(paramLabel = "COMMAND", descriptionKey = "helpCommand.command",
                 description = "The COMMAND to display the usage help message for.")
-        private String[] commands = new String[0];
+        private final String[] commands = new String[0];
 
         private CommandLine self;
         private PrintStream out;
@@ -13945,7 +13945,7 @@ public class CommandLine {
         private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
         private List<String> aliases;
 
-        private IParamLabelRenderer parameterLabelRenderer;
+        private final IParamLabelRenderer parameterLabelRenderer;
 
         /** Constructs a new {@code Help} instance with a default color scheme, initialized from annotations
          * on the specified class and superclasses.
@@ -15042,8 +15042,8 @@ public class CommandLine {
          *   PositionalParamSpec#description()} array, and these rows look like {@code {"", "", "", param.description()[i]}}.</p>
          */
         static class DefaultParameterRenderer implements IParameterRenderer {
-            private String requiredMarker;
-            private boolean showDefaultValues;
+            private final String requiredMarker;
+            private final boolean showDefaultValues;
             public DefaultParameterRenderer(boolean showDefaultValues, String requiredMarker) {
                 this.showDefaultValues = showDefaultValues;
                 this.requiredMarker = Assert.notNull(requiredMarker, "requiredMarker");
