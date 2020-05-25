@@ -15813,8 +15813,8 @@ public class CommandLine {
                 }
                 String[] codes = commaSeparatedCodes.split(",");
                 List<IStyle> styles = new ArrayList<IStyle>();
-                for (String s : codes) {
-                    String code = s.toLowerCase(ENGLISH).replace("(", "_").replace(")", "");
+                for (String code : codes) {
+                    code = code.toLowerCase(ENGLISH).replace("(", "_").replace(")", "");
                     IStyle found = (markupMap.containsKey(code)) ? markupMap.get(code) : markupMap.get("fg_" + code);
                     if (found != null) {
                         styles.add(found);
