@@ -89,7 +89,7 @@ When abbreviated options are enabled, user input `-AB` will match the long `-Aaa
 * [#1072] Bugfix: Mixin `UsageMessageSpec::width` and `UsageMessageSpec::longOptionsMaxWidth` is no longer ignored.
 * [#1058][#1059] DOC: Man page generator: fix incorrect asciidoctor call in synopsis.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1058][#1060] DOC: Man page generator: add documentation about creating language variants.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-
+* [#1073] DOC: Improve user manual: fix typos, update content. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 ## <a name="4.4.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
