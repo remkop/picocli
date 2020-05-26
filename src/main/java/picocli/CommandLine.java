@@ -7725,6 +7725,7 @@ public class CommandLine {
                 if (initializable(sortOptions, mixin.sortOptions(), DEFAULT_SORT_OPTIONS))                             {sortOptions = mixin.sortOptions();}
                 if (initializable(synopsisHeading, mixin.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))                 {synopsisHeading = mixin.synopsisHeading();}
                 if (initializable(synopsisSubcommandLabel, mixin.synopsisSubcommandLabel(), DEFAULT_SYNOPSIS_SUBCOMMANDS)) {synopsisHeading = mixin.synopsisHeading();}
+                if (initializable(width, mixin.width(), DEFAULT_USAGE_WIDTH))                                          {width = mixin.width();}
             }
             void initFrom(UsageMessageSpec settings, CommandSpec commandSpec) {
                 abbreviateSynopsis = settings.abbreviateSynopsis;
