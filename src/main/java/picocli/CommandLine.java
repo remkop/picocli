@@ -10029,6 +10029,7 @@ public class CommandLine {
             }
             @Override public Annotation[] getDeclaredAnnotations() { return method.getParameterAnnotations()[paramIndex]; }
             @Override public void setAccessible(boolean flag) throws SecurityException { method.setAccessible(flag); }
+            @SuppressWarnings("deprecation")
             @Override public boolean isAccessible() throws SecurityException { return method.isAccessible(); }
             @Override public String toString() { return method.toString() + ":" + getName(); }
         }
