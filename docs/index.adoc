@@ -359,7 +359,7 @@ The https://github.com/remkop/picocli/blob/master/picocli-examples[`picocli-exam
 [CAUTION]
 .Interactive options and shell applications with JLine 2
 ====
-Interactive options do not work in conjuction with JLine 2's `ConsoleReader`. Either implement a <<Custom Parameter Processing,`IParameterConsumer`>> which uses JLine2's `ConsoleReader` directly or use `picocli-shell-jline3`.
+Interactive options do not work in conjunction with JLine 2's `ConsoleReader`. Either implement a <<Custom Parameter Processing,`IParameterConsumer`>> which uses JLine2's `ConsoleReader` directly or use `picocli-shell-jline3`.
 ====
 
 === Short (POSIX) Options
@@ -1386,7 +1386,7 @@ Users can use the <<Double dash (`--`),end-of-options delimiter>> and disambigua
 `-x &dash;&dash; VALUE`, but this may not be obvious to many users.
 One idea is to <<Show End of Options,show the end-of-options>> delimiter in the usage help.
 
-An alternative is to avoid the use of optional parameters and use the default arity in this scenario to elimitate the ambiguity altogether.
+An alternative is to avoid the use of optional parameters and use the default arity in this scenario to eliminate the ambiguity altogether.
 
 
 == Required Arguments
@@ -2218,7 +2218,7 @@ for mistyped options, or the full usage help message of the problematic command.
 Finally, the handler returns an <<Exception Exit Codes,exit code>>.
 This is sufficient for most applications.
 
-Sometimes you want to display a shorter message. For example, the `grep` utility does not not show the full usage help when it gets an invalid argument:
+Sometimes you want to display a shorter message. For example, the `grep` utility does not show the full usage help when it gets an invalid argument:
 
 ----
 $ grep -d recurese "ERROR" logs/*
@@ -4800,7 +4800,7 @@ See <<Custom Help Subcommands>> for more details on creating help subcommands.
 
 For some command suites, it does not make sense to invoke the top-level command by itself, and the user is required to specify a subcommand.
 
-From version 4.3, picocli makes it easy to accomplish this: simply use the the <<Executing Subcommands,`execute` method>> to start your application, and make the top-level command a class that does not implement `Runnable` or `Callable`.
+From version 4.3, picocli makes it easy to accomplish this: simply use the <<Executing Subcommands,`execute` method>> to start your application, and make the top-level command a class that does not implement `Runnable` or `Callable`.
 
 Then, when the user specifies only the top-level command, without a subcommand, while this top-level command does not implement `Runnable` or `Callable`, picocli internally throws a `ParameterException` with the error message `"Missing required subcommand"`. This will cause the <<Invalid User Input, `IParameterExceptionHandler`>> to be called, which will display this message to the user.
 
@@ -6750,14 +6750,15 @@ Use `jlink` with the `--launcher` option to generate launcher scripts for your a
 
 See https://medium.com/azulsystems/using-jlink-to-build-java-runtimes-for-non-modular-applications-9568c5e70ef4[this article] for using jlink for non-modular applications.
 
-=== jpackage (Early Access)
-https://jdk.java.net/jpackage/[jpackage] is an early access build of https://openjdk.java.net/jeps/343[JEP 343: Packaging Tool].
+=== jpackage
+jpackage is a packaging tool according to https://openjdk.java.net/jeps/343[JEP 343] which ships with JDK 14. 
 JPackage can take the custom light-weight JRE produced by `jlink` and create an installer and a native application launcher.
 The result is a Java "application image" that is a single directory in the filesystem containing
 the native application launcher, resources and configuration files,
 and the custom light-weight JRE runtime image (including the application modules) produced by `jlink`.
 
-This https://www.infoq.com/news/2019/03/jep-343-jpackage/[InfoQ article] has more details.
+For further details, you may read the https://docs.oracle.com/en/java/javase/14/docs/specs/man/jpackage.html[jpackage synopsis] or study the https://docs.oracle.com/en/java/javase/14/jpackage/[Packaging Tool User's Guide].
+This https://www.infoq.com/news/2019/03/jep-343-jpackage/[InfoQ article] may be of interest, too.
 Gradle users may like these plugins: https://badass-runtime-plugin.beryx.org/releases/latest/[org.beryx Badass Runtime Plugin]
 and https://badass-jlink-plugin.beryx.org/releases/latest/[org.beryx Badass JLink Plugin].
 
