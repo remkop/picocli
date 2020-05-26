@@ -15386,7 +15386,7 @@ public class CommandLine {
              * @param usageHelpWidth the total width of the columns combined
              * @deprecated use {@link #forDefaultColumns(CommandLine.Help.Ansi, int, int)} instead
              */
-            public static TextTable forDefaultColumns(Ansi ansi, int usageHelpWidth) {
+            @Deprecated public static TextTable forDefaultColumns(Ansi ansi, int usageHelpWidth) {
                 // TODO split out the 1 (for long column indent) and 3 (should be description indent)
                 return forDefaultColumns(Help.defaultColorScheme(ansi), UsageMessageSpec.DEFAULT_USAGE_LONG_OPTIONS_WIDTH + 4, usageHelpWidth);
             }
@@ -15403,7 +15403,7 @@ public class CommandLine {
              * @param longOptionsColumnWidth the width of the long options column
              * @param usageHelpWidth the total width of the columns combined
              * @deprecated use {@link #forDefaultColumns(CommandLine.Help.ColorScheme, int, int)} instead */
-            public static TextTable forDefaultColumns(Ansi ansi, int longOptionsColumnWidth, int usageHelpWidth) {
+            @Deprecated public static TextTable forDefaultColumns(Ansi ansi, int longOptionsColumnWidth, int usageHelpWidth) {
                 return forDefaultColumns(Help.defaultColorScheme(ansi), longOptionsColumnWidth, usageHelpWidth);
             }
             /** Constructs a TextTable with five columns as follows:
@@ -15434,7 +15434,7 @@ public class CommandLine {
              * @param ansi whether to emit ANSI escape codes or not
              * @param columnWidths the width of each table column (all columns have zero indent)
              * @deprecated use {@link #forColumns(CommandLine.Help.ColorScheme, CommandLine.Help.Column...)} instead */
-            public static TextTable forColumnWidths(Ansi ansi, int... columnWidths) {
+            @Deprecated public static TextTable forColumnWidths(Ansi ansi, int... columnWidths) {
                 return forColumnWidths(Help.defaultColorScheme(ansi), columnWidths);
             }
             /** Constructs a new TextTable with columns with the specified width, all SPANning  multiple columns on
@@ -15453,14 +15453,14 @@ public class CommandLine {
              * @param ansi whether to emit ANSI escape codes or not
              * @param columns columns to construct this TextTable with
              * @deprecated use {@link #forColumns(CommandLine.Help.ColorScheme, CommandLine.Help.Column...)} instead */
-            public static TextTable forColumns(Ansi ansi, Column... columns) { return new TextTable(ansi, columns); }
+            @Deprecated public static TextTable forColumns(Ansi ansi, Column... columns) { return new TextTable(ansi, columns); }
             /** Constructs a {@code TextTable} with the specified columns.
              * @param colorScheme the styles and ANSI mode to use for embedded markup
              * @param columns columns to construct this TextTable with
              * @since 4.2 */
             public static TextTable forColumns(ColorScheme colorScheme, Column... columns) { return new TextTable(colorScheme, columns); }
             /** @deprecated use {@link TextTable#TextTable(picocli.CommandLine.Help.ColorScheme, picocli.CommandLine.Help.Column[])} instead */
-            protected TextTable(Ansi ansi, Column[] columns) { this(Help.defaultColorScheme(ansi), columns); }
+            @Deprecated protected TextTable(Ansi ansi, Column[] columns) { this(Help.defaultColorScheme(ansi), columns); }
             protected TextTable(ColorScheme colorScheme, Column[] columns) {
                 this.colorScheme = Assert.notNull(colorScheme, "ansi");
                 this.columns = Assert.notNull(columns, "columns").clone();
@@ -16297,7 +16297,7 @@ public class CommandLine {
             }
 
             /** @deprecated use {@link ColorScheme#apply(String, List)} instead */
-            public Text apply(String plainText, List<IStyle> styles) {
+            @Deprecated public Text apply(String plainText, List<IStyle> styles) {
                 return CommandLine.Help.defaultColorScheme(this).apply(plainText, styles);
             }
             /** Encapsulates rich text with styles and colors. Text objects may be constructed with Strings containing
