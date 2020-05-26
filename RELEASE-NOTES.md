@@ -82,6 +82,7 @@ When abbreviated options are enabled, user input `-AB` will match the long `-Aaa
 * [#1051][#1056] Enhancement: `GenerateCompletion` command no longer needs to be a direct subcommand of the root command. Thanks to [Philippe Charles](https://github.com/charphi) for the pull request.
 * [#1068] Enhancement: Make `ParserSpec::toString` output settings in alphabetic order.
 * [#1069] Enhancement: Debug output should show `optionsCaseInsensitive` and `subcommandsCaseInsensitive` settings.
+* [#1070] Enhancement: Code cleanup: removed redundant modifiers and initializations, unused variables, incorrect javadoc references, and more. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#1065] Bugfix: With a `List<>` option in `@ArgGroup`, group incorrectly appears twice in the synopsis. Thanks to [kap4lin](https://github.com/kap4lin) for raising this.
 * [#1067] Bugfix: `ParserSpec::initFrom` was not copying `useSimplifiedAtFiles`.
 * [#1054] Bugfix: option-parameter gets lost in Argument Groups. Thanks to [waacc-gh](https://github.com/waacc-gh) for raising this.
