@@ -11251,6 +11251,7 @@ public class CommandLine {
         private final List<OptionSpec> matchedOptions;
         private final List<PositionalParamSpec> matchedPositionals;
         private final List<String> originalArgs;
+        private final List<String> expandedArgs;
         private final List<String> unmatched;
         private final List<List<PositionalParamSpec>> matchedPositionalParams;
         private final List<Exception> errors;
@@ -11268,6 +11269,7 @@ public class CommandLine {
             matchedUniqueOptions = new LinkedHashSet<OptionSpec>(builder.options);
             unmatched = new ArrayList<String>(builder.unmatched);
             originalArgs = new ArrayList<String>(builder.originalArgList);
+            expandedArgs = new ArrayList<String>(builder.expandedArgList);
             matchedArgs = new ArrayList<ArgSpec>(builder.matchedArgsList);
             matchedUniquePositionals = new LinkedHashSet<PositionalParamSpec>(builder.positionals);
             matchedPositionals = new ArrayList<PositionalParamSpec>(builder.matchedPositionalsList);
@@ -11390,6 +11392,9 @@ public class CommandLine {
         /** Returns the command line arguments that were parsed. */
         public List<String> originalArgs()                  { return Collections.unmodifiableList(originalArgs); }
 
+        /** Returns the command line arguments that were parsed and have been expanded. */
+        public List<String> expandedArgs()                  { return Collections.unmodifiableList(expandedArgs); }
+
         /** If {@link ParserSpec#collectErrors} is {@code true}, returns the list of exceptions that were encountered during parsing, otherwise, returns an empty list.
          * @since 3.2 */
         public List<Exception> errors()                     { return Collections.unmodifiableList(errors); }
@@ -11455,6 +11460,7 @@ public class CommandLine {
             private final Set<PositionalParamSpec> positionals = new LinkedHashSet<PositionalParamSpec>();
             private final List<String> unmatched = new ArrayList<String>();
             private final List<String> originalArgList = new ArrayList<String>();
+            private final List<String> expandedArgList = new ArrayList<String>();
             private final List<List<PositionalParamSpec>> positionalParams = new ArrayList<List<PositionalParamSpec>>();
             private final List<ParseResult> subcommands = new ArrayList<ParseResult>();
             private boolean usageHelpRequested;
@@ -11520,7 +11526,9 @@ public class CommandLine {
             // implementation note: this method gets called with the most recently matched subcommand first, then the subcommand matched before that, etc
             public Builder subcommand(ParseResult subcommand) { subcommands.add(0, subcommand); return this; }
             /** Sets the specified command line arguments that were parsed. */
-            public Builder originalArgs(String[] originalArgs) { originalArgList.addAll(Arrays.asList(originalArgs)); return this;}
+            public Builder originalArgs(String[] originalArgs) { originalArgList.addAll(Arrays.asList(originalArgs)); return this; }
+            /** Sets the specified command line arguments that were parsed and have been expanded. */
+            public Builder expandedArgs(Collection<String> expandedArgs) { expandedArgList.addAll(expandedArgs); return this; }
 
             void addStringValue        (ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.stringValues.add(value);} }
             void addOriginalStringValue(ArgSpec argSpec, String value) {
@@ -12402,6 +12410,12 @@ public class CommandLine {
             // 5. a combination of stand-alone options and one option with an argument, like "-vxrffile"
 
             parseResultBuilder.originalArgs(originalArgs);
+
+            // Need to reverse the stack to get it back to normal order
+            List<String> expandedArgs = new ArrayList<String>(args);
+            Collections.reverse(expandedArgs);
+
+            parseResultBuilder.expandedArgs(expandedArgs);
             parseResultBuilder.nowProcessing = nowProcessing;
             String separator = config().separator();
             while (!args.isEmpty()) {
