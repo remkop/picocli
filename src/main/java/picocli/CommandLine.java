@@ -10845,6 +10845,7 @@ public class CommandLine {
                     throw new InitializationException("@picocli.CommandLine.Spec annotation is only supported on fields of type " + CommandSpec.class.getName());
                 }
             }
+            @SuppressWarnings("unchecked") //warning: [unchecked] Possible heap pollution from parameterized vararg type Class<? extends Annotation>
             private static void assertNoDuplicateAnnotations(TypedMember member, Class<? extends Annotation> myAnnotation, Class<? extends Annotation>... forbidden) {
                 for (Class<? extends Annotation> annotation : forbidden) {
                     if (member.isAnnotationPresent(annotation)) {
