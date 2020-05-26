@@ -14925,8 +14925,8 @@ public class CommandLine {
          *   OptionSpec#description()} array, and these rows look like {@code {"", "", "", option.description()[i]}}.</p>
          */
         static class DefaultOptionRenderer implements IOptionRenderer {
-            private String requiredMarker;
-            private boolean showDefaultValues;
+            private final String requiredMarker;
+            private final boolean showDefaultValues;
             private String sep;
             public DefaultOptionRenderer(boolean showDefaultValues, String requiredMarker) {
                 this.showDefaultValues = showDefaultValues;
