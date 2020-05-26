@@ -85,6 +85,7 @@ When abbreviated options are enabled, user input `-AB` will match the long `-Aaa
 * [#1065] Bugfix: With a `List<>` option in `@ArgGroup`, group incorrectly appears twice in the synopsis. Thanks to [kap4lin](https://github.com/kap4lin) for raising this.
 * [#1067] Bugfix: `ParserSpec::initFrom` was not copying `useSimplifiedAtFiles`.
 * [#1054] Bugfix: option-parameter gets lost in Argument Groups. Thanks to [waacc-gh](https://github.com/waacc-gh) for raising this.
+* [#1072] Bugfix: Mixin `UsageMessageSpec::width` and `UsageMessageSpec::longOptionsMaxWidth` is no longer ignored.
 * [#1058][#1059] DOC: Man page generator: fix incorrect asciidoctor call in synopsis.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1058][#1060] DOC: Man page generator: add documentation about creating language variants.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 

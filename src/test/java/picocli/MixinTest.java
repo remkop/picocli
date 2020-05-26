@@ -1050,4 +1050,28 @@ public class MixinTest {
         assertSame(myApp, myApp.verbosityMixin.commandSpec.userObject());
     }
 
+    @Command(usageHelpWidth = 123 )
+    static class MixinWidth {}
+
+    @Test
+    public void testMixinWidth() {
+        class MyApp {
+            @Mixin
+            MixinWidth mixin;
+        }
+        CommandLine cmd = new CommandLine(new MyApp());
+        assertEquals(123, cmd.getCommandSpec().usageMessage().width());
+    }
+
+    @Test
+    public void testMixinLongOptionsMaxWidth() {
+        CommandSpec spec = CommandSpec.create();
+        assertNotEquals(43, spec.usageMessage().longOptionsMaxWidth());
+        spec.usageMessage().longOptionsMaxWidth(43);
+
+        CommandSpec another = CommandSpec.create();
+        another.addMixin("a", spec);
+
+        assertEquals(43, another.usageMessage().longOptionsMaxWidth());
+    }
 }

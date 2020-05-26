@@ -7093,8 +7093,8 @@ public class CommandLine {
             private String exitCodeListHeading;
             private String[] exitCodeListStrings;
             private Map<String, String> exitCodeList;
-            private int width = DEFAULT_USAGE_WIDTH;
-            private int longOptionsMaxWidth = DEFAULT_USAGE_LONG_OPTIONS_WIDTH;
+            private Integer width;
+            private Integer longOptionsMaxWidth;
             private Integer cachedTerminalWidth;
 
             private final Interpolator interpolator;
@@ -7224,13 +7224,13 @@ public class CommandLine {
             /** Returns the maximum usage help message width. Derived from system property {@code "picocli.usage.width"}
              * if set, otherwise returns the value set via the {@link #width(int)} method, or if not set, the {@linkplain #DEFAULT_USAGE_WIDTH default width}.
              * @return the maximum usage help message width. Never returns less than 55. */
-            public int width() { return getSysPropertyWidthOrDefault(width, autoWidth()); }
+            public int width() { return getSysPropertyWidthOrDefault(width == null ? DEFAULT_USAGE_WIDTH : width, autoWidth()); }
 
             /** Returns the maximum usage help long options column max width to the specified value.
              * This value controls the maximum width of the long options column: any positional parameter labels or long options that are longer than the specified value will overflow into the description column, and cause the description to be displayed on the next line.
              * @return the new maximum usage help long options column max width. Always 20 or greater.
              * @since 4.2 */
-            public int longOptionsMaxWidth() { return longOptionsMaxWidth; }
+            public int longOptionsMaxWidth() { return longOptionsMaxWidth == null ? DEFAULT_USAGE_LONG_OPTIONS_WIDTH : longOptionsMaxWidth; }
 
             /** Returns whether picocli should attempt to detect the terminal size and adjust the usage help message width
              * to take the full terminal width. End users may enable this by setting system property {@code "picocli.usage.width"} to {@code AUTO},
@@ -7696,6 +7696,7 @@ public class CommandLine {
                 if (isNonDefault(cmd.header(), DEFAULT_MULTI_LINE))                           {header = cmd.header().clone();}
                 if (isNonDefault(cmd.headerHeading(), DEFAULT_SINGLE_VALUE))                  {headerHeading = cmd.headerHeading();}
                 if (isNonDefault(cmd.hidden(), DEFAULT_HIDDEN))                               {hidden = cmd.hidden();}
+                //if (isNonDefault(cmd.longOptionsMaxWidth(), DEFAULT_USAGE_LONG_OPTIONS_WIDTH)){longOptionsMaxWidth = cmd.longOptionsMaxWidth();}
                 if (isNonDefault(cmd.optionListHeading(), DEFAULT_SINGLE_VALUE))              {optionListHeading = cmd.optionListHeading();}
                 if (isNonDefault(cmd.parameterListHeading(), DEFAULT_SINGLE_VALUE))           {parameterListHeading = cmd.parameterListHeading();}
                 if (isNonDefault(cmd.requiredOptionMarker(), DEFAULT_REQUIRED_OPTION_MARKER)) {requiredOptionMarker = cmd.requiredOptionMarker();}
@@ -7722,6 +7723,7 @@ public class CommandLine {
                 if (initializable(header, mixin.header(), DEFAULT_MULTI_LINE))                                         {header = mixin.header().clone();}
                 if (initializable(headerHeading, mixin.headerHeading(), DEFAULT_SINGLE_VALUE))                         {headerHeading = mixin.headerHeading();}
                 if (initializable(hidden, mixin.hidden(), DEFAULT_HIDDEN))                                             {hidden = mixin.hidden();}
+                if (initializable(longOptionsMaxWidth, mixin.longOptionsMaxWidth(), DEFAULT_USAGE_LONG_OPTIONS_WIDTH)) {longOptionsMaxWidth = mixin.longOptionsMaxWidth();}
                 if (Messages.empty(messages) && Messages.resourceBundleBaseName(messages) == null) { messages(Messages.copy(commandSpec, mixin.messages())); }
                 if (initializable(optionListHeading, mixin.optionListHeading(), DEFAULT_SINGLE_VALUE))                 {optionListHeading = mixin.optionListHeading();}
                 if (initializable(parameterListHeading, mixin.parameterListHeading(), DEFAULT_SINGLE_VALUE))           {parameterListHeading = mixin.parameterListHeading();}
