@@ -248,6 +248,27 @@ public class ModelUsageMessageSpecTest {
     }
 
     @Test
+    public void testUsageMessageSpec_showEndOfOptionsDelimiterInUsageHelp() {
+        @Command(name = "blah") class MyApp {}
+
+        CommandLine cmd = new CommandLine(new MyApp());
+        String expected = String.format("" +
+                "Usage: blah%n");
+        assertEquals(expected, cmd.getUsageMessage());
+
+        UsageMessageSpec spec = cmd.getCommandSpec().usageMessage();
+        assertFalse(spec.showEndOfOptionsDelimiterInUsageHelp());
+
+        spec.showEndOfOptionsDelimiterInUsageHelp(true);
+        assertTrue(spec.showEndOfOptionsDelimiterInUsageHelp());
+        String expectedAfter = String.format("" +
+                "Usage: blah [--]%n" +
+                "  --     This option can be used to separate command-line options from the list%n" +
+                "           of positional parameters.%n");
+        assertEquals(expectedAfter, cmd.getUsageMessage());
+    }
+
+    @Test
     public void testUsageMessageSpec_updateFromCommand() {
         @Command(name = "blah", resourceBundle = "picocli.SharedMessages") class MyApp {}
 
