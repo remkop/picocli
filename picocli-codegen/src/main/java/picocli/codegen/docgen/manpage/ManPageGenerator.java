@@ -381,6 +381,14 @@ public class ManPageGenerator {
         IParameterRenderer parameterRenderer = spec.commandLine().getHelp().createDefaultParameterRenderer();
 
         List<OptionSpec> options = new ArrayList<OptionSpec>(spec.options()); // options are stored in order of declaration
+
+        // remove hidden options
+        for (Iterator<OptionSpec> iter = options.iterator(); iter.hasNext();) {
+            if (iter.next().hidden()) {
+                iter.remove();
+            }
+        }
+
         List<ArgGroupSpec> groups = optionListGroups(spec);
         for (ArgGroupSpec group : groups) { options.removeAll(group.options()); }
 
@@ -431,14 +439,12 @@ public class ManPageGenerator {
     }
 
     private static void writeOption(PrintWriter pw, IOptionRenderer optionRenderer, IParamLabelRenderer paramLabelRenderer, OptionSpec option) {
-        if (!option.hidden()) {
-            pw.println();
-            Text[][] rows = optionRenderer.render(option, paramLabelRenderer, COLOR_SCHEME);
-            pw.printf("%s::%n", join(", ", rows[0][1], rows[0][3]));
-            pw.printf("  %s%n", rows[0][4]);
-            for (int i = 1; i < rows.length; i++) {
-                pw.printf("+%n%s%n", rows[i][4]);
-            }
+        pw.println();
+        Text[][] rows = optionRenderer.render(option, paramLabelRenderer, COLOR_SCHEME);
+        pw.printf("%s::%n", join(", ", rows[0][1], rows[0][3]));
+        pw.printf("  %s%n", rows[0][4]);
+        for (int i = 1; i < rows.length; i++) {
+            pw.printf("+%n%s%n", rows[i][4]);
         }
     }
 
