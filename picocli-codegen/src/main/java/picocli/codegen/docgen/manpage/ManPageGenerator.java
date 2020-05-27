@@ -410,7 +410,9 @@ public class ManPageGenerator {
             pw.printf("== %s%n", COLOR_SCHEME.text(heading));
 
             for (PositionalParamSpec positional : group.positionalParameters()) {
-                writePositional(pw, positional, parameterRenderer, paramLabelRenderer);
+                if (!positional.hidden()) {
+                    writePositional(pw, positional, parameterRenderer, paramLabelRenderer);
+                }
             }
             List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.options());
             if (optionSort != null) {
@@ -449,19 +451,27 @@ public class ManPageGenerator {
     }
 
     private static void writePositional(PrintWriter pw, PositionalParamSpec positional, IParameterRenderer parameterRenderer, IParamLabelRenderer paramLabelRenderer) {
-        if (!positional.hidden()) {
-            pw.println();
-            Text[][] rows = parameterRenderer.render(positional, paramLabelRenderer, COLOR_SCHEME);
-            pw.printf("%s::%n", join(", ", rows[0][1], rows[0][3]));
-            pw.printf("  %s%n", rows[0][4]);
-            for (int i = 1; i < rows.length; i++) {
-                pw.printf("+%n%s%n", rows[i][4]);
-            }
+        pw.println();
+        Text[][] rows = parameterRenderer.render(positional, paramLabelRenderer, COLOR_SCHEME);
+        pw.printf("%s::%n", join(", ", rows[0][1], rows[0][3]));
+        pw.printf("  %s%n", rows[0][4]);
+        for (int i = 1; i < rows.length; i++) {
+            pw.printf("+%n%s%n", rows[i][4]);
         }
     }
 
     static void genPositionalArgs(PrintWriter pw, CommandSpec spec) {
-        if (spec.positionalParameters().isEmpty() && !spec.usageMessage().showAtFileInUsageHelp()) {
+        List<PositionalParamSpec> positionals = new ArrayList<>(spec.positionalParameters());
+        // remove hidden params
+        for (Iterator<PositionalParamSpec> iter = positionals.iterator(); iter.hasNext();) {
+            if (iter.next().hidden()) { iter.remove(); }
+        }
+        // positional parameters that are part of a group
+        // are shown in the custom option section for that group
+        List<ArgGroupSpec> groups = optionListGroups(spec);
+        for (ArgGroupSpec group : groups) { positionals.removeAll(group.positionalParameters()); }
+
+        if (positionals.isEmpty() && !spec.usageMessage().showAtFileInUsageHelp()) {
             return;
         }
         pw.printf("// tag::picocli-generated-man-section-arguments[]%n");
@@ -475,12 +485,6 @@ public class ManPageGenerator {
             CommandLine.Help help = cmd.getHelp();
             writePositional(pw, help.AT_FILE_POSITIONAL_PARAM, parameterRenderer, paramLabelRenderer);
         }
-
-        // positional parameters that are part of a group
-        // are shown in the custom option section for that group
-        List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(spec.positionalParameters());
-        List<ArgGroupSpec> groups = optionListGroups(spec);
-        for (ArgGroupSpec group : groups) { positionals.removeAll(group.positionalParameters()); }
 
         for (PositionalParamSpec positional : positionals) {
             writePositional(pw, positional, parameterRenderer, paramLabelRenderer);

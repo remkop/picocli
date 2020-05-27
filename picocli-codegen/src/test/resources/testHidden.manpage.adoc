@@ -44,11 +44,6 @@ This app does great things.
 
 // end::picocli-generated-man-section-options[]
 
-// tag::picocli-generated-man-section-arguments[]
-== Arguments
-
-// end::picocli-generated-man-section-arguments[]
-
 // tag::picocli-generated-man-section-commands[]
 == Commands
 
