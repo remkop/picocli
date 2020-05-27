@@ -1389,7 +1389,8 @@ public class CommandLine {
         return cli.getCommand();
     }
 
-    /** Parses the specified command line arguments and returns a list of {@code CommandLine} objects representing the
+    /** Expands any {@linkplain CommandLine#isExpandAtFiles() @-files} in the specified command line arguments, then
+     * parses the arguments and returns a list of {@code CommandLine} objects representing the
      * top-level command and any subcommands (if any) that were recognized and initialized during the parsing process.
      * <p>
      * If parsing succeeds, the first element in the returned list is always {@code this CommandLine} object. The
@@ -1411,7 +1412,8 @@ public class CommandLine {
     @Deprecated public List<CommandLine> parse(String... args) {
         return interpreter.parse(args);
     }
-    /** Parses the specified command line arguments and returns a list of {@code ParseResult} with the options, positional
+    /** Expands any {@linkplain CommandLine#isExpandAtFiles() @-files} in the specified command line arguments, then
+     * parses the arguments and returns a {@code ParseResult} with the options, positional
      * parameters, and subcommands (if any) that were recognized and initialized during the parsing process.
      * <p>If parsing fails, a {@link ParameterException} is thrown.</p>
      * <p>All this method does is parse the arguments and populate the annotated fields and methods.
@@ -11389,10 +11391,14 @@ public class CommandLine {
         /** Returns a list of command line arguments that did not match any options or positional parameters. */
         public List<String> unmatched()                     { return Collections.unmodifiableList(unmatched); }
 
-        /** Returns the command line arguments that were parsed. */
+        /** Returns the original command line arguments that were passed to the {@link CommandLine#parseArgs(String...)} method, before {@linkplain CommandLine#isExpandAtFiles() @-file expansion}.
+         * @see #expandedArgs() */
         public List<String> originalArgs()                  { return Collections.unmodifiableList(originalArgs); }
 
-        /** Returns the command line arguments that were parsed and have been expanded. */
+        /** Returns the command line arguments after {@linkplain CommandLine#isExpandAtFiles() @-files were expanded};
+         * these are the arguments that were actually parsed.
+         * @see #originalArgs()
+         * @since 4.4 */
         public List<String> expandedArgs()                  { return Collections.unmodifiableList(expandedArgs); }
 
         /** If {@link ParserSpec#collectErrors} is {@code true}, returns the list of exceptions that were encountered during parsing, otherwise, returns an empty list.
@@ -11525,9 +11531,15 @@ public class CommandLine {
             /** Sets the specified {@code ParseResult} for a subcommand that was matched on the command line. */
             // implementation note: this method gets called with the most recently matched subcommand first, then the subcommand matched before that, etc
             public Builder subcommand(ParseResult subcommand) { subcommands.add(0, subcommand); return this; }
-            /** Sets the specified command line arguments that were parsed. */
+            /** Sets the specified original command line arguments that were passed to the {@link CommandLine#parseArgs(String...)} method, before {@linkplain CommandLine#isExpandAtFiles() @-file expansion}.
+             * @see #expandedArgs(Collection)
+             * @see ParseResult#originalArgs() */
             public Builder originalArgs(String[] originalArgs) { originalArgList.addAll(Arrays.asList(originalArgs)); return this; }
-            /** Sets the specified command line arguments that were parsed and have been expanded. */
+            /** Sets the specified command line arguments after {@linkplain CommandLine#isExpandAtFiles() @-files were expanded};
+             * these are the arguments that were actually parsed.
+             * @see #originalArgs(String[])
+             * @see ParseResult#expandedArgs()
+             * @since 4.4 */
             public Builder expandedArgs(Collection<String> expandedArgs) { expandedArgList.addAll(expandedArgs); return this; }
 
             void addStringValue        (ArgSpec argSpec, String value) { if (!isInitializingDefaultValues) { argSpec.stringValues.add(value);} }
@@ -12409,14 +12421,12 @@ public class CommandLine {
             // 4. a combination of stand-alone options, like "-vxr". Equivalent to "-v -x -r", "-v true -x true -r true"
             // 5. a combination of stand-alone options and one option with an argument, like "-vxrffile"
 
-            parseResultBuilder.originalArgs(originalArgs);
-
-            // Need to reverse the stack to get it back to normal order
             List<String> expandedArgs = new ArrayList<String>(args);
-            Collections.reverse(expandedArgs);
-
+            Collections.reverse(expandedArgs); // Need to reverse the stack to get args in specified order
             parseResultBuilder.expandedArgs(expandedArgs);
+            parseResultBuilder.originalArgs(originalArgs);
             parseResultBuilder.nowProcessing = nowProcessing;
+
             String separator = config().separator();
             while (!args.isEmpty()) {
                 if (endOfOptions) {
