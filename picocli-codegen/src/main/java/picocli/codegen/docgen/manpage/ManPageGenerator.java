@@ -461,7 +461,7 @@ public class ManPageGenerator {
     }
 
     static void genPositionalArgs(PrintWriter pw, CommandSpec spec) {
-        List<PositionalParamSpec> positionals = new ArrayList<>(spec.positionalParameters());
+        List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(spec.positionalParameters());
         // remove hidden params
         for (Iterator<PositionalParamSpec> iter = positionals.iterator(); iter.hasNext();) {
             if (iter.next().hidden()) { iter.remove(); }
