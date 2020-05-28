@@ -1,0 +1,58 @@
+// tag::picocli-generated-full-manpage[]
+// tag::picocli-generated-man-section-header[]
+:doctype: manpage
+:revnumber: Versioned Command 1.0
+:manmanual: TestEndOfOptions Manual
+:mansource: Versioned Command 1.0
+:man-linkstyle: pass:[blue R < >]
+= testEndOfOptions(1)
+
+// end::picocli-generated-man-section-header[]
+
+// tag::picocli-generated-man-section-name[]
+== Name
+
+testEndOfOptions - This app does great things.
+
+// end::picocli-generated-man-section-name[]
+
+// tag::picocli-generated-man-section-synopsis[]
+== Synopsis
+
+*testEndOfOptions* [*-hV*] [*-o*=_<outputFolder>_] [*--*] [_<values>_...]
+
+// end::picocli-generated-man-section-synopsis[]
+
+// tag::picocli-generated-man-section-description[]
+== Description
+
+This app does great things.
+
+// end::picocli-generated-man-section-description[]
+
+// tag::picocli-generated-man-section-options[]
+== Options
+
+*-h*, *--help*::
+  Show this help message and exit.
+
+*-o*, *--output*=_<outputFolder>_::
+  Output location full path.
+
+*-V*, *--version*::
+  Print version information and exit.
+
+*--*::
+  This option can be used to separate command-line options from the list of positional parameters.
+
+// end::picocli-generated-man-section-options[]
+
+// tag::picocli-generated-man-section-arguments[]
+== Arguments
+
+[_<values>_...]::
+  Some values
+
+// end::picocli-generated-man-section-arguments[]
+
+// end::picocli-generated-full-manpage[]

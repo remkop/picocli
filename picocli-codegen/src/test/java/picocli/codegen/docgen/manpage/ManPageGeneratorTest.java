@@ -1,5 +1,6 @@
 package picocli.codegen.docgen.manpage;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
@@ -224,6 +225,34 @@ public class ManPageGeneratorTest {
         pw.flush();
 
         String expected = read("/testHiddenOptions.manpage.adoc");
+        expected = expected.replace("\r\n", "\n");
+        expected = expected.replace("\n", System.getProperty("line.separator"));
+        assertEquals(expected, sw.toString());
+    }
+
+    @Ignore // test case for https://github.com/remkop/picocli/issues/1077
+    @Test
+    public void testEndOfOptions() throws IOException {
+
+        @Command(name = "testEndOfOptions", mixinStandardHelpOptions = true,
+                showEndOfOptionsDelimiterInUsageHelp = true,
+                version = { "Versioned Command 1.0"},
+                description = "This app does great things."
+        )
+        class MyApp {
+            @Option(names = {"-o", "--output"}, description = "Output location full path.")
+            File outputFolder;
+
+            @Parameters(description = "Some values")
+            List<String> values;
+        }
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw); //System.out, true
+        ManPageGenerator.writeSingleManPage(pw, new CommandLine(new MyApp()).getCommandSpec());
+        pw.flush();
+
+        String expected = read("/testEndOfOptions.manpage.adoc");
         expected = expected.replace("\r\n", "\n");
         expected = expected.replace("\n", System.getProperty("line.separator"));
         assertEquals(expected, sw.toString());
