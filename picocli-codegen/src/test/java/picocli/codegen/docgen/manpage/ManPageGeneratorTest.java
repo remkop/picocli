@@ -196,6 +196,39 @@ public class ManPageGeneratorTest {
         assertEquals(expected, sw.toString());
     }
 
+    @Test
+    public void testHiddenOptions() throws IOException {
+
+        @Command(name = "testHiddenOptions",
+                version = {
+                        "Versioned Command 1.0",
+                        "Picocli " + picocli.CommandLine.VERSION,
+                        "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
+                        "OS: ${os.name} ${os.version} ${os.arch}"},
+                description = "This app does great things."
+        )
+        class MyApp {
+            @Option(names = {"-o", "--output"}, hidden = true, description = "Output location full path.")
+            File outputFolder;
+
+            @Option(names = {"--hidden-test"}, hidden = true)
+            File hidden;
+
+            @Parameters(hidden = true)
+            List<String> values;
+        }
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw); //System.out, true
+        ManPageGenerator.writeSingleManPage(pw, new CommandLine(new MyApp()).getCommandSpec());
+        pw.flush();
+
+        String expected = read("/testHiddenOptions.manpage.adoc");
+        expected = expected.replace("\r\n", "\n");
+        expected = expected.replace("\n", System.getProperty("line.separator"));
+        assertEquals(expected, sw.toString());
+    }
+
     private String read(String resource) throws IOException {
         return readAndClose(getClass().getResourceAsStream(resource));
     }
