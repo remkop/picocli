@@ -373,27 +373,25 @@ public class ManPageGenerator {
     }
 
     static void genOptions(PrintWriter pw, CommandSpec spec) {
-        if (spec.options().isEmpty()) {
-            return;
+        List<OptionSpec> options = new ArrayList<OptionSpec>(spec.options()); // options are stored in order of declaration
+
+        // remove hidden options
+        for (Iterator<OptionSpec> iter = options.iterator(); iter.hasNext();) {
+            if (iter.next().hidden()) { iter.remove(); }
         }
-        pw.printf("// tag::picocli-generated-man-section-options[]%n");
-        pw.printf("== Options%n");
 
         IOptionRenderer optionRenderer = spec.commandLine().getHelp().createDefaultOptionRenderer();
         IParamLabelRenderer paramLabelRenderer = spec.commandLine().getHelp().createDefaultParamLabelRenderer();
         IParameterRenderer parameterRenderer = spec.commandLine().getHelp().createDefaultParameterRenderer();
 
-        List<OptionSpec> options = new ArrayList<OptionSpec>(spec.options()); // options are stored in order of declaration
-
-        // remove hidden options
-        for (Iterator<OptionSpec> iter = options.iterator(); iter.hasNext();) {
-            if (iter.next().hidden()) {
-                iter.remove();
-            }
-        }
-
         List<ArgGroupSpec> groups = optionListGroups(spec);
         for (ArgGroupSpec group : groups) { options.removeAll(group.options()); }
+
+        if (spec.options().isEmpty()) {
+            return;
+        }
+        pw.printf("// tag::picocli-generated-man-section-options[]%n");
+        pw.printf("== Options%n");
 
         Comparator<OptionSpec> optionSort = spec.usageMessage().sortOptions()
                 ? new SortByShortestOptionNameAlphabetically()
