@@ -403,6 +403,12 @@ public class ManPageGenerator {
             writeOption(pw, optionRenderer, paramLabelRenderer, option);
         }
 
+        if (spec.usageMessage().showEndOfOptionsDelimiterInUsageHelp()) {
+            CommandLine cmd = new CommandLine(spec).setColorScheme(COLOR_SCHEME);
+            CommandLine.Help help = cmd.getHelp();
+            writeEndOfOptions(pw, optionRenderer, paramLabelRenderer, help.END_OF_OPTIONS_OPTION);
+        }
+
         // now create a custom option section for each arg group that has a heading
         Collections.sort(groups, new SortByOrder<ArgGroupSpec>());
         for (ArgGroupSpec group : groups) {
@@ -459,6 +465,16 @@ public class ManPageGenerator {
         for (int i = 1; i < rows.length; i++) {
             pw.printf("+%n%s%n", rows[i][4]);
         }
+    }
+
+    /** Write the end of options. */
+    private static void writeEndOfOptions(PrintWriter pw, IOptionRenderer optionRenderer, IParamLabelRenderer paramLabelRenderer, OptionSpec option) {
+        pw.println();
+        Text[][] rows = optionRenderer.render(option, paramLabelRenderer, COLOR_SCHEME);
+        pw.printf("%s::%n", join("", rows[0][1], rows[0][3]));
+        String description = String.valueOf(rows[0][4]);
+        // ignore "${picocli.endofoptions.description:-" and "}"
+        pw.printf("  %s%n",  description.substring(36,description.length()-1));
     }
 
     static void genPositionalArgs(PrintWriter pw, CommandSpec spec) {

@@ -230,7 +230,7 @@ public class ManPageGeneratorTest {
         assertEquals(expected, sw.toString());
     }
 
-    @Ignore // test case for https://github.com/remkop/picocli/issues/1077
+//    @Ignore // test case for https://github.com/remkop/picocli/issues/1077
     @Test
     public void testEndOfOptions() throws IOException {
 
