@@ -401,4 +401,19 @@ public class HelpSubCommandTest {
                 "Usage: app [COMMAND]%n");
         assertEquals(expected, baos.toString());
     }
+
+    @Test
+    public void testHelp_allSubcommands() {
+        @Command(name = "foo", description = "This is a visible subcommand") class Foo { }
+        @Command(name = "bar", description = "This is a hidden subcommand", hidden = true) class Bar { }
+        @Command(name = "app", subcommands = {Foo.class, Bar.class}) class App { }
+
+        CommandLine app = new CommandLine(new App(), new InnerClassFactory(this));
+        Help help = app.getHelp();
+        assertEquals(2, help.allSubcommands().size());
+        assertEquals(new HashSet<String>(Arrays.asList("foo", "bar")), help.allSubcommands().keySet());
+
+        assertEquals(1, help.subcommands().size());
+        assertEquals(new HashSet<String>(Arrays.asList("foo")), help.subcommands().keySet());
+    }
 }

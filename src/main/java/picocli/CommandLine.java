@@ -9553,6 +9553,32 @@ public class CommandLine {
                 for (ArgSpec arg : args()) { if (arg instanceof OptionSpec) { result.add((OptionSpec) arg); } }
                 return Collections.unmodifiableList(result);
             }
+            /** Returns all options configured for this group and all subgroups.
+             * @return an immutable list of all options in this group and its subgroups.
+             * @since 4.4 */
+            public List<OptionSpec> allOptionsNested() {
+                return addGroupOptionsToListRecursively(new ArrayList<OptionSpec>());
+            }
+            private List<OptionSpec> addGroupOptionsToListRecursively(List<OptionSpec> result) {
+                result.addAll(options());
+                for (ArgGroupSpec subGroup : subgroups()) {
+                    subGroup.addGroupOptionsToListRecursively(result);
+                }
+                return result;
+            }
+            /** Returns all positional parameters configured for this group and all subgroups.
+             * @return an immutable list of all positional parameters in this group and its subgroups.
+             * @since 4.4 */
+            public List<PositionalParamSpec> allPositionalParametersNested() {
+                return addGroupPositionalsToListRecursively(new ArrayList<PositionalParamSpec>());
+            }
+            private List<PositionalParamSpec> addGroupPositionalsToListRecursively(List<PositionalParamSpec> result) {
+                result.addAll(positionalParameters());
+                for (ArgGroupSpec subGroup : subgroups()) {
+                    subGroup.addGroupPositionalsToListRecursively(result);
+                }
+                return result;
+            }
 
             /** Returns the synopsis of this group. */
             public String synopsis() {
@@ -13971,7 +13997,8 @@ public class CommandLine {
 
         private final CommandSpec commandSpec;
         private final ColorScheme colorScheme;
-        private final Map<String, Help> commands = new LinkedHashMap<String, Help>();
+        private final Map<String, Help> allCommands = new LinkedHashMap<String, Help>();
+        private final Map<String, Help> visibleCommands = new LinkedHashMap<String, Help>();
         private List<String> aliases;
 
         private final IParamLabelRenderer parameterLabelRenderer;
@@ -14007,9 +14034,9 @@ public class CommandLine {
             this.aliases = new ArrayList<String>(Arrays.asList(commandSpec.aliases()));
             this.aliases.add(0, commandSpec.name());
             this.colorScheme = new ColorScheme.Builder(colorScheme).applySystemProperties().build();
-            parameterLabelRenderer = createDefaultParamLabelRenderer(); // uses help separator
+            this.parameterLabelRenderer = new DefaultParamLabelRenderer(commandSpec); // uses help separator
 
-            this.addAllSubcommands(commandSpec.subcommands());
+            this.registerSubcommands(commandSpec.subcommands());
             AT_FILE_POSITIONAL_PARAM.commandSpec = commandSpec; // for interpolation
         }
 
@@ -14027,9 +14054,15 @@ public class CommandLine {
          * @since 3.9 */
         private IHelpFactory getHelpFactory() { return commandSpec.usageMessage().helpFactory(); }
 
-        /** Returns the map of subcommand {@code Help} instances for this command Help.
-         * @since 3.9 */
-        public Map<String, Help> subcommands() { return Collections.unmodifiableMap(commands); }
+        /** Returns the map of non-hidden subcommand {@code Help} instances for this command Help.
+         * @since 3.9
+         * @see #allSubcommands() */
+        public Map<String, Help> subcommands() { return Collections.unmodifiableMap(visibleCommands); }
+
+        /** Returns the map of all subcommand {@code Help} instances (including hidden commands) for this command Help.
+         * @since 4.4
+         * @see #subcommands() */
+        public Map<String, Help> allSubcommands() { return Collections.unmodifiableMap(allCommands); }
 
         /** Returns the list of aliases for the command in this Help.
          * @since 3.9 */
@@ -14042,59 +14075,60 @@ public class CommandLine {
         public IParamLabelRenderer parameterLabelRenderer() {return parameterLabelRenderer;}
 
         /** Registers all specified subcommands with this Help.
-         * @param commands maps the command names to the associated CommandLine object
+         * @param subcommands the subcommands of this command
          * @return this Help instance (for method chaining)
-         * @see CommandLine#getSubcommands()
+         * @see #subcommands()
+         * @see #allSubcommands()
          */
-        public Help addAllSubcommands(Map<String, CommandLine> commands) {
-            if (commands != null) {
-                // first collect aliases
-                Map<CommandLine, List<String>> done = new IdentityHashMap<CommandLine, List<String>>();
-                for (CommandLine cmd : commands.values()) {
-                    if (!done.containsKey(cmd)) {
-                        done.put(cmd, new ArrayList<String>(Arrays.asList(cmd.commandSpec.aliases())));
-                    }
-                }
-                // then loop over all names that the command was registered with and add this name to the front of the list (if it isn't already in the list)
-                for (Map.Entry<String, CommandLine> entry : commands.entrySet()) {
-                    List<String> aliases = done.get(entry.getValue());
-                    if (!aliases.contains(entry.getKey())) { aliases.add(0, entry.getKey()); }
-                }
-                // The aliases list for each command now has at least one entry, with the main name at the front.
-                // Now we loop over the commands in the order that they were registered on their parent command.
-                for (Map.Entry<String, CommandLine> entry : commands.entrySet()) {
-                    // not registering hidden commands is easier than suppressing display in Help.commandList():
-                    // if all subcommands are hidden, help should not show command list header
-                    if (!entry.getValue().getCommandSpec().usageMessage().hidden()) {
-                        List<String> aliases = done.remove(entry.getValue());
-                        if (aliases != null) { // otherwise we already processed this command by another alias
-                            addSubcommand(aliases, entry.getValue());
-                        }
-                    }
-                }
+        public Help addAllSubcommands(Map<String, CommandLine> subcommands) {
+            if (subcommands != null) {
+                registerSubcommands(subcommands);
             }
             return this;
         }
 
-        /** Registers the specified subcommand with this Help.
-         * @param commandNames the name and aliases of the subcommand to display in the usage message
-         * @param commandLine the {@code CommandLine} object to get more information from
-         * @return this Help instance (for method chaining) */
-        Help addSubcommand(List<String> commandNames, CommandLine commandLine) {
-            String all = commandNames.toString();
-            commands.put(all.substring(1, all.length() - 1), getHelpFactory().create(commandLine.commandSpec, colorScheme).withCommandNames(commandNames));
-            return this;
+        private void registerSubcommands(Map<String, CommandLine> subcommands) {
+            // first collect aliases
+            Map<CommandLine, List<String>> done = new IdentityHashMap<CommandLine, List<String>>();
+            for (CommandLine cmd : subcommands.values()) {
+                if (!done.containsKey(cmd)) {
+                    done.put(cmd, new ArrayList<String>(Arrays.asList(cmd.commandSpec.aliases())));
+                }
+            }
+            // then loop over all names that the command was registered with and add this name to the front of the list (if it isn't already in the list)
+            for (Map.Entry<String, CommandLine> entry : subcommands.entrySet()) {
+                List<String> aliases = done.get(entry.getValue());
+                if (!aliases.contains(entry.getKey())) { aliases.add(0, entry.getKey()); }
+            }
+            // The aliases list for each command now has at least one entry, with the main name at the front.
+            // Now we loop over the commands in the order that they were registered on their parent command.
+            for (Map.Entry<String, CommandLine> entry : subcommands.entrySet()) {
+                // not registering hidden commands is easier than suppressing display in Help.commandList():
+                // if all subcommands are hidden, help should not show command list header
+                CommandLine commandLine = entry.getValue();
+                List<String> commandNames = done.remove(commandLine);
+                if (commandNames == null) { continue; }  // we already processed this command by another alias
+                String key = commandNames.toString().substring(1, commandNames.toString().length() - 1);
+                Help sub = getHelpFactory().create(commandLine.commandSpec, colorScheme).withCommandNames(commandNames);
+                allCommands.put(key, sub);
+                if (!sub.commandSpec().usageMessage().hidden()) {
+                    visibleCommands.put(key, sub);
+                }
+            }
         }
 
-        /** Registers the specified subcommand with this Help.
+        /** Registers the specified subcommand as one of the visible commands in this Help.
+         * This method does not check whether the specified command is hidden or not.
          * @param commandName the name of the subcommand to display in the usage message
          * @param command the {@code CommandSpec} or {@code @Command} annotated object to get more information from
          * @return this Help instance (for method chaining)
+         * @see #subcommands()
          * @deprecated
          */
         @Deprecated public Help addSubcommand(String commandName, Object command) {
-            commands.put(commandName,
-                    getHelpFactory().create(CommandSpec.forAnnotatedObject(command, commandSpec.commandLine().factory), defaultColorScheme(Ansi.AUTO)));
+            Help sub = getHelpFactory().create(CommandSpec.forAnnotatedObject(command, commandSpec.commandLine().factory), defaultColorScheme(Ansi.AUTO));
+            visibleCommands.put(commandName, sub);
+            allCommands.put(commandName, sub);
             return this;
         }
 
@@ -14362,20 +14396,25 @@ public class CommandLine {
             String[] lines = Ansi.OFF.new Text(commandSpec.usageMessage().synopsisHeading()).toString().split("\\r?\\n|\\r|%n", -1);
             return lines[lines.length - 1].length();
         }
-        /**
-         * <p>Returns a description of the {@linkplain Option options} supported by the application.
-         * This implementation {@linkplain #createShortOptionNameComparator() sorts options alphabetically}, and shows
-         * only the {@linkplain Option#hidden() non-hidden} options in a {@linkplain TextTable tabular format}
-         * using the {@linkplain #createDefaultOptionRenderer() default renderer} and {@linkplain Layout default layout}.</p>
-         * @return the fully formatted option list
-         * @see #optionList(Layout, Comparator, IParamLabelRenderer)
-         */
-        public String optionList() {
-            Comparator<OptionSpec> sortOrder = commandSpec.usageMessage().sortOptions()
-                    ? createShortOptionNameComparator()
-                    : createOrderComparatorIfNecessary(commandSpec.options());
-
-            return optionList(createDefaultLayout(), sortOrder, parameterLabelRenderer());
+        private List<OptionSpec> excludeHiddenAndGroupOptions(List<OptionSpec> all) {
+            List<OptionSpec> result = new ArrayList<OptionSpec>(all);
+            for (ArgGroupSpec group : optionSectionGroups()) { result.removeAll(group.allOptionsNested()); }
+            for (Iterator<OptionSpec> iter = result.iterator(); iter.hasNext(); ) {
+                if (iter.next().hidden()) {
+                    iter.remove();
+                }
+            }
+            return result;
+        }
+        private List<PositionalParamSpec> excludeHiddenAndGroupParams(List<PositionalParamSpec> all) {
+            List<PositionalParamSpec> result = new ArrayList<PositionalParamSpec>(all);
+            for (ArgGroupSpec group : optionSectionGroups()) { result.removeAll(group.allPositionalParametersNested()); }
+            for (Iterator<PositionalParamSpec> iter = result.iterator(); iter.hasNext(); ) {
+                if (iter.next().hidden()) {
+                    iter.remove();
+                }
+            }
+            return result;
         }
 
         private static Comparator<OptionSpec> createOrderComparatorIfNecessary(List<OptionSpec> options) {
@@ -14383,135 +14422,174 @@ public class CommandLine {
             return null;
         }
 
-        private int calcLongOptionColumnWidth() {
-            int max = 0;
-            IOptionRenderer optionRenderer = new DefaultOptionRenderer(false, " ");
-            boolean cjk = commandSpec.usageMessage().adjustLineBreaksForWideCJKCharacters();
-            int longOptionsColWidth = commandSpec.usageMessage().longOptionsMaxWidth() + 1; // add 1 space for indentation
-            for (OptionSpec option : commandSpec.options()) {
-                if (option.hidden()) { continue; }
-                Text[][] values = optionRenderer.render(option, parameterLabelRenderer(), colorScheme);
-                int len = cjk ? values[0][3].getCJKAdjustedLength() : values[0][3].length;
-                if (len < longOptionsColWidth) { max = Math.max(max, len); }
-            }
-            List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(commandSpec.positionalParameters()); // iterate in declaration order
-            if (hasAtFileParameter()) {
-                positionals.add(0, AT_FILE_POSITIONAL_PARAM);
-                AT_FILE_POSITIONAL_PARAM.messages(commandSpec.usageMessage().messages());
-            }
-            //IParameterRenderer paramRenderer = new DefaultParameterRenderer(false, " ");
-            for (PositionalParamSpec positional : positionals) {
-                if (positional.hidden()) { continue; }
-                //Text[][] values = paramRenderer.render(positional, parameterLabelRenderer(), colorScheme); // values[0][3]; //
-                Text label = parameterLabelRenderer().renderParameterLabel(positional, colorScheme.ansi(), colorScheme.parameterStyles);
-                int len = cjk ? label.getCJKAdjustedLength() : label.length;
-                if (len < longOptionsColWidth) { max = Math.max(max, len); }
-            }
-
-            return max + 3;
-        }
-
         /**
-         * Add options in the specified group (or in its subgroup) recursively to the specified option list.
-         * @param group current group to deal with
-         * @param options global result where options of current group will be added to
-         * @param optionSort comparator for options
+         * Returns a comparator for sorting options, or {@code null}, depending on the settings for this command.
+         * @return if {@linkplain Command#sortOptions() sortOptions} is selected,
+         *      return a comparator for sorting options based on their short name.
+         *      Otherwise, if any of the options has a non-default value for their {@linkplain Option#order() order} attribute,
+         *      then return a comparator for sorting options based on the order attribute.
+         *      Otherwise, return {@code null} to indicate that options should not be sorted.
+         * @since 4.4
          */
-        private void addGroupOptionsToListRecursively(ArgGroupSpec group, List<OptionSpec> options, Comparator<OptionSpec> optionSort) {
-            if (group == null) { return; }
-            List<OptionSpec> tmp = new ArrayList<OptionSpec>(group.options());
-            if (optionSort != null) {
-                Collections.sort(tmp, optionSort);
-            }
-            options.addAll(tmp);
-            for (ArgGroupSpec subGroup : group.subgroups()) {
-                addGroupOptionsToListRecursively(subGroup, options, optionSort);
-            }
+        public Comparator<OptionSpec> createDefaultOptionSort() {
+            return commandSpec.usageMessage().sortOptions()
+                    ? createShortOptionNameComparator()
+                    : createOrderComparatorIfNecessary(commandSpec.options());
         }
-
         /**
-         * Remove options in the specified group (or in its subgroup) recursively from the specified option list.
-         * @param group current group to deal with
-         * @param options global result where options of current group will be removed from
+         * <p>Returns a description of {@linkplain #options() all options} in this command, including any argument groups.
+         * </p><p>
+         * This implementation {@linkplain #createShortOptionNameComparator() sorts options alphabetically}, and shows
+         * only the {@linkplain Option#hidden() non-hidden} options in a {@linkplain TextTable tabular format}
+         * using the {@linkplain #createDefaultOptionRenderer() default renderer} and {@linkplain Layout default layout}.</p>
+         * @return the fully formatted option list, including any argument groups
+         * @see #optionListExcludingGroups(List)
+         * @see #optionListGroupSections()
          */
-        private void removeGroupOptionsFromListRecursively(ArgGroupSpec group, List<OptionSpec> options) {
-            if (group == null) { return; }
-            options.removeAll(group.options());
-            for (ArgGroupSpec subGroup : group.subgroups()) {
-                removeGroupOptionsFromListRecursively(subGroup, options);
-            }
+        public String optionList() {
+            return optionList(createDefaultLayout(), createDefaultOptionSort(), parameterLabelRenderer());
         }
-
+        /**
+         * <p>Returns a description of the specified list of options.
+         * </p><p>
+         * This implementation {@linkplain #createShortOptionNameComparator() sorts options alphabetically}, and shows
+         * only the specified options in a {@linkplain TextTable tabular format}
+         * using the {@linkplain #createDefaultOptionRenderer() default renderer} and {@linkplain #createDefaultLayout(List, List, ColorScheme)} default layout}.
+         * </p><p>
+         * Argument groups are not rendered by this method.
+         * </p>
+         * @param options the options to display in the returned rendered section of the usage help message
+         * @return the fully formatted portion of the option list for the specified options only (argument groups are not included)
+         * @see #optionListExcludingGroups(List, Layout, Comparator, IParamLabelRenderer)
+         * @since 4.4
+         */
+        public String optionListExcludingGroups(List<OptionSpec> options) {
+            return optionListExcludingGroups(options, createDefaultLayout(), createDefaultOptionSort(), parameterLabelRenderer());
+        }
         /** Sorts all {@code Options} with the specified {@code comparator} (if the comparator is non-{@code null}),
          * then {@linkplain Layout#addOption(CommandLine.Model.OptionSpec, CommandLine.Help.IParamLabelRenderer) adds} all non-hidden options to the
          * specified TextTable and returns the result of TextTable.toString().
-         * @param layout responsible for rendering the option list
+         * @param layout the layout responsible for rendering the option list
          * @param valueLabelRenderer used for options with a parameter
-         * @return the fully formatted option list
+         * @return the fully formatted option list, including any argument groups
+         * @see #optionListExcludingGroups(List, Layout, Comparator, IParamLabelRenderer)
+         * @see #optionListGroupSections()
          * @since 3.0 */
         public String optionList(Layout layout, Comparator<OptionSpec> optionSort, IParamLabelRenderer valueLabelRenderer) {
-            List<OptionSpec> options = new ArrayList<OptionSpec>(commandSpec.options()); // options are stored in order of declaration
+            List<OptionSpec> visibleOptionsNotInGroups = excludeHiddenAndGroupOptions(options());
+            return optionListExcludingGroups(visibleOptionsNotInGroups, layout, optionSort, valueLabelRenderer) + optionListGroupSections();
+        }
+        /** Sorts all {@code Options} with the specified {@code comparator} (if the comparator is non-{@code null}),
+         * then {@linkplain Layout#addOption(CommandLine.Model.OptionSpec, CommandLine.Help.IParamLabelRenderer) adds} the specified options to the
+         * specified TextTable and returns the result of TextTable.toString().
+         * Argument groups are not rendered by this method.
+         * @param optionList the options to show (this may be a subset of the options in this command);
+         *                   it is the responsibility of the caller to remove options that should not be displayed
+         * @param layout the layout responsible for rendering the option list
+         * @param valueLabelRenderer used for options with a parameter
+         * @return the fully formatted portion of the option list for the specified options only (argument groups are not included)
+         * @since 4.4 */
+        public String optionListExcludingGroups(List<OptionSpec> optionList, Layout layout, Comparator<OptionSpec> optionSort, IParamLabelRenderer valueLabelRenderer) {
+            List<OptionSpec> options = new ArrayList<OptionSpec>(optionList); // options are stored in order of declaration
             if (optionSort != null) {
                 Collections.sort(options, optionSort); // default: sort options ABC
             }
-            List<ArgGroupSpec> groups = optionListGroups();
-            for (ArgGroupSpec group : groups) {
-                removeGroupOptionsFromListRecursively(group, options);
-            }
+
+            layout.addAllOptions(options, valueLabelRenderer);
+            return layout.toString();
+        }
+
+        /**
+         * Returns a rendered section of the usage help message that contains the argument groups that have a non-{@code null} {@linkplain ArgGroup#heading() heading}.
+         * This is usually shown below the "normal" options of the command (that are not in an argument group).
+         * @return the fully formatted portion of the option list showing the argument groups
+         * @since 4.4
+         * @see #optionList()
+         * @see #optionListExcludingGroups(List)
+         * @see #optionSectionGroups()
+         */
+        public String optionListGroupSections() {
+            return optionListGroupSections(optionSectionGroups(), createDefaultOptionSort(), parameterLabelRenderer());
+        }
+        // @since 4.4
+        private String optionListGroupSections(List<ArgGroupSpec> groupList, Comparator<OptionSpec> optionSort, IParamLabelRenderer paramLabelRenderer) {
+            Set<ArgSpec> done = new HashSet<ArgSpec>();
+            List<ArgGroupSpec> groups = new ArrayList<ArgGroupSpec>(groupList);
+            Collections.sort(groups, new SortByOrder<ArgGroupSpec>());
 
             StringBuilder sb = new StringBuilder();
-            layout.addOptions(options, valueLabelRenderer);
-            sb.append(layout.toString());
-
-            Set<ArgSpec> done = new HashSet<ArgSpec>();
-            Collections.sort(groups, new SortByOrder<ArgGroupSpec>());
             for (ArgGroupSpec group : groups) {
-                sb.append(createHeading(group.heading()));
-
-                Layout groupLayout = createDefaultLayout();
-                groupLayout.addPositionalParameters(group.positionalParameters(), valueLabelRenderer);
-                List<OptionSpec> groupOptions = new ArrayList<OptionSpec>();
-                addGroupOptionsToListRecursively(group, groupOptions, optionSort);
+                List<OptionSpec> groupOptions = new ArrayList<OptionSpec>(group.allOptionsNested());
+                if (optionSort != null) { Collections.sort(groupOptions, optionSort); }
                 groupOptions.removeAll(done);
                 done.addAll(groupOptions);
-                groupLayout.addOptions(groupOptions, valueLabelRenderer);
+
+                List<PositionalParamSpec> groupPositionals = new ArrayList<PositionalParamSpec>(group.allPositionalParametersNested());
+                groupPositionals.removeAll(done);
+                done.addAll(groupPositionals);
+
+                Layout groupLayout = createDefaultLayout(); // create new empty layout based on the length of all options/positionals in this command
+                groupLayout.addPositionalParameters(groupPositionals, paramLabelRenderer);
+                groupLayout.addOptions(groupOptions, paramLabelRenderer);
+
+                sb.append(createHeading(group.heading()));
                 sb.append(groupLayout);
             }
             return sb.toString();
         }
 
-        /** Returns the list of {@code ArgGroupSpec}s with a non-{@code null} heading. */
-        private List<ArgGroupSpec> optionListGroups() {
+        /** Returns the list of {@code ArgGroupSpec} instances in this command that have a non-{@code null} heading, most deeply nested argument groups first.
+         * @see #optionListGroupSections()
+         * @since 4.4 */
+        public List<ArgGroupSpec> optionSectionGroups() {
             List<ArgGroupSpec> result = new ArrayList<ArgGroupSpec>();
-            optionListGroups(commandSpec.argGroups(), result);
+            optionSectionGroups(commandSpec.argGroups(), result);
             return result;
         }
-        private static void optionListGroups(List<ArgGroupSpec> groups, List<ArgGroupSpec> result) {
+        private static void optionSectionGroups(List<ArgGroupSpec> groups, List<ArgGroupSpec> result) {
             for (ArgGroupSpec group : groups) {
-                optionListGroups(group.subgroups(), result);
+                optionSectionGroups(group.subgroups(), result);
                 if (group.heading() != null) { result.add(group); }
             }
         }
 
         /**
-         * Returns the section of the usage help message that lists the parameters with their descriptions.
+         * Returns the rendered positional parameters section of the usage help message for {@linkplain #positionalParameters() all positional parameters} in this command.
          * @return the section of the usage help message that lists the parameters
+         * @see #parameterList(List)
          */
         public String parameterList() {
-            return parameterList(createDefaultLayout(), parameterLabelRenderer());
+            return parameterList(excludeHiddenAndGroupParams(positionalParameters()));
         }
         /**
-         * Returns the section of the usage help message that lists the parameters with their descriptions.
+         * Returns the rendered positional parameters section of the usage help message for the specified positional parameters.
+         * @param positionalParams the positional parameters to display in the returned rendered section of the usage help message;
+         *                         the caller is responsible for removing parameters that should not be displayed
+         * @return the section of the usage help message that lists the parameters
+         * @see #parameterList(List, Layout, IParamLabelRenderer)
+         * @since 4.4 */
+        public String parameterList(List<PositionalParamSpec> positionalParams) {
+            return parameterList(positionalParams, createDefaultLayout(), parameterLabelRenderer());
+        }
+        /**
+         * Returns the rendered section of the usage help message that lists all positional parameters in this command with their descriptions.
          * @param layout the layout to use
          * @param paramLabelRenderer for rendering parameter names
          * @return the section of the usage help message that lists the parameters
          */
         public String parameterList(Layout layout, IParamLabelRenderer paramLabelRenderer) {
-            List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(commandSpec.positionalParameters());
-            List<ArgGroupSpec> groups = optionListGroups();
-            for (ArgGroupSpec group : groups) { positionals.removeAll(group.positionalParameters()); }
-
-            layout.addPositionalParameters(positionals, paramLabelRenderer);
+            return parameterList(excludeHiddenAndGroupParams(positionalParameters()), layout, paramLabelRenderer);
+        }
+        /**
+         * Returns the rendered section of the usage help message that lists the specified parameters with their descriptions.
+         * @param positionalParams the positional parameters to display in the returned rendered section of the usage help message;
+         *                         the caller is responsible for removing parameters that should not be displayed
+         * @param layout the layout to use
+         * @param paramLabelRenderer for rendering parameter names
+         * @return the section of the usage help message that lists the parameters
+         * @since 4.4 */
+        public String parameterList(List<PositionalParamSpec> positionalParams, Layout layout, IParamLabelRenderer paramLabelRenderer) {
+            layout.addAllPositionalParameters(positionalParams, paramLabelRenderer);
             return layout.toString();
         }
 
@@ -14692,7 +14770,7 @@ public class CommandLine {
          * @param params the parameters to use to format the command list heading
          * @return the formatted command list heading */
         public String commandListHeading(Object... params) {
-            return commands.isEmpty() ? "" : createHeading(commandSpec.usageMessage().commandListHeading(), params);
+            return visibleCommands.isEmpty() ? "" : createHeading(commandSpec.usageMessage().commandListHeading(), params);
         }
 
         /** Returns the text displayed before the footer text; the result of {@code String.format(footerHeading, params)}.
@@ -14760,23 +14838,32 @@ public class CommandLine {
             }
             return textTable;
         }
-        /** Returns a 2-column list with command names and the first line of their header or (if absent) description.
-         * @return a usage help section describing the added commands */
+        /** Returns a 2-column list with the command names and first line of their header or (if absent) description of the commands returned by {@link #subcommands()}.
+         * @return a usage help section describing the added commands
+         * @see #commandList(Map) */
         public String commandList() {
-            if (subcommands().isEmpty()) { return ""; }
-            int commandLength = maxLength(subcommands().keySet());
-            Help.TextTable textTable = Help.TextTable.forColumns(ansi(),
+            return commandList(subcommands());
+        }
+        /** Returns a 2-column list with the command names and first line of their header or (if absent) description of the specified command map.
+         * @return a usage help section describing the added commands
+         * @see #subcommands()
+         * @see #allSubcommands()
+         * @since 4.4 */
+        public String commandList(Map<String, Help> subcommands) {
+            if (subcommands.isEmpty()) { return ""; }
+            int commandLength = maxLength(subcommands.keySet());
+            Help.TextTable textTable = Help.TextTable.forColumns(colorScheme().ansi(),
                     new Help.Column(commandLength + 2, 2, Help.Column.Overflow.SPAN),
                     new Help.Column(width() - (commandLength + 2), 2, Help.Column.Overflow.WRAP));
             textTable.setAdjustLineBreaksForWideCJKCharacters(adjustCJK());
 
-            for (Map.Entry<String, Help> entry : subcommands().entrySet()) {
+            for (Map.Entry<String, Help> entry : subcommands.entrySet()) {
                 Help help = entry.getValue();
                 UsageMessageSpec usage = help.commandSpec().usageMessage();
                 String header = !empty(usage.header())
                         ? usage.header()[0]
                         : (!empty(usage.description()) ? usage.description()[0] : "");
-                Text[] lines = this.colorScheme.text(format(header)).splitLines();
+                Text[] lines = colorScheme().text(format(header)).splitLines();
                 for (int i = 0; i < lines.length; i++) {
                     textTable.addRowValues(i == 0 ? help.commandNamesText(", ") : Ansi.EMPTY_TEXT, lines[i]);
                 }
@@ -14816,13 +14903,50 @@ public class CommandLine {
         /** Returns a {@code Layout} instance configured with the user preferences captured in this Help instance.
          * @return a Layout */
         public Layout createDefaultLayout() {
-            return createLayout(calcLongOptionColumnWidth());
+            return createDefaultLayout(options(), positionalParameters(), colorScheme());
+        }
+        /** Returns a {@code Layout} instance configured with the user preferences captured in this Help instance.
+         * @param options used to calculate the long options column width in the layout
+         * @param positionals used to calculate the long options column width in the layout
+         * @param aColorScheme used in the layout to create {@linkplain Text} values
+         * @return a Layout with the default columns
+         * @since 4.4 */
+        public Layout createDefaultLayout(List<OptionSpec> options, List<PositionalParamSpec> positionals, ColorScheme aColorScheme) {
+            return createLayout(calcLongOptionColumnWidth(options, positionals, aColorScheme), aColorScheme);
         }
 
-        private Layout createLayout(int longOptionsColumnWidth) {
-            TextTable tt = TextTable.forDefaultColumns(colorScheme, longOptionsColumnWidth, width());
+        private Layout createLayout(int longOptionsColumnWidth, ColorScheme aColorScheme) {
+            TextTable tt = TextTable.forDefaultColumns(aColorScheme, longOptionsColumnWidth, width());
             tt.setAdjustLineBreaksForWideCJKCharacters(commandSpec.usageMessage().adjustLineBreaksForWideCJKCharacters());
-            return new Layout(colorScheme, tt, createDefaultOptionRenderer(), createDefaultParameterRenderer());
+            return new Layout(aColorScheme, tt, createDefaultOptionRenderer(), createDefaultParameterRenderer());
+        }
+
+        private int calcLongOptionColumnWidth(List<OptionSpec> options, List<PositionalParamSpec> positionalParamSpecs, ColorScheme aColorScheme) {
+            int max = 0;
+            IOptionRenderer optionRenderer = new DefaultOptionRenderer(false, " ");
+            boolean cjk = commandSpec.usageMessage().adjustLineBreaksForWideCJKCharacters();
+            int longOptionsColWidth = commandSpec.usageMessage().longOptionsMaxWidth() + 1; // add 1 space for indentation
+            for (OptionSpec option : options) {
+                if (option.hidden()) { continue; }
+                Text[][] values = optionRenderer.render(option, parameterLabelRenderer(), aColorScheme);
+                int len = cjk ? values[0][3].getCJKAdjustedLength() : values[0][3].length;
+                if (len < longOptionsColWidth) { max = Math.max(max, len); }
+            }
+            List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(positionalParamSpecs); // iterate in declaration order
+            if (hasAtFileParameter()) {
+                positionals.add(0, AT_FILE_POSITIONAL_PARAM);
+                AT_FILE_POSITIONAL_PARAM.messages(commandSpec.usageMessage().messages());
+            }
+            //IParameterRenderer paramRenderer = new DefaultParameterRenderer(false, " ");
+            for (PositionalParamSpec positional : positionals) {
+                if (positional.hidden()) { continue; }
+                //Text[][] values = paramRenderer.render(positional, parameterLabelRenderer(), colorScheme); // values[0][3]; //
+                Text label = parameterLabelRenderer().renderParameterLabel(positional, aColorScheme.ansi(), aColorScheme.parameterStyles);
+                int len = cjk ? label.getCJKAdjustedLength() : label.length;
+                if (len < longOptionsColWidth) { max = Math.max(max, len); }
+            }
+
+            return max + 3;
         }
 
         /** Returns a new default OptionRenderer which converts {@link OptionSpec Options} to five columns of text to match
@@ -15275,6 +15399,14 @@ public class CommandLine {
                     }
                 }
             }
+            /** Calls {@link #addOption(CommandLine.Model.OptionSpec, CommandLine.Help.IParamLabelRenderer)} for all Options in the specified list.
+             * @param options options to add usage descriptions for;
+             *                it is the responsibility of the caller to exclude options that should not be shown
+             * @param paramLabelRenderer object that knows how to render option parameters
+             * @since 4.4 */
+            public void addAllOptions(List<OptionSpec> options, IParamLabelRenderer paramLabelRenderer) {
+                for (OptionSpec option : options) { addOption(option, paramLabelRenderer); }
+            }
             /**
              * Delegates to the {@link #optionRenderer option renderer} of this layout to obtain
              * text values for the specified {@link OptionSpec}, and then calls the {@link #layout(CommandLine.Model.ArgSpec, CommandLine.Help.Ansi.Text[][])}
@@ -15296,6 +15428,14 @@ public class CommandLine {
                         addPositionalParameter(param, paramLabelRenderer);
                     }
                 }
+            }
+            /** Calls {@link #addPositionalParameter(CommandLine.Model.PositionalParamSpec, CommandLine.Help.IParamLabelRenderer)} for all positional parameters in the specified list.
+             * @param params positional parameters to add usage descriptions for;
+             *               it is the responsibility of the caller to exclude positional parameters that should not be shown
+             * @param paramLabelRenderer knows how to render option parameters
+             * @since 4.4 */
+            public void addAllPositionalParameters(List<PositionalParamSpec> params, IParamLabelRenderer paramLabelRenderer) {
+                for (PositionalParamSpec param : params) { addPositionalParameter(param, paramLabelRenderer); }
             }
             /**
              * Delegates to the {@link #parameterRenderer parameter renderer} of this layout
@@ -15735,6 +15875,14 @@ public class CommandLine {
                 this.indent = indent;
                 this.overflow = Assert.notNull(overflow, "overflow");
             }
+            public boolean equals(Object obj) {
+                return obj instanceof Column
+                        && ((Column) obj).width == width
+                        && ((Column) obj).indent == indent
+                        && ((Column) obj).overflow == overflow;
+            }
+            public int hashCode() { return 17 * width + 37 * indent + 37 * overflow.hashCode();}
+            public String toString() { return String.format("Column[width=%d, indent=%d, overflow=%s]", width, indent, overflow); }
         }
 
         /** All usage help message are generated with a color scheme that assigns certain styles and colors to common

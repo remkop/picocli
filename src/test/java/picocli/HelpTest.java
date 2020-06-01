@@ -22,8 +22,8 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.ExecutionException;
 import picocli.CommandLine.Help;
 import picocli.CommandLine.Help.Ansi.IStyle;
 import picocli.CommandLine.Help.Ansi.Style;
@@ -51,7 +51,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -75,6 +74,7 @@ import static org.junit.Assert.*;
 import static picocli.CommandLine.Help.Visibility.ALWAYS;
 import static picocli.CommandLine.Help.Visibility.NEVER;
 import static picocli.CommandLine.Help.Visibility.ON_DEMAND;
+import static picocli.CommandLine.ScopeType.INHERIT;
 import static picocli.TestUtil.textArray;
 import static picocli.TestUtil.usageString;
 import static picocli.TestUtil.options;
@@ -3459,7 +3459,9 @@ public class HelpTest {
         TestUtil.setTraceLevel("WARN");
 
         assertTrue(systemErrRule.getLog(), systemErrRule.getLog().startsWith("[picocli DEBUG] getTerminalWidth() executing command ["));
-        assertTrue(systemErrRule.getLog(), systemErrRule.getLog().contains("[picocli DEBUG] getTerminalWidth() parsing output: "));
+        //assertTrue(systemErrRule.getLog(),
+        //        systemErrRule.getLog().contains("[picocli DEBUG] getTerminalWidth() parsing output: ")
+        //        || systemErrRule.getLog().contains("[picocli DEBUG] getTerminalWidth() ERROR: java.lang.ClassNotFoundException: java.lang.ProcessBuilder$Redirect"));
         assertTrue(systemErrRule.getLog(), systemErrRule.getLog().contains("[picocli DEBUG] getTerminalWidth() returning: "));
         //assertEquals(-1, width);
     }
@@ -4348,5 +4350,533 @@ public class HelpTest {
         String actual = new Help(new A()).parameterListHeading();
         String expected = String.format("");
         assertEquals(expected, actual);
+    }
+
+    @Test //#1081
+    public void testHelpConstructorShouldNotCallAddAllSubcommandsMethod() {
+        CommandLine cmd = new CommandLine(CommandSpec.create())
+                .setHelpFactory(new IHelpFactory() {
+                    public Help create(CommandSpec commandSpec, ColorScheme colorScheme) {
+                        return new Help(commandSpec, colorScheme) {
+                            @Override
+                            public Map<String, Help> allSubcommands() {
+                                throw new IllegalStateException("surprise");
+                            }
+                        };
+                    }
+                });
+        String actual = cmd.getUsageMessage();
+        assertEquals(String.format("Usage: <main class>%n"), actual);
+    }
+
+    @Test //#1081
+    public void testHelpConstructorShouldNotCallCreateDefaultParameterRenderer() {
+        CommandLine cmd = new CommandLine(CommandSpec.create())
+                .setHelpFactory(new IHelpFactory() {
+                    public Help create(CommandSpec commandSpec, ColorScheme colorScheme) {
+                        return new Help(commandSpec, colorScheme) {
+                            @Override
+                            public IParamLabelRenderer createDefaultParamLabelRenderer() {
+                                throw new IllegalStateException("Surprise!");
+                            }
+                        };
+                    }
+                });
+        String actual = cmd.getUsageMessage();
+        assertEquals(String.format("Usage: <main class>%n"), actual);
+    }
+
+    @Test
+    public void testHelp_createDefaultOptionSort_returnsNullIfSortIsFalseAndAllOptionsHaveDefaultOrder() {
+        @Command(sortOptions = false)
+        class App {
+            @Option(names = "-a", scope = INHERIT, description = "a option") boolean a;
+            @Option(names = "-b", scope = INHERIT, description = "b option") boolean b;
+            @Option(names = "-c", scope = INHERIT, description = "c option") boolean c;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        Help help = new Help(spec);
+        assertNull(help.createDefaultOptionSort());
+    }
+
+    @Test
+    public void testHelp_createDefaultOptionSort_returnsComparatorByOrderIfSortIsFalseAndAnyOptionsHasNonDefaultOrder() {
+        @Command(sortOptions = false)
+        class App {
+            @Option(names = "-a", scope = INHERIT, description = "a option", order = 123) boolean a;
+            @Option(names = "-b", scope = INHERIT, description = "b option") boolean b;
+            @Option(names = "-c", scope = INHERIT, description = "c option", order = 111) boolean c;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        Help help = new Help(spec);
+        Comparator<OptionSpec> optionSort = help.createDefaultOptionSort();
+        assertNotNull(optionSort);
+        List<OptionSpec> options = new ArrayList<OptionSpec>(spec.options());
+        assertEquals(Arrays.asList(spec.findOption('a'),
+                                    spec.findOption('b'),
+                                    spec.findOption('c')
+                ), options);
+        Collections.sort(options, optionSort);
+        assertEquals(Arrays.asList(spec.findOption('b'),
+                                    spec.findOption('c'),
+                                    spec.findOption('a')
+                            ), options);
+    }
+
+    @Test
+    public void testHelp_createDefaultOptionSort_returnsComparatorByShortNameIfSortIsTrue() {
+        @Command(sortOptions = true)
+        class App {
+            @Option(names = "-a", scope = INHERIT, description = "a option") boolean a;
+            @Option(names = "-e", scope = INHERIT, description = "e option") boolean e;
+            @Option(names = "-c", scope = INHERIT, description = "c option") boolean c;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        Help help = new Help(spec);
+        Comparator<OptionSpec> optionSort = help.createDefaultOptionSort();
+        assertNotNull(optionSort);
+        List<OptionSpec> options = new ArrayList<OptionSpec>(spec.options());
+        assertEquals(Arrays.asList(spec.findOption('a'),
+                spec.findOption('e'),
+                spec.findOption('c')
+        ), options);
+        Collections.sort(options, optionSort);
+        assertEquals(Arrays.asList(spec.findOption('a'),
+                spec.findOption('c'),
+                spec.findOption('e')
+        ), options);
+    }
+
+    @Test
+    public void testHelp_createDefaultOptionSort_returnsComparatorByShortNameIfSortIsTrueIgnoringOptionOrder() {
+        @Command(sortOptions = true)
+        class App {
+            @Option(names = "-a", scope = INHERIT, description = "a option", order = 123) boolean a;
+            @Option(names = "-e", scope = INHERIT, description = "e option") boolean e;
+            @Option(names = "-c", scope = INHERIT, description = "c option", order = 111) boolean c;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        Help help = new Help(spec);
+        Comparator<OptionSpec> optionSort = help.createDefaultOptionSort();
+        assertNotNull(optionSort);
+        List<OptionSpec> options = new ArrayList<OptionSpec>(spec.options());
+        assertEquals(Arrays.asList(spec.findOption('a'),
+                spec.findOption('e'),
+                spec.findOption('c')
+        ), options);
+        Collections.sort(options, optionSort);
+        assertEquals(Arrays.asList(spec.findOption('a'),
+                spec.findOption('c'),
+                spec.findOption('e')
+        ), options);
+    }
+
+    @Test //#1052
+    public void testCustomizeCommandListViaRenderer() {
+        @Command
+        class MyApp {
+            @Command(description = "subcommand foo")
+            void foo() {}
+
+            @Command(description = "subcommand bar", hidden = true)
+            void bar() {}
+
+            @Command(description = "subcommand baz", hidden = true)
+            void baz() {}
+
+            @Command(description = "subcommand xxx")
+            void xxx() {}
+
+            @Command(description = "subcommand yyy")
+            void yyy() {}
+
+            @Command(description = "subcommand zzz")
+            void zzz() {}
+        }
+
+        IHelpSectionRenderer renderer = new IHelpSectionRenderer() {
+            public String render(Help help) {
+                Map<String, Help> mySubcommands = createCustomCommandList(help);
+                return help.commandList(mySubcommands);
+            }
+
+            private Map<String, Help> createCustomCommandList(Help help) {
+                Map<String, Help> result = new LinkedHashMap<String, Help>();
+                // register commands in the specific order we want to see them in the usage help
+                for (String included : new String[]{"baz", "foo", "zzz", "yyy"}) {
+                    result.put(included, help.allSubcommands().get(included));
+                }
+                return result;
+            }
+        };
+        CommandLine cmd = new CommandLine(new MyApp());
+        cmd.getHelpSectionMap().put(UsageMessageSpec.SECTION_KEY_COMMAND_LIST, renderer);
+        assertEquals(String.format("" +
+                "Usage: <main class> [COMMAND]%n" +
+                "Commands:%n" +
+                "  baz  subcommand baz%n" +
+                "  foo  subcommand foo%n" +
+                "  zzz  subcommand zzz%n" +
+                "  yyy  subcommand yyy%n"), cmd.getUsageMessage());
+    }
+
+    @Test //#1052
+    public void testCustomizeOptionListViaRenderer() {
+        @Command
+        class App {
+            @Option(names = "-a", scope = INHERIT, description = "a option") boolean a;
+            @Option(names = "-b", scope = INHERIT, description = "b option") boolean b;
+            @Option(names = "-c", scope = INHERIT, description = "c option") boolean c;
+
+            @Command void sub() {}
+        }
+
+        IHelpSectionRenderer renderer = new IHelpSectionRenderer() {
+            public String render(Help help) {
+                List<OptionSpec> options = new ArrayList<OptionSpec>(help.commandSpec().options());
+                options.remove(help.commandSpec().findOption("-b"));
+                return help.optionListExcludingGroups(options);
+            }
+        };
+
+        CommandLine cmd = new CommandLine(new App());
+        cmd.getHelpSectionMap().put(UsageMessageSpec.SECTION_KEY_OPTION_LIST, renderer);
+        assertEquals(String.format("" +
+                "Usage: <main class> [-ac] [COMMAND]%n" + // TODO synopsis abc
+                "  -a     a option%n" +
+                "  -c     c option%n" +
+                "Commands:%n" +
+                "  sub%n"), cmd.getUsageMessage());
+    }
+
+    @Test //#1052
+    public void testCustomizeOptionListViaInheritance() {
+        @Command
+        class App {
+            @Option(names = "-a", scope = INHERIT, description = "a option") boolean a;
+            @Option(names = "-b", scope = INHERIT, description = "b option") boolean b;
+            @Option(names = "-c", scope = INHERIT, description = "c option") boolean c;
+
+            @Command(description = "This is the `sub` subcommand...") void sub() {}
+        }
+
+        CommandLine cmd = new CommandLine(new App())
+                .setHelpFactory(new IHelpFactory() {
+                    public Help create(CommandSpec commandSpec, ColorScheme colorScheme) {
+                        return new Help(commandSpec, colorScheme) {
+                            @Override
+                            public String optionListExcludingGroups(List<OptionSpec> options) {
+                                List<OptionSpec> shown = new ArrayList<OptionSpec>();
+                                for (OptionSpec option : options) {
+                                    if (!option.inherited() || option.shortestName().equals("-b")) {
+                                        shown.add(option);
+                                    }
+                                }
+                                return super.optionListExcludingGroups(shown);
+                            }
+                        };
+                    }
+                });
+        String actual = cmd.getSubcommands().get("sub").getUsageMessage();
+        assertEquals(String.format("" +
+                "Usage: <main class> sub [-b]%n" + // TODO synopsis -abc
+                "This is the `sub` subcommand...%n" +
+                "  -b     b option%n"), actual);
+    }
+
+    @Test
+    public void testHelp_optionList_noArgs_includesArgGroups() {
+        @Command
+        class App {
+            @Option(names = "-x", description = "option x") boolean x;
+            @Option(names = "-y", description = "option y") boolean y;
+            @ArgGroup(heading = "Usage Options%n")
+            UsageDemo usageDemo;
+        }
+        Help help = new Help(CommandSpec.forAnnotatedObject(new App()));
+        assertEquals(String.format("" +
+                "  -x                      option x%n" +
+                "  -y                      option y%n" +
+                "Usage Options%n" +
+                "      0BLAH               first parameter%n" +
+                "      1PARAMETER-with-a-name-so-long-that-it-runs-into-the-descriptions-column%n" +
+                "                          2nd parameter%n" +
+                "      remaining           remaining parameters%n" +
+                "      all                 all parameters%n" +
+                "  -a                      boolean option with short name only%n" +
+                "  -b=INT                  short option with a parameter%n" +
+                "  -c, --c-option          boolean option with short and long name%n" +
+                "  -d, --d-option=FILE     option with parameter and short and long name%n" +
+                "      --e-option          boolean option with only a long name%n" +
+                "      --f-option=STRING   option with parameter and only a long name%n" +
+                "  -g, --g-option-with-a-name-so-long-that-it-runs-into-the-descriptions-column%n" +
+                "                          boolean option with short and long name%n" +
+                ""), help.optionList());
+    }
+
+    @Test
+    public void testHelp_optionList_list_excludesArgGroups() {
+        @Command
+        class App {
+            @Option(names = "-x", description = "option x") boolean x;
+            @Option(names = "-y", description = "option y") boolean y;
+            @ArgGroup(heading = "Usage Options%n")
+            UsageDemo usageDemo;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        Help help = new Help(spec);
+        String actual = help.optionListExcludingGroups(Arrays.asList(spec.findOption('x'), spec.findOption('y')));
+        assertEquals(String.format("" +
+                "  -x                      option x%n" +
+                "  -y                      option y%n"), actual);
+    }
+
+    @Test
+    public void testHelp_optionList_list__layout_comparator_labelrenderer_excludesArgGroups() {
+        @Command
+        class App {
+            @Option(names = "-z", description = "option z") boolean z;
+            @Option(names = "-y", description = "option y") boolean y;
+            @Option(names = "-x", description = "option x") boolean x;
+            @ArgGroup(heading = "Usage Options%n")
+            UsageDemo usageDemo;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        Help help = new Help(spec);
+
+        String actual = help.optionListExcludingGroups(Arrays.asList(
+                spec.findOption('x'),
+                spec.findOption('y')),
+                help.createDefaultLayout(), help.createDefaultOptionSort(), help.createDefaultParamLabelRenderer());
+        assertEquals("Only shows specified options", String.format("" +
+                "  -x                      option x%n" +
+                "  -y                      option y%n" +
+                ""), actual);
+    }
+
+    @Test
+    public void testHelp_argumentGroupList() {
+        @Command
+        class App {
+            @Option(names = "-x", description = "option x") boolean x;
+            @Option(names = "-y", description = "option y") boolean y;
+            @ArgGroup(heading = "Usage Options%n")
+            UsageDemo usageDemo;
+        }
+        Help help = new Help(CommandSpec.forAnnotatedObject(new App()));
+        assertEquals(String.format("" +
+                "Usage Options%n" +
+                "      0BLAH               first parameter%n" +
+                "      1PARAMETER-with-a-name-so-long-that-it-runs-into-the-descriptions-column%n" +
+                "                          2nd parameter%n" +
+                "      remaining           remaining parameters%n" +
+                "      all                 all parameters%n" +
+                "  -a                      boolean option with short name only%n" +
+                "  -b=INT                  short option with a parameter%n" +
+                "  -c, --c-option          boolean option with short and long name%n" +
+                "  -d, --d-option=FILE     option with parameter and short and long name%n" +
+                "      --e-option          boolean option with only a long name%n" +
+                "      --f-option=STRING   option with parameter and only a long name%n" +
+                "  -g, --g-option-with-a-name-so-long-that-it-runs-into-the-descriptions-column%n" +
+                "                          boolean option with short and long name%n" +
+                ""), help.optionListGroupSections());
+    }
+
+    static class Section {
+        static class G0 {
+            @Option(names = "-0", description = "option -0 in G0") boolean zero;
+        }
+        static class G1 {
+            @Option(names = "-a", description = "option -a in G1") boolean a;
+        }
+        static class G2 {
+            @Option(names = "-b", description = "option -b in G2") boolean b;
+        }
+        static class G3 {
+            @Option(names = "-c", description = "option -c in G3") boolean c;
+
+            @ArgGroup(heading = "INNER GROUP%n")
+            G1 group;
+
+            @ArgGroup
+            G2 group2;
+        }
+        @ArgGroup(heading = "GROUP%n")
+        G3 group;
+    }
+    @Test
+    public void testHelp_optionSectionGroups_returnsGroupsWithHeaderIncludingSubgroups() {
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new Section());
+        Help help = new Help(spec);
+        List<Model.ArgGroupSpec> argGroups = help.optionSectionGroups();
+        assertEquals(2, argGroups.size());
+        assertEquals("INNER GROUP%n", argGroups.get(0).heading());
+        assertEquals("GROUP%n", argGroups.get(1).heading());
+    }
+
+    @Test
+    public void testHelp_parameterList_noargs_excludesHiddenAndGroupParams() {
+        @Command
+        class App {
+            @Parameters(paramLabel = "HIDDEN", description = "hidden positional", hidden = true) String x;
+            @Parameters(paramLabel = "VISIBLE", description = "visible positional") String y;
+            @ArgGroup(heading = "Usage Options%n")
+            UsageDemo usageDemo;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        Help help = new Help(spec);
+        String actual = help.parameterList();
+        assertEquals(String.format("" +
+                "      VISIBLE             visible positional%n" +
+                ""), actual);
+    }
+
+    @Test
+    public void testHelp_parameterList_list_showsAllSpecifiedParams() {
+        @Command
+        class App {
+            @Parameters(paramLabel = "HIDDEN", description = "hidden positional", hidden = true) String x;
+            @Parameters(paramLabel = "VISIBLE", description = "visible positional") String y;
+            @ArgGroup(heading = "Usage Options%n")
+            UsageDemo usageDemo;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        Help help = new Help(spec);
+        List<PositionalParamSpec> params = new ArrayList<PositionalParamSpec>();
+        for (PositionalParamSpec param : spec.positionalParameters()) {
+            if (Arrays.asList("0BLAH", "HIDDEN", "VISIBLE").contains(param.paramLabel())) {
+                params.add(param);
+            }
+        }
+        String actual = help.parameterList(params);
+        assertEquals(String.format("" +
+                "      0BLAH               first parameter%n" +
+                "      HIDDEN              hidden positional%n" +
+                "      VISIBLE             visible positional%n" +
+                ""), actual);
+    }
+
+    @Test
+    public void testHelp_parameterList_layout_paramRenderer_excludesHiddenAndGroupParams() {
+        @Command
+        class App {
+            @Parameters(paramLabel = "HIDDEN", description = "hidden positional", hidden = true) String x;
+            @Parameters(paramLabel = "VISIBLE", description = "visible positional") String y;
+            @ArgGroup(heading = "Usage Options%n")
+            UsageDemo usageDemo;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        Help help = new Help(spec);
+        String actual = help.parameterList(help.createDefaultLayout(), help.parameterLabelRenderer());
+        assertEquals(String.format("" +
+                "      VISIBLE             visible positional%n" +
+                ""), actual);
+    }
+
+    @Test
+    public void testHelp_parameterList_list_layout_paramRenderer_showsAllSpecifiedParams() {
+        @Command
+        class App {
+            @Parameters(paramLabel = "HIDDEN", description = "hidden positional", hidden = true) String x;
+            @Parameters(paramLabel = "VISIBLE", description = "visible positional") String y;
+            @ArgGroup(heading = "Usage Options%n")
+            UsageDemo usageDemo;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        Help help = new Help(spec);
+        List<PositionalParamSpec> params = new ArrayList<PositionalParamSpec>();
+        for (PositionalParamSpec param : spec.positionalParameters()) {
+            if (Arrays.asList("0BLAH", "HIDDEN", "VISIBLE").contains(param.paramLabel())) {
+                params.add(param);
+            }
+        }
+        String actual = help.parameterList(params, help.createDefaultLayout(), help.parameterLabelRenderer());
+        assertEquals(String.format("" +
+                "      0BLAH               first parameter%n" +
+                "      HIDDEN              hidden positional%n" +
+                "      VISIBLE             visible positional%n" +
+                ""), actual);
+    }
+
+    @Test
+    public void testHelp_createDefaultLayout_usesSpecifiedOptionsAndParamsToCalculateLongOptionColumnWidth() {
+        List<OptionSpec> options = Arrays.asList(OptionSpec.builder("-a", "--long-option-name").build());
+        List<PositionalParamSpec> positionals = Arrays.asList(PositionalParamSpec.builder().paramLabel("LONG_PARAM_LABEL").build());
+        Help help = new Help(CommandSpec.create());
+        ColorScheme colorScheme = new ColorScheme.Builder().build();
+        Help.Layout layout = help.createDefaultLayout(options, positionals, colorScheme);
+        assertSame(colorScheme, layout.colorScheme);
+        assertEquals(5, layout.table.columns().length);
+        int longOptionCol = Math.max("--long-option-name".length(), "LONG_PARAM_LABEL".length()) + 1 + 2; // 1 indent, 2 spacing to next col
+        Help.Column[] expected = new Help.Column[] {
+                new Help.Column(2, 0, Help.Column.Overflow.TRUNCATE),
+                new Help.Column(2, 0, Help.Column.Overflow.SPAN),
+                new Help.Column(1, 0, Help.Column.Overflow.TRUNCATE),
+                new Help.Column(longOptionCol, 1, Help.Column.Overflow.SPAN),
+                new Help.Column(80 - (2 + 2 + 1 + longOptionCol), 1, Help.Column.Overflow.WRAP),
+        };
+        assertArrayEquals(expected, layout.table.columns());
+    }
+
+    @Test
+    public void testHelpLayout_addOptions_excludesHiddenOptions() {
+        @Command
+        class App {
+            @Option(names = "-x", description = "option x", hidden = true) boolean x;
+            @Option(names = "-y", description = "option y") boolean y;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        Help help = new Help(spec);
+        Help.Layout layout = help.createDefaultLayout();
+        layout.addOptions(spec.options(), help.parameterLabelRenderer());
+        assertEquals(String.format("" +
+                "  -y     option y%n"), layout.toString());
+    }
+
+    @Test
+    public void testHelpLayout_addAllOptions_includesHiddenOptions() {
+        @Command
+        class App {
+            @Option(names = "-x", description = "option x", hidden = true) boolean x;
+            @Option(names = "-y", description = "option y") boolean y;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        Help help = new Help(spec);
+        Help.Layout layout = help.createDefaultLayout();
+        layout.addAllOptions(spec.options(), help.parameterLabelRenderer());
+        assertEquals(String.format("" +
+                "  -x     option x%n" +
+                "  -y     option y%n"), layout.toString());
+    }
+
+    @Test
+    public void testHelpLayout_addPositionalParameters_includesHiddenOptions() {
+        @Command
+        class App {
+            @Parameters(paramLabel = "HIDDEN", description = "hidden positional", hidden = true) String x;
+            @Parameters(paramLabel = "VISIBLE", description = "visible positional") String y;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        Help help = new Help(spec);
+        Help.Layout layout = help.createDefaultLayout();
+        layout.addPositionalParameters(spec.positionalParameters(), help.parameterLabelRenderer());
+        assertEquals(String.format("" +
+                "      VISIBLE   visible positional%n"), layout.toString());
+    }
+
+    @Test
+    public void testHelpLayout_addAllPositionalParameters_includesHiddenOptions() {
+        @Command
+        class App {
+            @Parameters(paramLabel = "HIDDEN", description = "hidden positional", hidden = true) String x;
+            @Parameters(paramLabel = "VISIBLE", description = "visible positional") String y;
+        }
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new App());
+        Help help = new Help(spec);
+        Help.Layout layout = help.createDefaultLayout();
+        layout.addAllPositionalParameters(spec.positionalParameters(), help.parameterLabelRenderer());
+        assertEquals(String.format("" +
+                "      HIDDEN    hidden positional%n" +
+                "      VISIBLE   visible positional%n"), layout.toString());
     }
 }
