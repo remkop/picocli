@@ -3411,12 +3411,12 @@ public class ArgGroupTest {
                 "  -r, --includetree=DIR...   Include only the specified CTrees.%n" +
                 "  -R, --excludetree=DIR...   Exclude the specified CTrees.%n" +
                 "CTree Options:%n" +
-                "  -t, --ctree=DIR            The CTree (directory) to process. The cTree name%n" +
-                "                               is the basename of the file.%n" +
                 "  -b, --includebase=PATH...  Include child files of cTree (only works with%n" +
                 "                               --ctree).%n" +
                 "  -B, --excludebase=PATH...  Exclude child files of cTree (only works with%n" +
                 "                               --ctree).%n" +
+                "  -t, --ctree=DIR            The CTree (directory) to process. The cTree name%n" +
+                "                               is the basename of the file.%n" +
                 "General Options:%n" +
                 "  -i, --input=FILE           Input filename (no defaults)%n" +
                 "  -n, --inputname=PATH       User's basename for input files (e.g.%n" +
@@ -3597,19 +3597,19 @@ public class ArgGroupTest {
     }
 
     static class InnerPositional1027 {
-        @Parameters(index = "0") String param0;
-        @Parameters(index = "1") String param1;
+        @Parameters(index = "0") String param00;
+        @Parameters(index = "1") String param01;
 
         public InnerPositional1027() {}
-        public InnerPositional1027(String param0, String param1) {
-            this.param0 = param0;
-            this.param1 = param1;
+        public InnerPositional1027(String param00, String param01) {
+            this.param00 = param00;
+            this.param01 = param01;
         }
         public boolean equals(Object obj) {
             if (!(obj instanceof InnerPositional1027)) { return false; }
             InnerPositional1027 other = (InnerPositional1027) obj;
-            return TestUtil.equals(this.param0, other.param0)
-                    && TestUtil.equals(this.param1, other.param1);
+            return TestUtil.equals(this.param00, other.param00)
+                    && TestUtil.equals(this.param01, other.param01);
         }
     }
     static class Inner1027 {
@@ -3745,5 +3745,69 @@ public class ArgGroupTest {
                 "  -A=N%n");
         String actual = new CommandLine(new Issue1065ExclusiveGroupNoSplit()).getUsageMessage(Help.Ansi.OFF);
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testAllOptionsNested() {
+        class Nested {
+            @ArgGroup(exclusive = false, multiplicity = "0..*")
+            List<Outer1027> outers;
+        }
+
+        List<ArgGroupSpec> argGroupSpecs = new CommandLine(new Nested()).getCommandSpec().argGroups();
+        assertEquals(1, argGroupSpecs.size());
+        ArgGroupSpec group = argGroupSpecs.get(0);
+        List<OptionSpec> options = group.options();
+        assertEquals(1, options.size());
+        assertEquals("-x", options.get(0).shortestName());
+
+        List<OptionSpec> allOptions = group.allOptionsNested();
+        assertEquals(2, allOptions.size());
+        assertEquals("-x", allOptions.get(0).shortestName());
+        assertEquals("-y", allOptions.get(1).shortestName());
+    }
+
+    @Test
+    public void testAllOptionsNested2() {
+        List<ArgGroupSpec> argGroupSpecs = new CommandLine(new Issue988()).getCommandSpec().argGroups();
+        assertEquals(2, argGroupSpecs.size());
+        ArgGroupSpec projectOrTreeOptionsGroup = argGroupSpecs.get(0);
+        List<OptionSpec> options = projectOrTreeOptionsGroup.options();
+        assertEquals(0, options.size());
+
+        List<OptionSpec> allOptions = projectOrTreeOptionsGroup.allOptionsNested();
+        assertEquals(6, allOptions.size());
+        assertEquals("--cproject", allOptions.get(0).longestName());
+        assertEquals("--includetree", allOptions.get(1).longestName());
+        assertEquals("--excludetree", allOptions.get(2).longestName());
+        assertEquals("--ctree", allOptions.get(3).longestName());
+        assertEquals("--includebase", allOptions.get(4).longestName());
+        assertEquals("--excludebase", allOptions.get(5).longestName());
+
+        ArgGroupSpec generalOptionsGroup = argGroupSpecs.get(1);
+        assertEquals(2, generalOptionsGroup.options().size());
+        assertEquals(2, generalOptionsGroup.allOptionsNested().size());
+    }
+
+    @Test
+    public void testAllPositionalParametersNested() {
+        class Nested {
+            @ArgGroup(exclusive = false, multiplicity = "0..*")
+            List<Outer1027> outers;
+        }
+
+        List<ArgGroupSpec> argGroupSpecs = new CommandLine(new Nested()).getCommandSpec().argGroups();
+        assertEquals(1, argGroupSpecs.size());
+        ArgGroupSpec group = argGroupSpecs.get(0);
+        List<PositionalParamSpec> positionals = group.positionalParameters();
+        assertEquals(2, positionals.size());
+        assertEquals("<param0>", positionals.get(0).paramLabel());
+
+        List<PositionalParamSpec> allPositionals = group.allPositionalParametersNested();
+        assertEquals(4, allPositionals.size());
+        assertEquals("<param0>", allPositionals.get(0).paramLabel());
+        assertEquals("<param1>", allPositionals.get(1).paramLabel());
+        assertEquals("<param00>", allPositionals.get(2).paramLabel());
+        assertEquals("<param01>", allPositionals.get(3).paramLabel());
     }
 }

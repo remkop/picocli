@@ -80,11 +80,24 @@ When abbreviated options are enabled, user input `-AB` will match the long `-Aaa
 ## <a name="4.4.0-fixes"></a> Fixed issues
 * [#10][#732][#1047] API: Support abbreviated options and commands. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#1074][#1075] API: Added method `ParseResult::expandedArgs` to return the list of arguments after `@-file` expansion. Thanks to [Kevin Bedi](https://github.com/mashlol) for the pull request.
+* [#1052] API: Show/Hide commands in usage help on specific conditions. Thanks to [Philippe Charles](https://github.com/charphi) for raising this.
+* [#1088] API: Add method `Help::allSubcommands` to return all subcommands, including hidden ones. Clarify the semantics of `Help::subcommands`.
+* [#1090] API: Add methods `Help::optionListExcludingGroups` to return a String with the rendered section of the usage help containing only the specified options, including hidden ones.
+* [#1092] API: Add method `Help::parameterList(List<PositionalParamSpec>)` to return a String with the rendered section of the usage help containing only the specified positional parameters, including hidden ones.
+* [#1093] API: Add method `Help::commandList(Map<String, Help>)` to return a String with the rendered section of the usage help containing only the specified subcommands, including hidden ones.
+* [#1091] API: Add method `Help::optionListGroupSections` to return a String with the rendered section of the usage help containing only the option groups.
+* [#1089] API: Add method `Help::createDefaultOptionSort` to create a `Comparator` that follows the command and options' configuration.
+* [#1084][#1094] API: Add method `Help::createDefaultLayout(List<OptionSpec>, List<PositionalParamSpec>, ColorScheme)` to create a layout for the specified options and positionals.
+* [#1087] API: Add methods `ArgumentGroupSpec::allOptionsNested` and `ArgumentGroupSpec::allPositionalParametersNested`.
+* [#1086] API: add methods `Help.Layout::addAllOptions` and `Help.Layout::addAllPositionals`, to show all specified options, including hidden ones.
+* [#1085] API: Add method `Help::optionSectionGroups` to get argument groups with a header.
 * [#1051][#1056] Enhancement: `GenerateCompletion` command no longer needs to be a direct subcommand of the root command. Thanks to [Philippe Charles](https://github.com/charphi) for the pull request.
 * [#1068] Enhancement: Make `ParserSpec::toString` output settings in alphabetic order.
 * [#1069] Enhancement: Debug output should show `optionsCaseInsensitive` and `subcommandsCaseInsensitive` settings.
 * [#1070] Enhancement: Code cleanup: removed redundant modifiers and initializations, unused variables, incorrect javadoc references, and more. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
+* [#1096] Enhancement: Override `Help.Column` `equals`, `hashCode` and `toString` methods to facilitate testing.
 * [#1063][#1064] `ManPageGenerator` now correctly excludes hidden options, parameters, and subcommands from man page generation. Thanks to [Brian Demers](https://github.com/bdemers) for the pull request.
+* [#1081] Bugfix: `CommandLine.Help` constructor no longer calls overridable methods `addAllSubcommands` and `createDefaultParamLabelRenderer`.
 * [#1065] Bugfix: With a `List<>` option in `@ArgGroup`, group incorrectly appears twice in the synopsis. Thanks to [kap4lin](https://github.com/kap4lin) for raising this.
 * [#1067] Bugfix: `ParserSpec::initFrom` was not copying `useSimplifiedAtFiles`.
 * [#1054] Bugfix: option-parameter gets lost in Argument Groups. Thanks to [waacc-gh](https://github.com/waacc-gh) for raising this.
