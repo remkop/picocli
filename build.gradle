@@ -74,7 +74,6 @@ allprojects {
     compileTestJava.options.encoding = "UTF-8"
 
     repositories {
-        mavenLocal()
         jcenter()
     }
 
