@@ -5,15 +5,15 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.jline.builtins.CommandRegistry;
-import org.jline.builtins.Completers.SystemCompleter;
 import org.jline.builtins.Options.HelpException;
-import org.jline.builtins.Widgets.ArgDesc;
-import org.jline.builtins.Widgets.CmdDesc;
+import org.jline.console.ArgDesc;
+import org.jline.console.CmdDesc;
+import org.jline.console.CommandRegistry;
 import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
+import org.jline.reader.impl.completer.SystemCompleter;
 import org.jline.utils.AttributedString;
 import picocli.CommandLine;
 import picocli.CommandLine.Help;
@@ -207,5 +207,10 @@ public class PicocliCommands implements CommandRegistry {
     @Override
     public Map<String, String> commandAliases() {
         return aliasCommand;
+    }
+
+    @Override
+    public CmdDesc commandDescription(String command) {
+        return null;
     }
 }
