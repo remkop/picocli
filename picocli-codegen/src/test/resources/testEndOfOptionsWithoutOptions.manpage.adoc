@@ -1,0 +1,41 @@
+// tag::picocli-generated-full-manpage[]
+// tag::picocli-generated-man-section-header[]
+:doctype: manpage
+:revnumber: Versioned Command 1.0
+:manmanual: TestEndOfOptionsWithoutOptions Manual
+:mansource: Versioned Command 1.0
+:man-linkstyle: pass:[blue R < >]
+= testEndOfOptionsWithoutOptions(1)
+
+// end::picocli-generated-man-section-header[]
+
+// tag::picocli-generated-man-section-name[]
+== Name
+
+testEndOfOptionsWithoutOptions - This app does great things.
+
+// end::picocli-generated-man-section-name[]
+
+// tag::picocli-generated-man-section-synopsis[]
+== Synopsis
+
+*testEndOfOptionsWithoutOptions* [*--*]
+
+// end::picocli-generated-man-section-synopsis[]
+
+// tag::picocli-generated-man-section-description[]
+== Description
+
+This app does great things.
+
+// end::picocli-generated-man-section-description[]
+
+// tag::picocli-generated-man-section-options[]
+== Options
+
+*--*::
+  This option can be used to separate command-line options from the list of positional parameters.
+
+// end::picocli-generated-man-section-options[]
+
+// end::picocli-generated-full-manpage[]

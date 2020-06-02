@@ -271,4 +271,25 @@ public class ManPageGeneratorTest {
             in.close();
         }
     }
+
+    @Test
+    public void testEndOfOptionsWithoutOptions() throws IOException {
+
+        @Command(name = "testEndOfOptionsWithoutOptions", showEndOfOptionsDelimiterInUsageHelp = true,
+                version = { "Versioned Command 1.0"},
+                description = "This app does great things.")
+        class MyApp {
+        }
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw); //System.out, true
+        ManPageGenerator.writeSingleManPage(pw, new CommandLine(new MyApp()).getCommandSpec());
+        pw.flush();
+
+
+        String expected = read("/testEndOfOptionsWithoutOptions.manpage.adoc");
+        expected = expected.replace("\r\n", "\n");
+        expected = expected.replace("\n", System.getProperty("line.separator"));
+        assertEquals(expected, sw.toString());
+    }
 }

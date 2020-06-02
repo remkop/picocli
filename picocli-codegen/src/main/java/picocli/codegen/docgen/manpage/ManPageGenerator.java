@@ -387,7 +387,7 @@ public class ManPageGenerator {
         List<ArgGroupSpec> groups = optionListGroups(spec);
         for (ArgGroupSpec group : groups) { options.removeAll(group.options()); }
 
-        if (options.isEmpty()) {
+        if (options.isEmpty() && !spec.usageMessage().showEndOfOptionsDelimiterInUsageHelp()) {
             return;
         }
         pw.printf("// tag::picocli-generated-man-section-options[]%n");
