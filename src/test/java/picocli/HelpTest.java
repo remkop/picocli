@@ -4520,7 +4520,8 @@ public class HelpTest {
                 "  yyy  subcommand yyy%n"), cmd.getUsageMessage());
     }
 
-    @Test //#1052
+    @Ignore("Needs synopsis customization for #983")
+    @Test //#983
     public void testCustomizeOptionListViaRenderer() {
         @Command
         class App {
@@ -4549,7 +4550,8 @@ public class HelpTest {
                 "  sub%n"), cmd.getUsageMessage());
     }
 
-    @Test //#1052
+    @Ignore("Needs synopsis customization for #983")
+    @Test //#983
     public void testCustomizeOptionListViaInheritance() {
         @Command
         class App {
@@ -4565,14 +4567,14 @@ public class HelpTest {
                     public Help create(CommandSpec commandSpec, ColorScheme colorScheme) {
                         return new Help(commandSpec, colorScheme) {
                             @Override
-                            public String optionListExcludingGroups(List<OptionSpec> options) {
+                            public String optionListExcludingGroups(List<OptionSpec> optionList, Layout layout, Comparator<OptionSpec> optionSort, IParamLabelRenderer valueLabelRenderer) {
                                 List<OptionSpec> shown = new ArrayList<OptionSpec>();
-                                for (OptionSpec option : options) {
+                                for (OptionSpec option : optionList) {
                                     if (!option.inherited() || option.shortestName().equals("-b")) {
                                         shown.add(option);
                                     }
                                 }
-                                return super.optionListExcludingGroups(shown);
+                                return super.optionListExcludingGroups(shown, layout, optionSort, valueLabelRenderer);
                             }
                         };
                     }
