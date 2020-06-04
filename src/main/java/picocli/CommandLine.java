@@ -14769,7 +14769,9 @@ public class CommandLine {
          * @param params the parameters to use to format the option list heading
          * @return the formatted option list heading */
         public String optionListHeading(Object... params) {
-            if (commandSpec.usageMessage().showEndOfOptionsDelimiterInUsageHelp() || !commandSpec.optionsMap().isEmpty()) {
+            boolean hasVisibleOption = false;
+            for (OptionSpec option : commandSpec.options()) { hasVisibleOption |= !option.hidden(); }
+            if (commandSpec.usageMessage().showEndOfOptionsDelimiterInUsageHelp() || hasVisibleOption) {
                 return createHeading(commandSpec.usageMessage().optionListHeading(), params);
             }
             return "";

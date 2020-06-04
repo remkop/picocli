@@ -4881,4 +4881,20 @@ public class HelpTest {
                 "      HIDDEN    hidden positional%n" +
                 "      VISIBLE   visible positional%n"), layout.toString());
     }
+
+    @Test
+    public void test1071OptionListHeadingWithOneHiddenOption() {
+        @Command(optionListHeading = "%nOptions:%n",
+                subcommands = {HelpCommand.class})
+        class MyTool {
+            @Option(names = { "--hidden" }, hidden = true)
+            String hidden = null;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [COMMAND]%n" +
+                "Commands:%n" +
+                "  help  Displays help information about the specified command%n");
+        String actual = new CommandLine(new MyTool()).getUsageMessage();
+        assertEquals(expected, actual);
+    }
 }
