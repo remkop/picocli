@@ -97,6 +97,7 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 
 ### Articles & Presentations
 #### English
+* [CLI applications with Micronaut and Picocli](https://dev.to/stack-labs/cli-applications-with-micronaut-and-picocli-4mc8) (2020-06-01) by [Λ\: Olivier Revial](https://twitter.com/pommeDouze).
 * [Building Native Covid19 Tracker CLI using Java, PicoCLI & GraalVM](https://aboullaite.me/java-covid19-cli-picocli-graalvm/) (2020-05-11) by [Mohammed Aboullaite](https://aboullaite.me/author/mohammed/).
 * [Creating CLI tools with Scala, Picocli and GraalVM](https://medium.com/@takezoe/creating-cli-tools-with-scala-picocli-and-graalvm-ffde05bbd01d) (2020-03-09) by [Naoki Takezoe](https://twitter.com/takezoen)
 * [Building native Java CLIs with GraalVM, Picocli, and Gradle](https://medium.com/@mitch.seymour/building-native-java-clis-with-graalvm-picocli-and-gradle-2e8a8388d70d) (2020-03-08) by [Mitch Seymour](https://medium.com/@mitch.seymour)
