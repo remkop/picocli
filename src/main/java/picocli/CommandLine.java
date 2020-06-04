@@ -14214,8 +14214,18 @@ public class CommandLine {
             Text positionalParamText = createDetailedSynopsisPositionalsText(argsInGroups);
             Text commandText = createDetailedSynopsisCommandText();
 
-            Text text = groupsText.concat(optionText).concat(endOfOptionsText).concat(positionalParamText).concat(commandText);
-
+            boolean positionalsOnly = true;
+            for (ArgGroupSpec group : commandSpec().argGroups()) {
+                if (group.validate()) { // non-validating groups are not shown in the synopsis
+                    positionalsOnly &= group.allOptionsNested().isEmpty();
+                }
+            }
+            Text text;
+            if (positionalsOnly) { // show end-of-options delimiter before the (all-positional params) groups
+                text = optionText.concat(endOfOptionsText).concat(groupsText).concat(positionalParamText).concat(commandText);
+            } else {
+                text = optionText.concat(groupsText).concat(endOfOptionsText).concat(positionalParamText).concat(commandText);
+            }
             return insertSynopsisCommandName(synopsisHeadingLength, text);
         }
 

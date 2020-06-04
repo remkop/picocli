@@ -1402,8 +1402,8 @@ public class ArgGroupTest {
             };
         }
         String expected = String.format("" +
-                "Usage: <main class> [[-a=<a> -b=<b> -c=<c>] | (-x=<x> | -y=<y>)] [-BCEF]%n" +
-                "                    [-A=<A>] [-D=<D>]%n" +
+                "Usage: <main class> [-BCEF] [-A=<A>] [-D=<D>] [[-a=<a> -b=<b> -c=<c>] | (-x=<x>%n" +
+                "                    | -y=<y>)]%n" +
                 "  -A=<A>%n" +
                 "  -B%n" +
                 "  -C%n" +
@@ -1570,10 +1570,10 @@ public class ArgGroupTest {
         CommandLine cmd = new CommandLine(app, new InnerClassFactory(this));
         String synopsis = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF)).synopsis(0);
         String expected = String.format("" +
-                "<main class> [[-a=<a> <f0> <f1>] [-a=<a> <f0> <f1>] | (-x=<x> | -y=<y>)]%n" +
-                "             [[-a=<a> <f0> <f1>] [-a=<a> <f0> <f1>] | (-x=<x> | -y=<y>)]%n" +
-                "             [[-a=<a> <f0> <f1>] [-a=<a> <f0> <f1>] | (-x=<x> | -y=<y>)] [-BC]%n" +
-                "             [-A=<A>]");
+                "<main class> [-BC] [-A=<A>] [[-a=<a> <f0> <f1>] [-a=<a> <f0> <f1>] | (-x=<x> |%n" +
+                "             -y=<y>)] [[-a=<a> <f0> <f1>] [-a=<a> <f0> <f1>] | (-x=<x> |%n" +
+                "             -y=<y>)] [[-a=<a> <f0> <f1>] [-a=<a> <f0> <f1>] | (-x=<x> |%n" +
+                "             -y=<y>)]");
         assertEquals(expected, synopsis.trim());
 
         try {
@@ -1679,8 +1679,8 @@ public class ArgGroupTest {
             };
         }
         String expected = String.format("" +
-                "Usage: <main class> [[-a=<a> <f0> <f1>] | (-x=<x> | -y=<y>)] [-BCEF] [-A=<A>]%n" +
-                "                    [-D=<D>] <f2>%n" +
+                "Usage: <main class> [-BCEF] [-A=<A>] [-D=<D>] [[-a=<a> <f0> <f1>] | (-x=<x> |%n" +
+                "                    -y=<y>)] <f2>%n" +
                 "      <f2>%n" +
                 "  -A=<A>%n" +
                 "  -B%n" +
@@ -1801,7 +1801,7 @@ public class ArgGroupTest {
         CommandLine cmd = new CommandLine(app);
 
         String synopsis = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF)).synopsis(0);
-        assertEquals("viewer (-a -d=<dataset> [-c=<container>] [-t=<type>])... [-f=<fallback>] <positional>", synopsis.trim());
+        assertEquals("viewer [-f=<fallback>] (-a -d=<dataset> [-c=<container>] [-t=<type>])... <positional>", synopsis.trim());
 
         ParseResult parseResult = cmd.parseArgs("-a", "-d", "data1", "-a", "-d=data2", "-c=contain2", "-t=typ2", "pos", "-a", "-d=data3", "-c=contain3");
         assertEquals("pos", parseResult.matchedPositionalValue(0, ""));
@@ -1863,7 +1863,7 @@ public class ArgGroupTest {
         CommandLine cmd = new CommandLine(app);
 
         String synopsis = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF)).synopsis(0);
-        assertEquals("viewer (-a -c=<container> -d=<dataset> -t=<type>)... [-f=<fallback>] <positional>", synopsis.trim());
+        assertEquals("viewer [-f=<fallback>] (-a -c=<container> -d=<dataset> -t=<type>)... <positional>", synopsis.trim());
 
         ParseResult parseResult = cmd.parseArgs("-a", "-d", "data1", "-c=contain1", "-t=typ1", "-a", "-d=data2", "-c=contain2", "-t=typ2", "pos", "-a", "-d=data3", "-c=contain3", "-t=type3");
         assertEquals("pos", parseResult.matchedPositionalValue(0, ""));
@@ -2250,7 +2250,7 @@ public class ArgGroupTest {
     public void testArgGroupHeaderLocalization() {
         CommandLine cmd = new CommandLine(new LocalizedCommand());
         String expected = String.format("" +
-                "Usage: ArgGroupsTest (-a | -b=<dataFile>) -q%n" +
+                "Usage: ArgGroupsTest -q (-a | -b=<dataFile>)%n" +
                 "  -q, --quiet      My description for option quiet%n" +
                 "My heading text%n" +
                 "  -a               My description for exclusive option a%n" +
@@ -2343,8 +2343,8 @@ public class ArgGroupTest {
     @Test
     public void testIssue722() {
         String expected = String.format("" +
-                "create (--level-1 <l1> (--level-2a <l2a>) (--level-2b <l2b> (--level-3a <l3a>)%n" +
-                "       (--level-3b <l3b>))) --level-0 <l0>%n");
+                "create --level-0 <l0> (--level-1 <l1> (--level-2a <l2a>) (--level-2b <l2b>%n" +
+                "       (--level-3a <l3a>) (--level-3b <l3b>)))%n");
 
         CommandLine cmd = new CommandLine(new Issue722.CreateCommand());
         Help help = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF));
@@ -2519,8 +2519,8 @@ public class ArgGroupTest {
     // https://github.com/remkop/picocli/issues/746
     public void testIssue746ArgGroupWithDefaultValuesSynopsis() {
         String expected = String.format("" +
-                "create [[--l1a=<l1a>] --l1b=<l1b> ([--l2a=<l2a>] --l2b=<l2b> (--l3a=<l3a>%n" +
-                "       [--l3b=<l3b>]))] [--l0=<l0>]%n");
+                "create [--l0=<l0>] [[--l1a=<l1a>] --l1b=<l1b> ([--l2a=<l2a>] --l2b=<l2b>%n" +
+                "       (--l3a=<l3a> [--l3b=<l3b>]))]%n");
 
         CommandLine cmd = new CommandLine(new Issue746.CreateCommand());
         Help help = new Help(cmd.getCommandSpec(), Help.defaultColorScheme(Help.Ansi.OFF));
@@ -3237,8 +3237,8 @@ public class ArgGroupTest {
 
         Execution execution = Execution.builder(supplier).execute("withMixin -h".split(" "));
         execution.assertSystemOut(String.format("" +
-                "Usage: <main class> withMixin [[-a -b] | (-x | -y)] [-hV] [-i=<anInt>]%n" +
-                "                              [-L=<aLong>]%n" +
+                "Usage: <main class> withMixin [-hV] [-i=<anInt>] [-L=<aLong>] [[-a -b] | (-x |%n" +
+                "                              -y)]%n" +
                 "  -a%n" +
                 "  -b%n" +
                 "  -h, --help      Show this help message and exit.%n" +
@@ -3257,8 +3257,8 @@ public class ArgGroupTest {
 
         Execution execution = Execution.builder(supplier).execute("posAndMixin -h".split(" "));
         execution.assertSystemOut(String.format("" +
-                "Usage: <main class> posAndMixin [[-a -b] | (-x | -y)] [-hV] [-i=<anInt>]%n" +
-                "                                [-L=<aLong>] [<arg0>...]%n" +
+                "Usage: <main class> posAndMixin [-hV] [-i=<anInt>] [-L=<aLong>] [[-a -b] | (-x%n" +
+                "                                | -y)] [<arg0>...]%n" +
                 "      [<arg0>...]%n" +
                 "  -a%n" +
                 "  -b%n" +
@@ -3278,8 +3278,9 @@ public class ArgGroupTest {
 
         Execution execution = Execution.builder(supplier).execute("posAndOptAndMixin -h".split(" "));
         execution.assertSystemOut(String.format("" +
-                "Usage: <main class> posAndOptAndMixin [[-a -b] | (-x | -y)] [-hV] [-i=<anInt>]%n" +
-                "                                      [-L=<aLong>] [-s=<arg1>]... [<arg0>...]%n" +
+                "Usage: <main class> posAndOptAndMixin [-hV] [-i=<anInt>] [-L=<aLong>]%n" +
+                "                                      [-s=<arg1>]... [[-a -b] | (-x | -y)]%n" +
+                "                                      [<arg0>...]%n" +
                 "      [<arg0>...]%n" +
                 "  -a%n" +
                 "  -b%n" +
@@ -3300,8 +3301,8 @@ public class ArgGroupTest {
 
         Execution execution = Execution.builder(supplier).execute("groupFirst -h".split(" "));
         execution.assertSystemOut(String.format("" +
-                "Usage: <main class> groupFirst [[-a -b] | (-x | -y)] [-hV] [-i=<anInt>]%n" +
-                "                               [-L=<aLong>] [-s=<arg3>]... [<arg2>...]%n" +
+                "Usage: <main class> groupFirst [-hV] [-i=<anInt>] [-L=<aLong>] [-s=<arg3>]...%n" +
+                "                               [[-a -b] | (-x | -y)] [<arg2>...]%n" +
                 "      [<arg2>...]%n" +
                 "  -a%n" +
                 "  -b%n" +
@@ -3809,5 +3810,45 @@ public class ArgGroupTest {
         assertEquals("<param1>", allPositionals.get(1).paramLabel());
         assertEquals("<param00>", allPositionals.get(2).paramLabel());
         assertEquals("<param01>", allPositionals.get(3).paramLabel());
+    }
+
+    @Test // #1061
+    public void testHelpForGroupWithPositionalsAndOptionsAndEndOfOptions() {
+        @Command(mixinStandardHelpOptions = true, showEndOfOptionsDelimiterInUsageHelp = true)
+        class Nested {
+            @ArgGroup(exclusive = false, multiplicity = "0..*")
+            List<Outer1027> outers;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [-hV] [-x <param0> <param1> [-y (<param00>%n" +
+                "                    <param01>)]...]... [--]%n" +
+                "      <param0>%n" +
+                "      <param00>%n" +
+                "      <param1>%n" +
+                "      <param01>%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "  -x%n" +
+                "  -y%n" +
+                "  --              This option can be used to separate command-line options from%n" +
+                "                    the list of positional parameters.%n");
+        assertEquals(expected, new CommandLine(new Nested()).getUsageMessage());
+    }
+
+    @Test // #1061
+    public void testHelpForGroupWithPositionalsAndEndOfOptions() {
+        @Command(mixinStandardHelpOptions = true, showEndOfOptionsDelimiterInUsageHelp = true)
+        class Group {
+            @ArgGroup InnerPositional1027 inner;
+        }
+        String expected = String.format("" +
+                "Usage: <main class> [-hV] [--] [<param00> | <param01>]%n" +
+                "      <param00>%n" +
+                "      <param01>%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "  --              This option can be used to separate command-line options from%n" +
+                "                    the list of positional parameters.%n");
+        assertEquals(expected, new CommandLine(new Group()).getUsageMessage());
     }
 }

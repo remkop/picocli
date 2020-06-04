@@ -92,6 +92,7 @@ When abbreviated options are enabled, user input `-AB` will match the long `-Aaa
 * [#1086] API: add methods `Help.Layout::addAllOptions` and `Help.Layout::addAllPositionals`, to show all specified options, including hidden ones.
 * [#1085] API: Add method `Help::optionSectionGroups` to get argument groups with a header.
 * [#1051][#1056] Enhancement: `GenerateCompletion` command no longer needs to be a direct subcommand of the root command. Thanks to [Philippe Charles](https://github.com/charphi) for the pull request.
+* [#1061] Enhancement: synopsis now shows non-group options before argument groups, for a more natural synopsis when groups contain only positional parameters.
 * [#1068] Enhancement: Make `ParserSpec::toString` output settings in alphabetic order.
 * [#1069] Enhancement: Debug output should show `optionsCaseInsensitive` and `subcommandsCaseInsensitive` settings.
 * [#1070] Enhancement: Code cleanup: removed redundant modifiers and initializations, unused variables, incorrect javadoc references, and more. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
@@ -112,7 +113,10 @@ When abbreviated options are enabled, user input `-AB` will match the long `-Aaa
 No features were deprecated in this release.
 
 ## <a name="4.4.0-breaking-changes"></a> Potential breaking changes
-This release has no breaking changes.
+This release changes the synopsis for commands with argument groups:
+the synopsis now shows the non-group options before argument groups, where previously argument groups were shown first.
+
+This gives a more natural synopsis when groups contain only positional parameters.
 
 
 # <a name="4.3.2"></a> Picocli 4.3.2
