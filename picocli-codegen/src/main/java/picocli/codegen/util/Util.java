@@ -32,9 +32,11 @@ public final class Util {
     }
 
     private static void addRecursively(CommandSpec command, IdentityHashMap<CommandSpec, CommandSpec> result) {
-        result.put(command, command);
-        for (CommandLine sub : command.subcommands().values()) {
-            addRecursively(sub.getCommandSpec(), result);
+        if (!command.usageMessage().hidden()) {
+            result.put(command, command);
+            for (CommandLine sub : command.subcommands().values()) {
+                addRecursively(sub.getCommandSpec(), result);
+            }
         }
     }
 
