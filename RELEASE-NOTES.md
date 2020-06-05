@@ -104,6 +104,7 @@ When abbreviated options are enabled, user input `-AB` will match the long `-Aaa
 * [#1067] Bugfix: `ParserSpec::initFrom` was not copying `useSimplifiedAtFiles`.
 * [#1054] Bugfix: option-parameter gets lost in Argument Groups. Thanks to [waacc-gh](https://github.com/waacc-gh) for raising this.
 * [#1072] Bugfix: Mixin `UsageMessageSpec::width` and `UsageMessageSpec::longOptionsMaxWidth` is no longer ignored.
+* [#1100] Bugfix: The factory of the original `CommandSpec` is now correctly used in the `CommandSpec` copy for repeatable subcommands. Thanks to [Michael Kunz](https://github.com/protogenes) for the pull request.
 * [#1058][#1059] DOC: Man page generator: fix incorrect asciidoctor call in synopsis.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1058][#1060] DOC: Man page generator: add documentation about creating language variants.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1073] DOC: Improve user manual: fix typos, update content. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
