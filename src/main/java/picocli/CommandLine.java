@@ -5753,7 +5753,7 @@ public class CommandLine {
 
             private CommandSpec copy() {
                 Object obj = userObject.type == null ? userObject.instance : userObject.type;
-                CommandSpec result = obj == null ? CommandSpec.create() : CommandSpec.forAnnotatedObject(obj);
+                CommandSpec result = obj == null ? CommandSpec.create() : CommandSpec.forAnnotatedObject(obj, userObject.factory);
                 result.commandLine = commandLine;
                 result.parent = parent;
                 result.methodParams = methodParams;
