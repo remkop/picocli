@@ -292,4 +292,69 @@ public class ManPageGeneratorTest {
         expected = expected.replace("\n", System.getProperty("line.separator"));
         assertEquals(expected, sw.toString());
     }
+
+    @Command(name = "top-level-command", description = "example top-level command",
+            mixinStandardHelpOptions = true)
+    static class Top {
+        @Option(names = {"-x", "--long-option"}, description = "Some example option")
+        int x;
+
+        @Command(description = "Example hidden subcommand", hidden = true, mixinStandardHelpOptions = true)
+        void hidden() {
+        }
+
+        @Command(description = "Example visible subcommand", mixinStandardHelpOptions = true)
+        void visible() {
+        }
+
+        @Command(description = "Example subcommand",
+                mixinStandardHelpOptions = true,
+                subcommands = ManPageGenerator.class)
+        void subcommand() {
+        }
+    }
+
+    @Test
+    public void testManPageGeneratorAsSubcommandHelp() {
+        StringWriter sw = new StringWriter();
+        new CommandLine(new Top()).setOut(new PrintWriter(sw, true))
+                .execute("subcommand", "gen-manpage", "--help");
+        String expected = String.format("" +
+                "Usage: top-level-command subcommand gen-manpage [-fhVv] [-d=<outdir>] [-t=<template-dir>]%n" +
+                "                                                [@<filename>...]%n" +
+                "Generates one or more AsciiDoc files with doctype 'manpage' in the specified directory.%n" +
+                "      [@<filename>...]    One or more argument files containing options.%n" +
+                "  -d, --outdir=<outdir>   Output directory to write the generated AsciiDoc files to. If not%n" +
+                "                            specified, files are written to the current directory.%n" +
+                "  -t, --template-dir=<template-dir>%n" +
+                "                          Optional directory to write customizable man page template files. If%n" +
+                "                            specified, an additional \"template\" file is created here for each%n" +
+                "                            generated manpage AsciiDoc file.%n" +
+                "                          Each template file contains `include` directives that import content from%n" +
+                "                            the corresponding generated manpage AsciiDoc file in the `--outdir`%n" +
+                "                            directory. Text can be added after each include to customize the%n" +
+                "                            resulting man page. The resulting man page will be a mixture of%n" +
+                "                            generated and manually edited text.%n" +
+                "                          These customizable templates are intended to be generated once, and%n" +
+                "                            afterwards be manually updated and maintained.%n" +
+                "  -v, --verbose           Specify multiple -v options to increase verbosity.%n" +
+                "                          For example, `-v -v -v` or `-vvv`%n" +
+                "  -f, --[no-]force        Overwrite existing man page templates. The default is `--no-force`,%n" +
+                "                            meaning processing is aborted and the process exits with status code 4%n" +
+                "                            if a man page template file already exists.%n" +
+                "  -h, --help              Show this help message and exit.%n" +
+                "  -V, --version           Print version information and exit.%n" +
+                "%n" +
+                "Converting to Man Page Format%n" +
+                "%n" +
+                "Use the `asciidoctor` tool to convert the generated AsciiDoc files to man pages in roff format:%n" +
+                "%n" +
+                "`asciidoctor --backend=manpage --source-dir=SOURCE_DIR --destination-dir=DESTINATION *.adoc`%n" +
+                "%n" +
+                "Point the SOURCE_DIR to either the `--outdir` directory or the `--template-dir` directory. Use some%n" +
+                "other directory as the DESTINATION.%n" +
+                "See https://asciidoctor.org/docs/user-manual/#man-pages%n" +
+                "See http://man7.org/linux/man-pages/man7/roff.7.html%n");
+        assertEquals(expected, sw.toString());
+    }
 }
