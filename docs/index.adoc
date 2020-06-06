@@ -3484,6 +3484,12 @@ Example command.
   -V, --version         Print version information and exit.
 ----
 
+The description of the `@<filename>` entry can also be specified in a <<Internationalization,resource bundle>> for internationalization and localization.
+The `descriptionKey` for the `@<filename>` entry in resource bundles is:
+
+* `picocli.atfile`
+
+
 === Show End of Options
 
 From picocli 4.3, an entry for the `--` <<Double dash (`--`),End of Options delimiter>> can be shown in the options list of the usage help message of a command with the `@Command(showEndOfOptionsDelimiterInUsageHelp = true)` annotation.
@@ -3579,6 +3585,12 @@ Example command.
   -V, --version   Print version information and exit.
   --              End of options. Remainder are positional parameters.
 ----
+
+
+The description of the End of Options delimiter entry can also be specified in a <<Internationalization,resource bundle>> for internationalization and localization.
+The `descriptionKey` for the End of Options delimiter entry in resource bundles is:
+
+* `picocli.endofoptions`
 
 === Show Default Values
 ==== `${DEFAULT-VALUE}` Variable
@@ -5307,10 +5319,19 @@ help = Show this help message and exit.
 version = Print version information and exit.
 
 # Exit Code Description
+# ---------------------
 usage.exitCodeListHeading = Exit Codes:%n
 usage.exitCodeList.0 = \u00200:Successful program execution. (notice leading space '\u0020')
 usage.exitCodeList.1 = 64:Usage error: user input for the command was incorrect.
 usage.exitCodeList.2 = 70:An exception occurred when invoking the business logic of this command.
+
+# @file Description
+# -----------------
+picocli.atfile=One or more argument files containing options, commands and positional parameters.
+
+# End-of-Options (--) Delimiter Description
+# -----------------------------------------
+picocli.endofoptions = Separates options from positional parameters.
 ----
 
 For options and positional parameters, the optional annotation attribute `descriptionKey` can be used to localize the description. For example:

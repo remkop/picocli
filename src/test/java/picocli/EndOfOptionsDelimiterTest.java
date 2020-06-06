@@ -106,6 +106,7 @@ public class EndOfOptionsDelimiterTest {
 
     public static class MyResourceBundle extends ListResourceBundle {
         protected Object[][] getContents() {
+            /** See {@link picocli.CommandLine.Help#END_OF_OPTIONS_OPTION} for the keys. */
             return new Object[][] {
                     {"picocli.endofoptions", "hi! I am the -- end-of-options description from a file"},
                     //{"picocli.endofoptions.description", "BUNDLE -- DESCRIPTION"},
