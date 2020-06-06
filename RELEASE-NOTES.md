@@ -108,7 +108,7 @@ To use the `ManPageGenerator` tool as a subcommand, you will need the `picocli-c
 * [#1085] API: Add method `Help::optionSectionGroups` to get argument groups with a header.
 * [#1101] API: Add method `Help::createDetailedSynopsisOptionsText` to specify which options to show in the synopsis.
 * [#1061] API: Add method `Help::makeSynopsisFromParts` for building complex synopsis strings; synopsis now shows non-group options before argument groups, for a more natural synopsis when groups contain only positional parameters.
-* [#983] API: Allow making inherited options hidden on subcommands.
+* [#983] Allow making inherited options hidden on subcommands. This can now be accomplished with the new `Help` methods by providing a custom option list and customizing the synopsis.
 * [#1051][#1056] Enhancement: `GenerateCompletion` command no longer needs to be a direct subcommand of the root command. Thanks to [Philippe Charles](https://github.com/charphi) for the pull request.
 * [#1068] Enhancement: Make `ParserSpec::toString` output settings in alphabetic order.
 * [#1069] Enhancement: Debug output should show `optionsCaseInsensitive` and `subcommandsCaseInsensitive` settings.
