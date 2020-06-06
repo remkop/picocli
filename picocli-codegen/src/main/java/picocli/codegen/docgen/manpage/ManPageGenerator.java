@@ -344,8 +344,9 @@ public class ManPageGenerator implements Callable<Integer> {
     }
 
     private static String makeFileName(CommandSpec spec) {
-        String result = spec.qualifiedName("-") + ".adoc";
-        return result.replaceAll("\\s", "_");
+        return (spec.qualifiedName("-") + ".adoc")
+                .replaceAll("\\s", "_")
+                .replace("<main_class>", "main_class");
     }
 
     private static void generateSingleManPage(CommandSpec spec, File manpage) throws IOException {

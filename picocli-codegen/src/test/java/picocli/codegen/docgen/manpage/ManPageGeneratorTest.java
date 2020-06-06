@@ -16,10 +16,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import static org.junit.Assert.*;
 
@@ -428,4 +428,71 @@ public class ManPageGeneratorTest {
             }
         }
     }
+
+    @Command(subcommands = { ManPageGenerator.class})
+    static class Nameless implements Callable<Integer> {
+
+         @Parameters(index = "0")
+         private File file;
+
+        public static void main(String... args) throws Exception {
+            CommandLine cmd = new CommandLine(new Nameless());
+            System.exit(cmd.execute(args));
+        }
+
+        @Override
+        public Integer call() throws Exception {
+            return 0;
+        }
+    }
+
+    @Test
+    public void testNamelessCommand() throws IOException {
+        File outdir = new File(System.getProperty("java.io.tmpdir"), "manpage" + System.currentTimeMillis());
+        outdir.mkdir();
+        File templateDir = new File(outdir, "templates");
+        int exitCode = new CommandLine(new Nameless())
+                .execute("gen-manpage", /*"-vv",*/ "--outdir=" + outdir, "--template-dir=" + templateDir);
+        try {
+            assertEquals(0, exitCode);
+
+            //System.out.println(Arrays.asList(templateDir.listFiles()));
+            //System.out.println(Arrays.asList(outdir.listFiles()));
+
+            String[] files = new String[] {
+                    "main_class.adoc", //
+                    "main_class-gen-manpage.adoc"
+            };
+
+            for (String f : files) {
+                String expected = read("/manpagegenerator/templates/" + f);
+                String actual = readAndClose(new FileInputStream(new File(templateDir, f)));
+
+                expected = expected.replace("$OUTDIR", outdir.getAbsolutePath().replace('\\', '/'));
+                assertEquals("/manpagegenerator/templates/" + f, expected, actual);
+            }
+
+            for (String f : files) {
+                String expected = read("/manpagegenerator/" + f);
+                String actual = readAndClose(new FileInputStream(new File(outdir, f)));
+
+                expected = expected.replace("$VERSION", CommandLine.VERSION);
+                assertEquals("/manpagegenerator/" + f, expected, actual);
+            }
+
+        } finally {
+            for (File f : templateDir.listFiles()) {
+                f.delete();
+            }
+            try {
+                assertTrue(templateDir.getAbsolutePath(), templateDir.delete());
+            } finally {
+                for (File f : outdir.listFiles()) {
+                    f.delete();
+                }
+                assertTrue(outdir.getAbsolutePath(), outdir.delete());
+            }
+        }
+    }
+
 }

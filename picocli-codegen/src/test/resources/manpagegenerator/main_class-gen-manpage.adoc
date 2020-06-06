@@ -1,0 +1,86 @@
+// tag::picocli-generated-full-manpage[]
+// tag::picocli-generated-man-section-header[]
+:doctype: manpage
+:revnumber: <main class> gen-manpage 4.3.3-SNAPSHOT
+:manmanual: <main class> Manual
+:mansource: <main class> gen-manpage 4.3.3-SNAPSHOT
+:man-linkstyle: pass:[blue R < >]
+= <main class>-gen-manpage(1)
+
+// end::picocli-generated-man-section-header[]
+
+// tag::picocli-generated-man-section-name[]
+== Name
+
+<main class>-gen-manpage - Generates man pages for all commands in the specified directory.
+
+// end::picocli-generated-man-section-name[]
+
+// tag::picocli-generated-man-section-synopsis[]
+== Synopsis
+
+*<main class> gen-manpage* [*-fhVv*] [*-d*=_<outdir>_] [*-t*=_<template-dir>_] [_@<filename>_...]
+
+// end::picocli-generated-man-section-synopsis[]
+
+// tag::picocli-generated-man-section-description[]
+== Description
+
+Generates man pages for all commands in the specified directory.
+
+// end::picocli-generated-man-section-description[]
+
+// tag::picocli-generated-man-section-options[]
+== Options
+
+*-d*, *--outdir*=_<outdir>_::
+  Output directory to write the generated AsciiDoc files to. If not specified, files are written to the current directory.
+
+*-t*, *--template-dir*=_<template-dir>_::
+  Optional directory to write customizable man page template files. If specified, an additional "template" file is created here for each generated manpage AsciiDoc file. 
++
+Each template file contains `include` directives that import content from the corresponding generated manpage AsciiDoc file in the `--outdir` directory. Text can be added after each include to customize the resulting man page. The resulting man page will be a mixture of generated and manually edited text.
++
+These customizable templates are intended to be generated once, and afterwards be manually updated and maintained.
+
+*-v*, *--verbose*::
+  Specify multiple -v options to increase verbosity.
++
+For example, `-v -v -v` or `-vvv`
+
+*-f*, *--[no-]force*::
+  Overwrite existing man page templates. The default is `--no-force`, meaning processing is aborted and the process exits with status code 4 if a man page template file already exists.
+
+*-h*, *--help*::
+  Show this help message and exit.
+
+*-V*, *--version*::
+  Print version information and exit.
+
+// end::picocli-generated-man-section-options[]
+
+// tag::picocli-generated-man-section-arguments[]
+== Arguments
+
+[_@<filename>_...]::
+  One or more argument files containing options.
+
+// end::picocli-generated-man-section-arguments[]
+
+// tag::picocli-generated-man-section-footer[]
+==  Converting to Man Page Format 
+
+[%hardbreaks]
+Use the `asciidoctor` tool to convert the generated AsciiDoc files to man pages in roff format:
+
+[%hardbreaks]
+`asciidoctor --backend=manpage --source-dir=SOURCE_DIR --destination-dir=DESTINATION *.adoc`
+
+[%hardbreaks]
+Point the SOURCE_DIR to either the `--outdir` directory or the `--template-dir` directory. Use some other directory as the DESTINATION.
+See https://asciidoctor.org/docs/user-manual/#man-pages
+See http://man7.org/linux/man-pages/man7/roff.7.html
+
+// end::picocli-generated-man-section-footer[]
+
+// end::picocli-generated-full-manpage[]
