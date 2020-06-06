@@ -106,8 +106,10 @@ To use the `ManPageGenerator` tool as a subcommand, you will need the `picocli-c
 * [#1087] API: Add methods `ArgumentGroupSpec::allOptionsNested` and `ArgumentGroupSpec::allPositionalParametersNested`.
 * [#1086] API: add methods `Help.Layout::addAllOptions` and `Help.Layout::addAllPositionals`, to show all specified options, including hidden ones.
 * [#1085] API: Add method `Help::optionSectionGroups` to get argument groups with a header.
+* [#1101] API: Add method `Help::createDetailedSynopsisOptionsText` to specify which options to show in the synopsis.
+* [#1061] API: Add method `Help::makeSynopsisFromParts` for building complex synopsis strings; synopsis now shows non-group options before argument groups, for a more natural synopsis when groups contain only positional parameters.
+* [#983] API: Allow making inherited options hidden on subcommands.
 * [#1051][#1056] Enhancement: `GenerateCompletion` command no longer needs to be a direct subcommand of the root command. Thanks to [Philippe Charles](https://github.com/charphi) for the pull request.
-* [#1061] Enhancement: synopsis now shows non-group options before argument groups, for a more natural synopsis when groups contain only positional parameters.
 * [#1068] Enhancement: Make `ParserSpec::toString` output settings in alphabetic order.
 * [#1069] Enhancement: Debug output should show `optionsCaseInsensitive` and `subcommandsCaseInsensitive` settings.
 * [#1070] Enhancement: Code cleanup: removed redundant modifiers and initializations, unused variables, incorrect javadoc references, and more. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.

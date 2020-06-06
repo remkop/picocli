@@ -59,11 +59,14 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -74,6 +77,8 @@ import static org.junit.Assert.*;
 import static picocli.CommandLine.Help.Visibility.ALWAYS;
 import static picocli.CommandLine.Help.Visibility.NEVER;
 import static picocli.CommandLine.Help.Visibility.ON_DEMAND;
+import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_OPTION_LIST;
+import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_SYNOPSIS;
 import static picocli.CommandLine.ScopeType.INHERIT;
 import static picocli.TestUtil.textArray;
 import static picocli.TestUtil.usageString;
@@ -4520,7 +4525,6 @@ public class HelpTest {
                 "  yyy  subcommand yyy%n"), cmd.getUsageMessage());
     }
 
-    @Ignore("Needs synopsis customization for #983")
     @Test //#983
     public void testCustomizeOptionListViaRenderer() {
         @Command
@@ -4532,25 +4536,94 @@ public class HelpTest {
             @Command void sub() {}
         }
 
-        IHelpSectionRenderer renderer = new IHelpSectionRenderer() {
+        IHelpSectionRenderer optionListRenderer = new IHelpSectionRenderer() {
             public String render(Help help) {
                 List<OptionSpec> options = new ArrayList<OptionSpec>(help.commandSpec().options());
                 options.remove(help.commandSpec().findOption("-b"));
                 return help.optionListExcludingGroups(options);
             }
         };
+        IHelpSectionRenderer synopsisRenderer = new IHelpSectionRenderer() {
+            public String render(Help help) {
+                List<OptionSpec> options = new ArrayList<OptionSpec>(help.commandSpec().options());
+                options.remove(help.commandSpec().findOption("-b"));
+
+                Set<ArgSpec> argsInGroups = new HashSet<ArgSpec>();
+                Text groupsText = help.createDetailedSynopsisGroupsText(argsInGroups);
+                Text optionText = help.createDetailedSynopsisOptionsText(argsInGroups, options, Help.createShortOptionArityAndNameComparator(), true);
+                Text endOfOptionsText = help.createDetailedSynopsisEndOfOptionsText();
+                Text positionalParamText = help.createDetailedSynopsisPositionalsText(argsInGroups);
+                Text commandText = help.createDetailedSynopsisCommandText();
+
+                return help.makeSynopsisFromParts(help.synopsisHeadingLength(), optionText, groupsText, endOfOptionsText, positionalParamText, commandText);
+            }
+        };
 
         CommandLine cmd = new CommandLine(new App());
-        cmd.getHelpSectionMap().put(UsageMessageSpec.SECTION_KEY_OPTION_LIST, renderer);
+        cmd.getHelpSectionMap().put(UsageMessageSpec.SECTION_KEY_OPTION_LIST, optionListRenderer);
+        cmd.getHelpSectionMap().put(UsageMessageSpec.SECTION_KEY_SYNOPSIS, synopsisRenderer);
         assertEquals(String.format("" +
-                "Usage: <main class> [-ac] [COMMAND]%n" + // TODO synopsis abc
+                "Usage: <main class> [-ac] [COMMAND]%n" +
                 "  -a     a option%n" +
                 "  -c     c option%n" +
                 "Commands:%n" +
                 "  sub%n"), cmd.getUsageMessage());
     }
 
-    @Ignore("Needs synopsis customization for #983")
+    @Test //#983
+    public void testCustomizeSubcommandsOptionListViaRenderer() {
+        @Command
+        class App {
+            @Option(names = "-a", scope = INHERIT, description = "a option") boolean a;
+            @Option(names = "-b", scope = INHERIT, description = "b option") boolean b;
+            @Option(names = "-c", scope = INHERIT, description = "c option") boolean c;
+
+            @Command(description = "This is the `sub` subcommand...")
+            void sub() {}
+        }
+
+        IHelpSectionRenderer optionListRenderer = new IHelpSectionRenderer() {
+            public String render(Help help) {
+                return help.optionListExcludingGroups(filter(help.commandSpec().options()));
+            }
+        };
+        IHelpSectionRenderer synopsisRenderer = new IHelpSectionRenderer() {
+            public String render(Help help) {
+                List<OptionSpec> options = filter(help.commandSpec().options());
+
+                Set<ArgSpec> argsInGroups = new HashSet<ArgSpec>();
+                Text groupsText = help.createDetailedSynopsisGroupsText(argsInGroups);
+                Text optionText = help.createDetailedSynopsisOptionsText(argsInGroups, options, Help.createShortOptionArityAndNameComparator(), true);
+                Text endOfOptionsText = help.createDetailedSynopsisEndOfOptionsText();
+                Text positionalParamText = help.createDetailedSynopsisPositionalsText(argsInGroups);
+                Text commandText = help.createDetailedSynopsisCommandText();
+
+                return help.makeSynopsisFromParts(help.synopsisHeadingLength(), optionText, groupsText, endOfOptionsText, positionalParamText, commandText);
+            }
+        };
+
+        CommandLine cmd = new CommandLine(new App());
+        for (CommandLine sub : cmd.getSubcommands().values()) {
+            sub.getHelpSectionMap().put(SECTION_KEY_OPTION_LIST, optionListRenderer);
+            sub.getHelpSectionMap().put(SECTION_KEY_SYNOPSIS, synopsisRenderer);
+        }
+        String expectedSub = String.format("" +
+                "Usage: <main class> sub [-b]%n" +
+                "This is the `sub` subcommand...%n" +
+                "  -b     b option%n");
+        String actualSub = cmd.getSubcommands().get("sub").getUsageMessage(CommandLine.Help.Ansi.OFF);
+        assertEquals(expectedSub, actualSub);
+    }
+    private static List<OptionSpec> filter(List<OptionSpec> optionList) {
+        List<OptionSpec> shown = new ArrayList<OptionSpec>();
+        for (OptionSpec option : optionList) {
+            if (!option.inherited() || option.shortestName().equals("-b")) {
+                shown.add(option);
+            }
+        }
+        return shown;
+    }
+
     @Test //#983
     public void testCustomizeOptionListViaInheritance() {
         @Command
@@ -4568,20 +4641,29 @@ public class HelpTest {
                         return new Help(commandSpec, colorScheme) {
                             @Override
                             public String optionListExcludingGroups(List<OptionSpec> optionList, Layout layout, Comparator<OptionSpec> optionSort, IParamLabelRenderer valueLabelRenderer) {
+                                return super.optionListExcludingGroups(filter(optionList), layout, optionSort, valueLabelRenderer);
+                            }
+
+                            @Override
+                            protected Text createDetailedSynopsisOptionsText(Collection<ArgSpec> done, List<OptionSpec> optionList, Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions) {
+                                return super.createDetailedSynopsisOptionsText(done, filter(optionList), optionSort, clusterBooleanOptions);
+                            }
+
+                            private List<OptionSpec> filter(List<OptionSpec> optionList) {
                                 List<OptionSpec> shown = new ArrayList<OptionSpec>();
                                 for (OptionSpec option : optionList) {
                                     if (!option.inherited() || option.shortestName().equals("-b")) {
                                         shown.add(option);
                                     }
                                 }
-                                return super.optionListExcludingGroups(shown, layout, optionSort, valueLabelRenderer);
+                                return shown;
                             }
                         };
                     }
                 });
         String actual = cmd.getSubcommands().get("sub").getUsageMessage();
         assertEquals(String.format("" +
-                "Usage: <main class> sub [-b]%n" + // TODO synopsis -abc
+                "Usage: <main class> sub [-b]%n" +
                 "This is the `sub` subcommand...%n" +
                 "  -b     b option%n"), actual);
     }
