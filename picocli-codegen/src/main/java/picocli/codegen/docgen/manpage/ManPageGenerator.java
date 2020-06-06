@@ -9,6 +9,7 @@ import picocli.CommandLine.Help.ColorScheme;
 import picocli.CommandLine.Help.IOptionRenderer;
 import picocli.CommandLine.Help.IParamLabelRenderer;
 import picocli.CommandLine.Help.IParameterRenderer;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Model.ArgGroupSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.IOrdered;
@@ -16,6 +17,7 @@ import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.Spec;
 import picocli.codegen.util.Assert;
 import picocli.codegen.util.Util;
 
@@ -28,6 +30,42 @@ import java.util.concurrent.Callable;
 
 import static java.lang.String.format;
 
+/**
+ * Generates AsciiDoc files in a special format that can be converted to HTML, PDF and Unix Man pages.
+ * <p>
+ *  This class can be used as a subcommand, in which case it generates man pages for all
+ *  non-hidden commands in the hierarchy from the top-level command down,
+ *  or it can be executed as a stand-alone tool, in which case the user needs to specify
+ *  the {@code @Command}-annotated classes to generate man pages for.
+ * </p>
+ */
+@Command(name = "gen-manpage",
+        version = "${COMMAND-FULL-NAME} " + CommandLine.VERSION,
+        showAtFileInUsageHelp = true,
+        mixinStandardHelpOptions = true,
+        sortOptions = false,
+        usageHelpAutoWidth = true,
+        usageHelpWidth = 100,
+        description = {"Generates one or more AsciiDoc files with doctype 'manpage' in the specified directory."},
+        //exitCodeListHeading = "%nExit Codes (if enabled with `--exit`)%n",
+        //exitCodeList = {
+        //        "0:Successful program execution.",
+        //        "1:A runtime exception occurred while generating man pages.",
+        //        "2:Usage error: user input for the command was incorrect, " +
+        //                "e.g., the wrong number of arguments, a bad flag, " +
+        //                "a bad syntax in a parameter, etc.",
+        //        "4:A template file exists in the template directory. (Remove the `--template-dir` option or use `--force` to overwrite.)"
+        //},
+        footerHeading = "%nConverting to Man Page Format%n%n",
+        footer = {"Use the `asciidoctor` tool to convert the generated AsciiDoc files to man pages in roff format:",
+                "",
+                "`asciidoctor --backend=manpage --source-dir=SOURCE_DIR --destination-dir=DESTINATION *.adoc`",
+                "",
+                "Point the SOURCE_DIR to either the `--outdir` directory or the `--template-dir` directory. Use some other directory as the DESTINATION.",
+                "See https://asciidoctor.org/docs/user-manual/#man-pages",
+                "See http://man7.org/linux/man-pages/man7/roff.7.html",
+        }
+)
 public class ManPageGenerator {
     static final int EXIT_CODE_TEMPLATE_EXISTS = 4;
 
@@ -45,6 +83,29 @@ public class ManPageGenerator {
     };
     static final ColorScheme COLOR_SCHEME = new ColorScheme.Builder(CommandLine.Help.Ansi.ON).
             commands(BOLD).options(BOLD).optionParams(ITALIC).parameters(ITALIC).customMarkupMap(createMarkupMap()).build();
+
+    @Mixin Config config;
+    @Spec CommandSpec spec;
+
+    /**
+     * Invokes {@link #generateManPage(Config, CommandSpec...)} to generate man pages for
+     * all non-hidden commands in the hierarchy from the top-level command down.
+     * This method is only called when this class is used as a subcommand.
+     * @return an exit code indicating success or failure, as follows:
+     *         <ul>
+     *         <li>0: Successful program execution.</li>
+     *         <li>1: A runtime exception occurred while generating man pages.</li>
+     *         <li>2: Usage error: user input for the command was incorrect,
+     *                e.g., the wrong number of arguments, a bad flag,
+     *                a bad syntax in a parameter, etc.</li>
+     *         <li>4: A template file exists in the template directory. (Remove the `--template-dir` option or use `--force` to overwrite.)</li>
+     *         </ul>
+     * @throws IOException if a problem occurred writing files.
+     */
+    public Integer call() throws IOException {
+        List<CommandSpec> specs = Util.flattenHierarchy(spec.root());
+        return generateManPage(config, specs.toArray(new CommandSpec[0]));
+    }
 
     private static Map<String, IStyle> createMarkupMap() {
         Map<String, IStyle> result = new HashMap<String, IStyle>();
@@ -135,7 +196,7 @@ public class ManPageGenerator {
         @Parameters(arity = "1..*", description = "One or more command classes to generate man pages for.")
         Class<?>[] classes = new Class<?>[0];
 
-        @CommandLine.Mixin Config config;
+        @Mixin Config config;
 
         @Option(names = {"-c", "--factory"}, description = "Optionally specify the fully qualified class name of the custom factory to use to instantiate the command class. " +
                 "If omitted, the default picocli factory is used.")
@@ -152,6 +213,24 @@ public class ManPageGenerator {
         }
     }
 
+    /**
+     * Invokes {@link #generateManPage(Config, CommandSpec...)} to generate man pages for
+     * the user-specified {@code @Command}-annotated classes.
+     * <p>
+     *     If the {@code --exit} option is specified, {@code System.exit} is invoked
+     *     afterwards with an exit code as follows:
+     * </p>
+     * <ul>
+     * <li>0: Successful program execution.</li>
+     * <li>1: A runtime exception occurred while generating man pages.</li>
+     * <li>2: Usage error: user input for the command was incorrect,
+     *        e.g., the wrong number of arguments, a bad flag,
+     *        a bad syntax in a parameter, etc.</li>
+     * <li>4: A template file exists in the template directory. (Remove the `--template-dir` option or use `--force` to overwrite.)</li>
+     * </ul>
+     * @param args command line arguments to be parsed. Must include the classes to
+     *             generate man pages for.
+     */
     public static void main(String[] args) {
         App app = new App();
         int exitCode = new CommandLine(app).execute(args);
@@ -160,6 +239,21 @@ public class ManPageGenerator {
         }
     }
 
+    /**
+     * Generates AsciiDoc files for the specified classes to the specified output directory,
+     * optionally also generating template files in the {@code customizablePagesDirectory} directory.
+     * @param outdir Output directory to write the generated AsciiDoc files to.
+     * @param customizablePagesDirectory Optional directory to write customizable man page template files.
+     *                                 If non-{@code null}, an additional "template" file is created here for each
+     *                                 generated manpage AsciiDoc file.
+     * @param verbosity the length of this array determines verbosity during processing
+     * @param overwriteCustomizablePages Overwrite existing man page templates.
+     *                         The default is false, meaning processing is aborted and the process exits
+     *                         with status code 4 if a man page template file already exists.
+     * @param specs the Commands to generate AsciiDoc man pages for
+     * @return the exit code
+     * @throws IOException if a problem occurred writing to the file system
+     */
     public static int generateManPage(File outdir,
                                       File customizablePagesDirectory,
                                       boolean[] verbosity,
