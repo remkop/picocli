@@ -14214,6 +14214,22 @@ public class CommandLine {
             Text positionalParamText = createDetailedSynopsisPositionalsText(argsInGroups);
             Text commandText = createDetailedSynopsisCommandText();
 
+            return makeSynopsisFromParts(synopsisHeadingLength, optionText, groupsText, endOfOptionsText, positionalParamText, commandText);
+        }
+
+        /**
+         * Concatenates the command name and the specified synopsis parts and returns a fully rendered synopsis String.
+         * @param synopsisHeadingLength length of the synopsis heading string to be displayed on the same line as the first synopsis line.
+         *                              For example, if the synopsis heading is {@code "Usage: "}, this value is 7.
+         * @param optionText the Ansi.Text object with the rendered options list (excluding the argument groups)
+         * @param groupsText the Ansi.Text object showing the rendered argument groups
+         * @param endOfOptionsText the Ansi.Text object containing the end of options delimiter (if enabled)
+         * @param positionalParamText the Ansi.Text object showing the rendered positional parameters
+         * @param commandText the Ansi.Text object showing the subcommands part of the synopsis
+         * @return a fully rendered synopsis String
+         * @since 4.4
+         */
+        protected String makeSynopsisFromParts(int synopsisHeadingLength, Text optionText, Text groupsText, Text endOfOptionsText, Text positionalParamText, Text commandText) {
             boolean positionalsOnly = true;
             for (ArgGroupSpec group : commandSpec().argGroups()) {
                 if (group.validate()) { // non-validating groups are not shown in the synopsis
@@ -14252,8 +14268,19 @@ public class CommandLine {
          * @return the formatted options, starting with a {@code " "} space, or an empty Text if this command has no named options
          * @since 3.9 */
         protected Text createDetailedSynopsisOptionsText(Collection<ArgSpec> done, Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions) {
+            return createDetailedSynopsisOptionsText(done, commandSpec.options(), optionSort, clusterBooleanOptions);
+        }
+        /** Returns a Text object containing a partial detailed synopsis showing only the specified options, starting with a {@code " "} space.
+         * Follows the unix convention of showing optional options and parameters in square brackets ({@code [ ]}).
+         * @param done the list of options and positional parameters for which a synopsis was already generated. Options in this set should be excluded.
+         * @param optionList the list of options to include in the synopsis
+         * @param optionSort comparator to sort options or {@code null} if options should not be sorted
+         * @param clusterBooleanOptions {@code true} if boolean short options should be clustered into a single string
+         * @return the formatted options, starting with a {@code " "} space, or an empty Text if this command has no named options
+         * @since 4.4 */
+        protected Text createDetailedSynopsisOptionsText(Collection<ArgSpec> done, List<OptionSpec> optionList, Comparator<OptionSpec> optionSort, boolean clusterBooleanOptions) {
             Text optionText = ansi().new Text(0);
-            List<OptionSpec> options = new ArrayList<OptionSpec>(commandSpec.options()); // iterate in declaration order
+            List<OptionSpec> options = new ArrayList<OptionSpec>(optionList); // iterate in declaration order
             if (optionSort != null) {
                 Collections.sort(options, optionSort);// iterate in specified sort order
             }
