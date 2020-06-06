@@ -6497,6 +6497,18 @@ The man pages for the picocli built-in tools were created with this tool:
 * link:man/gen-proxy-config.html[gen-proxy-config] (`picocli.codegen.aot.graalvm.DynamicProxyConfigGenerator`)
 * link:man/gen-resource-config.html[gen-resource-config] (`picocli.codegen.aot.graalvm.ResourceConfigGenerator`)
 
+From picocli 4.4, this tool can be used as a <<Subcommands,subcommand>> in your application, with the usual syntax:
+
+[source,java]
+----
+import picocli.codegen.docgen.manpage.ManPageGenerator;
+
+@Command(subcommands = ManPageGenerator.class)
+...
+----
+
+To use the `ManPageGenerator` tool as a subcommand, you will need the `picocli-codegen` jar in your classpath.
+
 == Testing Your Application
 
 === Black Box and White Box Testing

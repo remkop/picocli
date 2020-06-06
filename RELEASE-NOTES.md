@@ -8,6 +8,8 @@ This release contains bugfixes and enhancements.
 From this release, picocli supports abbreviated options and subcommands. When abbreviations are enabled, users can specify the initial letter(s) of the first component and optionally of one or more subsequent components of an option or subcommand name.
 "Components" are separated by `-` dash characters or by case, so for example, both `--CamelCase` and `--kebab-case` have two components.
 
+From this release, the `ManPageGenerator` tool can be used as a subcommand in your application.
+
 Fixed a bug in argument group parsing where incorrect input with missing mandatory elements was accepted when an option was specified multiple times.
 
 This is the seventy-first public release.
@@ -16,6 +18,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 ## <a name="4.4.0-toc"></a> Table of Contents
 * [New and noteworthy](#4.4.0-new)
   * [Abbreviated Options and Subcommands](#4.4.0-abbreviated-options-and-commands)
+  * [ManPageGenerator as Subcommand in Your App](#4.4.0-gen-manpage-subcommand)
 * [Fixed issues](#4.4.0-fixes)
 * [Deprecations](#4.4.0-deprecated)
 * [Potential breaking changes](#4.4.0-breaking-changes)
@@ -76,6 +79,18 @@ assertFalse(app.b);
 When abbreviated options are enabled, user input `-AB` will match the long `-AaaBbb` option, but not the `-A` and `-B` options.
 
 
+### <a name="4.4.0-gen-manpage-subcommand"></a> ManPageGenerator as Subcommand in Your App
+
+From picocli 4.4, the `ManPageGenerator` tool can be used as a subcommand in your application, with the usual syntax:
+
+```
+import picocli.codegen.docgen.manpage.ManPageGenerator;
+
+@Command(subcommands = ManPageGenerator.class)
+...
+```
+
+To use the `ManPageGenerator` tool as a subcommand, you will need the `picocli-codegen` jar in your classpath.
 
 ## <a name="4.4.0-fixes"></a> Fixed issues
 * [#10][#732][#1047] API: Support abbreviated options and commands. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
