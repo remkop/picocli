@@ -1,19 +1,22 @@
 package picocli.codegen.docgen.manpage;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.codegen.util.Assert;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -259,7 +262,9 @@ public class ManPageGeneratorTest {
     }
 
     private String read(String resource) throws IOException {
-        return readAndClose(getClass().getResourceAsStream(resource));
+        URL url = ManPageGenerator.class.getResource(resource);
+        Assert.notNull(url, "resource '" + resource + "'");
+        return readAndClose(url.openStream());
     }
 
     private String readAndClose(InputStream in) throws IOException {
@@ -322,7 +327,7 @@ public class ManPageGeneratorTest {
         String expected = String.format("" +
                 "Usage: top-level-command subcommand gen-manpage [-fhVv] [-d=<outdir>] [-t=<template-dir>]%n" +
                 "                                                [@<filename>...]%n" +
-                "Generates one or more AsciiDoc files with doctype 'manpage' in the specified directory.%n" +
+                "Generates man pages for all commands in the specified directory.%n" +
                 "      [@<filename>...]    One or more argument files containing options.%n" +
                 "  -d, --outdir=<outdir>   Output directory to write the generated AsciiDoc files to. If not%n" +
                 "                            specified, files are written to the current directory.%n" +
@@ -356,5 +361,71 @@ public class ManPageGeneratorTest {
                 "See https://asciidoctor.org/docs/user-manual/#man-pages%n" +
                 "See http://man7.org/linux/man-pages/man7/roff.7.html%n");
         assertEquals(expected, sw.toString());
+    }
+
+    @Test
+    public void testManPageGeneratorAsSubcommandParentHelp() {
+        StringWriter sw = new StringWriter();
+        new CommandLine(new Top()).setOut(new PrintWriter(sw, true))
+                .execute("subcommand", "--help");
+        String expected = String.format("" +
+                "Usage: top-level-command subcommand [-hV] [COMMAND]%n" +
+                "Example subcommand%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "Commands:%n" +
+                "  gen-manpage  Generates man pages for all commands in the specified directory.%n");
+        assertEquals(expected, sw.toString());
+    }
+
+    @Test
+    public void testManPageGeneratorAsSubcommand() throws IOException {
+        File outdir = new File(System.getProperty("java.io.tmpdir"), "manpage" + System.currentTimeMillis());
+        outdir.mkdir();
+        File templateDir = new File(outdir, "templates");
+        int exitCode = new CommandLine(new Top())
+                .execute("subcommand", "gen-manpage", /*"-vv",*/ "--outdir=" + outdir, "--template-dir=" + templateDir);
+        try {
+            assertEquals(0, exitCode);
+
+            //System.out.println(Arrays.asList(templateDir.listFiles()));
+            //System.out.println(Arrays.asList(outdir.listFiles()));
+
+            String[] files = new String[] {
+                    "top-level-command.adoc", //
+                    "top-level-command-visible.adoc", //
+                    "top-level-command-subcommand.adoc", //
+                    "top-level-command-subcommand-gen-manpage.adoc"
+            };
+
+            for (String f : files) {
+                String expected = read("/manpagegenerator/templates/" + f);
+                String actual = readAndClose(new FileInputStream(new File(templateDir, f)));
+
+                expected = expected.replace("$OUTDIR", outdir.getAbsolutePath().replace('\\', '/'));
+                assertEquals("/manpagegenerator/templates/" + f, expected, actual);
+            }
+
+            for (String f : files) {
+                String expected = read("/manpagegenerator/" + f);
+                String actual = readAndClose(new FileInputStream(new File(outdir, f)));
+
+                expected = expected.replace("$VERSION", CommandLine.VERSION);
+                assertEquals("/manpagegenerator/" + f, expected, actual);
+            }
+
+        } finally {
+            for (File f : templateDir.listFiles()) {
+                f.delete();
+            }
+            try {
+                assertTrue(templateDir.getAbsolutePath(), templateDir.delete());
+            } finally {
+                for (File f : outdir.listFiles()) {
+                    f.delete();
+                }
+                assertTrue(outdir.getAbsolutePath(), outdir.delete());
+            }
+        }
     }
 }

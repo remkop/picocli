@@ -1,0 +1,20 @@
+:includedir: $OUTDIR
+//include::{includedir}/top-level-command-subcommand-gen-manpage.adoc[tag=picocli-generated-full-manpage]
+
+include::{includedir}/top-level-command-subcommand-gen-manpage.adoc[tag=picocli-generated-man-section-header]
+
+include::{includedir}/top-level-command-subcommand-gen-manpage.adoc[tag=picocli-generated-man-section-name]
+
+include::{includedir}/top-level-command-subcommand-gen-manpage.adoc[tag=picocli-generated-man-section-synopsis]
+
+include::{includedir}/top-level-command-subcommand-gen-manpage.adoc[tag=picocli-generated-man-section-description]
+
+include::{includedir}/top-level-command-subcommand-gen-manpage.adoc[tag=picocli-generated-man-section-options]
+
+include::{includedir}/top-level-command-subcommand-gen-manpage.adoc[tag=picocli-generated-man-section-arguments]
+
+include::{includedir}/top-level-command-subcommand-gen-manpage.adoc[tag=picocli-generated-man-section-commands]
+
+include::{includedir}/top-level-command-subcommand-gen-manpage.adoc[tag=picocli-generated-man-section-exit-status]
+
+include::{includedir}/top-level-command-subcommand-gen-manpage.adoc[tag=picocli-generated-man-section-footer]

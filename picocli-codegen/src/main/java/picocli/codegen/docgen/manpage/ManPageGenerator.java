@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -46,7 +47,7 @@ import static java.lang.String.format;
         sortOptions = false,
         usageHelpAutoWidth = true,
         usageHelpWidth = 100,
-        description = {"Generates one or more AsciiDoc files with doctype 'manpage' in the specified directory."},
+        description = {"Generates man pages for all commands in the specified directory."},
         //exitCodeListHeading = "%nExit Codes (if enabled with `--exit`)%n",
         //exitCodeList = {
         //        "0:Successful program execution.",
@@ -66,7 +67,7 @@ import static java.lang.String.format;
                 "See http://man7.org/linux/man-pages/man7/roff.7.html",
         }
 )
-public class ManPageGenerator {
+public class ManPageGenerator implements Callable<Integer> {
     static final int EXIT_CODE_TEMPLATE_EXISTS = 4;
 
     static final IStyle BOLD = new IStyle() {
@@ -103,8 +104,7 @@ public class ManPageGenerator {
      * @throws IOException if a problem occurred writing files.
      */
     public Integer call() throws IOException {
-        List<CommandSpec> specs = Util.flattenHierarchy(spec.root());
-        return generateManPage(config, specs.toArray(new CommandSpec[0]));
+        return generateManPage(config, spec.root());
     }
 
     private static Map<String, IStyle> createMarkupMap() {
@@ -279,6 +279,8 @@ public class ManPageGenerator {
             return CommandLine.ExitCode.USAGE;
         }
 
+        traceAllSpecs(specs, config);
+
         for (CommandSpec spec : specs) {
             int result = generateSingleManPage(config, spec);
             if (result != CommandLine.ExitCode.OK) {
@@ -299,6 +301,21 @@ public class ManPageGenerator {
             }
         }
         return CommandLine.ExitCode.OK;
+    }
+
+    private static void traceAllSpecs(CommandSpec[] specs, Config config) {
+        List<String> all = new ArrayList<String>();
+        for (CommandSpec spec: specs) {
+            Object obj = spec.userObject();
+            if (obj == null) {
+                all.add(spec.name() + " (no user object)");
+            } else if (obj instanceof Method) {
+                all.add(spec.name() + " (" + ((Method) obj).toGenericString() + ")");
+            } else {
+                all.add(obj.getClass().getName());
+            }
+        }
+        config.verbose("Generating man pages for %s and all subcommands%n", all);
     }
 
     private static int generateSingleManPage(Config config, CommandSpec spec) throws IOException {

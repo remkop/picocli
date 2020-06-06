@@ -1,0 +1,58 @@
+// tag::picocli-generated-full-manpage[]
+// tag::picocli-generated-man-section-header[]
+:doctype: manpage
+:revnumber: 
+:manmanual: Top-level-command Manual
+:mansource: 
+:man-linkstyle: pass:[blue R < >]
+= top-level-command(1)
+
+// end::picocli-generated-man-section-header[]
+
+// tag::picocli-generated-man-section-name[]
+== Name
+
+top-level-command - example top-level command
+
+// end::picocli-generated-man-section-name[]
+
+// tag::picocli-generated-man-section-synopsis[]
+== Synopsis
+
+*top-level-command* [*-hV*] [*-x*=_<x>_] [COMMAND]
+
+// end::picocli-generated-man-section-synopsis[]
+
+// tag::picocli-generated-man-section-description[]
+== Description
+
+example top-level command
+
+// end::picocli-generated-man-section-description[]
+
+// tag::picocli-generated-man-section-options[]
+== Options
+
+*-h*, *--help*::
+  Show this help message and exit.
+
+*-V*, *--version*::
+  Print version information and exit.
+
+*-x*, *--long-option*=_<x>_::
+  Some example option
+
+// end::picocli-generated-man-section-options[]
+
+// tag::picocli-generated-man-section-commands[]
+== Commands
+
+*subcommand*::
+  Example subcommand
+
+*visible*::
+  Example visible subcommand
+
+// end::picocli-generated-man-section-commands[]
+
+// end::picocli-generated-full-manpage[]
