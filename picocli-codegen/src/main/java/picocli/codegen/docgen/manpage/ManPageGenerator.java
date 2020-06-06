@@ -42,6 +42,7 @@ import static java.lang.String.format;
  */
 @Command(name = "gen-manpage",
         version = "${COMMAND-FULL-NAME} " + CommandLine.VERSION,
+        helpCommand = true, // don't validate required options and positional parameters of the parent command
         showAtFileInUsageHelp = true,
         mixinStandardHelpOptions = true,
         sortOptions = false,
