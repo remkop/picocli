@@ -126,16 +126,23 @@ public class TestUtil {
         String result = original;
         do {
             original = result;
-            result = stripAnsiTraceOnce(original, "(ANSI is disabled by default:", ")", "(ANSI is disabled ...");
-            result = stripAnsiTraceOnce(result, "Creating CommandSpec for object", " of class", "Creating CommandSpec... for object");
-            result = stripAnsiTraceOnce(result, " on ", System.getProperty("line.separator"), "");
+            //result = stripAnsiTraceOnce(original, "(ANSI is disabled by default:", ")", "(ANSI is disabled ...");
+            result = stripAnsiTraceOnce(original, "(ANSI is disabled by default:", "CLICOLOR_FORCE=", ")", "(ANSI is disabled ...");
+            result = stripAnsiTraceOnce(result, "Creating CommandSpec for object", null, " of class", "Creating CommandSpec... for object");
+            result = stripAnsiTraceOnce(result, " on ", null, System.getProperty("line.separator"), "");
         } while (result != original);
         return result;
     }
 
-    private static String stripAnsiTraceOnce(String original, String prefix, String suffix, String replacement) {
+    private static String stripAnsiTraceOnce(String original, String prefix, String prefix2, String suffix, String replacement) {
         int pos = original.indexOf(prefix);
         if (pos > 0) {
+            if (prefix2 != null) { // this allows us to skip over any intermediate closing brackets ')' in the "ANSI is disabled by default" line (https://github.com/remkop/picocli/issues/1103#issuecomment-640204473)
+                int pos2 = original.indexOf(prefix2, pos);
+                if (pos2 > 0) {
+                    pos = pos2;
+                }
+            }
             int to = original.indexOf(suffix, pos);
             return original.substring(0, pos) + replacement + original.substring(to);
         }
