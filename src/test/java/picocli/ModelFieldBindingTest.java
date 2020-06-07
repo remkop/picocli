@@ -1,6 +1,10 @@
 package picocli;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.rules.TestRule;
 import picocli.CommandLine.Model.FieldBinding;
 import picocli.CommandLine.PicocliException;
 
@@ -10,6 +14,13 @@ import static org.junit.Assert.*;
 import static org.hamcrest.MatcherAssert.*;
 
 public class ModelFieldBindingTest {
+
+    // allows tests to set any kind of properties they like, without having to individually roll them back
+    @Rule
+    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
     @Test
     public void testFieldBindingDoesNotSetAccessible() throws Exception {

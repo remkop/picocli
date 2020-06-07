@@ -3,8 +3,10 @@ package picocli;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.contrib.java.lang.system.SystemErrRule;
 import org.junit.contrib.java.lang.system.SystemOutRule;
+import org.junit.rules.TestRule;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -21,6 +23,11 @@ import static picocli.TestUtil.usageString;
 import static picocli.TestUtil.setOf;
 
 public class HelpSubCommandTest {
+
+    // allows tests to set any kind of properties they like, without having to individually roll them back
+    @Rule
+    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 

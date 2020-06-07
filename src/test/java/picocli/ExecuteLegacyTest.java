@@ -18,6 +18,7 @@ package picocli;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.*;
+import org.junit.rules.TestRule;
 import picocli.CommandLine.Model.CommandSpec;
 
 import java.io.ByteArrayOutputStream;
@@ -35,6 +36,11 @@ import static picocli.CommandLine.*;
 
 @SuppressWarnings("deprecation")
 public class ExecuteLegacyTest {
+
+    // allows tests to set any kind of properties they like, without having to individually roll them back
+    @Rule
+    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
     

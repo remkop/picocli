@@ -2,6 +2,8 @@ package picocli;
 
 import org.junit.*;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.rules.TestRule;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -18,6 +20,11 @@ import static org.junit.Assert.*;
 import static picocli.CommandLine.*;
 
 public class OptionMethodSpecTest {
+
+    // allows tests to set any kind of properties they like, without having to individually roll them back
+    @Rule
+    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+
     @Rule
     public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 

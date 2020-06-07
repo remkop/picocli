@@ -1,7 +1,11 @@
 package picocli;
 
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.rules.TestRule;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.IParameterConsumer;
 import picocli.CommandLine.Model.ArgSpec;
@@ -17,6 +21,13 @@ import java.util.Stack;
 import static org.junit.Assert.*;
 
 public class ParameterConsumerTest {
+
+    // allows tests to set any kind of properties they like, without having to individually roll them back
+    @Rule
+    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
     static class FindExecParameterConsumer implements IParameterConsumer {
         public void consumeParameters(Stack<String> args, ArgSpec argSpec, CommandSpec commandSpec) {

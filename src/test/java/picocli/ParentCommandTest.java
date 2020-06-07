@@ -18,9 +18,13 @@ package picocli;
 import java.io.File;
 import java.util.List;
 
+import org.junit.Rule;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.InitializationException;
 import picocli.CommandLine.Option;
@@ -28,6 +32,13 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
 public class ParentCommandTest {
+
+    // allows tests to set any kind of properties they like, without having to individually roll them back
+    @Rule
+    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
     @Command(name = "top", subcommands = Sub.class)
     static class Top implements Runnable {

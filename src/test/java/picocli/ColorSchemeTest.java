@@ -1,6 +1,10 @@
 package picocli;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.rules.TestRule;
 import picocli.CommandLine.Help;
 import picocli.CommandLine.Help.ColorScheme;
 
@@ -16,6 +20,11 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 public class ColorSchemeTest {
+
+    // allows tests to set any kind of properties they like, without having to individually roll them back
+    @Rule
+    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+
     @Test
     public void testEquals() {
         ColorScheme defaultScheme = Help.defaultColorScheme(Help.Ansi.AUTO);

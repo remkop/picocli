@@ -1,6 +1,10 @@
 package picocli;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -8,8 +12,14 @@ import java.lang.reflect.Method;
 
 import static org.junit.Assert.*;
 
-public class CommandAnnotationMethodTest
-{
+public class CommandAnnotationMethodTest {
+
+    // allows tests to set any kind of properties they like, without having to individually roll them back
+    @Rule
+    public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
     static class State {
 
@@ -19,8 +29,7 @@ public class CommandAnnotationMethodTest
             return state;
         }
 
-        public void setState(final String state)
-        {
+        public void setState(final String state) {
             this.state = state;
         }
     }
@@ -40,8 +49,7 @@ public class CommandAnnotationMethodTest
         }
     }
 
-    static class StateFactory implements CommandLine.IFactory
-    {
+    static class StateFactory implements CommandLine.IFactory {
 
         private State state;
 
@@ -49,15 +57,10 @@ public class CommandAnnotationMethodTest
             this.state = state;
         }
 
-        public <K> K create(final Class<K> cls)
-          throws Exception
-        {
-            try
-            {
+        public <K> K create(final Class<K> cls) throws Exception {
+            try {
                 return cls.getConstructor(State.class).newInstance(state);
-            }
-            catch (final Exception e)
-            {
+            } catch (final Exception e) {
                 return cls.getConstructor().newInstance();
             }
         }
