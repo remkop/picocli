@@ -27,7 +27,7 @@ abstract class Base: Callable<Any> {
     }
 
     override fun call() {
-        println("Hello from $this")
+        println("Hello from $this; verbose=$verbose and loggingLevel=$loggingLevel")
     }
 }
 
