@@ -23,7 +23,7 @@ abstract class Base: Callable<Any> {
     var verbose: Boolean = false
 
     open fun initLogging() {
-
+        println("$this is initializing logging with verbose=$verbose and loggingLevel=$loggingLevel")
     }
 
     override fun call() {
