@@ -16312,8 +16312,12 @@ public class CommandLine {
             }
             static boolean isJansiConsoleInstalled() {
                 try {
-                    // first check if JANSI was explicitly disabled: by default this uses
-                    // system property "org.fusesource.jansi.Ansi.disable"
+                    // first check if JANSI was explicitly disabled _without loading any JANSI classes_:
+                    // see https://github.com/remkop/picocli/issues/1106
+                    if (Boolean.getBoolean("org.fusesource.jansi.Ansi.disable")) {
+                        return false;
+                    }
+                    // the Ansi class internally also checks system property "org.fusesource.jansi.Ansi.disable"
                     // but may also have been set with Ansi.setEnabled or a custom detector
                     Class<?> ansi = Class.forName("org.fusesource.jansi.Ansi");
                     Boolean enabled = (Boolean) ansi.getDeclaredMethod("isEnabled").invoke(null);
