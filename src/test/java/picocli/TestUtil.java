@@ -137,13 +137,14 @@ public class TestUtil {
     private static String stripAnsiTraceOnce(String original, String prefix, String prefix2, String suffix, String replacement) {
         int pos = original.indexOf(prefix);
         if (pos > 0) {
+            int endPos = pos;
             if (prefix2 != null) { // this allows us to skip over any intermediate closing brackets ')' in the "ANSI is disabled by default" line (https://github.com/remkop/picocli/issues/1103#issuecomment-640204473)
                 int pos2 = original.indexOf(prefix2, pos);
                 if (pos2 > 0) {
-                    pos = pos2;
+                    endPos = pos2;
                 }
             }
-            int to = original.indexOf(suffix, pos);
+            int to = original.indexOf(suffix, endPos);
             return original.substring(0, pos) + replacement + original.substring(to);
         }
         return original;

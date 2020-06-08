@@ -2110,6 +2110,37 @@ public class CommandLineTest {
         }
         assertEquals(stripAnsiTrace(stripHashcodes(expected)), stripAnsiTrace(stripHashcodes(actual)));
     }
+
+    @Test
+    public void testStripAnsiTrace() {
+        String original = "[picocli INFO] Picocli version: 4.3.3-SNAPSHOT, JVM: 1.5.0_22 (Sun Microsystems Inc. Java HotSpot(TM) Client VM 1.5.0_22-b03), OS: Windows NT (unknown) 6.2 x86\n" +
+                "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]\n" +
+                "[picocli DEBUG] Parser configuration: optionsCaseInsensitive=false, subcommandsCaseInsensitive=false, abbreviatedOptionsAllowed=false, abbreviatedSubcommandsAllowed=false, aritySatisfiedByAttachedOptionParam=false, atFileCommentChar=#, caseInsensitiveEnumValuesAllowed=false, collectErrors=false, endOfOptionsDelimiter=--, expandAtFiles=true, limitSplit=false, overwrittenOptionsAllowed=false, posixClusteredShortOptionsAllowed=true, separator=null, splitQuotedStrings=false, stopAtPositional=false, stopAtUnmatched=false, toggleBooleanFlags=false, trimQuotes=false, unmatchedArgumentsAllowed=false, unmatchedOptionsArePositionalParams=false, useSimplifiedAtFiles=false\n" +
+                "[picocli DEBUG] (ANSI is disabled by default: systemproperty[picocli.ansi]=false, isatty=true, TERM=null, OSTYPE=null, isWindows=true, JansiConsoleInstalled=false, ANSICON=null, ConEmuANSI=null, NO_COLOR=null, CLICOLOR=null, CLICOLOR_FORCE=null)\n" +
+                "[picocli DEBUG] Initializing command 'git' (user object: picocli.Demo$Git@10f8ee4): 3 options, 0 positional parameters, 0 required, 0 groups, 12 subcommands.\n" +
+                "[picocli DEBUG] Set initial value for field java.io.File picocli.Demo$Git.gitDir of type class java.io.File to null.\n";
+
+        String expected = "[picocli INFO] Picocli version: 4.3.3-SNAPSHOT, JVM: 1.5.0_22 (Sun Microsystems Inc. Java HotSpot(TM) Client VM 1.5.0_22-b03), OS: Windows NT (unknown) 6.2 x86\n" +
+                "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]\n" +
+                "[picocli DEBUG] Parser configuration: optionsCaseInsensitive=false, subcommandsCaseInsensitive=false, abbreviatedOptionsAllowed=false, abbreviatedSubcommandsAllowed=false, aritySatisfiedByAttachedOptionParam=false, atFileCommentChar=#, caseInsensitiveEnumValuesAllowed=false, collectErrors=false, endOfOptionsDelimiter=--, expandAtFiles=true, limitSplit=false, overwrittenOptionsAllowed=false, posixClusteredShortOptionsAllowed=true, separator=null, splitQuotedStrings=false, stopAtPositional=false, stopAtUnmatched=false, toggleBooleanFlags=false, trimQuotes=false, unmatchedArgumentsAllowed=false, unmatchedOptionsArePositionalParams=false, useSimplifiedAtFiles=false\n" +
+                "[picocli DEBUG] (ANSI is disabled ...)\n" +
+                "[picocli DEBUG] Initializing command 'git' (user object: picocli.Demo$Git@10f8ee4): 3 options, 0 positional parameters, 0 required, 0 groups, 12 subcommands.\n" +
+                "[picocli DEBUG] Set initial value for field java.io.File picocli.Demo$Git.gitDir of type class java.io.File to null.\n";
+
+        assertEquals(expected, stripAnsiTrace(original));
+
+        // Now use environment value with closing brace: ANSICON=80x1000 (80x25)
+        // https://github.com/remkop/picocli/issues/1103
+        String original2 = "[picocli INFO] Picocli version: 4.3.3-SNAPSHOT, JVM: 1.5.0_22 (Sun Microsystems Inc. Java HotSpot(TM) Client VM 1.5.0_22-b03), OS: Windows NT (unknown) 6.2 x86\n" +
+                "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]\n" +
+                "[picocli DEBUG] Parser configuration: optionsCaseInsensitive=false, subcommandsCaseInsensitive=false, abbreviatedOptionsAllowed=false, abbreviatedSubcommandsAllowed=false, aritySatisfiedByAttachedOptionParam=false, atFileCommentChar=#, caseInsensitiveEnumValuesAllowed=false, collectErrors=false, endOfOptionsDelimiter=--, expandAtFiles=true, limitSplit=false, overwrittenOptionsAllowed=false, posixClusteredShortOptionsAllowed=true, separator=null, splitQuotedStrings=false, stopAtPositional=false, stopAtUnmatched=false, toggleBooleanFlags=false, trimQuotes=false, unmatchedArgumentsAllowed=false, unmatchedOptionsArePositionalParams=false, useSimplifiedAtFiles=false\n" +
+                "[picocli DEBUG] (ANSI is disabled by default: systemproperty[picocli.ansi]=false, isatty=true, TERM=null, OSTYPE=null, isWindows=true, JansiConsoleInstalled=false, ANSICON=80x1000 (80x25), ConEmuANSI=null, NO_COLOR=null, CLICOLOR=null, CLICOLOR_FORCE=null)\n" +
+                "[picocli DEBUG] Initializing command 'git' (user object: picocli.Demo$Git@10f8ee4): 3 options, 0 positional parameters, 0 required, 0 groups, 12 subcommands.\n" +
+                "[picocli DEBUG] Set initial value for field java.io.File picocli.Demo$Git.gitDir of type class java.io.File to null.\n";
+
+        assertEquals(expected, stripAnsiTrace(original2));
+    }
+
     @Test
     public void testTraceWarningIfOptionOverwrittenWhenOverwrittenOptionsAllowed() throws Exception {
         PrintStream originalErr = System.err;
