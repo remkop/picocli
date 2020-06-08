@@ -115,6 +115,7 @@ To use the `ManPageGenerator` tool as a subcommand, you will need the `picocli-c
 * [#1070] Enhancement: Code cleanup: removed redundant modifiers and initializations, unused variables, incorrect javadoc references, and more. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#1096] Enhancement: Override `Help.Column` `equals`, `hashCode` and `toString` methods to facilitate testing.
 * [#1063][#1064] `ManPageGenerator` now correctly excludes hidden options, parameters, and subcommands from man page generation. Thanks to [Brian Demers](https://github.com/bdemers) for the pull request.
+* [#1103] Enhancement: Tests no longer fail under Cygwin/ConEmu due to ANSI in output. Thanks to [David Walluck](https://github.com/dwalluck) for raising this.
 * [#1071] Bugfix: Usage help no longer renders options header when it is specified via `optionListHeading` when all options are hidden.
 * [#1081] Bugfix: `CommandLine.Help` constructor no longer calls overridable methods `addAllSubcommands` and `createDefaultParamLabelRenderer`.
 * [#1065] Bugfix: With a `List<>` option in `@ArgGroup`, group incorrectly appears twice in the synopsis. Thanks to [kap4lin](https://github.com/kap4lin) for raising this.
