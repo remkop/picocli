@@ -5723,6 +5723,7 @@ public class CommandLine {
             private final Interpolator interpolator = new Interpolator(this);
             private final UsageMessageSpec usageMessage = new UsageMessageSpec(interpolator);
             private TypedMember[] methodParams;
+            private TypedMember[] constructorParams;
 
             private final CommandUserObject userObject;
             private CommandLine commandLine;
@@ -6514,6 +6515,31 @@ public class CommandLine {
                         values[i] = null;
                         for (ArgGroupSpec group : groups) {
                             if (group.typeInfo.equals(methodParams[i].typeInfo)) {
+                                values[i] = group.userObjectOr(null);
+                                argIndex += group.argCount();
+                                break;
+                            }
+                        }
+                    } else {
+                        values[i] = args.get(argIndex++).getValue();
+                    }
+                }
+                return values;
+            }
+
+            Object[] commandConstructorParamValues() {
+                Object[] values = new Object[constructorParams.length];
+                int argIndex = 0;
+                for (int i = 0; i < constructorParams.length; i++) {
+                    if (constructorParams[i].isAnnotationPresent(Mixin.class)) {
+                        String name = constructorParams[i].getAnnotation(Mixin.class).name();
+                        CommandSpec mixin = mixins.get(empty(name) ? constructorParams[i].name : name);
+                        values[i] = mixin.userObject.getInstance();
+                        argIndex += mixin.args.size();
+                    } else if (constructorParams[i].isAnnotationPresent(ArgGroup.class)) {
+                        values[i] = null;
+                        for (ArgGroupSpec group : groups) {
+                            if (group.typeInfo.equals(constructorParams[i].typeInfo)) {
                                 values[i] = group.userObjectOr(null);
                                 argIndex += group.argCount();
                                 break;
@@ -10062,6 +10088,74 @@ public class CommandLine {
             @Override public String toString() { return method.toString() + ":" + getName(); }
         }
 
+        public static class ConstructorParam extends AccessibleObject {
+            final Constructor constructor;
+            final int paramIndex;
+            final String name;
+            int position;
+
+            public ConstructorParam(Constructor constructor, int paramIndex) {
+                this.constructor = constructor;
+                this.paramIndex = paramIndex;
+                String tmp = "arg" + paramIndex;
+                try {
+                    Method getParameters = Method.class.getMethod("getParameters");
+                    Object parameters = getParameters.invoke(constructor);
+                    Object parameter = Array.get(parameters, paramIndex);
+                    tmp = (String) Class.forName("java.lang.reflect.Parameter").getDeclaredMethod("getName").invoke(parameter);
+                } catch (Exception ignored) {
+                }
+                this.name = tmp;
+            }
+
+            public Type getParameterizedType() {
+                return constructor.getGenericParameterTypes()[paramIndex];
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public Class<?> getType() {
+                return constructor.getParameterTypes()[paramIndex];
+            }
+
+            public Constructor getDeclaringExecutable() {
+                return constructor;
+            }
+
+            @Override
+            public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+                for (Annotation annotation : getDeclaredAnnotations()) {
+                    if (annotationClass.isAssignableFrom(annotation.getClass())) {
+                        return annotationClass.cast(annotation);
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public Annotation[] getDeclaredAnnotations() {
+                return constructor.getParameterAnnotations()[paramIndex];
+            }
+
+            @Override
+            public void setAccessible(boolean flag) throws SecurityException {
+                constructor.setAccessible(flag);
+            }
+
+            @SuppressWarnings("deprecation")
+            @Override
+            public boolean isAccessible() throws SecurityException {
+                return constructor.isAccessible();
+            }
+
+            @Override
+            public String toString() {
+                return constructor.toString() + ":" + getName();
+            }
+        }
+
         /** Encapculates type information for an option or parameter to make this information available both at runtime
          * and at compile time (when {@code Class} values are not available).
          * Most of the methods in this interface (but not all!) are safe to use by annotation processors.
@@ -10356,6 +10450,20 @@ public class CommandLine {
                 // bind parameter
                 ObjectBinding binding = new ObjectBinding();
                 getter = binding; setter = binding;
+                initializeInitialValue(param); // arg is a method param; we have to create initial values ourselves
+                initialValueState = InitialValueState.POSTPONED; // the initial value can be obtained from the getter
+            }
+
+            TypedMember(ConstructorParam param, IScope scope) {
+                this.scope = scope;
+                accessible = Assert.notNull(param, "command constructor parameter");
+                accessible.setAccessible(true);
+                name = param.getName();
+                typeInfo = createTypeInfo(param.getType(), param.getParameterizedType());
+                // bind parameter
+                ObjectBinding binding = new ObjectBinding();
+                getter = binding;
+                setter = binding;
                 initializeInitialValue(param); // arg is a method param; we have to create initial values ourselves
                 initialValueState = InitialValueState.POSTPONED; // the initial value can be obtained from the getter
             }
@@ -10681,6 +10789,10 @@ public class CommandLine {
                         Command cmd = cls.getAnnotation(Command.class);
                         if (cmd != null) {
                             result.updateCommandAttributes(cmd, factory);
+                            Constructor[] constructors = cls.getConstructors();
+                            if (constructors.length > 0) {
+                                initFromConstructorParameters(userObject, constructors[0], result, null, factory);
+                            }
                             injectSpecIntoVersionProvider(result, cmd, factory);
                             initSubcommands(cmd, cls, result, factory, originalHierarchy);
                             hasCommandAnnotation = true;
@@ -10840,6 +10952,25 @@ public class CommandLine {
                 receiver.methodParams = members;
                 return result;
             }
+
+            private static boolean initFromConstructorParameters(IScope scope, Constructor constructor, CommandSpec receiver, ArgGroupSpec.Builder groupBuilder, IFactory factory) {
+                boolean result = false;
+                int optionCount = 0;
+                TypedMember[] members = new TypedMember[constructor.getParameterTypes().length];
+                for (int i = 0, count = members.length; i < count; i++) {
+                    ConstructorParam param = new ConstructorParam(constructor, i);
+                    if (param.isAnnotationPresent(Option.class) || param.isAnnotationPresent(Mixin.class) || param.isAnnotationPresent(ArgGroup.class)) {
+                        optionCount++;
+                    } else {
+                        param.position = i - optionCount;
+                    }
+                    members[i] = new TypedMember(param, scope);
+                    result |= initFromAnnotatedTypedMembers(members[i], null, receiver, groupBuilder, factory);
+                }
+                receiver.constructorParams = members;
+                return result;
+            }
+
             @SuppressWarnings("unchecked")
             private static void validateArgSpecMember(TypedMember member) {
                 if (!member.isArgSpec()) { throw new IllegalStateException("Bug: validateArgSpecMember() should only be called with an @Option or @Parameters member"); }
@@ -11085,6 +11216,15 @@ public class CommandLine {
                 return new CommandUserObject(userObject, factory);
             }
 
+            private Object makeInstanceWithArgs() {
+                Object[] values = commandSpec.commandConstructorParamValues();
+                try {
+                    return type.getConstructors()[0].newInstance(values);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException("Failed to construct instance of " + type.getName(), e);
+                }
+            }
+
             public Object getInstance() {
                 if (instance == null) {
                     Tracer t = new Tracer();
@@ -11094,7 +11234,13 @@ public class CommandLine {
                     }
                     try {
                         t.debug("Getting a %s instance from factory %s%n", type.getName(), factory);
-                        instance = DefaultFactory.create(factory, type);
+
+                        if (commandSpec != null && commandSpec.constructorParams != null && commandSpec.constructorParams.length > 0) {
+                            instance = makeInstanceWithArgs();
+                        } else {
+                            instance = DefaultFactory.create(factory, type);
+                        }
+
                         type = instance.getClass(); // potentially change interface name to impl type name
                         t.debug("Factory returned a %s instance (%s)%n", type.getName(), Integer.toHexString(System.identityHashCode(instance)));
                     } catch (InitializationException ex) {
@@ -12257,7 +12403,8 @@ public class CommandLine {
             arguments.addAll(result);
         }
         private void clear() {
-            getCommandSpec().userObject(); // #690 instantiate user object when cmd matched on the command line
+            // eitan - too early to instantiate object
+//            getCommandSpec().userObject(); // #690 instantiate user object when cmd matched on the command line
             position = 0;
             endOfOptions = false;
             isHelpRequested = false;
