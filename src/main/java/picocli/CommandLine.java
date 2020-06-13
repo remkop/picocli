@@ -6809,10 +6809,6 @@ public class CommandLine {
             }
 
             boolean resemblesOption(String arg, Tracer tracer) {
-                if (parser().unmatchedOptionsArePositionalParams()) {
-                    if (tracer != null && tracer.isDebug()) {tracer.debug("Parser is configured to treat all unmatched options as positional parameter%n", arg);}
-                    return false;
-                }
                 if (arg.length() == 1) {
                     if (tracer != null && tracer.isDebug()) {tracer.debug("Single-character arguments that don't match known options are considered positional parameters%n", arg);}
                     return false;
@@ -12549,7 +12545,6 @@ public class CommandLine {
                 else {
                     args.push(arg);
                     if (tracer.isDebug()) {tracer.debug("Could not find option '%s', deciding whether to treat as unmatched option or positional parameter...%n", arg);}
-                    if (commandSpec.resemblesOption(arg, tracer)) { handleUnmatchedArgument(args); continue; } // #149
                     if (tracer.isDebug()) {tracer.debug("No option named '%s' found. Processing as positional parameter%n", arg);}
                     processPositionalParameter(required, initialized, actuallyUnquoted, args);
                 }
@@ -12598,6 +12593,14 @@ public class CommandLine {
             }
         }
         private void processPositionalParameter(Collection<ArgSpec> required, Set<ArgSpec> initialized, boolean alreadyUnquoted, Stack<String> args) throws Exception {
+            String arg = args.peek();
+            if (!endOfOptions && commandSpec.resemblesOption(arg, tracer)) {
+                if (!commandSpec.parser().unmatchedOptionsArePositionalParams()) {
+                    handleUnmatchedArgument(args); // #149
+                    return;
+                }
+                if (tracer.isDebug()) {tracer.debug("Parser is configured to treat all unmatched options as positional parameter%n", arg);}
+            }
             int argIndex = parseResultBuilder.originalArgList.size() - args.size();
             if (tracer.isDebug()) {tracer.debug("[%d] Processing next arg as a positional parameter. Command-local position=%d. Remainder=%s%n", argIndex, position, reverse(copy(args)));}
             if (config().stopAtPositional()) {
@@ -12756,7 +12759,6 @@ public class CommandLine {
                         args.push(paramAttachedToOption ? prefix + cluster : cluster);
                         if (args.peek().equals(arg)) { // #149 be consistent between unmatched short and long options
                             if (tracer.isDebug()) {tracer.debug("Could not match any short options in %s, deciding whether to treat as unmatched option or positional parameter...%n", arg);}
-                            if (commandSpec.resemblesOption(arg, tracer)) { handleUnmatchedArgument(args); return; } // #149
                             processPositionalParameter(required, initialized, alreadyUnquoted, args);
                             return;
                         }
