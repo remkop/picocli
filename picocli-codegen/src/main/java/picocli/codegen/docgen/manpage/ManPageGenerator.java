@@ -22,8 +22,10 @@ import picocli.codegen.util.Assert;
 import picocli.codegen.util.Util;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -350,10 +352,10 @@ public class ManPageGenerator implements Callable<Integer> {
     }
 
     private static void generateSingleManPage(CommandSpec spec, File manpage) throws IOException {
-        FileWriter writer = null;
+        OutputStreamWriter writer = null;
         PrintWriter pw = null;
         try {
-            writer = new FileWriter(manpage);
+            writer = new OutputStreamWriter(new FileOutputStream(manpage), "UTF-8");
             pw = new PrintWriter(writer);
             writeSingleManPage(pw, spec);
         } finally {
