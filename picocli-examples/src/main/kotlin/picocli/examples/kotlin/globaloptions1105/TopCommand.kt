@@ -67,7 +67,7 @@ class TopCommand: WrapperBase("top-command", "does top-command work") {
     )
     var loggingLevel: Level = Level.INFO
 
-    open fun initLogging() {
+    fun initLogging() {
         println("$this is initializing logging with verbose=$verbose and loggingLevel=$loggingLevel")
     }
 
@@ -80,7 +80,7 @@ fun WrapperBase.start(args: Array<String>) {
 
     this.args = args
 
-    val exceptionHandler = IExecutionExceptionHandler { ex: Exception, commandLine: CommandLine, parseResult: ParseResult ->
+    val exceptionHandler = IExecutionExceptionHandler { ex: Exception, _, parseResult: ParseResult ->
         val throwable = ex.cause ?: ex
         val top: TopCommand = parseResult.commandSpec().root().userObject() as TopCommand
         if (top.verbose) {
