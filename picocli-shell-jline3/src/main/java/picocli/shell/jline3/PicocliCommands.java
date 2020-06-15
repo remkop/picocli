@@ -149,7 +149,7 @@ public class PicocliCommands implements CommandRegistry {
 
     /**
      *
-     * @param command
+     * @param args
      * @return command description for JLine TailTipWidgets to be displayed in terminal status bar.
      */
     @Override

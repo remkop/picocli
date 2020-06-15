@@ -90,7 +90,7 @@ public class ManPageGenerator implements Callable<Integer> {
     @Spec CommandSpec spec;
 
     /**
-     * Invokes {@link #generateManPage(Config, CommandSpec...)} to generate man pages for
+     * Invokes {@link #generateManPage(Config, CommandLine.Model.CommandSpec...)} to generate man pages for
      * all non-hidden commands in the hierarchy from the top-level command down.
      * This method is only called when this class is used as a subcommand.
      * @return an exit code indicating success or failure, as follows:
@@ -215,7 +215,7 @@ public class ManPageGenerator implements Callable<Integer> {
     }
 
     /**
-     * Invokes {@link #generateManPage(Config, CommandSpec...)} to generate man pages for
+     * Invokes {@link #generateManPage(Config, CommandLine.Model.CommandSpec...)} to generate man pages for
      * the user-specified {@code @Command}-annotated classes.
      * <p>
      *     If the {@code --exit} option is specified, {@code System.exit} is invoked
