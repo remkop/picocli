@@ -115,6 +115,7 @@ To use the `ManPageGenerator` tool as a subcommand, you will need the `picocli-c
 * [#1070] Enhancement: Code cleanup: removed redundant modifiers and initializations, unused variables, incorrect javadoc references, and more. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#1096] Enhancement: Override `Help.Column` `equals`, `hashCode` and `toString` methods to facilitate testing.
 * [#1106] Enhancement: First check if JANSI is explicitly disabled _without loading any JANSI classes_, to avoid JANSI extracting a DLL to the temporary folder when one of its classes is loaded. This avoids problems where AppLocker can forbid loading of non-signed libraries from the Windows temporary folder. Thanks to [Philippe Charles](https://github.com/charphi) for raising this.
+* [#1109][#1112] Enhancement: Fix `ManPageGenerator` to ensure generated AsciiDoc man pages use UTF-8 encoding. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1063][#1064] `ManPageGenerator` now correctly excludes hidden options, parameters, and subcommands from man page generation. Thanks to [Brian Demers](https://github.com/bdemers) for the pull request.
 * [#1103] Enhancement: Tests no longer fail under Cygwin/ConEmu due to ANSI in output. Thanks to [David Walluck](https://github.com/dwalluck) for raising this.
 * [#1071] Bugfix: Usage help no longer renders options header when it is specified via `optionListHeading` when all options are hidden.
