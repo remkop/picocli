@@ -402,7 +402,7 @@ public class ManPageGeneratorTest {
                 String expected = read("/manpagegenerator/templates/" + f);
                 String actual = readAndClose(new FileInputStream(new File(templateDir, f)));
 
-                expected = expected.replace("$OUTDIR", outdir.getAbsolutePath().replace('\\', '/'));
+                expected = expected.replace("$OUTDIR", outdir.getAbsolutePath().replace('\\', '/')).replace("\r\n", "\n").replace("\n", System.getProperty("line.separator"));
                 assertEquals("/manpagegenerator/templates/" + f, expected, actual);
             }
 
@@ -410,7 +410,7 @@ public class ManPageGeneratorTest {
                 String expected = read("/manpagegenerator/" + f);
                 String actual = readAndClose(new FileInputStream(new File(outdir, f)));
 
-                expected = expected.replace("$VERSION", CommandLine.VERSION);
+                expected = expected.replace("$VERSION", CommandLine.VERSION).replace("\r\n", "\n").replace("\n", System.getProperty("line.separator"));
                 assertEquals("/manpagegenerator/" + f, expected, actual);
             }
 
@@ -468,7 +468,7 @@ public class ManPageGeneratorTest {
                 String expected = read("/manpagegenerator/templates/" + f);
                 String actual = readAndClose(new FileInputStream(new File(templateDir, f)));
 
-                expected = expected.replace("$OUTDIR", outdir.getAbsolutePath().replace('\\', '/'));
+                expected = expected.replace("$OUTDIR", outdir.getAbsolutePath().replace('\\', '/')).replace("\r\n", "\n").replace("\n", System.getProperty("line.separator"));
                 assertEquals("/manpagegenerator/templates/" + f, expected, actual);
             }
 
@@ -476,7 +476,7 @@ public class ManPageGeneratorTest {
                 String expected = read("/manpagegenerator/" + f);
                 String actual = readAndClose(new FileInputStream(new File(outdir, f)));
 
-                expected = expected.replace("$VERSION", CommandLine.VERSION);
+                expected = expected.replace("$VERSION", CommandLine.VERSION).replace("\r\n", "\n").replace("\n", System.getProperty("line.separator"));
                 assertEquals("/manpagegenerator/" + f, expected, actual);
             }
 
