@@ -8,6 +8,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
 
 import static org.junit.Assert.*;
@@ -74,14 +75,24 @@ public class FallbackTest {
 
     @Test
     public void testSubcommandAssignedToOption() {
+        class MyBadParams implements CommandLine.IParameterExceptionHandler {
+            ParameterException ex;
+            public int handleParseException(ParameterException ex, String[] args) throws Exception {
+                this.ex = ex;
+                return 2;
+            }
+        }
+        MyBadParams handler = new MyBadParams();
         MyCommand cmd = new MyCommand();
         int exitCode = new CommandLine(cmd)
                 .setUnmatchedOptionsArePositionalParams(true)
+                .setParameterExceptionHandler(handler)
                 .execute("-x run app a".split(" "));
 
-        assertEquals("run", cmd.arity1);
-        assertEquals(0, exitCode);
+        assertEquals(2, exitCode);
+        assertEquals(null, cmd.arity1);
         assertNull(cmd.subApp);
-        assertArrayEquals(new String[]{"app", "a"}, cmd.params);
+        assertNotNull(handler.ex);
+        assertEquals("Expected parameter for option '-x' but found 'run'", handler.ex.getMessage());
     }
 }

@@ -919,16 +919,24 @@ public class CommandLineTest {
     }
     @Test
     public void testShortOptionsWithSeparatorButNoValueAssignsEmptyStringEvenIfNotLast() {
-        CompactFields compact = CommandLine.populateCommand(new CompactFields(), "-ro= -v".split(" "));
-        verifyCompact(compact, false, true, "-v", null);
+        try {
+            CommandLine.populateCommand(new CompactFields(), "-ro= -v".split(" "));
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Expected parameter for option '-o' but found '-v'", ex.getMessage());
+        }
     }
     @Test
     public void testShortOptionsWithColonSeparatorButNoValueAssignsEmptyStringEvenIfNotLast() {
         CompactFields compact = new CompactFields();
         CommandLine cmd = new CommandLine(compact);
         cmd.setSeparator(":");
-        cmd.parseArgs("-ro: -v".split(" "));
-        verifyCompact(compact, false, true, "-v", null);
+        try {
+            cmd.parseArgs("-ro: -v".split(" "));
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Expected parameter for option '-o' but found '-v'", ex.getMessage());
+        }
     }
     @Test
     public void testShortOptionsWithSeparatorButNoValueFailsIfValueRequired() {

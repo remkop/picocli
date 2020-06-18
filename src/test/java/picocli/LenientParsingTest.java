@@ -190,7 +190,7 @@ public class LenientParsingTest {
         cmd.getCommandSpec().parser().collectErrors(true);
         cmd.parseArgs("-Long", "-boolean");
         assertEquals(1, cmd.getParseResult().errors().size());
-        assertEquals("Invalid value for option '-Long': '-boolean' is not a long", cmd.getParseResult().errors().get(0).getMessage());
+        assertEquals("Expected parameter for option '-Long' but found '-boolean'", cmd.getParseResult().errors().get(0).getMessage());
     }
     @Test
     public void testBooleanOptionsArity0_nFailsIfAttachedParamNotABoolean() { // ignores varargs

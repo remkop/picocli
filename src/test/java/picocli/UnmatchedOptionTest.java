@@ -115,7 +115,6 @@ public class UnmatchedOptionTest {
         assertArrayEquals(new String[]{"4", "5"}, app.y);
     }
 
-    @Ignore
     @Test
     public void testSingleValueOptionDoesNotConsumeActualOption() {
         class App {
@@ -123,8 +122,7 @@ public class UnmatchedOptionTest {
             @Option(names = "-y") String y;
         }
 
-        //FIXME
-        expect(new App(), "Missing required parameter for option '-x' (<x>)", MissingParameterException.class, "-y", "-x");
+        expect(new App(), "Expected parameter for option '-y' but found '-x'", MissingParameterException.class, "-y", "-x");
     }
 
     @Test

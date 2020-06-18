@@ -12829,12 +12829,18 @@ public class CommandLine {
                                                   Set<ArgSpec> initialized,
                                                   String argDescription) throws Exception {
             boolean noMoreValues = args.isEmpty();
-            String value = args.isEmpty() ? null : args.pop();
+            String value = noMoreValues ? null : args.pop();
+            String quotedValue = value;
             if (commandSpec.parser().trimQuotes() && !alreadyUnquoted) {value = unquote(value);}
             Range arity = argSpec.arity().isUnspecified ? derivedArity : argSpec.arity(); // #509
             if (arity.max == 0 && !arity.isUnspecified && lookBehind == LookBehind.ATTACHED_WITH_SEPARATOR) { // #509
                 throw new MaxValuesExceededException(CommandLine.this, optionDescription("", argSpec, 0) +
                         " should be specified without '" + value + "' parameter");
+            }
+            if (arity.min > 0) {
+                args.push(quotedValue);
+                assertNoMissingMandatoryParameter(argSpec, args, 0, arity);
+                args.pop();
             }
             int consumed = arity.min; // the number or args we need to consume
 

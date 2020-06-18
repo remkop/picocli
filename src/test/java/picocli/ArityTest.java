@@ -769,7 +769,7 @@ public class ArityTest {
             CommandLine.populateCommand(new App(),  "-Long", "-boolean");
             fail("should fail");
         } catch (CommandLine.ParameterException ex) {
-            assertEquals("Invalid value for option '-Long': '-boolean' is not a long", ex.getMessage());
+            assertEquals("Expected parameter for option '-Long' but found '-boolean'", ex.getMessage());
         }
     }
     /** see <a href="https://github.com/remkop/picocli/issues/279">issue #279</a>  */
