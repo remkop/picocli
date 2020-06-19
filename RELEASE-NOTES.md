@@ -8,6 +8,8 @@ This release contains bugfixes and enhancements.
 From this release, picocli supports abbreviated options and subcommands. When abbreviations are enabled, users can specify the initial letter(s) of the first component and optionally of one or more subsequent components of an option or subcommand name.
 "Components" are separated by `-` dash characters or by case, so for example, both `--CamelCase` and `--kebab-case` have two components.
 
+Parser fixes and improvements: the parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes. Also, values that resemble, but not exactly match, option names are now treated more consistently and parser behaviour for such values is configurable.
+
 From this release, the `ManPageGenerator` tool can be used as a subcommand in your application.
 
 Fixed a bug in argument group parsing where incorrect input with missing mandatory elements was accepted when an option was specified multiple times.
@@ -18,6 +20,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 ## <a name="4.4.0-toc"></a> Table of Contents
 * [New and noteworthy](#4.4.0-new)
   * [Abbreviated Options and Subcommands](#4.4.0-abbreviated-options-and-commands)
+  * [Parser Fixes and Improvements](#4.4.0-parser)
   * [ManPageGenerator as Subcommand in Your App](#4.4.0-gen-manpage-subcommand)
 * [Fixed issues](#4.4.0-fixes)
 * [Deprecations](#4.4.0-deprecated)
@@ -78,6 +81,35 @@ assertFalse(app.b);
 
 When abbreviated options are enabled, user input `-AB` will match the long `-AaaBbb` option, but not the `-A` and `-B` options.
 
+### <a name="4.4.0-parser"></a> Parser Fixes and Improvements
+
+Parser fixes and improvements: the parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes. For example:
+
+```java
+class App {
+    @Option(names = "-x") String x;
+    @Option(names = "-y") String y;
+}
+```
+
+In previous versions of picocli, the above command would accept input `-x -y`, and the value `-y` would be assigned to the `x` String field. From this release, the above input will be rejected with an error message indicating that the `-x` option requires a parameter.
+
+If it is necessary to accept values that match option names, these values need to be quoted. For example:
+
+```java
+class App {
+    @Option(names = "-x") String x;
+    @Option(names = "-y") String y;
+
+    public static void main(String... args) {
+        App app = new App();
+        new CommandLine(app).setTrimQuotes(true).parseArgs("-x=\"-y\"");
+        assertEquals("-y", app.x);
+    }
+}
+```
+
+
 
 ### <a name="4.4.0-gen-manpage-subcommand"></a> ManPageGenerator as Subcommand in Your App
 
@@ -119,6 +151,7 @@ To use the `ManPageGenerator` tool as a subcommand, you will need the `picocli-c
 * [#1109][#1112] Enhancement: Fix `ManPageGenerator` to ensure generated AsciiDoc man pages use UTF-8 encoding. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1063][#1064] `ManPageGenerator` now correctly excludes hidden options, parameters, and subcommands from man page generation. Thanks to [Brian Demers](https://github.com/bdemers) for the pull request.
 * [#1103] Enhancement: Tests no longer fail under Cygwin/ConEmu due to ANSI in output. Thanks to [David Walluck](https://github.com/dwalluck) for raising this.
+* [#1055] Bugfix: The parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes. Thanks to [waacc-gh](https://github.com/waacc-gh) for raising this.
 * [#1071] Bugfix: Usage help no longer renders options header when it is specified via `optionListHeading` when all options are hidden.
 * [#1081] Bugfix: `CommandLine.Help` constructor no longer calls overridable methods `addAllSubcommands` and `createDefaultParamLabelRenderer`.
 * [#1065] Bugfix: With a `List<>` option in `@ArgGroup`, group incorrectly appears twice in the synopsis. Thanks to [kap4lin](https://github.com/kap4lin) for raising this.
@@ -137,6 +170,10 @@ To use the `ManPageGenerator` tool as a subcommand, you will need the `picocli-c
 No features were deprecated in this release.
 
 ## <a name="4.4.0-breaking-changes"></a> Potential breaking changes
+The parser behaviour has changed: picocli will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes.
+Applications that rely on this behaviour need to use quoted values.
+
+
 This release changes the synopsis for commands with argument groups:
 the synopsis now shows the non-group options before argument groups, where previously argument groups were shown first.
 

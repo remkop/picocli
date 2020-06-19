@@ -2435,6 +2435,38 @@ If picocli finds a field annotated with `@Unmatched`, it automatically sets `unm
 so no `UnmatchedArgumentException` is thrown when a command line argument cannot be assigned to an option or positional parameter.
 If no unmatched arguments are found, the value of the field annotated with `@Unmatched` is unchanged.
 
+=== Option Names as Option Values
+Since picocli 4.4, the parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes.
+For example:
+
+[source,java]
+----
+class App {
+    @Option(names = "-x") String x;
+    @Option(names = "-y") String y;
+}
+----
+
+In previous versions of picocli, the above command would accept input `-x -y`, and the value `-y` would be assigned to the `x` String field.
+From this release, the above input will be rejected with an error message indicating that the `-x` option requires a parameter.
+
+If it is necessary to accept values that match option names, these values need to be quoted.
+For example:
+
+[source,java]
+----
+class App {
+    @Option(names = "-x") String x;
+    @Option(names = "-y") String y;
+
+    public static void main(String... args) {
+        App app = new App();
+        new CommandLine(app).setTrimQuotes(true).parseArgs("-x=\"-y\"");
+        assertEquals("-y", app.x);
+    }
+}
+----
+
 === Unknown Options
 A special case of unmatched input are arguments that resemble options but don't match any of the defined options.
 For example:

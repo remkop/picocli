@@ -116,6 +116,15 @@ public class UnmatchedOptionTest {
     }
 
     @Test
+    public void testSingleValueOptionDoesNotConsumeActualOptionSimple() {
+        class App {
+            @Option(names = "-x") String x;
+        }
+
+        expect(new App(), "Expected parameter for option '-x' but found '-x'", MissingParameterException.class, "-x", "-x");
+    }
+
+    @Test
     public void testSingleValueOptionDoesNotConsumeActualOption() {
         class App {
             @Option(names = "-x") int x;
@@ -123,6 +132,20 @@ public class UnmatchedOptionTest {
         }
 
         expect(new App(), "Expected parameter for option '-y' but found '-x'", MissingParameterException.class, "-y", "-x");
+    }
+
+    @Test
+    public void testSingleValueOptionCanConsumeQuotedActualOption() {
+        class App {
+            @Option(names = "-x") int x;
+            @Option(names = "-y") String y;
+        }
+        App app = new App();
+        new CommandLine(app).parseArgs("-y", "\"-x\"");
+        assertEquals("\"-x\"", app.y);
+
+        new CommandLine(app).setTrimQuotes(true).parseArgs("-y", "\"-x\"");
+        assertEquals("-x", app.y);
     }
 
     @Test
