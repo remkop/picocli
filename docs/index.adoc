@@ -414,7 +414,7 @@ This is enough in most cases, but picocli offers alternatives for applications t
 
 === Negatable Options
 
-From picocli 4.0, options can be `negatable`.
+From picocli 4.0, boolean options can be `negatable`.
 
 ```java
 @Command(name = "negatable-options-demo")
