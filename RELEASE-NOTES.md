@@ -83,6 +83,8 @@ When abbreviated options are enabled, user input `-AB` will match the long `-Aaa
 
 ### <a name="4.4.0-parser"></a> Parser Fixes and Improvements
 
+#### Option Names as Option Values
+
 Parser fixes and improvements: the parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes. For example:
 
 ```java
@@ -109,6 +111,18 @@ class App {
 }
 ```
 
+#### Vararg Positional Parameters No Longer Consume Unmatched Options
+
+Vararg positional arguments no longer consume unmatched options unless `unmatchedOptionsArePositionalParams` is set to `true`. For example:
+
+```java
+class App {
+    @Parameters(arity = "*") String[] positionals;
+}
+```
+
+In previous versions of picocli, the above command would reject input `-z 123` with error `"Unknown option: '-z'`, but input `123 -z` would be accepted and the `positionals` String array would contain two values, `123` and `-z`.
+From this release, both of the above input sequences will be rejected with an error message indicating that `-z` is an unknown option.
 
 
 ### <a name="4.4.0-gen-manpage-subcommand"></a> ManPageGenerator as Subcommand in Your App
@@ -152,6 +166,7 @@ To use the `ManPageGenerator` tool as a subcommand, you will need the `picocli-c
 * [#1063][#1064] `ManPageGenerator` now correctly excludes hidden options, parameters, and subcommands from man page generation. Thanks to [Brian Demers](https://github.com/bdemers) for the pull request.
 * [#1103] Enhancement: Tests no longer fail under Cygwin/ConEmu due to ANSI in output. Thanks to [David Walluck](https://github.com/dwalluck) for raising this.
 * [#1055] Bugfix: The parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes. Thanks to [waacc-gh](https://github.com/waacc-gh) for raising this.
+* [#1015] Bugfix: Parser improvement: varargs positional arguments no longer consume unmatched options unless `unmatchedOptionsArePositionalParams` is configured. Thanks to [Chris Smowton](https://github.com/smowton) for raising this.
 * [#1071] Bugfix: Usage help no longer renders options header when it is specified via `optionListHeading` when all options are hidden.
 * [#1081] Bugfix: `CommandLine.Help` constructor no longer calls overridable methods `addAllSubcommands` and `createDefaultParamLabelRenderer`.
 * [#1065] Bugfix: With a `List<>` option in `@ArgGroup`, group incorrectly appears twice in the synopsis. Thanks to [kap4lin](https://github.com/kap4lin) for raising this.

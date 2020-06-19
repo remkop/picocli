@@ -263,7 +263,16 @@ public class UnmatchedOptionTest {
         assertArrayEquals(new String[]{"4", "-z"}, app.y);
     }
 
-    @Ignore
+    @Test
+    public void testMultiValueVarArgPositionalDoesNotConsumeArgResemblingOptionSimple() {
+        class App {
+            @Parameters(arity = "*") String[] y;
+        }
+
+        expect(new App(), "Unknown option: '-z'", UnmatchedArgumentException.class, "-z", "4");
+        expect(new App(), "Unknown option: '-z'", UnmatchedArgumentException.class, "4", "-z");
+    }
+
     @Test
     public void testMultiValueVarArgPositionalDoesNotConsumeArgResemblingOption() {
         class App {
@@ -274,7 +283,6 @@ public class UnmatchedOptionTest {
         expect(new App(), "Unknown option: '-z'", UnmatchedArgumentException.class, "-x", "3", "-z");
         expect(new App(), "Unknown option: '-z'", UnmatchedArgumentException.class, "-x", "3", "-z", "4");
 
-        //FIXME
         expect(new App(), "Unknown option: '-z'", UnmatchedArgumentException.class, "-x", "3", "4", "-z");
     }
     @Test
@@ -300,7 +308,6 @@ public class UnmatchedOptionTest {
         assertArrayEquals(new String[]{"4", "-z"}, app.y);
     }
 
-    @Ignore
     @Test
     public void testMultiValuePositionalArity2_NDoesNotConsumeArgResemblingOption() {
         class App {
@@ -314,7 +321,6 @@ public class UnmatchedOptionTest {
         expect(new App(), "positional parameter at index 0..* (<y>) requires at least 2 values, but only 1 were specified: [4]",
                 MissingParameterException.class, "-x", "3", "-z", "4");
 
-        //FIXME
         expect(new App(), "Unknown option: '-z'", UnmatchedArgumentException.class, "-x", "3", "4", "-z");
     }
     @Test

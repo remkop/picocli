@@ -1093,18 +1093,24 @@ public class CommandLineTest {
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
                         "[picocli DEBUG] [2] Processing next arg as a positional parameter. Command-local position=0. Remainder=[-r, -v, p1, p2]%n" +
                         "[picocli DEBUG] Position 0 (command-local) is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
+                        "[picocli DEBUG] '-r' resembles an option: 4 matching prefix chars out of 3 option names%n" +
+                        "[picocli DEBUG] Parser is configured to allow unmatched option '-r' as option or positional parameter.%n" +
                         "[picocli INFO] Adding [-r] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 0%n" +
                         "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 1.%n" +
                         "[picocli DEBUG] [3] Processing next arg as a positional parameter. Command-local position=1. Remainder=[-v, p1, p2]%n" +
-                        "[picocli DEBUG] Position 1 (command-local) is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
+                        "[picocli DEBUG] Position 1 (command-local) is in index range 0..*. Trying to assign args to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles, arity=0..1%n" +
+                        "[picocli DEBUG] '-v' resembles an option: 4 matching prefix chars out of 3 option names%n" +
+                        "[picocli DEBUG] Parser is configured to allow unmatched option '-v' as option or positional parameter.%n" +
                         "[picocli INFO] Adding [-v] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 1%n" +
                         "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 2.%n" +
                         "[picocli DEBUG] [4] Processing next arg as a positional parameter. Command-local position=2. Remainder=[p1, p2]%n" +
-                        "[picocli DEBUG] Position 2 (command-local) is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
+                        "[picocli DEBUG] Position 2 (command-local) is in index range 0..*. Trying to assign args to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles, arity=0..1%n" +
+                        "[picocli DEBUG] 'p1' doesn't resemble an option: 0 matching prefix chars out of 3 option names%n" +
                         "[picocli INFO] Adding [p1] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 2%n" +
                         "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 3.%n" +
                         "[picocli DEBUG] [5] Processing next arg as a positional parameter. Command-local position=3. Remainder=[p2]%n" +
-                        "[picocli DEBUG] Position 3 (command-local) is in index range 0..*. Trying to assign args to field java.io.File[] %1$s$CompactFields.inputFiles, arity=0..1%n" +
+                        "[picocli DEBUG] Position 3 (command-local) is in index range 0..*. Trying to assign args to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles, arity=0..1%n" +
+                        "[picocli DEBUG] 'p2' doesn't resemble an option: 0 matching prefix chars out of 3 option names%n" +
                         "[picocli INFO] Adding [p2] to field java.io.File[] picocli.CommandLineTest$CompactFields.inputFiles for args[0..*] at position 3%n" +
                         "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 4.%n" +
                         "[picocli DEBUG] Applying default values for command '<main class>'%n" +
@@ -2075,22 +2081,26 @@ public class CommandLineTest {
                         "[picocli DEBUG] Set initial value for field java.util.List<java.io.File> picocli.Demo$GitCommit.files of type interface java.util.List to [].%n" +
                         "[picocli DEBUG] [2] Processing argument '-m'. Remainder=[\"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] '-m' cannot be separated into <option>=<option-parameter>%n" +
-                        "[picocli DEBUG] Found option named '-m': field java.util.List<String> %1$s$GitCommit.message, arity=1%n" +
+                        "[picocli DEBUG] Found option named '-m': field java.util.List<String> picocli.Demo$GitCommit.message, arity=1%n" +
+                        "[picocli DEBUG] '\"Fixed typos\"' doesn't resemble an option: 0 matching prefix chars out of 14 option names%n" +
                         "[picocli INFO] Adding [\"Fixed typos\"] to field java.util.List<String> picocli.Demo$GitCommit.message for option -m%n" +
                         "[picocli DEBUG] Initializing binding for option '--message' (<msg>)%n" +
                         "[picocli DEBUG] [4] Processing argument '--'. Remainder=[src1.java, src2.java, src3.java]%n" +
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
                         "[picocli DEBUG] [5] Processing next arg as a positional parameter. Command-local position=0. Remainder=[src1.java, src2.java, src3.java]%n" +
-                        "[picocli DEBUG] Position 0 (command-local) is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
+                        "[picocli DEBUG] Position 0 (command-local) is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> picocli.Demo$GitCommit.files, arity=0..1%n" +
+                        "[picocli DEBUG] 'src1.java' doesn't resemble an option: 0 matching prefix chars out of 14 option names%n" +
                         "[picocli INFO] Adding [src1.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 0%n" +
                         "[picocli DEBUG] Initializing binding for positional parameter at index 0..* (<files>)%n" +
                         "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 1.%n" +
                         "[picocli DEBUG] [6] Processing next arg as a positional parameter. Command-local position=1. Remainder=[src2.java, src3.java]%n" +
-                        "[picocli DEBUG] Position 1 (command-local) is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
+                        "[picocli DEBUG] Position 1 (command-local) is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> picocli.Demo$GitCommit.files, arity=0..1%n" +
+                        "[picocli DEBUG] 'src2.java' doesn't resemble an option: 0 matching prefix chars out of 14 option names%n" +
                         "[picocli INFO] Adding [src2.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 1%n" +
                         "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 2.%n" +
                         "[picocli DEBUG] [7] Processing next arg as a positional parameter. Command-local position=2. Remainder=[src3.java]%n" +
-                        "[picocli DEBUG] Position 2 (command-local) is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> %1$s$GitCommit.files, arity=0..1%n" +
+                        "[picocli DEBUG] Position 2 (command-local) is in index range 0..*. Trying to assign args to field java.util.List<java.io.File> picocli.Demo$GitCommit.files, arity=0..1%n" +
+                        "[picocli DEBUG] 'src3.java' doesn't resemble an option: 0 matching prefix chars out of 14 option names%n" +
                         "[picocli INFO] Adding [src3.java] to field java.util.List<java.io.File> picocli.Demo$GitCommit.files for args[0..*] at position 2%n" +
                         "[picocli DEBUG] Consumed 1 arguments and 0 interactive values, moving command-local position to index 3.%n" +
                         "[picocli DEBUG] Applying default values for command 'git git-commit'%n" +

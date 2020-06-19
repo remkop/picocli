@@ -12989,6 +12989,9 @@ public class CommandLine {
                 Map<Object, Object> typedValuesAtPosition = new LinkedHashMap<Object, Object>();
                 parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
                 assertNoMissingMandatoryParameter(argSpec, args, i, arity);
+                if (isArgResemblesOptionThereforeDiscontinue(argSpec, args)) {
+                    break;
+                }
                 consumeOneMapArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
                 result.putAll(typedValuesAtPosition);
                 consumed = consumedCountMap(i + 1, initialSize, argSpec);
@@ -13009,6 +13012,9 @@ public class CommandLine {
                 parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
                 if (!canConsumeOneMapArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.peek(), classes, keyConverter, valueConverter, argDescription)) {
                     break; // leave empty map at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again
+                }
+                if (isArgResemblesOptionThereforeDiscontinue(argSpec, args)) {
+                    break;
                 }
                 consumeOneMapArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
                 result.putAll(typedValuesAtPosition);
@@ -13174,6 +13180,9 @@ public class CommandLine {
                 List<Object> typedValuesAtPosition = new ArrayList<Object>();
                 parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
                 assertNoMissingMandatoryParameter(argSpec, args, i, arity);
+                if (isArgResemblesOptionThereforeDiscontinue(argSpec, args)) {
+                    break;
+                }
                 consumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
                 result.addAll(typedValuesAtPosition);
                 consumed = consumedCount(i + 1, initialSize, argSpec);
@@ -13201,6 +13210,9 @@ public class CommandLine {
                     if (!canConsumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.peek(), type, argDescription)) {
                         break; // leave empty list at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again
                     }
+                    if (isArgResemblesOptionThereforeDiscontinue(argSpec, args)) {
+                        break;
+                    }
                     consumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
                     result.addAll(typedValuesAtPosition);
                     consumed = consumedCount(i + 1, initialSize, argSpec);
@@ -13223,6 +13235,21 @@ public class CommandLine {
                 } else {
                     return Collections.singletonList((Object) Boolean.TRUE);
                 }
+            }
+            return result;
+        }
+
+        private boolean isArgResemblesOptionThereforeDiscontinue(ArgSpec argSpec, Stack<String> args) throws Exception {
+            boolean result = false;
+            String arg = args.peek();
+            if (commandSpec.resemblesOption(arg, tracer)) {
+                if ((argSpec.isPositional() && !(endOfOptions || commandSpec.parser().unmatchedOptionsArePositionalParams())) // #1015
+                //|| (argSpec.isOption() /*&& !commandSpec.parser().unmatchedOptionsAllowedAsOptionParams()*/) // #639
+                ) {
+                    handleUnmatchedArgument(args);
+                    result = true;
+                }
+                if (tracer.isDebug()) {tracer.debug("Parser is configured to allow unmatched option '%s' as option or positional parameter.%n", arg);}
             }
             return result;
         }
