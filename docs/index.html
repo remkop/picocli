@@ -9132,7 +9132,7 @@ Multi-line text blocks can be used in command and option descriptions, headers a
         <span class="keyword">try</span> {
             <span class="keyword">return</span> injector.getInstance(aClass);
         } <span class="keyword">catch</span> (<span class="exception">ConfigurationException</span> ex) { <span class="comment">// no implementation found in Guice configuration</span>
-            <span class="keyword">return</span> CommandLine.defaultFactory().create(clazz); <span class="comment">// fallback if missing</span>
+            <span class="keyword">return</span> CommandLine.defaultFactory().create(aClass); <span class="comment">// fallback if missing</span>
         }
     }
 

@@ -6155,7 +6155,7 @@ public class GuiceFactory implements IFactory {
         try {
             return injector.getInstance(aClass);
         } catch (ConfigurationException ex) { // no implementation found in Guice configuration
-            return CommandLine.defaultFactory().create(clazz); // fallback if missing
+            return CommandLine.defaultFactory().create(aClass); // fallback if missing
         }
     }
 
