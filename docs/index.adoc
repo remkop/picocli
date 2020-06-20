@@ -6145,7 +6145,8 @@ The below example shows how to create a <<Custom Factory,custom `IFactory`>> imp
 [source,java]
 ----
 import com.google.inject.*;
-import picocli.CommandLine.IFactory;
+import picocli.*;
+import picocli.CommandLine.*;
 
 public class GuiceFactory implements IFactory {
     private final Injector injector = Guice.createInjector(new DemoModule());
@@ -6155,7 +6156,7 @@ public class GuiceFactory implements IFactory {
         try {
             return injector.getInstance(aClass);
         } catch (ConfigurationException ex) { // no implementation found in Guice configuration
-            return CommandLine.defaultFactory().create(clazz); // fallback if missing
+            return CommandLine.defaultFactory().create(aClass); // fallback if missing
         }
     }
 
@@ -6163,7 +6164,6 @@ public class GuiceFactory implements IFactory {
         @Override
         protected void configure() {
             bind(java.util.List.class).to(java.util.LinkedList.class);
-            bind(Runnable.class).to(InjectionDemo.class);
         }
     }
 }
@@ -6173,7 +6173,9 @@ Use the custom factory when creating a `CommandLine` instance, or when invoking 
 
 [source,java]
 ----
-import javax.inject.Inject;
+import javax.inject.*;
+import picocli.*;
+import picocli.CommandLine.*;
 
 @Command(name = "di-demo")
 public class InjectionDemo implements Runnable {
@@ -6182,7 +6184,7 @@ public class InjectionDemo implements Runnable {
     @Option(names = "-x") int x;
 
     public static void main(String[] args) {
-        new CommandLine(Runnable.class, new GuiceFactory()).execute(args);
+        new CommandLine(InjectionDemo.class, new GuiceFactory()).execute(args);
     }
 
     @Override
