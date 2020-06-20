@@ -9122,7 +9122,8 @@ Multi-line text blocks can be used in command and option descriptions, headers a
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">com.google.inject</span>.*;
-<span class="keyword">import</span> <span class="include">picocli.CommandLine.IFactory</span>;
+<span class="keyword">import</span> <span class="include">picocli</span>.*;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine</span>.*;
 
 <span class="directive">public</span> <span class="type">class</span> <span class="class">GuiceFactory</span> <span class="directive">implements</span> IFactory {
     <span class="directive">private</span> <span class="directive">final</span> Injector injector = Guice.createInjector(<span class="keyword">new</span> DemoModule());
@@ -9140,7 +9141,6 @@ Multi-line text blocks can be used in command and option descriptions, headers a
         <span class="annotation">@Override</span>
         <span class="directive">protected</span> <span class="type">void</span> configure() {
             bind(java.util.List.class).to(java.util.LinkedList.class);
-            bind(<span class="predefined-type">Runnable</span>.class).to(InjectionDemo.class);
         }
     }
 }</code></pre>
@@ -9151,7 +9151,9 @@ Multi-line text blocks can be used in command and option descriptions, headers a
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">javax.inject.Inject</span>;
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">javax.inject</span>.*;
+<span class="keyword">import</span> <span class="include">picocli</span>.*;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine</span>.*;
 
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">di-demo</span><span class="delimiter">&quot;</span></span>)
 <span class="directive">public</span> <span class="type">class</span> <span class="class">InjectionDemo</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
@@ -9160,7 +9162,7 @@ Multi-line text blocks can be used in command and option descriptions, headers a
     <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>) <span class="type">int</span> x;
 
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
-        <span class="keyword">new</span> CommandLine(<span class="predefined-type">Runnable</span>.class, <span class="keyword">new</span> GuiceFactory()).execute(args);
+        <span class="keyword">new</span> CommandLine(InjectionDemo.class, <span class="keyword">new</span> GuiceFactory()).execute(args);
     }
 
     <span class="annotation">@Override</span>
