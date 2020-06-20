@@ -6145,8 +6145,8 @@ The below example shows how to create a <<Custom Factory,custom `IFactory`>> imp
 [source,java]
 ----
 import com.google.inject.*;
-import picocli.*;
-import picocli.CommandLine.*;
+import picocli.CommandLine;
+import picocli.CommandLine.IFactory;
 
 public class GuiceFactory implements IFactory {
     private final Injector injector = Guice.createInjector(new DemoModule());
