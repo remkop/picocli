@@ -178,6 +178,7 @@ To use the `ManPageGenerator` tool as a subcommand, you will need the `picocli-c
 * [#1058][#1060] DOC: Man page generator: add documentation about creating language variants.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1073] DOC: Improve user manual: fix typos, update content. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1102] DOC: Show `descriptionKeys` for `@file` and EndOfOptions (--) delimiter in resource bundles.
+* [#1116] DOC: Improved Guice example in user manual. Thanks to [H.Sakata](https://github.com/sakata1222) for the pull request.
 * [#1099] Dependency Upgrade: Bump JLine to 3.15.0. Thanks to [mattirn](https://github.com/mattirn) for the pull request.
 
 
