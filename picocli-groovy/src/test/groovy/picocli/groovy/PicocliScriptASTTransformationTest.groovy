@@ -371,7 +371,7 @@ import picocli.CommandLine.Parameters
             assert collector.errors[0] instanceof SyntaxErrorMessage
             SyntaxException syntex = ((SyntaxErrorMessage) collector.errors[0]).cause
             String expected = String.format("Declared type java.lang.Long -> java.lang.Long does not extend groovy.lang.Script class!\n @ line 2, column 1.")
-            assert expected == syntex.message
+            assert expected.split("@")[0] == syntex.message.split("@")[0]
         }
     }
 
