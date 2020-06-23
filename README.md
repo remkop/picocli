@@ -97,9 +97,14 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 
 ### Articles & Presentations
 #### English
+* [AUDIO] [Scala Valentines #2](https://scala.love/scala-valentines-2/) (2020-06-21) Podcast talks about picocli (from 18:11). 
+* [How to create a command line tool using Java?](https://fullstackdeveloper.guru/2020/06/18/how-to-create-a-command-line-tool-using-java/) (2020-06-18) by [Vijay SRJ](https://twitter.com/FullStackDevel6).
+* [Command-line tools with Quarkus and Picocli](https://quarkify.net/command-line-tools-with-quarkus-and-picocli/) (2020-06-08) by [Dmytro Chaban](https://twitter.com/dmi3coder).
 * Quarkus guide for [Quarkus command mode with picocli](https://quarkus.io/guides/picocli), thanks to a picocli extension by [Michał Górniewski](https://github.com/mgorniew) included in [Quarkus 1.5](https://quarkus.io/blog/quarkus-1-5-final-released/) (2020-06-03).
 * [CLI applications with Micronaut and Picocli](https://dev.to/stack-labs/cli-applications-with-micronaut-and-picocli-4mc8) (2020-06-01) by [Λ\: Olivier Revial](https://twitter.com/pommeDouze).
+* [Picocli introduction - Modern Java command-line parsing](https://aragost.com/blog/java/picocli-introduction.html) (2020-05-19) by [Jonas Andersen](https://twitter.com/PrimusAlgo).
 * [Building Native Covid19 Tracker CLI using Java, PicoCLI & GraalVM](https://aboullaite.me/java-covid19-cli-picocli-graalvm/) (2020-05-11) by [Mohammed Aboullaite](https://aboullaite.me/author/mohammed/).
+* [Quarkus Command mode with Picocli](https://quarkify.net/quarkus-command-mode-with-picocli/) (2020-04-27) by [Dmytro Chaban](https://twitter.com/dmi3coder).
 * [Creating CLI tools with Scala, Picocli and GraalVM](https://medium.com/@takezoe/creating-cli-tools-with-scala-picocli-and-graalvm-ffde05bbd01d) (2020-03-09) by [Naoki Takezoe](https://twitter.com/takezoen)
 * [Building native Java CLIs with GraalVM, Picocli, and Gradle](https://medium.com/@mitch.seymour/building-native-java-clis-with-graalvm-picocli-and-gradle-2e8a8388d70d) (2020-03-08) by [Mitch Seymour](https://medium.com/@mitch.seymour)
 * [Build Great Native CLI Apps in Java with Graalvm and Picocli](https://www.infoq.com/articles/java-native-cli-graalvm-picocli/) (2020-03-07)
@@ -122,6 +127,7 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 * [Интерфейсы командной строки Java: picocli](https://habr.com/ru/company/otus/blog/419401/) (2018-08-06): Russian translation by [MaxRokatansky](https://habr.com/ru/users/MaxRokatansky/) of Dustin Marx' blog post.
 
 #### Español
+* [Quarkus - Introducción: picocli](https://gerardo.dev/aws-quarkus-picocli.html) (2020-06-15) by [Gerardo Arroyo](https://twitter.com/codewarrior506).
 * [VIDEO] [Picocli - Spring Boot example](https://youtu.be/y9ayfjfrTF4) (2020-05-24) 7-minute quick introduction by Gonzalo H. Mendoza.
 
 #### Français
