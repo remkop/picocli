@@ -1,0 +1,323 @@
+[quote, Jakub Korab (@jakekorab), https://twitter.com/jakekorab/status/1273644747639357447]
+Picocli is PFM.
+http://picocli.info
+
+---
+
+[quote, The Full Stack Developer (@FullStackDevel6), https://twitter.com/FullStackDevel6/status/1273570156891926528]
+@picocli is a cool library to create command line tools in java. Here is my experience on creating my first command line tool.. https://fullstackdeveloper.guru/2020/06/18/how-to-create-a-command-line-tool-using-java/
+
+---
+
+
+[quote, Anthony Ikeda (@anthonyikeda), https://twitter.com/anthonyikeda/status/1268227543544389632]
+@QuarkusIO Thank you so much for Picocli integration in  1.5.0!!!
+
+---
+[quote, Ryan (@RRMcGuinness), https://twitter.com/RRMcGuinness/status/1264990741983608834]
+I’ve really enjoyed PicoCLI for Java as it aligns to Docker and other complex formats.
+
+---
+
+[quote, Jonas Andersen (@PrimusAlgo), https://twitter.com/PrimusAlgo/status/1262760580806393860]
+Your command-line applications also deserve a good UX. I just published a gentle introduction to #Java command-line applications with #picocli. https://aragost.com/blog/java/picocli-introduction.html
+
+---
+
+
+[quote, Sergei Egorov (@bsideup), https://twitter.com/bsideup/status/1259479581817536512]
+Nice! Had a positive experience building @cimate_io's native binary with #picocli as well:
+https://github.com/testcontainers/testcontainers-java/blob/8377288a10a892d8ed830b59b860eb3e40a72491/.github/workflows/ci.yml#L71
+
+---
+
+
+[quote, Alexandre Grison (@algrison), https://twitter.com/algrison/status/1259393589114789889]
+Awesome! I did use  @picocli some time ago the doc is phenomenal.
+Nowadays, I usually code these kind of tools using #Clojure and #babashka.
+You got me interested, so I did the same one with these, 40 lines, execution is instant. No way I use bash again 🤣
+
+---
+
+
+[quote, Mohammed Aboullaite (@laytoun), https://twitter.com/laytoun/status/1259198700397776901]
+When it comes to building a command line tool, #Java is generally not the first language that comes to mind!
+I spent the day playing with @picocli building a #covid19 tracker CLI, compiled to native binary using @graalvm! It was fun  https://asciinema.org/a/aUIoDq6jRE5eYFWAJicTMmiI9
+
+---
+
+
+[quote, Nicola Corti (@cortinico), https://twitter.com/cortinico/status/1258442538014380032]
+The CLI parameter parsing is done with picocli: http://github.com/remkop/picocli/
+This makes really easy to create scripts that are easier to use and understand also for other humans or #AndroidDev out there Smiling face with open mouth and cold sweat You get a --help for free like here (image)
+
+---
+
+
+[quote, Galder Zamarreño (@galderz), https://twitter.com/galderz/status/1255440605246873600]
+Very impressed with picocli. Pretty much anything you'd want to do with a CLI. Just tried converting types and sub-subcommands. The docu is top notch, very easy to find things there: http://picocli.info #picocli #java thx
+@maxandersen for tip
+
+---
+[quote, Ralf D. Müller™ (@RalfDMueller), https://twitter.com/RalfDMueller/status/1251417574782402560]
+my impressions so far:  @picocli is a great choice for cl parsing to start up a tool. #jline is great for interactive input while running. Together they are the best choice I have found so far cli tools on the #jvm. 😀 😎
+but now I still need to create my PoC
+
+---
+
+[quote, George Mich (@gmich_), https://twitter.com/gmich_/status/1250159695991582720]
+Congrats. I remember a couple of years ago when I first used it, there were maybe a couple dozen of them. Cudos and thanks for this great framework.
+
+---
+[quote, Michael Simons (@rotnroll666), https://twitter.com/rotnroll666/status/1249262533925580800]
+I'm late to the party, but I wholeheartly recommend PicoCLI as well. Our official Neo4j tooling (the admin tool https://github.com/neo4j/neo4j/blob/4.0.3/community/command-line/src/main/java/org/neo4j/cli/AdminTool.java ) uses it and I build the neo4j-migrations cli with it https://github.com/michael-simons/neo4j-migrations/tree/master/neo4j-migrations-cli Remko and the community did an outstanding job here.
+
+---
+[quote, Álvaro Sánchez-Mariscal (@alvaro_sanchez), https://twitter.com/alvaro_sanchez/status/1249077421023940611]
+We are rewriting the @micronautfw CLI with Picocli and... Micronaut, of course 😄
+However that's still in very early stages of development and I would not call it a good example.
+@RemkoPopma  surely has better ones
+
+---
+[quote, Yuri Schimke (@yschimke), https://twitter.com/yschimke/status/1247784245491200002]
+Picocli cleared a lot of issues for me
+
+---
+[quote, Philipp Hanslovsky (@hanslovsky), https://twitter.com/hanslovsky/status/1242863574512517121]
+____
+and uses @picocli, the best command line parser for the JVM, to read user options
+
+https://picocli.info
+
+3/3
+____
+---
+[quote, おれきゅー@駆け出しJavaエンジニア(@orekyuu), https://twitter.com/orekyuu/status/1239931661111853057]
+明日はgraalとpicocliで遊ぶぞ
+
+---
+[quote, かずひら (@kazuhira_r), https://twitter.com/kazuhira_r/status/1235967549424062464]
+書いた
+Javaのコマンドラインアプリケーション向けのフレームワーク、picocliで遊ぶ - CLOVER 🍀 https://kazuhira-r.hatenablog.com/entry/2020/03/07/013626
+
+---
+[quote, いまいまさのぶ (@masanobuimai), https://twitter.com/masanobuimai/status/1235195432495534080]
+Spring Batch、大袈裟感あるからなー。コマンドラインツールでSpring使いたいだけならpicocliじゃダメなの？って思うようになりました。
+|qω・`)ﾁﾗｯ
+
+---
+[quote, Nakamura Masato (@Masahito), https://twitter.com/Masahito/status/1234862173266071553]
+picocli面白い
+
+---
+[quote, Jun Ohtani (@johtani), https://twitter.com/johtani/status/1233696832649232384]
+picocli便利でした! / KuromojiのCLIコマンドとpicocliとGraalVM-
+@johtaniの日記 3rd | @johtani's blog 3rd edition - https://blog.johtani.info/blog/2020/02/28/kuromoji-cli/
+
+---
+[quote, Jun Ohtani (@johtani), https://twitter.com/johtani/status/1233223359489433600]
+とりあえず、picocliがすごく便利だってのはわかった。あと、これも。 https://github.com/palantir/gradle-graal
+
+---
+[quote, wreulicke (@wreulicke), https://twitter.com/wreulicke/status/1232488166910648321]
+picocliならspring-boot-starterもあるので
+spring bootとのintegrationも簡単ですね
+https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter
+
+---
+[quote, Eduardo Gonzalez (@wm_eddie), https://twitter.com/wm_eddie/status/1228302473032429568]
+I’ve done exactly that with @picocli it was awesome.
+
+---
+[quote, Oleg Šelajev (@shelajev), https://twitter.com/shelajev/status/1228093404934017025]
+@picocli might be interesting
+
+---
+(Replying to @picocli * What is it about picocli that makes you happy with it? * What would you do if picocli did not exist?)
+[quote, Michael Simons (@rotnroll666), https://twitter.com/rotnroll666/status/1224225614397419521]
+____
+Documentation and real world use cases (I.e I found how to inject main conf instance into subcommands and also how to replace key=Val separator with : etc)
+
+Probably would have run my own primitive key=val thing. Would have been enough for the start, but now I have already…
+
+…than planned in a lightweight setup that doesn’t get into my way.
+____
+
+---
+[quote, Matt Casters (@mattcasters), https://twitter.com/mattcasters/status/1218196413160488960]
+It's quite nice isn't it. I've turned to it when we needed a better CLI for Kettle. We'll completely switch to it for
+@projhop
+
+---
+[quote, Michael Simons (@rotnroll666), https://twitter.com/rotnroll666/status/1218140465863761920]
+There are some projects that really, really impress me.
+@picocli is one of those. So well thought of. Wow. https://picocli.info
+
+---
+[quote, François Farquet (@FFarquet), https://twitter.com/FFarquet/status/1211779749099556869]
+Agreed ! @picocli is awesome 👏
+
+---
+[quote, 大雪 命 (@mikoto2000), https://twitter.com/mikoto2000/status/1210188793078136832]
+あ、picocli は、 --help と --version を自分で作りこまなくて良いのが便利でした。
+
+---
+[quote, いまいまさのぶ (@masanobuimai), https://twitter.com/masanobuimai/status/1202137978983743489]
+Spring Bootを外して，picocliだけでネイティブビルドすると問題無く，どこに持っていっても動くexeができました。 https://github.com/masanobuimai/plain-picocli
+
+---
+[quote, Shunsuke Tadokoro (@todokr), https://twitter.com/todokr/status/1198050362071998465]
+picocliはJVM言語でときめくCLIアプリを作るためのライブラリ。コマンドオプションやヘルプをいい感じに実装できる。ドキュメントを流し読みするとGraalVMのnative-imageだけでなくjlinkやjpackageでの配布もできるっぽい。
+https://picocli.info
+#jjug_ccc #ccc_i1
+
+---
+[quote, Richard Groß (@ArghRich), https://twitter.com/ArghRich/status/1176613978988064770]
+PicoCli is awesome. We use it for CodeCharta.
+
+---
+[quote, Arnaud Héritier (@aheritier), https://twitter.com/aheritier/status/1175714849025908742]
+J’utilise picocli avec groovy dans Shinobi et je confirme la puissance. On est bon pour réécrire cbsupport en @java avec @graalvm et @QuarkusIO?
+
+---
+[quote, Oliver Kopp (@koppor), https://twitter.com/koppor/status/1174570961053638656]
+We already included it in adr-j (https://github.com/adoble/adr-j). Gradle Windows build correctly depends on https://github.com/palantir/gradle-graal/issues/184. -- Thank you for making the GraalVM build so easy!
+
+---
+[quote, Philipp Hanslovsky (@hanslovsky), https://twitter.com/hanslovsky/status/1173771196653015041]
+____
+TIL: @picocli CommandLine.execute uses the return code of its command as exit code if the command implements Callable<Integer>. This is also applied to all subcommands. How cool is that!!!
+
+https://picocli.info/#_generating_an_exit_code
+
+#Java #cli #commandline #interface
+____
+
+---
+[quote, Philipp Hanslovsky (@hanslovsky), https://twitter.com/hanslovsky/status/1158845336737255425]
+Bash completion file available as paintera_completion on the release page, auto-generated with the amazing @picocli CLI https://github.com/saalfeldlab/paintera/releases/tag/paintera-0.18.0
+
+---
+[quote, ふりぎ🗝 (@huruikagi), https://twitter.com/huruikagi/status/1152929954666958848]
+Kotlinで素敵にCLIやりたくなってpicocli調べてる
+https://picocli.info
+
+---
+[quote, かんがるー (@ksbyzero), https://twitter.com/ksbyzero/status/1152375792409559040]
+Blog を書きました。Picocli は usage を自動できれいに表示してくれるし、自動補完コマンドが作れるし、とても面白いです。https://ksby.hatenablog.com/entry/2019/07/20/092721
+
+---
+[quote, Original Codester (@furyGnu), https://twitter.com/furyGnu/status/1144587101188624384]
+(je viens de mater picocli et Akka et.... bah il se pourrait que ça soit super-utile pour mon projet ^^ #BrunoLesBonsTuyaux )
+
+---
+[quote, Philipp Hanslovsky (@hanslovsky), https://twitter.com/hanslovsky/status/1143626502749249538]
+Definitely support the picocli recommendation, a game changer for Java cli in my opinion
+
+---
+[quote, くろみー (@clomie), https://twitter.com/clomie/status/1141970640104148992]
+args4jとかApacheCommons CLIよりもっとモダンなコマンドラインオプションパーサーないのかって思って探したらpicocliってやつが良かった
+
+---
+[quote, Snow Days (@snow_days_world), https://twitter.com/snow_days_world/status/1141729392734830592]
+Picocliはマジで神
+
+---
+[quote, ISHIZUKA Ryuhei (@kacchi123), https://twitter.com/kacchi123/status/1132987377004101633]
+picocli！Java CLI parser。
+機会あってたまたま探していたら、コレコレ！！POSIX/GNU拡張にも対応し、読めば読むほど気配りが素晴らしい！
+3年前に出会えなかったのが残念。。残ってるコードは全部書き直す。ゾッコン！
+jcommander/args4j、今までありがとう！commons cli、君は相変わらずだね。。
+
+---
+[quote, Yogesh Jadhav (@yogeshcjadhav), https://twitter.com/yogeshcjadhav/status/1126385514368598017]
+Building command line applications. How about making it user-friendly? Check picocli - powerfully packed with numerous features, extensible - https://picocli.info
+#Java #CLI #picocli
+
+---
+[quote, Y. Alonso (@yalogar), https://twitter.com/yalogar/status/1111282399290249216]
+@picocli You're pretty great! Documentaiton is awesome too!
+
+---
+[quote, Philipp Hanslovsky (@hanslovsky), https://twitter.com/hanslovsky/status/1098033103359090689]
+____
+Are you looking for an awesome Java command line parser? Check out picocli by @RemkoPopma, the best parser I have used in any language to date!!
+
+https://picocli.info
+
+#java #cli #commandline #picocli
+____
+---
+
+[quote, Mario García (@marioggar), https://twitter.com/marioggar/status/1094344655762800642]
+Sure I'll try to give some feedback whenever I can. I honestly think is a great project.
+
+---
+[quote, Victor Osório (@vepo), https://twitter.com/vepo/status/1093910172186144768]
+@picocli, I love you! Easy to implement a complex command line tool!!! 🤩 🧙🏼🧙🏼
+
+---
+[quote, Junichiro Kazama (@jkazama77), https://twitter.com/jkazama77/status/1085371016191213568]
+CLIライブラリの picocli 知らなかったけど便利そう
+
+---
+[quote, Hein Smith (@hein_smith), https://twitter.com/hein_smith/status/1081519315143311360]
+Stumbled across @picocli https://github.com/remkop/picocli, quite a breath of fresh air for developing CLI applications. #java #cli #development #commandline
+
+---
+
+[quote, Peter Murray-Rust (@petermurrayrust), https://twitter.com/petermurrayrust/status/1070598252666515456]
+2/ I struggled for a long to make a commandline my #ami software . Now I've discovered a wonderful #opensource library that does everything I want and more. @picocli! and the movie https://drive.google.com/open?id=1640xhsdk5XbwNLBHr5DGaYQhgzRs8aSZ has a feel-good ending! Open is about sharing and collaboration.
+
+---
+[quote, Peter Murray-Rust (@petermurrayrust), https://twitter.com/petermurrayrust/status/1070309783402676225]
+3/ Three days ago I discovered a wonderful tool @picocli that does everything I want (and more). It's #opensource Apache2 licence and it's clearly got a vibrant community. New issues every few days and new point releases.
+WOW! ...
+
+---
+[quote, Oliver Weiler (@helpermethod), https://twitter.com/helpermethod/status/1062614593451843584]
+Writing commandline apps with @java 11, @picocli and @graalvm and having the time of my life!
+
+---
+[quote, Arash Shahkar (@amizrash), https://twitter.com/amizrash/status/1057320573729001472]
+@picocli is awesome, especially when paired with @graalvm native image generation!
+
+---
+[quote, Checkstyle (@checkstyle_java), https://twitter.com/checkstyle_java/status/1057246772089606144]
+Checkstyle migrated from Apache CLI to @picocli (will be released in 8.15), finally documentation of CLI arguments become well organized in declarative way in code - https://github.com/checkstyle/checkstyle/blob/master/src/main/java/com/puppycrawl/tools/checkstyle/Main.java#L569 , and now checkstyle's CLI is following CLI's best practices.
+
+---
+[quote, Karate (@KarateDSL), https://twitter.com/KarateDSL/status/1044795145806209025]
+a shout out to the @picocli project and @RemkoPopma - we've been using #picocli for the stand-alone JAR / executable for a while and are very happy with it
+
+---
+[quote, Wolfgang Werner (@0xcafebabe), https://twitter.com/0xcafebabe/status/1037726380245635072]
+@picocli Looks like the modern java CLI parser you've been looking for. I certainly have and like it. Pretty much so.
+https://picocli.info
+
+---
+[quote, Sean Champ (@spchamp), https://twitter.com/spchamp/status/1028892160370700288]
+picocli might be the most comprehensive getopt-alike ever developed, no joke
+
+---
+[quote, Christian Grobmeier (@grobmeier), https://twitter.com/grobmeier/status/997550576417296384]
+Picocli is actually a nice piece of work! #java
+
+---
+[quote, George Mich (@gmich_), https://twitter.com/gmich_/status/972057738128785409]
+Picocli rulez
+
+---
+[quote, Andrea Cisternino (@acister64), https://twitter.com/acister64/status/949569348267597825]
+#Picocli and #Groovy: two of my favorite Java technologies together!
+
+---
+[quote, Maiden Lane (@rjs2006), https://twitter.com/rjs2006/status/941073118638034945]
+picocli is a great tool.  Saving me a ton of time.  Great features.
+http://picocli.info
+
+---
+[quote, Stephen M. Coakley (@sagebind), https://twitter.com/sagebind/status/926603239402983424]
+Thanks for the shoutout! I am currently using picocli for a cool company project and I'm really liking it.
+
+---
