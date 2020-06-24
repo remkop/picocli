@@ -132,7 +132,10 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 
 #### Français
 * [Application mobile: Créez de superbes applications CLI natives en Java avec Graalvm et Picocli](https://seodigitalmarketing.net/application-mobile-creez-de-superbes-applications-cli-natives-en-java-avec-graalvm-et-picocli/) (2020-05-07) Translation of [Build Great Native CLI Apps in Java with Graalvm and Picocli](https://www.infoq.com/articles/java-native-cli-graalvm-picocli/) by [bouf1450](https://seodigitalmarketing.net/author/bouf1450/). 
-* [VIDEO] [Des applications en ligne de commande avec Picocli et GraalVM (N. Peters)](https://www.youtube.com/watch?v=8ENbMwkaFyk) (2019-05-07): 15 minute presentation by Nicolas Peters during Devoxx FR. Presentation slides are [available on GitHub](https://t.co/tXhtpTpAff?amp=1).
+* [VIDEO] [Des applications en ligne de commande avec Picocli et GraalVM (N. Peters)](https://www.youtube.com/watch?v=8ENbMwkaFyk) (2019-05-07): 15-minute presentation by Nicolas Peters during Devoxx FR. Presentation slides are [available on GitHub](https://t.co/tXhtpTpAff?amp=1).
+
+#### Português
+* [VIDEO] [Quarkus #40: Command Mode com Picocli](https://www.youtube.com/watch?v=LweGDh-Jxlc) (2020-06-23): 13-minute presentation by [Vinícius Ferraz](https://www.youtube.com/channel/UCJNOHl-pTTTj4S9yq60Ps9A) (@viniciusfcf).
 
 #### 日本語
 * [Picocli + Kotlin + graalvm-native-image plugin でネイティブツールを作る](https://mike-neck.hatenadiary.com/entry/2020/04/24/090000) (2020-04-24) blog post by [mike-neck](https://mike-neck.hatenadiary.com/about) ([引きこもり持田](https://twitter.com/mike_neck) on Twitter).
