@@ -2343,15 +2343,15 @@ When case sensitivity is <<Case Sensitivity,disabled>> only the `-` dash charact
 .Examples of valid abbreviations
 [options="header"]
 |===
-|Option or Subcommand|Recognized Abbreviations
-|`--veryLongCamelCase` | `--very`, `--vLCC`, `--vCase`
-|`--super-long-option` | `--sup`, `--sLO`, `--s-l-o`, `--s-lon`, `--s-opt`, `--sOpt`
-|`some-long-command` | `so`, `sLC`, `s-l-c`, `soLoCo`, `someCom`
+|Option or Subcommand|Sample Recognized Abbreviations
+|`--veryLongCamelCase` | `--very`, `--vLCC`, `--vCase` (...)
+|`--super-long-option` | `--sup`, `--sLO`, `--s-l-o`, `--s-lon`, `--s-opt`, `--sOpt` (...)
+|`some-long-command` | `so`, `sLC`, `s-l-c`, `soLoCo`, `someCom` (...)
 |===
 
 ==== Ambiguous Abbreviations
 When the user specifies input that can match multiple options or subcommands, the parser throws a `ParameterException`.
-When applications use the `execute` method, a <<Invalid User Input,short error message>> and the usage help is displayed to the user.
+When applications use the `execute` method, an error message and the usage help is <<Invalid User Input,displayed>> to the user.
 
 For example, given a command with subcommands `help` and `hello`, then ambiguous user input like `hel` will show this error message:
 
@@ -2361,7 +2361,8 @@ Error: 'hel' is not unique: it matches 'hello', 'help'
 
 ==== Abbreviated Long Options and POSIX Clustered Short Options
 
-When an argument can match both a long option and a set of <<Short (POSIX) Options,clustered short options>>, picocli matches the long option.
+When an argument can match both an abbreviated long option and a set of <<Short (POSIX) Options,clustered short options>>, picocli matches the long option.
+This is the case regardless of abbreviations, but be aware that with abbreviated options enabled, the chance of such collisions increases.
 
 For example:
 
@@ -2374,7 +2375,7 @@ class AbbreviationsAndPosix {
 }
 AbbreviationsAndPosix app = new AbbreviationsAndPosix();
 new CommandLine(app).setAbbreviatedOptionsAllowed(true).parseArgs("-AB");
-assertTrue(app.aaaBbb);
+assertTrue(app.aaaBbb); // the long option is matched from abbreviated input -AB
 assertFalse(app.a);
 assertFalse(app.b);
 ----
@@ -2384,8 +2385,8 @@ When abbreviated options are enabled, user input `-AB` will match the long `-Aaa
 
 === Overwriting Single Options
 
-When a single-value option is specified multiple times on the command line, the default parser behaviour is
-to throw an `OverwrittenOptionException`. For example:
+When a single-value option is specified multiple times on the command line, the default parser behaviour is to throw an `OverwrittenOptionException`.
+For example:
 [source,java]
 ----
 @Option(name = "-p") int port;
@@ -2394,13 +2395,13 @@ The following input results in an `OverwrittenOptionException`:
 ----
 <command> -p 80 -p 8080
 ----
-Applications can change this by calling `CommandLine.setOverwrittenOptionsAllowed(true)` before parsing the input.
+Applications can change this by calling `CommandLine::setOverwrittenOptionsAllowed` with `true` before parsing the input.
 When overwritten options are allowed, the last specified value takes effect (the above input will set the `port` field to `8080`)
 and a WARN level message is printed to the console. (See <<Tracing>> for how to switch off the warnings.)
 
 === Stop At Positional
 By default, positional parameters can be mixed with options on the command line, but this is not always desirable.
-From picocli 2.3, applications can call `CommandLine.setStopAtPositional(true)`
+From picocli 2.3, applications can call `CommandLine::setStopAtPositional` with `true`
 to force the parser to treat all values following the first positional parameter as positional parameters.
 
 When this flag is set, the first positional parameter effectively serves as an "<<Double dash (`--`),end of options>>" marker.
@@ -2421,11 +2422,11 @@ so the following input results in an `UnmatchedArgumentException`:
 java OnlyThree 1 2 3 4 5
 ----
 
-Applications can change this by calling `CommandLine.setUnmatchedArgumentsAllowed(true)` before parsing the input.
+Applications can change this by calling `CommandLine::setUnmatchedArgumentsAllowed` with `true` before parsing the input.
 When unmatched arguments are allowed, the above input will be accepted and a WARN level message is printed to the console.
 (See <<Tracing>> for how to switch off the warnings.)
 
-The unmatched argument values can be obtained with the `CommandLine.getUnmatchedArguments()` method.
+The unmatched argument values can be obtained with the `CommandLine::getUnmatchedArguments` method.
 
 === `@Unmatched` annotation [[unmatched-annotation]]
 From picocli 3.0, fields annotated with `@Unmatched` will be populated with the unmatched arguments.
@@ -2491,8 +2492,7 @@ by comparing its leading characters to the prefix characters of the known option
 When the unmatched value is similar to the known options, picocli throws an `UnmatchedArgumentException`
 rather than treating it as a positional parameter.
 
-As usual, `CommandLine.setUnmatchedArgumentsAllowed(true)` will accept unmatched input and
-display a WARN-level message on the console.
+As usual, calling `CommandLine::setUnmatchedArgumentsAllowed` with `true` will accept unmatched input and display a WARN-level message on the console.
 
 
 Arguments that are not considered similar to the known options are interpreted as positional parameters:
@@ -2501,7 +2501,7 @@ Arguments that are not considered similar to the known options are interpreted a
 ----
 The above input is treated by the parser as one positional parameter (`x`) followed by the `-a` option and its value.
 
-Picocli 3.0 introduced a `CommandLine.setUnmatchedOptionsArePositionalParams(boolean)` method that can be used to
+Picocli 3.0 introduced the `CommandLine::setUnmatchedOptionsArePositionalParams` method that can be used to
 force the parser to treat arguments resembling an option as positional parameters. For example:
 
 ----
@@ -2511,11 +2511,11 @@ When `unmatchedOptionsArePositionalParams` is set to `true`, the unknown option 
 The next argument `-a` is recognized and processed as a known option like you would expect.
 
 === Stop At Unmatched
-From picocli 2.3, applications can call `CommandLine.setStopAtUnmatched(true)` to force the parser to stop interpreting
+From picocli 2.3, applications can call `CommandLine::setStopAtUnmatched` with `true` to force the parser to stop interpreting
 options and positional parameters as soon as it encounters an unmatched argument.
 
 When this flag is set, the first unmatched argument and all subsequent command line arguments are added to the
-unmatched arguments list returned by `CommandLine.getUnmatchedArguments()`.
+unmatched arguments list returned by `CommandLine::getUnmatchedArguments`.
 
 === Toggle Boolean Flags
 When a flag option is specified on the command line picocli will set its value to the opposite of its _default_ value.
@@ -2523,18 +2523,18 @@ When a flag option is specified on the command line picocli will set its value t
 Prior to 4.0, the default was to "toggle" boolean flags to the opposite of their _current_ value:
 if the previous value was `true` it is set to `false`, and when the value was `false` it is set to `true`.
 
-Applications can call `CommandLine.setToggleBooleanFlags(true)` to enable toggling.
+Applications can call `CommandLine::setToggleBooleanFlags` with `true` to enable toggling.
 Note that when toggling is enabled, specifying a flag option twice on the command line will have no effect because they cancel each other out.
 
 
 === POSIX Clustered Short Options
 By default, the picocli parser allows POSIX clustered short options, so short options like `-x -v -f SomeFile` can be clustered together like `-xvfSomeFile`.
-From picocli 3.0, applications can call `CommandLine.setPosixClusteredShortOptionsAllowed(false)` to enforce that options must be separated with whitespace on the command line.
+From picocli 3.0, applications can call `CommandLine::setPosixClusteredShortOptionsAllowed` with `false` to enforce that options must be separated with whitespace on the command line.
 (This also means that option parameters must be separated from the option name by whitespace or the `=` <<Option-Parameter Separators,separator>> character, so `-D key=value` and `-D=key=value` will be recognized but `-Dkey=value` will not.)
 
 === Lenient Mode
 From picocli 3.2, the parser can be configured to continue parsing invalid input to the end.
-When `collectErrors` is set to `true`, and a problem occurs during parsing, an `Exception` is added to the `ParseResult.errors()` list and parsing continues. The default behaviour (when `collectErrors` is `false`) is to abort parsing by throwing the `Exception`.
+When `collectErrors` is set to `true`, and a problem occurs during parsing, an `Exception` is added to the list returned by `ParseResult::errors` and parsing continues. The default behaviour (when `collectErrors` is `false`) is to abort parsing by throwing the `Exception`.
 
 This is useful when generating completion candidates on partial input, and is also useful when using picocli in
 languages like Clojure where idiomatic error handling does not involve throwing and catching exceptions.
@@ -2693,7 +2693,7 @@ This allows you to control:
 * the documentation string showing both the positive and the negative form in the usage help message
 
 By default, a set of https://picocli.info/apidocs/picocli/CommandLine.RegexTransformer.html#createDefault--[regular expressions] is used to control the above.
-Use `CommandLine.setNegatableOptionTransformer` to replace the https://picocli.info/apidocs/picocli/CommandLine.INegatableOptionTransformer[`INegatableOptionTransformer`] with a custom version.
+Use `CommandLine::setNegatableOptionTransformer` to replace the https://picocli.info/apidocs/picocli/CommandLine.INegatableOptionTransformer[`INegatableOptionTransformer`] with a custom version.
 See the javadoc for details.
 
 === Custom Parameter Processing
@@ -2768,8 +2768,8 @@ if (app.usageHelpRequested) {
 The `CommandLine` class offers two methods that allow external components to detect whether
 usage help or version information was requested (without inspecting the annotated domain object):
 
-* `CommandLine.isUsageHelpRequested()` returns `true` if the parser matched an option annotated with `usageHelp=true`
-* `CommandLine.isVersionHelpRequested()` returns `true` if the parser matched an option annotated with `versionHelp=true`
+* `CommandLine::isUsageHelpRequested` returns `true` if the parser matched an option annotated with `usageHelp=true`
+* `CommandLine::isVersionHelpRequested` returns `true` if the parser matched an option annotated with `versionHelp=true`
 
 [source,java]
 ----
