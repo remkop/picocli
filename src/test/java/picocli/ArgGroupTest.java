@@ -2099,7 +2099,7 @@ public class ArgGroupTest {
 
         //-f pattern -w text --> accepted --> ok
         Issue1054 bean2 = new Issue1054();
-        new CommandLine(bean2).parseArgs("-f pattern -w text".split(" "));
+        new CommandLine(bean2).parseArgs("-f pattern -w text".split(" ")); // also mentioned in #1055
         assertEquals(1, bean2.modifications.size());
         assertEquals("pattern", bean2.modifications.get(0).findPattern.pattern());
         assertFalse(bean2.modifications.get(0).change.delete);
@@ -2119,6 +2119,30 @@ public class ArgGroupTest {
             fail("Expected exception");
         } catch (MissingParameterException ex) {
             assertEquals("Error: Missing required argument(s): --find=<findPattern>", ex.getMessage());
+        }
+    }
+
+    @Test // https://github.com/remkop/picocli/issues/1055
+    public void testIssue1055Case1() {
+        //-f -f -w text --> accepted --> wrong: findPattern = "-f", means, the second -f is treated as an option-parameter for the first -f
+        try {
+            Issue1054 bean = new Issue1054();
+            new CommandLine(bean).parseArgs("-f -f -w text".split(" "));
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Expected parameter for option '--find' but found '-f'", ex.getMessage());
+        }
+    }
+
+    @Test // https://github.com/remkop/picocli/issues/1055
+    public void testIssue1055Case2() {
+        //-f pattern -w -d --> wrong: replacement = "-d", means -d is treated as an option-parameter for -w
+        try {
+            Issue1054 bean = new Issue1054();
+            new CommandLine(bean).parseArgs("-f pattern -w -d".split(" "));
+            fail("Expected exception");
+        } catch (MissingParameterException ex) {
+            assertEquals("Expected parameter for option '--replace-with' but found '-d'", ex.getMessage());
         }
     }
 
