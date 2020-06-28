@@ -85,18 +85,9 @@ When abbreviated options are enabled, user input `-AB` will match the long `-Aaa
 
 #### Option Names as Option Values
 
-Parser fixes and improvements: the parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes. For example:
-
-```java
-class App {
-    @Option(names = "-x") String x;
-    @Option(names = "-y") String y;
-}
-```
-
-In previous versions of picocli, the above command would accept input `-x -y`, and the value `-y` would be assigned to the `x` String field. From this release, the above input will be rejected with an error message indicating that the `-x` option requires a parameter.
-
-If it is necessary to accept values that match option names, these values need to be quoted. For example:
+Options that take a parameter previously were able to take option names as the parameter value.
+From this release, this is no longer possible.
+The parser will no longer assign values that match an option name to an option, unless the value is in quotes. For example:
 
 ```java
 class App {
@@ -105,15 +96,29 @@ class App {
 
     public static void main(String... args) {
         App app = new App();
-        new CommandLine(app).setTrimQuotes(true).parseArgs("-x=\"-y\"");
-        assertEquals("-y", app.x);
+        new CommandLine(app).setTrimQuotes(true).parseArgs(args);
+        System.out.printf("x='%s', y='%s'%n", app.x, app.y);
     }
 }
 ```
 
+In previous versions of picocli, the above command would accept input `-x -y`, and the value `-y` would be assigned to the `x` String field. From this release, the above input will be rejected with an error message indicating that the `-x` option requires a parameter.
+
+If it is necessary to accept values that match option names, these values need to be quoted. For example:
+
+```
+java App -x="-y"
+```
+
+This will print the following output:
+
+```
+x='-y', y='null'
+```
+
 #### Vararg Positional Parameters No Longer Consume Unmatched Options
 
-Vararg positional arguments no longer consume unmatched options unless `unmatchedOptionsArePositionalParams` is set to `true`. For example:
+Vararg positional arguments no longer consume unmatched options unless configured to do so. For example:
 
 ```java
 class App {
@@ -121,8 +126,55 @@ class App {
 }
 ```
 
-In previous versions of picocli, the above command would reject input `-z 123` with error `"Unknown option: '-z'`, but input `123 -z` would be accepted and the `positionals` String array would contain two values, `123` and `-z`.
+In previous versions of picocli, the parser behaviour was not consistent:
+
+* input `-z 123` would be rejected with error `"Unmatched argument: '-z'`
+* input `123 -z` would be accepted and the `positionals` String array would contain two values, `123` and `-z`
+
+(Note that this problem only occurred with multi-value positional parameters defined with variable arity: `arity = "*"`.)
+
 From this release, both of the above input sequences will be rejected with an error message indicating that `-z` is an unknown option.
+As before, to accept such values as positional parameters, call `CommandLine::setUnmatchedOptionsArePositionalParams` with `true`.
+
+#### Configure Whether Options Should Consume Unknown Options
+
+By default, options accept parameter values that "resemble" (but don't exactly match) an option.
+
+This release introduces a `CommandLine::setUnmatchedOptionsAllowedAsOptionParameters` method that makes it possible to configure the parser to reject values that resemble options as option parameters.
+Setting it to `false` will result in values resembling option names being rejected as option values.
+
+For example:
+
+```java
+class App {
+    @Option(names = "-x") String x;
+}
+```
+
+By default, a value like `-z`, which resembles an option, is accepted as the parameter for `-x`:
+
+```java
+App app = new App();
+new CommandLine(app).parseArgs("-x", "-z");
+assertEquals("-z", app.x);
+```
+
+After setting the `unmatchedOptionsAllowedAsOptionParameters` parser option to `false`, values resembling an option are rejected as parameter for `-x`:
+
+```java
+new CommandLine(new App())
+        .setUnmatchedOptionsAllowedAsOptionParameters(false)
+        .parseArgs("-x", "-z");
+```
+
+This will throw an `UnmatchedArgumentException` with message:
+
+```
+"Unknown option '-z'; Expected parameter for option '-x' but found '-z'"
+```
+
+NOTE: Negative numbers are not considered to be unknown options, so even when `unmatchedOptionsAllowedAsOptionParameters` is set to `false`, option parameters like `-123`, `-NaN`, `-Infinity`, `-#ABC` and `-0xCAFEBABE` will not be rejected for resembling but not matching an option name.
+
 
 
 ### <a name="4.4.0-gen-manpage-subcommand"></a> ManPageGenerator as Subcommand in Your App
@@ -140,6 +192,7 @@ To use the `ManPageGenerator` tool as a subcommand, you will need the `picocli-c
 
 ## <a name="4.4.0-fixes"></a> Fixed issues
 * [#10][#732][#1047] API: Support abbreviated options and commands. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
+* [#639] API: Add method `CommandLine::is/setUnmatchedOptionsAllowedAsOptionParameters` to disallow option parameter values resembling option names. Thanks to [Peter Murray-Rust ](https://github.com/petermr) for raising this.
 * [#1074][#1075] API: Added method `ParseResult::expandedArgs` to return the list of arguments after `@-file` expansion. Thanks to [Kevin Bedi](https://github.com/mashlol) for the pull request.
 * [#1052] API: Show/Hide commands in usage help on specific conditions. Thanks to [Philippe Charles](https://github.com/charphi) for raising this.
 * [#1088] API: Add method `Help::allSubcommands` to return all subcommands, including hidden ones. Clarify the semantics of `Help::subcommands`.
@@ -186,10 +239,18 @@ To use the `ManPageGenerator` tool as a subcommand, you will need the `picocli-c
 No features were deprecated in this release.
 
 ## <a name="4.4.0-breaking-changes"></a> Potential breaking changes
+
+### Parser Changes
 The parser behaviour has changed: picocli will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes.
 Applications that rely on this behaviour need to use quoted values.
 
+### Error Message for Unknown Options
+Unmatched arguments that look like options now result in an error message `Unknown option: '-unknown'`.
 
+Previously, the error message was: `Unmatched argument: '-unknown'`.
+
+
+### Usage Help: Synopsis for Arg Groups
 This release changes the synopsis for commands with argument groups:
 the synopsis now shows the non-group options before argument groups, where previously argument groups were shown first.
 

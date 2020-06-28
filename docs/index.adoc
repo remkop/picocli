@@ -2406,9 +2406,16 @@ to force the parser to treat all values following the first positional parameter
 
 When this flag is set, the first positional parameter effectively serves as an "<<Double dash (`--`),end of options>>" marker.
 
+=== Stop At Unmatched
+From picocli 2.3, applications can call `CommandLine::setStopAtUnmatched` with `true` to force the parser to stop interpreting
+options and positional parameters as soon as it encounters an unmatched argument.
+
+When this flag is set, the first unmatched argument and all subsequent command line arguments are added to the
+unmatched arguments list returned by `CommandLine::getUnmatchedArguments`.
+
 === Unmatched Input
-By default, an `UnmatchedArgumentException` is thrown when a command line argument cannot be assigned to
-an option or positional parameter. For example:
+By default, an `UnmatchedArgumentException` is thrown when a command line argument cannot be assigned to an option or positional parameter.
+For example:
 
 [source,java]
 ----
@@ -2436,22 +2443,89 @@ If picocli finds a field annotated with `@Unmatched`, it automatically sets `unm
 so no `UnmatchedArgumentException` is thrown when a command line argument cannot be assigned to an option or positional parameter.
 If no unmatched arguments are found, the value of the field annotated with `@Unmatched` is unchanged.
 
-=== Option Names as Option Values
-Since picocli 4.4, the parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes.
+=== Unknown Options
+
+==== Unknown Options Definition
+A special case of unmatched input are arguments that resemble options but don't match any of the defined options.
+Picocli determines if a value "resembles an option" by comparing its leading characters to the prefix characters of the known options.
+
+NOTE: Negative numbers are not considered to be unknown options, so values like `-123`, `-NaN`, `-Infinity`, `-#ABC` and `-0xCAFEBABE` will not be treated specially for resembling an option name.
+
+For example, the value `-z` is considered an unknown option when we have a command that only defines options `-x` and `-y`:
+
+[source,java]
+----
+@Option(names = "-x") String x;
+@Option(names = "-y") String y;
+@Parameters String[] remainder;
+----
+The above defines options `-x` and `-y`, but no option `-z`. So what should the parser do when the user gives input like this?
+
+----
+<command> -z -x XXX
+----
+
+
+==== Positional Parameters Resembling Options
+
+One possibility is to silently accept such values as positional parameters, but this is often not desirable.
+
+By default, when the value resembles an option, picocli throws an `UnmatchedArgumentException` rather than treating it as a positional parameter.
+
+Picocli 3.0 introduced the `CommandLine::setUnmatchedOptionsArePositionalParams` method that can be used to force the parser to treat arguments resembling an option as positional parameters.
+For example:
+
+----
+<command> -z -x XXX
+----
+When `unmatchedOptionsArePositionalParams` is set to `true`, the unknown option `-z` is treated as a positional parameter.
+The next argument `-x` is recognized and processed as a known option like you would expect.
+
+NOTE: An alternative is to call `CommandLine::setUnmatchedArgumentsAllowed` with `true`, this will accept and store such values separately as described in <<Unmatched Input>>.
+
+==== Option Parameters Resembling Options
+
+By default, options accept parameter values that "resemble" (but don't exactly match) an option.
+
+Picocli 4.4 introduced a `CommandLine::setUnmatchedOptionsAllowedAsOptionParameters` method that makes it possible to configure the parser to reject values that resemble options as option parameters.
+Setting this to `false` will result in values resembling option names being rejected as option values.
+
 For example:
 
 [source,java]
 ----
-class App {
+class MyApp {
     @Option(names = "-x") String x;
-    @Option(names = "-y") String y;
 }
 ----
 
-In previous versions of picocli, the above command would accept input `-x -y`, and the value `-y` would be assigned to the `x` String field.
-From this release, the above input will be rejected with an error message indicating that the `-x` option requires a parameter.
+By default, a value like `-z`, which resembles an option, is accepted as the parameter for `-x`:
 
-If it is necessary to accept values that match option names, these values need to be quoted.
+[source,java]
+----
+App app = new App();
+new CommandLine(app).parseArgs("-x", "-z");
+assertEquals("-z", app.x);
+----
+
+After setting the `unmatchedOptionsAllowedAsOptionParameters` parser option to `false`, values resembling an option are rejected as parameter for `-x`:
+
+[source,java]
+----
+new CommandLine(new App())
+        .setUnmatchedOptionsAllowedAsOptionParameters(false)
+        .parseArgs("-x", "-z");
+----
+
+This will throw an `UnmatchedArgumentException` with message:
+
+----
+"Unknown option '-z'; Expected parameter for option '-x' but found '-z'"
+----
+
+
+=== Option Names as Option Values
+Since picocli 4.4, the parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes.
 For example:
 
 [source,java]
@@ -2462,60 +2536,30 @@ class App {
 
     public static void main(String... args) {
         App app = new App();
-        new CommandLine(app).setTrimQuotes(true).parseArgs("-x=\"-y\"");
-        assertEquals("-y", app.x);
+        new CommandLine(app).setTrimQuotes(true).parseArgs(args);
+        System.out.printf("x='%s', y='%s'%n", app.x, app.y);
     }
 }
 ----
 
-=== Unknown Options
-A special case of unmatched input are arguments that resemble options but don't match any of the defined options.
+In previous versions of picocli, the above command would accept input `-x -y`, and the value `-y` would be assigned to the `x` String field.
+From picocli 4.4, the above input will be rejected with an error message indicating that the `-x` option requires a parameter.
+
+If it is necessary to accept values that match option names, such values need to be quoted.
 For example:
 
-[source,java]
+[source,bash]
 ----
-@Option(names = "-a") String alpha;
-@Option(names = "-b") String beta;
-@Parameters String[] remainder;
+java App -x="-y"
 ----
-The above defines options `-a` and `-b`, but what should the parser do with input like this?
 
+This will print the following output:
+
+[source,bash]
 ----
-<command> -x -a AAA
+x='-y', y='null'
 ----
-The `-x` argument "looks like" an option but there is no `-x` option defined...
 
-One possibility is to silently accept such values as positional parameters but this is often not desirable.
-From version 1.0, picocli determines if the unmatched argument "resembles an option"
-by comparing its leading characters to the prefix characters of the known options.
-
-When the unmatched value is similar to the known options, picocli throws an `UnmatchedArgumentException`
-rather than treating it as a positional parameter.
-
-As usual, calling `CommandLine::setUnmatchedArgumentsAllowed` with `true` will accept unmatched input and display a WARN-level message on the console.
-
-
-Arguments that are not considered similar to the known options are interpreted as positional parameters:
-----
-<command> x -a AAA
-----
-The above input is treated by the parser as one positional parameter (`x`) followed by the `-a` option and its value.
-
-Picocli 3.0 introduced the `CommandLine::setUnmatchedOptionsArePositionalParams` method that can be used to
-force the parser to treat arguments resembling an option as positional parameters. For example:
-
-----
-<command> -x -a AAA
-----
-When `unmatchedOptionsArePositionalParams` is set to `true`, the unknown option `-x` is treated as a positional parameter.
-The next argument `-a` is recognized and processed as a known option like you would expect.
-
-=== Stop At Unmatched
-From picocli 2.3, applications can call `CommandLine::setStopAtUnmatched` with `true` to force the parser to stop interpreting
-options and positional parameters as soon as it encounters an unmatched argument.
-
-When this flag is set, the first unmatched argument and all subsequent command line arguments are added to the
-unmatched arguments list returned by `CommandLine::getUnmatchedArguments`.
 
 === Toggle Boolean Flags
 When a flag option is specified on the command line picocli will set its value to the opposite of its _default_ value.

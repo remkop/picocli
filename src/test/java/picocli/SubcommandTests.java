@@ -1,6 +1,5 @@
 package picocli;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -29,12 +28,16 @@ import picocli.CommandLine.UnmatchedArgumentException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.*;
-import static picocli.TestUtil.setTraceLevel;
-import static picocli.TestUtil.textArray;
 import static picocli.TestUtil.setOf;
+import static picocli.TestUtil.setTraceLevel;
 
 public class SubcommandTests {
     @Rule
@@ -2307,6 +2310,53 @@ public class SubcommandTests {
             for (CommandLine subsub : sub.getSubcommands().values()) {
                 grandChildCount++;
                 assertEquals("subsubcommand added before IS impacted", newValue, sub.getNegatableOptionTransformer());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+    @Test
+    public void testSetUnmatchedOptionsAllowedAsOptionParameters_BeforeSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        assertTrue(commandLine.isUnmatchedOptionsAllowedAsOptionParameters());
+        commandLine.setUnmatchedOptionsAllowedAsOptionParameters(false);
+        assertFalse(commandLine.isUnmatchedOptionsAllowedAsOptionParameters());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        commandLine.addSubcommand("main", createNestedCommand());
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added afterwards is not impacted", true, sub.isUnmatchedOptionsAllowedAsOptionParameters());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subcommand added afterwards is not impacted", true, subsub.isUnmatchedOptionsAllowedAsOptionParameters());
+            }
+        }
+        assertTrue(childCount > 0);
+        assertTrue(grandChildCount > 0);
+    }
+
+    @Test
+    public void testSetUnmatchedOptionsAllowedAsOptionParameters_AfterSubcommandsAdded() {
+        @Command
+        class TopLevel {}
+        CommandLine commandLine = new CommandLine(new TopLevel());
+        commandLine.addSubcommand("main", createNestedCommand());
+        assertTrue(commandLine.isUnmatchedOptionsAllowedAsOptionParameters());
+        commandLine.setUnmatchedOptionsAllowedAsOptionParameters(false);
+        assertFalse(commandLine.isUnmatchedOptionsAllowedAsOptionParameters());
+
+        int childCount = 0;
+        int grandChildCount = 0;
+        for (CommandLine sub : commandLine.getSubcommands().values()) {
+            childCount++;
+            assertEquals("subcommand added before IS impacted", false, sub.isUnmatchedOptionsAllowedAsOptionParameters());
+            for (CommandLine subsub : sub.getSubcommands().values()) {
+                grandChildCount++;
+                assertEquals("subsubcommand added before IS impacted", false, sub.isUnmatchedOptionsAllowedAsOptionParameters());
             }
         }
         assertTrue(childCount > 0);

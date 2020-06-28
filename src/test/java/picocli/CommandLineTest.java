@@ -1076,7 +1076,7 @@ public class CommandLineTest {
                         "[picocli DEBUG] Creating CommandSpec for picocli.CommandLineTest$CompactFields@20f5239f with factory picocli.CommandLine$DefaultFactory%n" +
                         "[picocli INFO] Picocli version: %3$s%n" +
                         "[picocli INFO] Parsing 6 command line args [-oout, --, -r, -v, p1, p2]%n" +
-                        "[picocli DEBUG] Parser configuration: optionsCaseInsensitive=false, subcommandsCaseInsensitive=false, abbreviatedOptionsAllowed=false, abbreviatedSubcommandsAllowed=false, aritySatisfiedByAttachedOptionParam=false, atFileCommentChar=#, caseInsensitiveEnumValuesAllowed=false, collectErrors=false, endOfOptionsDelimiter=--, expandAtFiles=true, limitSplit=false, overwrittenOptionsAllowed=false, posixClusteredShortOptionsAllowed=true, separator=null, splitQuotedStrings=false, stopAtPositional=false, stopAtUnmatched=false, toggleBooleanFlags=false, trimQuotes=false, unmatchedArgumentsAllowed=false, unmatchedOptionsArePositionalParams=false, useSimplifiedAtFiles=false%n" +
+                        "[picocli DEBUG] Parser configuration: optionsCaseInsensitive=false, subcommandsCaseInsensitive=false, abbreviatedOptionsAllowed=false, abbreviatedSubcommandsAllowed=false, aritySatisfiedByAttachedOptionParam=false, atFileCommentChar=#, caseInsensitiveEnumValuesAllowed=false, collectErrors=false, endOfOptionsDelimiter=--, expandAtFiles=true, limitSplit=false, overwrittenOptionsAllowed=false, posixClusteredShortOptionsAllowed=true, separator=null, splitQuotedStrings=false, stopAtPositional=false, stopAtUnmatched=false, toggleBooleanFlags=false, trimQuotes=false, unmatchedArgumentsAllowed=false, unmatchedOptionsAllowedAsOptionParameters=true, unmatchedOptionsArePositionalParams=false, useSimplifiedAtFiles=false%n" +
                         "[picocli DEBUG] (ANSI is disabled by default: ...)%n" +
                         "[picocli DEBUG] Initializing command 'null' (user object: picocli.CommandLineTest$CompactFields@20f5239f): 3 options, 1 positional parameters, 0 required, 0 groups, 0 subcommands.%n" +
                         "[picocli DEBUG] Set initial value for field boolean picocli.CommandLineTest$CompactFields.verbose of type boolean to false.%n" +
@@ -1088,6 +1088,7 @@ public class CommandLineTest {
                         "[picocli DEBUG] Trying to process '-oout' as clustered short options%n" +
                         "[picocli DEBUG] Found option '-o' in -oout: field java.io.File %1$s$CompactFields.outputFile, arity=1%n" +
                         "[picocli DEBUG] Trying to process 'out' as option parameter%n" +
+                        "[picocli DEBUG] 'out' doesn't resemble an option: 0 matching prefix chars out of 3 option names%n" +
                         "[picocli INFO] Setting field java.io.File picocli.CommandLineTest$CompactFields.outputFile to 'out' (was 'null') for option -o%n" +
                         "[picocli DEBUG] [1] Processing argument '--'. Remainder=[-r, -v, p1, p2]%n" +
                         "[picocli INFO] Found end-of-options delimiter '--'. Treating remainder as positional parameters.%n" +
@@ -2056,7 +2057,7 @@ public class CommandLineTest {
                         "[picocli DEBUG] Adding subcommand 'tag' to 'git'%n" +
                         "[picocli INFO] Picocli version: %3$s%n" +
                         "[picocli INFO] Parsing 8 command line args [--git-dir=/home/rpopma/picocli, commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
-                        "[picocli DEBUG] Parser configuration: optionsCaseInsensitive=false, subcommandsCaseInsensitive=false, abbreviatedOptionsAllowed=false, abbreviatedSubcommandsAllowed=false, aritySatisfiedByAttachedOptionParam=false, atFileCommentChar=#, caseInsensitiveEnumValuesAllowed=false, collectErrors=false, endOfOptionsDelimiter=--, expandAtFiles=true, limitSplit=false, overwrittenOptionsAllowed=false, posixClusteredShortOptionsAllowed=true, separator=null, splitQuotedStrings=false, stopAtPositional=false, stopAtUnmatched=false, toggleBooleanFlags=false, trimQuotes=false, unmatchedArgumentsAllowed=false, unmatchedOptionsArePositionalParams=false, useSimplifiedAtFiles=false%n" +
+                        "[picocli DEBUG] Parser configuration: optionsCaseInsensitive=false, subcommandsCaseInsensitive=false, abbreviatedOptionsAllowed=false, abbreviatedSubcommandsAllowed=false, aritySatisfiedByAttachedOptionParam=false, atFileCommentChar=#, caseInsensitiveEnumValuesAllowed=false, collectErrors=false, endOfOptionsDelimiter=--, expandAtFiles=true, limitSplit=false, overwrittenOptionsAllowed=false, posixClusteredShortOptionsAllowed=true, separator=null, splitQuotedStrings=false, stopAtPositional=false, stopAtUnmatched=false, toggleBooleanFlags=false, trimQuotes=false, unmatchedArgumentsAllowed=false, unmatchedOptionsAllowedAsOptionParameters=true, unmatchedOptionsArePositionalParams=false, useSimplifiedAtFiles=false%n" +
                         "[picocli DEBUG] (ANSI is disabled by default: ...)%n" +
                         "[picocli DEBUG] Initializing command 'git' (user object: picocli.Demo$Git@75d4a5c2): 3 options, 0 positional parameters, 0 required, 0 groups, 12 subcommands.%n" +
                         "[picocli DEBUG] Set initial value for field java.io.File picocli.Demo$Git.gitDir of type class java.io.File to null.%n" +
@@ -2065,6 +2066,7 @@ public class CommandLineTest {
                         "[picocli DEBUG] [0] Processing argument '--git-dir=/home/rpopma/picocli'. Remainder=[commit, -m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Separated '--git-dir' option from '/home/rpopma/picocli' option parameter%n" +
                         "[picocli DEBUG] Found option named '--git-dir': field java.io.File %1$s$Git.gitDir, arity=1%n" +
+                        "[picocli DEBUG] '/home/rpopma/picocli' doesn't resemble an option: 0 matching prefix chars out of 5 option names%n" +
                         "[picocli INFO] Setting field java.io.File picocli.Demo$Git.gitDir to '%2$s' (was 'null') for option --git-dir%n" +
                         "[picocli DEBUG] [1] Processing argument 'commit'. Remainder=[-m, \"Fixed typos\", --, src1.java, src2.java, src3.java]%n" +
                         "[picocli DEBUG] Found subcommand 'commit' (command 'git-commit' (user object: picocli.Demo$GitCommit@22ff4249))%n" +

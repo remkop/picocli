@@ -953,6 +953,33 @@ public class CommandLine {
         return this;
     }
 
+    /** Returns whether options can have parameter values that resemble an option, or whether such values should be rejected as unknown options.
+     * The default is {@code true}, so by default input like {@code -x=-unknown} is accepted if {@code -x} is an option that takes a String parameter.
+     * @return {@code true} when options can have parameter values that resemble an option, {@code false} when such values should be rejected as unknown options
+     * @since 4.4
+     */
+    public boolean isUnmatchedOptionsAllowedAsOptionParameters() {
+        return getCommandSpec().parser().unmatchedOptionsAllowedAsOptionParameters();
+    }
+
+    /** Sets whether options can have parameter values that resemble an option, or whether such values should be rejected as unknown options.
+     * The default is {@code false}, so by default
+     * input like {@code -x=-unknown} is accepted if {@code -x} is an option that takes a String parameter.
+     * <p>The specified setting will be registered with this {@code CommandLine} and the full hierarchy of its
+     * subcommands and nested sub-subcommands <em>at the moment this method is called</em>. Subcommands added
+     * later will have the default setting. To ensure a setting is applied to all
+     * subcommands, call the setter last, after adding subcommands.</p>
+     * @param newValue the new setting. When {@code true}, options can have parameter values that resemble an option, when {@code false}, such values are rejected as unknown options
+     * @return this {@code CommandLine} object, to allow method chaining
+     * @since 4.4
+     */
+    public CommandLine setUnmatchedOptionsAllowedAsOptionParameters(boolean newValue) {
+        getCommandSpec().parser().unmatchedOptionsAllowedAsOptionParameters(newValue);
+        for (CommandLine command : getCommandSpec().subcommands().values()) {
+            command.setUnmatchedOptionsAllowedAsOptionParameters(newValue);
+        }
+        return this;
+    }
     /** Returns whether arguments on the command line that resemble an option should be treated as positional parameters.
      * The default is {@code false} and the parser behaviour depends on {@link #isUnmatchedArgumentsAllowed()}.
      * @return {@code true} arguments on the command line that resemble an option should be treated as positional parameters, {@code false} otherwise
@@ -6809,10 +6836,14 @@ public class CommandLine {
             }
 
             boolean resemblesOption(String arg, Tracer tracer) {
+                if (arg == null) { return false; }
                 if (arg.length() == 1) {
                     if (tracer != null && tracer.isDebug()) {tracer.debug("Single-character arguments that don't match known options are considered positional parameters%n", arg);}
                     return false;
                 }
+                try { Long.decode(arg);        return false; } catch (NumberFormatException nan) {} // negative numbers are not unknown options
+                try { Double.parseDouble(arg); return false; } catch (NumberFormatException nan) {} // negative numbers are not unknown options
+
                 if (options().isEmpty()) {
                     boolean result = arg.startsWith("-");
                     if (tracer != null && tracer.isDebug()) {tracer.debug("'%s' %s an option%n", arg, (result ? "resembles" : "doesn't resemble"));}
@@ -7788,6 +7819,7 @@ public class CommandLine {
             private boolean toggleBooleanFlags = false;
             private boolean trimQuotes = shouldTrimQuotes();
             private boolean unmatchedArgumentsAllowed = false;
+            private boolean unmatchedOptionsAllowedAsOptionParameters = true;
             private boolean unmatchedOptionsArePositionalParams = false;
             private boolean useSimplifiedAtFiles = false;
 
@@ -7839,6 +7871,10 @@ public class CommandLine {
             public boolean splitQuotedStrings()  { return splitQuotedStrings; }
             /** @see CommandLine#isUnmatchedOptionsArePositionalParams() */
             public boolean unmatchedOptionsArePositionalParams() { return unmatchedOptionsArePositionalParams; }
+            /**
+             * @see CommandLine#isUnmatchedOptionsAllowedAsOptionParameters()
+             * @since 4.4 */
+            public boolean unmatchedOptionsAllowedAsOptionParameters() { return unmatchedOptionsAllowedAsOptionParameters; }
             private boolean splitFirst()                       { return limitSplit(); }
             /** Returns true if arguments should be split first before any further processing and the number of
              * parts resulting from the split is limited to the max arity of the argument. */
@@ -7889,6 +7925,10 @@ public class CommandLine {
             /** @see CommandLine#setSplitQuotedStrings(boolean)
              * @since 3.7 */
             public ParserSpec splitQuotedStrings(boolean splitQuotedStrings)  { this.splitQuotedStrings = splitQuotedStrings; return this; }
+            /**
+             * @see CommandLine#setUnmatchedOptionsAllowedAsOptionParameters(boolean)
+             * @since 4.4 */
+            public ParserSpec unmatchedOptionsAllowedAsOptionParameters(boolean unmatchedOptionsAllowedAsOptionParameters) { this.unmatchedOptionsAllowedAsOptionParameters = unmatchedOptionsAllowedAsOptionParameters; return this; }
             /** @see CommandLine#setUnmatchedOptionsArePositionalParams(boolean) */
             public ParserSpec unmatchedOptionsArePositionalParams(boolean unmatchedOptionsArePositionalParams) { this.unmatchedOptionsArePositionalParams = unmatchedOptionsArePositionalParams; return this; }
             /** Sets whether exceptions during parsing should be collected instead of thrown.
@@ -7917,13 +7957,13 @@ public class CommandLine {
                                 "limitSplit=%s, overwrittenOptionsAllowed=%s, posixClusteredShortOptionsAllowed=%s, " +
                                 "separator=%s, splitQuotedStrings=%s, stopAtPositional=%s, stopAtUnmatched=%s, " +
                                 "toggleBooleanFlags=%s, trimQuotes=%s, " +
-                                "unmatchedArgumentsAllowed=%s, unmatchedOptionsArePositionalParams=%s, useSimplifiedAtFiles=%s",
+                                "unmatchedArgumentsAllowed=%s, unmatchedOptionsAllowedAsOptionParameters=%s, unmatchedOptionsArePositionalParams=%s, useSimplifiedAtFiles=%s",
                         abbreviatedOptionsAllowed, abbreviatedSubcommandsAllowed, aritySatisfiedByAttachedOptionParam, atFileCommentChar,
                         caseInsensitiveEnumValuesAllowed, collectErrors, endOfOptionsDelimiter, expandAtFiles,
                         limitSplit, overwrittenOptionsAllowed, posixClusteredShortOptionsAllowed,
                         separator, splitQuotedStrings, stopAtPositional, stopAtUnmatched,
                         toggleBooleanFlags, trimQuotes,
-                        unmatchedArgumentsAllowed, unmatchedOptionsArePositionalParams, useSimplifiedAtFiles);
+                        unmatchedArgumentsAllowed, unmatchedOptionsAllowedAsOptionParameters, unmatchedOptionsArePositionalParams, useSimplifiedAtFiles);
             }
 
             void initFrom(ParserSpec settings) {
@@ -7945,6 +7985,7 @@ public class CommandLine {
                 toggleBooleanFlags = settings.toggleBooleanFlags;
                 trimQuotes = settings.trimQuotes;
                 unmatchedArgumentsAllowed = settings.unmatchedArgumentsAllowed;
+                unmatchedOptionsAllowedAsOptionParameters = settings.unmatchedOptionsAllowedAsOptionParameters;
                 unmatchedOptionsArePositionalParams = settings.unmatchedOptionsArePositionalParams;
                 useSimplifiedAtFiles = settings.useSimplifiedAtFiles;
             }
@@ -12839,8 +12880,10 @@ public class CommandLine {
             }
             if (arity.min > 0) {
                 args.push(quotedValue);
-                assertNoMissingMandatoryParameter(argSpec, args, 0, arity);
+                boolean discontinue = assertNoMissingMandatoryParameter(argSpec, args, 0, arity) // #1055
+                        || isArgResemblesOptionThereforeDiscontinue(argSpec, args, 0, arity); // #1015 #639
                 args.pop();
+                if (discontinue) { return 0; }
             }
             int consumed = arity.min; // the number or args we need to consume
 
@@ -12988,8 +13031,7 @@ public class CommandLine {
             for (int i = 0; consumed < arity.min && !args.isEmpty(); i++) {
                 Map<Object, Object> typedValuesAtPosition = new LinkedHashMap<Object, Object>();
                 parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
-                assertNoMissingMandatoryParameter(argSpec, args, i, arity);
-                if (isArgResemblesOptionThereforeDiscontinue(argSpec, args)) {
+                if (assertNoMissingMandatoryParameter(argSpec, args, i, arity) || isArgResemblesOptionThereforeDiscontinue(argSpec, args, i, arity)) {
                     break;
                 }
                 consumeOneMapArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
@@ -13013,7 +13055,7 @@ public class CommandLine {
                 if (!canConsumeOneMapArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.peek(), classes, keyConverter, valueConverter, argDescription)) {
                     break; // leave empty map at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again
                 }
-                if (isArgResemblesOptionThereforeDiscontinue(argSpec, args)) {
+                if (isArgResemblesOptionThereforeDiscontinue(argSpec, args, i, arity)) {
                     break;
                 }
                 consumeOneMapArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.pop(), classes, keyConverter, valueConverter, typedValuesAtPosition, i, argDescription);
@@ -13088,11 +13130,36 @@ public class CommandLine {
             return keyValue;
         }
 
-        private void assertNoMissingMandatoryParameter(ArgSpec argSpec, Stack<String> args, int i, Range arity) {
+        private boolean assertNoMissingMandatoryParameter(ArgSpec argSpec, Stack<String> args, int i, Range arity) {
             if (!varargCanConsumeNextValue(argSpec, args.peek())) {
-                String desc = arity.min > 1 ? (i + 1) + " (of " + arity.min + " mandatory parameters) " : "";
-                throw new MissingParameterException(CommandLine.this, argSpec, "Expected parameter " + desc + "for " + optionDescription("", argSpec, -1) + " but found '" + args.peek() + "'");
+                String msg = createMissingParameterMessageFoundOtherOption(argSpec, args, i, arity);
+                maybeThrow(new MissingParameterException(CommandLine.this, argSpec, msg));
+                return true;
             }
+            return false;
+        }
+
+        private String createMissingParameterMessageFoundOtherOption(ArgSpec argSpec, Stack<String> args, int i, Range arity) {
+            String desc = arity.min > 1 ? (i + 1) + " (of " + arity.min + " mandatory parameters) " : "";
+            return "Expected parameter " + desc + "for " + optionDescription("", argSpec, -1) + " but found '" + args.peek() + "'";
+        }
+
+        private boolean isArgResemblesOptionThereforeDiscontinue(ArgSpec argSpec, Stack<String> args, int i, Range arity) throws Exception {
+            boolean result = false;
+            String arg = args.peek();
+            if (commandSpec.resemblesOption(arg, tracer)) {
+                if (argSpec.isPositional() && !(endOfOptions || commandSpec.parser().unmatchedOptionsArePositionalParams())) { // #1015
+                    handleUnmatchedArgument(args);
+                    result = true;
+                }
+                if (argSpec.isOption() && !commandSpec.parser().unmatchedOptionsAllowedAsOptionParameters()) { // #639
+                    String msg = "Unknown option: '" + arg + "'; " + createMissingParameterMessageFoundOtherOption(argSpec, args, i, arity);
+                    maybeThrow(new UnmatchedArgumentException(commandSpec.commandLine(), msg));
+                    result = true;
+                }
+                if (tracer.isDebug()) {tracer.debug("Parser is configured to allow unmatched option '%s' as option or positional parameter.%n", arg);}
+            }
+            return result;
         }
         private int applyValuesToArrayField(ArgSpec argSpec,
                                             boolean negated,
@@ -13179,8 +13246,7 @@ public class CommandLine {
             for (int i = 0; consumed < arity.min && !args.isEmpty(); i++) {
                 List<Object> typedValuesAtPosition = new ArrayList<Object>();
                 parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
-                assertNoMissingMandatoryParameter(argSpec, args, i, arity);
-                if (isArgResemblesOptionThereforeDiscontinue(argSpec, args)) {
+                if (assertNoMissingMandatoryParameter(argSpec, args, i, arity) || isArgResemblesOptionThereforeDiscontinue(argSpec, args, i, arity)) {
                     break;
                 }
                 consumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
@@ -13210,7 +13276,7 @@ public class CommandLine {
                     if (!canConsumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.peek(), type, argDescription)) {
                         break; // leave empty list at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again
                     }
-                    if (isArgResemblesOptionThereforeDiscontinue(argSpec, args)) {
+                    if (isArgResemblesOptionThereforeDiscontinue(argSpec, args, i, arity)) {
                         break;
                     }
                     consumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
@@ -13235,21 +13301,6 @@ public class CommandLine {
                 } else {
                     return Collections.singletonList((Object) Boolean.TRUE);
                 }
-            }
-            return result;
-        }
-
-        private boolean isArgResemblesOptionThereforeDiscontinue(ArgSpec argSpec, Stack<String> args) throws Exception {
-            boolean result = false;
-            String arg = args.peek();
-            if (commandSpec.resemblesOption(arg, tracer)) {
-                if ((argSpec.isPositional() && !(endOfOptions || commandSpec.parser().unmatchedOptionsArePositionalParams())) // #1015
-                //|| (argSpec.isOption() /*&& !commandSpec.parser().unmatchedOptionsAllowedAsOptionParams()*/) // #639
-                ) {
-                    handleUnmatchedArgument(args);
-                    result = true;
-                }
-                if (tracer.isDebug()) {tracer.debug("Parser is configured to allow unmatched option '%s' as option or positional parameter.%n", arg);}
             }
             return result;
         }
