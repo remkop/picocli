@@ -43,7 +43,7 @@ before_script:
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
 script:
-  - ./gradlew check --info
+  - ./gradlew check --info --stacktrace
 after_success:
   - bash <(curl -s https://codecov.io/bash)
   - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
