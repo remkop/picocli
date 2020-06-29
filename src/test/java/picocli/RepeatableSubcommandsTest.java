@@ -744,6 +744,7 @@ public class RepeatableSubcommandsTest {
         assertEquals(2, cmd.count);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testCommandLinePublicSetter() throws IOException {
         PrintWriter ERR = new PrintWriter(new StringWriter());
@@ -841,6 +842,7 @@ public class RepeatableSubcommandsTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void checkEquals(CommandLine line, CommandLine other) {
         assertSame(line.getAtFileCommentChar(), other.getAtFileCommentChar());
         assertSame(line.isCaseInsensitiveEnumValuesAllowed(), other.isCaseInsensitiveEnumValuesAllowed());

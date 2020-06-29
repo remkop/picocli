@@ -29,7 +29,7 @@ class VersionProviderMetaData implements IVersionProvider, ITypeMetaData {
 
     /**
      * Sets the specified {@code CommandSpec}'s
-     * {@linkplain CommandSpec#versionProvider(IVersionProvider) version provider}
+     * {@linkplain CommandSpec#versionProvider(picocli.CommandLine.IVersionProvider)}  version provider}
      * to an {@code VersionProviderMetaData} instance if the annotation attribute was present on the
      * specified {@code Command} annotation.
      *

@@ -229,6 +229,7 @@ To use the `ManPageGenerator` tool as a subcommand, you will need the `picocli-c
 * [#1100] Bugfix: The factory of the original `CommandSpec` is now correctly used in the `CommandSpec` copy for repeatable subcommands. Thanks to [Michael Kunz](https://github.com/protogenes) for the pull request.
 * [#1058][#1059] DOC: Man page generator: fix incorrect asciidoctor call in synopsis.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1058][#1060] DOC: Man page generator: add documentation about creating language variants.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1120] Clean up compiler warnings.
 * [#1073] DOC: Improve user manual: fix typos, update content. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1102] DOC: Show `descriptionKeys` for `@file` and EndOfOptions (--) delimiter in resource bundles.
 * [#1116] DOC: Improved Guice example in user manual. Thanks to [H.Sakata](https://github.com/sakata1222) for the pull request.
