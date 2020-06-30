@@ -3183,9 +3183,14 @@ public class CommandLine {
      * @since 3.6.0
      */
     public static List<Method> getCommandMethods(Class<?> cls, String methodName) {
+        return getCommandMethods(cls, methodName, true);
+    }
+    private static List<Method> getCommandMethods(Class<?> cls, String methodName, boolean includeInherited) {
         Set<Method> candidates = new HashSet<Method>();
-        // traverse public member methods (excludes static/non-public, includes inherited)
-        candidates.addAll(Arrays.asList(Assert.notNull(cls, "class").getMethods()));
+        if (includeInherited) {
+            // traverse public member methods (excludes static/non-public, includes inherited)
+            candidates.addAll(Arrays.asList(Assert.notNull(cls, "class").getMethods()));
+        }
         // traverse directly declared methods (includes static/non-public, excludes inherited)
         candidates.addAll(Arrays.asList(Assert.notNull(cls, "class").getDeclaredMethods()));
 
@@ -6123,15 +6128,15 @@ public class CommandLine {
                 if (userObject.isMethod()) {
                     throw new InitializationException("Cannot discover subcommand methods of this Command Method: " + userObject);
                 }
-                for (CommandLine sub : createMethodSubcommands(userObject.getType(), factory)) {
+                for (CommandLine sub : createMethodSubcommands(userObject.getType(), factory, true)) {
                     addSubcommand(sub.getCommandName(), sub);
                 }
                 isAddMethodSubcommands = true;
                 return this;
             }
-            static List<CommandLine> createMethodSubcommands(Class<?> cls, IFactory factory) {
+            static List<CommandLine> createMethodSubcommands(Class<?> cls, IFactory factory, boolean includeInherited) {
                 List<CommandLine> result = new ArrayList<CommandLine>();
-                for (Method method : getCommandMethods(cls, null)) {
+                for (Method method : getCommandMethods(cls, null, includeInherited)) {
                     result.add(new CommandLine(method, factory));
                 }
                 return result;
@@ -10722,6 +10727,7 @@ public class CommandLine {
                             initSubcommands(cmd, cls, result, factory, originalHierarchy);
                             hasCommandAnnotation = true;
                         }
+                        initMethodSubcommands(cls, result, factory); // regardless of @Command annotation
                         hasCommandAnnotation |= initFromAnnotatedFields(userObject, cls, result, null, factory, null);
                         if (cls.isAnnotationPresent(Command.class)) {
                             mixinStandardHelpOptions |= cls.getAnnotation(Command.class).mixinStandardHelpOptions();
@@ -10769,8 +10775,10 @@ public class CommandLine {
                                 sub.getName() + ": " + ex, ex);
                     }
                 }
-                if (cmd.addMethodSubcommands() && cls != null) {
-                    for (CommandLine sub : CommandSpec.createMethodSubcommands(cls, factory)) {
+            }
+            private static void initMethodSubcommands(Class<?> cls, CommandSpec parent, IFactory factory) {
+                if (parent.isAddMethodSubcommands() && cls != null) {
+                    for (CommandLine sub : CommandSpec.createMethodSubcommands(cls, factory, false)) {
                         parent.addSubcommand(sub.getCommandName(), sub);
                         for (CommandSpec mixin : sub.getCommandSpec().mixins().values()) {
                             mixin.injectParentCommand(parent.userObject);

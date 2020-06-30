@@ -582,12 +582,12 @@ public class CommandMethodTest {
     }
 
     @Test
-    public void testMethodCommandsAreNotSubcommandsOfNonAnnotatedClassWithAnnotatedFields() {
+    public void testMethodCommandsAreSubcommandsOfNonAnnotatedClassWithAnnotatedFields() {
         CommandLine cmd = new CommandLine(new UnAnnotatedClassWithAnnotatedField());
         assertNotNull(cmd.getCommandSpec().findOption('y'));
 
-        assertTrue(cmd.getSubcommands().isEmpty());
-        assertNull(cmd.getCommandSpec().findOption('x'));
+        assertFalse(cmd.getSubcommands().isEmpty());
+        assertNotNull(cmd.getSubcommands().get("cmd1").getCommandSpec().findOption('x'));
     }
 
     @Command

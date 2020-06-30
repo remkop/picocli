@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.*;
+import static picocli.CommandLine.ScopeType.INHERIT;
 import static picocli.TestUtil.setOf;
 import static picocli.TestUtil.setTraceLevel;
 
@@ -2460,5 +2461,17 @@ public class SubcommandTests {
         assertEquals(-11, ((Top990)result2.commandSpec().userObject()).a);
         assertEquals(-22, ((Sub990)result2.subcommand().commandSpec().userObject()).b);
         assertEquals(-33, ((SubSub990)result2.subcommand().subcommand().commandSpec().userObject()).c);
+    }
+
+    @Test // https://github.com/remkop/picocli/issues/1083
+    public void testIssue1083SubcommandMethodsWithoutCommandAnnotationOnEnclosingClass() {
+        class App {
+            @Option(names = "-a", scope = INHERIT) boolean a;
+            @Command void sub() {}
+        }
+        CommandLine sub = new CommandLine(new App()).getSubcommands().get("sub");
+        assertNotNull(sub);
+        assertNotNull(sub.getCommandSpec().findOption("-a"));
+        assertTrue(sub.getCommandSpec().findOption("-a").inherited());
     }
 }
