@@ -1738,7 +1738,7 @@ public class AutoCompleteTest {
                 "function _complete_%1$s() {\n" +
                 "  local cmds0=(help)\n" +
                 "\n" +
-                "  if CompWordsContainsArray \"${cmds0[@]}\"; then _picocli_CompletionDemo_help; return $?; fi\n" +
+                "  if CompWordsContainsArray \"${cmds0[@]}\"; then _picocli_%1$s_help; return $?; fi\n" +
                 "\n" +
                 "  # No subcommands were specified; generate completions for the top-level command.\n" +
                 "  _picocli_%1$s; return $?;\n" +
@@ -1750,9 +1750,9 @@ public class AutoCompleteTest {
                 "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
                 "  local prev_word=${COMP_WORDS[COMP_CWORD-1]}\n" +
                 "\n" +
-                "  local commands=\"generate-completion help\"\n" +
+                "  local commands=\"help\"\n" + // NOTE: no generate-completion: this command is hidden
                 "  local flag_opts=\"\"\n" +
-                "  local arg_opts=\"--apples --bbb\"\n" +
+                "  local arg_opts=\"--apples --bbb\"\n" + // NOTE: no --aaa: this option is hidden
                 "\n" +
                 "  compopt +o default\n" +
                 "\n" +

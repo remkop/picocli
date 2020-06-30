@@ -222,6 +222,7 @@ To use the `ManPageGenerator` tool as a subcommand, you will need the `picocli-c
 * [#1055] Bugfix: The parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes. Thanks to [waacc-gh](https://github.com/waacc-gh) for raising this.
 * [#1015] Bugfix: Parser improvement: varargs positional arguments no longer consume unmatched options unless `unmatchedOptionsArePositionalParams` is configured. Thanks to [Chris Smowton](https://github.com/smowton) for raising this.
 * [#1071] Bugfix: Usage help no longer renders options header when it is specified via `optionListHeading` when all options are hidden.
+* [#1076] Bugfix: Don't generate Autocomplete for hidden commands. Thanks to [power721](https://github.com/power721) for raising this.
 * [#1081] Bugfix: `CommandLine.Help` constructor no longer calls overridable methods `addAllSubcommands` and `createDefaultParamLabelRenderer`.
 * [#1065] Bugfix: With a `List<>` option in `@ArgGroup`, group incorrectly appears twice in the synopsis. Thanks to [kap4lin](https://github.com/kap4lin) for raising this.
 * [#1067] Bugfix: `ParserSpec::initFrom` was not copying `useSimplifiedAtFiles`.

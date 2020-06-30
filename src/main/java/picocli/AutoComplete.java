@@ -605,7 +605,12 @@ public class AutoComplete {
         List<OptionSpec> argOptionFields = filter(commandSpec.options(), negate(new BooleanArgFilter()));
         String argOptionNames = optionNames(argOptionFields);
 
-        Set<String> subCommands = commandLine.getSubcommands().keySet();
+        Set<String> subCommands = new LinkedHashSet<String>();
+        for (String sub : commandLine.getSubcommands().keySet()) {
+            if (!commandLine.getSubcommands().get(sub).getCommandSpec().usageMessage().hidden()) {
+                subCommands.add(sub); // #1076 Don't generate Autocomplete for hidden commands
+            }
+        }
         // If the command is a HelpCommand, append parent subcommands to the autocompletion list.
         if (commandLine.getParent() != null && commandLine.getCommand() instanceof HelpCommand) {
             subCommands = new LinkedHashSet<String>(subCommands);
