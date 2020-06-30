@@ -14209,7 +14209,7 @@ public class CommandLine {
          * @param command the {@code CommandSpec} or {@code @Command} annotated object to get more information from
          * @return this Help instance (for method chaining)
          * @see #subcommands()
-         * @deprecated
+         * @deprecated use {@link #addAllSubcommands(Map)} instead
          */
         @Deprecated public Help addSubcommand(String commandName, Object command) {
             Help sub = getHelpFactory().create(CommandSpec.forAnnotatedObject(command, commandSpec.commandLine().factory), defaultColorScheme(Ansi.AUTO));
