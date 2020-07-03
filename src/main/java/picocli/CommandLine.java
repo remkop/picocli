@@ -3682,7 +3682,7 @@ public class CommandLine {
          * Also, embedded {@code %n} newline markers are converted to actual newlines.
          * </p>
          * @return the description of this option
-         * @see <a href="https://picocli.info/#_variable_interpolation">Variable Interpolation</a> section of the user manual
+         * @see <a href="https://picocli.info/#_variable_interpolation">Variable Interpolation section of the user manual</a>
          */
         String[] description() default {};
 
@@ -3967,7 +3967,7 @@ public class CommandLine {
          * Also, embedded {@code %n} newline markers are converted to actual newlines.
          * </p>
          * @return the description of the parameter(s)
-         * @see <a href="https://picocli.info/#_variable_interpolation">Variable Interpolation</a> section of the user manual
+         * @see <a href="https://picocli.info/#_variable_interpolation">Variable Interpolation section of the user manual</a>
          */
         String[] description() default {};
 
@@ -15757,7 +15757,7 @@ public class CommandLine {
              * @param columns columns to construct this TextTable with
              * @since 4.2 */
             public static TextTable forColumns(ColorScheme colorScheme, Column... columns) { return new TextTable(colorScheme, columns); }
-            /** @deprecated use {@link TextTable#TextTable(picocli.CommandLine.Help.ColorScheme, picocli.CommandLine.Help.Column[])} instead */
+            /** @deprecated use {@link picocli.CommandLine.Help.TextTable#TextTable(picocli.CommandLine.Help.ColorScheme, picocli.CommandLine.Help.Column[])}  instead */
             @Deprecated protected TextTable(Ansi ansi, Column[] columns) { this(Help.defaultColorScheme(ansi), columns); }
             protected TextTable(ColorScheme colorScheme, Column[] columns) {
                 this.colorScheme = Assert.notNull(colorScheme, "ansi");
