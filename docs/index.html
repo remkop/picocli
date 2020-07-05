@@ -526,8 +526,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 4.3.2,</span>
-<span id="revdate">2020-05-16</span>
+<span id="revnumber">version 4.4.0,</span>
+<span id="revdate">2020-07-05</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -615,19 +615,21 @@ table.CodeRay td.code>pre{padding:0}
 </li>
 <li><a href="#_parser_configuration">10. Parser Configuration</a>
 <ul class="sectlevel2">
-<li><a href="#_overwriting_single_options">10.1. Overwriting Single Options</a></li>
-<li><a href="#_stop_at_positional">10.2. Stop At Positional</a></li>
-<li><a href="#_unmatched_input">10.3. Unmatched Input</a></li>
-<li><a href="#unmatched-annotation">10.4. <code>@Unmatched</code> annotation</a></li>
-<li><a href="#_unknown_options">10.5. Unknown Options</a></li>
-<li><a href="#_stop_at_unmatched">10.6. Stop At Unmatched</a></li>
-<li><a href="#_toggle_boolean_flags">10.7. Toggle Boolean Flags</a></li>
-<li><a href="#_posix_clustered_short_options">10.8. POSIX Clustered Short Options</a></li>
-<li><a href="#_lenient_mode_incubating">10.9. Lenient Mode (Incubating)</a></li>
-<li><a href="#_quoted_values">10.10. Quoted Values</a></li>
-<li><a href="#_customizing_negatable_options">10.11. Customizing Negatable Options</a></li>
-<li><a href="#_custom_parameter_processing">10.12. Custom Parameter Processing</a></li>
-<li><a href="#_case_sensitivity">10.13. Case Sensitivity</a></li>
+<li><a href="#_case_sensitivity">10.1. Case Sensitivity</a></li>
+<li><a href="#_abbreviated_options_and_subcommands">10.2. Abbreviated Options and Subcommands</a></li>
+<li><a href="#_overwriting_single_options">10.3. Overwriting Single Options</a></li>
+<li><a href="#_stop_at_positional">10.4. Stop At Positional</a></li>
+<li><a href="#_stop_at_unmatched">10.5. Stop At Unmatched</a></li>
+<li><a href="#_unmatched_input">10.6. Unmatched Input</a></li>
+<li><a href="#unmatched-annotation">10.7. <code>@Unmatched</code> annotation</a></li>
+<li><a href="#_unknown_options">10.8. Unknown Options</a></li>
+<li><a href="#_option_names_as_option_values">10.9. Option Names as Option Values</a></li>
+<li><a href="#_toggle_boolean_flags">10.10. Toggle Boolean Flags</a></li>
+<li><a href="#_posix_clustered_short_options">10.11. POSIX Clustered Short Options</a></li>
+<li><a href="#_lenient_mode">10.12. Lenient Mode</a></li>
+<li><a href="#_quoted_values">10.13. Quoted Values</a></li>
+<li><a href="#_customizing_negatable_options">10.14. Customizing Negatable Options</a></li>
+<li><a href="#_custom_parameter_processing">10.15. Custom Parameter Processing</a></li>
 </ul>
 </li>
 <li><a href="#_help">11. Help</a>
@@ -787,7 +789,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_launch4j">28.3. launch4j</a></li>
 <li><a href="#_javapackager_java_8">28.4. javapackager (Java 8)</a></li>
 <li><a href="#_jlink_java_9">28.5. jlink (Java 9+)</a></li>
-<li><a href="#_jpackage_early_access">28.6. jpackage (Early Access)</a></li>
+<li><a href="#_jpackage">28.6. jpackage</a></li>
 <li><a href="#_jbang">28.7. jbang</a></li>
 </ul>
 </li>
@@ -947,7 +949,7 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <h4 id="_gradle">2.1.1. Gradle</h4>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.3.2'</pre>
+<pre>compile 'info.picocli:picocli:4.4.0'</pre>
 </div>
 </div>
 </div>
@@ -958,7 +960,7 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.3.2&lt;/version&gt;
+  &lt;version&gt;4.4.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -1023,7 +1025,7 @@ In most cases no further configuration is needed when generating a native image.
       &lt;path&gt;
         &lt;groupId&gt;info.picocli&lt;/groupId&gt;
         &lt;artifactId&gt;picocli-codegen&lt;/artifactId&gt;
-        &lt;version&gt;4.3.2&lt;/version&gt;
+        &lt;version&gt;4.4.0&lt;/version&gt;
       &lt;/path&gt;
     &lt;/annotationProcessorPaths&gt;
     &lt;compilerArgs&gt;
@@ -1042,8 +1044,8 @@ In most cases no further configuration is needed when generating a native image.
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code>dependencies {
-    compile 'info.picocli:picocli:4.3.2'
-    annotationProcessor 'info.picocli:picocli-codegen:4.3.2'
+    compile 'info.picocli:picocli:4.4.0'
+    annotationProcessor 'info.picocli:picocli-codegen:4.4.0'
 }</code></pre>
 </div>
 </div>
@@ -1066,7 +1068,7 @@ then replace <code>annotationProcessor</code> with <code>kapt</code>:</p>
 <pre class="CodeRay highlight"><code>apply plugin: 'kotlin-kapt' // required
 dependencies {
     // ...
-    kapt 'info.picocli:picocli-codegen:4.3.2'
+    kapt 'info.picocli:picocli-codegen:4.4.0'
 }</code></pre>
 </div>
 </div>
@@ -1095,8 +1097,7 @@ dependencies {
 <div class="sectionbody">
 <div class="paragraph">
 <p>Command line arguments can be separated into <em>options</em>  and <em>positional parameters</em>.
-Options have a name, positional parameters are usually the values that follow the options,
-but they may be mixed.</p>
+Options have a name, positional parameters are usually the values that follow the options, but they may be mixed.</p>
 </div>
 <div class="paragraph">
 <p><span class="image"><img src="images/OptionsAndParameters2.png" alt="Example command with annotated @Option and @Parameters"></span></p>
@@ -1108,7 +1109,8 @@ but they may be mixed.</p>
 <h3 id="_options">3.1. Options</h3>
 <div class="paragraph">
 <p>An option must have one or more <code>names</code>.
-Picocli lets you use any option name you want.</p>
+Picocli lets you use any option name you want.
+Option names are case-sensitive by default, but this is <a href="#_case_sensitivity">customizable</a>.</p>
 </div>
 <div class="admonitionblock tip">
 <table>
@@ -1311,7 +1313,7 @@ Another idea is to add a separate different option (that could be named <code>--
 <td class="content">
 <div class="title">Interactive options and shell applications with JLine 2</div>
 <div class="paragraph">
-<p>Interactive options do not work in conjuction with JLine 2&#8217;s <code>ConsoleReader</code>. Either implement a <a href="#_custom_parameter_processing"><code>IParameterConsumer</code></a> which uses JLine2&#8217;s <code>ConsoleReader</code> directly or use <code>picocli-shell-jline3</code>.</p>
+<p>Interactive options do not work in conjunction with JLine 2&#8217;s <code>ConsoleReader</code>. Either implement a <a href="#_custom_parameter_processing"><code>IParameterConsumer</code></a> which uses JLine2&#8217;s <code>ConsoleReader</code> directly or use <code>picocli-shell-jline3</code>.</p>
 </div>
 </td>
 </tr>
@@ -1393,7 +1395,7 @@ If the <code>-x</code> option is specified multiple times on the command line, t
 <div class="sect2">
 <h3 id="_negatable_options">3.5. Negatable Options</h3>
 <div class="paragraph">
-<p>From picocli 4.0, options can be <code>negatable</code>.</p>
+<p>From picocli 4.0, boolean options can be <code>negatable</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2840,7 +2842,7 @@ MyLogLevel syslogLevel;</code></pre>
 One idea is to <a href="#_show_end_of_options">show the end-of-options</a> delimiter in the usage help.</p>
 </div>
 <div class="paragraph">
-<p>An alternative is to avoid the use of optional parameters and use the default arity in this scenario to elimitate the ambiguity altogether.</p>
+<p>An alternative is to avoid the use of optional parameters and use the default arity in this scenario to eliminate the ambiguity altogether.</p>
 </div>
 </div>
 </div>
@@ -4012,7 +4014,7 @@ Finally, the handler returns an <a href="#_exception_exit_codes">exit code</a>.
 This is sufficient for most applications.</p>
 </div>
 <div class="paragraph">
-<p>Sometimes you want to display a shorter message. For example, the <code>grep</code> utility does not not show the full usage help when it gets an invalid argument:</p>
+<p>Sometimes you want to display a shorter message. For example, the <code>grep</code> utility does not show the full usage help when it gets an invalid argument:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -4110,10 +4112,148 @@ This can be accomplished by installing a custom <code>IExecutionExceptionHandler
 <h2 id="_parser_configuration">10. Parser Configuration</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_overwriting_single_options">10.1. Overwriting Single Options</h3>
+<h3 id="_case_sensitivity">10.1. Case Sensitivity</h3>
 <div class="paragraph">
-<p>When a single-value option is specified multiple times on the command line, the default parser behaviour is
-to throw an <code>OverwrittenOptionException</code>. For example:</p>
+<p>By default, all options and subcommands are case sensitive.
+From picocli 4.3, case sensitivity is configurable.
+Case sensitivity can be switched off globally, as well as on a per-command basis.</p>
+</div>
+<div class="paragraph">
+<p>To toggle case sensitivity for all commands, use the <code>CommandLine::setSubcommandsCaseInsensitive</code> and <code>CommandLine::setOptionsCaseInsensitive</code> methods.
+Use the <code>CommandSpec::subcommandsCaseInsensitive</code> and <code>CommandSpec::optionsCaseInsensitive</code> methods to give some commands a different case sensitivity than others.</p>
+</div>
+<div class="paragraph">
+<p>Where possible, picocli will try to prevent ambiguity: when multiple options with the same name are registered in a command, a <code>DuplicateOptionAnnotationsException</code> is thrown.
+When multiple subcommands with the same name are registered in a command, a <code>DuplicateNameException</code> is thrown.</p>
+</div>
+<div class="paragraph">
+<p>With case sensitivity switched off, the same principle applies: multiple options whose names differ only in case cannot be registered in a command.
+Similarly, multiple subcommands cannot be registered when their names differ only in case.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>When a combination of POSIX options resembles a long option, picocli will prioritize the long option.
+This is the case regardless of case sensitivity, but be aware that with case sensitivity switched off, the chance of such collisions increases.
+For example, if a command has POSIX options <code>-a</code>, <code>-b</code>, and <code>-c</code>, and a long option <code>-ABC</code>, then, when the user specifies <code>-abc</code>, picocli will recognize it as the long option <code>-ABC</code>, not as the POSIX options.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>See the <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/casesensitivity">casesensitivity</a> package in <code>picocli-examples</code> for some examples.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_abbreviated_options_and_subcommands">10.2. Abbreviated Options and Subcommands</h3>
+<div class="paragraph">
+<p>Since picocli 4.4, the parser can recognize abbreviated options and subcommands.
+This needs to be enabled explicitly with <code>CommandLine::setAbbreviatedOptionsAllowed</code> and <code>CommandLine::setAbbreviatedSubcommandsAllowed</code>.</p>
+</div>
+<div class="sect3">
+<h4 id="_recognized_abbreviations">10.2.1. Recognized Abbreviations</h4>
+<div class="paragraph">
+<p>When abbreviations are enabled, users can specify the initial letter(s) of the first component and optionally of one or more subsequent components of an option or subcommand name.</p>
+</div>
+<div class="paragraph">
+<p>"Components" are separated by <code>-</code> dash characters or by case, so for example, both <code>--CamelCase</code> and <code>--kebab-case</code> have two components.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>When case sensitivity is <a href="#_case_sensitivity">disabled</a> only the <code>-</code> dash character can be used to separate components.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 3. Examples of valid abbreviations</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Option or Subcommand</th>
+<th class="tableblock halign-left valign-top">Sample Recognized Abbreviations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--veryLongCamelCase</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--very</code>, <code>--vLCC</code>, <code>--vCase</code> (&#8230;&#8203;)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--super-long-option</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--sup</code>, <code>--sLO</code>, <code>--s-l-o</code>, <code>--s-lon</code>, <code>--s-opt</code>, <code>--sOpt</code> (&#8230;&#8203;)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>some-long-command</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>so</code>, <code>sLC</code>, <code>s-l-c</code>, <code>soLoCo</code>, <code>someCom</code> (&#8230;&#8203;)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_ambiguous_abbreviations">10.2.2. Ambiguous Abbreviations</h4>
+<div class="paragraph">
+<p>When the user specifies input that can match multiple options or subcommands, the parser throws a <code>ParameterException</code>.
+When applications use the <code>execute</code> method, an error message and the usage help is <a href="#_invalid_user_input">displayed</a> to the user.</p>
+</div>
+<div class="paragraph">
+<p>For example, given a command with subcommands <code>help</code> and <code>hello</code>, then ambiguous user input like <code>hel</code> will show this error message:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Error: 'hel' is not unique: it matches 'hello', 'help'</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_abbreviated_long_options_and_posix_clustered_short_options">10.2.3. Abbreviated Long Options and POSIX Clustered Short Options</h4>
+<div class="paragraph">
+<p>When an argument can match both an abbreviated long option and a set of <a href="#_short_posix_options">clustered short options</a>, picocli matches the long option.
+This is the case regardless of abbreviations, but be aware that with abbreviated options enabled, the chance of such collisions increases.</p>
+</div>
+<div class="paragraph">
+<p>For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">AbbreviationsAndPosix</span> {
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-A</span><span class="delimiter">&quot;</span></span>) <span class="type">boolean</span> a;
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-B</span><span class="delimiter">&quot;</span></span>) <span class="type">boolean</span> b;
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-AaaBbb</span><span class="delimiter">&quot;</span></span>) <span class="type">boolean</span> aaaBbb;
+}
+AbbreviationsAndPosix app = <span class="keyword">new</span> AbbreviationsAndPosix();
+<span class="keyword">new</span> CommandLine(app).setAbbreviatedOptionsAllowed(<span class="predefined-constant">true</span>).parseArgs(<span class="string"><span class="delimiter">&quot;</span><span class="content">-AB</span><span class="delimiter">&quot;</span></span>);
+assertTrue(app.aaaBbb); <span class="comment">// the long option is matched from abbreviated input -AB</span>
+assertFalse(app.a);
+assertFalse(app.b);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When abbreviated options are enabled, user input <code>-AB</code> will match the long <code>-AaaBbb</code> option, but not the <code>-A</code> and <code>-B</code> options.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_overwriting_single_options">10.3. Overwriting Single Options</h3>
+<div class="paragraph">
+<p>When a single-value option is specified multiple times on the command line, the default parser behaviour is to throw an <code>OverwrittenOptionException</code>.
+For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -4129,16 +4269,16 @@ to throw an <code>OverwrittenOptionException</code>. For example:</p>
 </div>
 </div>
 <div class="paragraph">
-<p>Applications can change this by calling <code>CommandLine.setOverwrittenOptionsAllowed(true)</code> before parsing the input.
+<p>Applications can change this by calling <code>CommandLine::setOverwrittenOptionsAllowed</code> with <code>true</code> before parsing the input.
 When overwritten options are allowed, the last specified value takes effect (the above input will set the <code>port</code> field to <code>8080</code>)
 and a WARN level message is printed to the console. (See <a href="#_tracing">Tracing</a> for how to switch off the warnings.)</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_stop_at_positional">10.2. Stop At Positional</h3>
+<h3 id="_stop_at_positional">10.4. Stop At Positional</h3>
 <div class="paragraph">
 <p>By default, positional parameters can be mixed with options on the command line, but this is not always desirable.
-From picocli 2.3, applications can call <code>CommandLine.setStopAtPositional(true)</code>
+From picocli 2.3, applications can call <code>CommandLine::setStopAtPositional</code> with <code>true</code>
 to force the parser to treat all values following the first positional parameter as positional parameters.</p>
 </div>
 <div class="paragraph">
@@ -4146,10 +4286,21 @@ to force the parser to treat all values following the first positional parameter
 </div>
 </div>
 <div class="sect2">
-<h3 id="_unmatched_input">10.3. Unmatched Input</h3>
+<h3 id="_stop_at_unmatched">10.5. Stop At Unmatched</h3>
 <div class="paragraph">
-<p>By default, an <code>UnmatchedArgumentException</code> is thrown when a command line argument cannot be assigned to
-an option or positional parameter. For example:</p>
+<p>From picocli 2.3, applications can call <code>CommandLine::setStopAtUnmatched</code> with <code>true</code> to force the parser to stop interpreting
+options and positional parameters as soon as it encounters an unmatched argument.</p>
+</div>
+<div class="paragraph">
+<p>When this flag is set, the first unmatched argument and all subsequent command line arguments are added to the
+unmatched arguments list returned by <code>CommandLine::getUnmatchedArguments</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_unmatched_input">10.6. Unmatched Input</h3>
+<div class="paragraph">
+<p>By default, an <code>UnmatchedArgumentException</code> is thrown when a command line argument cannot be assigned to an option or positional parameter.
+For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -4168,16 +4319,16 @@ so the following input results in an <code>UnmatchedArgumentException</code>:</p
 </div>
 </div>
 <div class="paragraph">
-<p>Applications can change this by calling <code>CommandLine.setUnmatchedArgumentsAllowed(true)</code> before parsing the input.
+<p>Applications can change this by calling <code>CommandLine::setUnmatchedArgumentsAllowed</code> with <code>true</code> before parsing the input.
 When unmatched arguments are allowed, the above input will be accepted and a WARN level message is printed to the console.
 (See <a href="#_tracing">Tracing</a> for how to switch off the warnings.)</p>
 </div>
 <div class="paragraph">
-<p>The unmatched argument values can be obtained with the <code>CommandLine.getUnmatchedArguments()</code> method.</p>
+<p>The unmatched argument values can be obtained with the <code>CommandLine::getUnmatchedArguments</code> method.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="unmatched-annotation">10.4. <code>@Unmatched</code> annotation</h3>
+<h3 id="unmatched-annotation">10.7. <code>@Unmatched</code> annotation</h3>
 <div class="paragraph">
 <p>From picocli 3.0, fields annotated with <code>@Unmatched</code> will be populated with the unmatched arguments.
 The field must be of type <code>String[]</code> or <code>List&lt;String&gt;</code>.</p>
@@ -4189,80 +4340,171 @@ If no unmatched arguments are found, the value of the field annotated with <code
 </div>
 </div>
 <div class="sect2">
-<h3 id="_unknown_options">10.5. Unknown Options</h3>
+<h3 id="_unknown_options">10.8. Unknown Options</h3>
+<div class="sect3">
+<h4 id="_unknown_options_definition">10.8.1. Unknown Options Definition</h4>
 <div class="paragraph">
 <p>A special case of unmatched input are arguments that resemble options but don&#8217;t match any of the defined options.
-For example:</p>
+Picocli determines if a value "resembles an option" by comparing its leading characters to the prefix characters of the known options.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Negative numbers are not considered to be unknown options, so values like <code>-123</code>, <code>-NaN</code>, <code>-Infinity</code>, <code>-#ABC</code> and <code>-0xCAFEBABE</code> will not be treated specially for resembling an option name.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>For example, the value <code>-z</code> is considered an unknown option when we have a command that only defines options <code>-x</code> and <code>-y</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-a</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> alpha;
-<span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-b</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> beta;
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> x;
+<span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-y</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> y;
 <span class="annotation">@Parameters</span> <span class="predefined-type">String</span><span class="type">[]</span> remainder;</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The above defines options <code>-a</code> and <code>-b</code>, but what should the parser do with input like this?</p>
+<p>The above defines options <code>-x</code> and <code>-y</code>, but no option <code>-z</code>. So what should the parser do when the user gives input like this?</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;command&gt; -x -a AAA</pre>
+<pre>&lt;command&gt; -z -x XXX</pre>
 </div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_positional_parameters_resembling_options">10.8.2. Positional Parameters Resembling Options</h4>
+<div class="paragraph">
+<p>One possibility is to silently accept such values as positional parameters, but this is often not desirable.</p>
 </div>
 <div class="paragraph">
-<p>The <code>-x</code> argument "looks like" an option but there is no <code>-x</code> option defined&#8230;&#8203;</p>
+<p>By default, when the value resembles an option, picocli throws an <code>UnmatchedArgumentException</code> rather than treating it as a positional parameter.</p>
 </div>
 <div class="paragraph">
-<p>One possibility is to silently accept such values as positional parameters but this is often not desirable.
-From version 1.0, picocli determines if the unmatched argument "resembles an option"
-by comparing its leading characters to the prefix characters of the known options.</p>
-</div>
-<div class="paragraph">
-<p>When the unmatched value is similar to the known options, picocli throws an <code>UnmatchedArgumentException</code>
-rather than treating it as a positional parameter.</p>
-</div>
-<div class="paragraph">
-<p>As usual, <code>CommandLine.setUnmatchedArgumentsAllowed(true)</code> will accept unmatched input and
-display a WARN-level message on the console.</p>
-</div>
-<div class="paragraph">
-<p>Arguments that are not considered similar to the known options are interpreted as positional parameters:</p>
+<p>Picocli 3.0 introduced the <code>CommandLine::setUnmatchedOptionsArePositionalParams</code> method that can be used to force the parser to treat arguments resembling an option as positional parameters.
+For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;command&gt; x -a AAA</pre>
+<pre>&lt;command&gt; -z -x XXX</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The above input is treated by the parser as one positional parameter (<code>x</code>) followed by the <code>-a</code> option and its value.</p>
+<p>When <code>unmatchedOptionsArePositionalParams</code> is set to <code>true</code>, the unknown option <code>-z</code> is treated as a positional parameter.
+The next argument <code>-x</code> is recognized and processed as a known option like you would expect.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+An alternative is to call <code>CommandLine::setUnmatchedArgumentsAllowed</code> with <code>true</code>, this will accept and store such values separately as described in <a href="#_unmatched_input">Unmatched Input</a>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_option_parameters_resembling_options">10.8.3. Option Parameters Resembling Options</h4>
+<div class="paragraph">
+<p>By default, options accept parameter values that "resemble" (but don&#8217;t exactly match) an option.</p>
 </div>
 <div class="paragraph">
-<p>Picocli 3.0 introduced a <code>CommandLine.setUnmatchedOptionsArePositionalParams(boolean)</code> method that can be used to
-force the parser to treat arguments resembling an option as positional parameters. For example:</p>
+<p>Picocli 4.4 introduced a <code>CommandLine::setUnmatchedOptionsAllowedAsOptionParameters</code> method that makes it possible to configure the parser to reject values that resemble options as option parameters.
+Setting this to <code>false</code> will result in values resembling option names being rejected as option values.</p>
+</div>
+<div class="paragraph">
+<p>For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;command&gt; -x -a AAA</pre>
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">MyApp</span> {
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> x;
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>When <code>unmatchedOptionsArePositionalParams</code> is set to <code>true</code>, the unknown option <code>-x</code> is treated as a positional parameter.
-The next argument <code>-a</code> is recognized and processed as a known option like you would expect.</p>
+<p>By default, a value like <code>-z</code>, which resembles an option, is accepted as the parameter for <code>-x</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">App app = <span class="keyword">new</span> App();
+<span class="keyword">new</span> CommandLine(app).parseArgs(<span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-z</span><span class="delimiter">&quot;</span></span>);
+assertEquals(<span class="string"><span class="delimiter">&quot;</span><span class="content">-z</span><span class="delimiter">&quot;</span></span>, app.x);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After setting the <code>unmatchedOptionsAllowedAsOptionParameters</code> parser option to <code>false</code>, values resembling an option are rejected as parameter for <code>-x</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">new</span> CommandLine(<span class="keyword">new</span> App())
+        .setUnmatchedOptionsAllowedAsOptionParameters(<span class="predefined-constant">false</span>)
+        .parseArgs(<span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">-z</span><span class="delimiter">&quot;</span></span>);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will throw an <code>UnmatchedArgumentException</code> with message:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>"Unknown option '-z'; Expected parameter for option '-x' but found '-z'"</pre>
+</div>
+</div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_stop_at_unmatched">10.6. Stop At Unmatched</h3>
+<h3 id="_option_names_as_option_values">10.9. Option Names as Option Values</h3>
 <div class="paragraph">
-<p>From picocli 2.3, applications can call <code>CommandLine.setStopAtUnmatched(true)</code> to force the parser to stop interpreting
-options and positional parameters as soon as it encounters an unmatched argument.</p>
+<p>Since picocli 4.4, the parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">App</span> {
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> x;
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-y</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">String</span> y;
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
+        App app = <span class="keyword">new</span> App();
+        <span class="keyword">new</span> CommandLine(app).setTrimQuotes(<span class="predefined-constant">true</span>).parseArgs(args);
+        <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">x='%s', y='%s'%n</span><span class="delimiter">&quot;</span></span>, app.x, app.y);
+    }
+}</code></pre>
+</div>
 </div>
 <div class="paragraph">
-<p>When this flag is set, the first unmatched argument and all subsequent command line arguments are added to the
-unmatched arguments list returned by <code>CommandLine.getUnmatchedArguments()</code>.</p>
+<p>In previous versions of picocli, the above command would accept input <code>-x -y</code>, and the value <code>-y</code> would be assigned to the <code>x</code> String field.
+From picocli 4.4, the above input will be rejected with an error message indicating that the <code>-x</code> option requires a parameter.</p>
+</div>
+<div class="paragraph">
+<p>If it is necessary to accept values that match option names, such values need to be quoted.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">java App -x=&quot;-y&quot;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will print the following output:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">x='-y', y='null'</code></pre>
+</div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_toggle_boolean_flags">10.7. Toggle Boolean Flags</h3>
+<h3 id="_toggle_boolean_flags">10.10. Toggle Boolean Flags</h3>
 <div class="paragraph">
 <p>When a flag option is specified on the command line picocli will set its value to the opposite of its <em>default</em> value.</p>
 </div>
@@ -4271,23 +4513,23 @@ unmatched arguments list returned by <code>CommandLine.getUnmatchedArguments()</
 if the previous value was <code>true</code> it is set to <code>false</code>, and when the value was <code>false</code> it is set to <code>true</code>.</p>
 </div>
 <div class="paragraph">
-<p>Applications can call <code>CommandLine.setToggleBooleanFlags(true)</code> to enable toggling.
+<p>Applications can call <code>CommandLine::setToggleBooleanFlags</code> with <code>true</code> to enable toggling.
 Note that when toggling is enabled, specifying a flag option twice on the command line will have no effect because they cancel each other out.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_posix_clustered_short_options">10.8. POSIX Clustered Short Options</h3>
+<h3 id="_posix_clustered_short_options">10.11. POSIX Clustered Short Options</h3>
 <div class="paragraph">
 <p>By default, the picocli parser allows POSIX clustered short options, so short options like <code>-x -v -f SomeFile</code> can be clustered together like <code>-xvfSomeFile</code>.
-From picocli 3.0, applications can call <code>CommandLine.setPosixClusteredShortOptionsAllowed(false)</code> to enforce that options must be separated with whitespace on the command line.
+From picocli 3.0, applications can call <code>CommandLine::setPosixClusteredShortOptionsAllowed</code> with <code>false</code> to enforce that options must be separated with whitespace on the command line.
 (This also means that option parameters must be separated from the option name by whitespace or the <code>=</code> <a href="#_option_parameter_separators">separator</a> character, so <code>-D key=value</code> and <code>-D=key=value</code> will be recognized but <code>-Dkey=value</code> will not.)</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_lenient_mode_incubating">10.9. Lenient Mode (Incubating)</h3>
+<h3 id="_lenient_mode">10.12. Lenient Mode</h3>
 <div class="paragraph">
 <p>From picocli 3.2, the parser can be configured to continue parsing invalid input to the end.
-When <code>collectErrors</code> is set to <code>true</code>, and a problem occurs during parsing, an <code>Exception</code> is added to the <code>ParseResult.errors()</code> list and parsing continues. The default behaviour (when <code>collectErrors</code> is <code>false</code>) is to abort parsing by throwing the <code>Exception</code>.</p>
+When <code>collectErrors</code> is set to <code>true</code>, and a problem occurs during parsing, an <code>Exception</code> is added to the list returned by <code>ParseResult::errors</code> and parsing continues. The default behaviour (when <code>collectErrors</code> is <code>false</code>) is to abort parsing by throwing the <code>Exception</code>.</p>
 </div>
 <div class="paragraph">
 <p>This is useful when generating completion candidates on partial input, and is also useful when using picocli in
@@ -4298,9 +4540,9 @@ languages like Clojure where idiomatic error handling does not involve throwing 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_quoted_values">10.10. Quoted Values</h3>
+<h3 id="_quoted_values">10.13. Quoted Values</h3>
 <div class="sect3">
-<h4 id="_trimming_quotes">10.10.1. Trimming Quotes</h4>
+<h4 id="_trimming_quotes">10.13.1. Trimming Quotes</h4>
 <div class="paragraph">
 <p>From picocli 3.7, quotes around command line parameters are preserved by default (previously they were removed). This can be configured with <code>CommandLine::setTrimQuotes</code>, or the parser configuration <code>trimQuotes</code>. From picocli 4.0, quoted arguments can contain nested quoted substrings, to give end users fine-grained control over how values are split.</p>
 </div>
@@ -4377,7 +4619,7 @@ languages like Clojure where idiomatic error handling does not involve throwing 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_splitting_quoted_parameters">10.10.2. Splitting Quoted Parameters</h4>
+<h4 id="_splitting_quoted_parameters">10.13.2. Splitting Quoted Parameters</h4>
 <div class="paragraph">
 <p>By default, if the option or positional parameter has a <a href="#_split_regex"><code>split</code></a> regex defined, parameter values are split into parts while respecting quotes: the <code>split</code> regular expression is not matched inside a quoted region.</p>
 </div>
@@ -4505,7 +4747,7 @@ yyy"</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_customizing_negatable_options">10.11. Customizing Negatable Options</h3>
+<h3 id="_customizing_negatable_options">10.14. Customizing Negatable Options</h3>
 <div class="paragraph">
 <p><a href="#_negatable_options">Negatable options</a> can be customized via the <code>INegatableOptionTransformer</code> interface:</p>
 </div>
@@ -4554,12 +4796,12 @@ yyy"</code></pre>
 </div>
 <div class="paragraph">
 <p>By default, a set of <a href="https://picocli.info/apidocs/picocli/CommandLine.RegexTransformer.html#createDefault--">regular expressions</a> is used to control the above.
-Use <code>CommandLine.setNegatableOptionTransformer</code> to replace the <a href="https://picocli.info/apidocs/picocli/CommandLine.INegatableOptionTransformer"><code>INegatableOptionTransformer</code></a> with a custom version.
+Use <code>CommandLine::setNegatableOptionTransformer</code> to replace the <a href="https://picocli.info/apidocs/picocli/CommandLine.INegatableOptionTransformer"><code>INegatableOptionTransformer</code></a> with a custom version.
 See the javadoc for details.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_custom_parameter_processing">10.12. Custom Parameter Processing</h3>
+<h3 id="_custom_parameter_processing">10.15. Custom Parameter Processing</h3>
 <div class="paragraph">
 <p>Options or positional parameters can be assigned a <code>IParameterConsumer</code> that implements
 custom logic to process the parameters for this option or this position.
@@ -4606,44 +4848,6 @@ options for the <code>find</code> command itself, but are interpreted as a separ
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_case_sensitivity">10.13. Case Sensitivity</h3>
-<div class="paragraph">
-<p>By default, all options and subcommands are case sensitive.
-Case sensitivity can be switched off globally, as well as on a per-command basis.</p>
-</div>
-<div class="paragraph">
-<p>To toggle case sensitivity for all commands, use the <code>CommandLine::setSubcommandsCaseInsensitive</code> and <code>CommandLine::setOptionsCaseInsensitive</code> methods.
-Use the <code>CommandSpec::subcommandsCaseInsensitive</code> and <code>CommandSpec::optionsCaseInsensitive</code> methods to give some commands a different case sensitivity than others.</p>
-</div>
-<div class="paragraph">
-<p>Where possible, picocli will try to prevent ambiguity: when multiple options with the same name are registered in a command, a <code>DuplicateOptionAnnotationsException</code> is thrown.
-When multiple subcommands with the same name are registered in a command, a <code>DuplicateNameException</code> is thrown.</p>
-</div>
-<div class="paragraph">
-<p>With case sensitivity switched off, the same principle applies: multiple options whose names differ only in case cannot be registered in a command.
-Similarly, multiple subcommands cannot be registered when their names differ only in case.</p>
-</div>
-<div class="admonitionblock warning">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-warning" title="Warning"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>When a combination of POSIX options resembles a long option, picocli will prioritize the long option.
-This is the case regardless of case sensitivity, but be aware that with case sensitivity switched off, the chance of such collisions increases.
-For example, if a command has POSIX options <code>-a</code>, <code>-b</code>, and <code>-c</code>, and a long option <code>-ABC</code>, then, when the user specifies <code>-abc</code>, picocli will recognize it as the long option <code>-ABC</code>, not as the POSIX options.</p>
-</div>
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>See the <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/casesensitivity">casesensitivity</a> package in <code>picocli-examples</code> for some examples.</p>
-</div>
-</div>
 </div>
 </div>
 <div class="sect1">
@@ -4686,10 +4890,10 @@ usage help or version information was requested (without inspecting the annotate
 <div class="ulist">
 <ul>
 <li>
-<p><code>CommandLine.isUsageHelpRequested()</code> returns <code>true</code> if the parser matched an option annotated with <code>usageHelp=true</code></p>
+<p><code>CommandLine::isUsageHelpRequested</code> returns <code>true</code> if the parser matched an option annotated with <code>usageHelp=true</code></p>
 </li>
 <li>
-<p><code>CommandLine.isVersionHelpRequested()</code> returns <code>true</code> if the parser matched an option annotated with <code>versionHelp=true</code></p>
+<p><code>CommandLine::isVersionHelpRequested</code> returns <code>true</code> if the parser matched an option annotated with <code>versionHelp=true</code></p>
 </li>
 </ul>
 </div>
@@ -5699,6 +5903,17 @@ Example command.
   -V, --version         Print version information and exit.</pre>
 </div>
 </div>
+<div class="paragraph">
+<p>The description of the <code>@&lt;filename&gt;</code> entry can also be specified in a <a href="#_internationalization">resource bundle</a> for internationalization and localization.
+The <code>descriptionKey</code> for the <code>@&lt;filename&gt;</code> entry in resource bundles is:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>picocli.atfile</code></p>
+</li>
+</ul>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -5816,6 +6031,17 @@ Example command.
   -V, --version   Print version information and exit.
   --              End of options. Remainder are positional parameters.</pre>
 </div>
+</div>
+<div class="paragraph">
+<p>The description of the End of Options delimiter entry can also be specified in a <a href="#_internationalization">resource bundle</a> for internationalization and localization.
+The <code>descriptionKey</code> for the End of Options delimiter entry in resource bundles is:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>picocli.endofoptions</code></p>
+</li>
+</ul>
 </div>
 </div>
 </div>
@@ -6053,7 +6279,7 @@ For example:</p>
 <p><span class="image"><img src="images/DescriptionWithColors.png" alt="Description with Ansi styles and colors"></span></p>
 </div>
 <table class="tableblock frame-all grid-cols stretch">
-<caption class="title">Table 3. Pre-defined styles and colors that can be used in descriptions and headers using the <code>@|STYLE1[,STYLE2]&#8230;&#8203; text|@</code> notation</caption>
+<caption class="title">Table 4. Pre-defined styles and colors that can be used in descriptions and headers using the <code>@|STYLE1[,STYLE2]&#8230;&#8203; text|@</code> notation</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -6699,7 +6925,9 @@ See the <a href="https://github.com/remkop/picocli/blob/master/src/test/java/pic
 </div>
 </div>
 <div class="paragraph">
-<p>Subcommands referenced in a <code>subcommands</code> attribute <em>must</em> have a <code>@Command</code> annotation with a <code>name</code> attribute, or an exception is thrown from the <code>CommandLine</code> constructor. This name will be used both for generating usage help and for recognizing subcommands when parsing the command line.</p>
+<p>Subcommands referenced in a <code>subcommands</code> attribute <em>must</em> have a <code>@Command</code> annotation with a <code>name</code> attribute, or an exception is thrown from the <code>CommandLine</code> constructor.
+This name will be used both for generating usage help and for recognizing subcommands when parsing the command line.
+Command names are case-sensitive by default, but this is <a href="#_case_sensitivity">customizable</a>.</p>
 </div>
 <div class="paragraph">
 <p>Custom type converters registered on a <code>CommandLine</code> instance will apply to all subcommands that were declared on the main command with the <code>subcommands</code> annotation.</p>
@@ -7461,7 +7689,7 @@ are not validated (similar to <a href="#_help_options">help options</a>).</p>
 <p>For some command suites, it does not make sense to invoke the top-level command by itself, and the user is required to specify a subcommand.</p>
 </div>
 <div class="paragraph">
-<p>From version 4.3, picocli makes it easy to accomplish this: simply use the the <a href="#_executing_subcommands"><code>execute</code> method</a> to start your application, and make the top-level command a class that does not implement <code>Runnable</code> or <code>Callable</code>.</p>
+<p>From version 4.3, picocli makes it easy to accomplish this: simply use the <a href="#_executing_subcommands"><code>execute</code> method</a> to start your application, and make the top-level command a class that does not implement <code>Runnable</code> or <code>Callable</code>.</p>
 </div>
 <div class="paragraph">
 <p>Then, when the user specifies only the top-level command, without a subcommand, while this top-level command does not implement <code>Runnable</code> or <code>Callable</code>, picocli internally throws a <code>ParameterException</code> with the error message <code>"Missing required subcommand"</code>. This will cause the <a href="#_invalid_user_input"><code>IParameterExceptionHandler</code></a> to be called, which will display this message to the user.</p>
@@ -8044,10 +8272,19 @@ help = Show this help message and exit.
 version = Print version information and exit.
 
 # Exit Code Description
+# ---------------------
 usage.exitCodeListHeading = Exit Codes:%n
 usage.exitCodeList.0 = \u00200:Successful program execution. (notice leading space '\u0020')
 usage.exitCodeList.1 = 64:Usage error: user input for the command was incorrect.
-usage.exitCodeList.2 = 70:An exception occurred when invoking the business logic of this command.</code></pre>
+usage.exitCodeList.2 = 70:An exception occurred when invoking the business logic of this command.
+
+# @file Description
+# -----------------
+picocli.atfile=One or more argument files containing options, commands and positional parameters.
+
+# End-of-Options (--) Delimiter Description
+# -----------------------------------------
+picocli.endofoptions = Separates options from positional parameters.</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -8279,6 +8516,12 @@ helpCommand.command = Shared description of COMMAND parameter of built-in help s
 <td class="tableblock halign-left valign-middle"><p class="tableblock">4.0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">any section of the usage help message for a command</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">replaced with the fully qualified name of its parent command (that is, preceded by the name(s) of the parent command&#8217;s ancestor commands)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>${ROOT-COMMAND-NAME}</code></p></td>
+<td class="tableblock halign-left valign-middle"><p class="tableblock">4.4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">any section of the usage help message for a command</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">replaced with the name of the top-level command (in a command suite with subcommands)</p></td>
 </tr>
 </tbody>
 </table>
@@ -9122,8 +9365,8 @@ Multi-line text blocks can be used in command and option descriptions, headers a
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">com.google.inject</span>.*;
-<span class="keyword">import</span> <span class="include">picocli</span>.*;
-<span class="keyword">import</span> <span class="include">picocli.CommandLine</span>.*;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine</span>;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.IFactory</span>;
 
 <span class="directive">public</span> <span class="type">class</span> <span class="class">GuiceFactory</span> <span class="directive">implements</span> IFactory {
     <span class="directive">private</span> <span class="directive">final</span> Injector injector = Guice.createInjector(<span class="keyword">new</span> DemoModule());
@@ -9190,7 +9433,7 @@ To use this custom factory, add the following dependency:</p>
 <pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
   <span class="tag">&lt;groupId&gt;</span>info.picocli<span class="tag">&lt;/groupId&gt;</span>
   <span class="tag">&lt;artifactId&gt;</span>picocli-spring-boot-starter<span class="tag">&lt;/artifactId&gt;</span>
-  <span class="tag">&lt;version&gt;</span>4.3.2<span class="tag">&lt;/version&gt;</span>
+  <span class="tag">&lt;version&gt;</span>4.4.0<span class="tag">&lt;/version&gt;</span>
 <span class="tag">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -9200,7 +9443,7 @@ To use this custom factory, add the following dependency:</p>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code>dependencies {
-    compile "info.picocli:picocli-spring-boot-starter:4.3.2"
+    compile "info.picocli:picocli-spring-boot-starter:4.4.0"
 }</code></pre>
 </div>
 </div>
@@ -9649,6 +9892,20 @@ The generated AsciiDoc files can be converted to HTML, PDF and unix man pages wi
 </li>
 </ul>
 </div>
+<div class="paragraph">
+<p>From picocli 4.4, this tool can be used as a <a href="#_subcommands">subcommand</a> in your application, with the usual syntax:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">picocli.codegen.docgen.manpage.ManPageGenerator</span>;
+
+<span class="annotation">@Command</span>(subcommands = ManPageGenerator.class)
+...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To use the <code>ManPageGenerator</code> tool as a subcommand, you will need the <code>picocli-codegen</code> jar in your classpath.</p>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -9979,16 +10236,17 @@ Use <code>jlink</code> with the <code>--launcher</code> option to generate launc
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jpackage_early_access">28.6. jpackage (Early Access)</h3>
+<h3 id="_jpackage">28.6. jpackage</h3>
 <div class="paragraph">
-<p><a href="https://jdk.java.net/jpackage/">jpackage</a> is an early access build of <a href="https://openjdk.java.net/jeps/343">JEP 343: Packaging Tool</a>.
+<p>jpackage is a packaging tool according to <a href="https://openjdk.java.net/jeps/343">JEP 343</a> which ships with JDK 14.
 JPackage can take the custom light-weight JRE produced by <code>jlink</code> and create an installer and a native application launcher.
 The result is a Java "application image" that is a single directory in the filesystem containing
 the native application launcher, resources and configuration files,
 and the custom light-weight JRE runtime image (including the application modules) produced by <code>jlink</code>.</p>
 </div>
 <div class="paragraph">
-<p>This <a href="https://www.infoq.com/news/2019/03/jep-343-jpackage/">InfoQ article</a> has more details.
+<p>For further details, you may read the <a href="https://docs.oracle.com/en/java/javase/14/docs/specs/man/jpackage.html">jpackage synopsis</a> or study the <a href="https://docs.oracle.com/en/java/javase/14/jpackage/">Packaging Tool User&#8217;s Guide</a>.
+This <a href="https://www.infoq.com/news/2019/03/jep-343-jpackage/">InfoQ article</a> may be of interest, too.
 Gradle users may like these plugins: <a href="https://badass-runtime-plugin.beryx.org/releases/latest/">org.beryx Badass Runtime Plugin</a>
 and <a href="https://badass-jlink-plugin.beryx.org/releases/latest/">org.beryx Badass JLink Plugin</a>.</p>
 </div>
@@ -10058,7 +10316,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.3.2</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.4.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabConfig</span>(systemClassLoader=<span class="predefined-constant">true</span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
@@ -10087,7 +10345,7 @@ count.times {
 </td>
 <td class="content">
 When upgrading scripts to picocli 4.0, just changing the version number is not enough!
-Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.3.2')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.3.2')</code> will not work,
+Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.4.0')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.4.0')</code> will not work,
 because the <code>@picocli.groovy.PicocliScript</code> annotation class and supporting classes have been moved into a separate module, <code>picocli-groovy</code>.
 </td>
 </tr>
@@ -10111,7 +10369,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.3.2</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.4.0</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -10302,7 +10560,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle_3">36.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.3.2'</pre>
+<pre>compile 'info.picocli:picocli:4.4.0'</pre>
 </div>
 </div>
 </div>
@@ -10313,7 +10571,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.3.2&lt;/version&gt;
+  &lt;version&gt;4.4.0&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -10322,7 +10580,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt">36.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "4.3.2"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "4.4.0"</pre>
 </div>
 </div>
 </div>
@@ -10330,7 +10588,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy">36.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.3.2" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.4.0" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -10346,8 +10604,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.3.2<br>
-Last updated 2020-05-16 17:56:13 +0900
+Version 4.4.0<br>
+Last updated 2020-07-05 09:22:52 +0900
 </div>
 </div>
 </body>

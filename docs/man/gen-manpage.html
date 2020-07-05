@@ -555,12 +555,16 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>Use the <code>asciidoctor</code> tool to convert the generated AsciiDoc files to man pages in roff format:</p>
 </div>
 <div class="paragraph">
-<p><code>asciidoctor --backend=manpage --source-dir=SOURCE_DIR --destination-dir=DESTINATION</code></p>
+<p><code>asciidoctor --backend=manpage --source-dir=SOURCE_DIR --destination-dir=DESTINATION *.adoc</code></p>
 </div>
 <div class="paragraph">
 <p>Point the SOURCE_DIR to either the <code>--outdir</code> directory or the <code>--template-dir</code> directory. Use some other directory as the DESTINATION.<br>
 See <a href="https://asciidoctor.org/docs/user-manual/#man-pages" class="bare">https://asciidoctor.org/docs/user-manual/#man-pages</a><br>
 See <a href="http://man7.org/linux/man-pages/man7/roff.7.html" class="bare">http://man7.org/linux/man-pages/man7/roff.7.html</a></p>
+</div>
+<div class="paragraph">
+<p>In order to generate localized man pages, set the target locale by specifying the user.language, user.country, and user.variant system properties.<br>
+The generated usage help will then contain information retrieved from the resource bundle based on the user locale.</p>
 </div>
 </div>
 </div>
@@ -569,7 +573,7 @@ See <a href="http://man7.org/linux/man-pages/man7/roff.7.html" class="bare">http
 <div class="sectionbody">
 <div class="literalblock">
 <div class="content">
-<pre>java -cp "myapp.jar;picocli-4.3.2.jar;picocli-codegen-4.3.2.jar" picocli.codegen.docgen.manpage.ManPageGenerator my.pkg.MyClass</pre>
+<pre>java -Duser.language=de -cp "myapp.jar;picocli-4.4.0.jar;picocli-codegen-4.4.0.jar" picocli.codegen.docgen.manpage.ManPageGenerator my.pkg.MyClass</pre>
 </div>
 </div>
 </div>
@@ -577,8 +581,8 @@ See <a href="http://man7.org/linux/man-pages/man7/roff.7.html" class="bare">http
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.3.2<br>
-Last updated 2020-05-16 18:00:06 +0900
+Version 4.4.0<br>
+Last updated 2020-07-05 11:03:25 +0900
 </div>
 </div>
 </body>
