@@ -1,9 +1,9 @@
 // tag::picocli-generated-full-manpage[]
 // tag::picocli-generated-man-section-header[]
 :doctype: manpage
-:revnumber: <main class> gen-manpage 4.3.3-SNAPSHOT
+:revnumber: <main class> gen-manpage $VERSION
 :manmanual: <main class> Manual
-:mansource: <main class> gen-manpage 4.3.3-SNAPSHOT
+:mansource: <main class> gen-manpage $VERSION
 :man-linkstyle: pass:[blue R < >]
 = <main class>-gen-manpage(1)
 
