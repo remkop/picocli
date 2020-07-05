@@ -3,16 +3,17 @@
 # <a name="4.4.0"></a> Picocli 4.4.0 (UNRELEASED)
 The picocli community is pleased to announce picocli 4.4.0.
 
-This release contains bugfixes and enhancements.
+This release contains over 45 bugfixes, enhancements, and new features.
 
-From this release, picocli supports abbreviated options and subcommands. When abbreviations are enabled, users can specify the initial letter(s) of the first component and optionally of one or more subsequent components of an option or subcommand name.
-"Components" are separated by `-` dash characters or by case, so for example, both `--CamelCase` and `--kebab-case` have two components.
+A major new feature in this release is support for abbreviated options and subcommands. When abbreviations are enabled, users can specify the initial letter(s) of the first "component" and optionally of one or more subsequent components of an option or subcommand name.
+"Components" are parts of a name, separated by `-` dash characters or by upper/lower case. So for example, both `--CamelCase` and `--kebab-case` have two components.
+For details see the [New and Noteworthy](#4.4.0-new) section below.
 
-Parser fixes and improvements: the parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes. Also, values that resemble, but not exactly match, option names are now treated more consistently and parser behaviour for such values is configurable.
+Another important change are parser fixes and improvements: the parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes. Also, values that resemble, but not exactly match, option names are now treated more consistently and parser behaviour for such values is configurable.
 
-From this release, the `ManPageGenerator` tool can be used as a subcommand in your application.
+Also worth hightlighting: from this release, the `ManPageGenerator` tool can be used as a subcommand in your application.
 
-Fixed a bug in argument group parsing where incorrect input with missing mandatory elements was accepted when an option was specified multiple times.
+This release has many more improvements for customizing the usage help message, JANSI fixes, and other bugfixes and improvements. See the [Fixed Issues](#4.4.0-fixes) list for details.
 
 This is the seventy-first public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -226,7 +227,7 @@ To use the `ManPageGenerator` tool as a subcommand, you will need the `picocli-c
 * [#1081] Bugfix: `CommandLine.Help` constructor no longer calls overridable methods `addAllSubcommands` and `createDefaultParamLabelRenderer`.
 * [#1065] Bugfix: With a `List<>` option in `@ArgGroup`, group incorrectly appears twice in the synopsis. Thanks to [kap4lin](https://github.com/kap4lin) for raising this.
 * [#1067] Bugfix: `ParserSpec::initFrom` was not copying `useSimplifiedAtFiles`.
-* [#1054] Bugfix: option-parameter gets lost in Argument Groups. Thanks to [waacc-gh](https://github.com/waacc-gh) for raising this.
+* [#1054] Bugfix: Fixed issue in argument group parsing where incorrect input with missing mandatory elements was accepted when an option was specified multiple times. Thanks to [waacc-gh](https://github.com/waacc-gh) for raising this.
 * [#1072] Bugfix: Mixin `UsageMessageSpec::width` and `UsageMessageSpec::longOptionsMaxWidth` is no longer ignored.
 * [#1100] Bugfix: The factory of the original `CommandSpec` is now correctly used in the `CommandSpec` copy for repeatable subcommands. Thanks to [Michael Kunz](https://github.com/protogenes) for the pull request.
 * [#1058][#1059] DOC: Man page generator: fix incorrect asciidoctor call in synopsis.  Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
