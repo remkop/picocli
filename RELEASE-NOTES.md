@@ -1,5 +1,33 @@
 # picocli Release Notes
 
+# <a name="4.4.1"></a> Picocli 4.4.1 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.4.1.
+
+This release contains bug fixes and enhancements.
+
+This is the seventy-second public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.4.1-toc"></a> Table of Contents
+* [New and noteworthy](#4.4.1-new)
+* [Fixed issues](#4.4.1-fixes)
+* [Deprecations](#4.4.1-deprecated)
+* [Potential breaking changes](#4.4.1-breaking-changes)
+
+## <a name="4.4.1-new"></a> New and Noteworthy
+
+
+## <a name="4.4.1-fixes"></a> Fixed issues
+* [#1124] Enhancement: automatically generate a better summary in the `AutoComplete.GenerateCompletion` generated man page.
+
+
+## <a name="4.4.1-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.4.1-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 # <a name="4.4.0"></a> Picocli 4.4.0
 The picocli community is pleased to announce picocli 4.4.0.
 

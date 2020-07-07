@@ -119,6 +119,11 @@ task generateManpageAsciiDoc(type: JavaExec) {
             'picocli.AutoComplete$App', // the command line app
             'picocli.AutoComplete$GenerateCompletion', // generate completion subcommand
             "--outdir=${project.buildDir}/picocli-generated-docs", "-v" //, "--template-dir=src/docs/mantemplates"
+    doLast {
+        ant.replaceregexp(match: "completion script for generate-completion", replace: "completion script for the root command of this command", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'build/picocli-generated-docs', includes: 'generate-completion.adoc')
+        }
+    }
 }
 
 apply plugin: 'org.asciidoctor.convert'
