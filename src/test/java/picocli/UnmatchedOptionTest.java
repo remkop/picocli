@@ -1,14 +1,17 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
+import picocli.CommandLine.Command;
 import picocli.CommandLine.MissingParameterException;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.OverwrittenOptionException;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.UnmatchedArgumentException;
 
 import java.util.Arrays;
@@ -579,5 +582,22 @@ public class UnmatchedOptionTest {
         assertEquals(Float.NaN, app.f, 0);
         assertEquals("-2", app.x);
         assertEquals(Arrays.asList("-3", "-0", "-0.0", "-NaN"), app.y);
+    }
+
+    @Ignore("#1125")
+    @Test // https://github.com/remkop/picocli/issues/1125
+    public void testSubcommandAsOptionValue() {
+        @Command(name = "app")
+        class App {
+            @Option(names = "-x") String x;
+
+            @Command
+            public int search() {
+                return 123;
+            }
+        }
+        ParseResult parseResult = new CommandLine(new App()).parseArgs("-x", "search", "search");
+        assertEquals("search", parseResult.matchedOptionValue("-x", null));
+        assertTrue(parseResult.hasSubcommand());
     }
 }
