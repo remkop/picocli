@@ -97,10 +97,13 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 
 ### Articles & Presentations
 #### English
+* [Micronaut, Picocli, and GraalVM](https://e.printstacktrace.blog/building-stackoverflow-cli-with-java-11-micronaut-picocli-and-graalvm/) (2020-07-08) by [Szymon Stepniak](https://e.printstacktrace.blog/).
+* [VIDEO] (Extremely well-produced and informative, recommended!) [Building command-line app with Java 11, Micronaut, Picocli, and GraalVM](https://www.youtube.com/watch?v=Xdcg4Drg1hc) (2020-07-01) by [Szymon Stepniak](https://e.printstacktrace.blog/) ([YouTube channel](https://www.youtube.com/channel/UCEf8e5YAYnowq-2deW4tpsw)).
 * [AUDIO] [Scala Valentines #2](https://scala.love/scala-valentines-2/) (2020-06-21) Podcast talks about picocli (from 18:11). 
 * [How to create a command line tool using Java?](https://fullstackdeveloper.guru/2020/06/18/how-to-create-a-command-line-tool-using-java/) (2020-06-18) by [Vijay SRJ](https://twitter.com/FullStackDevel6).
 * [Command-line tools with Quarkus and Picocli](https://quarkify.net/command-line-tools-with-quarkus-and-picocli/) (2020-06-08) by [Dmytro Chaban](https://twitter.com/dmi3coder).
 * Quarkus guide for [Quarkus command mode with picocli](https://quarkus.io/guides/picocli), thanks to a picocli extension by [Michał Górniewski](https://github.com/mgorniew) included in [Quarkus 1.5](https://quarkus.io/blog/quarkus-1-5-final-released/) (2020-06-03).
+* [Native images with Micronaut and GraalVM](https://dev.to/stack-labs/native-images-with-micronaut-and-graalvm-4koe) (2020-06-01) by [Λ\: Olivier Revial](https://twitter.com/pommeDouze).
 * [CLI applications with Micronaut and Picocli](https://dev.to/stack-labs/cli-applications-with-micronaut-and-picocli-4mc8) (2020-06-01) by [Λ\: Olivier Revial](https://twitter.com/pommeDouze).
 * [Picocli introduction - Modern Java command-line parsing](https://aragost.com/blog/java/picocli-introduction.html) (2020-05-19) by [Jonas Andersen](https://twitter.com/PrimusAlgo).
 * [Building Native Covid19 Tracker CLI using Java, PicoCLI & GraalVM](https://aboullaite.me/java-covid19-cli-picocli-graalvm/) (2020-05-11) by [Mohammed Aboullaite](https://aboullaite.me/author/mohammed/).
