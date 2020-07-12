@@ -216,7 +216,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 * [jbang](https://github.com/maxandersen/jbang) not only uses picocli internally, but also has a CLI template to generate an initial script: use `jbang --init=cli helloworld.java` to generate a sample picocli-enabled jbang script. See [asciinema](https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&speed=2). 
 
 
-<img src="https://picocli.info/images/downloads-202004.png">
+<img src="https://picocli.info/images/downloads-202006.png">
 
 Glad to see more people are using picocli. We must be doing something right. :-) 
 
