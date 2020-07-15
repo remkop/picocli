@@ -4050,12 +4050,16 @@ Try 'grep --help' for more information.</pre>
         CommandLine cmd = ex.getCommandLine();
         <span class="predefined-type">PrintWriter</span> writer = cmd.getErr();
 
-        writer.println(ex.getMessage());
+        writer.println(cmd.getColorScheme().errorText(ex.getMessage())); <span class="comment">// bold red</span>
         UnmatchedArgumentException.printSuggestions(ex, writer);
-        writer.print(cmd.getHelp().fullSynopsis()); <span class="comment">// since 4.1</span>
+        writer.print(cmd.getHelp().fullSynopsis());
 
         CommandSpec spec = cmd.getCommandSpec();
         writer.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">Try '%s --help' for more information.%n</span><span class="delimiter">&quot;</span></span>, spec.qualifiedName());
+
+        <span class="keyword">if</span> (<span class="string"><span class="delimiter">&quot;</span><span class="content">DEBUG</span><span class="delimiter">&quot;</span></span>.equalsIgnoreCase(<span class="predefined-type">System</span>.getProperty(<span class="string"><span class="delimiter">&quot;</span><span class="content">picocli.trace</span><span class="delimiter">&quot;</span></span>))) {
+            ex.printStackTrace(<span class="predefined-type">System</span>.err); <span class="comment">// show more detail if requested by user</span>
+        }
 
         <span class="keyword">return</span> cmd.getExitCodeExceptionMapper() != <span class="predefined-constant">null</span>
                     ? cmd.getExitCodeExceptionMapper().getExitCode(ex)

@@ -19,7 +19,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.4.1-fixes"></a> Fixed issues
 * [#1124] Enhancement: automatically generate a better summary in the `AutoComplete.GenerateCompletion` generated man page.
-
+* [#1127] DOC: Custom ShortErrorMessageHandler manual example should use bold red for error message.
 
 ## <a name="4.4.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
