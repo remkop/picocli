@@ -2074,22 +2074,22 @@ public class CommandLine {
         }
     }
     private static int handleUnhandled(Exception ex, CommandLine cmd, int defaultExitCode) {
-        cmd.getErr().print(exceptionToColorString(ex, cmd.getColorScheme()));
+        cmd.getErr().print(throwableToColorString(ex, cmd.getColorScheme()));
         cmd.getErr().flush();
         return mappedExitCode(ex, cmd.getExitCodeExceptionMapper(), defaultExitCode);
     }
 
     /**
-     * Convert an {@code Exception} to a {@code String} , with message and stack traces extracted and colored
+     * Convert an {@code Throwable} to a {@code String} , with message and stack traces extracted and colored
      * according to {@code ColorScheme}.
-     * @param ex the {@code Exception} to be converted
+     * @param t the {@code Throwable} to be converted
      * @param existingColorScheme the {@code ColorScheme} to use
      * @return converted and colored {@code String}
      */
-    private static String exceptionToColorString(Exception ex, Help.ColorScheme existingColorScheme) {
+    private static String throwableToColorString(Throwable t, Help.ColorScheme existingColorScheme) {
         Help.ColorScheme colorScheme = new Help.ColorScheme.Builder(existingColorScheme).applySystemProperties().build();
         StringWriter stringWriter = new ColoredStackTraceWriter(colorScheme);
-        ex.printStackTrace(new PrintWriter(stringWriter));
+        t.printStackTrace(new PrintWriter(stringWriter));
         return stringWriter.toString();
     }
 
@@ -16077,11 +16077,27 @@ public class CommandLine {
              * @return a Text with all error styles applied to the specified error string
              * @since 4.3 */
             public Ansi.Text errorText(String error) {return apply(error, errorStyles); }
-            /** Returns a Text with all stackTrace styles applied to the specified stackTrace string.
+            /** Returns a Text with all stackTrace styles applied to all lines in the specified stackTrace string.
              * @param stackTrace the stack trace string to apply the registered stack trace styles to
              * @return a Text with all stack trace styles applied to the specified stack trace string
              * @since 4.3 */
             public Ansi.Text stackTraceText(String stackTrace) {return apply(stackTrace, stackTraceStyles); }
+            /** Returns a Text with all stackTrace styles applied to all lines in the stack trace of the specified Throwable.
+             * @param t the Throwable whose stack trace string to apply the registered stack trace styles to
+             * @return a Text with all stack trace styles applied to the stack trace of the specified Throwable
+             * @since 4.5 */
+            public Ansi.Text stackTraceText(Throwable t) {
+                StringWriter sw = new StringWriter();
+                t.printStackTrace(new PrintWriter(sw, true));
+                return stackTraceText(sw.toString());
+            }
+            /** Returns a String with the {@link #errorStyles() error styles} applied to the stack trace lines showing the
+             * throwable class name and error message (including "Caused by:..." lines), and the {@link #stackTraceStyles() stack trace styles}
+             * applied to the remaining stack trace of lines the specified Throwable.
+             * @param t the Throwable whose stack trace string to apply the error and stack trace styles to
+             * @return a String with error and stack trace styles applied to the stack trace of the specified Throwable
+             * @since 4.5 */
+            public String richStackTraceString(Throwable t) { return throwableToColorString(t, this); }
 
             /** Returns the {@code Ansi} setting of this color scheme. */
             public Ansi ansi() { return ansi; }

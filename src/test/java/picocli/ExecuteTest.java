@@ -1497,7 +1497,10 @@ public class ExecuteTest {
     }
 
     private List<String> getSystemErrLines() {
-        Scanner scanner = new Scanner(systemErrRule.getLog());
+        return getSystemErrLines(systemErrRule.getLog());
+    }
+    private List<String> getSystemErrLines(String text) {
+        Scanner scanner = new Scanner(text);
         List<String> lines = new ArrayList<String>();
         while (scanner.hasNextLine()) {
             lines.add(scanner.nextLine()
@@ -1571,4 +1574,67 @@ public class ExecuteTest {
             assertEquals(expected[i], lines.get(lines.size() - (expected.length - i)));
         }
     }
+
+    @Test
+    public void testColorSchemeStackTraceText() {
+        System.setProperty("picocli.ansi", "true");
+
+        final Throwable[] caught = new Throwable[1];
+
+        CommandLine commandLine = new CommandLine(new Issue1048());
+        commandLine.setParameterExceptionHandler(new IParameterExceptionHandler() {
+            public int handleParseException(ParameterException ex, String[] args) throws Exception {
+                PrintWriter err = ex.getCommandLine().getErr();
+                err.println(ex.getCommandLine().getColorScheme().stackTraceText(ex));
+                caught[0] = ex;
+                return 0;
+            }
+        });
+        commandLine.execute("-unknownOption");
+        Help.ColorScheme colorScheme = commandLine.getColorScheme();
+
+        List<String> lines = getSystemErrLines();
+
+        //assertEquals(colorScheme.stackTraceText("picocli.CommandLine$UnmatchedArgumentException: Unknown option: '-unknownOption'").toString(), lines.get(0));
+
+        StringWriter sw = new StringWriter();
+        caught[0].printStackTrace(new PrintWriter(sw));
+        String expected = commandLine.getColorScheme().stackTraceText(sw.toString()).toString();
+        assertEquals(getSystemErrLines(expected), lines);
+    }
+
+    @Test
+    public void testColorSchemeRichStackTraceString() {
+        System.setProperty("picocli.ansi", "true");
+
+        final Throwable[] caught = new Throwable[1];
+
+        CommandLine commandLine = new CommandLine(new Issue1048());
+        commandLine.setParameterExceptionHandler(new IParameterExceptionHandler() {
+            public int handleParseException(ParameterException ex, String[] args) throws Exception {
+                PrintWriter err = ex.getCommandLine().getErr();
+                err.print(ex.getCommandLine().getColorScheme().richStackTraceString(ex));
+                err.flush();
+                caught[0] = ex;
+                return 0;
+            }
+        });
+        commandLine.execute("-unknownOption");
+        Help.ColorScheme colorScheme = commandLine.getColorScheme();
+
+        List<String> lines = getSystemErrLines();
+
+        StringWriter sw = new StringWriter();
+        caught[0].printStackTrace(new PrintWriter(sw));
+        List<String> expected = getSystemErrLines(sw.toString());
+        for (int i = 0; i < expected.size(); i++) {
+            String line = expected.get(i);
+            String replaced = line.contains("Exception:")
+                    ? colorScheme.errorText(line).toString()
+                    : colorScheme.stackTraceText(line).toString();
+            expected.set(i, replaced);
+        }
+        assertEquals(expected, lines);
+    }
 }
+
