@@ -16074,11 +16074,13 @@ public class CommandLine {
             public Ansi.Text optionParamText(String optionParam) { return apply(optionParam, optionParamStyles); }
             /** Returns a Text with all error styles applied to the specified error string.
              * @param error the error string to apply the registered error styles to
-             * @return a Text with all error styles applied to the specified error string */
+             * @return a Text with all error styles applied to the specified error string
+             * @since 4.3 */
             public Ansi.Text errorText(String error) {return apply(error, errorStyles); }
             /** Returns a Text with all stackTrace styles applied to the specified stackTrace string.
              * @param stackTrace the stack trace string to apply the registered stack trace styles to
-             * @return a Text with all stack trace styles applied to the specified stack trace string */
+             * @return a Text with all stack trace styles applied to the specified stack trace string
+             * @since 4.3 */
             public Ansi.Text stackTraceText(String stackTrace) {return apply(stackTrace, stackTraceStyles); }
 
             /** Returns the {@code Ansi} setting of this color scheme. */
