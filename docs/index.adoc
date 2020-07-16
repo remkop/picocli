@@ -2249,18 +2249,21 @@ class ShortErrorMessageHandler implements IParameterExceptionHandler {
 
     public int handleParseException(ParameterException ex, String[] args) {
         CommandLine cmd = ex.getCommandLine();
-        PrintWriter writer = cmd.getErr();
+        PrintWriter err = cmd.getErr();
 
-        writer.println(cmd.getColorScheme().errorText(ex.getMessage())); // bold red
-        UnmatchedArgumentException.printSuggestions(ex, writer);
-        writer.print(cmd.getHelp().fullSynopsis());
+        // if tracing at DEBUG level, show the location of the issue
+        if ("DEBUG".equalsIgnoreCase(System.getProperty("picocli.trace"))) {
+            StringWriter sw = new StringWriter();
+            ex.printStackTrace(new PrintWriter(sw, true));
+            err.println(cmd.getColorScheme().stackTraceText(sw.toString()));
+        }
+
+        err.println(cmd.getColorScheme().errorText(ex.getMessage())); // bold red
+        UnmatchedArgumentException.printSuggestions(ex, err);
+        err.print(cmd.getHelp().fullSynopsis());
 
         CommandSpec spec = cmd.getCommandSpec();
-        writer.printf("Try '%s --help' for more information.%n", spec.qualifiedName());
-
-        if ("DEBUG".equalsIgnoreCase(System.getProperty("picocli.trace"))) {
-            ex.printStackTrace(System.err); // show more detail if requested by user
-        }
+        err.printf("Try '%s --help' for more information.%n", spec.qualifiedName());
 
         return cmd.getExitCodeExceptionMapper() != null
                     ? cmd.getExitCodeExceptionMapper().getExitCode(ex)
