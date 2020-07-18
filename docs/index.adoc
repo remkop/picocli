@@ -209,6 +209,34 @@ kapt {
 ```
 See the https://github.com/remkop/picocli/tree/master/picocli-codegen[`picocli-codegen` README] for more details.
 
+=== Running the Application
+
+After we successfully compiled our <<CheckSum-application,example `CheckSum` application>>, let's quickly look at how to run it.
+
+There are many ways to run picocli-based applications, depending on whether we included picocli as source, created a jar for our application or not, and whether we created a shaded jar (also known as uber-jar) containing all dependencies.
+
+Before we run our `CheckSum` application, let's create an example file whose checksum we want to print. For example:
+
+[source,bash]
+----
+echo "hello" > hello.txt
+----
+
+Now, assuming we created a jar named `checksum.jar` containing our compiled `CheckSum.class`, we can run the application with `java -cp <classpath> <MainClass> [OPTIONS]`. For example:
+
+[source,bash]
+----
+java -cp "picocli-4.4.1-SNAPSHOT.jar;checksum.jar" CheckSum --algorithm SHA-1 hello.txt
+----
+
+You may want to package your application in such a way that end users can invoke it with a short command like this:
+
+[source,bash]
+----
+checksum --algorithm SHA-1 hello.txt
+----
+
+See the <<Packaging Your Application>> section for ideas on how to accomplish this.
 
 == Options and Parameters
 Command line arguments can be separated into _options_  and _positional parameters_.
@@ -6802,7 +6830,51 @@ For more details, see the https://github.com/remkop/picocli/files/4359943/bulk-s
 
 == Packaging Your Application
 
-You finished your application. Congratulations! Now, how do you package it and distribute it to your users? Here are some ideas.
+You finished your application. Congratulations! Now, how do you package it and distribute it to your users?
+
+As mentioned in <<Running the Application>>, earlier in this manual, one way to run our application is like this:
+
+[source,bash]
+----
+java -cp "picocli-4.4.1-SNAPSHOT.jar;myapp.jar" org.myorg.MyMainClass --option=value arg0 arg1
+----
+
+That is quite verbose. You may want to package your application in such a way that end users can invoke it by its command name like this:
+
+[source,bash]
+----
+mycommand --option=value arg0 arg1
+----
+
+After all, the usage help shows the command name defined in `@Command(name = "mycommand")`, so we would like users to be able to run the application with this command.
+
+Below are some ideas on how to accomplish this.
+
+=== Alias
+On unix-based operating systems, you can ask your users to define an alias. For example:
+
+[source,bash]
+----
+alias mycommand='java -cp "/path/to/picocli-4.4.1-SNAPSHOT.jar;/path/to/myapp.jar" org.myorg.MainClass'
+----
+
+Append the above line to your `~/.bashrc` file to make this alias available in every new shell session.
+
+This requires that a JRE is installed on the machine and assumes that the `java` executable is in the `PATH`.
+
+NOTE: In Windows, the `DOSKEY` command can be used to define macros, but this has https://superuser.com/questions/560519/how-to-set-an-alias-in-windows-command-line/560558#560558[serious limitations].
+
+Defining an alias is cheap and easy, but fragile and not very portable.
+A better alternative is to create a launcher script.
+Many build tools provide plugins to generate launcher scripts for your application, as detailed in the following section.
+
+=== [[_build_tool_plugins]] Launcher Script
+
+The https://www.mojohaus.org/appassembler/[Application Assembler Maven Plugin] can be used with Maven, and similarly, https://docs.gradle.org/current/userguide/application_plugin.html[Gradle Application plugin] can be used with Gradle, to create a distribution zip or tar file with launcher scripts.
+
+Both require a JRE to be installed on the target machine.
+
+An even more interesting solution may be to create a GraalVM native image for your application, as detailed in the following section.
 
 === GraalVM Native Image
 
@@ -6851,10 +6923,6 @@ This https://picocli.info/picocli-on-graalvm.html[older article], "Picocli on Gr
 
 See also this https://github.com/remkop/picocli-native-image-demo[demo Gradle project] and this https://github.com/remkop/picocli-native-image-maven-demo[demo Maven project] that provide a simple complete CLI app, with build instructions, that developers can clone, and build to get the stand-alone executable.
 
-=== Build Tool Plugins
-
-Both https://www.mojohaus.org/appassembler/[Application Assembler Maven Plugin] and https://docs.gradle.org/current/userguide/application_plugin.html[Gradle Application plugin] create a distribution zip or tar file with launcher scripts. Both require a JRE to be installed on the target machine.
-
 === launch4j
 http://launch4j.sourceforge.net/docs.html[launch4j] can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.
 
@@ -6887,6 +6955,7 @@ You use it with a `//DEPS` comment, similar to the http://groovy-lang.org/grape.
 
 Use `jbang --init=cli helloworld.java` to create an initial script with a picocli template.
 This https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&speed=2[asciinema presentation] shows what is possible.
+
 
 == Picocli in Other Languages
 Picocli may be used in other JVM languages that support annotations.

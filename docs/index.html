@@ -538,6 +538,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_add_as_external_dependency">2.1. Add as External Dependency</a></li>
 <li><a href="#_add_as_source">2.2. Add as Source</a></li>
 <li><a href="#_annotation_processor">2.3. Annotation Processor</a></li>
+<li><a href="#_running_the_application">2.4. Running the Application</a></li>
 </ul>
 </li>
 <li><a href="#_options_and_parameters">3. Options and Parameters</a>
@@ -784,13 +785,14 @@ table.CodeRay td.code>pre{padding:0}
 </li>
 <li><a href="#_packaging_your_application">28. Packaging Your Application</a>
 <ul class="sectlevel2">
-<li><a href="#_graalvm_native_image">28.1. GraalVM Native Image</a></li>
-<li><a href="#_build_tool_plugins">28.2. Build Tool Plugins</a></li>
-<li><a href="#_launch4j">28.3. launch4j</a></li>
-<li><a href="#_javapackager_java_8">28.4. javapackager (Java 8)</a></li>
-<li><a href="#_jlink_java_9">28.5. jlink (Java 9+)</a></li>
-<li><a href="#_jpackage">28.6. jpackage</a></li>
-<li><a href="#_jbang">28.7. jbang</a></li>
+<li><a href="#_alias">28.1. Alias</a></li>
+<li><a href="#_launcher_script">28.2.  Launcher Script</a></li>
+<li><a href="#_graalvm_native_image">28.3. GraalVM Native Image</a></li>
+<li><a href="#_launch4j">28.4. launch4j</a></li>
+<li><a href="#_javapackager_java_8">28.5. javapackager (Java 8)</a></li>
+<li><a href="#_jlink_java_9">28.6. jlink (Java 9+)</a></li>
+<li><a href="#_jpackage">28.7. jpackage</a></li>
+<li><a href="#_jbang">28.8. jbang</a></li>
 </ul>
 </li>
 <li><a href="#_picocli_in_other_languages">29. Picocli in Other Languages</a>
@@ -1088,6 +1090,42 @@ dependencies {
 <p>See the <a href="https://github.com/remkop/picocli/tree/master/picocli-codegen"><code>picocli-codegen</code> README</a> for more details.</p>
 </div>
 </div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_running_the_application">2.4. Running the Application</h3>
+<div class="paragraph">
+<p>After we successfully compiled our <a href="#CheckSum-application">example <code>CheckSum</code> application</a>, let&#8217;s quickly look at how to run it.</p>
+</div>
+<div class="paragraph">
+<p>There are many ways to run picocli-based applications, depending on whether we included picocli as source, created a jar for our application or not, and whether we created a shaded jar (also known as uber-jar) containing all dependencies.</p>
+</div>
+<div class="paragraph">
+<p>Before we run our <code>CheckSum</code> application, let&#8217;s create an example file whose checksum we want to print. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">echo &quot;hello&quot; &gt; hello.txt</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now, assuming we created a jar named <code>checksum.jar</code> containing our compiled <code>CheckSum.class</code>, we can run the application with <code>java -cp &lt;classpath&gt; &lt;MainClass&gt; [OPTIONS]</code>. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">java -cp &quot;picocli-4.4.0.jar;checksum.jar&quot; CheckSum --algorithm SHA-1 hello.txt</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You may want to package your application in such a way that end users can invoke it with a short command like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">checksum --algorithm SHA-1 hello.txt</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>See the <a href="#_packaging_your_application">Packaging Your Application</a> section for ideas on how to accomplish this.</p>
 </div>
 </div>
 </div>
@@ -10137,15 +10175,83 @@ test {
 <h2 id="_packaging_your_application">28. Packaging Your Application</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>You finished your application. Congratulations! Now, how do you package it and distribute it to your users? Here are some ideas.</p>
+<p>You finished your application. Congratulations! Now, how do you package it and distribute it to your users?</p>
+</div>
+<div class="paragraph">
+<p>As mentioned in <a href="#_running_the_application">Running the Application</a>, earlier in this manual, one way to run our application is like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">java -cp &quot;picocli-4.4.0.jar;myapp.jar&quot; org.myorg.MyMainClass --option=value arg0 arg1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>That is quite verbose. You may want to package your application in such a way that end users can invoke it by its command name like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">mycommand --option=value arg0 arg1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After all, the usage help shows the command name defined in <code>@Command(name = "mycommand")</code>, so we would like users to be able to run the application with this command.</p>
+</div>
+<div class="paragraph">
+<p>Below are some ideas on how to accomplish this.</p>
 </div>
 <div class="sect2">
-<h3 id="_graalvm_native_image">28.1. GraalVM Native Image</h3>
+<h3 id="_alias">28.1. Alias</h3>
+<div class="paragraph">
+<p>On unix-based operating systems, you can ask your users to define an alias. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">alias mycommand='java -cp &quot;/path/to/picocli-4.4.0.jar;/path/to/myapp.jar&quot; org.myorg.MainClass'</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Append the above line to your <code>~/.bashrc</code> file to make this alias available in every new shell session.</p>
+</div>
+<div class="paragraph">
+<p>This requires that a JRE is installed on the machine and assumes that the <code>java</code> executable is in the <code>PATH</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+In Windows, the <code>DOSKEY</code> command can be used to define macros, but this has <a href="https://superuser.com/questions/560519/how-to-set-an-alias-in-windows-command-line/560558#560558">serious limitations</a>.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Defining an alias is cheap and easy, but fragile and not very portable.
+A better alternative is to create a launcher script.
+Many build tools provide plugins to generate launcher scripts for your application, as detailed in the following section.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_launcher_script">28.2. <a id="_build_tool_plugins"></a> Launcher Script</h3>
+<div class="paragraph">
+<p>The <a href="https://www.mojohaus.org/appassembler/">Application Assembler Maven Plugin</a> can be used with Maven, and similarly, <a href="https://docs.gradle.org/current/userguide/application_plugin.html">Gradle Application plugin</a> can be used with Gradle, to create a distribution zip or tar file with launcher scripts.</p>
+</div>
+<div class="paragraph">
+<p>Both require a JRE to be installed on the target machine.</p>
+</div>
+<div class="paragraph">
+<p>An even more interesting solution may be to create a GraalVM native image for your application, as detailed in the following section.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_graalvm_native_image">28.3. GraalVM Native Image</h3>
 <div class="paragraph">
 <p><span class="image"><img src="images/exe-picocli-on-graalvm.png" alt="Turn your picocli-based application into a native image" width="265" height="150"></span></p>
 </div>
 <div class="sect3">
-<h4 id="_what_are_graalvm_native_images">28.1.1. What are GraalVM Native Images?</h4>
+<h4 id="_what_are_graalvm_native_images">28.3.1. What are GraalVM Native Images?</h4>
 <div class="paragraph">
 <p><a href="https://www.graalvm.org/docs/reference-manual/aot-compilation/">GraalVM Native Image</a> allows you to
 ahead-of-time compile Java code to a standalone executable, called a native image.
@@ -10158,7 +10264,7 @@ to be able to use features like <a href="https://github.com/oracle/graal/blob/ma
 </div>
 </div>
 <div class="sect3">
-<h4 id="_how_do_i_create_a_native_image_for_my_application">28.1.2. How do I Create a Native Image for my Application?</h4>
+<h4 id="_how_do_i_create_a_native_image_for_my_application">28.3.2. How do I Create a Native Image for my Application?</h4>
 <div class="paragraph">
 <p>The <code>picocli-codegen</code> module contains an annotation processor that generates the necessary configuration files
 under <code>META-INF/native-image/picocli-generated/$project</code> during compilation,
@@ -10200,7 +10306,7 @@ Gradle users may be interested in the <a href="https://github.com/palantir/gradl
 </div>
 </div>
 <div class="sect3">
-<h4 id="_where_can_i_get_more_details">28.1.3. Where can I get More Details?</h4>
+<h4 id="_where_can_i_get_more_details">28.3.3. Where can I get More Details?</h4>
 <div class="paragraph">
 <p>This InfoQ article <a href="https://www.infoq.com/articles/java-native-cli-graalvm-picocli/">Build Great Native CLI Apps in Java with Graalvm and Picocli</a> provides details on setting up the GraalVM toolchain for creating native images.
 It pays special attention to Windows, where setting up the compiler toolchain can be tricky.</p>
@@ -10214,25 +10320,19 @@ It pays special attention to Windows, where setting up the compiler toolchain ca
 </div>
 </div>
 <div class="sect2">
-<h3 id="_build_tool_plugins">28.2. Build Tool Plugins</h3>
-<div class="paragraph">
-<p>Both <a href="https://www.mojohaus.org/appassembler/">Application Assembler Maven Plugin</a> and <a href="https://docs.gradle.org/current/userguide/application_plugin.html">Gradle Application plugin</a> create a distribution zip or tar file with launcher scripts. Both require a JRE to be installed on the target machine.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_launch4j">28.3. launch4j</h3>
+<h3 id="_launch4j">28.4. launch4j</h3>
 <div class="paragraph">
 <p><a href="http://launch4j.sourceforge.net/docs.html">launch4j</a> can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_javapackager_java_8">28.4. javapackager (Java 8)</h3>
+<h3 id="_javapackager_java_8">28.5. javapackager (Java 8)</h3>
 <div class="paragraph">
 <p>JDK 8 <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javapackager.html">javapackager</a> can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jlink_java_9">28.5. jlink (Java 9+)</h3>
+<h3 id="_jlink_java_9">28.6. jlink (Java 9+)</h3>
 <div class="paragraph">
 <p>With the JPMS module system introduced in Java 9 it became possible to use <a href="https://docs.oracle.com/javase/9/tools/jlink.htm#JSWOR-GUID-CECAC52B-CFEE-46CB-8166-F17A8E9280E9">jlink</a> to create a custom light-weight JRE with only the necessary modules.
 This JRE may be as small as 30-40MB.
@@ -10243,7 +10343,7 @@ Use <code>jlink</code> with the <code>--launcher</code> option to generate launc
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jpackage">28.6. jpackage</h3>
+<h3 id="_jpackage">28.7. jpackage</h3>
 <div class="paragraph">
 <p>jpackage is a packaging tool according to <a href="https://openjdk.java.net/jeps/343">JEP 343</a> which ships with JDK 14.
 JPackage can take the custom light-weight JRE produced by <code>jlink</code> and create an installer and a native application launcher.
@@ -10259,7 +10359,7 @@ and <a href="https://badass-jlink-plugin.beryx.org/releases/latest/">org.beryx B
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jbang">28.7. jbang</h3>
+<h3 id="_jbang">28.8. jbang</h3>
 <div class="paragraph">
 <p><a href="https://github.com/maxandersen/jbang">jbang</a> allows you to write scripts in Java that use external dependencies.
 You use it with a <code>//DEPS</code> comment, similar to the <a href="http://groovy-lang.org/grape.html"><code>@Grab</code></a> annotation in Groovy.</p>
