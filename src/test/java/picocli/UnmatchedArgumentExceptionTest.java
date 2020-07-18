@@ -18,8 +18,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 
 import static java.lang.String.format;
 import static org.junit.Assert.*;
@@ -187,4 +189,52 @@ public class UnmatchedArgumentExceptionTest {
                 "Usage: Completion [COMMAND]%n");
     }
 
+
+    @Test
+    public void testUnmatchedExceptionStringConstructor() {
+        UnmatchedArgumentException ex = new UnmatchedArgumentException(new CommandLine(CommandLine.Model.CommandSpec.create()), "aa");
+        assertNotNull(ex.getUnmatched());
+        assertTrue(ex.getUnmatched().isEmpty());
+        assertTrue(ex.getSuggestions().isEmpty());
+    }
+
+    @Test
+    public void testUnmatchedExceptionListConstructor() {
+        UnmatchedArgumentException ex = new UnmatchedArgumentException(new CommandLine(CommandLine.Model.CommandSpec.create()), new ArrayList<String>());
+        assertNotNull(ex.getUnmatched());
+        assertTrue(ex.getUnmatched().isEmpty());
+        assertTrue(ex.getSuggestions().isEmpty());
+
+        ex = new UnmatchedArgumentException(new CommandLine(CommandLine.Model.CommandSpec.create()), Arrays.asList("a", "b"));
+        assertEquals(Arrays.asList("a", "b"), ex.getUnmatched());
+    }
+
+    @Test
+    public void testUnmatchedExceptionStackConstructor() {
+        UnmatchedArgumentException ex = new UnmatchedArgumentException(new CommandLine(CommandLine.Model.CommandSpec.create()), new Stack<String>());
+        assertNotNull(ex.getUnmatched());
+        assertTrue(ex.getUnmatched().isEmpty());
+        assertTrue(ex.getSuggestions().isEmpty());
+
+        Stack<String> stack = new Stack<String>();
+        stack.push("x");
+        stack.push("y");
+        stack.push("z");
+        ex = new UnmatchedArgumentException(new CommandLine(CommandLine.Model.CommandSpec.create()), stack);
+        assertEquals(Arrays.asList("z", "y", "x"), ex.getUnmatched());
+    }
+
+    @Test
+    public void testUnmatchedExceptionIsUnknownOption() {
+        CommandLine cmd = new CommandLine(CommandLine.Model.CommandSpec.create());
+
+        assertFalse("unmatch list is null", new UnmatchedArgumentException(cmd, "").isUnknownOption());
+        assertFalse("unmatch list is empty", new UnmatchedArgumentException(cmd, new ArrayList<String>()).isUnknownOption());
+
+        List<String> likeAnOption = Arrays.asList("-x");
+        assertTrue("first unmatched resembles option", new UnmatchedArgumentException(cmd, likeAnOption).isUnknownOption());
+
+        List<String> unlikeOption = Arrays.asList("xxx");
+        assertFalse("first unmatched doesn't resembles option", new UnmatchedArgumentException(cmd, unlikeOption).isUnknownOption());
+    }
 }

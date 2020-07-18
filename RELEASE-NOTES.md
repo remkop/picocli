@@ -21,6 +21,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1129] API: Add methods `ColorScheme::stackTraceText(Throwable)` and `ColorScheme::richStackTraceString(Throwable)`.
 * [#1124] Enhancement: automatically generate a better summary in the `AutoComplete.GenerateCompletion` generated man page.
 * [#1126] Enhancement: Make picocli trace levels case-insensitive.
+* [#1128] Enhancement: `ParameterException` caused by `TypeConversionException` now have their cause exception set.
 * [#1127] DOC: Custom ShortErrorMessageHandler manual example should use bold red for error message.
 
 ## <a name="4.4.1-deprecated"></a> Deprecations

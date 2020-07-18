@@ -13427,7 +13427,7 @@ public class CommandLine {
                 return converter.convert(value);
             } catch (TypeConversionException ex) {
                 String msg = String.format("Invalid value for %s: %s", optionDescription("", argSpec, index), ex.getMessage());
-                throw new ParameterException(CommandLine.this, msg, argSpec, value);
+                throw new ParameterException(CommandLine.this, msg, ex, argSpec, value);
             } catch (Exception other) {
                 String desc = optionDescription("", argSpec, index);
                 String msg = String.format("Invalid value for %s: cannot convert '%s' to %s (%s)", desc, value, type.getSimpleName(), other);

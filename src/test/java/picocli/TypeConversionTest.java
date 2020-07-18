@@ -30,6 +30,8 @@ import picocli.CommandLine.TypeConversionException;
 import picocli.CommandLine.UnmatchedArgumentException;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -685,6 +687,71 @@ public class TypeConversionTest {
             assertEquals("Invalid value for positional parameter at index 0 (<sqlTypeParam>): cannot convert 'anything' to int (java.lang.IllegalStateException: bad converter)", ex.getMessage());
         }
     }
+    @Test
+    public void testIssue1128ParameterExceptionHasCauseException() {
+        class App {
+            @Parameters(converter = ErrorConverter.class)
+            int sqlTypeParam;
+        }
+        CommandLine commandLine = new CommandLine(new App());
+        try {
+            commandLine.parseArgs("anything");
+        } catch (CommandLine.ParameterException ex) {
+            assertEquals("Invalid value for positional parameter at index 0 (<sqlTypeParam>): cannot convert 'anything' to int (java.lang.IllegalStateException: bad converter)", ex.getMessage());
+            assertEquals(IllegalStateException.class, ex.getCause().getClass());
+            assertEquals("bad converter", ex.getCause().getMessage());
+        }
+
+
+        final StringWriter sw = new StringWriter();
+        commandLine.setParameterExceptionHandler(new CommandLine.IParameterExceptionHandler() {
+            public int handleParseException(ParameterException ex, String[] args) {
+                ex.printStackTrace(new PrintWriter(sw, true));
+                return 0;
+            }
+        });
+        commandLine.execute("anything");
+        //System.out.println(sw);
+        assertTrue(sw.toString().startsWith("picocli.CommandLine$ParameterException: Invalid value for positional parameter at index 0 (<sqlTypeParam>): cannot convert 'anything' to int (java.lang.IllegalStateException: bad converter)"));
+        assertTrue(sw.toString().contains(String.format("Caused by: java.lang.IllegalStateException: bad converter%n" +
+                "\tat picocli.TypeConversionTest$ErrorConverter.convert(TypeConversionTest.java:674)%n" +
+                "\tat picocli.TypeConversionTest$ErrorConverter.convert(TypeConversionTest.java:672)")));
+    }
+    static class TypeConversionExceptionConverter implements ITypeConverter<Integer> {
+        public Integer convert(String value) throws Exception {
+            throw new TypeConversionException("I am always thrown");
+        }
+    }
+    @Test
+    public void testIssue1128ParameterExceptionCausedByTypeConversionHasCauseException() {
+        class App {
+            @Parameters(converter = TypeConversionExceptionConverter.class)
+            int sqlTypeParam;
+        }
+        CommandLine commandLine = new CommandLine(new App());
+        try {
+            commandLine.parseArgs("anything");
+        } catch (CommandLine.ParameterException ex) {
+            assertEquals("Invalid value for positional parameter at index 0 (<sqlTypeParam>): I am always thrown", ex.getMessage());
+            assertEquals(TypeConversionException.class, ex.getCause().getClass());
+            assertEquals("I am always thrown", ex.getCause().getMessage());
+        }
+
+
+        final StringWriter sw = new StringWriter();
+        commandLine.setParameterExceptionHandler(new CommandLine.IParameterExceptionHandler() {
+            public int handleParseException(ParameterException ex, String[] args) {
+                ex.printStackTrace(new PrintWriter(sw, true));
+                return 0;
+            }
+        });
+        commandLine.execute("anything");
+        //System.out.println(sw);
+        assertTrue(sw.toString().startsWith("picocli.CommandLine$ParameterException: Invalid value for positional parameter at index 0 (<sqlTypeParam>): I am always thrown"));
+        assertTrue(sw.toString().contains(String.format("Caused by: picocli.CommandLine$TypeConversionException: I am always thrown%n" +
+                "\tat picocli.TypeConversionTest$TypeConversionExceptionConverter.convert(TypeConversionTest.java:722)%n" +
+                "\tat picocli.TypeConversionTest$TypeConversionExceptionConverter.convert(TypeConversionTest.java:720)%n")));
+    }
     static class CustomConverter implements ITypeConverter<Integer> {
         public Integer convert(String value) { return Integer.parseInt(value); }
     }
@@ -1201,5 +1268,64 @@ public class TypeConversionTest {
         new CommandLine(app).parseArgs("--result-types", "PARTIAL,COMPLETE");
 
         assertEquals(EnumSet.of(PARTIAL, COMPLETE), app.resultTypes);
+    }
+    @Test
+    public void testMapAndCollectionFieldTypeInference() {
+        class App {
+            @Option(names = "-a") Map<Integer, URI> a;
+            @Option(names = "-b") Map<TimeUnit, StringBuilder> b;
+            @SuppressWarnings("unchecked")
+            @Option(names = "-c") Map c;
+            @Option(names = "-d") List<File> d;
+            @Option(names = "-e") Map<? extends Integer, ? super Long> e;
+            @Option(names = "-f", type = {Long.class, Float.class}) Map<? extends Number, ? super Number> f;
+            @SuppressWarnings("unchecked")
+            @Option(names = "-g", type = {TimeUnit.class, Float.class}) Map g;
+        }
+        App app = CommandLine.populateCommand(new App(),
+                "-a", "8=/path", "-a", "98765432=/path/to/resource",
+                "-b", "SECONDS=abc",
+                "-c", "123=ABC",
+                "-d", "/path/to/file",
+                "-e", "12345=67890",
+                "-f", "12345=67.89",
+                "-g", "MILLISECONDS=12.34");
+        assertEquals(app.a.size(), 2);
+        assertEquals(URI.create("/path"), app.a.get(8));
+        assertEquals(URI.create("/path/to/resource"), app.a.get(98765432));
+
+        assertEquals(app.b.size(), 1);
+        assertEquals(new StringBuilder("abc").toString(), app.b.get(TimeUnit.SECONDS).toString());
+
+        assertEquals(app.c.size(), 1);
+        assertEquals("ABC", app.c.get("123"));
+
+        assertEquals(app.d.size(), 1);
+        assertEquals(new File("/path/to/file"), app.d.get(0));
+
+        assertEquals(app.e.size(), 1);
+        assertEquals(Long.valueOf(67890), app.e.get(12345));
+
+        assertEquals(app.f.size(), 1);
+        assertEquals(67.89f, app.f.get(Long.valueOf(12345)));
+
+        assertEquals(app.g.size(), 1);
+        assertEquals(12.34f, app.g.get(TimeUnit.MILLISECONDS));
+    }
+    @Test
+    public void testUseTypeAttributeInsteadOfFieldType() {
+        class App {
+            @Option(names = "--num", type = BigDecimal.class) // subclass of field type
+                    Number[] number; // array type with abstract component class
+
+            @Parameters(type = StringBuilder.class) // concrete impl class
+                    Appendable address; // type declared as interface
+        }
+        App app = CommandLine.populateCommand(new App(), "--num", "123.456", "ABC");
+        assertEquals(1, app.number.length);
+        assertEquals(new BigDecimal("123.456"), app.number[0]);
+
+        assertEquals("ABC", app.address.toString());
+        assertTrue(app.address instanceof StringBuilder);
     }
 }

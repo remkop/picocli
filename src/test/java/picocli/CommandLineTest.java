@@ -2177,65 +2177,6 @@ public class CommandLineTest {
         assertEquals(Arrays.asList("4=d"), cmd.getUnmatchedArguments());
     }
     @Test
-    public void testMapAndCollectionFieldTypeInference() {
-        class App {
-            @Option(names = "-a") Map<Integer, URI> a;
-            @Option(names = "-b") Map<TimeUnit, StringBuilder> b;
-            @SuppressWarnings("unchecked")
-            @Option(names = "-c") Map c;
-            @Option(names = "-d") List<File> d;
-            @Option(names = "-e") Map<? extends Integer, ? super Long> e;
-            @Option(names = "-f", type = {Long.class, Float.class}) Map<? extends Number, ? super Number> f;
-            @SuppressWarnings("unchecked")
-            @Option(names = "-g", type = {TimeUnit.class, Float.class}) Map g;
-        }
-        App app = CommandLine.populateCommand(new App(),
-                "-a", "8=/path", "-a", "98765432=/path/to/resource",
-                "-b", "SECONDS=abc",
-                "-c", "123=ABC",
-                "-d", "/path/to/file",
-                "-e", "12345=67890",
-                "-f", "12345=67.89",
-                "-g", "MILLISECONDS=12.34");
-        assertEquals(app.a.size(), 2);
-        assertEquals(URI.create("/path"), app.a.get(8));
-        assertEquals(URI.create("/path/to/resource"), app.a.get(98765432));
-
-        assertEquals(app.b.size(), 1);
-        assertEquals(new StringBuilder("abc").toString(), app.b.get(TimeUnit.SECONDS).toString());
-
-        assertEquals(app.c.size(), 1);
-        assertEquals("ABC", app.c.get("123"));
-
-        assertEquals(app.d.size(), 1);
-        assertEquals(new File("/path/to/file"), app.d.get(0));
-
-        assertEquals(app.e.size(), 1);
-        assertEquals(Long.valueOf(67890), app.e.get(12345));
-
-        assertEquals(app.f.size(), 1);
-        assertEquals(67.89f, app.f.get(Long.valueOf(12345)));
-
-        assertEquals(app.g.size(), 1);
-        assertEquals(12.34f, app.g.get(TimeUnit.MILLISECONDS));
-    }
-    @Test
-    public void testUseTypeAttributeInsteadOfFieldType() {
-        class App {
-            @Option(names = "--num", type = BigDecimal.class) // subclass of field type
-            Number[] number; // array type with abstract component class
-
-            @Parameters(type = StringBuilder.class) // concrete impl class
-            Appendable address; // type declared as interface
-        }
-        App app = CommandLine.populateCommand(new App(), "--num", "123.456", "ABC");
-        assertEquals(1, app.number.length);
-        assertEquals(new BigDecimal("123.456"), app.number[0]);
-
-        assertEquals("ABC", app.address.toString());
-        assertTrue(app.address instanceof StringBuilder);
-    }
-    @Test
     public void testMultipleMissingOptions() {
         class App {
             @Option(names = "-a", required = true) String first;
@@ -2309,54 +2250,6 @@ public class CommandLineTest {
         } catch (ParameterException ex) {
             assertEquals("IllegalStateException: Queue full while processing argument at or before arg[1] 'a,b,c' in [-queue, a,b,c]: java.lang.IllegalStateException: Queue full", ex.getMessage());
         }
-    }
-
-    @Test
-    public void testUnmatchedExceptionStringConstructor() {
-        UnmatchedArgumentException ex = new UnmatchedArgumentException(new CommandLine(CommandSpec.create()), "aa");
-        assertNotNull(ex.getUnmatched());
-        assertTrue(ex.getUnmatched().isEmpty());
-        assertTrue(ex.getSuggestions().isEmpty());
-    }
-
-    @Test
-    public void testUnmatchedExceptionListConstructor() {
-        UnmatchedArgumentException ex = new UnmatchedArgumentException(new CommandLine(CommandSpec.create()), new ArrayList<String>());
-        assertNotNull(ex.getUnmatched());
-        assertTrue(ex.getUnmatched().isEmpty());
-        assertTrue(ex.getSuggestions().isEmpty());
-
-        ex = new UnmatchedArgumentException(new CommandLine(CommandSpec.create()), Arrays.asList("a", "b"));
-        assertEquals(Arrays.asList("a", "b"), ex.getUnmatched());
-    }
-
-    @Test
-    public void testUnmatchedExceptionStackConstructor() {
-        UnmatchedArgumentException ex = new UnmatchedArgumentException(new CommandLine(CommandSpec.create()), new Stack<String>());
-        assertNotNull(ex.getUnmatched());
-        assertTrue(ex.getUnmatched().isEmpty());
-        assertTrue(ex.getSuggestions().isEmpty());
-
-        Stack<String> stack = new Stack<String>();
-        stack.push("x");
-        stack.push("y");
-        stack.push("z");
-        ex = new UnmatchedArgumentException(new CommandLine(CommandSpec.create()), stack);
-        assertEquals(Arrays.asList("z", "y", "x"), ex.getUnmatched());
-    }
-
-    @Test
-    public void testUnmatchedExceptionIsUnknownOption() {
-        CommandLine cmd = new CommandLine(CommandSpec.create());
-
-        assertFalse("unmatch list is null", new UnmatchedArgumentException(cmd, "").isUnknownOption());
-        assertFalse("unmatch list is empty", new UnmatchedArgumentException(cmd, new ArrayList<String>()).isUnknownOption());
-
-        List<String> likeAnOption = Arrays.asList("-x");
-        assertTrue("first unmatched resembles option", new UnmatchedArgumentException(cmd, likeAnOption).isUnknownOption());
-
-        List<String> unlikeOption = Arrays.asList("xxx");
-        assertFalse("first unmatched doesn't resembles option", new UnmatchedArgumentException(cmd, unlikeOption).isUnknownOption());
     }
 
     @Test
