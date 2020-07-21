@@ -2652,8 +2652,8 @@ the <code>-f</code> argument is recognized as a separate option.</p>
 <p>As mentioned in the <a href="#_arity">previous section</a>, while processing parameters for an option with variable arity, when a known option, a subcommand, or the <a href="#_double_dash">end-of-options delimiter</a> is encountered, picocli will stop adding parameters to the variable arity option.</p>
 </div>
 <div class="paragraph">
-<p>However, the picocli parser currently does not give special treatment to <a href="#_unknown_options">unknown options</a> (values that "look like" an option) when processing parameters for an option with variable arity.
-Such values are simply consumed by the option with variable arity. This may change in a future version of picocli.</p>
+<p>However, by default the picocli parser does not give special treatment to <a href="#_unknown_options">unknown options</a> (values that "look like" an option) when processing parameters for an option with variable arity.
+Such values are simply consumed by the option with variable arity. From picocli 4.4 this is <a href="#_option_parameters_resembling_options">configurable</a>.</p>
 </div>
 </div>
 <div class="sect3">

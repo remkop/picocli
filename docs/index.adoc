@@ -12,6 +12,7 @@
 //:highlightjs-theme: darkula
 :icons: font
 :imagesdir: images
+:sectanchors:
 
 [link=https://github.com/remkop/picocli]
 image::https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png[Fork me on GitHub,float="right"]
@@ -1287,8 +1288,8 @@ the `-f` argument is recognized as a separate option.
 ==== Variable Arity Options and Unknown Options
 As mentioned in the <<Arity,previous section>>, while processing parameters for an option with variable arity, when a known option, a subcommand, or the <<Double dash (`--`),end-of-options delimiter>> is encountered, picocli will stop adding parameters to the variable arity option.
 
-However, the picocli parser currently does not give special treatment to <<Unknown Options,unknown options>> (values that "look like" an option) when processing parameters for an option with variable arity.
-Such values are simply consumed by the option with variable arity. This may change in a future version of picocli.
+However, by default the picocli parser does not give special treatment to <<Unknown Options,unknown options>> (values that "look like" an option) when processing parameters for an option with variable arity.
+Such values are simply consumed by the option with variable arity. From picocli 4.4 this is <<Option Parameters Resembling Options,configurable>>.
 
 
 ==== Variable Arity Options and Positional Parameters
