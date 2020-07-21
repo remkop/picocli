@@ -1113,7 +1113,7 @@ dependencies {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">java -cp &quot;picocli-4.4.0.jar;checksum.jar&quot; CheckSum --algorithm SHA-1 hello.txt</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">java -cp &quot;picocli-4.4.0.jar:checksum.jar&quot; CheckSum --algorithm SHA-1 hello.txt</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -10206,7 +10206,7 @@ test {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">alias mycommand='java -cp &quot;/path/to/picocli-4.4.0.jar;/path/to/myapp.jar&quot; org.myorg.MainClass'</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">alias mycommand='java -cp &quot;/path/to/picocli-4.4.0.jar:/path/to/myapp.jar&quot; org.myorg.MainClass'</code></pre>
 </div>
 </div>
 <div class="paragraph">
