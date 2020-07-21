@@ -24,6 +24,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1128] Enhancement: `ParameterException` caused by `TypeConversionException` now have their cause exception set.
 * [#1127] DOC: Custom ShortErrorMessageHandler manual example should use bold red for error message.
 * [#1130] DOC: Clarify how to run picocli-based applications.
+* [#1131] DOC: Add anchor links before section titles in user manual.
 
 ## <a name="4.4.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
