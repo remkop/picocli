@@ -4137,14 +4137,15 @@ This can be accomplished by installing a custom <code>IExecutionExceptionHandler
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">PrintExceptionMessageHandler</span> <span class="directive">implements</span> IExecutionExceptionHandler {
     <span class="directive">public</span> <span class="type">int</span> handleExecutionException(<span class="exception">Exception</span> ex,
-                                        CommandLine commandLine,
+                                        CommandLine cmd,
                                         ParseResult parseResult) {
 
-        commandLine.getErr().println(ex.getMessage());
+        <span class="comment">// bold red error message</span>
+        cmd.getErr().println(cmd.getColorScheme().errorText(ex.getMessage()));
 
-        <span class="keyword">return</span> commandLine.getExitCodeExceptionMapper() != <span class="predefined-constant">null</span>
-                    ? commandLine.getExitCodeExceptionMapper().getExitCode(ex)
-                    : commandLine.getCommandSpec().exitCodeOnExecutionException();
+        <span class="keyword">return</span> cmd.getExitCodeExceptionMapper() != <span class="predefined-constant">null</span>
+                    ? cmd.getExitCodeExceptionMapper().getExitCode(ex)
+                    : cmd.getCommandSpec().exitCodeOnExecutionException();
     }
 }</code></pre>
 </div>

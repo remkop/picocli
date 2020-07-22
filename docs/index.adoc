@@ -2323,14 +2323,15 @@ Where the `IExecutionExceptionHandler` implementation could look something like 
 ----
 class PrintExceptionMessageHandler implements IExecutionExceptionHandler {
     public int handleExecutionException(Exception ex,
-                                        CommandLine commandLine,
+                                        CommandLine cmd,
                                         ParseResult parseResult) {
 
-        commandLine.getErr().println(ex.getMessage());
+        // bold red error message
+        cmd.getErr().println(cmd.getColorScheme().errorText(ex.getMessage()));
 
-        return commandLine.getExitCodeExceptionMapper() != null
-                    ? commandLine.getExitCodeExceptionMapper().getExitCode(ex)
-                    : commandLine.getCommandSpec().exitCodeOnExecutionException();
+        return cmd.getExitCodeExceptionMapper() != null
+                    ? cmd.getExitCodeExceptionMapper().getExitCode(ex)
+                    : cmd.getCommandSpec().exitCodeOnExecutionException();
     }
 }
 ----
