@@ -1,0 +1,70 @@
+---
+CommandSpec:
+  name: 'top'
+  aliases: []
+  userObject: picocli.issue1137.Issue1137
+  helpCommand: false
+  defaultValueProvider: null
+  versionProvider: null
+  version: [test 1.0]
+  ArgGroups: []
+  Options:
+  - names: [--level]
+    usageHelp: false
+    versionHelp: false
+    description: [Level.]
+    descriptionKey: ''
+    typeInfo: CompileTimeTypeInfo(java.lang.String, aux=[java.lang.String], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'OFF'
+    showDefaultValue: ALWAYS
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<level>'
+    converters: []
+    completionCandidates: CompletionCandidatesMetaData(picocli.issue1137.Issue1137.LevelCompletion)
+    getter: AnnotatedElementHolder(FIELD level in picocli.issue1137.Issue1137)
+    setter: AnnotatedElementHolder(FIELD level in picocli.issue1137.Issue1137)
+  PositionalParams: []
+  UnmatchedArgsBindings: []
+  Mixins: []
+  UsageMessageSpec:
+    width: 80
+    abbreviateSynopsis: false
+    hidden: false
+    showDefaultValues: false
+    sortOptions: true
+    requiredOptionMarker: ' '
+    headerHeading: ''
+    header: []
+    synopsisHeading: 'Usage: '
+    customSynopsis: []
+    descriptionHeading: ''
+    description: []
+    parameterListHeading: ''
+    optionListHeading: ''
+    commandListHeading: 'Commands:%n'
+    footerHeading: ''
+    footer: []
+  ParserSpec:
+    separator: '='
+    endOfOptionsDelimiter: '--'
+    expandAtFiles: true
+    atFileCommentChar: '#'
+    overwrittenOptionsAllowed: false
+    unmatchedArgumentsAllowed: false
+    unmatchedOptionsArePositionalParams: false
+    stopAtUnmatched: false
+    stopAtPositional: false
+    posixClusteredShortOptionsAllowed: true
+    aritySatisfiedByAttachedOptionParam: false
+    caseInsensitiveEnumValuesAllowed: false
+    collectErrors: false
+    limitSplit: false
+    toggleBooleanFlags: false
+  Subcommands: []

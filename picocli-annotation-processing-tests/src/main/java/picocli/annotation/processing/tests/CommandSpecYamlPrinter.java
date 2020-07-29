@@ -225,15 +225,8 @@ public class CommandSpecYamlPrinter {
     }
 
     private String iter(Iterable<String> iterable) {
-        if (iterable == null) { return "null"; }
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-        String sep = "";
-        for (String str : iterable) {
-            sb.append(sep).append(str);
-            sep = ", ";
-        }
-        return sb.append("]").toString();
+        // cannot list actual completion candidates: class cannot be instantiated at compile time
+        return String.valueOf(iterable);
     }
 
     @Command(name = "CommandSpecYamlPrinter", mixinStandardHelpOptions = true,

@@ -41,7 +41,7 @@ class CompletionCandidatesMetaData implements Iterable<String>, ITypeMetaData {
                 for (ExecutableElement attribute : elementValues.keySet()) {
                     if ("completionCandidates".equals(attribute.getSimpleName().toString())) {
                         AnnotationValue typeMirror = elementValues.get(attribute);
-                        return new CompletionCandidatesMetaData((TypeMirror) typeMirror);
+                        return new CompletionCandidatesMetaData((TypeMirror) typeMirror.getValue());
                     }
                 }
             }
@@ -72,7 +72,7 @@ class CompletionCandidatesMetaData implements Iterable<String>, ITypeMetaData {
     /** Always returns {@code null}. */
     @Override
     public Iterator<String> iterator() {
-        return null;
+        throw new UnsupportedOperationException("Cannot instantiate " + typeMirror + " at compile time.");
     }
 
     /**
