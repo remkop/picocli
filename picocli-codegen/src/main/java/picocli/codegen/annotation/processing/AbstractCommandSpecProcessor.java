@@ -33,7 +33,9 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.util.SimpleElementVisitor6;
+import javax.lang.model.util.TypeKindVisitor6;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import java.io.PrintWriter;
@@ -840,7 +842,23 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                     logger.fine("Adding " + entry + " to commandSpec " + commandSpec1);
                     commandSpec1.addSpecElement(entry.getValue());
                 } else {
-                    proc.error(entry.getKey(), "@Spec must be enclosed in a @Command, but was %s: %s", entry.getKey().getEnclosingElement(), entry.getKey().getEnclosingElement().getSimpleName());
+                    Element enclosingElement = entry.getKey().getEnclosingElement();
+                    if (enclosingElement.getKind() == ElementKind.CLASS || enclosingElement.getKind() == ENUM) {
+                        TypeMirror typeMirror = enclosingElement.asType();
+                        TypeElement typeElement = (TypeElement) ((DeclaredType) typeMirror).asElement();
+                        List<? extends TypeMirror> interfaces = typeElement.getInterfaces();
+                        boolean valid = false;
+                        for (TypeMirror interf : interfaces) {
+                            if (interf.toString().equals("picocli.CommandLine.IVersionProvider")) {
+                                valid = true;
+                            }
+                        }
+                        if (!valid) {
+                            proc.error(entry.getKey(), "@Spec must be enclosed in a @Command, or in a class that implements IVersionProvider but was %s: %s", entry.getKey().getEnclosingElement(), entry.getKey().getEnclosingElement().getSimpleName());
+                        }
+                    } else {
+                        proc.error(entry.getKey(), "@Spec must be enclosed in a @Command, but was %s: %s", entry.getKey().getEnclosingElement(), entry.getKey().getEnclosingElement().getSimpleName());
+                    }
                 }
             }
             for (Map.Entry<Element, IAnnotatedElement> entry : parentCommandElements.entrySet()) {

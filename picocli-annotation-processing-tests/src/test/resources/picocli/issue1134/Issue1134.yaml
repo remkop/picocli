@@ -1,0 +1,70 @@
+---
+CommandSpec:
+  name: 'top'
+  aliases: []
+  userObject: picocli.issue1134.Issue1134
+  helpCommand: false
+  defaultValueProvider: null
+  versionProvider: VersionProviderMetaData(picocli.issue1134.MyVersionProvider)
+  version: []
+  ArgGroups: []
+  Options:
+  - names: [--level]
+    usageHelp: false
+    versionHelp: false
+    description: []
+    descriptionKey: ''
+    typeInfo: CompileTimeTypeInfo(java.lang.String, aux=[java.lang.String], collection=false, map=false)
+    arity: 1
+    splitRegex: ''
+    interactive: false
+    required: false
+    hidden: false
+    hideParamSyntax: false
+    defaultValue: 'null'
+    showDefaultValue: ON_DEMAND
+    hasInitialValue: false
+    initialValue: 'null'
+    paramLabel: '<level>'
+    converters: []
+    completionCandidates: null
+    getter: AnnotatedElementHolder(FIELD level in picocli.issue1134.Issue1134)
+    setter: AnnotatedElementHolder(FIELD level in picocli.issue1134.Issue1134)
+  PositionalParams: []
+  UnmatchedArgsBindings: []
+  Mixins: []
+  UsageMessageSpec:
+    width: 80
+    abbreviateSynopsis: false
+    hidden: false
+    showDefaultValues: false
+    sortOptions: true
+    requiredOptionMarker: ' '
+    headerHeading: ''
+    header: []
+    synopsisHeading: 'Usage: '
+    customSynopsis: []
+    descriptionHeading: ''
+    description: []
+    parameterListHeading: ''
+    optionListHeading: ''
+    commandListHeading: 'Commands:%n'
+    footerHeading: ''
+    footer: []
+  ParserSpec:
+    separator: '='
+    endOfOptionsDelimiter: '--'
+    expandAtFiles: true
+    atFileCommentChar: '#'
+    overwrittenOptionsAllowed: false
+    unmatchedArgumentsAllowed: false
+    unmatchedOptionsArePositionalParams: false
+    stopAtUnmatched: false
+    stopAtPositional: false
+    posixClusteredShortOptionsAllowed: true
+    aritySatisfiedByAttachedOptionParam: false
+    caseInsensitiveEnumValuesAllowed: false
+    collectErrors: false
+    limitSplit: false
+    toggleBooleanFlags: false
+  Subcommands: []

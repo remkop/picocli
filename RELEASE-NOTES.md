@@ -23,6 +23,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1126] Enhancement: Make picocli trace levels case-insensitive.
 * [#1128] Enhancement: `ParameterException` caused by `TypeConversionException` now have their cause exception set.
 * [#1137] Bugfix: The `picocli-codegen` annotation processor causes the build to fail with a `ClassCastException` when an option has `completionCandidates` defined.
+* [#1134] Bugfix: The `picocli-codegen` annotation processor should allow `@Spec`-annotated field in classes implementing `IVersionProvider`.
 * [#1127] DOC: Custom ShortErrorMessageHandler manual example should use bold red for error message.
 * [#1130] DOC: Clarify how to run picocli-based applications.
 * [#1131] DOC: Add anchor links before section titles in user manual.
