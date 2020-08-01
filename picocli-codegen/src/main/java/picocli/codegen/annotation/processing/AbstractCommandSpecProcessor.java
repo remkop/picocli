@@ -16,6 +16,7 @@ import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.Spec;
 import picocli.CommandLine.Unmatched;
+import picocli.codegen.util.JulLogFormatter;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -29,13 +30,12 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.util.SimpleElementVisitor6;
-import javax.lang.model.util.TypeKindVisitor6;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import java.io.PrintWriter;
@@ -101,13 +101,20 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
     static ConsoleHandler handler = new ConsoleHandler();
 
     protected AbstractCommandSpecProcessor() {
-        for (Handler h : Logger.getLogger("picocli.annotation.processing").getHandlers()) {
-            Logger.getLogger("picocli.annotation.processing").removeHandler(h);
+        if (Boolean.getBoolean("jul.format")) {
+            for (Handler h : Logger.getLogger("picocli.annotation.processing").getHandlers()) {
+                h.setFormatter(new JulLogFormatter());
+            }
         }
-        handler.setFormatter(new JulLogFormatter());
-        handler.setLevel(Level.ALL);
-        Logger.getLogger("picocli.annotation.processing").addHandler(handler);
-        Logger.getLogger("picocli.annotation.processing").setLevel(Level.ALL);
+//        if (System.getProperty("java.util.logging.config.file") == null) {
+//            for (Handler h : Logger.getLogger("picocli.annotation.processing").getHandlers()) {
+//                Logger.getLogger("picocli.annotation.processing").removeHandler(h);
+//            }
+//            handler.setFormatter(new JulLogFormatter());
+//            handler.setLevel(Level.ALL);
+//            Logger.getLogger("picocli.annotation.processing").addHandler(handler);
+//            Logger.getLogger("picocli.annotation.processing").setLevel(Level.ALL);
+//        }
     }
 
     /**
@@ -377,32 +384,36 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 result.add(commandSpec);
 
                 List<? extends Element> enclosedElements = subcommandElement.getEnclosedElements();
-                for (Element enclosed : enclosedElements) {
-                    if (enclosed.getAnnotation(Command.class) != null) {
-                        buildCommand(enclosed, context, roundEnv);
-                    }
-                    if (enclosed.getAnnotation(ArgGroup.class) != null) {
-                        buildArgGroup(enclosed, context);
-                    }
-                    if (enclosed.getAnnotation(Mixin.class) != null) {
-                        buildMixin(enclosed, roundEnv, context);
-                    }
-                    if (enclosed.getAnnotation(Option.class) != null) {
-                        buildOption(enclosed, context);
-                    }
-                    if (enclosed.getAnnotation(Parameters.class) != null) {
-                        buildParameter(enclosed, context);
-                    }
-                    if (enclosed.getAnnotation(Unmatched.class) != null) {
-                        buildUnmatched(enclosed, context);
-                    }
-                    if (enclosed.getAnnotation(Spec.class) != null) {
-                        buildSpec(enclosed, context);
-                    }
-                    if (enclosed.getAnnotation(ParentCommand.class) != null) {
-                        buildParentCommand(enclosed, context);
-                    }
-                }
+                processEnclosedElements(context, roundEnv, enclosedElements);
+            }
+        }
+    }
+
+    private void processEnclosedElements(Context context, RoundEnvironment roundEnv, List<? extends Element> enclosedElements) {
+        for (Element enclosed : enclosedElements) {
+            if (enclosed.getAnnotation(Command.class) != null) {
+                buildCommand(enclosed, context, roundEnv);
+            }
+            if (enclosed.getAnnotation(ArgGroup.class) != null) {
+                buildArgGroup(enclosed, context, roundEnv);
+            }
+            if (enclosed.getAnnotation(Mixin.class) != null) {
+                buildMixin(enclosed, roundEnv, context);
+            }
+            if (enclosed.getAnnotation(Option.class) != null) {
+                buildOption(enclosed, context);
+            }
+            if (enclosed.getAnnotation(Parameters.class) != null) {
+                buildParameter(enclosed, context);
+            }
+            if (enclosed.getAnnotation(Unmatched.class) != null) {
+                buildUnmatched(enclosed, context);
+            }
+            if (enclosed.getAnnotation(Spec.class) != null) {
+                buildSpec(enclosed, context);
+            }
+            if (enclosed.getAnnotation(ParentCommand.class) != null) {
+                buildParentCommand(enclosed, context);
             }
         }
     }
@@ -456,14 +467,15 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         logger.fine("Building argGroups...");
         Set<? extends Element> explicitArgGroups = roundEnv.getElementsAnnotatedWith(ArgGroup.class);
         for (Element element : explicitArgGroups) {
-            buildArgGroup(element, context);
+            buildArgGroup(element, context, roundEnv);
         }
     }
 
-    private void buildArgGroup(Element element, Context context) {
+    private void buildArgGroup(Element element, Context context, RoundEnvironment roundEnv) {
         debugElement(element, "@ArgGroup");
-        if (element.asType().getKind() != TypeKind.DECLARED && element.asType().getKind() != TypeKind.ARRAY) {
-            error(element, "@ArgGroup must have a declared or array type, not %s", element.asType());
+        TypeMirror elementType = element.asType();
+        if (elementType.getKind() != TypeKind.DECLARED && elementType.getKind() != TypeKind.ARRAY) {
+            error(element, "@ArgGroup must have a declared or array type, not %s", elementType);
             return;
         }
         @SuppressWarnings("deprecation") // SimpleElementVisitor6 is deprecated in Java 9
@@ -480,6 +492,13 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
         } else {
             builder.updateArgGroupAttributes(element.getAnnotation(ArgGroup.class));
             context.argGroupElements.put(element, builder);
+
+            DeclaredType declaredType = (elementType.getKind() == TypeKind.ARRAY)
+                    ? (DeclaredType) ((ArrayType) elementType).getComponentType()
+                    : (DeclaredType) elementType;
+
+            TypeElement typeElement = (TypeElement) declaredType.asElement();
+            processEnclosedElements(context, roundEnv, typeElement.getEnclosedElements());
         }
     }
 
@@ -967,9 +986,12 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
                 }
             }
             Stack<Integer> sortedGroups = graph.topologicalSort();
+            logger.fine(argGroupElements.toString());
             while (!sortedGroups.isEmpty()) {
                 Element argGroupElement = lookup[sortedGroups.pop()];
-                ArgGroupSpec group = argGroupElements.get(argGroupElement).build();
+                ArgGroupSpec.Builder argGroupBuilder = argGroupElements.get(argGroupElement);
+                logger.log(Level.FINE, "args=%s, typeInfo=%s", new Object[]{argGroupBuilder.args(), argGroupBuilder.typeInfo()});
+                ArgGroupSpec group = argGroupBuilder.build();
 
                 CommandSpec commandSpec = getOrCreateCommandSpecForArg(argGroupElement, commands);
                 logger.fine("Building ArgGroupSpec for " + argGroupElement + " in command " + commandSpec);
