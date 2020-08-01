@@ -2282,9 +2282,7 @@ class ShortErrorMessageHandler implements IParameterExceptionHandler {
 
         // if tracing at DEBUG level, show the location of the issue
         if ("DEBUG".equalsIgnoreCase(System.getProperty("picocli.trace"))) {
-            StringWriter sw = new StringWriter();
-            ex.printStackTrace(new PrintWriter(sw, true));
-            err.println(cmd.getColorScheme().stackTraceText(sw.toString()));
+            err.println(cmd.getColorScheme().stackTraceText(ex));
         }
 
         err.println(cmd.getColorScheme().errorText(ex.getMessage())); // bold red

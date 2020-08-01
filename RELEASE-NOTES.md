@@ -1,23 +1,27 @@
 # picocli Release Notes
 
-# <a name="4.4.1"></a> Picocli 4.4.1 (UNRELEASED)
-The picocli community is pleased to announce picocli 4.4.1.
+# <a name="4.5.0"></a> Picocli 4.5.0 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.5.0.
 
 This release contains bug fixes and enhancements.
+
+The `ColorScheme` class now has new methods `stackTraceText` and `richStackTraceString`, which can be convenient when creating [custom error handlers](https://picocli.info/#_handling_errors) with colors.
+
+Various bugfixes in the `picocli-codegen` annotation processor.
 
 This is the seventy-second public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
-## <a name="4.4.1-toc"></a> Table of Contents
-* [New and noteworthy](#4.4.1-new)
-* [Fixed issues](#4.4.1-fixes)
-* [Deprecations](#4.4.1-deprecated)
-* [Potential breaking changes](#4.4.1-breaking-changes)
+## <a name="4.5.0-toc"></a> Table of Contents
+* [New and noteworthy](#4.5.0-new)
+* [Fixed issues](#4.5.0-fixes)
+* [Deprecations](#4.5.0-deprecated)
+* [Potential breaking changes](#4.5.0-breaking-changes)
 
-## <a name="4.4.1-new"></a> New and Noteworthy
+## <a name="4.5.0-new"></a> New and Noteworthy
 
 
-## <a name="4.4.1-fixes"></a> Fixed issues
+## <a name="4.5.0-fixes"></a> Fixed issues
 * [#1129] API: Add methods `ColorScheme::stackTraceText(Throwable)` and `ColorScheme::richStackTraceString(Throwable)`.
 * [#1124] Enhancement: automatically generate a better summary in the `AutoComplete.GenerateCompletion` generated man page.
 * [#1126] Enhancement: Make picocli trace levels case-insensitive.
@@ -29,10 +33,10 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1130] DOC: Clarify how to run picocli-based applications.
 * [#1131] DOC: Add anchor links before section titles in user manual.
 
-## <a name="4.4.1-deprecated"></a> Deprecations
+## <a name="4.5.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
 
-## <a name="4.4.1-breaking-changes"></a> Potential breaking changes
+## <a name="4.5.0-breaking-changes"></a> Potential breaking changes
 This release has no breaking changes.
 
 
