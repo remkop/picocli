@@ -1,11 +1,11 @@
-package picocli.codegen.annotation.processing;
+package picocli.codegen.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
-class JulLogFormatter extends Formatter {
+public class JulLogFormatter extends Formatter {
     SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
 
     @Override
