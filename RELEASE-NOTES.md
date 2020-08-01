@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="4.5.0"></a> Picocli 4.5.0 (UNRELEASED)
+# <a name="4.5.0"></a> Picocli 4.5.0
 The picocli community is pleased to announce picocli 4.5.0.
 
 This release contains bug fixes and enhancements.
@@ -8,6 +8,8 @@ This release contains bug fixes and enhancements.
 The `ColorScheme` class now has new methods `stackTraceText` and `richStackTraceString`, which can be convenient when creating [custom error handlers](https://picocli.info/#_handling_errors) with colors.
 
 Various bugfixes in the `picocli-codegen` annotation processor.
+
+The user manual now has anchor links before all section titles.
 
 This is the seventy-second public release.
 Picocli follows [semantic versioning](http://semver.org/).
