@@ -97,6 +97,9 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 
 ### Articles & Presentations
 #### English
+* [Building a GitHub Dependents Scraper with Quarkus and Picocli](https://blog.marcnuri.com/github-dependents-scraper-quarkus-picocli/) (2020-07-31) by [Marc Nuri](https://twitter.com/MarcNuri).
+* [Building a decent Java CLI](https://atextor.de/2020/07/27/building-a-decent-java-cli.html) (2020-07-27) by [Andreas Textor](https://twitter.com/atextor).
+* [VIDEO] (Another very well-produced video by Szymon Stepniak) [OAuth 2.0 in a Java command-line app | #micronaut #picocli #oauth2](https://www.youtube.com/watch?v=js5H9UbmmMY) (2020-07-23) by [Szymon Stepniak](https://e.printstacktrace.blog/) ([YouTube channel](https://www.youtube.com/channel/UCEf8e5YAYnowq-2deW4tpsw)).
 * [Micronaut, Picocli, and GraalVM](https://e.printstacktrace.blog/building-stackoverflow-cli-with-java-11-micronaut-picocli-and-graalvm/) (2020-07-08) by [Szymon Stepniak](https://e.printstacktrace.blog/).
 * [VIDEO] (Extremely well-produced and informative, recommended!) [Building command-line app with Java 11, Micronaut, Picocli, and GraalVM](https://www.youtube.com/watch?v=Xdcg4Drg1hc) (2020-07-01) by [Szymon Stepniak](https://e.printstacktrace.blog/) ([YouTube channel](https://www.youtube.com/channel/UCEf8e5YAYnowq-2deW4tpsw)).
 * [AUDIO] [Scala Valentines #2](https://scala.love/scala-valentines-2/) (2020-06-21) Podcast talks about picocli (from 18:11). 
