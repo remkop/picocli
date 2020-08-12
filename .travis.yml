@@ -36,6 +36,7 @@ matrix:
   - jdk: openjdk-ea
     #  - openjdk7 # Disabled to avoid error java.security.NoSuchProviderException: no such provider: SunEC...
 
+install: skip
 before_script:
   - chmod +x gradlew
 # for CodeClimate
