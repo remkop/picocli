@@ -7200,7 +7200,7 @@ public class CommandLine {
                 final String[] cmd = (Help.Ansi.isWindows() && !Help.Ansi.isPseudoTTY())
                         ? new String[] {"cmd.exe", "/c", "mode con"}
                         : (Help.Ansi.isMac()
-                                ? new String[] {"stty", "-a", "-f", "/dev/tty"}
+                                ? new String[] {"tput", "cols"}
                                 : new String[] {"stty", "-a", "-F", "/dev/tty"});
                 Thread t = new Thread(new Runnable() {
                     public void run() {
@@ -7224,7 +7224,9 @@ public class CommandLine {
                             tracer.debug("getTerminalWidth() parsing output: %s%n", txt);
                             Pattern pattern = (Help.Ansi.isWindows() && !Help.Ansi.isPseudoTTY())
                                     ? Pattern.compile(".*?:\\s*(\\d+)\\D.*?:\\s*(\\d+)\\D.*", Pattern.DOTALL)
-                            		: Pattern.compile(".*olumns(:)?\\s+(\\d+)\\D.*", Pattern.DOTALL);
+                                    : (Help.Ansi.isMac()
+                                            ? Pattern.compile("(\\s*)(\\d+)\\s*")
+                                            : Pattern.compile(".*olumns(:)?\\s+(\\d+)\\D.*", Pattern.DOTALL));
                             Matcher matcher = pattern.matcher(txt);
                             if (matcher.matches()) {
                                 size.set(Integer.parseInt(matcher.group(2)));
