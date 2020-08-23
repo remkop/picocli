@@ -135,6 +135,7 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 * [Интерфейсы командной строки Java: picocli](https://habr.com/ru/company/otus/blog/419401/) (2018-08-06): Russian translation by [MaxRokatansky](https://habr.com/ru/users/MaxRokatansky/) of Dustin Marx' blog post.
 
 #### Español
+* [Quarkus + Picocli: Web scaper para extraer proyectos dependientes en GitHub](https://blog.marcnuri.com/quarkus-picocli-web-scaper-dependientes-github/) (2020-08-15) by [Marc Nuri](https://twitter.com/MarcNuri).
 * [Quarkus - Introducción: picocli](https://gerardo.dev/aws-quarkus-picocli.html) (2020-06-15) by [Gerardo Arroyo](https://twitter.com/codewarrior506).
 * [VIDEO] [Picocli - Spring Boot example](https://youtu.be/y9ayfjfrTF4) (2020-05-24) 7-minute quick introduction by Gonzalo H. Mendoza.
 
