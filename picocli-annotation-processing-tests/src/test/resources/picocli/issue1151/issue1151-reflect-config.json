@@ -1,0 +1,57 @@
+[
+  {
+    "name" : "picocli.CommandLine$AutoHelpMixin",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "helpRequested" },
+      { "name" : "versionRequested" }
+    ]
+  },
+  {
+    "name" : "picocli.codegen.docgen.manpage.ManPageGenerator",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "config" },
+      { "name" : "spec" }
+    ]
+  },
+  {
+    "name" : "picocli.codegen.docgen.manpage.ManPageGenerator$App",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "classes" },
+      { "name" : "config" },
+      { "name" : "exit" },
+      { "name" : "factoryClass" }
+    ]
+  },
+  {
+    "name" : "picocli.codegen.docgen.manpage.ManPageGenerator$Config",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "directory" },
+      { "name" : "force" },
+      { "name" : "templatesDirectory" },
+      { "name" : "verbosity" }
+    ]
+  },
+  {
+    "name" : "picocli.issue1151.Issue1151CommandWithManPageGeneratorSubcommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  }
+]
