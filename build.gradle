@@ -131,6 +131,9 @@ allprojects {
         archives testJar
         archives jar
     }
+    tasks.withType(GenerateModuleMetadata) {
+        enabled = false // fix for https://github.com/remkop/picocli/issues/1152
+    }
     distributions {
         main {
             baseName = "$archivesBaseName-all"
