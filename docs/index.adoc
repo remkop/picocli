@@ -757,7 +757,7 @@ cl.registerConverter(Locale.class, s -> new Locale.Builder().setLanguageTag(s).b
 cl.registerConverter(Cipher.class, s -> Cipher.getInstance(s));
 ----
 
-After registering custom converters, call the `execute(String...)` or parseArgs(String...)` method on the `CommandLine` instance where the converters are registered. (The static `populateCommand` method cannot be used.) For example:
+After registering custom converters, call the `execute(String...)` or `parseArgs(String...)` method on the `CommandLine` instance where the converters are registered. (The static `populateCommand` method cannot be used.) For example:
 
 [source,java]
 ----

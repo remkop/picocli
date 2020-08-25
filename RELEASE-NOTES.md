@@ -1,5 +1,38 @@
 # picocli Release Notes
 
+
+# <a name="4.5.1"></a> Picocli 4.5.1 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.5.1.
+
+This release contains bug fixes and enhancements.
+
+
+Various bugfixes in the `picocli-codegen` annotation processor.
+
+
+
+This is the seventy-second public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.5.1-toc"></a> Table of Contents
+* [New and noteworthy](#4.5.1-new)
+* [Fixed issues](#4.5.1-fixes)
+* [Deprecations](#4.5.1-deprecated)
+* [Potential breaking changes](#4.5.1-breaking-changes)
+
+## <a name="4.5.1-new"></a> New and Noteworthy
+
+
+## <a name="4.5.1-fixes"></a> Fixed issues
+* [#1153] DOC: Fix documentation leading code quote. Thanks to sabrina at exchange.culturesky.com for reporting this.
+
+## <a name="4.5.1-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.5.1-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 # <a name="4.5.0"></a> Picocli 4.5.0
 The picocli community is pleased to announce picocli 4.5.0.
 
