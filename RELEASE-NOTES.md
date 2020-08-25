@@ -24,6 +24,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.5.1-fixes"></a> Fixed issues
+* [#1152] Bugfix: Gradle build fail when using picocli 4.4.0 or 4.5.0: Gradle Module Metadata for picocli 4.4.0+ missing from Maven Central. Thanks to [Frank Pavageau](https://github.com/fpavageau) for reporting this.
 * [#1150] Bugfix: Fix terminal width detection on macOS. Thanks to [David Phillips](https://github.com/electrum) for the pull request.
 * [#1142] DOC: Update Kotlin GraalVM native image example - Update native image gradle plugin. Now supports jdk 11. Thanks to [OndrejMalek](https://github.com/OndrejMalek) for the pull request.
 * [#1153] DOC: Fix documentation leading code quote. Thanks to sabrina at exchange.culturesky.com for reporting this.
