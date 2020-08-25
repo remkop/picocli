@@ -29,7 +29,6 @@ public class Issue1151Test {
     }
 
 
-    @Ignore("Requires fix for https://github.com/remkop/picocli/issues/1151")
     @Test
     public void testGenerateReflectConfigIssue1151() {
         NativeImageConfigGeneratorProcessor processor = new NativeImageConfigGeneratorProcessor();

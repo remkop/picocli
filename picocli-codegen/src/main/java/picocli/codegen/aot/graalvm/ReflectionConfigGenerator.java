@@ -187,6 +187,7 @@ public class ReflectionConfigGenerator {
                 List.class.getName(),
                 Set.class.getName(),
                 Map.class.getName(),
+                Class.class.getName(), Class[].class.getName(), Class[].class.getCanonicalName(), "java.lang.Class<?>", "java.lang.Class<?>[]",
                 "java.lang.reflect.Executable", // addMethod("getParameters")
                 "java.lang.reflect.Parameter", // addMethod("getName");
                 "org.fusesource.jansi.AnsiConsole", // addField("out", false);

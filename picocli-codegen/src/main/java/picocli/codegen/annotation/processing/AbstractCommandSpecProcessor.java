@@ -242,12 +242,18 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             @Override
             public Void visitType(TypeElement e, CommandSpec commandSpec) {
                 updateCommandSpecFromTypeElement(e, context, commandSpec, roundEnv);
+
+                List<? extends Element> enclosedElements = e.getEnclosedElements();
+                processEnclosedElements(context, roundEnv, enclosedElements);
                 return null;
             }
 
             @Override
             public Void visitExecutable(ExecutableElement e, CommandSpec commandSpec) {
                 updateCommandFromMethodElement(e, context, commandSpec, roundEnv);
+
+                List<? extends Element> enclosedElements = e.getEnclosedElements();
+                processEnclosedElements(context, roundEnv, enclosedElements);
                 return null;
             }
         }, result);
@@ -382,9 +388,6 @@ public abstract class AbstractCommandSpecProcessor extends AbstractProcessor {
             if (isValidSubcommandHasNameAttribute(subcommandElement)) {
                 CommandSpec commandSpec = buildCommand(subcommandElement, context, roundEnv);
                 result.add(commandSpec);
-
-                List<? extends Element> enclosedElements = subcommandElement.getEnclosedElements();
-                processEnclosedElements(context, roundEnv, enclosedElements);
             }
         }
     }
