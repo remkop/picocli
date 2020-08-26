@@ -190,7 +190,7 @@ public class ManPageGenerator implements Callable<Integer> {
                     "",
                     "Example",
                     "-------",
-                    "  java -Duser.language=de -cp \"myapp.jar;picocli-4.5.1.jar;picocli-codegen-4.5.1.jar\" " +
+                    "  java -Duser.language=de -cp \"myapp.jar;picocli-4.5.2-SNAPSHOT.jar;picocli-codegen-4.5.2-SNAPSHOT.jar\" " +
                             "picocli.codegen.docgen.manpage.ManPageGenerator my.pkg.MyClass"
             }
     )
