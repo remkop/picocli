@@ -13,7 +13,6 @@ Suppress generation of Gradle Module Metadata, to fix Gradle build failures for 
 Fixed terminal width detection on macOS.
 
 The user manual now has a new section on [Validation](https://picocli.info/#_validation). Various other documentation improvements.
-The javadoc now uses the new Java-9 style.
 
 
 This is the seventy-third public release.
