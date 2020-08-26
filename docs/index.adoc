@@ -2335,6 +2335,181 @@ class PrintExceptionMessageHandler implements IExecutionExceptionHandler {
 ----
 
 
+== Validation
+=== Built-in Validation
+Picocli provides some limited form of validation:
+
+* <<Required Options,required options>>
+* <<Required Parameters,required positional parameters>>
+* options with one or more <<Arity,required parameters>>
+* <<Overwriting Single Options,allow/disallow>> single-value options being specified multiple times
+* <<Mutually Dependent Options,mutually dependent>> options
+* <<Mutually Exclusive Options,mutually exclusive>> options
+* <<Repeating Composite Argument Groups,repeating groups>> of exclusive or dependent options
+* <<Required Subcommands,required subcommands>>
+* <<Handling Invalid Input,type conversion>>
+* <<Unmatched Input,unmatched input>>
+* <<Unknown Options,unknown options>>
+
+=== Custom Validation
+Most applications will need to do additional validations to verify some business rules.
+
+Applications that use the <<Executing Commands,`execute` API>> may find it useful to throw a `ParameterException` when validation fails:
+any `ParameterExceptions` will be caught and handled by picocli's built-in <<Invalid User Input,error handler>>, which shows the error message in bold red, and is followed by the usage help message.
+
+To construct a `ParameterException`, you need the `CommandLine` instance where the error occurred.
+This can be obtained from the `CommandSpec`, which in turn can be obtained from a <<spec-annotation,`@Spec`-annotated>> field.
+The sections below show some examples.
+
+==== Single Value Validation
+Methods annotated with `@Option` and `@Parameters` can do simple input validation by throwing a `ParameterException` when invalid values are specified on the command line.
+
+The following example validates that the value specified for the `--prime` option is a prime number:
+
+[source,java]
+----
+class SingleOptionValidationExample {
+    private int prime;
+
+    @Spec CommandSpec spec; // injected by picocli
+
+    @Option(names = {"-p", "--prime"}, paramLabel = "NUMBER")
+    public void setPrimeNumber(int value) {
+        boolean invalid = false;
+        for (int i = 2; i <= value / 2; i++) {
+            if (value % i == 0) {
+                invalid = true;
+                break;
+            }
+        }
+        if (invalid) {
+            throw new ParameterException(spec.commandLine(),
+                    String.format("Invalid value '%s' for option '--p': " +
+                            "value is not a prime number.", value));
+        }
+    }
+    // ...
+}
+----
+
+==== Validating Option Combinations
+Another common scenario is that the combination of multiple options and positional parameters is valid.
+One way to accomplish this is to perform such validation at the beginning of the business logic.
+
+The following example validates that at least one of the `--xml`, `--csv`, or `--json` options is specified:
+
+[source,java]
+----
+@Command(name = "myapp", mixinStandardHelpOptions = true, version = "myapp 0.1")
+class MultiOptionValidationExample implements Runnable {
+    @Option(name="--xml") List<File> xmlFiles;
+    @Option(name="--csv") List<File> csvFiles;
+    @Option(name="--json") List<File> jsonFiles;
+
+    @Spec CommandSpec spec; // injected by picocli
+
+    public static void main(String... args) {
+        System.exit(new CommandLine(new MultiOptionValidationExample()).execute(args));
+    }
+
+    public void run() {
+        validate();
+
+        // remaining business logic here
+    }
+
+    private void validate() {
+        if (missing(xmlFiles) && missing(csvFiles) && missing(jsonFiles)) {
+            throw new ParameterException(spec.commandLine(),
+                    "Missing option: at least one of the " +
+                    "'--xml', '--csv', or '--json' options must be specified.");
+        }
+    }
+
+    private void missing(List<?> list) {
+        return list == null || list.isEmpty();
+    }
+}
+----
+
+==== JSR-380 BeanValidation
+If you want to keep your validation declarative and annotation-based, take a look at https://jcp.org/en/jsr/detail?id=380[JSR 380].
+
+JSR-380 is a specification of the Java API for bean validation, part of JavaEE and JavaSE, which ensures that the properties of a bean meet specific criteria, using annotations such as `@NotNull`, `@Min`, and `@Max`.
+
+The picocli wiki has a https://github.com/remkop/picocli/wiki/JSR-380-BeanValidation[full example], below is a snippet:
+
+[source,java]
+----
+import picocli.CommandLine;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.*;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.constraints.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
+// Example inspired by https://www.baeldung.com/javax-validation
+public class User implements Runnable {
+
+    @NotNull(message = "Name cannot be null")
+    @Option(names = {"-n", "--name"}, description = "mandatory")
+    private String name;
+
+    @Min(value = 18, message = "Age should not be less than 18")
+    @Max(value = 150, message = "Age should not be greater than 150")
+    @Option(names = {"-a", "--age"}, description = "between 18-150")
+    private int age;
+
+    @Email(message = "Email should be valid")
+    @Option(names = {"-e", "--email"}, description = "valid email")
+    private String email;
+
+    @Spec CommandSpec spec;
+
+    public User() { }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                ", email='" + email + '\'' +
+                '}';
+    }
+
+    public static void main(String... args) {
+        new CommandLine(new User()).execute(args);
+    }
+
+    @Override
+    public void run() {
+        validate();
+
+        // remaining business logic here
+    }
+
+    private void validate() {
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        Set<ConstraintViolation<User>> violations = validator.validate(this);
+
+        if (!violations.isEmpty()) {
+            String errorMsg = "";
+            for (ConstraintViolation<User> violation : violations) {
+                errorMsg += "ERROR: " + violation.getMessage() + "\n";
+            }
+            throw new ParameterException(spec.commandLine(), errorMsg);
+        }
+    }
+}
+----
+
+
+
 == Parser Configuration
 
 === Case Sensitivity
@@ -5635,8 +5810,6 @@ It is possible for these attributes to contain variables, but be aware of the li
 
 If these attributes have variables, and the variables get a different value after the model is constructed, the change will not be reflected in the model.
 //Also, the annotation processor will not be able to resolve these variables at compile time and will not be able to construct a model.
-
-
 
 
 == Tips & Tricks
