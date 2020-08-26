@@ -6,12 +6,16 @@ The picocli community is pleased to announce picocli 4.5.1.
 
 This release contains bug fixes and enhancements.
 
+Fixed bug in the `picocli-codegen` annotation processor that resulted in errors in native images that used `ManPageGenerator` as subcommand.
 
-Various bugfixes in the `picocli-codegen` annotation processor.
+Suppress generation of Gradle Module Metadata, to fix Gradle build failures for projects using picocli 4.4.0 or 4.5.0.
+
+Fix terminal width detection on macOS.
+
+Various documentation improvements.
 
 
-
-This is the seventy-second public release.
+This is the seventy-third public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.5.1-toc"></a> Table of Contents
