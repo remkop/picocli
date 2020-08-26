@@ -18,6 +18,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.5.2-fixes"></a> Fixed issues
+* [#1155] DOC: Fix sample code in chapter "Validation". Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1157] DOC: Fix typo "a argument group" in user manual. Thanks to sabrina at exchange.culturesky.com for raising this.
 
 ## <a name="4.5.2-deprecated"></a> Deprecations
