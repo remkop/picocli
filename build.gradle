@@ -329,6 +329,10 @@ task bumpVersion {
         ant.replaceregexp(match: "rev=\"$projectPreviousVersionRegex\"", replace: "rev=\\\"$version\\\"", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
         }
+        // Running the Application and Packaging sections
+        ant.replaceregexp(match: "picocli-${projectPreviousVersionRegex}.jar", replace: "picocli-${version}.jar", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
         ant.replaceregexp(match: releaseDatePreviousRegex, replace: releaseDate, flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
             fileset(dir: 'docs', includes: 'quick-guide.adoc')

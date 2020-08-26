@@ -1,8 +1,8 @@
 = Quick Guide
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.5.1-SNAPSHOT
-:revdate: 2020-08-01
+:revnumber: 4.5.1
+:revdate: 2020-08-26
 :toc: left
 :numbered:
 :toclevels: 1

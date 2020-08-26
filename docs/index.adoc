@@ -1,8 +1,8 @@
 = picocli - a mighty tiny command line interface
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.5.1-SNAPSHOT
-:revdate: 2020-08-01
+:revnumber: 4.5.1
+:revdate: 2020-08-26
 :toc: left
 :numbered:
 :toclevels: 2
@@ -110,7 +110,7 @@ Below are examples of configuring Gradle or Maven to use picocli as an external 
 
 ==== Gradle
 ----
-compile 'info.picocli:picocli:4.5.1-SNAPSHOT'
+compile 'info.picocli:picocli:4.5.1'
 ----
 
 ==== Maven
@@ -118,7 +118,7 @@ compile 'info.picocli:picocli:4.5.1-SNAPSHOT'
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.5.1-SNAPSHOT</version>
+  <version>4.5.1</version>
 </dependency>
 ----
 
@@ -161,7 +161,7 @@ https://immutables.github.io/apt.html[This page] shows the steps to configure Ec
       <path>
         <groupId>info.picocli</groupId>
         <artifactId>picocli-codegen</artifactId>
-        <version>4.5.1-SNAPSHOT</version>
+        <version>4.5.1</version>
       </path>
     </annotationProcessorPaths>
     <compilerArgs>
@@ -177,8 +177,8 @@ See the https://github.com/remkop/picocli/tree/master/picocli-codegen[`picocli-c
 ===== Gradle
 ```
 dependencies {
-    compile 'info.picocli:picocli:4.5.1-SNAPSHOT'
-    annotationProcessor 'info.picocli:picocli-codegen:4.5.1-SNAPSHOT'
+    compile 'info.picocli:picocli:4.5.1'
+    annotationProcessor 'info.picocli:picocli-codegen:4.5.1'
 }
 ```
 
@@ -196,7 +196,7 @@ then replace `annotationProcessor` with `kapt`:
 apply plugin: 'kotlin-kapt' // required
 dependencies {
     // ...
-    kapt 'info.picocli:picocli-codegen:4.5.1-SNAPSHOT'
+    kapt 'info.picocli:picocli-codegen:4.5.1'
 }
 ```
 
@@ -227,7 +227,7 @@ Now, assuming we created a jar named `checksum.jar` containing our compiled `Che
 
 [source,bash]
 ----
-java -cp "picocli-4.5.0.jar:checksum.jar" CheckSum --algorithm SHA-1 hello.txt
+java -cp "picocli-4.5.1.jar:checksum.jar" CheckSum --algorithm SHA-1 hello.txt
 ----
 
 You may want to package your application in such a way that end users can invoke it with a short command like this:
@@ -6457,14 +6457,14 @@ Maven:
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli-spring-boot-starter</artifactId>
-  <version>4.5.1-SNAPSHOT</version>
+  <version>4.5.1</version>
 </dependency>
 ```
 
 Gradle:
 ```
 dependencies {
-    compile "info.picocli:picocli-spring-boot-starter:4.5.1-SNAPSHOT"
+    compile "info.picocli:picocli-spring-boot-starter:4.5.1"
 }
 ```
 
@@ -7009,7 +7009,7 @@ As mentioned in <<Running the Application>>, earlier in this manual, one way to 
 
 [source,bash]
 ----
-java -cp "picocli-4.5.0.jar;myapp.jar" org.myorg.MyMainClass --option=value arg0 arg1
+java -cp "picocli-4.5.1.jar;myapp.jar" org.myorg.MyMainClass --option=value arg0 arg1
 ----
 
 That is quite verbose. You may want to package your application in such a way that end users can invoke it by its command name like this:
@@ -7028,7 +7028,7 @@ On unix-based operating systems, you can ask your users to define an alias. For 
 
 [source,bash]
 ----
-alias mycommand='java -cp "/path/to/picocli-4.5.0.jar:/path/to/myapp.jar" org.myorg.MainClass'
+alias mycommand='java -cp "/path/to/picocli-4.5.1.jar:/path/to/myapp.jar" org.myorg.MainClass'
 ----
 
 Append the above line to your `~/.bashrc` file to make this alias available in every new shell session.
@@ -7171,7 +7171,7 @@ The script body is executed if the user input was valid and did not request usag
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli-groovy:4.5.1-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.5.1')
 @GrabConfig(systemClassLoader=true)
 @Command(name = "myScript",
         mixinStandardHelpOptions = true, // add --help and --version options
@@ -7193,7 +7193,7 @@ assert this.commandLine.commandName == "myScript"
 ----
 
 WARNING: When upgrading scripts to picocli 4.0, just changing the version number is not enough!
-Scripts should use `@Grab('info.picocli:picocli-groovy:4.5.1-SNAPSHOT')`. The old artifact id `@Grab('info.picocli:picocli:4.5.1-SNAPSHOT')` will not work,
+Scripts should use `@Grab('info.picocli:picocli-groovy:4.5.1')`. The old artifact id `@Grab('info.picocli:picocli:4.5.1')` will not work,
 because the `@picocli.groovy.PicocliScript` annotation class and supporting classes have been moved into a separate module, `picocli-groovy`.
 
 ==== Older Versions of Groovy
@@ -7202,7 +7202,7 @@ NOTE: When using a Groovy version older than 2.4.7, use this workaround for the 
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli-groovy:4.5.1-SNAPSHOT')
+@Grab('info.picocli:picocli-groovy:4.5.1')
 @GrabExclude('org.codehaus.groovy:groovy-all') // work around GROOVY-7613
 ...
 ----
@@ -7343,7 +7343,7 @@ See the <<Source,source code>> below. Copy and paste it into a file called `Comm
 
 === Gradle
 ----
-compile 'info.picocli:picocli:4.5.1-SNAPSHOT'
+compile 'info.picocli:picocli:4.5.1'
 ----
 
 === Maven
@@ -7351,19 +7351,19 @@ compile 'info.picocli:picocli:4.5.1-SNAPSHOT'
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.5.1-SNAPSHOT</version>
+  <version>4.5.1</version>
 </dependency>
 ----
 
 === Scala SBT
 ----
-libraryDependencies += "info.picocli" % "picocli" % "4.5.1-SNAPSHOT"
+libraryDependencies += "info.picocli" % "picocli" % "4.5.1"
 ----
 
 === Ivy
 
 ----
-<dependency org="info.picocli" name="picocli" rev="4.5.1-SNAPSHOT" />
+<dependency org="info.picocli" name="picocli" rev="4.5.1" />
 ----
 
 === Source

@@ -526,8 +526,8 @@ table.CodeRay td.code>pre{padding:0}
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 4.5.0,</span>
-<span id="revdate">2020-08-01</span>
+<span id="revnumber">version 4.5.1,</span>
+<span id="revdate">2020-08-26</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -614,207 +614,213 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_handling_errors">9.8. Handling Errors</a></li>
 </ul>
 </li>
-<li><a href="#_parser_configuration">10. Parser Configuration</a>
+<li><a href="#_validation">10. Validation</a>
 <ul class="sectlevel2">
-<li><a href="#_case_sensitivity">10.1. Case Sensitivity</a></li>
-<li><a href="#_abbreviated_options_and_subcommands">10.2. Abbreviated Options and Subcommands</a></li>
-<li><a href="#_overwriting_single_options">10.3. Overwriting Single Options</a></li>
-<li><a href="#_stop_at_positional">10.4. Stop At Positional</a></li>
-<li><a href="#_stop_at_unmatched">10.5. Stop At Unmatched</a></li>
-<li><a href="#_unmatched_input">10.6. Unmatched Input</a></li>
-<li><a href="#unmatched-annotation">10.7. <code>@Unmatched</code> annotation</a></li>
-<li><a href="#_unknown_options">10.8. Unknown Options</a></li>
-<li><a href="#_option_names_as_option_values">10.9. Option Names as Option Values</a></li>
-<li><a href="#_toggle_boolean_flags">10.10. Toggle Boolean Flags</a></li>
-<li><a href="#_posix_clustered_short_options">10.11. POSIX Clustered Short Options</a></li>
-<li><a href="#_lenient_mode">10.12. Lenient Mode</a></li>
-<li><a href="#_quoted_values">10.13. Quoted Values</a></li>
-<li><a href="#_customizing_negatable_options">10.14. Customizing Negatable Options</a></li>
-<li><a href="#_custom_parameter_processing">10.15. Custom Parameter Processing</a></li>
+<li><a href="#_built_in_validation">10.1. Built-in Validation</a></li>
+<li><a href="#_custom_validation">10.2. Custom Validation</a></li>
 </ul>
 </li>
-<li><a href="#_help">11. Help</a>
+<li><a href="#_parser_configuration">11. Parser Configuration</a>
 <ul class="sectlevel2">
-<li><a href="#_help_options">11.1. Help Options</a></li>
-<li><a href="#_mixin_standard_help_options">11.2. Mixin Standard Help Options</a></li>
-<li><a href="#_built_in_help_subcommand">11.3. Built-in Help Subcommand</a></li>
-<li><a href="#_custom_help_subcommands">11.4. Custom Help Subcommands</a></li>
-<li><a href="#_printing_help_automatically">11.5. Printing Help Automatically</a></li>
+<li><a href="#_case_sensitivity">11.1. Case Sensitivity</a></li>
+<li><a href="#_abbreviated_options_and_subcommands">11.2. Abbreviated Options and Subcommands</a></li>
+<li><a href="#_overwriting_single_options">11.3. Overwriting Single Options</a></li>
+<li><a href="#_stop_at_positional">11.4. Stop At Positional</a></li>
+<li><a href="#_stop_at_unmatched">11.5. Stop At Unmatched</a></li>
+<li><a href="#_unmatched_input">11.6. Unmatched Input</a></li>
+<li><a href="#unmatched-annotation">11.7. <code>@Unmatched</code> annotation</a></li>
+<li><a href="#_unknown_options">11.8. Unknown Options</a></li>
+<li><a href="#_option_names_as_option_values">11.9. Option Names as Option Values</a></li>
+<li><a href="#_toggle_boolean_flags">11.10. Toggle Boolean Flags</a></li>
+<li><a href="#_posix_clustered_short_options">11.11. POSIX Clustered Short Options</a></li>
+<li><a href="#_lenient_mode">11.12. Lenient Mode</a></li>
+<li><a href="#_quoted_values">11.13. Quoted Values</a></li>
+<li><a href="#_customizing_negatable_options">11.14. Customizing Negatable Options</a></li>
+<li><a href="#_custom_parameter_processing">11.15. Custom Parameter Processing</a></li>
 </ul>
 </li>
-<li><a href="#_version_help">12. Version Help</a>
+<li><a href="#_help">12. Help</a>
 <ul class="sectlevel2">
-<li><a href="#_static_version_information">12.1. Static Version Information</a></li>
-<li><a href="#_dynamic_version_information">12.2. Dynamic Version Information</a></li>
+<li><a href="#_help_options">12.1. Help Options</a></li>
+<li><a href="#_mixin_standard_help_options">12.2. Mixin Standard Help Options</a></li>
+<li><a href="#_built_in_help_subcommand">12.3. Built-in Help Subcommand</a></li>
+<li><a href="#_custom_help_subcommands">12.4. Custom Help Subcommands</a></li>
+<li><a href="#_printing_help_automatically">12.5. Printing Help Automatically</a></li>
 </ul>
 </li>
-<li><a href="#_usage_help">13. Usage Help</a>
+<li><a href="#_version_help">13. Version Help</a>
 <ul class="sectlevel2">
-<li><a href="#_compact_example">13.1. Compact Example</a></li>
-<li><a href="#_command_name">13.2. Command Name</a></li>
-<li><a href="#_parameter_labels">13.3. Parameter Labels</a></li>
-<li><a href="#_unsorted_option_list">13.4. Unsorted Option List</a></li>
-<li><a href="#_reordering_options">13.5. Reordering Options</a></li>
-<li><a href="#_split_synopsis_label">13.6. Split Synopsis Label</a></li>
-<li><a href="#_abbreviated_synopsis">13.7. Abbreviated Synopsis</a></li>
-<li><a href="#_custom_synopsis">13.8. Custom Synopsis</a></li>
-<li><a href="#_synopsis_subcommand_label">13.9. Synopsis Subcommand Label</a></li>
-<li><a href="#_header_and_footer">13.10. Header and Footer</a></li>
-<li><a href="#_exit_code_list">13.11. Exit Code List</a></li>
-<li><a href="#_format_specifiers">13.12. Format Specifiers</a></li>
-<li><a href="#_section_headings">13.13. Section Headings</a></li>
-<li><a href="#_expanded_example">13.14. Expanded Example</a></li>
-<li><a href="#_option_parameter_separators">13.15. Option-Parameter Separators</a></li>
-<li><a href="#_hidden_options_and_parameters">13.16. Hidden Options and Parameters</a></li>
-<li><a href="#_show_at_files">13.17. Show At Files</a></li>
-<li><a href="#_show_end_of_options">13.18. Show End of Options</a></li>
-<li><a href="#_show_default_values">13.19. Show Default Values</a></li>
-<li><a href="#_required_option_marker">13.20. Required-Option Marker</a></li>
-<li><a href="#_usage_width">13.21. Usage Width</a></li>
-<li><a href="#_auto_terminal_width">13.22. Auto (Terminal) Width</a></li>
-<li><a href="#_long_option_column_width">13.23. Long Option Column Width</a></li>
+<li><a href="#_static_version_information">13.1. Static Version Information</a></li>
+<li><a href="#_dynamic_version_information">13.2. Dynamic Version Information</a></li>
 </ul>
 </li>
-<li><a href="#_ansi_colors_and_styles">14. ANSI Colors and Styles</a>
+<li><a href="#_usage_help">14. Usage Help</a>
 <ul class="sectlevel2">
-<li><a href="#_colorized_example">14.1. Colorized Example</a></li>
-<li><a href="#_usage_help_with_styles_and_colors">14.2. Usage Help with Styles and Colors</a></li>
-<li><a href="#_styles_and_colors_in_application_output">14.3. Styles and Colors in Application Output</a></li>
-<li><a href="#_more_colors">14.4. More Colors</a></li>
-<li><a href="#_configuring_fixed_elements">14.5. Configuring Fixed Elements</a></li>
-<li><a href="#_supported_platforms">14.6. Supported Platforms</a></li>
-<li><a href="#_forcing_ansi_onoff">14.7. Forcing ANSI On/Off</a></li>
-<li><a href="#_heuristics_for_enabling_ansi">14.8. Heuristics for Enabling ANSI</a></li>
+<li><a href="#_compact_example">14.1. Compact Example</a></li>
+<li><a href="#_command_name">14.2. Command Name</a></li>
+<li><a href="#_parameter_labels">14.3. Parameter Labels</a></li>
+<li><a href="#_unsorted_option_list">14.4. Unsorted Option List</a></li>
+<li><a href="#_reordering_options">14.5. Reordering Options</a></li>
+<li><a href="#_split_synopsis_label">14.6. Split Synopsis Label</a></li>
+<li><a href="#_abbreviated_synopsis">14.7. Abbreviated Synopsis</a></li>
+<li><a href="#_custom_synopsis">14.8. Custom Synopsis</a></li>
+<li><a href="#_synopsis_subcommand_label">14.9. Synopsis Subcommand Label</a></li>
+<li><a href="#_header_and_footer">14.10. Header and Footer</a></li>
+<li><a href="#_exit_code_list">14.11. Exit Code List</a></li>
+<li><a href="#_format_specifiers">14.12. Format Specifiers</a></li>
+<li><a href="#_section_headings">14.13. Section Headings</a></li>
+<li><a href="#_expanded_example">14.14. Expanded Example</a></li>
+<li><a href="#_option_parameter_separators">14.15. Option-Parameter Separators</a></li>
+<li><a href="#_hidden_options_and_parameters">14.16. Hidden Options and Parameters</a></li>
+<li><a href="#_show_at_files">14.17. Show At Files</a></li>
+<li><a href="#_show_end_of_options">14.18. Show End of Options</a></li>
+<li><a href="#_show_default_values">14.19. Show Default Values</a></li>
+<li><a href="#_required_option_marker">14.20. Required-Option Marker</a></li>
+<li><a href="#_usage_width">14.21. Usage Width</a></li>
+<li><a href="#_auto_terminal_width">14.22. Auto (Terminal) Width</a></li>
+<li><a href="#_long_option_column_width">14.23. Long Option Column Width</a></li>
 </ul>
 </li>
-<li><a href="#_usage_help_api">15. Usage Help API</a>
+<li><a href="#_ansi_colors_and_styles">15. ANSI Colors and Styles</a>
 <ul class="sectlevel2">
-<li><a href="#_reordering_sections">15.1. Reordering Sections</a></li>
-<li><a href="#_custom_layout">15.2. Custom Layout</a></li>
+<li><a href="#_colorized_example">15.1. Colorized Example</a></li>
+<li><a href="#_usage_help_with_styles_and_colors">15.2. Usage Help with Styles and Colors</a></li>
+<li><a href="#_styles_and_colors_in_application_output">15.3. Styles and Colors in Application Output</a></li>
+<li><a href="#_more_colors">15.4. More Colors</a></li>
+<li><a href="#_configuring_fixed_elements">15.5. Configuring Fixed Elements</a></li>
+<li><a href="#_supported_platforms">15.6. Supported Platforms</a></li>
+<li><a href="#_forcing_ansi_onoff">15.7. Forcing ANSI On/Off</a></li>
+<li><a href="#_heuristics_for_enabling_ansi">15.8. Heuristics for Enabling ANSI</a></li>
 </ul>
 </li>
-<li><a href="#_subcommands">16. Subcommands</a>
+<li><a href="#_usage_help_api">16. Usage Help API</a>
 <ul class="sectlevel2">
-<li><a href="#_registering_subcommands_declaratively">16.1. Registering Subcommands Declaratively</a></li>
-<li><a href="#_registering_subcommands_programmatically">16.2. Registering Subcommands Programmatically</a></li>
-<li><a href="#_subcommand_aliases">16.3. Subcommand Aliases</a></li>
-<li><a href="#_subcommands_as_methods">16.4. Subcommands as Methods</a></li>
-<li><a href="#_executing_subcommands">16.5. Executing Subcommands</a></li>
-<li><a href="#_initialization_before_execution">16.6. Initialization Before Execution</a></li>
-<li><a href="#parentcommand-annotation">16.7. <code>@ParentCommand</code> Annotation</a></li>
-<li><a href="#_inherited_options">16.8. Inherited Options</a></li>
-<li><a href="#_manually_parsing_subcommands">16.9. Manually Parsing Subcommands</a></li>
-<li><a href="#_nested_sub_subcommands">16.10. Nested sub-Subcommands</a></li>
-<li><a href="#_repeatable_subcommands">16.11. Repeatable Subcommands</a></li>
-<li><a href="#_usage_help_for_subcommands">16.12. Usage Help for Subcommands</a></li>
-<li><a href="#_hidden_subcommands">16.13. Hidden Subcommands</a></li>
-<li><a href="#_help_subcommands">16.14. Help Subcommands</a></li>
-<li><a href="#_required_subcommands">16.15. Required Subcommands</a></li>
+<li><a href="#_reordering_sections">16.1. Reordering Sections</a></li>
+<li><a href="#_custom_layout">16.2. Custom Layout</a></li>
 </ul>
 </li>
-<li><a href="#_reuse">17. Reuse</a>
+<li><a href="#_subcommands">17. Subcommands</a>
 <ul class="sectlevel2">
-<li><a href="#_subclassing">17.1. Subclassing</a></li>
-<li><a href="#_mixins">17.2. Mixins</a></li>
-<li><a href="#_use_case_configure_log_level_with_a_global_option">17.3. Use Case: Configure Log Level with a Global Option</a></li>
-<li><a href="#_sharing_options_in_subcommands">17.4. Sharing Options in Subcommands</a></li>
-<li><a href="#_reuse_combinations">17.5. Reuse Combinations</a></li>
+<li><a href="#_registering_subcommands_declaratively">17.1. Registering Subcommands Declaratively</a></li>
+<li><a href="#_registering_subcommands_programmatically">17.2. Registering Subcommands Programmatically</a></li>
+<li><a href="#_subcommand_aliases">17.3. Subcommand Aliases</a></li>
+<li><a href="#_subcommands_as_methods">17.4. Subcommands as Methods</a></li>
+<li><a href="#_executing_subcommands">17.5. Executing Subcommands</a></li>
+<li><a href="#_initialization_before_execution">17.6. Initialization Before Execution</a></li>
+<li><a href="#parentcommand-annotation">17.7. <code>@ParentCommand</code> Annotation</a></li>
+<li><a href="#_inherited_options">17.8. Inherited Options</a></li>
+<li><a href="#_manually_parsing_subcommands">17.9. Manually Parsing Subcommands</a></li>
+<li><a href="#_nested_sub_subcommands">17.10. Nested sub-Subcommands</a></li>
+<li><a href="#_repeatable_subcommands">17.11. Repeatable Subcommands</a></li>
+<li><a href="#_usage_help_for_subcommands">17.12. Usage Help for Subcommands</a></li>
+<li><a href="#_hidden_subcommands">17.13. Hidden Subcommands</a></li>
+<li><a href="#_help_subcommands">17.14. Help Subcommands</a></li>
+<li><a href="#_required_subcommands">17.15. Required Subcommands</a></li>
 </ul>
 </li>
-<li><a href="#_internationalization">18. Internationalization</a>
+<li><a href="#_reuse">18. Reuse</a>
 <ul class="sectlevel2">
-<li><a href="#_configuration">18.1. Configuration</a></li>
-<li><a href="#_example_resource_bundle">18.2. Example Resource Bundle</a></li>
-<li><a href="#_shared_resource_bundles">18.3. Shared Resource Bundles</a></li>
-<li><a href="#_localizing_the_built_in_help">18.4. Localizing the Built-In Help</a></li>
-<li><a href="#_localizing_default_values">18.5. Localizing Default Values</a></li>
+<li><a href="#_subclassing">18.1. Subclassing</a></li>
+<li><a href="#_mixins">18.2. Mixins</a></li>
+<li><a href="#_use_case_configure_log_level_with_a_global_option">18.3. Use Case: Configure Log Level with a Global Option</a></li>
+<li><a href="#_sharing_options_in_subcommands">18.4. Sharing Options in Subcommands</a></li>
+<li><a href="#_reuse_combinations">18.5. Reuse Combinations</a></li>
 </ul>
 </li>
-<li><a href="#_variable_interpolation">19. Variable Interpolation</a>
+<li><a href="#_internationalization">19. Internationalization</a>
 <ul class="sectlevel2">
-<li><a href="#_variable_interpolation_example">19.1. Variable Interpolation Example</a></li>
-<li><a href="#_predefined_variables">19.2. Predefined Variables</a></li>
-<li><a href="#_custom_variables">19.3. Custom Variables</a></li>
-<li><a href="#_default_values_for_custom_variables">19.4. Default Values for Custom Variables</a></li>
-<li><a href="#_escaping_variables">19.5. Escaping Variables</a></li>
-<li><a href="#_switching_off_variable_interpolation">19.6. Switching Off Variable Interpolation</a></li>
-<li><a href="#_limitations_of_variable_interpolation">19.7. Limitations of Variable Interpolation</a></li>
+<li><a href="#_configuration">19.1. Configuration</a></li>
+<li><a href="#_example_resource_bundle">19.2. Example Resource Bundle</a></li>
+<li><a href="#_shared_resource_bundles">19.3. Shared Resource Bundles</a></li>
+<li><a href="#_localizing_the_built_in_help">19.4. Localizing the Built-In Help</a></li>
+<li><a href="#_localizing_default_values">19.5. Localizing Default Values</a></li>
 </ul>
 </li>
-<li><a href="#_tips_tricks">20. Tips &amp; Tricks</a>
+<li><a href="#_variable_interpolation">20. Variable Interpolation</a>
 <ul class="sectlevel2">
-<li><a href="#_programmatic_api">20.1. Programmatic API</a></li>
-<li><a href="#option-parameters-methods">20.2. <code>@Option</code> and <code>@Parameters</code> Methods</a></li>
-<li><a href="#command-methods">20.3.  <code>@Command</code> Methods</a></li>
-<li><a href="#spec-annotation">20.4.  <code>@Spec</code> Annotation</a></li>
-<li><a href="#_custom_factory">20.5. Custom Factory</a></li>
-<li><a href="#_automatic_parameter_indexes">20.6. Automatic Parameter Indexes</a></li>
-<li><a href="#_improved_support_for_chinese_japanese_and_korean">20.7. Improved Support for Chinese, Japanese and Korean</a></li>
-<li><a href="#_boolean_options_with_parameters">20.8. Boolean Options with Parameters</a></li>
-<li><a href="#_hexadecimal_values">20.9. Hexadecimal Values</a></li>
-<li><a href="#_option_parameter_separators_2">20.10. Option-Parameter Separators</a></li>
-<li><a href="#_best_practices_for_command_line_interfaces">20.11. Best Practices for Command Line Interfaces</a></li>
-<li><a href="#_text_blocks_for_java_15">20.12. Text Blocks for Java 15</a></li>
+<li><a href="#_variable_interpolation_example">20.1. Variable Interpolation Example</a></li>
+<li><a href="#_predefined_variables">20.2. Predefined Variables</a></li>
+<li><a href="#_custom_variables">20.3. Custom Variables</a></li>
+<li><a href="#_default_values_for_custom_variables">20.4. Default Values for Custom Variables</a></li>
+<li><a href="#_escaping_variables">20.5. Escaping Variables</a></li>
+<li><a href="#_switching_off_variable_interpolation">20.6. Switching Off Variable Interpolation</a></li>
+<li><a href="#_limitations_of_variable_interpolation">20.7. Limitations of Variable Interpolation</a></li>
 </ul>
 </li>
-<li><a href="#_dependency_injection">21. Dependency Injection</a>
+<li><a href="#_tips_tricks">21. Tips &amp; Tricks</a>
 <ul class="sectlevel2">
-<li><a href="#_guice_example">21.1. Guice Example</a></li>
-<li><a href="#_spring_boot_example">21.2. Spring Boot Example</a></li>
-<li><a href="#_micronaut_example">21.3. Micronaut Example</a></li>
-<li><a href="#_cdi_2_0_jsr_365">21.4. CDI 2.0 (JSR 365)</a></li>
-<li><a href="#_quarkus_example">21.5. Quarkus Example</a></li>
+<li><a href="#_programmatic_api">21.1. Programmatic API</a></li>
+<li><a href="#option-parameters-methods">21.2. <code>@Option</code> and <code>@Parameters</code> Methods</a></li>
+<li><a href="#command-methods">21.3.  <code>@Command</code> Methods</a></li>
+<li><a href="#spec-annotation">21.4.  <code>@Spec</code> Annotation</a></li>
+<li><a href="#_custom_factory">21.5. Custom Factory</a></li>
+<li><a href="#_automatic_parameter_indexes">21.6. Automatic Parameter Indexes</a></li>
+<li><a href="#_improved_support_for_chinese_japanese_and_korean">21.7. Improved Support for Chinese, Japanese and Korean</a></li>
+<li><a href="#_boolean_options_with_parameters">21.8. Boolean Options with Parameters</a></li>
+<li><a href="#_hexadecimal_values">21.9. Hexadecimal Values</a></li>
+<li><a href="#_option_parameter_separators_2">21.10. Option-Parameter Separators</a></li>
+<li><a href="#_best_practices_for_command_line_interfaces">21.11. Best Practices for Command Line Interfaces</a></li>
+<li><a href="#_text_blocks_for_java_15">21.12. Text Blocks for Java 15</a></li>
 </ul>
 </li>
-<li><a href="#_java_9_jpms_modules">22. Java 9 JPMS Modules</a>
+<li><a href="#_dependency_injection">22. Dependency Injection</a>
 <ul class="sectlevel2">
-<li><a href="#_module_configuration">22.1. Module Configuration</a></li>
+<li><a href="#_guice_example">22.1. Guice Example</a></li>
+<li><a href="#_spring_boot_example">22.2. Spring Boot Example</a></li>
+<li><a href="#_micronaut_example">22.3. Micronaut Example</a></li>
+<li><a href="#_cdi_2_0_jsr_365">22.4. CDI 2.0 (JSR 365)</a></li>
+<li><a href="#_quarkus_example">22.5. Quarkus Example</a></li>
 </ul>
 </li>
-<li><a href="#_osgi_bundle">23. OSGi Bundle</a></li>
-<li><a href="#_tracing">24. Tracing</a></li>
-<li><a href="#_tab_autocomplete">25. TAB Autocomplete</a></li>
-<li><a href="#_generate_man_page_documentation">26. Generate Man Page Documentation</a></li>
-<li><a href="#_testing_your_application">27. Testing Your Application</a>
+<li><a href="#_java_9_jpms_modules">23. Java 9 JPMS Modules</a>
 <ul class="sectlevel2">
-<li><a href="#_black_box_and_white_box_testing">27.1. Black Box and White Box Testing</a></li>
-<li><a href="#_testing_the_output">27.2. Testing the Output</a></li>
-<li><a href="#_testing_the_exit_code">27.3. Testing the Exit Code</a></li>
-<li><a href="#_testing_environment_variables">27.4. Testing Environment Variables</a></li>
+<li><a href="#_module_configuration">23.1. Module Configuration</a></li>
 </ul>
 </li>
-<li><a href="#_packaging_your_application">28. Packaging Your Application</a>
+<li><a href="#_osgi_bundle">24. OSGi Bundle</a></li>
+<li><a href="#_tracing">25. Tracing</a></li>
+<li><a href="#_tab_autocomplete">26. TAB Autocomplete</a></li>
+<li><a href="#_generate_man_page_documentation">27. Generate Man Page Documentation</a></li>
+<li><a href="#_testing_your_application">28. Testing Your Application</a>
 <ul class="sectlevel2">
-<li><a href="#_alias">28.1. Alias</a></li>
-<li><a href="#_launcher_script">28.2.  Launcher Script</a></li>
-<li><a href="#_graalvm_native_image">28.3. GraalVM Native Image</a></li>
-<li><a href="#_launch4j">28.4. launch4j</a></li>
-<li><a href="#_javapackager_java_8">28.5. javapackager (Java 8)</a></li>
-<li><a href="#_jlink_java_9">28.6. jlink (Java 9+)</a></li>
-<li><a href="#_jpackage">28.7. jpackage</a></li>
-<li><a href="#_jbang">28.8. jbang</a></li>
+<li><a href="#_black_box_and_white_box_testing">28.1. Black Box and White Box Testing</a></li>
+<li><a href="#_testing_the_output">28.2. Testing the Output</a></li>
+<li><a href="#_testing_the_exit_code">28.3. Testing the Exit Code</a></li>
+<li><a href="#_testing_environment_variables">28.4. Testing Environment Variables</a></li>
 </ul>
 </li>
-<li><a href="#_picocli_in_other_languages">29. Picocli in Other Languages</a>
+<li><a href="#_packaging_your_application">29. Packaging Your Application</a>
 <ul class="sectlevel2">
-<li><a href="#_groovy">29.1. Groovy</a></li>
-<li><a href="#_kotlin">29.2. Kotlin</a></li>
-<li><a href="#_scala">29.3. Scala</a></li>
+<li><a href="#_alias">29.1. Alias</a></li>
+<li><a href="#_launcher_script">29.2.  Launcher Script</a></li>
+<li><a href="#_graalvm_native_image">29.3. GraalVM Native Image</a></li>
+<li><a href="#_launch4j">29.4. launch4j</a></li>
+<li><a href="#_javapackager_java_8">29.5. javapackager (Java 8)</a></li>
+<li><a href="#_jlink_java_9">29.6. jlink (Java 9+)</a></li>
+<li><a href="#_jpackage">29.7. jpackage</a></li>
+<li><a href="#_jbang">29.8. jbang</a></li>
 </ul>
 </li>
-<li><a href="#_api_javadoc">30. API Javadoc</a></li>
-<li><a href="#_github_project">31. GitHub Project</a></li>
-<li><a href="#_issue_tracker">32. Issue Tracker</a></li>
-<li><a href="#_mailing_list">33. Mailing List</a></li>
-<li><a href="#_license">34. License</a></li>
-<li><a href="#_releases">35. Releases</a></li>
-<li><a href="#_download">36. Download</a>
+<li><a href="#_picocli_in_other_languages">30. Picocli in Other Languages</a>
 <ul class="sectlevel2">
-<li><a href="#_gradle_3">36.1. Gradle</a></li>
-<li><a href="#_maven_3">36.2. Maven</a></li>
-<li><a href="#_scala_sbt">36.3. Scala SBT</a></li>
-<li><a href="#_ivy">36.4. Ivy</a></li>
-<li><a href="#_source">36.5. Source</a></li>
+<li><a href="#_groovy">30.1. Groovy</a></li>
+<li><a href="#_kotlin">30.2. Kotlin</a></li>
+<li><a href="#_scala">30.3. Scala</a></li>
+</ul>
+</li>
+<li><a href="#_api_javadoc">31. API Javadoc</a></li>
+<li><a href="#_github_project">32. GitHub Project</a></li>
+<li><a href="#_issue_tracker">33. Issue Tracker</a></li>
+<li><a href="#_mailing_list">34. Mailing List</a></li>
+<li><a href="#_license">35. License</a></li>
+<li><a href="#_releases">36. Releases</a></li>
+<li><a href="#_download">37. Download</a>
+<ul class="sectlevel2">
+<li><a href="#_gradle_3">37.1. Gradle</a></li>
+<li><a href="#_maven_3">37.2. Maven</a></li>
+<li><a href="#_scala_sbt">37.3. Scala SBT</a></li>
+<li><a href="#_ivy">37.4. Ivy</a></li>
+<li><a href="#_source">37.5. Source</a></li>
 </ul>
 </li>
 </ul>
@@ -951,7 +957,7 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <h4 id="_gradle"><a class="anchor" href="#_gradle"></a>2.1.1. Gradle</h4>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.5.0'</pre>
+<pre>compile 'info.picocli:picocli:4.5.1'</pre>
 </div>
 </div>
 </div>
@@ -962,7 +968,7 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.5.0&lt;/version&gt;
+  &lt;version&gt;4.5.1&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -1027,7 +1033,7 @@ In most cases no further configuration is needed when generating a native image.
       &lt;path&gt;
         &lt;groupId&gt;info.picocli&lt;/groupId&gt;
         &lt;artifactId&gt;picocli-codegen&lt;/artifactId&gt;
-        &lt;version&gt;4.5.0&lt;/version&gt;
+        &lt;version&gt;4.5.1&lt;/version&gt;
       &lt;/path&gt;
     &lt;/annotationProcessorPaths&gt;
     &lt;compilerArgs&gt;
@@ -1046,8 +1052,8 @@ In most cases no further configuration is needed when generating a native image.
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code>dependencies {
-    compile 'info.picocli:picocli:4.5.0'
-    annotationProcessor 'info.picocli:picocli-codegen:4.5.0'
+    compile 'info.picocli:picocli:4.5.1'
+    annotationProcessor 'info.picocli:picocli-codegen:4.5.1'
 }</code></pre>
 </div>
 </div>
@@ -1070,7 +1076,7 @@ then replace <code>annotationProcessor</code> with <code>kapt</code>:</p>
 <pre class="CodeRay highlight"><code>apply plugin: 'kotlin-kapt' // required
 dependencies {
     // ...
-    kapt 'info.picocli:picocli-codegen:4.5.0'
+    kapt 'info.picocli:picocli-codegen:4.5.1'
 }</code></pre>
 </div>
 </div>
@@ -1113,7 +1119,7 @@ dependencies {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">java -cp &quot;picocli-4.5.0.jar:checksum.jar&quot; CheckSum --algorithm SHA-1 hello.txt</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">java -cp &quot;picocli-4.5.1.jar:checksum.jar&quot; CheckSum --algorithm SHA-1 hello.txt</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1915,7 +1921,7 @@ cl.registerConverter(<span class="predefined-type">Cipher</span>.class, s -&gt; 
 </div>
 </div>
 <div class="paragraph">
-<p>After registering custom converters, call the <code>execute(String&#8230;&#8203;)</code> or parseArgs(String&#8230;&#8203;)` method on the <code>CommandLine</code> instance where the converters are registered. (The static <code>populateCommand</code> method cannot be used.) For example:</p>
+<p>After registering custom converters, call the <code>execute(String&#8230;&#8203;)</code> or <code>parseArgs(String&#8230;&#8203;)</code> method on the <code>CommandLine</code> instance where the converters are registered. (The static <code>populateCommand</code> method cannot be used.) For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -4153,10 +4159,233 @@ This can be accomplished by installing a custom <code>IExecutionExceptionHandler
 </div>
 </div>
 <div class="sect1">
-<h2 id="_parser_configuration"><a class="anchor" href="#_parser_configuration"></a>10. Parser Configuration</h2>
+<h2 id="_validation"><a class="anchor" href="#_validation"></a>10. Validation</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_case_sensitivity"><a class="anchor" href="#_case_sensitivity"></a>10.1. Case Sensitivity</h3>
+<h3 id="_built_in_validation"><a class="anchor" href="#_built_in_validation"></a>10.1. Built-in Validation</h3>
+<div class="paragraph">
+<p>Picocli provides some limited form of validation:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#_required_options">required options</a></p>
+</li>
+<li>
+<p><a href="#_required_parameters">required positional parameters</a></p>
+</li>
+<li>
+<p>options with one or more <a href="#_arity">required parameters</a></p>
+</li>
+<li>
+<p><a href="#_overwriting_single_options">allow/disallow</a> single-value options being specified multiple times</p>
+</li>
+<li>
+<p><a href="#_mutually_dependent_options">mutually dependent</a> options</p>
+</li>
+<li>
+<p><a href="#_mutually_exclusive_options">mutually exclusive</a> options</p>
+</li>
+<li>
+<p><a href="#_repeating_composite_argument_groups">repeating groups</a> of exclusive or dependent options</p>
+</li>
+<li>
+<p><a href="#_required_subcommands">required subcommands</a></p>
+</li>
+<li>
+<p><a href="#_handling_invalid_input">type conversion</a></p>
+</li>
+<li>
+<p><a href="#_unmatched_input">unmatched input</a></p>
+</li>
+<li>
+<p><a href="#_unknown_options">unknown options</a></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_custom_validation"><a class="anchor" href="#_custom_validation"></a>10.2. Custom Validation</h3>
+<div class="paragraph">
+<p>Most applications will need to do additional validations to verify some business rules.</p>
+</div>
+<div class="paragraph">
+<p>Applications that use the <a href="#execute"><code>execute</code> API</a> may find it useful to throw a <code>ParameterException</code> when validation fails:
+any <code>ParameterExceptions</code> will be caught and handled by picocli&#8217;s built-in <a href="#_invalid_user_input">error handler</a>, which shows the error message in bold red, and is followed by the usage help message.</p>
+</div>
+<div class="paragraph">
+<p>To construct a <code>ParameterException</code>, you need the <code>CommandLine</code> instance where the error occurred.
+This can be obtained from the <code>CommandSpec</code>, which in turn can be obtained from a <a href="#spec-annotation"><code>@Spec</code>-annotated</a> field.
+The sections below show some examples.</p>
+</div>
+<div class="sect3">
+<h4 id="_single_value_validation"><a class="anchor" href="#_single_value_validation"></a>10.2.1. Single Value Validation</h4>
+<div class="paragraph">
+<p>Methods annotated with <code>@Option</code> and <code>@Parameters</code> can do simple input validation by throwing a <code>ParameterException</code> when invalid values are specified on the command line.</p>
+</div>
+<div class="paragraph">
+<p>The following example validates that the value specified for the <code>--prime</code> option is a prime number:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="type">class</span> <span class="class">SingleOptionValidationExample</span> {
+    <span class="directive">private</span> <span class="type">int</span> prime;
+
+    <span class="annotation">@Spec</span> CommandSpec spec; <span class="comment">// injected by picocli</span>
+
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-p</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--prime</span><span class="delimiter">&quot;</span></span>}, paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">NUMBER</span><span class="delimiter">&quot;</span></span>)
+    <span class="directive">public</span> <span class="type">void</span> setPrimeNumber(<span class="type">int</span> value) {
+        <span class="type">boolean</span> invalid = <span class="predefined-constant">false</span>;
+        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="integer">2</span>; i &lt;= value / <span class="integer">2</span>; i++) {
+            <span class="keyword">if</span> (value % i == <span class="integer">0</span>) {
+                invalid = <span class="predefined-constant">true</span>;
+                <span class="keyword">break</span>;
+            }
+        }
+        <span class="keyword">if</span> (invalid) {
+            <span class="keyword">throw</span> <span class="keyword">new</span> ParameterException(spec.commandLine(),
+                    <span class="predefined-type">String</span>.format(<span class="string"><span class="delimiter">&quot;</span><span class="content">Invalid value '%s' for option '--p': </span><span class="delimiter">&quot;</span></span> +
+                            <span class="string"><span class="delimiter">&quot;</span><span class="content">value is not a prime number.</span><span class="delimiter">&quot;</span></span>, value));
+        }
+    }
+    <span class="comment">// ...</span>
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_validating_option_combinations"><a class="anchor" href="#_validating_option_combinations"></a>10.2.2. Validating Option Combinations</h4>
+<div class="paragraph">
+<p>Another common scenario is that the combination of multiple options and positional parameters is valid.
+One way to accomplish this is to perform such validation at the beginning of the business logic.</p>
+</div>
+<div class="paragraph">
+<p>The following example validates that at least one of the <code>--xml</code>, <code>--csv</code>, or <code>--json</code> options is specified:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myapp</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">myapp 0.1</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">MultiOptionValidationExample</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+    <span class="annotation">@Option</span>(name=<span class="string"><span class="delimiter">&quot;</span><span class="content">--xml</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; xmlFiles;
+    <span class="annotation">@Option</span>(name=<span class="string"><span class="delimiter">&quot;</span><span class="content">--csv</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; csvFiles;
+    <span class="annotation">@Option</span>(name=<span class="string"><span class="delimiter">&quot;</span><span class="content">--json</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; jsonFiles;
+
+    <span class="annotation">@Spec</span> CommandSpec spec; <span class="comment">// injected by picocli</span>
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
+        <span class="predefined-type">System</span>.exit(<span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MultiOptionValidationExample()).execute(args));
+    }
+
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        validate();
+
+        <span class="comment">// remaining business logic here</span>
+    }
+
+    <span class="directive">private</span> <span class="type">void</span> validate() {
+        <span class="keyword">if</span> (missing(xmlFiles) &amp;&amp; missing(csvFiles) &amp;&amp; missing(jsonFiles)) {
+            <span class="keyword">throw</span> <span class="keyword">new</span> ParameterException(spec.commandLine(),
+                    <span class="string"><span class="delimiter">&quot;</span><span class="content">Missing option: at least one of the </span><span class="delimiter">&quot;</span></span> +
+                    <span class="string"><span class="delimiter">&quot;</span><span class="content">'--xml', '--csv', or '--json' options must be specified.</span><span class="delimiter">&quot;</span></span>);
+        }
+    }
+
+    <span class="directive">private</span> <span class="type">void</span> missing(<span class="predefined-type">List</span>&lt;?&gt; list) {
+        <span class="keyword">return</span> list == <span class="predefined-constant">null</span> || list.isEmpty();
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_jsr_380_beanvalidation"><a class="anchor" href="#_jsr_380_beanvalidation"></a>10.2.3. JSR-380 BeanValidation</h4>
+<div class="paragraph">
+<p>If you want to keep your validation declarative and annotation-based, take a look at <a href="https://jcp.org/en/jsr/detail?id=380">JSR 380</a>.</p>
+</div>
+<div class="paragraph">
+<p>JSR-380 is a specification of the Java API for bean validation, part of JavaEE and JavaSE, which ensures that the properties of a bean meet specific criteria, using annotations such as <code>@NotNull</code>, <code>@Min</code>, and <code>@Max</code>.</p>
+</div>
+<div class="paragraph">
+<p>The picocli wiki has a <a href="https://github.com/remkop/picocli/wiki/JSR-380-BeanValidation">full example</a>, below is a snippet:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">picocli.CommandLine</span>;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.Model.CommandSpec</span>;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine</span>.*;
+
+<span class="keyword">import</span> <span class="include">javax.validation.ConstraintViolation</span>;
+<span class="keyword">import</span> <span class="include">javax.validation.Validation</span>;
+<span class="keyword">import</span> <span class="include">javax.validation.Validator</span>;
+<span class="keyword">import</span> <span class="include">javax.validation.constraints</span>.*;
+<span class="keyword">import</span> <span class="include">java.util.Arrays</span>;
+<span class="keyword">import</span> <span class="include">java.util.List</span>;
+<span class="keyword">import</span> <span class="include">java.util.Set</span>;
+
+<span class="comment">// Example inspired by https://www.baeldung.com/javax-validation</span>
+<span class="directive">public</span> <span class="type">class</span> <span class="class">User</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+
+    <span class="annotation">@NotNull</span>(message = <span class="string"><span class="delimiter">&quot;</span><span class="content">Name cannot be null</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-n</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--name</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">mandatory</span><span class="delimiter">&quot;</span></span>)
+    <span class="directive">private</span> <span class="predefined-type">String</span> name;
+
+    <span class="annotation">@Min</span>(value = <span class="integer">18</span>, message = <span class="string"><span class="delimiter">&quot;</span><span class="content">Age should not be less than 18</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Max</span>(value = <span class="integer">150</span>, message = <span class="string"><span class="delimiter">&quot;</span><span class="content">Age should not be greater than 150</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-a</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--age</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">between 18-150</span><span class="delimiter">&quot;</span></span>)
+    <span class="directive">private</span> <span class="type">int</span> age;
+
+    <span class="annotation">@Email</span>(message = <span class="string"><span class="delimiter">&quot;</span><span class="content">Email should be valid</span><span class="delimiter">&quot;</span></span>)
+    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-e</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--email</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">valid email</span><span class="delimiter">&quot;</span></span>)
+    <span class="directive">private</span> <span class="predefined-type">String</span> email;
+
+    <span class="annotation">@Spec</span> CommandSpec spec;
+
+    <span class="directive">public</span> User() { }
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="predefined-type">String</span> toString() {
+        <span class="keyword">return</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">User{</span><span class="delimiter">&quot;</span></span> +
+                <span class="string"><span class="delimiter">&quot;</span><span class="content">name='</span><span class="delimiter">&quot;</span></span> + name + <span class="string"><span class="delimiter">'</span><span class="char">\'</span><span class="delimiter">'</span></span> +
+                <span class="string"><span class="delimiter">&quot;</span><span class="content">, age=</span><span class="delimiter">&quot;</span></span> + age +
+                <span class="string"><span class="delimiter">&quot;</span><span class="content">, email='</span><span class="delimiter">&quot;</span></span> + email + <span class="string"><span class="delimiter">'</span><span class="char">\'</span><span class="delimiter">'</span></span> +
+                <span class="string"><span class="delimiter">'</span><span class="content">}</span><span class="delimiter">'</span></span>;
+    }
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) {
+        <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> User()).execute(args);
+    }
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        validate();
+
+        <span class="comment">// remaining business logic here</span>
+    }
+
+    <span class="directive">private</span> <span class="type">void</span> validate() {
+        <span class="predefined-type">Validator</span> validator = Validation.buildDefaultValidatorFactory().getValidator();
+        <span class="predefined-type">Set</span>&lt;ConstraintViolation&lt;User&gt;&gt; violations = validator.validate(<span class="local-variable">this</span>);
+
+        <span class="keyword">if</span> (!violations.isEmpty()) {
+            <span class="predefined-type">String</span> errorMsg = <span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span>;
+            <span class="keyword">for</span> (ConstraintViolation&lt;User&gt; violation : violations) {
+                errorMsg += <span class="string"><span class="delimiter">&quot;</span><span class="content">ERROR: </span><span class="delimiter">&quot;</span></span> + violation.getMessage() + <span class="string"><span class="delimiter">&quot;</span><span class="char">\n</span><span class="delimiter">&quot;</span></span>;
+            }
+            <span class="keyword">throw</span> <span class="keyword">new</span> ParameterException(spec.commandLine(), errorMsg);
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_parser_configuration"><a class="anchor" href="#_parser_configuration"></a>11. Parser Configuration</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_case_sensitivity"><a class="anchor" href="#_case_sensitivity"></a>11.1. Case Sensitivity</h3>
 <div class="paragraph">
 <p>By default, all options and subcommands are case sensitive.
 From picocli 4.3, case sensitivity is configurable.
@@ -4195,13 +4424,13 @@ For example, if a command has POSIX options <code>-a</code>, <code>-b</code>, an
 </div>
 </div>
 <div class="sect2">
-<h3 id="_abbreviated_options_and_subcommands"><a class="anchor" href="#_abbreviated_options_and_subcommands"></a>10.2. Abbreviated Options and Subcommands</h3>
+<h3 id="_abbreviated_options_and_subcommands"><a class="anchor" href="#_abbreviated_options_and_subcommands"></a>11.2. Abbreviated Options and Subcommands</h3>
 <div class="paragraph">
 <p>Since picocli 4.4, the parser can recognize abbreviated options and subcommands.
 This needs to be enabled explicitly with <code>CommandLine::setAbbreviatedOptionsAllowed</code> and <code>CommandLine::setAbbreviatedSubcommandsAllowed</code>.</p>
 </div>
 <div class="sect3">
-<h4 id="_recognized_abbreviations"><a class="anchor" href="#_recognized_abbreviations"></a>10.2.1. Recognized Abbreviations</h4>
+<h4 id="_recognized_abbreviations"><a class="anchor" href="#_recognized_abbreviations"></a>11.2.1. Recognized Abbreviations</h4>
 <div class="paragraph">
 <p>When abbreviations are enabled, users can specify the initial letter(s) of the first component and optionally of one or more subsequent components of an option or subcommand name.</p>
 </div>
@@ -4251,7 +4480,7 @@ This needs to be enabled explicitly with <code>CommandLine::setAbbreviatedOption
 </table>
 </div>
 <div class="sect3">
-<h4 id="_ambiguous_abbreviations"><a class="anchor" href="#_ambiguous_abbreviations"></a>10.2.2. Ambiguous Abbreviations</h4>
+<h4 id="_ambiguous_abbreviations"><a class="anchor" href="#_ambiguous_abbreviations"></a>11.2.2. Ambiguous Abbreviations</h4>
 <div class="paragraph">
 <p>When the user specifies input that can match multiple options or subcommands, the parser throws a <code>ParameterException</code>.
 When applications use the <code>execute</code> method, an error message and the usage help is <a href="#_invalid_user_input">displayed</a> to the user.</p>
@@ -4266,7 +4495,7 @@ When applications use the <code>execute</code> method, an error message and the 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_abbreviated_long_options_and_posix_clustered_short_options"><a class="anchor" href="#_abbreviated_long_options_and_posix_clustered_short_options"></a>10.2.3. Abbreviated Long Options and POSIX Clustered Short Options</h4>
+<h4 id="_abbreviated_long_options_and_posix_clustered_short_options"><a class="anchor" href="#_abbreviated_long_options_and_posix_clustered_short_options"></a>11.2.3. Abbreviated Long Options and POSIX Clustered Short Options</h4>
 <div class="paragraph">
 <p>When an argument can match both an abbreviated long option and a set of <a href="#_short_posix_options">clustered short options</a>, picocli matches the long option.
 This is the case regardless of abbreviations, but be aware that with abbreviated options enabled, the chance of such collisions increases.</p>
@@ -4294,7 +4523,7 @@ assertFalse(app.b);</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_overwriting_single_options"><a class="anchor" href="#_overwriting_single_options"></a>10.3. Overwriting Single Options</h3>
+<h3 id="_overwriting_single_options"><a class="anchor" href="#_overwriting_single_options"></a>11.3. Overwriting Single Options</h3>
 <div class="paragraph">
 <p>When a single-value option is specified multiple times on the command line, the default parser behaviour is to throw an <code>OverwrittenOptionException</code>.
 For example:</p>
@@ -4319,7 +4548,7 @@ and a WARN level message is printed to the console. (See <a href="#_tracing">Tra
 </div>
 </div>
 <div class="sect2">
-<h3 id="_stop_at_positional"><a class="anchor" href="#_stop_at_positional"></a>10.4. Stop At Positional</h3>
+<h3 id="_stop_at_positional"><a class="anchor" href="#_stop_at_positional"></a>11.4. Stop At Positional</h3>
 <div class="paragraph">
 <p>By default, positional parameters can be mixed with options on the command line, but this is not always desirable.
 From picocli 2.3, applications can call <code>CommandLine::setStopAtPositional</code> with <code>true</code>
@@ -4330,7 +4559,7 @@ to force the parser to treat all values following the first positional parameter
 </div>
 </div>
 <div class="sect2">
-<h3 id="_stop_at_unmatched"><a class="anchor" href="#_stop_at_unmatched"></a>10.5. Stop At Unmatched</h3>
+<h3 id="_stop_at_unmatched"><a class="anchor" href="#_stop_at_unmatched"></a>11.5. Stop At Unmatched</h3>
 <div class="paragraph">
 <p>From picocli 2.3, applications can call <code>CommandLine::setStopAtUnmatched</code> with <code>true</code> to force the parser to stop interpreting
 options and positional parameters as soon as it encounters an unmatched argument.</p>
@@ -4341,7 +4570,7 @@ unmatched arguments list returned by <code>CommandLine::getUnmatchedArguments</c
 </div>
 </div>
 <div class="sect2">
-<h3 id="_unmatched_input"><a class="anchor" href="#_unmatched_input"></a>10.6. Unmatched Input</h3>
+<h3 id="_unmatched_input"><a class="anchor" href="#_unmatched_input"></a>11.6. Unmatched Input</h3>
 <div class="paragraph">
 <p>By default, an <code>UnmatchedArgumentException</code> is thrown when a command line argument cannot be assigned to an option or positional parameter.
 For example:</p>
@@ -4372,7 +4601,7 @@ When unmatched arguments are allowed, the above input will be accepted and a WAR
 </div>
 </div>
 <div class="sect2">
-<h3 id="unmatched-annotation"><a class="anchor" href="#unmatched-annotation"></a>10.7. <code>@Unmatched</code> annotation</h3>
+<h3 id="unmatched-annotation"><a class="anchor" href="#unmatched-annotation"></a>11.7. <code>@Unmatched</code> annotation</h3>
 <div class="paragraph">
 <p>From picocli 3.0, fields annotated with <code>@Unmatched</code> will be populated with the unmatched arguments.
 The field must be of type <code>String[]</code> or <code>List&lt;String&gt;</code>.</p>
@@ -4384,9 +4613,9 @@ If no unmatched arguments are found, the value of the field annotated with <code
 </div>
 </div>
 <div class="sect2">
-<h3 id="_unknown_options"><a class="anchor" href="#_unknown_options"></a>10.8. Unknown Options</h3>
+<h3 id="_unknown_options"><a class="anchor" href="#_unknown_options"></a>11.8. Unknown Options</h3>
 <div class="sect3">
-<h4 id="_unknown_options_definition"><a class="anchor" href="#_unknown_options_definition"></a>10.8.1. Unknown Options Definition</h4>
+<h4 id="_unknown_options_definition"><a class="anchor" href="#_unknown_options_definition"></a>11.8.1. Unknown Options Definition</h4>
 <div class="paragraph">
 <p>A special case of unmatched input are arguments that resemble options but don&#8217;t match any of the defined options.
 Picocli determines if a value "resembles an option" by comparing its leading characters to the prefix characters of the known options.</p>
@@ -4423,7 +4652,7 @@ Negative numbers are not considered to be unknown options, so values like <code>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_positional_parameters_resembling_options"><a class="anchor" href="#_positional_parameters_resembling_options"></a>10.8.2. Positional Parameters Resembling Options</h4>
+<h4 id="_positional_parameters_resembling_options"><a class="anchor" href="#_positional_parameters_resembling_options"></a>11.8.2. Positional Parameters Resembling Options</h4>
 <div class="paragraph">
 <p>One possibility is to silently accept such values as positional parameters, but this is often not desirable.</p>
 </div>
@@ -4457,7 +4686,7 @@ An alternative is to call <code>CommandLine::setUnmatchedArgumentsAllowed</code>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_option_parameters_resembling_options"><a class="anchor" href="#_option_parameters_resembling_options"></a>10.8.3. Option Parameters Resembling Options</h4>
+<h4 id="_option_parameters_resembling_options"><a class="anchor" href="#_option_parameters_resembling_options"></a>11.8.3. Option Parameters Resembling Options</h4>
 <div class="paragraph">
 <p>By default, options accept parameter values that "resemble" (but don&#8217;t exactly match) an option.</p>
 </div>
@@ -4506,7 +4735,7 @@ assertEquals(<span class="string"><span class="delimiter">&quot;</span><span cla
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_names_as_option_values"><a class="anchor" href="#_option_names_as_option_values"></a>10.9. Option Names as Option Values</h3>
+<h3 id="_option_names_as_option_values"><a class="anchor" href="#_option_names_as_option_values"></a>11.9. Option Names as Option Values</h3>
 <div class="paragraph">
 <p>Since picocli 4.4, the parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes.
 For example:</p>
@@ -4548,7 +4777,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_toggle_boolean_flags"><a class="anchor" href="#_toggle_boolean_flags"></a>10.10. Toggle Boolean Flags</h3>
+<h3 id="_toggle_boolean_flags"><a class="anchor" href="#_toggle_boolean_flags"></a>11.10. Toggle Boolean Flags</h3>
 <div class="paragraph">
 <p>When a flag option is specified on the command line picocli will set its value to the opposite of its <em>default</em> value.</p>
 </div>
@@ -4562,7 +4791,7 @@ Note that when toggling is enabled, specifying a flag option twice on the comman
 </div>
 </div>
 <div class="sect2">
-<h3 id="_posix_clustered_short_options"><a class="anchor" href="#_posix_clustered_short_options"></a>10.11. POSIX Clustered Short Options</h3>
+<h3 id="_posix_clustered_short_options"><a class="anchor" href="#_posix_clustered_short_options"></a>11.11. POSIX Clustered Short Options</h3>
 <div class="paragraph">
 <p>By default, the picocli parser allows POSIX clustered short options, so short options like <code>-x -v -f SomeFile</code> can be clustered together like <code>-xvfSomeFile</code>.
 From picocli 3.0, applications can call <code>CommandLine::setPosixClusteredShortOptionsAllowed</code> with <code>false</code> to enforce that options must be separated with whitespace on the command line.
@@ -4570,7 +4799,7 @@ From picocli 3.0, applications can call <code>CommandLine::setPosixClusteredShor
 </div>
 </div>
 <div class="sect2">
-<h3 id="_lenient_mode"><a class="anchor" href="#_lenient_mode"></a>10.12. Lenient Mode</h3>
+<h3 id="_lenient_mode"><a class="anchor" href="#_lenient_mode"></a>11.12. Lenient Mode</h3>
 <div class="paragraph">
 <p>From picocli 3.2, the parser can be configured to continue parsing invalid input to the end.
 When <code>collectErrors</code> is set to <code>true</code>, and a problem occurs during parsing, an <code>Exception</code> is added to the list returned by <code>ParseResult::errors</code> and parsing continues. The default behaviour (when <code>collectErrors</code> is <code>false</code>) is to abort parsing by throwing the <code>Exception</code>.</p>
@@ -4584,9 +4813,9 @@ languages like Clojure where idiomatic error handling does not involve throwing 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_quoted_values"><a class="anchor" href="#_quoted_values"></a>10.13. Quoted Values</h3>
+<h3 id="_quoted_values"><a class="anchor" href="#_quoted_values"></a>11.13. Quoted Values</h3>
 <div class="sect3">
-<h4 id="_trimming_quotes"><a class="anchor" href="#_trimming_quotes"></a>10.13.1. Trimming Quotes</h4>
+<h4 id="_trimming_quotes"><a class="anchor" href="#_trimming_quotes"></a>11.13.1. Trimming Quotes</h4>
 <div class="paragraph">
 <p>From picocli 3.7, quotes around command line parameters are preserved by default (previously they were removed). This can be configured with <code>CommandLine::setTrimQuotes</code>, or the parser configuration <code>trimQuotes</code>. From picocli 4.0, quoted arguments can contain nested quoted substrings, to give end users fine-grained control over how values are split.</p>
 </div>
@@ -4663,7 +4892,7 @@ languages like Clojure where idiomatic error handling does not involve throwing 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_splitting_quoted_parameters"><a class="anchor" href="#_splitting_quoted_parameters"></a>10.13.2. Splitting Quoted Parameters</h4>
+<h4 id="_splitting_quoted_parameters"><a class="anchor" href="#_splitting_quoted_parameters"></a>11.13.2. Splitting Quoted Parameters</h4>
 <div class="paragraph">
 <p>By default, if the option or positional parameter has a <a href="#_split_regex"><code>split</code></a> regex defined, parameter values are split into parts while respecting quotes: the <code>split</code> regular expression is not matched inside a quoted region.</p>
 </div>
@@ -4791,7 +5020,7 @@ yyy"</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_customizing_negatable_options"><a class="anchor" href="#_customizing_negatable_options"></a>10.14. Customizing Negatable Options</h3>
+<h3 id="_customizing_negatable_options"><a class="anchor" href="#_customizing_negatable_options"></a>11.14. Customizing Negatable Options</h3>
 <div class="paragraph">
 <p><a href="#_negatable_options">Negatable options</a> can be customized via the <code>INegatableOptionTransformer</code> interface:</p>
 </div>
@@ -4845,7 +5074,7 @@ See the javadoc for details.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_custom_parameter_processing"><a class="anchor" href="#_custom_parameter_processing"></a>10.15. Custom Parameter Processing</h3>
+<h3 id="_custom_parameter_processing"><a class="anchor" href="#_custom_parameter_processing"></a>11.15. Custom Parameter Processing</h3>
 <div class="paragraph">
 <p>Options or positional parameters can be assigned a <code>IParameterConsumer</code> that implements
 custom logic to process the parameters for this option or this position.
@@ -4895,10 +5124,10 @@ options for the <code>find</code> command itself, but are interpreted as a separ
 </div>
 </div>
 <div class="sect1">
-<h2 id="_help"><a class="anchor" href="#_help"></a>11. Help</h2>
+<h2 id="_help"><a class="anchor" href="#_help"></a>12. Help</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_help_options"><a class="anchor" href="#_help_options"></a>11.1. Help Options</h3>
+<h3 id="_help_options"><a class="anchor" href="#_help_options"></a>12.1. Help Options</h3>
 <div class="paragraph">
 <p>Applications can define help options by setting attribute <code>versionHelp = true</code>, <code>usageHelp = true</code> or <code>help = true</code>.
 If one of the arguments specified on the command line is a "help" option, picocli will not throw a <code>MissingParameterException</code> when required options are missing.</p>
@@ -4960,7 +5189,7 @@ commandLine.parseArgs(args);
 </div>
 </div>
 <div class="sect2">
-<h3 id="_mixin_standard_help_options"><a class="anchor" href="#_mixin_standard_help_options"></a>11.2. Mixin Standard Help Options</h3>
+<h3 id="_mixin_standard_help_options"><a class="anchor" href="#_mixin_standard_help_options"></a>12.2. Mixin Standard Help Options</h3>
 <div class="paragraph">
 <p>Picocli 3.0 introduced the <code>mixinStandardHelpOptions</code> command attribute. When this attribute is set to <code>true</code>, picocli adds a <a href="#_mixins">mixin</a> to the
 command that adds <a href="#_help_options"><code>usageHelp</code></a> and <a href="#_help_options"><code>versionHelp</code></a> options to the command. For example:</p>
@@ -4991,7 +5220,7 @@ The usage help message for the above example looks like this:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_built_in_help_subcommand"><a class="anchor" href="#_built_in_help_subcommand"></a>11.3. Built-in Help Subcommand</h3>
+<h3 id="_built_in_help_subcommand"><a class="anchor" href="#_built_in_help_subcommand"></a>12.3. Built-in Help Subcommand</h3>
 <div class="paragraph">
 <p>From 3.0, picocli provides a <code>help</code> subcommand (<code>picocli.CommandLine.HelpCommand</code>) that can be installed as a subcommand
 on any application command. It prints usage help for the parent command or sibling subcommands. For example:</p>
@@ -5024,7 +5253,7 @@ on any application command. It prints usage help for the parent command or sibli
 </div>
 </div>
 <div class="sect2">
-<h3 id="_custom_help_subcommands"><a class="anchor" href="#_custom_help_subcommands"></a>11.4. Custom Help Subcommands</h3>
+<h3 id="_custom_help_subcommands"><a class="anchor" href="#_custom_help_subcommands"></a>12.4. Custom Help Subcommands</h3>
 <div class="paragraph">
 <p>Custom help subcommands should mark themselves as a <a href="#_help_subcommands">help command</a> to tell picocli not to throw a <code>MissingParameterException</code> when required options are missing.</p>
 </div>
@@ -5065,7 +5294,7 @@ commands with access to the parent command and sibling commands, whether to use 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_printing_help_automatically"><a class="anchor" href="#_printing_help_automatically"></a>11.5. Printing Help Automatically</h3>
+<h3 id="_printing_help_automatically"><a class="anchor" href="#_printing_help_automatically"></a>12.5. Printing Help Automatically</h3>
 <div class="paragraph">
 <p>From picocli 2.0, the <a href="#execute">convenience methods</a> will automatically print usage help and version information
 when a help option was specified on the command line (options annotated with the <code>versionHelp</code> or <code>usageHelp</code> attribute - but not the <code>help</code> attribute).</p>
@@ -5122,12 +5351,12 @@ was requested, and invoke <code>CommandLine::usage</code> or <code>CommandLine::
 </div>
 </div>
 <div class="sect1">
-<h2 id="_version_help"><a class="anchor" href="#_version_help"></a>12. Version Help</h2>
+<h2 id="_version_help"><a class="anchor" href="#_version_help"></a>13. Version Help</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_static_version_information"><a class="anchor" href="#_static_version_information"></a>12.1. Static Version Information</h3>
+<h3 id="_static_version_information"><a class="anchor" href="#_static_version_information"></a>13.1. Static Version Information</h3>
 <div class="sect3">
-<h4 id="_command_version_attribute"><a class="anchor" href="#_command_version_attribute"></a>12.1.1. Command <code>version</code> Attribute</h4>
+<h4 id="_command_version_attribute"><a class="anchor" href="#_command_version_attribute"></a>13.1.1. Command <code>version</code> Attribute</h4>
 <div class="paragraph">
 <p>Since v0.9.8, applications can specify version information in the <code>version</code> attribute of the <code>@Command</code> annotation.</p>
 </div>
@@ -5157,7 +5386,7 @@ commandLine.parseArgs(args);
 </div>
 </div>
 <div class="sect3">
-<h4 id="_multi_line_version_info"><a class="anchor" href="#_multi_line_version_info"></a>12.1.2. Multi-line Version Info</h4>
+<h4 id="_multi_line_version_info"><a class="anchor" href="#_multi_line_version_info"></a>13.1.2. Multi-line Version Info</h4>
 <div class="paragraph">
 <p>The <code>version</code> may specify multiple Strings. Each will be printed on a separate line.</p>
 </div>
@@ -5179,7 +5408,7 @@ Build 12345
 </div>
 </div>
 <div class="sect3">
-<h4 id="_version_info_with_variables"><a class="anchor" href="#_version_info_with_variables"></a>12.1.3. Version Info With Variables</h4>
+<h4 id="_version_info_with_variables"><a class="anchor" href="#_version_info_with_variables"></a>13.1.3. Version Info With Variables</h4>
 <div class="paragraph">
 <p>Since 4.0, the version strings may contain <a href="#_variable_interpolation">system properties and environment variables</a>. For example:</p>
 </div>
@@ -5206,7 +5435,7 @@ OS: Linux 4.4.0-17134-Microsoft amd64</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_version_info_with_colors"><a class="anchor" href="#_version_info_with_colors"></a>12.1.4. Version Info With Colors</h4>
+<h4 id="_version_info_with_colors"><a class="anchor" href="#_version_info_with_colors"></a>13.1.4. Version Info With Colors</h4>
 <div class="paragraph">
 <p>The version strings may contain <a href="#_usage_help_with_styles_and_colors">markup</a> to show ANSI styles and colors. For example:</p>
 </div>
@@ -5227,7 +5456,7 @@ OS: Linux 4.4.0-17134-Microsoft amd64</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_version_info_with_format_specifiers"><a class="anchor" href="#_version_info_with_format_specifiers"></a>12.1.5. Version Info With Format Specifiers</h4>
+<h4 id="_version_info_with_format_specifiers"><a class="anchor" href="#_version_info_with_format_specifiers"></a>13.1.5. Version Info With Format Specifiers</h4>
 <div class="paragraph">
 <p>From picocli 1.0, the <code>version</code> may contain <a href="#_format_specifiers">format specifiers</a>:</p>
 </div>
@@ -5253,9 +5482,9 @@ OS: Linux 4.4.0-17134-Microsoft amd64</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_dynamic_version_information"><a class="anchor" href="#_dynamic_version_information"></a>12.2. Dynamic Version Information</h3>
+<h3 id="_dynamic_version_information"><a class="anchor" href="#_dynamic_version_information"></a>13.2. Dynamic Version Information</h3>
 <div class="sect3">
-<h4 id="_command_versionprovider_attribute"><a class="anchor" href="#_command_versionprovider_attribute"></a>12.2.1. Command <code>versionProvider</code> Attribute</h4>
+<h4 id="_command_versionprovider_attribute"><a class="anchor" href="#_command_versionprovider_attribute"></a>13.2.1. Command <code>versionProvider</code> Attribute</h4>
 <div class="paragraph">
 <p>From picocli 2.2, the <code>@Command</code> annotation supports a <code>versionProvider</code> attribute.
 Applications may specify a <code>IVersionProvider</code> implementation in this attribute, and picocli will instantiate this class
@@ -5273,7 +5502,7 @@ For example, an implementation may return version information obtained from the 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_iversionprovider_interface"><a class="anchor" href="#_iversionprovider_interface"></a>12.2.2. <code>IVersionProvider</code> Interface</h4>
+<h4 id="_iversionprovider_interface"><a class="anchor" href="#_iversionprovider_interface"></a>13.2.2. <code>IVersionProvider</code> Interface</h4>
 <div class="paragraph">
 <p>Custom version providers need to implement the <code>picocli.CommandLine.IVersionProvider</code> interface:</p>
 </div>
@@ -5300,7 +5529,7 @@ and a build-generated version properties file-based
 </div>
 </div>
 <div class="sect3">
-<h4 id="_dynamic_version_info_with_variables"><a class="anchor" href="#_dynamic_version_info_with_variables"></a>12.2.3. Dynamic Version Info with Variables</h4>
+<h4 id="_dynamic_version_info_with_variables"><a class="anchor" href="#_dynamic_version_info_with_variables"></a>13.2.3. Dynamic Version Info with Variables</h4>
 <div class="paragraph">
 <p>The version strings returned from the <code>IVersionProvider</code> may contain <a href="#_variable_interpolation">system properties and environment variables</a>.</p>
 </div>
@@ -5325,7 +5554,7 @@ of any command that uses this version provider.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_injecting_commandspec_into_a_iversionprovider"><a class="anchor" href="#_injecting_commandspec_into_a_iversionprovider"></a>12.2.4. Injecting <code>CommandSpec</code> Into a <code>IVersionProvider</code></h4>
+<h4 id="_injecting_commandspec_into_a_iversionprovider"><a class="anchor" href="#_injecting_commandspec_into_a_iversionprovider"></a>13.2.4. Injecting <code>CommandSpec</code> Into a <code>IVersionProvider</code></h4>
 <div class="paragraph">
 <p>From picocli 4.2.0, <code>IVersionProvider</code> implementations can have <code>@Spec</code>-annotated fields. If such a field
 exists, picocli will inject the <code>CommandSpec</code> of the command that uses this version provider.
@@ -5351,10 +5580,10 @@ and may make it easier to implement version providers that can be reused among m
 </div>
 </div>
 <div class="sect1">
-<h2 id="_usage_help"><a class="anchor" href="#_usage_help"></a>13. Usage Help</h2>
+<h2 id="_usage_help"><a class="anchor" href="#_usage_help"></a>14. Usage Help</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_compact_example"><a class="anchor" href="#_compact_example"></a>13.1. Compact Example</h3>
+<h3 id="_compact_example"><a class="anchor" href="#_compact_example"></a>14.1. Compact Example</h3>
 <div class="paragraph">
 <p>A default picocli usage help message looks like this:</p>
 </div>
@@ -5403,7 +5632,7 @@ Copyright(c) 2017</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_command_name"><a class="anchor" href="#_command_name"></a>13.2. Command Name</h3>
+<h3 id="_command_name"><a class="anchor" href="#_command_name"></a>14.2. Command Name</h3>
 <div class="paragraph">
 <p>In the above example, the program name is taken from the <code>name</code> attribute of the <code>Command</code> annotation:</p>
 </div>
@@ -5422,7 +5651,7 @@ Copyright(c) 2017</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_parameter_labels"><a class="anchor" href="#_parameter_labels"></a>13.3. Parameter Labels</h3>
+<h3 id="_parameter_labels"><a class="anchor" href="#_parameter_labels"></a>14.3. Parameter Labels</h3>
 <div class="paragraph">
 <p>Non-boolean options require a value. The usage help should explain this, and picocli shows the option parameter
 in the synopsis and in the option list. By default, the field name is shown in <code>&lt;</code> and <code>&gt;</code> fish brackets.
@@ -5465,7 +5694,7 @@ For demonstration purposes the above example mixes the all-uppercase (e.g., <cod
 </div>
 </div>
 <div class="sect2">
-<h3 id="_unsorted_option_list"><a class="anchor" href="#_unsorted_option_list"></a>13.4. Unsorted Option List</h3>
+<h3 id="_unsorted_option_list"><a class="anchor" href="#_unsorted_option_list"></a>14.4. Unsorted Option List</h3>
 <div class="paragraph">
 <p>By default the options list displays options in alphabetical order. Use the <code>sortOptions = false</code> attribute to display options in the order they are declared in your class.</p>
 </div>
@@ -5476,7 +5705,7 @@ For demonstration purposes the above example mixes the all-uppercase (e.g., <cod
 </div>
 </div>
 <div class="sect2">
-<h3 id="_reordering_options"><a class="anchor" href="#_reordering_options"></a>13.5. Reordering Options</h3>
+<h3 id="_reordering_options"><a class="anchor" href="#_reordering_options"></a>14.5. Reordering Options</h3>
 <div class="paragraph">
 <p>When mixing <code>@Option</code> methods and <code>@Option</code> fields, options do not reliably appear in declaration order.</p>
 </div>
@@ -5486,7 +5715,7 @@ Options with a lower number are shown before options with a higher number.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_split_synopsis_label"><a class="anchor" href="#_split_synopsis_label"></a>13.6. Split Synopsis Label</h3>
+<h3 id="_split_synopsis_label"><a class="anchor" href="#_split_synopsis_label"></a>14.6. Split Synopsis Label</h3>
 <div class="paragraph">
 <p>Options and parameters may have a <a href="#_split_regex"><code>split</code></a> attribute to split each parameter into smaller substrings.
 Regular expressions may contain literal text, but may also contain <a href="https://www.regular-expressions.info/characters.html">special characters</a>.
@@ -5519,7 +5748,7 @@ We want the usage help message to show this.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_abbreviated_synopsis"><a class="anchor" href="#_abbreviated_synopsis"></a>13.7. Abbreviated Synopsis</h3>
+<h3 id="_abbreviated_synopsis"><a class="anchor" href="#_abbreviated_synopsis"></a>14.7. Abbreviated Synopsis</h3>
 <div class="paragraph">
 <p>If a command is very complex and has many options, it is sometimes desirable to suppress details from the synopsis with the <code>abbreviateSynopsis</code> attribute. For example:</p>
 </div>
@@ -5543,7 +5772,7 @@ We want the usage help message to show this.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_custom_synopsis"><a class="anchor" href="#_custom_synopsis"></a>13.8. Custom Synopsis</h3>
+<h3 id="_custom_synopsis"><a class="anchor" href="#_custom_synopsis"></a>14.8. Custom Synopsis</h3>
 <div class="paragraph">
 <p>For even more control of the synopsis, use the <code>customSynopsis</code> attribute to specify one ore more synopsis lines. For example:</p>
 </div>
@@ -5571,7 +5800,7 @@ We want the usage help message to show this.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_synopsis_subcommand_label"><a class="anchor" href="#_synopsis_subcommand_label"></a>13.9. Synopsis Subcommand Label</h3>
+<h3 id="_synopsis_subcommand_label"><a class="anchor" href="#_synopsis_subcommand_label"></a>14.9. Synopsis Subcommand Label</h3>
 <div class="paragraph">
 <p>For commands with <a href="#_usage_help_for_subcommands">subcommands</a>, the string <code>[COMMAND]</code> is appended to the end of the synopsis (whether the synopsis is <a href="#_abbreviated_synopsis">abbreviated</a> or not). This looks something like this:</p>
 </div>
@@ -5612,7 +5841,7 @@ We want the usage help message to show this.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_header_and_footer"><a class="anchor" href="#_header_and_footer"></a>13.10. Header and Footer</h3>
+<h3 id="_header_and_footer"><a class="anchor" href="#_header_and_footer"></a>14.10. Header and Footer</h3>
 <div class="paragraph">
 <p>The <code>header</code> will be shown at the top of the usage help message (before the synopsis). The first header line is also the line shown in the subcommand list if your command has subcommands (see <a href="#_usage_help_for_subcommands">Usage Help for Subcommands</a>).</p>
 </div>
@@ -5624,7 +5853,7 @@ We want the usage help message to show this.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_exit_code_list"><a class="anchor" href="#_exit_code_list"></a>13.11. Exit Code List</h3>
+<h3 id="_exit_code_list"><a class="anchor" href="#_exit_code_list"></a>14.11. Exit Code List</h3>
 <div class="paragraph">
 <p>By default, the usage help message does not display <a href="#_generating_an_exit_code">exit code</a> information.
 Applications that call <code>System.exit</code> need to configure the <code>exitCodeListHeading</code> and <code>exitCodeList</code> annotation attributes.
@@ -5661,7 +5890,7 @@ Exit Codes:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_format_specifiers"><a class="anchor" href="#_format_specifiers"></a>13.12. Format Specifiers</h3>
+<h3 id="_format_specifiers"><a class="anchor" href="#_format_specifiers"></a>14.12. Format Specifiers</h3>
 <div class="paragraph">
 <p>All usage help message elements can have embedded line separator (<code>%n</code>) format specifiers.
 These are converted to the platform-specific line separator when the usage help message is printed.</p>
@@ -5690,7 +5919,7 @@ where each element of the array is displayed on a separate line in the usage hel
 </div>
 </div>
 <div class="sect2">
-<h3 id="_section_headings"><a class="anchor" href="#_section_headings"></a>13.13. Section Headings</h3>
+<h3 id="_section_headings"><a class="anchor" href="#_section_headings"></a>14.13. Section Headings</h3>
 <div class="paragraph">
 <p>Section headers can be used to make usage message layout appear more spacious. The example below demonstrates the use of embedded line separator (<code>%n</code>) format specifiers:</p>
 </div>
@@ -5714,7 +5943,7 @@ where each element of the array is displayed on a separate line in the usage hel
 </div>
 </div>
 <div class="sect2">
-<h3 id="_expanded_example"><a class="anchor" href="#_expanded_example"></a>13.14. Expanded Example</h3>
+<h3 id="_expanded_example"><a class="anchor" href="#_expanded_example"></a>14.14. Expanded Example</h3>
 <div class="paragraph">
 <p>The below example demonstrates what a customized usage message can look like.
 Note how section headings with line separators can create a more spacious usage message,
@@ -5772,7 +6001,7 @@ Options:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_parameter_separators"><a class="anchor" href="#_option_parameter_separators"></a>13.15. Option-Parameter Separators</h3>
+<h3 id="_option_parameter_separators"><a class="anchor" href="#_option_parameter_separators"></a>14.15. Option-Parameter Separators</h3>
 <div class="paragraph">
 <p>The separator displayed between options and option parameters (<code>=</code> by default)
 in the synopsis and the option list can be configured with the <code>separator</code> attribute.</p>
@@ -5796,7 +6025,7 @@ the <code>@Command(separator = " ")</code> annotation also affects how picocli p
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hidden_options_and_parameters"><a class="anchor" href="#_hidden_options_and_parameters"></a>13.16. Hidden Options and Parameters</h3>
+<h3 id="_hidden_options_and_parameters"><a class="anchor" href="#_hidden_options_and_parameters"></a>14.16. Hidden Options and Parameters</h3>
 <div class="paragraph">
 <p>Options and Parameters with the <code>hidden</code> attribute set to <code>true</code> will not be shown in the usage help message.
 This is useful for example when a parameter at some index is captured into multiple fields:
@@ -5830,12 +6059,12 @@ by default each of these fields would be shown in the usage message, which would
 </div>
 </div>
 <div class="sect2">
-<h3 id="_show_at_files"><a class="anchor" href="#_show_at_files"></a>13.17. Show At Files</h3>
+<h3 id="_show_at_files"><a class="anchor" href="#_show_at_files"></a>14.17. Show At Files</h3>
 <div class="paragraph">
 <p>From picocli 4.2, an entry for <code>@&lt;filename&gt;</code> can be shown in the options and parameters list of the usage help message of a command with the <code>@Command(showAtFileInUsageHelp = true)</code> annotation.</p>
 </div>
 <div class="sect3">
-<h4 id="_example_2"><a class="anchor" href="#_example_2"></a>13.17.1. Example</h4>
+<h4 id="_example_2"><a class="anchor" href="#_example_2"></a>14.17.1. Example</h4>
 <div class="paragraph">
 <p>Example command:</p>
 </div>
@@ -5863,7 +6092,7 @@ Example command.
 </div>
 </div>
 <div class="sect3">
-<h4 id="_changing_the_at_file_entry_location"><a class="anchor" href="#_changing_the_at_file_entry_location"></a>13.17.2. Changing the At File Entry Location</h4>
+<h4 id="_changing_the_at_file_entry_location"><a class="anchor" href="#_changing_the_at_file_entry_location"></a>14.17.2. Changing the At File Entry Location</h4>
 <div class="paragraph">
 <p>By default, the <code>@&lt;filename&gt;</code> entry is shown before the positional parameters in the synopsis as well as in the parameters list.</p>
 </div>
@@ -5908,7 +6137,7 @@ Example command.
 </div>
 </div>
 <div class="sect3">
-<h4 id="_changing_the_at_file_entry_text"><a class="anchor" href="#_changing_the_at_file_entry_text"></a>13.17.3. Changing the At File Entry Text</h4>
+<h4 id="_changing_the_at_file_entry_text"><a class="anchor" href="#_changing_the_at_file_entry_text"></a>14.17.3. Changing the At File Entry Text</h4>
 <div class="paragraph">
 <p>Both the label and the description of the <code>@&lt;filename&gt;</code> entry have been defined with <a href="#_custom_variables">custom variables</a>, to allow applications to change the text. The variables are:</p>
 </div>
@@ -5961,12 +6190,12 @@ The <code>descriptionKey</code> for the <code>@&lt;filename&gt;</code> entry in 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_show_end_of_options"><a class="anchor" href="#_show_end_of_options"></a>13.18. Show End of Options</h3>
+<h3 id="_show_end_of_options"><a class="anchor" href="#_show_end_of_options"></a>14.18. Show End of Options</h3>
 <div class="paragraph">
 <p>From picocli 4.3, an entry for the <code>--</code> <a href="#_double_dash">End of Options delimiter</a> can be shown in the options list of the usage help message of a command with the <code>@Command(showEndOfOptionsDelimiterInUsageHelp = true)</code> annotation.</p>
 </div>
 <div class="sect3">
-<h4 id="_example_3"><a class="anchor" href="#_example_3"></a>13.18.1. Example</h4>
+<h4 id="_example_3"><a class="anchor" href="#_example_3"></a>14.18.1. Example</h4>
 <div class="paragraph">
 <p>Example command:</p>
 </div>
@@ -5995,7 +6224,7 @@ Example command.
 </div>
 </div>
 <div class="sect3">
-<h4 id="_changing_the_end_of_options_entry_location"><a class="anchor" href="#_changing_the_end_of_options_entry_location"></a>13.18.2. Changing the End of Options Entry Location</h4>
+<h4 id="_changing_the_end_of_options_entry_location"><a class="anchor" href="#_changing_the_end_of_options_entry_location"></a>14.18.2. Changing the End of Options Entry Location</h4>
 <div class="paragraph">
 <p>By default, the <code>--</code> End of Options entry is shown between the options and the positional parameters in the synopsis, and at the end of the options list.</p>
 </div>
@@ -6041,7 +6270,7 @@ Example command.
 </div>
 </div>
 <div class="sect3">
-<h4 id="_changing_the_end_of_options_entry_text"><a class="anchor" href="#_changing_the_end_of_options_entry_text"></a>13.18.3. Changing the End of Options Entry Text</h4>
+<h4 id="_changing_the_end_of_options_entry_text"><a class="anchor" href="#_changing_the_end_of_options_entry_text"></a>14.18.3. Changing the End of Options Entry Text</h4>
 <div class="paragraph">
 <p>The description of the <code>--</code> End of Options delimiter entry has been defined with a <a href="#_custom_variables">custom variable</a>, to allow applications to change the text. The variable is:</p>
 </div>
@@ -6090,9 +6319,9 @@ The <code>descriptionKey</code> for the End of Options delimiter entry in resour
 </div>
 </div>
 <div class="sect2">
-<h3 id="_show_default_values"><a class="anchor" href="#_show_default_values"></a>13.19. Show Default Values</h3>
+<h3 id="_show_default_values"><a class="anchor" href="#_show_default_values"></a>14.19. Show Default Values</h3>
 <div class="sect3">
-<h4 id="_default_value_variable"><a class="anchor" href="#_default_value_variable"></a>13.19.1. <code>${DEFAULT-VALUE}</code> Variable</h4>
+<h4 id="_default_value_variable"><a class="anchor" href="#_default_value_variable"></a>14.19.1. <code>${DEFAULT-VALUE}</code> Variable</h4>
 <div class="paragraph">
 <p>From picocli 3.2, it is possible to embed the <a href="#_default_values">default values</a> in the description for an option or positional parameter by
 specifying the <a href="#_variable_interpolation">variable</a> <code>${DEFAULT-VALUE}</code> in the description text.
@@ -6124,7 +6353,7 @@ CommandLine.usage(<span class="keyword">new</span> DefaultValues(), <span class=
 </div>
 </div>
 <div class="sect3">
-<h4 id="_completion_candidates_variable"><a class="anchor" href="#_completion_candidates_variable"></a>13.19.2. <code>${COMPLETION-CANDIDATES}</code> Variable</h4>
+<h4 id="_completion_candidates_variable"><a class="anchor" href="#_completion_candidates_variable"></a>14.19.2. <code>${COMPLETION-CANDIDATES}</code> Variable</h4>
 <div class="paragraph">
 <p>Similarly, it is possible to embed the completion candidates in the description for an option or positional parameter by
 specifying the <a href="#_variable_interpolation">variable</a> <code>${COMPLETION-CANDIDATES}</code> in the description text.</p>
@@ -6164,7 +6393,7 @@ CommandLine.usage(<span class="keyword">new</span> ValidValuesDemo(), <span clas
 </div>
 </div>
 <div class="sect3">
-<h4 id="_legacy_configuration_for_displaying_default_values"><a class="anchor" href="#_legacy_configuration_for_displaying_default_values"></a>13.19.3. Legacy Configuration for Displaying Default Values</h4>
+<h4 id="_legacy_configuration_for_displaying_default_values"><a class="anchor" href="#_legacy_configuration_for_displaying_default_values"></a>14.19.3. Legacy Configuration for Displaying Default Values</h4>
 <div class="paragraph">
 <p>Prior to picocli 3.2, you need to use the <code>@Command(showDefaultValues = true)</code> attribute to append the default value of
  all non-<code>null</code> options and positional parameters to the description column.</p>
@@ -6193,7 +6422,7 @@ This attribute accepts three values:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_required_option_marker"><a class="anchor" href="#_required_option_marker"></a>13.20. Required-Option Marker</h3>
+<h3 id="_required_option_marker"><a class="anchor" href="#_required_option_marker"></a>14.20. Required-Option Marker</h3>
 <div class="paragraph">
 <p>Required options can be marked in the option list by the character specified with the <code>requiredOptionMarker</code> attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with the <a href="#_abbreviated_synopsis"><code>abbreviateSynopsis</code></a> attribute. For example:</p>
 </div>
@@ -6218,7 +6447,7 @@ This attribute accepts three values:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_width"><a class="anchor" href="#_usage_width"></a>13.21. Usage Width</h3>
+<h3 id="_usage_width"><a class="anchor" href="#_usage_width"></a>14.21. Usage Width</h3>
 <div class="paragraph">
 <p>The default width of the usage help message is 80 characters.
 Commands defined with <code>@Command(usageHelpWidth = NUMBER)</code> in the annotations will use the specified width.</p>
@@ -6234,7 +6463,7 @@ Commands defined with <code>@Command(usageHelpWidth = NUMBER)</code> in the anno
 </div>
 </div>
 <div class="sect2">
-<h3 id="_auto_terminal_width"><a class="anchor" href="#_auto_terminal_width"></a>13.22. Auto (Terminal) Width</h3>
+<h3 id="_auto_terminal_width"><a class="anchor" href="#_auto_terminal_width"></a>14.22. Auto (Terminal) Width</h3>
 <div class="paragraph">
 <p>From 4.0, commands defined with <code>@Command(usageHelpAutoWidth = true)</code> will try to adjust the usage message help layout to the terminal width.
 There is also programmatic API to control this via the <code>CommandLine::setUsageHelpAutoWidth</code> and <code>UsageMessageSpec::autoWidth</code> methods.</p>
@@ -6247,7 +6476,7 @@ There is also programmatic API to control this via the <code>CommandLine::setUsa
 </div>
 </div>
 <div class="sect2">
-<h3 id="_long_option_column_width"><a class="anchor" href="#_long_option_column_width"></a>13.23. Long Option Column Width</h3>
+<h3 id="_long_option_column_width"><a class="anchor" href="#_long_option_column_width"></a>14.23. Long Option Column Width</h3>
 <div class="paragraph">
 <p>The default layout shows short options and long options in separate columns, followed by the description column.
 The width of the long options column shrinks automatically if all long options are very short,
@@ -6290,10 +6519,10 @@ but by default this column does not grow larger than 20 characters.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_ansi_colors_and_styles"><a class="anchor" href="#_ansi_colors_and_styles"></a>14. ANSI Colors and Styles</h2>
+<h2 id="_ansi_colors_and_styles"><a class="anchor" href="#_ansi_colors_and_styles"></a>15. ANSI Colors and Styles</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_colorized_example"><a class="anchor" href="#_colorized_example"></a>14.1. Colorized Example</h3>
+<h3 id="_colorized_example"><a class="anchor" href="#_colorized_example"></a>15.1. Colorized Example</h3>
 <div class="paragraph">
 <p>Below shows the same usage help message as shown in <a href="#_expanded_example">Expanded Example</a>, with ANSI escape codes enabled.</p>
 </div>
@@ -6302,7 +6531,7 @@ but by default this column does not grow larger than 20 characters.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_help_with_styles_and_colors"><a class="anchor" href="#_usage_help_with_styles_and_colors"></a>14.2. Usage Help with Styles and Colors</h3>
+<h3 id="_usage_help_with_styles_and_colors"><a class="anchor" href="#_usage_help_with_styles_and_colors"></a>15.2. Usage Help with Styles and Colors</h3>
 <div class="paragraph">
 <p>You can use colors and styles in the descriptions, header and footer
 of the usage help message.</p>
@@ -6412,7 +6641,7 @@ This feature is used to generate man page documentation.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_styles_and_colors_in_application_output"><a class="anchor" href="#_styles_and_colors_in_application_output"></a>14.3. Styles and Colors in Application Output</h3>
+<h3 id="_styles_and_colors_in_application_output"><a class="anchor" href="#_styles_and_colors_in_application_output"></a>15.3. Styles and Colors in Application Output</h3>
 <div class="paragraph">
 <p>The use of ANSI colors and styles is not limited to the <a href="#_usage_help_with_styles_and_colors">usage help</a>
 and <a href="#_static_version_information">version information</a>.</p>
@@ -6431,7 +6660,7 @@ By using the <code>Ansi.AUTO</code> enum value, picocli will  <a href="#_heurist
 </div>
 </div>
 <div class="sect2">
-<h3 id="_more_colors"><a class="anchor" href="#_more_colors"></a>14.4. More Colors</h3>
+<h3 id="_more_colors"><a class="anchor" href="#_more_colors"></a>15.4. More Colors</h3>
 <div class="paragraph">
 <p>Most terminals support a <a href="https://en.wikipedia.org/wiki/ANSI_escape_code#Colors">256 color indexed palette</a>:</p>
 </div>
@@ -6456,9 +6685,9 @@ or <code>@|fg(46) the same color by index, as foreground color|@</code>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_configuring_fixed_elements"><a class="anchor" href="#_configuring_fixed_elements"></a>14.5. Configuring Fixed Elements</h3>
+<h3 id="_configuring_fixed_elements"><a class="anchor" href="#_configuring_fixed_elements"></a>15.5. Configuring Fixed Elements</h3>
 <div class="sect3">
-<h4 id="_color_scheme"><a class="anchor" href="#_color_scheme"></a>14.5.1. Color Scheme</h4>
+<h4 id="_color_scheme"><a class="anchor" href="#_color_scheme"></a>15.5.1. Color Scheme</h4>
 <div class="paragraph">
 <p>Picocli uses a default color scheme for options, parameters and commands.
 There are no annotations to modify this color scheme, but it can be changed programmatically.</p>
@@ -6498,7 +6727,7 @@ CommandLine.usage(annotatedObject, <span class="predefined-type">System</span>.o
 </div>
 </div>
 <div class="sect3">
-<h4 id="_color_scheme_overrides"><a class="anchor" href="#_color_scheme_overrides"></a>14.5.2. Color Scheme Overrides</h4>
+<h4 id="_color_scheme_overrides"><a class="anchor" href="#_color_scheme_overrides"></a>15.5.2. Color Scheme Overrides</h4>
 <div class="paragraph">
 <p>The following system properties override the color scheme styles. This allows end users to adjust for their individual terminal color setup.</p>
 </div>
@@ -6527,13 +6756,13 @@ picocli.color.stackTraces</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_supported_platforms"><a class="anchor" href="#_supported_platforms"></a>14.6. Supported Platforms</h3>
+<h3 id="_supported_platforms"><a class="anchor" href="#_supported_platforms"></a>15.6. Supported Platforms</h3>
 <div class="paragraph">
 <p>Picocli will only emit ANSI escape codes on supported platforms.
 For details, see <a href="#_heuristics_for_enabling_ansi">Heuristics for Enabling ANSI</a>.</p>
 </div>
 <div class="sect3">
-<h4 id="_unix_and_linux"><a class="anchor" href="#_unix_and_linux"></a>14.6.1. Unix and Linux</h4>
+<h4 id="_unix_and_linux"><a class="anchor" href="#_unix_and_linux"></a>15.6.1. Unix and Linux</h4>
 <div class="paragraph">
 <p>Most Unix and Linux platforms support ANSI colors natively.
 On Windows, when picocli detects it is running under a Unix variant like Cygwin or MSYS(2) on Windows
@@ -6541,7 +6770,7 @@ On Windows, when picocli detects it is running under a Unix variant like Cygwin 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_windows"><a class="anchor" href="#_windows"></a>14.6.2. Windows</h4>
+<h4 id="_windows"><a class="anchor" href="#_windows"></a>15.6.2. Windows</h4>
 <div class="paragraph">
 <p>Displaying colors on Windows Command Console and PowerShell requires a bit of extra work.</p>
 </div>
@@ -6657,7 +6886,7 @@ One option is for end users to install either <a href="http://cmder.net/">Cmder<
 </div>
 </div>
 <div class="sect2">
-<h3 id="_forcing_ansi_onoff"><a class="anchor" href="#_forcing_ansi_onoff"></a>14.7. Forcing ANSI On/Off</h3>
+<h3 id="_forcing_ansi_onoff"><a class="anchor" href="#_forcing_ansi_onoff"></a>15.7. Forcing ANSI On/Off</h3>
 <div class="paragraph">
 <p>You can force picocli to either always use ANSI codes or never use ANSI codes regardless of the platform:</p>
 </div>
@@ -6685,7 +6914,7 @@ CommandLine.usage(<span class="keyword">new</span> App(), <span class="predefine
 </div>
 </div>
 <div class="sect2">
-<h3 id="_heuristics_for_enabling_ansi"><a class="anchor" href="#_heuristics_for_enabling_ansi"></a>14.8. Heuristics for Enabling ANSI</h3>
+<h3 id="_heuristics_for_enabling_ansi"><a class="anchor" href="#_heuristics_for_enabling_ansi"></a>15.8. Heuristics for Enabling ANSI</h3>
 <div class="paragraph">
 <p>Below is the exact sequence of steps picocli uses to determine whether or not to emit ANSI escape codes.</p>
 </div>
@@ -6736,7 +6965,7 @@ CommandLine.usage(<span class="keyword">new</span> App(), <span class="predefine
 </div>
 </div>
 <div class="sect1">
-<h2 id="_usage_help_api"><a class="anchor" href="#_usage_help_api"></a>15. Usage Help API</h2>
+<h2 id="_usage_help_api"><a class="anchor" href="#_usage_help_api"></a>16. Usage Help API</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>For further customization of the usage help message, picocli has a Help API.
@@ -6744,7 +6973,7 @@ The <code>Help</code> class provides a number of high-level operations, and a se
 Details of the Help API are out of scope for this document, but the following sections give some idea of what is possible.</p>
 </div>
 <div class="sect2">
-<h3 id="_reordering_sections"><a class="anchor" href="#_reordering_sections"></a>15.1. Reordering Sections</h3>
+<h3 id="_reordering_sections"><a class="anchor" href="#_reordering_sections"></a>16.1. Reordering Sections</h3>
 <div class="paragraph">
 <p>One thing you may want to do is reorder sections of the usage message or add custom sections.</p>
 </div>
@@ -6862,7 +7091,7 @@ map.put(SECTION_KEY_FOOTER,                 help -&gt; help.footer());</code></p
 <p>This ordering may be modified with the <code>CommandLine::setHelpSectionKeys</code> setter method (or <code>UsageMessageSpec::sectionKeys(List)</code> for a single <code>CommandSpec</code>).</p>
 </div>
 <div class="sect3">
-<h4 id="_custom_help_section_example"><a class="anchor" href="#_custom_help_section_example"></a>15.1.1. Custom Help Section Example</h4>
+<h4 id="_custom_help_section_example"><a class="anchor" href="#_custom_help_section_example"></a>16.1.1. Custom Help Section Example</h4>
 <div class="paragraph">
 <p>The below example shows how to add a custom Environment Variables section to the usage help message.</p>
 </div>
@@ -6901,7 +7130,7 @@ cmd.setHelpSectionKeys(keys);</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_custom_layout"><a class="anchor" href="#_custom_layout"></a>15.2. Custom Layout</h3>
+<h3 id="_custom_layout"><a class="anchor" href="#_custom_layout"></a>16.2. Custom Layout</h3>
 <div class="paragraph">
 <p>Picocli also supports unconventional option list layouts. An example of an unconventional layout is the <code>zip</code> application, which shows multiple options per row:</p>
 </div>
@@ -6943,10 +7172,10 @@ See the <a href="https://github.com/remkop/picocli/blob/master/src/test/java/pic
 </div>
 </div>
 <div class="sect1">
-<h2 id="_subcommands"><a class="anchor" href="#_subcommands"></a>16. Subcommands</h2>
+<h2 id="_subcommands"><a class="anchor" href="#_subcommands"></a>17. Subcommands</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_registering_subcommands_declaratively"><a class="anchor" href="#_registering_subcommands_declaratively"></a>16.1. Registering Subcommands Declaratively</h3>
+<h3 id="_registering_subcommands_declaratively"><a class="anchor" href="#_registering_subcommands_declaratively"></a>17.1. Registering Subcommands Declaratively</h3>
 <div class="paragraph">
 <p>From v0.9.8, picocli supports registering subcommands declaratively with the <code>@Command</code> annotation&#8217;s <code>subcommands</code> attribute.</p>
 </div>
@@ -6987,7 +7216,7 @@ Command names are case-sensitive by default, but this is <a href="#_case_sensiti
 </div>
 </div>
 <div class="sect2">
-<h3 id="_registering_subcommands_programmatically"><a class="anchor" href="#_registering_subcommands_programmatically"></a>16.2. Registering Subcommands Programmatically</h3>
+<h3 id="_registering_subcommands_programmatically"><a class="anchor" href="#_registering_subcommands_programmatically"></a>17.2. Registering Subcommands Programmatically</h3>
 <div class="paragraph">
 <p>Subcommands can be registered with the <code>CommandLine.addSubcommand</code> method.
 You pass in the name of the command and the annotated object to populate with the subcommand options.
@@ -7033,7 +7262,7 @@ adding subcommands.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_subcommand_aliases"><a class="anchor" href="#_subcommand_aliases"></a>16.3. Subcommand Aliases</h3>
+<h3 id="_subcommand_aliases"><a class="anchor" href="#_subcommand_aliases"></a>17.3. Subcommand Aliases</h3>
 <div class="paragraph">
 <p>Commands may optionally define an <code>aliases</code> attribute to provide alternate names for commands that will be recognized by the parser. Aliases are displayed in the default help output. For example:</p>
 </div>
@@ -7053,7 +7282,7 @@ adding subcommands.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_subcommands_as_methods"><a class="anchor" href="#_subcommands_as_methods"></a>16.4. Subcommands as Methods</h3>
+<h3 id="_subcommands_as_methods"><a class="anchor" href="#_subcommands_as_methods"></a>17.4. Subcommands as Methods</h3>
 <div class="paragraph">
 <p>As of picocli 3.6 it is possible to register subcommands in a very compact manner by having a <code>@Command</code> class with <code>@Command</code>-annotated methods. The methods are automatically <a href="#_subcommand_methods">registered as subcommands</a> of the <code>@Command</code> class.</p>
 </div>
@@ -7062,7 +7291,7 @@ adding subcommands.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_executing_subcommands"><a class="anchor" href="#_executing_subcommands"></a>16.5. Executing Subcommands</h3>
+<h3 id="_executing_subcommands"><a class="anchor" href="#_executing_subcommands"></a>17.5. Executing Subcommands</h3>
 <div class="paragraph">
 <p>The easiest way to design an application with subcommands is to let each command and subcommand either be a class that implements <code>Runnable</code> or <code>Callable</code>, or a <code>@Command</code>-annotated method.</p>
 </div>
@@ -7160,7 +7389,7 @@ See also <a href="#_executing_commands_with_subcommands">Executing Commands with
 </div>
 </div>
 <div class="sect2">
-<h3 id="_initialization_before_execution"><a class="anchor" href="#_initialization_before_execution"></a>16.6. Initialization Before Execution</h3>
+<h3 id="_initialization_before_execution"><a class="anchor" href="#_initialization_before_execution"></a>17.6. Initialization Before Execution</h3>
 <div class="paragraph">
 <p>Sometimes an application needs to take some action before execution.
 With a single command, you can simply do this in the beginning of the <code>run</code> or <code>call</code> method, but in an application with subcommands you don&#8217;t want to repeat this code in every subcommand.</p>
@@ -7204,7 +7433,7 @@ With a single command, you can simply do this in the beginning of the <code>run<
 </div>
 </div>
 <div class="sect2">
-<h3 id="parentcommand-annotation"><a class="anchor" href="#parentcommand-annotation"></a>16.7. <code>@ParentCommand</code> Annotation</h3>
+<h3 id="parentcommand-annotation"><a class="anchor" href="#parentcommand-annotation"></a>17.7. <code>@ParentCommand</code> Annotation</h3>
 <div class="paragraph">
 <p>In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.</p>
 </div>
@@ -7260,7 +7489,7 @@ The <code>List</code> subcommand can use the <code>@ParentCommand</code> annotat
 </div>
 </div>
 <div class="sect2">
-<h3 id="_inherited_options"><a class="anchor" href="#_inherited_options"></a>16.8. Inherited Options</h3>
+<h3 id="_inherited_options"><a class="anchor" href="#_inherited_options"></a>17.8. Inherited Options</h3>
 <div class="paragraph">
 <p>Picocli 4.3 adds support for "inherited" options.
 Options defined with <code>scope = ScopeType.INHERIT</code> are shared with all subcommands (and sub-subcommands, to any level of depth).
@@ -7342,7 +7571,7 @@ Alternatively, for such subcommands, sharing options via <a href="#_mixins">mixi
 </div>
 </div>
 <div class="sect2">
-<h3 id="_manually_parsing_subcommands"><a class="anchor" href="#_manually_parsing_subcommands"></a>16.9. Manually Parsing Subcommands</h3>
+<h3 id="_manually_parsing_subcommands"><a class="anchor" href="#_manually_parsing_subcommands"></a>17.9. Manually Parsing Subcommands</h3>
 <div class="paragraph">
 <p>For the following example, we assume we created an alias <code>git</code> that invokes our Java application. This could also be a script or a function that calls our Java program:</p>
 </div>
@@ -7415,7 +7644,7 @@ See also the previous section, <a href="#_executing_subcommands">Executing Subco
 </div>
 </div>
 <div class="sect2">
-<h3 id="_nested_sub_subcommands"><a class="anchor" href="#_nested_sub_subcommands"></a>16.10. Nested sub-Subcommands</h3>
+<h3 id="_nested_sub_subcommands"><a class="anchor" href="#_nested_sub_subcommands"></a>17.10. Nested sub-Subcommands</h3>
 <div class="paragraph">
 <p>The specified object can be an annotated object or a
 <code>CommandLine</code> instance with its own nested subcommands. For example:</p>
@@ -7466,12 +7695,12 @@ The <code>picocli-examples</code> module has an <a href="https://github.com/remk
 </div>
 </div>
 <div class="sect2">
-<h3 id="_repeatable_subcommands"><a class="anchor" href="#_repeatable_subcommands"></a>16.11. Repeatable Subcommands</h3>
+<h3 id="_repeatable_subcommands"><a class="anchor" href="#_repeatable_subcommands"></a>17.11. Repeatable Subcommands</h3>
 <div class="paragraph">
 <p>From picocli 4.2, it is possible to specify that a command&#8217;s subcommands can be specified multiple times by marking it with <code>@Command(subcommandsRepeatable = true)</code>.</p>
 </div>
 <div class="sect3">
-<h4 id="_example_4"><a class="anchor" href="#_example_4"></a>16.11.1. Example</h4>
+<h4 id="_example_4"><a class="anchor" href="#_example_4"></a>17.11.1. Example</h4>
 <div class="paragraph">
 <p>Below is an example where the top-level command <code>myapp</code> is marked as <code>subcommandsRepeatable = true</code>.
 This command has three subcommands, <code>add</code>, <code>list</code> and <code>send-report</code>:</p>
@@ -7516,7 +7745,7 @@ This invocation is valid because <code>myapp</code> is marked with <code>subcomm
 </div>
 </div>
 <div class="sect3">
-<h4 id="_repeatable_subcommands_specification"><a class="anchor" href="#_repeatable_subcommands_specification"></a>16.11.2. Repeatable Subcommands Specification</h4>
+<h4 id="_repeatable_subcommands_specification"><a class="anchor" href="#_repeatable_subcommands_specification"></a>17.11.2. Repeatable Subcommands Specification</h4>
 <div class="paragraph">
 <p>Normally, <code>subcommandsRepeatable</code> is <code>false</code>, so for each command, only one of its subcommands can be specified, potentially followed by only one sub-subcommand of that subcommand, etc.
 In mathematical terms, a valid sequence of commands and subcommands can be represented by a <em>directed rooted tree</em> that starts at the top-level command. This is illustrated by the diagram below.</p>
@@ -7554,7 +7783,7 @@ myapp add -x=item1 -w=0.2 myapp</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_repeatable_subcommands_execution"><a class="anchor" href="#_repeatable_subcommands_execution"></a>16.11.3. Repeatable Subcommands Execution</h4>
+<h4 id="_repeatable_subcommands_execution"><a class="anchor" href="#_repeatable_subcommands_execution"></a>17.11.3. Repeatable Subcommands Execution</h4>
 <div class="paragraph">
 <p>The default <a href="#_executing_commands_with_subcommands"><code>IExecutionStrategy</code></a> (<code>picocli.CommandLine.RunLast</code>) only executes the last subcommands <em>with the same parent</em>. For example, if</p>
 </div>
@@ -7569,7 +7798,7 @@ myapp add -x=item1 -w=0.2 myapp</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_help_for_subcommands"><a class="anchor" href="#_usage_help_for_subcommands"></a>16.12. Usage Help for Subcommands</h3>
+<h3 id="_usage_help_for_subcommands"><a class="anchor" href="#_usage_help_for_subcommands"></a>17.12. Usage Help for Subcommands</h3>
 <div class="paragraph">
 <p>After registering subcommands, calling the <code>commandLine.usage</code> method will show a usage help message that includes all registered subcommands. For example:</p>
 </div>
@@ -7681,7 +7910,7 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hidden_subcommands"><a class="anchor" href="#_hidden_subcommands"></a>16.13. Hidden Subcommands</h3>
+<h3 id="_hidden_subcommands"><a class="anchor" href="#_hidden_subcommands"></a>17.13. Hidden Subcommands</h3>
 <div class="paragraph">
 <p>Commands with the <code>hidden</code> attribute set to <code>true</code> will not be shown in the usage help message of their parent command.</p>
 </div>
@@ -7712,7 +7941,7 @@ Commands:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_help_subcommands"><a class="anchor" href="#_help_subcommands"></a>16.14. Help Subcommands</h3>
+<h3 id="_help_subcommands"><a class="anchor" href="#_help_subcommands"></a>17.14. Help Subcommands</h3>
 <div class="paragraph">
 <p>Commands with the <code>helpCommand</code> attribute set to <code>true</code> are treated as help commands.
 When picocli encounters a help command on the command line, required options and required positional parameters of the parent command
@@ -7728,7 +7957,7 @@ are not validated (similar to <a href="#_help_options">help options</a>).</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_required_subcommands"><a class="anchor" href="#_required_subcommands"></a>16.15. Required Subcommands</h3>
+<h3 id="_required_subcommands"><a class="anchor" href="#_required_subcommands"></a>17.15. Required Subcommands</h3>
 <div class="paragraph">
 <p>For some command suites, it does not make sense to invoke the top-level command by itself, and the user is required to specify a subcommand.</p>
 </div>
@@ -7763,14 +7992,14 @@ To show that the subcommand is mandatory, set the <code>synopsisSubcommandLabel<
 </div>
 </div>
 <div class="sect1">
-<h2 id="_reuse"><a class="anchor" href="#_reuse"></a>17. Reuse</h2>
+<h2 id="_reuse"><a class="anchor" href="#_reuse"></a>18. Reuse</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>You may find yourself defining the same options, parameters or command attributes in many command line applications.
 To reduce duplication, picocli supports two ways to reuse such options and attributes: subclassing and mixins.</p>
 </div>
 <div class="sect2">
-<h3 id="_subclassing"><a class="anchor" href="#_subclassing"></a>17.1. Subclassing</h3>
+<h3 id="_subclassing"><a class="anchor" href="#_subclassing"></a>18.1. Subclassing</h3>
 <div class="paragraph">
 <p>One way to reuse options and attributes is to extend the class where they are defined.
 Picocli will walk the class hierarchy to check for annotations, so <code>@Options</code>, <code>@Parameters</code> and <code>@Command</code> attributes declared on a superclass are available in all subclasses.</p>
@@ -7805,7 +8034,7 @@ Picocli will walk the class hierarchy to check for annotations, so <code>@Option
 </div>
 </div>
 <div class="sect2">
-<h3 id="_mixins"><a class="anchor" href="#_mixins"></a>17.2. Mixins</h3>
+<h3 id="_mixins"><a class="anchor" href="#_mixins"></a>18.2. Mixins</h3>
 <div class="paragraph">
 <p>Picocli 3.0 introduced the concept of "mixins".
 Mixins allow reuse without subclassing:
@@ -7840,7 +8069,7 @@ Alternatively, mixins can be installed programmatically by calling the <code>Com
 </div>
 </div>
 <div class="sect3">
-<h4 id="mixin-annotation"><a class="anchor" href="#mixin-annotation"></a>17.2.1. <code>@Mixin</code> Annotation</h4>
+<h4 id="mixin-annotation"><a class="anchor" href="#mixin-annotation"></a>18.2.1. <code>@Mixin</code> Annotation</h4>
 <div class="paragraph">
 <p>A command defined in a class can include a mixin by annotating a field with <code>@Mixin</code>.
 Similarly, a <a href="#_subcommands_as_methods"><code>@Command</code>-annotated method</a> can include a mixin by declaring a <code>@Mixin</code>-annotated method parameter.
@@ -7884,7 +8113,7 @@ the mixed-in object is also injected into the field annotated with <code>@Mixin<
 </div>
 </div>
 <div class="sect3">
-<h4 id="_mixin_example_logger"><a class="anchor" href="#_mixin_example_logger"></a>17.2.2. Mixin Example: Logger</h4>
+<h4 id="_mixin_example_logger"><a class="anchor" href="#_mixin_example_logger"></a>18.2.2. Mixin Example: Logger</h4>
 <div class="paragraph">
 <p>Here is an example mixin class <code>MyLogger</code>.
 It has an option <code>-v</code> that can be specified multiple times to increase verbosity.
@@ -7941,7 +8170,7 @@ The <code>MyLogger</code> class also provides some methods like <code>debug</cod
 </div>
 </div>
 <div class="sect3">
-<h4 id="_accessing_the_mixee_from_a_mixin"><a class="anchor" href="#_accessing_the_mixee_from_a_mixin"></a>17.2.3. Accessing the Mixee from a Mixin</h4>
+<h4 id="_accessing_the_mixee_from_a_mixin"><a class="anchor" href="#_accessing_the_mixee_from_a_mixin"></a>18.2.3. Accessing the Mixee from a Mixin</h4>
 <div class="paragraph">
 <p>Sometimes you need to write a Mixin class that accesses the mixee (the command where it is mixed in).</p>
 </div>
@@ -7979,7 +8208,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_accessing_the_parent_command_from_a_mixin"><a class="anchor" href="#_accessing_the_parent_command_from_a_mixin"></a>17.2.4. Accessing the Parent Command from a Mixin</h4>
+<h4 id="_accessing_the_parent_command_from_a_mixin"><a class="anchor" href="#_accessing_the_parent_command_from_a_mixin"></a>18.2.4. Accessing the Parent Command from a Mixin</h4>
 <div class="paragraph">
 <p>Since picocli 4.2, <a href="#_parentcommand_annotation"><code>@ParentCommand</code>-annotated</a> fields can be used in mixins.
 This injects a reference to the parent command of the mixee into the mixin.
@@ -8040,7 +8269,7 @@ java Top sub -v</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_adding_mixins_programmatically"><a class="anchor" href="#_adding_mixins_programmatically"></a>17.2.5. Adding Mixins Programmatically</h4>
+<h4 id="_adding_mixins_programmatically"><a class="anchor" href="#_adding_mixins_programmatically"></a>18.2.5. Adding Mixins Programmatically</h4>
 <div class="paragraph">
 <p>The below example shows how a mixin can be added programmatically with the <code>CommandLine.addMixin</code> method.</p>
 </div>
@@ -8067,7 +8296,7 @@ commandline.addMixin(<span class="string"><span class="delimiter">&quot;</span><
 </div>
 </div>
 <div class="sect2">
-<h3 id="_use_case_configure_log_level_with_a_global_option"><a class="anchor" href="#_use_case_configure_log_level_with_a_global_option"></a>17.3. Use Case: Configure Log Level with a Global Option</h3>
+<h3 id="_use_case_configure_log_level_with_a_global_option"><a class="anchor" href="#_use_case_configure_log_level_with_a_global_option"></a>18.3. Use Case: Configure Log Level with a Global Option</h3>
 <div class="paragraph">
 <p>For mixins that need to be reusable across more than two levels in the command hierarchy,
 declaring a <a href="#spec-annotation"><code>@Spec(MIXEE)</code>-annotated</a> field gives the mixin access to the full command hierarchy.</p>
@@ -8190,14 +8419,14 @@ java MyApp sub subsubmethod -vv</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_sharing_options_in_subcommands"><a class="anchor" href="#_sharing_options_in_subcommands"></a>17.4. Sharing Options in Subcommands</h3>
+<h3 id="_sharing_options_in_subcommands"><a class="anchor" href="#_sharing_options_in_subcommands"></a>18.4. Sharing Options in Subcommands</h3>
 <div class="paragraph">
 <p>The above use case can also be accomplished (with less code) via <a href="#_inherited_options">Inherited Options</a>.
 Inherited options are another reuse mechanism where an application defines an option on one command, after which end users can specify this option on any of the subcommands, and it will set the value of the annotated field on the parent command.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_reuse_combinations"><a class="anchor" href="#_reuse_combinations"></a>17.5. Reuse Combinations</h3>
+<h3 id="_reuse_combinations"><a class="anchor" href="#_reuse_combinations"></a>18.5. Reuse Combinations</h3>
 <div class="paragraph">
 <p>The above mechanisms can be combined in any way. Mixins can be nested, and there is no limitation to how deeply mixins can be nested. A mixin may also inherit options, positional parameters and command attributes from a super class.</p>
 </div>
@@ -8236,7 +8465,7 @@ Inherited options are another reuse mechanism where an application defines an op
 </div>
 </div>
 <div class="sect1">
-<h2 id="_internationalization"><a class="anchor" href="#_internationalization"></a>18. Internationalization</h2>
+<h2 id="_internationalization"><a class="anchor" href="#_internationalization"></a>19. Internationalization</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>As of version 3.6, usage help message sections and the description for options and positional parameters can be specified in a resource bundle.
@@ -8246,7 +8475,7 @@ A resource bundle can be set via annotations and programmatically.</p>
 <p>In order to get you started quickly, the <a href="https://github.com/remkop/picocli/blob/master/picocli-examples"><code>picocli-examples</code></a> module has a minimal i18n example, coded both in <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/i18n/I18NDemo.java">Java</a> and <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/i18n/I18NDemo.kt">Kotlin</a>.</p>
 </div>
 <div class="sect2">
-<h3 id="_configuration"><a class="anchor" href="#_configuration"></a>18.1. Configuration</h3>
+<h3 id="_configuration"><a class="anchor" href="#_configuration"></a>19.1. Configuration</h3>
 <div class="paragraph">
 <p>Annotation example:</p>
 </div>
@@ -8269,7 +8498,7 @@ cmd.setResourceBundle(<span class="predefined-type">ResourceBundle</span>.getBun
 </div>
 </div>
 <div class="sect2">
-<h3 id="_example_resource_bundle"><a class="anchor" href="#_example_resource_bundle"></a>18.2. Example Resource Bundle</h3>
+<h3 id="_example_resource_bundle"><a class="anchor" href="#_example_resource_bundle"></a>19.2. Example Resource Bundle</h3>
 <div class="paragraph">
 <p>Example properties resource bundle:</p>
 </div>
@@ -8402,7 +8631,7 @@ This is to be consistent with other <a href="#_section_headings">section heading
 </div>
 </div>
 <div class="sect2">
-<h3 id="_shared_resource_bundles"><a class="anchor" href="#_shared_resource_bundles"></a>18.3. Shared Resource Bundles</h3>
+<h3 id="_shared_resource_bundles"><a class="anchor" href="#_shared_resource_bundles"></a>19.3. Shared Resource Bundles</h3>
 <div class="paragraph">
 <p>Resources for multiple commands can be specified in a single ResourceBundle. Keys and their value can be
 shared by multiple commands (so you don&#8217;t need to repeat them for every command), but alternatively, keys can be prefixed with
@@ -8423,7 +8652,7 @@ usage.footer.1 = footer line 1</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_localizing_the_built_in_help"><a class="anchor" href="#_localizing_the_built_in_help"></a>18.4. Localizing the Built-In Help</h3>
+<h3 id="_localizing_the_built_in_help"><a class="anchor" href="#_localizing_the_built_in_help"></a>19.4. Localizing the Built-In Help</h3>
 <div class="paragraph">
 <p>The built-in <code>picocli.CommandLine.HelpCommand</code> can be localized as follows:</p>
 </div>
@@ -8455,7 +8684,7 @@ helpCommand.command = Shared description of COMMAND parameter of built-in help s
 </div>
 </div>
 <div class="sect2">
-<h3 id="_localizing_default_values"><a class="anchor" href="#_localizing_default_values"></a>18.5. Localizing Default Values</h3>
+<h3 id="_localizing_default_values"><a class="anchor" href="#_localizing_default_values"></a>19.5. Localizing Default Values</h3>
 <div class="paragraph">
 <p>Options with a <a href="#_default_values">default value</a> can use the <code>${DEFAULT-VALUE}</code> variable in the localized option description in the resource bundle:</p>
 </div>
@@ -8468,13 +8697,13 @@ helpCommand.command = Shared description of COMMAND parameter of built-in help s
 </div>
 </div>
 <div class="sect1">
-<h2 id="_variable_interpolation"><a class="anchor" href="#_variable_interpolation"></a>19. Variable Interpolation</h2>
+<h2 id="_variable_interpolation"><a class="anchor" href="#_variable_interpolation"></a>20. Variable Interpolation</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>From 4.0, picocli supports variable interpolation (variable expansion) in annotation attributes as well as in text attributes of the programmatic API.</p>
 </div>
 <div class="sect2">
-<h3 id="_variable_interpolation_example"><a class="anchor" href="#_variable_interpolation_example"></a>19.1. Variable Interpolation Example</h3>
+<h3 id="_variable_interpolation_example"><a class="anchor" href="#_variable_interpolation_example"></a>20.1. Variable Interpolation Example</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>,
@@ -8499,7 +8728,7 @@ helpCommand.command = Shared description of COMMAND parameter of built-in help s
 </div>
 </div>
 <div class="sect2">
-<h3 id="_predefined_variables"><a class="anchor" href="#_predefined_variables"></a>19.2. Predefined Variables</h3>
+<h3 id="_predefined_variables"><a class="anchor" href="#_predefined_variables"></a>20.2. Predefined Variables</h3>
 <div class="paragraph">
 <p>The following variables are predefined:</p>
 </div>
@@ -8571,7 +8800,7 @@ helpCommand.command = Shared description of COMMAND parameter of built-in help s
 </table>
 </div>
 <div class="sect2">
-<h3 id="_custom_variables"><a class="anchor" href="#_custom_variables"></a>19.3. Custom Variables</h3>
+<h3 id="_custom_variables"><a class="anchor" href="#_custom_variables"></a>20.3. Custom Variables</h3>
 <div class="paragraph">
 <p>In addition, you can define your own variables. Currently the following syntaxes are supported:</p>
 </div>
@@ -8593,7 +8822,7 @@ helpCommand.command = Shared description of COMMAND parameter of built-in help s
 </div>
 </div>
 <div class="sect2">
-<h3 id="_default_values_for_custom_variables"><a class="anchor" href="#_default_values_for_custom_variables"></a>19.4. Default Values for Custom Variables</h3>
+<h3 id="_default_values_for_custom_variables"><a class="anchor" href="#_default_values_for_custom_variables"></a>20.4. Default Values for Custom Variables</h3>
 <div class="paragraph">
 <p>You can specify a default value to use when no value is found for a custom variable. The syntax for specifying a default is <code>${a:-b}</code>, where <code>a</code> is the variable name and <code>b</code> is the default value to use if <code>a</code> is not found.</p>
 </div>
@@ -8621,20 +8850,20 @@ ${bundle:key:-defaultValue}</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_escaping_variables"><a class="anchor" href="#_escaping_variables"></a>19.5. Escaping Variables</h3>
+<h3 id="_escaping_variables"><a class="anchor" href="#_escaping_variables"></a>20.5. Escaping Variables</h3>
 <div class="paragraph">
 <p>Sometimes you want to show a string like <code>"${VAR}"</code> in a description.
 A <code>$</code> character can be escaped with another <code>$</code> character. Therefore, <code>$${VAR}</code> will not be interpreted as a <code>VAR</code> variable, but will be replaced by <code>${VAR}</code> instead.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_switching_off_variable_interpolation"><a class="anchor" href="#_switching_off_variable_interpolation"></a>19.6. Switching Off Variable Interpolation</h3>
+<h3 id="_switching_off_variable_interpolation"><a class="anchor" href="#_switching_off_variable_interpolation"></a>20.6. Switching Off Variable Interpolation</h3>
 <div class="paragraph">
 <p>Variable interpolation can be switched off for the full command hierarchy by calling <code>CommandLine.setInterpolateVariables(false)</code>, or for a particular command by calling <code>CommandSpec.interpolateVariables(false)</code>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_limitations_of_variable_interpolation"><a class="anchor" href="#_limitations_of_variable_interpolation"></a>19.7. Limitations of Variable Interpolation</h3>
+<h3 id="_limitations_of_variable_interpolation"><a class="anchor" href="#_limitations_of_variable_interpolation"></a>20.7. Limitations of Variable Interpolation</h3>
 <div class="paragraph">
 <p>Some attribute values need to be resolved early, when the model is constructed from the annotation values.</p>
 </div>
@@ -8667,10 +8896,10 @@ A <code>$</code> character can be escaped with another <code>$</code> character.
 </div>
 </div>
 <div class="sect1">
-<h2 id="_tips_tricks"><a class="anchor" href="#_tips_tricks"></a>20. Tips &amp; Tricks</h2>
+<h2 id="_tips_tricks"><a class="anchor" href="#_tips_tricks"></a>21. Tips &amp; Tricks</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_programmatic_api"><a class="anchor" href="#_programmatic_api"></a>20.1. Programmatic API</h3>
+<h3 id="_programmatic_api"><a class="anchor" href="#_programmatic_api"></a>21.1. Programmatic API</h3>
 <div class="paragraph">
 <p>Picocli also provides a <a href="picocli-programmatic-api.html">programmatic API</a>, in addition to the annotations API.</p>
 </div>
@@ -8684,7 +8913,7 @@ For example, Groovy&#8217;s <a href="http://groovy-lang.org/dsls.html#_clibuilde
 </div>
 </div>
 <div class="sect2">
-<h3 id="option-parameters-methods"><a class="anchor" href="#option-parameters-methods"></a>20.2. <code>@Option</code> and <code>@Parameters</code> Methods</h3>
+<h3 id="option-parameters-methods"><a class="anchor" href="#option-parameters-methods"></a>21.2. <code>@Option</code> and <code>@Parameters</code> Methods</h3>
 <div class="paragraph">
 <p>From version 3.2, <code>@Option</code> and <code>@Parameters</code> annotations can be added to methods as well as fields of a class.</p>
 </div>
@@ -8695,7 +8924,7 @@ For example, Groovy&#8217;s <a href="http://groovy-lang.org/dsls.html#_clibuilde
 <p>Alternatively, you may annotate "getter-like" methods (methods that return a value) on an interface, and picocli will create an instance of the interface that returns the values specified on the command line, converted to the method return type.</p>
 </div>
 <div class="sect3">
-<h4 id="_annotating_methods_of_an_interface"><a class="anchor" href="#_annotating_methods_of_an_interface"></a>20.2.1. Annotating Methods of an Interface</h4>
+<h4 id="_annotating_methods_of_an_interface"><a class="anchor" href="#_annotating_methods_of_an_interface"></a>21.2.1. Annotating Methods of an Interface</h4>
 <div class="paragraph">
 <p>The <code>@Option</code> and <code>@Parameters</code> annotations can be used on methods of an interface that return a value. For example:</p>
 </div>
@@ -8721,7 +8950,7 @@ Counter counter = cmd.getCommand(); <span class="comment">// picocli created an 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_annotating_methods_of_a_concrete_class"><a class="anchor" href="#_annotating_methods_of_a_concrete_class"></a>20.2.2. Annotating Methods of a Concrete Class</h4>
+<h4 id="_annotating_methods_of_a_concrete_class"><a class="anchor" href="#_annotating_methods_of_a_concrete_class"></a>21.2.2. Annotating Methods of a Concrete Class</h4>
 <div class="paragraph">
 <p>The <code>@Option</code> and <code>@Parameters</code> annotations can be used on methods of a class that accept a parameter. For example:</p>
 </div>
@@ -8783,7 +9012,7 @@ cmd.parseArgs(args);
 </div>
 </div>
 <div class="sect2">
-<h3 id="command-methods"><a class="anchor" href="#command-methods"></a>20.3. <a id="_command-methods"></a> <code>@Command</code> Methods</h3>
+<h3 id="command-methods"><a class="anchor" href="#command-methods"></a>21.3. <a id="_command-methods"></a> <code>@Command</code> Methods</h3>
 <div class="paragraph">
 <p>From picocli 3.6, methods can be annotated with <code>@Command</code>.
 The method parameters provide the command options and parameters. For example:</p>
@@ -8844,7 +9073,7 @@ If compiled with the <code>-parameters</code> flag on Java 8 or higher, the <cod
 </table>
 </div>
 <div class="sect3">
-<h4 id="_subcommand_methods"><a class="anchor" href="#_subcommand_methods"></a>20.3.1. Subcommand Methods</h4>
+<h4 id="_subcommand_methods"><a class="anchor" href="#_subcommand_methods"></a>21.3.1. Subcommand Methods</h4>
 <div class="paragraph">
 <p>If the enclosing class is annotated with <code>@Command</code>, method commands are automatically added as subcommands to the class command, unless the class command has attribute <code>@Command(addMethodSubcommands = false)</code>.
 For example:</p>
@@ -8871,7 +9100,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_description_text_in_resourcebundle"><a class="anchor" href="#_description_text_in_resourcebundle"></a>20.3.2. Description Text in ResourceBundle</h4>
+<h4 id="_description_text_in_resourcebundle"><a class="anchor" href="#_description_text_in_resourcebundle"></a>21.3.2. Description Text in ResourceBundle</h4>
 <div class="paragraph">
 <p>The usage help of the above <code>git commit</code> example command is very minimal:</p>
 </div>
@@ -8917,7 +9146,7 @@ Record changes to the repository
 </div>
 </div>
 <div class="sect3">
-<h4 id="_mixin_support_in_command_methods"><a class="anchor" href="#_mixin_support_in_command_methods"></a>20.3.3. Mixin Support in <code>@Command</code> Methods</h4>
+<h4 id="_mixin_support_in_command_methods"><a class="anchor" href="#_mixin_support_in_command_methods"></a>21.3.3. Mixin Support in <code>@Command</code> Methods</h4>
 <div class="paragraph">
 <p>From picocli 3.8, <code>@Command</code> methods accept <code>@Mixin</code> parameters.
 All options and positional parameters defined in the mixin class are added to the command.</p>
@@ -8944,7 +9173,7 @@ All options and positional parameters defined in the mixin class are added to th
 </div>
 </div>
 <div class="sect2">
-<h3 id="spec-annotation"><a class="anchor" href="#spec-annotation"></a>20.4. <a id="_spec-annotation"></a> <code>@Spec</code> Annotation</h3>
+<h3 id="spec-annotation"><a class="anchor" href="#spec-annotation"></a>21.4. <a id="_spec-annotation"></a> <code>@Spec</code> Annotation</h3>
 <div class="paragraph">
 <p>Picocli 3.2 introduces a <code>@Spec</code> annotation for injecting the <code>CommandSpec</code> model of the command into a command field.</p>
 </div>
@@ -8967,7 +9196,7 @@ This complements the <code>@ParentCommand</code> annotation;  the <code>@ParentC
 </div>
 </div>
 <div class="sect3">
-<h4 id="spec-mixee-annotation"><a class="anchor" href="#spec-mixee-annotation"></a>20.4.1. <code>@Spec(MIXEE)</code> Annotation</h4>
+<h4 id="spec-mixee-annotation"><a class="anchor" href="#spec-mixee-annotation"></a>21.4.1. <code>@Spec(MIXEE)</code> Annotation</h4>
 <div class="paragraph">
 <p>Since picocli 4.3, the <code>@Spec</code> annotation has a <code>value</code> element.
 The value is <code>Spec.Target.SELF</code> by default, meaning that the <code>CommandSpec</code> of the enclosing class is injected into the <code>@Spec</code>-annotated field.</p>
@@ -8981,7 +9210,7 @@ See <a href="#_accessing_the_mixee_from_a_mixin">Accessing the Mixee from a Mixi
 </div>
 </div>
 <div class="sect2">
-<h3 id="_custom_factory"><a class="anchor" href="#_custom_factory"></a>20.5. Custom Factory</h3>
+<h3 id="_custom_factory"><a class="anchor" href="#_custom_factory"></a>21.5. Custom Factory</h3>
 <div class="paragraph">
 <p>Declaratively registered <a href="#_registering_subcommands_declaratively">subcommands</a>, <a href="#_option_specific_type_converters">type converters</a> and <a href="#_dynamic_version_information">version providers</a> must be instantiated somehow. From picocli 2.2, a custom factory can be specified when constructing a <code>CommandLine</code> instance. This allows full control over object creation and opens possibilities for Inversion of Control and Dependency Injection (see <a href="#_dependency_injection">next section</a>). For example:</p>
 </div>
@@ -9032,9 +9261,9 @@ Previously, <code>Collection</code> objects were instantiated separately without
 </div>
 </div>
 <div class="sect2">
-<h3 id="_automatic_parameter_indexes"><a class="anchor" href="#_automatic_parameter_indexes"></a>20.6. Automatic Parameter Indexes</h3>
+<h3 id="_automatic_parameter_indexes"><a class="anchor" href="#_automatic_parameter_indexes"></a>21.6. Automatic Parameter Indexes</h3>
 <div class="sect3">
-<h4 id="_automatic_indexes"><a class="anchor" href="#_automatic_indexes"></a>20.6.1. Automatic Indexes</h4>
+<h4 id="_automatic_indexes"><a class="anchor" href="#_automatic_indexes"></a>21.6.1. Automatic Indexes</h4>
 <div class="paragraph">
 <p><a href="#_positional_parameters">Positional parameters</a> have an <code>index</code> attribute that determines which command line argument(s) are captured.
 It is possible to omit the <code>index</code> attribute and let picocli automatically assign an index.</p>
@@ -9110,7 +9339,7 @@ For applications with <a href="#option-parameters-methods"><code>@Parameters</co
 </div>
 </div>
 <div class="sect3">
-<h4 id="_anchored_automatic_index"><a class="anchor" href="#_anchored_automatic_index"></a>20.6.2. Anchored Automatic Index</h4>
+<h4 id="_anchored_automatic_index"><a class="anchor" href="#_anchored_automatic_index"></a>21.6.2. Anchored Automatic Index</h4>
 <div class="paragraph">
 <p>The default automatic index (<code>index = "0+"</code>) for single-value positional parameters is "anchored at zero": it starts at zero, and is increased with each additional positional parameter.</p>
 </div>
@@ -9131,7 +9360,7 @@ This can be useful when defining <a href="#_mixins">Mixins</a> with positional p
 </div>
 </div>
 <div class="sect3">
-<h4 id="_combining_explicit_and_automatic_indexes"><a class="anchor" href="#_combining_explicit_and_automatic_indexes"></a>20.6.3. Combining Explicit and Automatic Indexes</h4>
+<h4 id="_combining_explicit_and_automatic_indexes"><a class="anchor" href="#_combining_explicit_and_automatic_indexes"></a>21.6.3. Combining Explicit and Automatic Indexes</h4>
 <div class="paragraph">
 <p>If a command defines a positional parameter with an explicit index at the anchor point, then automatic indexes anchored at that point will start from the explicit index plus 1.
 For example:</p>
@@ -9152,7 +9381,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_unanchored_automatic_index"><a class="anchor" href="#_unanchored_automatic_index"></a>20.6.4. Unanchored Automatic Index</h4>
+<h4 id="_unanchored_automatic_index"><a class="anchor" href="#_unanchored_automatic_index"></a>21.6.4. Unanchored Automatic Index</h4>
 <div class="paragraph">
 <p>Sometimes you want to have indexes assigned automatically to come at the end.
 This can be useful when defining <a href="#_mixins">Mixins</a> with positional parameters.</p>
@@ -9175,7 +9404,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_do_not_combine_unanchored_indexes_with_open_ended_indexes"><a class="anchor" href="#_do_not_combine_unanchored_indexes_with_open_ended_indexes"></a>20.6.5. Do Not Combine Unanchored Indexes with Open-ended Indexes</h4>
+<h4 id="_do_not_combine_unanchored_indexes_with_open_ended_indexes"><a class="anchor" href="#_do_not_combine_unanchored_indexes_with_open_ended_indexes"></a>21.6.5. Do Not Combine Unanchored Indexes with Open-ended Indexes</h4>
 <div class="paragraph">
 <p>It is not possible to combine unanchored indexes (<code>+</code>) with open-ended explicit indexes (<code>*</code>):
 the parameter with the open-ended index will capture all arguments, and there is no position "after the other indexes" that can be assigned.</p>
@@ -9194,7 +9423,7 @@ the parameter with the open-ended index will capture all arguments, and there is
 </div>
 </div>
 <div class="sect2">
-<h3 id="_improved_support_for_chinese_japanese_and_korean"><a class="anchor" href="#_improved_support_for_chinese_japanese_and_korean"></a>20.7. Improved Support for Chinese, Japanese and Korean</h3>
+<h3 id="_improved_support_for_chinese_japanese_and_korean"><a class="anchor" href="#_improved_support_for_chinese_japanese_and_korean"></a>21.7. Improved Support for Chinese, Japanese and Korean</h3>
 <div class="paragraph">
 <p>Picocli will align the usage help message to fit within some user-defined width (80 columns by default).
 A number of characters in Chinese, Japanese and Korean (CJK) are wider than others.
@@ -9208,7 +9437,7 @@ If those characters are treated to have the same width as other characters, the 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_boolean_options_with_parameters"><a class="anchor" href="#_boolean_options_with_parameters"></a>20.8. Boolean Options with Parameters</h3>
+<h3 id="_boolean_options_with_parameters"><a class="anchor" href="#_boolean_options_with_parameters"></a>21.8. Boolean Options with Parameters</h3>
 <div class="paragraph">
 <p>By default the value of a boolean field is set to the logical negative of its default value when the option is specified on the command line.</p>
 </div>
@@ -9242,7 +9471,7 @@ If those characters are treated to have the same width as other characters, the 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hexadecimal_values"><a class="anchor" href="#_hexadecimal_values"></a>20.9. Hexadecimal Values</h3>
+<h3 id="_hexadecimal_values"><a class="anchor" href="#_hexadecimal_values"></a>21.9. Hexadecimal Values</h3>
 <div class="paragraph">
 <p>Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
 register a custom type converter that delegates to the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-">decode</a> method to convert strings to numbers.</p>
@@ -9294,9 +9523,9 @@ commandLine.registerConverter(<span class="predefined-type">Integer</span>.TYPE,
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_parameter_separators_2"><a class="anchor" href="#_option_parameter_separators_2"></a>20.10. Option-Parameter Separators</h3>
+<h3 id="_option_parameter_separators_2"><a class="anchor" href="#_option_parameter_separators_2"></a>21.10. Option-Parameter Separators</h3>
 <div class="sect3">
-<h4 id="_default_separators"><a class="anchor" href="#_default_separators"></a>20.10.1. Default Separators</h4>
+<h4 id="_default_separators"><a class="anchor" href="#_default_separators"></a>21.10.1. Default Separators</h4>
 <div class="paragraph">
 <p>Options may take an <em>option parameter</em> (also called <em>option-argument</em>).
 For POSIX-style short options (like <code>-f</code> or <code>-c</code>), the option parameter may be attached to the option,
@@ -9326,7 +9555,7 @@ That is, all of the below are equivalent:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_custom_separators"><a class="anchor" href="#_custom_separators"></a>20.10.2. Custom Separators</h4>
+<h4 id="_custom_separators"><a class="anchor" href="#_custom_separators"></a>21.10.2. Custom Separators</h4>
 <div class="paragraph">
 <p>The separator string can be customized programmatically or declaratively.</p>
 </div>
@@ -9364,7 +9593,7 @@ commandLine.parseArgs(<span class="string"><span class="delimiter">&quot;</span>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_best_practices_for_command_line_interfaces"><a class="anchor" href="#_best_practices_for_command_line_interfaces"></a>20.11. Best Practices for Command Line Interfaces</h3>
+<h3 id="_best_practices_for_command_line_interfaces"><a class="anchor" href="#_best_practices_for_command_line_interfaces"></a>21.11. Best Practices for Command Line Interfaces</h3>
 <div class="paragraph">
 <p>When designing your command line application,
 the <a href="https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces">GNU recommendations</a> for command line interfaces and <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX Utility Guidelines</a> may be useful.</p>
@@ -9375,7 +9604,7 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect2">
-<h3 id="_text_blocks_for_java_15"><a class="anchor" href="#_text_blocks_for_java_15"></a>20.12. Text Blocks for Java 15</h3>
+<h3 id="_text_blocks_for_java_15"><a class="anchor" href="#_text_blocks_for_java_15"></a>21.12. Text Blocks for Java 15</h3>
 <div class="paragraph">
 <p>When writing your command line program, you can use Java 15&#8217;s new "Text Block" feature.
 Multi-line text blocks can be used in command and option descriptions, headers and footers.</p>
@@ -9396,10 +9625,10 @@ Multi-line text blocks can be used in command and option descriptions, headers a
 </div>
 </div>
 <div class="sect1">
-<h2 id="_dependency_injection"><a class="anchor" href="#_dependency_injection"></a>21. Dependency Injection</h2>
+<h2 id="_dependency_injection"><a class="anchor" href="#_dependency_injection"></a>22. Dependency Injection</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_guice_example"><a class="anchor" href="#_guice_example"></a>21.1. Guice Example</h3>
+<h3 id="_guice_example"><a class="anchor" href="#_guice_example"></a>22.1. Guice Example</h3>
 <div class="paragraph">
 <p><span class="image"><img src="https://picocli.info/images/225px-Guice.jpg" alt="Guice logo"></span></p>
 </div>
@@ -9461,7 +9690,7 @@ Multi-line text blocks can be used in command and option descriptions, headers a
 </div>
 </div>
 <div class="sect2">
-<h3 id="_spring_boot_example"><a class="anchor" href="#_spring_boot_example"></a>21.2. Spring Boot Example</h3>
+<h3 id="_spring_boot_example"><a class="anchor" href="#_spring_boot_example"></a>22.2. Spring Boot Example</h3>
 <div class="paragraph">
 <p><span class="image"><img src="https://picocli.info/images/spring-boot.png" alt="Spring Boot Logo" width="350" height="167"></span></p>
 </div>
@@ -9477,7 +9706,7 @@ To use this custom factory, add the following dependency:</p>
 <pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
   <span class="tag">&lt;groupId&gt;</span>info.picocli<span class="tag">&lt;/groupId&gt;</span>
   <span class="tag">&lt;artifactId&gt;</span>picocli-spring-boot-starter<span class="tag">&lt;/artifactId&gt;</span>
-  <span class="tag">&lt;version&gt;</span>4.5.0<span class="tag">&lt;/version&gt;</span>
+  <span class="tag">&lt;version&gt;</span>4.5.1<span class="tag">&lt;/version&gt;</span>
 <span class="tag">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -9487,7 +9716,7 @@ To use this custom factory, add the following dependency:</p>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code>dependencies {
-    compile "info.picocli:picocli-spring-boot-starter:4.5.0"
+    compile "info.picocli:picocli-spring-boot-starter:4.5.1"
 }</code></pre>
 </div>
 </div>
@@ -9604,7 +9833,7 @@ The business logic of your command looks like any other picocli command with opt
 </div>
 </div>
 <div class="sect2">
-<h3 id="_micronaut_example"><a class="anchor" href="#_micronaut_example"></a>21.3. Micronaut Example</h3>
+<h3 id="_micronaut_example"><a class="anchor" href="#_micronaut_example"></a>22.3. Micronaut Example</h3>
 <div class="paragraph">
 <p><span class="image"><img src="https://micronaut.io/images/micronaut_mini_copy_tm.svg" alt="Micronaut Logo" width="350"></span></p>
 </div>
@@ -9643,7 +9872,7 @@ The business logic of your command looks like any other picocli command with opt
 </div>
 </div>
 <div class="sect2">
-<h3 id="_cdi_2_0_jsr_365"><a class="anchor" href="#_cdi_2_0_jsr_365"></a>21.4. CDI 2.0 (JSR 365)</h3>
+<h3 id="_cdi_2_0_jsr_365"><a class="anchor" href="#_cdi_2_0_jsr_365"></a>22.4. CDI 2.0 (JSR 365)</h3>
 <div class="paragraph">
 <p>If your application runs in a dependency injection container that does not offer explicit support for picocli, it may still be possible to get dependency injection in your picocli commands, subcommands and other classes like version providers, default providers, type converters, etc.</p>
 </div>
@@ -9708,7 +9937,7 @@ The business logic of your command looks like any other picocli command with opt
 </div>
 </div>
 <div class="sect2">
-<h3 id="_quarkus_example"><a class="anchor" href="#_quarkus_example"></a>21.5. Quarkus Example</h3>
+<h3 id="_quarkus_example"><a class="anchor" href="#_quarkus_example"></a>22.5. Quarkus Example</h3>
 <div class="paragraph">
 <p><span class="image"><img src="https://quarkus.io/assets/images/quarkus_logo_horizontal_rgb_600px_reverse.png" alt="Quarkus Logo" width="350"></span></p>
 </div>
@@ -9763,7 +9992,7 @@ As of this writing, there is work in progress in the Quarkus community on a pico
 </div>
 </div>
 <div class="sect1">
-<h2 id="_java_9_jpms_modules"><a class="anchor" href="#_java_9_jpms_modules"></a>22. Java 9 JPMS Modules</h2>
+<h2 id="_java_9_jpms_modules"><a class="anchor" href="#_java_9_jpms_modules"></a>23. Java 9 JPMS Modules</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The main <code>picocli-${version}.jar</code> is a JPMS module named <code>info.picocli</code>.</p>
@@ -9779,7 +10008,7 @@ This causes problems for some older tools, which incorrectly process the module 
 To provide the best backward compatibility, the main picocli artifact is a <a href="https://openjdk.java.net/jeps/238#Modular-multi-release-JAR-files">modular multi-release jar</a> with the <code>module-info.class</code> file located in <code>META-INF/versions/9</code>.</p>
 </div>
 <div class="sect2">
-<h3 id="_module_configuration"><a class="anchor" href="#_module_configuration"></a>22.1. Module Configuration</h3>
+<h3 id="_module_configuration"><a class="anchor" href="#_module_configuration"></a>23.1. Module Configuration</h3>
 <div class="paragraph">
 <p>Applications that use Java 9&#8217;s modules need to configure their module to allow picocli reflective access to the annotated classes and fields.</p>
 </div>
@@ -9820,7 +10049,7 @@ open module com.yourorg.yourapp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_osgi_bundle"><a class="anchor" href="#_osgi_bundle"></a>23. OSGi Bundle</h2>
+<h2 id="_osgi_bundle"><a class="anchor" href="#_osgi_bundle"></a>24. OSGi Bundle</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p><span class="image"><img src="https://www.osgi.org/wp-content/uploads/OSGi-website-header-logo.png" alt="OSGi logo"></span></p>
@@ -9831,7 +10060,7 @@ open module com.yourorg.yourapp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_tracing"><a class="anchor" href="#_tracing"></a>24. Tracing</h2>
+<h2 id="_tracing"><a class="anchor" href="#_tracing"></a>25. Tracing</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli 1.0 introduced support for parser tracing to facilitate troubleshooting.</p>
@@ -9893,7 +10122,7 @@ unalias git</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_tab_autocomplete"><a class="anchor" href="#_tab_autocomplete"></a>25. TAB Autocomplete</h2>
+<h2 id="_tab_autocomplete"><a class="anchor" href="#_tab_autocomplete"></a>26. TAB Autocomplete</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli-based applications can now have command line completion in Bash or Zsh Unix shells.
@@ -9902,7 +10131,7 @@ See the <a href="autocomplete.html">Autocomplete for Java Command Line Applicati
 </div>
 </div>
 <div class="sect1">
-<h2 id="_generate_man_page_documentation"><a class="anchor" href="#_generate_man_page_documentation"></a>26. Generate Man Page Documentation</h2>
+<h2 id="_generate_man_page_documentation"><a class="anchor" href="#_generate_man_page_documentation"></a>27. Generate Man Page Documentation</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>From picocli 4.2, the <code>picocli-codegen</code> module has a <code>ManPageGenerator</code> tool that can generate AsciiDoc documentation using the <code>manpage</code> doctype and manpage document structure.
@@ -9953,10 +10182,10 @@ The generated AsciiDoc files can be converted to HTML, PDF and unix man pages wi
 </div>
 </div>
 <div class="sect1">
-<h2 id="_testing_your_application"><a class="anchor" href="#_testing_your_application"></a>27. Testing Your Application</h2>
+<h2 id="_testing_your_application"><a class="anchor" href="#_testing_your_application"></a>28. Testing Your Application</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_black_box_and_white_box_testing"><a class="anchor" href="#_black_box_and_white_box_testing"></a>27.1. Black Box and White Box Testing</h3>
+<h3 id="_black_box_and_white_box_testing"><a class="anchor" href="#_black_box_and_white_box_testing"></a>28.1. Black Box and White Box Testing</h3>
 <div class="paragraph">
 <p>Picocli 4.0 introduced the <a href="#execute"><code>execute</code></a>, <code>get/setOut</code>, and <code>get/setErr</code> APIs that make testing a lot easier.</p>
 </div>
@@ -9989,7 +10218,7 @@ assertEquals(<span class="string"><span class="delimiter">&quot;</span><span cla
 </div>
 </div>
 <div class="sect2">
-<h3 id="_testing_the_output"><a class="anchor" href="#_testing_the_output"></a>27.2. Testing the Output</h3>
+<h3 id="_testing_the_output"><a class="anchor" href="#_testing_the_output"></a>28.2. Testing the Output</h3>
 <div class="paragraph">
 <p>This assumes that the application uses the <code>PrintWriter</code> provided by <a href="https://picocli.info/apidocs/picocli/CommandLine.html#getOut--"><code>CommandLine.getOut</code></a> or  <a href="https://picocli.info/apidocs/picocli/CommandLine.html#getErr--"><code>CommandLine.getErr</code></a>.
 Applications can get these writers via the <a href="#spec-annotation"><code>@Spec</code></a> annotation:</p>
@@ -10075,7 +10304,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_testing_the_exit_code"><a class="anchor" href="#_testing_the_exit_code"></a>27.3. Testing the Exit Code</h3>
+<h3 id="_testing_the_exit_code"><a class="anchor" href="#_testing_the_exit_code"></a>28.3. Testing the Exit Code</h3>
 <div class="paragraph">
 <p>Testing the exit code of applications that call <code>System.exit</code> can be tricky but is not impossible.</p>
 </div>
@@ -10111,7 +10340,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_testing_environment_variables"><a class="anchor" href="#_testing_environment_variables"></a>27.4. Testing Environment Variables</h3>
+<h3 id="_testing_environment_variables"><a class="anchor" href="#_testing_environment_variables"></a>28.4. Testing Environment Variables</h3>
 <div class="paragraph">
 <p>Since picocli offers support for using <a href="#_variable_interpolation">environment variables</a> in the annotations, you may want to test this.</p>
 </div>
@@ -10171,7 +10400,7 @@ test {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_packaging_your_application"><a class="anchor" href="#_packaging_your_application"></a>28. Packaging Your Application</h2>
+<h2 id="_packaging_your_application"><a class="anchor" href="#_packaging_your_application"></a>29. Packaging Your Application</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>You finished your application. Congratulations! Now, how do you package it and distribute it to your users?</p>
@@ -10181,7 +10410,7 @@ test {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">java -cp &quot;picocli-4.5.0.jar;myapp.jar&quot; org.myorg.MyMainClass --option=value arg0 arg1</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">java -cp &quot;picocli-4.5.1.jar;myapp.jar&quot; org.myorg.MyMainClass --option=value arg0 arg1</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -10199,13 +10428,13 @@ test {
 <p>Below are some ideas on how to accomplish this.</p>
 </div>
 <div class="sect2">
-<h3 id="_alias"><a class="anchor" href="#_alias"></a>28.1. Alias</h3>
+<h3 id="_alias"><a class="anchor" href="#_alias"></a>29.1. Alias</h3>
 <div class="paragraph">
 <p>On unix-based operating systems, you can ask your users to define an alias. For example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">alias mycommand='java -cp &quot;/path/to/picocli-4.5.0.jar:/path/to/myapp.jar&quot; org.myorg.MainClass'</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">alias mycommand='java -cp &quot;/path/to/picocli-4.5.1.jar:/path/to/myapp.jar&quot; org.myorg.MainClass'</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -10233,7 +10462,7 @@ Many build tools provide plugins to generate launcher scripts for your applicati
 </div>
 </div>
 <div class="sect2">
-<h3 id="_launcher_script"><a class="anchor" href="#_launcher_script"></a>28.2. <a id="_build_tool_plugins"></a> Launcher Script</h3>
+<h3 id="_launcher_script"><a class="anchor" href="#_launcher_script"></a>29.2. <a id="_build_tool_plugins"></a> Launcher Script</h3>
 <div class="paragraph">
 <p>The <a href="https://www.mojohaus.org/appassembler/">Application Assembler Maven Plugin</a> can be used with Maven, and similarly, <a href="https://docs.gradle.org/current/userguide/application_plugin.html">Gradle Application plugin</a> can be used with Gradle, to create a distribution zip or tar file with launcher scripts.</p>
 </div>
@@ -10245,12 +10474,12 @@ Many build tools provide plugins to generate launcher scripts for your applicati
 </div>
 </div>
 <div class="sect2">
-<h3 id="_graalvm_native_image"><a class="anchor" href="#_graalvm_native_image"></a>28.3. GraalVM Native Image</h3>
+<h3 id="_graalvm_native_image"><a class="anchor" href="#_graalvm_native_image"></a>29.3. GraalVM Native Image</h3>
 <div class="paragraph">
 <p><span class="image"><img src="images/exe-picocli-on-graalvm.png" alt="Turn your picocli-based application into a native image" width="265" height="150"></span></p>
 </div>
 <div class="sect3">
-<h4 id="_what_are_graalvm_native_images"><a class="anchor" href="#_what_are_graalvm_native_images"></a>28.3.1. What are GraalVM Native Images?</h4>
+<h4 id="_what_are_graalvm_native_images"><a class="anchor" href="#_what_are_graalvm_native_images"></a>29.3.1. What are GraalVM Native Images?</h4>
 <div class="paragraph">
 <p><a href="https://www.graalvm.org/docs/reference-manual/aot-compilation/">GraalVM Native Image</a> allows you to
 ahead-of-time compile Java code to a standalone executable, called a native image.
@@ -10263,7 +10492,7 @@ to be able to use features like <a href="https://github.com/oracle/graal/blob/ma
 </div>
 </div>
 <div class="sect3">
-<h4 id="_how_do_i_create_a_native_image_for_my_application"><a class="anchor" href="#_how_do_i_create_a_native_image_for_my_application"></a>28.3.2. How do I Create a Native Image for my Application?</h4>
+<h4 id="_how_do_i_create_a_native_image_for_my_application"><a class="anchor" href="#_how_do_i_create_a_native_image_for_my_application"></a>29.3.2. How do I Create a Native Image for my Application?</h4>
 <div class="paragraph">
 <p>The <code>picocli-codegen</code> module contains an annotation processor that generates the necessary configuration files
 under <code>META-INF/native-image/picocli-generated/$project</code> during compilation,
@@ -10305,7 +10534,7 @@ Gradle users may be interested in the <a href="https://github.com/palantir/gradl
 </div>
 </div>
 <div class="sect3">
-<h4 id="_where_can_i_get_more_details"><a class="anchor" href="#_where_can_i_get_more_details"></a>28.3.3. Where can I get More Details?</h4>
+<h4 id="_where_can_i_get_more_details"><a class="anchor" href="#_where_can_i_get_more_details"></a>29.3.3. Where can I get More Details?</h4>
 <div class="paragraph">
 <p>This InfoQ article <a href="https://www.infoq.com/articles/java-native-cli-graalvm-picocli/">Build Great Native CLI Apps in Java with Graalvm and Picocli</a> provides details on setting up the GraalVM toolchain for creating native images.
 It pays special attention to Windows, where setting up the compiler toolchain can be tricky.</p>
@@ -10319,19 +10548,19 @@ It pays special attention to Windows, where setting up the compiler toolchain ca
 </div>
 </div>
 <div class="sect2">
-<h3 id="_launch4j"><a class="anchor" href="#_launch4j"></a>28.4. launch4j</h3>
+<h3 id="_launch4j"><a class="anchor" href="#_launch4j"></a>29.4. launch4j</h3>
 <div class="paragraph">
 <p><a href="http://launch4j.sourceforge.net/docs.html">launch4j</a> can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_javapackager_java_8"><a class="anchor" href="#_javapackager_java_8"></a>28.5. javapackager (Java 8)</h3>
+<h3 id="_javapackager_java_8"><a class="anchor" href="#_javapackager_java_8"></a>29.5. javapackager (Java 8)</h3>
 <div class="paragraph">
 <p>JDK 8 <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javapackager.html">javapackager</a> can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jlink_java_9"><a class="anchor" href="#_jlink_java_9"></a>28.6. jlink (Java 9+)</h3>
+<h3 id="_jlink_java_9"><a class="anchor" href="#_jlink_java_9"></a>29.6. jlink (Java 9+)</h3>
 <div class="paragraph">
 <p>With the JPMS module system introduced in Java 9 it became possible to use <a href="https://docs.oracle.com/javase/9/tools/jlink.htm#JSWOR-GUID-CECAC52B-CFEE-46CB-8166-F17A8E9280E9">jlink</a> to create a custom light-weight JRE with only the necessary modules.
 This JRE may be as small as 30-40MB.
@@ -10342,7 +10571,7 @@ Use <code>jlink</code> with the <code>--launcher</code> option to generate launc
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jpackage"><a class="anchor" href="#_jpackage"></a>28.7. jpackage</h3>
+<h3 id="_jpackage"><a class="anchor" href="#_jpackage"></a>29.7. jpackage</h3>
 <div class="paragraph">
 <p>jpackage is a packaging tool according to <a href="https://openjdk.java.net/jeps/343">JEP 343</a> which ships with JDK 14.
 JPackage can take the custom light-weight JRE produced by <code>jlink</code> and create an installer and a native application launcher.
@@ -10358,7 +10587,7 @@ and <a href="https://badass-jlink-plugin.beryx.org/releases/latest/">org.beryx B
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jbang"><a class="anchor" href="#_jbang"></a>28.8. jbang</h3>
+<h3 id="_jbang"><a class="anchor" href="#_jbang"></a>29.8. jbang</h3>
 <div class="paragraph">
 <p><a href="https://github.com/maxandersen/jbang">jbang</a> allows you to write scripts in Java that use external dependencies.
 You use it with a <code>//DEPS</code> comment, similar to the <a href="http://groovy-lang.org/grape.html"><code>@Grab</code></a> annotation in Groovy.</p>
@@ -10371,15 +10600,15 @@ This <a href="https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&am
 </div>
 </div>
 <div class="sect1">
-<h2 id="_picocli_in_other_languages"><a class="anchor" href="#_picocli_in_other_languages"></a>29. Picocli in Other Languages</h2>
+<h2 id="_picocli_in_other_languages"><a class="anchor" href="#_picocli_in_other_languages"></a>30. Picocli in Other Languages</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli may be used in other JVM languages that support annotations.</p>
 </div>
 <div class="sect2">
-<h3 id="_groovy"><a class="anchor" href="#_groovy"></a>29.1. Groovy</h3>
+<h3 id="_groovy"><a class="anchor" href="#_groovy"></a>30.1. Groovy</h3>
 <div class="sect3">
-<h4 id="_groovy_annotation_syntax"><a class="anchor" href="#_groovy_annotation_syntax"></a>29.1.1. Groovy Annotation Syntax</h4>
+<h4 id="_groovy_annotation_syntax"><a class="anchor" href="#_groovy_annotation_syntax"></a>30.1.1. Groovy Annotation Syntax</h4>
 <div class="paragraph">
 <p>In Groovy, use <code>[</code> and <code>]</code> to surround array values, instead of the <code>{</code> and <code>}</code> used in Java.</p>
 </div>
@@ -10406,7 +10635,7 @@ This <a href="https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&am
 </div>
 </div>
 <div class="sect3">
-<h4 id="_groovy_scripts"><a class="anchor" href="#_groovy_scripts"></a>29.1.2. Groovy Scripts</h4>
+<h4 id="_groovy_scripts"><a class="anchor" href="#_groovy_scripts"></a>30.1.2. Groovy Scripts</h4>
 <div class="paragraph">
 <p>Picocli 2.0 introduced special support for Groovy scripts. (From picocli 4.0 this was moved into a separate module, <code>picocli-groovy</code>.)</p>
 </div>
@@ -10422,7 +10651,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.5.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.5.1</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabConfig</span>(systemClassLoader=<span class="predefined-constant">true</span>)
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myScript</span><span class="delimiter">&quot;</span></span>,
         mixinStandardHelpOptions = <span class="predefined-constant">true</span>, <span class="comment">// add --help and --version options</span>
@@ -10451,7 +10680,7 @@ count.times {
 </td>
 <td class="content">
 When upgrading scripts to picocli 4.0, just changing the version number is not enough!
-Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.5.0')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.5.0')</code> will not work,
+Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.5.1')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.5.1')</code> will not work,
 because the <code>@picocli.groovy.PicocliScript</code> annotation class and supporting classes have been moved into a separate module, <code>picocli-groovy</code>.
 </td>
 </tr>
@@ -10459,7 +10688,7 @@ because the <code>@picocli.groovy.PicocliScript</code> annotation class and supp
 </div>
 </div>
 <div class="sect3">
-<h4 id="_older_versions_of_groovy"><a class="anchor" href="#_older_versions_of_groovy"></a>29.1.3. Older Versions of Groovy</h4>
+<h4 id="_older_versions_of_groovy"><a class="anchor" href="#_older_versions_of_groovy"></a>30.1.3. Older Versions of Groovy</h4>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -10475,7 +10704,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.5.0</span><span class="delimiter">'</span></span>)
+<pre class="CodeRay highlight"><code data-lang="groovy"><span class="annotation">@Grab</span>(<span class="string"><span class="delimiter">'</span><span class="content">info.picocli:picocli-groovy:4.5.1</span><span class="delimiter">'</span></span>)
 <span class="annotation">@GrabExclude</span>(<span class="string"><span class="delimiter">'</span><span class="content">org.codehaus.groovy:groovy-all</span><span class="delimiter">'</span></span>) <span class="comment">// work around GROOVY-7613</span>
 ...</code></pre>
 </div>
@@ -10486,9 +10715,9 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 </div>
 <div class="sect2">
-<h3 id="_kotlin"><a class="anchor" href="#_kotlin"></a>29.2. Kotlin</h3>
+<h3 id="_kotlin"><a class="anchor" href="#_kotlin"></a>30.2. Kotlin</h3>
 <div class="sect3">
-<h4 id="_kotlin_annotation_syntax"><a class="anchor" href="#_kotlin_annotation_syntax"></a>29.2.1. Kotlin Annotation Syntax</h4>
+<h4 id="_kotlin_annotation_syntax"><a class="anchor" href="#_kotlin_annotation_syntax"></a>30.2.1. Kotlin Annotation Syntax</h4>
 <div class="paragraph">
 <p>Kotlin 1.2 (released Nov 28, 2017) officially supports <a href="http://kotlinlang.org/docs/reference/whatsnew12.html#array-literals-in-annotations">array literals in annotations</a>, allowing a more compact notation:</p>
 </div>
@@ -10531,7 +10760,7 @@ class SubCmd { // ...
 </div>
 </div>
 <div class="sect3">
-<h4 id="_older_versions_of_kotlin"><a class="anchor" href="#_older_versions_of_kotlin"></a>29.2.2. Older Versions of Kotlin</h4>
+<h4 id="_older_versions_of_kotlin"><a class="anchor" href="#_older_versions_of_kotlin"></a>30.2.2. Older Versions of Kotlin</h4>
 <div class="paragraph">
 <p>Kotlin versions prior to 1.2 did not allow the <a href="https://kotlinlang.org/docs/reference/annotations.html">array literal syntax in annotations</a>, so with older versions of Kotlin you will have to write <code>arrayOf(&#8230;&#8203;)</code> for the <code>names</code>, <code>description</code> and <code>type</code> attributes.</p>
 </div>
@@ -10562,7 +10791,7 @@ fun main(args: Array&lt;String&gt;) = System.exit(CommandLine(MyApp()).execute(*
 </div>
 </div>
 <div class="sect2">
-<h3 id="_scala"><a class="anchor" href="#_scala"></a>29.3. Scala</h3>
+<h3 id="_scala"><a class="anchor" href="#_scala"></a>30.3. Scala</h3>
 <div class="paragraph">
 <p>Scala does not allow specifying array annotation attribute as a single value,
 so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for the <code>names</code>, <code>description</code> and <code>type</code> attributes.</p>
@@ -10599,7 +10828,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_api_javadoc"><a class="anchor" href="#_api_javadoc"></a>30. API Javadoc</h2>
+<h2 id="_api_javadoc"><a class="anchor" href="#_api_javadoc"></a>31. API Javadoc</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli API Javadoc can be found <a href="apidocs/">here</a>.</p>
@@ -10610,7 +10839,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_github_project"><a class="anchor" href="#_github_project"></a>31. GitHub Project</h2>
+<h2 id="_github_project"><a class="anchor" href="#_github_project"></a>32. GitHub Project</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The <a href="https://github.com/remkop/picocli">GitHub project</a> has the source code, tests, build scripts, etc.</p>
@@ -10624,7 +10853,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_issue_tracker"><a class="anchor" href="#_issue_tracker"></a>32. Issue Tracker</h2>
+<h2 id="_issue_tracker"><a class="anchor" href="#_issue_tracker"></a>33. Issue Tracker</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The GitHub <a href="https://github.com/remkop/picocli/issues">Issue Tracker</a> can be used to report bugs or request features. There is also a <a href="#_mailing_list">Mailing List</a>, and for questions where the user community may know the answer, <a href="https://stackoverflow.com/questions/tagged/picocli">StackOverflow</a> is both a good resource and a great way to build an online knowledge base.</p>
@@ -10632,7 +10861,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_mailing_list"><a class="anchor" href="#_mailing_list"></a>33. Mailing List</h2>
+<h2 id="_mailing_list"><a class="anchor" href="#_mailing_list"></a>34. Mailing List</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Join the <a href="https://groups.google.com/d/forum/picocli">picocli Google group</a> if you are interested in discussing anything picocli-related and receiving announcements on new releases.</p>
@@ -10640,7 +10869,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_license"><a class="anchor" href="#_license"></a>34. License</h2>
+<h2 id="_license"><a class="anchor" href="#_license"></a>35. License</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Picocli is licensed under the <a href="https://github.com/remkop/picocli/blob/master/LICENSE">Apache License 2.0</a>.</p>
@@ -10648,7 +10877,7 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_releases"><a class="anchor" href="#_releases"></a>35. Releases</h2>
+<h2 id="_releases"><a class="anchor" href="#_releases"></a>36. Releases</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Previous versions are available from the GitHub project <a href="https://github.com/remkop/picocli/releases">Releases</a>.</p>
@@ -10656,50 +10885,50 @@ object MyApp {
 </div>
 </div>
 <div class="sect1">
-<h2 id="_download"><a class="anchor" href="#_download"></a>36. Download</h2>
+<h2 id="_download"><a class="anchor" href="#_download"></a>37. Download</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>You can add picocli as an external dependency to your project, or you can include it as source.
 See the <a href="#_source">source code</a> below. Copy and paste it into a file called <code>CommandLine.java</code>, add it to your project, and enjoy!</p>
 </div>
 <div class="sect2">
-<h3 id="_gradle_3"><a class="anchor" href="#_gradle_3"></a>36.1. Gradle</h3>
+<h3 id="_gradle_3"><a class="anchor" href="#_gradle_3"></a>37.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.5.0'</pre>
+<pre>compile 'info.picocli:picocli:4.5.1'</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_maven_3"><a class="anchor" href="#_maven_3"></a>36.2. Maven</h3>
+<h3 id="_maven_3"><a class="anchor" href="#_maven_3"></a>37.2. Maven</h3>
 <div class="listingblock">
 <div class="content">
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.5.0&lt;/version&gt;
+  &lt;version&gt;4.5.1&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_scala_sbt"><a class="anchor" href="#_scala_sbt"></a>36.3. Scala SBT</h3>
+<h3 id="_scala_sbt"><a class="anchor" href="#_scala_sbt"></a>37.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "4.5.0"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "4.5.1"</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_ivy"><a class="anchor" href="#_ivy"></a>36.4. Ivy</h3>
+<h3 id="_ivy"><a class="anchor" href="#_ivy"></a>37.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.5.0" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.5.1" /&gt;</pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_source"><a class="anchor" href="#_source"></a>36.5. Source</h3>
+<h3 id="_source"><a class="anchor" href="#_source"></a>37.5. Source</h3>
 <div class="paragraph">
 <p>Picocli has only one source file: <a href="https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java">CommandLine.java</a>.
 This facilitates including it in your project in source form to avoid having an external dependency on picocli.</p>
@@ -10710,8 +10939,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.5.0<br>
-Last updated 2020-08-01 11:50:35 +0900
+Version 4.5.1<br>
+Last updated 2020-08-26 12:49:06 +0900
 </div>
 </div>
 </body>

@@ -1,7 +1,7 @@
 # picocli Release Notes
 
 
-# <a name="4.5.1"></a> Picocli 4.5.1 (UNRELEASED)
+# <a name="4.5.1"></a> Picocli 4.5.1
 The picocli community is pleased to announce picocli 4.5.1.
 
 This release contains bug fixes and enhancements.
@@ -10,11 +10,10 @@ Fixed bug in the `picocli-codegen` annotation processor that resulted in errors 
 
 Suppress generation of Gradle Module Metadata, to fix Gradle build failures for projects using picocli 4.4.0 or 4.5.0.
 
-Fix terminal width detection on macOS.
+Fixed terminal width detection on macOS.
 
-The user manual now has a new section on [Validation](https://picocli.info/#_validation).
-
-Various documentation improvements.
+The user manual now has a new section on [Validation](https://picocli.info/#_validation). Various other documentation improvements.
+The javadoc now uses the new Java-9 style.
 
 
 This is the seventy-third public release.
