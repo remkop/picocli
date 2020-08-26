@@ -2387,6 +2387,7 @@ class SingleOptionValidationExample {
                     String.format("Invalid value '%s' for option '--p': " +
                             "value is not a prime number.", value));
         }
+        prime = value;
     }
     // ...
 }
@@ -2402,9 +2403,9 @@ The following example validates that at least one of the `--xml`, `--csv`, or `-
 ----
 @Command(name = "myapp", mixinStandardHelpOptions = true, version = "myapp 0.1")
 class MultiOptionValidationExample implements Runnable {
-    @Option(name="--xml") List<File> xmlFiles;
-    @Option(name="--csv") List<File> csvFiles;
-    @Option(name="--json") List<File> jsonFiles;
+    @Option(names="--xml") List<File> xmlFiles;
+    @Option(names="--csv") List<File> csvFiles;
+    @Option(names="--json") List<File> jsonFiles;
 
     @Spec CommandSpec spec; // injected by picocli
 
@@ -2426,7 +2427,7 @@ class MultiOptionValidationExample implements Runnable {
         }
     }
 
-    private void missing(List<?> list) {
+    private boolean missing(List<?> list) {
         return list == null || list.isEmpty();
     }
 }
