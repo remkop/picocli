@@ -140,7 +140,10 @@ public class AbstractCommandSpecProcessorTest {
             "@Unmatched must be of type String[] or List<String> but was: int",
             "@Unmatched must be of type String[] or List<String> but was: java.lang.Integer"
         ));
-        validateErrorMessages(compilation, expected);
+        List<String> reportedTwiceOnJava9Plus = new ArrayList<>(Arrays.asList(
+                "@Mixin must have a declared type, not int"
+                ));
+        validateErrorMessages(compilation, expected, reportedTwiceOnJava9Plus);
     }
 
     @Test
