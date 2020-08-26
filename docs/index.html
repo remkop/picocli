@@ -2296,7 +2296,7 @@ Not only will picocli validate the input, it allows you to <a href="#_show_defau
 <div class="ulist">
 <ul>
 <li>
-<p>when the option is used in a argument group, the usage help <a href="#_default_values_in_argument_groups">cannot show the default value</a></p>
+<p>when the option is used in an argument group, the usage help <a href="#_default_values_in_argument_groups">cannot show the default value</a></p>
 </li>
 <li>
 <p>picocli&#8217;s annotation processors can only detect default values in annotations, not in the field declaration. Your application may not work correctly with future features like documentation generated from the annotations.</p>
@@ -4244,9 +4244,10 @@ The sections below show some examples.</p>
         }
         <span class="keyword">if</span> (invalid) {
             <span class="keyword">throw</span> <span class="keyword">new</span> ParameterException(spec.commandLine(),
-                    <span class="predefined-type">String</span>.format(<span class="string"><span class="delimiter">&quot;</span><span class="content">Invalid value '%s' for option '--p': </span><span class="delimiter">&quot;</span></span> +
+                    <span class="predefined-type">String</span>.format(<span class="string"><span class="delimiter">&quot;</span><span class="content">Invalid value '%s' for option '--prime': </span><span class="delimiter">&quot;</span></span> +
                             <span class="string"><span class="delimiter">&quot;</span><span class="content">value is not a prime number.</span><span class="delimiter">&quot;</span></span>, value));
         }
+        prime = value;
     }
     <span class="comment">// ...</span>
 }</code></pre>
@@ -4266,9 +4267,9 @@ One way to accomplish this is to perform such validation at the beginning of the
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">myapp</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">myapp 0.1</span><span class="delimiter">&quot;</span></span>)
 <span class="type">class</span> <span class="class">MultiOptionValidationExample</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
-    <span class="annotation">@Option</span>(name=<span class="string"><span class="delimiter">&quot;</span><span class="content">--xml</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; xmlFiles;
-    <span class="annotation">@Option</span>(name=<span class="string"><span class="delimiter">&quot;</span><span class="content">--csv</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; csvFiles;
-    <span class="annotation">@Option</span>(name=<span class="string"><span class="delimiter">&quot;</span><span class="content">--json</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; jsonFiles;
+    <span class="annotation">@Option</span>(names=<span class="string"><span class="delimiter">&quot;</span><span class="content">--xml</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; xmlFiles;
+    <span class="annotation">@Option</span>(names=<span class="string"><span class="delimiter">&quot;</span><span class="content">--csv</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; csvFiles;
+    <span class="annotation">@Option</span>(names=<span class="string"><span class="delimiter">&quot;</span><span class="content">--json</span><span class="delimiter">&quot;</span></span>) <span class="predefined-type">List</span>&lt;<span class="predefined-type">File</span>&gt; jsonFiles;
 
     <span class="annotation">@Spec</span> CommandSpec spec; <span class="comment">// injected by picocli</span>
 
@@ -4290,7 +4291,7 @@ One way to accomplish this is to perform such validation at the beginning of the
         }
     }
 
-    <span class="directive">private</span> <span class="type">void</span> missing(<span class="predefined-type">List</span>&lt;?&gt; list) {
+    <span class="directive">private</span> <span class="type">boolean</span> missing(<span class="predefined-type">List</span>&lt;?&gt; list) {
         <span class="keyword">return</span> list == <span class="predefined-constant">null</span> || list.isEmpty();
     }
 }</code></pre>
