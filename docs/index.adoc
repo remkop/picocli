@@ -1026,7 +1026,7 @@ int count = 123; // default value is 123
 ====
 Defining a default value by assigning a value at the field declaration has limitations:
 
-* when the option is used in a argument group, the usage help <<Default Values in Argument Groups,cannot show the default value>>
+* when the option is used in an argument group, the usage help <<Default Values in Argument Groups,cannot show the default value>>
 * picocli's annotation processors can only detect default values in annotations, not in the field declaration. Your application may not work correctly with future features like documentation generated from the annotations.
 ====
 
@@ -2384,7 +2384,7 @@ class SingleOptionValidationExample {
         }
         if (invalid) {
             throw new ParameterException(spec.commandLine(),
-                    String.format("Invalid value '%s' for option '--p': " +
+                    String.format("Invalid value '%s' for option '--prime': " +
                             "value is not a prime number.", value));
         }
         prime = value;

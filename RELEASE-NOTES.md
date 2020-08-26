@@ -1,5 +1,32 @@
 # picocli Release Notes
 
+# <a name="4.5.2"></a> Picocli 4.5.2 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.5.2.
+
+This release contains bug fixes and enhancements.
+
+This is the seventy-fourth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.5.2-toc"></a> Table of Contents
+* [New and noteworthy](#4.5.2-new)
+* [Fixed issues](#4.5.2-fixes)
+* [Deprecations](#4.5.2-deprecated)
+* [Potential breaking changes](#4.5.2-breaking-changes)
+
+## <a name="4.5.2-new"></a> New and Noteworthy
+
+
+## <a name="4.5.2-fixes"></a> Fixed issues
+* [#1157] DOC: Fix typo "a argument group" in user manual. Thanks to sabrina at exchange.culturesky.com for raising this.
+
+## <a name="4.5.2-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.5.2-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 
 # <a name="4.5.1"></a> Picocli 4.5.1
 The picocli community is pleased to announce picocli 4.5.1.
