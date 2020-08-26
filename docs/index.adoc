@@ -2403,8 +2403,8 @@ The following example validates that at least one of the `--xml`, `--csv`, or `-
 ----
 @Command(name = "myapp", mixinStandardHelpOptions = true, version = "myapp 0.1")
 class MultiOptionValidationExample implements Runnable {
-    @Option(names="--xml") List<File> xmlFiles;
-    @Option(names="--csv") List<File> csvFiles;
+    @Option(names="--xml")  List<File> xmlFiles;
+    @Option(names="--csv")  List<File> csvFiles;
     @Option(names="--json") List<File> jsonFiles;
 
     @Spec CommandSpec spec; // injected by picocli
