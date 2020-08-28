@@ -1721,9 +1721,9 @@ The `picocli-codegen` module now includes an annotation processor that instantly
 
 Use this if you’re interested in:
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **Graal native images**. The annotation processor generates and updates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md) files under
+* **Graal native images**. The annotation processor generates and updates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/Configuration.md) files under
 `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
-This includes configuration files for [reflection](https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md), [resources](https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md) and [dynamic proxies](https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md).
+This includes configuration files for [reflection](https://github.com/oracle/graal/blob/master/substratevm/Reflection.md), [resources](https://github.com/oracle/graal/blob/master/substratevm/Resources.md) and [dynamic proxies](https://github.com/oracle/graal/blob/master/substratevm/DynamicProxy.md).
 By embedding these configuration files, your jar is instantly Graal-enabled.
 The `$project` location is configurable, see [processor options](#picocli-processor-options) below.
 In most cases no further configuration is needed when generating a native image. 
@@ -2717,7 +2717,7 @@ This release includes the first cut of an annotation processor that can build a 
 
 Use this if you’re interested in:
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **Graal native images**. The annotation processor generates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md)
+* **Graal native images**. The annotation processor generates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/Configuration.md)
 files under `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
 By embedding these configuration files, your jar is instantly Graal-enabled.
 In most cases no further configuration is needed when generating a native image. 
@@ -2754,9 +2754,9 @@ This release includes the first cut of an annotation processor that can build a 
 
 Use this if you’re interested in:
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **Graal native images**. The annotation processor generates and updates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md) files under
+* **Graal native images**. The annotation processor generates and updates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/Configuration.md) files under
 `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
-This includes configuration files for [reflection](https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md), [resources](https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md) and [dynamic proxies](https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md).
+This includes configuration files for [reflection](https://github.com/oracle/graal/blob/master/substratevm/Reflection.md), [resources](https://github.com/oracle/graal/blob/master/substratevm/Resources.md) and [dynamic proxies](https://github.com/oracle/graal/blob/master/substratevm/DynamicProxy.md).
 By embedding these configuration files, your jar is instantly Graal-enabled.
 The `$project` location is configurable, see [processor options](#picocli-processor-options) below.
 In most cases no further configuration is needed when generating a native image. 
@@ -3128,7 +3128,7 @@ The `picocli-codegen` module now has two new tools, in addition to the existing 
 
 #### ResourceConfigGenerator
 The GraalVM native-image builder by default will not integrate any of the
-[classpath resources](https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md) into the image it creates.
+[classpath resources](https://github.com/oracle/graal/blob/master/substratevm/Resources.md) into the image it creates.
 
 `ResourceConfigGenerator` generates a JSON String with the resource bundles and other classpath resources
 that should be included in the Substrate VM native image.
@@ -3141,7 +3141,7 @@ This allows picocli-based native image applications to access these resources.
 #### DynamicProxyConfigGenerator
 
 Substrate VM doesn't provide machinery for generating and interpreting bytecodes at run time. Therefore all dynamic proxy classes 
-[need to be generated](https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md) at native image build time.
+[need to be generated](https://github.com/oracle/graal/blob/master/substratevm/DynamicProxy.md) at native image build time.
 
 `DynamicProxyConfigGenerator` generates a JSON String with the fully qualified interface names for which
 dynamic proxy classes should be generated at native image build time.

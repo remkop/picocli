@@ -132,9 +132,9 @@ The `picocli-codegen` module includes an annotation processor that can build a m
 Enabling this annotation processor in your project is optional, but strongly recommended. Use this if you’re interested in:
 
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **<<GraalVM Native Image,GraalVM native images>>**. The annotation processor generates and updates https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[GraalVM configuration] files under
+* **<<GraalVM Native Image,GraalVM native images>>**. The annotation processor generates and updates https://github.com/oracle/graal/blob/master/substratevm/Configuration.md[GraalVM configuration] files under
 `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
-This includes configuration files for https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md[resources] and https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md[dynamic proxies].
+This includes configuration files for https://github.com/oracle/graal/blob/master/substratevm/Reflection.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/Resources.md[resources] and https://github.com/oracle/graal/blob/master/substratevm/DynamicProxy.md[dynamic proxies].
 By embedding these configuration files, your jar is instantly Graal-enabled.
 In most cases no further configuration is needed when generating a native image.
 
@@ -7060,8 +7060,8 @@ ahead-of-time compile Java code to a standalone executable, called a native imag
 The resulting executable includes the application, the libraries, and the JDK and does not require a separate Java VM to be installed.
 The generated native image has faster startup time and lower runtime memory overhead compared to a Java VM.
 
-GraalVM native images have some limitations and require some extra https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md[configuration]
-to be able to use features like https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md[resources] (including resource bundles) and https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md[dynamic proxies].
+GraalVM native images have some limitations and require some extra https://github.com/oracle/graal/blob/master/substratevm/Configuration.md[configuration]
+to be able to use features like https://github.com/oracle/graal/blob/master/substratevm/Reflection.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/Resources.md[resources] (including resource bundles) and https://github.com/oracle/graal/blob/master/substratevm/DynamicProxy.md[dynamic proxies].
 
 ==== How do I Create a Native Image for my Application?
 The `picocli-codegen` module contains an annotation processor that generates the necessary configuration files
@@ -7078,7 +7078,7 @@ After installing GraalVM and installing the `native-image` generator utility (wi
 you can then create a native image by invoking the `native-image` command:
 
 ----
-path/to/native-image -cp picocli-4.2.0.jar --static -jar myapp.jar
+path/to/native-image -cp picocli-4.5.1.jar --static -jar myapp.jar
 ----
 
 CAUTION: To create a native image, the compiler toolchain for your platform needs to be installed. See https://www.infoq.com/articles/java-native-cli-graalvm-picocli/[Build Great Native CLI Apps in Java with Graalvm and Picocli] for details.
