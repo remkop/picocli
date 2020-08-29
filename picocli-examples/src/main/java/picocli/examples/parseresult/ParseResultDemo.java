@@ -3,6 +3,7 @@ package picocli.examples.parseresult;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParseResult;
@@ -30,11 +31,14 @@ public class ParseResultDemo implements Runnable {
         System.out.println(pr.expandedArgs());
         System.out.println(pr.originalArgs());
 
-        String[] options = {"x", "y"};
-        for (String name : options) {
-            System.out.printf("%s was specified: %s%n", name, pr.hasMatchedOption(name));
-            System.out.printf("%s=%s (-1 means this option was not matched on command line)%n", name, pr.matchedOptionValue(name, -1));
-            System.out.printf("%s=%s (arg value or default)%n", name, spec.findOption(name).getValue());
+        List<OptionSpec> options = spec.options();
+        for (OptionSpec opt : options) {
+            System.out.printf("%s was specified: %s%n",
+                    opt.longestName(), pr.hasMatchedOption(opt));
+            System.out.printf("%s=%s (-1 means this option was not matched on command line)%n",
+                    opt.shortestName(), pr.matchedOptionValue(opt.longestName(), -1));
+            System.out.printf("%s=%s (arg value or default)%n",
+                    opt.longestName(), opt.getValue());
             System.out.println();
         }
 
