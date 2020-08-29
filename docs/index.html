@@ -994,9 +994,9 @@ Applications can call <code>System.exit</code> with the returned exit code to si
 <p><strong>Compile time error checking</strong>. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.</p>
 </li>
 <li>
-<p><strong><a href="#_graalvm_native_image">GraalVM native images</a></strong>. The annotation processor generates and updates <a href="https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md">GraalVM configuration</a> files under
+<p><strong><a href="#_graalvm_native_image">GraalVM native images</a></strong>. The annotation processor generates and updates <a href="https://github.com/oracle/graal/blob/master/substratevm/Configuration.md">GraalVM configuration</a> files under
 <code>META-INF/native-image/picocli-generated/$project</code> during compilation, to be included in the application jar.
-This includes configuration files for <a href="https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md">reflection</a>, <a href="https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md">resources</a> and <a href="https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md">dynamic proxies</a>.
+This includes configuration files for <a href="https://github.com/oracle/graal/blob/master/substratevm/Reflection.md">reflection</a>, <a href="https://github.com/oracle/graal/blob/master/substratevm/Resources.md">resources</a> and <a href="https://github.com/oracle/graal/blob/master/substratevm/DynamicProxy.md">dynamic proxies</a>.
 By embedding these configuration files, your jar is instantly Graal-enabled.
 In most cases no further configuration is needed when generating a native image.</p>
 </li>
@@ -10488,8 +10488,8 @@ The resulting executable includes the application, the libraries, and the JDK an
 The generated native image has faster startup time and lower runtime memory overhead compared to a Java VM.</p>
 </div>
 <div class="paragraph">
-<p>GraalVM native images have some limitations and require some extra <a href="https://github.com/oracle/graal/blob/master/substratevm/CONFIGURE.md">configuration</a>
-to be able to use features like <a href="https://github.com/oracle/graal/blob/master/substratevm/REFLECTION.md">reflection</a>, <a href="https://github.com/oracle/graal/blob/master/substratevm/RESOURCES.md">resources</a> (including resource bundles) and <a href="https://github.com/oracle/graal/blob/master/substratevm/DYNAMIC_PROXY.md">dynamic proxies</a>.</p>
+<p>GraalVM native images have some limitations and require some extra <a href="https://github.com/oracle/graal/blob/master/substratevm/Configuration.md">configuration</a>
+to be able to use features like <a href="https://github.com/oracle/graal/blob/master/substratevm/Reflection.md">reflection</a>, <a href="https://github.com/oracle/graal/blob/master/substratevm/Resources.md">resources</a> (including resource bundles) and <a href="https://github.com/oracle/graal/blob/master/substratevm/DynamicProxy.md">dynamic proxies</a>.</p>
 </div>
 </div>
 <div class="sect3">
@@ -10512,7 +10512,7 @@ you can then create a native image by invoking the <code>native-image</code> com
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>path/to/native-image -cp picocli-4.2.0.jar --static -jar myapp.jar</pre>
+<pre>path/to/native-image -cp picocli-4.5.1.jar --static -jar myapp.jar</pre>
 </div>
 </div>
 <div class="admonitionblock caution">

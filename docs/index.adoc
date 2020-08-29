@@ -7078,7 +7078,7 @@ After installing GraalVM and installing the `native-image` generator utility (wi
 you can then create a native image by invoking the `native-image` command:
 
 ----
-path/to/native-image -cp picocli-4.5.1.jar --static -jar myapp.jar
+path/to/native-image -cp picocli-4.5.2-SNAPSHOT.jar --static -jar myapp.jar
 ----
 
 CAUTION: To create a native image, the compiler toolchain for your platform needs to be installed. See https://www.infoq.com/articles/java-native-cli-graalvm-picocli/[Build Great Native CLI Apps in Java with Graalvm and Picocli] for details.
