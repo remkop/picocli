@@ -33,7 +33,7 @@ public class ParseResultDemo implements Runnable {
         String[] options = {"x", "y"};
         for (String name : options) {
             System.out.printf("%s was specified: %s%n", name, pr.hasMatchedOption(name));
-            System.out.printf("%s=%s (-1 means this option was not matched on command line)%n", name, pr.matchedOptionValue("x", -1));
+            System.out.printf("%s=%s (-1 means this option was not matched on command line)%n", name, pr.matchedOptionValue(name, -1));
             System.out.printf("%s=%s (arg value or default)%n", name, spec.findOption(name).getValue());
             System.out.println();
         }
