@@ -15,17 +15,31 @@ public class ParseResultDemo implements Runnable {
     @Spec CommandSpec spec;
 
     @Option(names = "-x")
-    int x;
+    int x = 10;
+
+    @Option(names = "-y", defaultValue = "20")
+    int y;
 
     @Parameters
     List<String> positionalParams;
 
     @Override
     public void run() {
-        ParseResult parseResult = spec.commandLine().getParseResult();
+        ParseResult pr = spec.commandLine().getParseResult();
 
-        System.out.println(parseResult.expandedArgs());
-        System.out.println(parseResult.originalArgs());
+        System.out.println(pr.expandedArgs());
+        System.out.println(pr.originalArgs());
+
+        String[] options = {"x", "y"};
+        for (String name : options) {
+            System.out.printf("%s was specified: %s%n", name, pr.hasMatchedOption(name));
+            System.out.printf("%s=%s (-1 means this option was not matched on command line)%n", name, pr.matchedOptionValue("x", -1));
+            System.out.printf("%s=%s (arg value or default)%n", name, spec.findOption(name).getValue());
+            System.out.println();
+        }
+
+        System.out.printf("-x=%s (field value)%n", x);
+        System.out.printf("-y=%s (field value)%n", y);
     }
 
     public static void main(String[] args) {
