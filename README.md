@@ -144,6 +144,7 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 * [VIDEO] [Des applications en ligne de commande avec Picocli et GraalVM (N. Peters)](https://www.youtube.com/watch?v=8ENbMwkaFyk) (2019-05-07): 15-minute presentation by Nicolas Peters during Devoxx FR. Presentation slides are [available on GitHub](https://t.co/tXhtpTpAff?amp=1).
 
 #### Português
+* [Desenvolva aplicações CLI nativas em Java com Graalvm e Picocli](https://www.infoq.com/br/articles/java-native-cli-graalvm-picocli/) (2020-08-28): Portuguese translation of [Build Great Native CLI Apps in Java with Graalvm and Picocli](https://www.infoq.com/articles/java-native-cli-graalvm-picocli/), thanks to [Rodrigo Ap G Batista](https://www.infoq.com/br/profile/Rodrigo-Ap-G-Batista/).
 * [VIDEO] [Quarkus #40: Command Mode com Picocli](https://www.youtube.com/watch?v=LweGDh-Jxlc) (2020-06-23): 13-minute presentation by [Vinícius Ferraz](https://www.youtube.com/channel/UCJNOHl-pTTTj4S9yq60Ps9A) (@viniciusfcf).
 
 #### 日本語
