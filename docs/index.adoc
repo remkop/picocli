@@ -1168,6 +1168,50 @@ Note that the option description may contain the `${FALLBACK-VALUE}` <<Predefine
 
 <<Boolean Options,Boolean options>> can also define a `fallbackValue` to specify the value that should be set when the option is matched on the command line, regardless of the default value. This can be useful when the default is configurable by the end user, for example.
 
+=== Was a Value Defaulted?
+
+Sometimes an application is interested in knowing whether an option value was specified on the command line, or whether the default value was assigned.
+
+You can use `ParseResult::hasMatchedOption` to detect whether an option was actually matched on the command line,
+and `ParseResult::matchedOptionValue` to get the (type-converted) value that was specified on the command line.
+`OptionSpec::getValue` will return the value assigned (which may be a command line argument or may be the default value).
+
+For example:
+
+[source,java]
+----
+@Command(name = "defaults", mixinStandardHelpOptions = true, version = "defaults 0.1")
+public class DefaultValueDemo implements Runnable {
+
+    @Option(names = "-x")
+    int x = 10;
+
+    @Option(names = "-y", defaultValue = "20")
+    int y;
+
+    @Spec CommandSpec spec;
+
+    @Override
+    public void run() {
+        ParseResult pr = spec.commandLine().getParseResult();
+
+        for (OptionSpec option : spec.options()) {
+            String name = option.longestName();
+            System.out.printf("%s was specified: %s%n", name, pr.hasMatchedOption(option));
+            System.out.printf("%s=%s (-1 means this option was not matched on command line)%n",
+                    name, pr.matchedOptionValue(name, -1));
+            System.out.printf("%s=%s (arg value or default)%n", name, option.getValue());
+            System.out.println();
+        }
+    }
+
+    public static void main(String[] args) {
+        new CommandLine(new DefaultValueDemo()).execute(args);
+    }
+}
+----
+
+
 
 == Multiple Values
 Multi-valued options and positional parameters are annotated fields that can capture multiple values from the command line.
@@ -4477,7 +4521,7 @@ Custom type converters registered on a `CommandLine` instance will apply to all 
 
 Subcommands referenced in a `subcommands` attribute need to have a public no-argument constructor to be instantiated, unless a <<Custom Factory>> is installed to instantiate classes.
 
-Prior to picocli 4,2, the declared subcommands were instantiated immediately when the top-level `CommandLine` (the `new CommandLine(new Git())` object in the above example) was constructed.
+Prior to picocli 4.2, the declared subcommands were instantiated immediately when the top-level `CommandLine` (the `new CommandLine(new Git())` object in the above example) was constructed.
 
 From picocli 4.2, the declared subcommands are not instantiated until they are matched on the command line, unless they have a `@Spec` or `@ParentObject`-annotated field; these are injected during initialization, and in order to inject them the subcommand is instantiated during initialization.
 

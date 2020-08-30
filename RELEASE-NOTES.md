@@ -21,6 +21,8 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1158] DOC: Fix broken links to GraalVM repo. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1155] DOC: Fix sample code in chapter "Validation". Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1157] DOC: Fix typo "a argument group" in user manual. Thanks to sabrina at exchange.culturesky.com for raising this.
+* [#1160] DOC: Added section [Was a Value Defaulted?](https://picocli.info/#_was_a_value_defaulted) to the user manual.
+* [#1161] DOC: Fix typo 4,2 in user manual. Thanks to sabrina at exchange.culturesky.com for raising this.
 
 ## <a name="4.5.2-deprecated"></a> Deprecations
 No features were deprecated in this release.

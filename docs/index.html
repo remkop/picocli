@@ -572,6 +572,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_default_provider">5.3. Default Provider</a></li>
 <li><a href="#_propertiesdefaultprovider">5.4. PropertiesDefaultProvider</a></li>
 <li><a href="#fallbackValue-annotation">5.5. <code>fallbackValue</code> Annotation</a></li>
+<li><a href="#_was_a_value_defaulted">5.6. Was a Value Defaulted?</a></li>
 </ul>
 </li>
 <li><a href="#_multiple_values">6. Multiple Values</a>
@@ -2471,6 +2472,53 @@ x = -1</code></pre>
 </div>
 <div class="paragraph">
 <p><a href="#_boolean_options">Boolean options</a> can also define a <code>fallbackValue</code> to specify the value that should be set when the option is matched on the command line, regardless of the default value. This can be useful when the default is configurable by the end user, for example.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_was_a_value_defaulted"><a class="anchor" href="#_was_a_value_defaulted"></a>5.6. Was a Value Defaulted?</h3>
+<div class="paragraph">
+<p>Sometimes an application is interested in knowing whether an option value was specified on the command line, or whether the default value was assigned.</p>
+</div>
+<div class="paragraph">
+<p>You can use <code>ParseResult::hasMatchedOption</code> to detect whether an option was actually matched on the command line,
+and <code>ParseResult::matchedOptionValue</code> to get the (type-converted) value that was specified on the command line.
+<code>OptionSpec::getValue</code> will return the value assigned (which may be a command line argument or may be the default value).</p>
+</div>
+<div class="paragraph">
+<p>For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">defaults</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">defaults 0.1</span><span class="delimiter">&quot;</span></span>)
+<span class="directive">public</span> <span class="type">class</span> <span class="class">DefaultValueDemo</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
+
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-x</span><span class="delimiter">&quot;</span></span>)
+    <span class="type">int</span> x = <span class="integer">10</span>;
+
+    <span class="annotation">@Option</span>(names = <span class="string"><span class="delimiter">&quot;</span><span class="content">-y</span><span class="delimiter">&quot;</span></span>, defaultValue = <span class="string"><span class="delimiter">&quot;</span><span class="content">20</span><span class="delimiter">&quot;</span></span>)
+    <span class="type">int</span> y;
+
+    <span class="annotation">@Spec</span> CommandSpec spec;
+
+    <span class="annotation">@Override</span>
+    <span class="directive">public</span> <span class="type">void</span> run() {
+        ParseResult pr = spec.commandLine().getParseResult();
+
+        <span class="keyword">for</span> (OptionSpec option : spec.options()) {
+            <span class="predefined-type">String</span> name = option.longestName();
+            <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">%s was specified: %s%n</span><span class="delimiter">&quot;</span></span>, name, pr.hasMatchedOption(option));
+            <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">%s=%s (-1 means this option was not matched on command line)%n</span><span class="delimiter">&quot;</span></span>,
+                    name, pr.matchedOptionValue(name, -<span class="integer">1</span>));
+            <span class="predefined-type">System</span>.out.printf(<span class="string"><span class="delimiter">&quot;</span><span class="content">%s=%s (arg value or default)%n</span><span class="delimiter">&quot;</span></span>, name, option.getValue());
+            <span class="predefined-type">System</span>.out.println();
+        }
+    }
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> DefaultValueDemo()).execute(args);
+    }
+}</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -7210,7 +7258,7 @@ Command names are case-sensitive by default, but this is <a href="#_case_sensiti
 <p>Subcommands referenced in a <code>subcommands</code> attribute need to have a public no-argument constructor to be instantiated, unless a <a href="#_custom_factory">Custom Factory</a> is installed to instantiate classes.</p>
 </div>
 <div class="paragraph">
-<p>Prior to picocli 4,2, the declared subcommands were instantiated immediately when the top-level <code>CommandLine</code> (the <code>new CommandLine(new Git())</code> object in the above example) was constructed.</p>
+<p>Prior to picocli 4.2, the declared subcommands were instantiated immediately when the top-level <code>CommandLine</code> (the <code>new CommandLine(new Git())</code> object in the above example) was constructed.</p>
 </div>
 <div class="paragraph">
 <p>From picocli 4.2, the declared subcommands are not instantiated until they are matched on the command line, unless they have a <code>@Spec</code> or <code>@ParentObject</code>-annotated field; these are injected during initialization, and in order to inject them the subcommand is instantiated during initialization.</p>
