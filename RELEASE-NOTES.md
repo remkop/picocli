@@ -20,9 +20,9 @@ Picocli follows [semantic versioning](http://semver.org/).
 ## <a name="4.5.2-fixes"></a> Fixed issues
 * [#1158] DOC: Fix broken links to GraalVM repo. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1155] DOC: Fix sample code in chapter "Validation". Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-* [#1157] DOC: Fix typo "a argument group" in user manual. Thanks to sabrina at exchange.culturesky.com for raising this.
+* [#1157] DOC: Fix typo "a argument group" in user manual. Thanks to sabrina for raising this.
 * [#1160] DOC: Added section [Was a Value Defaulted?](https://picocli.info/#_was_a_value_defaulted) to the user manual.
-* [#1161] DOC: Fix typo 4,2 in user manual. Thanks to sabrina at exchange.culturesky.com for raising this.
+* [#1161] DOC: Fix typo 4,2 in user manual. Thanks to sabrina for raising this.
 
 ## <a name="4.5.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
@@ -63,7 +63,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1152] Bugfix: Gradle build fail when using picocli 4.4.0 or 4.5.0: Gradle Module Metadata for picocli 4.4.0+ missing from Maven Central. Thanks to [Frank Pavageau](https://github.com/fpavageau) for reporting this.
 * [#1150] Bugfix: Fix terminal width detection on macOS. Thanks to [David Phillips](https://github.com/electrum) for the pull request.
 * [#1142] DOC: Update Kotlin GraalVM native image example - Update native image gradle plugin. Now supports jdk 11. Thanks to [OndrejMalek](https://github.com/OndrejMalek) for the pull request.
-* [#1153] DOC: Fix documentation leading code quote. Thanks to sabrina at exchange.culturesky.com for raising this.
+* [#1153] DOC: Fix documentation leading code quote. Thanks to sabrina for raising this.
 * [#1147] DOC: Add documentation on how to do custom parameter validation. Thanks to [Loren Keagle](https://github.com/LorenKeagle) for raising this.
   
 
