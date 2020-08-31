@@ -470,4 +470,26 @@ public class InheritedOptionTest {
         assertFalse(bean.run);
     }
 
+    @Command(name = "Issue1159")
+    static class Issue1159 {
+        @Option(names = "--xxx-yyy", scope = INHERIT)
+        int x;
+
+        @Command
+        void sub() {
+        }
+    }
+
+    @Test
+    public void testIssue1159() {
+        Issue1159 bean = new Issue1159();
+        CommandLine cmd = new CommandLine(bean);
+        cmd.setAbbreviatedOptionsAllowed(true);
+        cmd.parseArgs("--x-y", "123");
+        assertEquals(123, bean.x);
+
+        cmd.parseArgs("sub", "--x-y", "345");
+        assertEquals(345, bean.x);
+    }
+
 }
