@@ -12526,11 +12526,7 @@ public class CommandLine {
 
                 // if we find another command, we are done with the current command
                 if (commandSpec.parser().abbreviatedSubcommandsAllowed()) {
-                    try {
-                        arg = AbbreviationMatcher.match(commandSpec.subcommands().keySet(), arg, commandSpec.subcommandsCaseInsensitive());
-                    } catch (IllegalArgumentException ex) {
-                        throw new ParameterException(CommandLine.this, "Error: " + ex.getMessage());
-                    }
+                    arg = AbbreviationMatcher.match(commandSpec.subcommands().keySet(), arg, commandSpec.subcommandsCaseInsensitive(), CommandLine.this);
                 }
                 if (commandSpec.subcommands().containsKey(arg)) {
                     CommandLine subcommand = commandSpec.subcommands().get(arg);
@@ -12553,21 +12549,17 @@ public class CommandLine {
                 // A single option may be without option parameters, like "-v" or "--verbose" (a boolean value),
                 // or an option may have one or more option parameters.
                 // A parameter may be attached to the option.
+                Set<String> aggregatedOptionNames = new LinkedHashSet<String>();
                 if (commandSpec.parser().abbreviatedOptionsAllowed()) {
-                    Set<String> aggregatedOptionNames = new LinkedHashSet<String>();
                     aggregatedOptionNames.addAll(commandSpec.optionsMap().keySet());
                     aggregatedOptionNames.addAll(commandSpec.negatedOptionsMap().keySet());
-                    Iterator<String> iterator = aggregatedOptionNames.iterator();
-                    try {
-                        arg = AbbreviationMatcher.match(aggregatedOptionNames, arg, commandSpec.optionsCaseInsensitive());
-                    } catch (IllegalArgumentException ex) {
-                        throw new ParameterException(CommandLine.this, "Error: " + ex.getMessage());
-                    }
+                    arg = AbbreviationMatcher.match(aggregatedOptionNames, arg, commandSpec.optionsCaseInsensitive(), CommandLine.this);
                 }
                 LookBehind lookBehind = LookBehind.SEPARATE;
                 int separatorIndex = arg.indexOf(separator);
                 if (separatorIndex > 0) {
                     String key = arg.substring(0, separatorIndex);
+                    key = AbbreviationMatcher.match(aggregatedOptionNames, key, commandSpec.optionsCaseInsensitive(), CommandLine.this); //#1159, #1162
                     // be greedy. Consume the whole arg as an option if possible.
                     if (isStandaloneOption(key) && isStandaloneOption(arg)) {
                         tracer.warn("Both '%s' and '%s' are valid option names in %s. Using '%s'...%n", arg, key, getCommandName(), arg);
@@ -17509,8 +17501,9 @@ public class CommandLine {
             return str;
         }
 
-        public static String match(Set<String> set, String abbreviation, boolean caseInsensitive) {
-            if (set.contains(abbreviation)) { // return exact match
+        /** Returns the non-abbreviated name if found, otherwise returns the specified original abbreviation value. */
+        public static String match(Set<String> set, String abbreviation, boolean caseInsensitive, CommandLine source) {
+            if (set.contains(abbreviation) || set.isEmpty()) { // return exact match
                 return abbreviation;
             }
             List<String> abbreviatedKeyChunks = splitIntoChunks(abbreviation, caseInsensitive);
@@ -17523,7 +17516,7 @@ public class CommandLine {
             }
             if (candidates.size() > 1) {
                 String str = candidates.toString();
-                throw new IllegalArgumentException("'" + abbreviation + "' is not unique: it matches '" +
+                throw new ParameterException(source, "Error: '" + abbreviation + "' is not unique: it matches '" +
                         str.substring(1, str.length() - 1).replace(", ", "', '") + "'");
             }
             return candidates.isEmpty() ? abbreviation : candidates.get(0); // return the original if no match found

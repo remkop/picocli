@@ -18,6 +18,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.5.2-fixes"></a> Fixed issues
+* [#1162] Bugfix: Abbreviated options are not matched if value attached with '=' separator (like `-x=3`). Thanks to [Chris Laprun](https://github.com/metacosm) for raising this.
 * [#1158] DOC: Fix broken links to GraalVM repo. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1155] DOC: Fix sample code in chapter "Validation". Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1157] DOC: Fix typo "a argument group" in user manual. Thanks to sabrina for raising this.

@@ -492,4 +492,16 @@ public class InheritedOptionTest {
         assertEquals(345, bean.x);
     }
 
+    @Test
+    public void testIssue1159WithEquals() {
+        Issue1159 bean = new Issue1159();
+        CommandLine cmd = new CommandLine(bean);
+        cmd.setAbbreviatedOptionsAllowed(true);
+        cmd.parseArgs("--x-y=123");
+        assertEquals(123, bean.x);
+
+        cmd.parseArgs("sub", "--x-y=345");
+        assertEquals(345, bean.x);
+    }
+
 }

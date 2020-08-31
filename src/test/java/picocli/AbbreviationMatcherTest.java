@@ -1,6 +1,5 @@
 package picocli;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -10,11 +9,19 @@ import org.junit.rules.TestRule;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import static org.junit.Assert.*;
-import static picocli.CommandLine.*;
-import static picocli.CommandLine.AbbreviationMatcher.*;
+import static picocli.CommandLine.AbbreviationMatcher.match;
+import static picocli.CommandLine.AbbreviationMatcher.splitIntoChunks;
+import static picocli.CommandLine.Command;
+import static picocli.CommandLine.Model;
+import static picocli.CommandLine.Option;
+import static picocli.CommandLine.ParameterException;
+import static picocli.CommandLine.ParseResult;
+import static picocli.CommandLine.UnmatchedArgumentException;
 
 public class AbbreviationMatcherTest {
 
@@ -42,58 +49,59 @@ public class AbbreviationMatcherTest {
     @Test
     public void testPrefixMatch() {
         Set<String> set = createSet();
+        CommandLine cmd = new CommandLine(Model.CommandSpec.create());
 
-        assertEquals("kebab-case", match(set, "kebab-case", false));
-        assertEquals("kebab-case-extra", match(set, "kebab-case-extra", false));
-        assertEquals("very-long-kebab-case", match(set, "very-long-kebab-case", false));
-        assertEquals("very-long-kebab-case", match(set, "v-l-k-c", false));
-        assertEquals("very-long-kebab-case", match(set, "vLKC", false));
-        assertEquals("camelCase", match(set, "camelCase", false));
-        assertEquals("camelCase", match(set, "cC", false));
-        assertEquals("camelCase", match(set, "c-c", false));
-        assertEquals("camelCase", match(set, "camC", false));
-        assertEquals("camelCase", match(set, "camel", false));
-        assertEquals("camelCase", match(set, "ca", false));
-        assertEquals("super-long-option", match(set, "s-l-o", false));
-        assertEquals("super-long-option", match(set, "s-long-opt", false));
-        assertEquals("super-long-option", match(set, "super", false));
-        assertEquals("super-long-option", match(set, "sup", false));
-        assertEquals("super-long-option", match(set, "sup-long", false));
-        assertNotEquals("super-long-option", match(set, "SLO", false));
-        assertEquals   ("super-long-option", match(set, "sLO", false));
-        assertEquals("super-long-option", match(set, "s-opt", false));
-        assertEquals("veryLongCamelCase", match(set, "veryLongCamelCase", false));
-        assertEquals("veryLongCamelCase", match(set, "vLCC", false));
-        assertEquals("veryLongCamelCase", match(set, "v-l-c-c", false));
-        assertEquals("extremely-long-option-with-many-components", match(set, "extr-opt-comp", false));
-        assertEquals("extremely-long-option-with-many-components", match(set, "extr-long-opt-comp", false));
-        assertEquals("extremely-long-option-with-many-components", match(set, "extr-comp", false));
-        assertNotEquals("extremely-long-option-with-many-components", match(set, "extr-opt-long-comp", false));
-        assertNotEquals("extremely-long-option-with-many-components", match(set, "long", false));
+        assertEquals("kebab-case", match(set, "kebab-case", false, cmd));
+        assertEquals("kebab-case-extra", match(set, "kebab-case-extra", false, cmd));
+        assertEquals("very-long-kebab-case", match(set, "very-long-kebab-case", false, cmd));
+        assertEquals("very-long-kebab-case", match(set, "v-l-k-c", false, cmd));
+        assertEquals("very-long-kebab-case", match(set, "vLKC", false, cmd));
+        assertEquals("camelCase", match(set, "camelCase", false, cmd));
+        assertEquals("camelCase", match(set, "cC", false, cmd));
+        assertEquals("camelCase", match(set, "c-c", false, cmd));
+        assertEquals("camelCase", match(set, "camC", false, cmd));
+        assertEquals("camelCase", match(set, "camel", false, cmd));
+        assertEquals("camelCase", match(set, "ca", false, cmd));
+        assertEquals("super-long-option", match(set, "s-l-o", false, cmd));
+        assertEquals("super-long-option", match(set, "s-long-opt", false, cmd));
+        assertEquals("super-long-option", match(set, "super", false, cmd));
+        assertEquals("super-long-option", match(set, "sup", false, cmd));
+        assertEquals("super-long-option", match(set, "sup-long", false, cmd));
+        assertNotEquals("super-long-option", match(set, "SLO", false, cmd));
+        assertEquals   ("super-long-option", match(set, "sLO", false, cmd));
+        assertEquals("super-long-option", match(set, "s-opt", false, cmd));
+        assertEquals("veryLongCamelCase", match(set, "veryLongCamelCase", false, cmd));
+        assertEquals("veryLongCamelCase", match(set, "vLCC", false, cmd));
+        assertEquals("veryLongCamelCase", match(set, "v-l-c-c", false, cmd));
+        assertEquals("extremely-long-option-with-many-components", match(set, "extr-opt-comp", false, cmd));
+        assertEquals("extremely-long-option-with-many-components", match(set, "extr-long-opt-comp", false, cmd));
+        assertEquals("extremely-long-option-with-many-components", match(set, "extr-comp", false, cmd));
+        assertNotEquals("extremely-long-option-with-many-components", match(set, "extr-opt-long-comp", false, cmd));
+        assertNotEquals("extremely-long-option-with-many-components", match(set, "long", false, cmd));
 
         try {
-            match(set, "vLC", false);
+            match(set, "vLC", false, cmd);
             fail("Expected exception");
-        } catch (IllegalArgumentException ex) {
-            assertEquals("'vLC' is not unique: it matches 'very-long-kebab-case', 'veryLongCamelCase'", ex.getMessage());
+        } catch (ParameterException ex) {
+            assertEquals("Error: 'vLC' is not unique: it matches 'very-long-kebab-case', 'veryLongCamelCase'", ex.getMessage());
         }
         try {
-            match(set, "k-c", false);
+            match(set, "k-c", false, cmd);
             fail("Expected exception");
-        } catch (IllegalArgumentException ex) {
-            assertEquals("'k-c' is not unique: it matches 'kebab-case-extra', 'kebab-case-extra-extra', 'kebab-case'", ex.getMessage());
+        } catch (ParameterException ex) {
+            assertEquals("Error: 'k-c' is not unique: it matches 'kebab-case-extra', 'kebab-case-extra-extra', 'kebab-case'", ex.getMessage());
         }
         try {
-            match(set, "kC", false);
+            match(set, "kC", false, cmd);
             fail("Expected exception");
-        } catch (IllegalArgumentException ex) {
-            assertEquals("'kC' is not unique: it matches 'kebab-case-extra', 'kebab-case-extra-extra', 'kebab-case'", ex.getMessage());
+        } catch (ParameterException ex) {
+            assertEquals("Error: 'kC' is not unique: it matches 'kebab-case-extra', 'kebab-case-extra-extra', 'kebab-case'", ex.getMessage());
         }
         try {
-            match(set, "keb-ca", false);
+            match(set, "keb-ca", false, cmd);
             fail("Expected exception");
-        } catch (IllegalArgumentException ex) {
-            assertEquals("'keb-ca' is not unique: it matches 'kebab-case-extra', 'kebab-case-extra-extra', 'kebab-case'", ex.getMessage());
+        } catch (ParameterException ex) {
+            assertEquals("Error: 'keb-ca' is not unique: it matches 'kebab-case-extra', 'kebab-case-extra-extra', 'kebab-case'", ex.getMessage());
         }
     }
 
@@ -107,26 +115,28 @@ public class AbbreviationMatcherTest {
         original.add("--super-long-option");
         original.add("some-long-command");
 
-        assertNotEquals("--veryLongCamelCase", match(original, "--VLCC", false));
-        assertEquals("--veryLongCamelCase", match(original, "--very", false));
-        assertEquals("--veryLongCamelCase", match(original, "--vLCC", false));
-        assertEquals("--veryLongCamelCase", match(original, "--vCase", false));
+        CommandLine cmd = new CommandLine(Model.CommandSpec.create());
 
-        assertEquals("--super-long-option", match(original, "--sup", false));
-        assertNotEquals("--super-long-option", match(original, "--Sup", false));
-        assertEquals("--super-long-option", match(original, "--sLO", false));
-        assertEquals("--super-long-option", match(original, "--s-l-o", false));
-        assertEquals("--super-long-option", match(original, "--s-lon", false));
-        assertEquals("--super-long-option", match(original, "--s-opt", false));
-        assertEquals("--super-long-option", match(original, "--sOpt", false));
+        assertNotEquals("--veryLongCamelCase", match(original, "--VLCC", false, cmd));
+        assertEquals("--veryLongCamelCase", match(original, "--very", false, cmd));
+        assertEquals("--veryLongCamelCase", match(original, "--vLCC", false, cmd));
+        assertEquals("--veryLongCamelCase", match(original, "--vCase", false, cmd));
 
-        assertNotEquals("some-long-command", match(original, "So", false));
-        assertEquals("some-long-command", match(original, "so", false));
-        assertEquals("some-long-command", match(original, "sLC", false));
-        assertEquals("some-long-command", match(original, "s-l-c", false));
-        assertEquals("some-long-command", match(original, "soLoCo", false));
-        assertNotEquals("some-long-command", match(original, "SoLoCo", false));
-        assertEquals("some-long-command", match(original, "someCom", false));
+        assertEquals("--super-long-option", match(original, "--sup", false, cmd));
+        assertNotEquals("--super-long-option", match(original, "--Sup", false, cmd));
+        assertEquals("--super-long-option", match(original, "--sLO", false, cmd));
+        assertEquals("--super-long-option", match(original, "--s-l-o", false, cmd));
+        assertEquals("--super-long-option", match(original, "--s-lon", false, cmd));
+        assertEquals("--super-long-option", match(original, "--s-opt", false, cmd));
+        assertEquals("--super-long-option", match(original, "--sOpt", false, cmd));
+
+        assertNotEquals("some-long-command", match(original, "So", false, cmd));
+        assertEquals("some-long-command", match(original, "so", false, cmd));
+        assertEquals("some-long-command", match(original, "sLC", false, cmd));
+        assertEquals("some-long-command", match(original, "s-l-c", false, cmd));
+        assertEquals("some-long-command", match(original, "soLoCo", false, cmd));
+        assertNotEquals("some-long-command", match(original, "SoLoCo", false, cmd));
+        assertEquals("some-long-command", match(original, "someCom", false, cmd));
     }
 
     @Test
@@ -538,4 +548,19 @@ public class AbbreviationMatcherTest {
             assertEquals("Unknown option: '--AB'", ex.getMessage());
         }
     }
+
+    @Test
+    public void testAbbreviatedOptionWithAttachedValue() {
+        @Command
+        class Bean {
+            @Option(names = "--xxx-yyy")
+            int x;
+        }
+        Bean bean = new Bean();
+        CommandLine cmd = new CommandLine(bean);
+        cmd.setAbbreviatedOptionsAllowed(true);
+        cmd.parseArgs("--x-y=123");
+        assertEquals(123, bean.x);
+    }
+
 }
