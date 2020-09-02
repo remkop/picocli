@@ -14,6 +14,7 @@ import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ParseResult;
 
 import java.util.*;
 
@@ -504,4 +505,24 @@ public class InheritedOptionTest {
         assertEquals(345, bean.x);
     }
 
+    @Test
+    public void testIssue1159ParseResult() {
+        Issue1159 bean = new Issue1159();
+        CommandLine cmd = new CommandLine(bean).setAbbreviatedOptionsAllowed(true);
+        ParseResult parseResult = cmd.parseArgs("sub", "--x", "345");
+        assertEquals(345, bean.x);
+
+        assertTrue(parseResult.hasSubcommand());
+        ParseResult subResult = parseResult.subcommand();
+
+        assertTrue("Matched on the subcommand", subResult.hasMatchedOption("--xxx-yyy"));
+        Object subValue = subResult.matchedOption("--xxx-yyy").getValue();
+        assertEquals(345, subValue);
+
+        assertFalse("Abbreviated options not supported in ParseResult...",
+                subResult.hasMatchedOption("--x")); // this does not work
+
+        assertFalse("Not matched on the parent command",
+                parseResult.hasMatchedOption("--xxx-yyy"));
+    }
 }
