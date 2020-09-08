@@ -257,6 +257,8 @@ public class Example {
             }
         } catch (Throwable t) {
             t.printStackTrace();
+        } finally {
+            AnsiConsole.systemUninstall();
         }
     }
 }

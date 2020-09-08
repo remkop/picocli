@@ -24,6 +24,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1157] DOC: Fix typo "a argument group" in user manual. Thanks to sabrina for raising this.
 * [#1160] DOC: Added section [Was a Value Defaulted?](https://picocli.info/#_was_a_value_defaulted) to the user manual.
 * [#1161] DOC: Fix typo 4,2 in user manual. Thanks to sabrina for raising this.
+* [#1165] DOC: Fix jline3 example: add `AnsiConsole::systemUninstall` in `finally` clause. Thanks to [David Walluck](https://github.com/dwalluck) for raising this.
 
 ## <a name="4.5.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
