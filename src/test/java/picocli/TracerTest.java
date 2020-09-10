@@ -2,6 +2,7 @@ package picocli;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
 
@@ -22,6 +23,9 @@ import static picocli.TestUtil.stripHashcodes;
 public class TracerTest {
     @Rule
     public final TestRule restoreSystemProperties = new RestoreSystemProperties();
+
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
 
     private static void clearBuiltInTracingCache() throws Exception {
         Field field = Class.forName("picocli.CommandLine$BuiltIn").getDeclaredField("traced");
