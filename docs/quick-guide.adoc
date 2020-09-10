@@ -784,13 +784,13 @@ private void handleParseResult(List<CommandLine> parsed) {
 }
 ----
 
-You may be interested in the <<Convenience Methods for Subcommands,convenience methods for subcommands>> to reduce error handling and other boilerplate code in your application.
+As of Picocli 4.0, you may use the <<Executing Commands,`execute` method>> to reduce error handling and other boilerplate code in your application.
 
 
 === `@ParentCommand` Annotation
 In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands.
 The `@ParentCommand` annotation makes it easy for subcommands to access their parent command options: subcommand fields annotated with `@ParentCommand` are initialized with a reference to the parent command.
-The user manual has an example showing https://picocli.info/#__code_parentcommand_code_annotation[how to use the `@ParentCommand` annotation].
+The user manual has an example showing https://picocli.info/#parentcommand-annotation[how to use the `@ParentCommand` annotation].
 
 
 === Usage Help for Subcommands
