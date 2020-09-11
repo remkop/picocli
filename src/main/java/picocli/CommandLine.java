@@ -365,7 +365,10 @@ public class CommandLine {
      * @since 0.9.7
      */
     public Map<String, CommandLine> getSubcommands() {
-        return new CaseAwareLinkedMap<String, CommandLine>(getCommandSpec().subcommands());
+        CaseAwareLinkedMap<String, CommandLine> subcommands = new CaseAwareLinkedMap<String, CommandLine>();
+        subcommands.setCaseInsensitive(isSubcommandsCaseInsensitive());
+        subcommands.putAll(getCommandSpec().subcommands());
+        return subcommands;
     }
     /**
      * Returns the command that this is a subcommand of, or {@code null} if this is a top-level command.
