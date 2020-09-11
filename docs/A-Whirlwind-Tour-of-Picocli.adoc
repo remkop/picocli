@@ -2,6 +2,10 @@
 :author: Remko Popma
 :source-highlighter: coderay
 :icons: font
+ifdef::env-github[]
+:note-caption: :information_source:
+:tip-caption: :bulb:
+endif::[]
 //:imagesdir: http://picocli.info
 
 

@@ -9,6 +9,10 @@
 :source-highlighter: coderay
 :icons: font
 :imagesdir: images
+ifdef::env-github[]
+:caution-caption: :fire:
+:tip-caption: :bulb:
+endif::[]
 
 TIP: For most applications the annotations API is a better fit than the programmatic API: the annotation syntax is more compact, easier to read, and easier to maintain. See this https://picocli.info/quick-guide.html[quick guide] and for more details, the http://picocli.info[user manual].
 

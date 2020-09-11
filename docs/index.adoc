@@ -13,6 +13,13 @@
 :icons: font
 :imagesdir: images
 :sectanchors:
+ifdef::env-github[]
+:caution-caption: :fire:
+:important-caption: :heavy_exclamation_mark:
+:note-caption: :information_source:
+:tip-caption: :bulb:
+:warning-caption: :warning:
+endif::[]
 
 [link=https://github.com/remkop/picocli]
 image::https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png[Fork me on GitHub,float="right"]

@@ -7,6 +7,9 @@
 //:toclevels: 3
 //:imagesdir: https://picocli.info/images/
 :imagesdir: images/
+ifdef::env-github[]
+:tip-caption: :bulb:
+endif::[]
 // create variables for some link text used in article to prevent link mangling in PDF
 :ms-cpp-2015-redist: Microsoft Visual C++ 2015 Redistributable Update 3 RC
 :ms-cpp-2010-redist: Microsoft Visual C++ 2010 SP1 Redistributable Package (x64)

@@ -1,6 +1,9 @@
 = Picocli on GraalVM: Blazingly Fast Command Line Apps
 :source-highlighter: highlightjs
 :highlightjs-theme: darkula
+ifdef::env-github[]
+:tip-caption: :bulb:
+endif::[]
 
 image::https://picocli.info/images/picocli-on-graalvm.png[]
 
