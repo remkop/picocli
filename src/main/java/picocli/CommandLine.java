@@ -365,8 +365,7 @@ public class CommandLine {
      * @since 0.9.7
      */
     public Map<String, CommandLine> getSubcommands() {
-        return new CaseAwareLinkedMap<String, CommandLine>(
-                (CaseAwareLinkedMap<String, CommandLine>) getCommandSpec().subcommands());
+        return new CaseAwareLinkedMap<String, CommandLine>(getCommandSpec().subcommands());
     }
     /**
      * Returns the command that this is a subcommand of, or {@code null} if this is a top-level command.
@@ -5563,14 +5562,14 @@ public class CommandLine {
             private final Locale locale;
 
             /**
-             * Constructs an empty LinkedCaseAwareMap instance with {@link java.util.Locale#ENGLISH}.
+             * Constructs an empty {@code CaseAwareLinkedMap} instance with {@link java.util.Locale#ENGLISH}.
              */
             public CaseAwareLinkedMap() {
                 this(ENGLISH);
             }
 
             /**
-             * Constructs an empty LinkedCaseAwareMap instance with the specified {@link java.util.Locale}.
+             * Constructs an empty {@code CaseAwareLinkedMap} instance with the specified {@link java.util.Locale}.
              * @param locale the locale to convert character cases
              */
             public CaseAwareLinkedMap(Locale locale) {
@@ -5578,16 +5577,14 @@ public class CommandLine {
             }
 
             /**
-             * Constructs a CaseAwareLinkedMap instance with the same mappings, case sensitivity and locale as the specified map.
-             * @param map the map whose mappings, case sensitivity and locale are to be placed in this map
+             * Constructs a {@code CaseAwareLinkedMap} instance with the same mappings as the specified map.
+             * The {@code CaseAwareLinkedMap} instance is created with a default locale {@link java.util.Locale#ENGLISH}.
+             * @param map the map whose mappings are to be placed in this map
              * @throws NullPointerException if the specified map is null
              */
-            public CaseAwareLinkedMap(CaseAwareLinkedMap<K, V> map) {
-                targetMap.putAll(map.targetMap);
-                keyMap.putAll(map.keyMap);
-                keySet.addAll(map.keySet);
-                caseInsensitive = map.caseInsensitive;
-                locale = map.locale;
+            public CaseAwareLinkedMap(Map<? extends K, ? extends V> map) {
+                this(ENGLISH);
+                putAll(map);
             }
 
             static boolean isCaseConvertible(Class<?> clazz) {
