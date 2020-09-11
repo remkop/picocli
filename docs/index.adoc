@@ -74,9 +74,9 @@ import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.concurrent.Callable;
 
-@Command(name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0",
+@Command(name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0", // <4>
          description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
-class CheckSum implements Callable<Integer> {
+class CheckSum implements Callable<Integer> { // <1>
 
     @Parameters(index = "0", description = "The file whose checksum to calculate.")
     private File file;
@@ -87,8 +87,8 @@ class CheckSum implements Callable<Integer> {
     // this example implements Callable, so parsing, error handling and handling user
     // requests for usage help or version help can be done with one line of code.
     public static void main(String... args) {
-        int exitCode = new CommandLine(new CheckSum()).execute(args);
-        System.exit(exitCode);
+        int exitCode = new CommandLine(new CheckSum()).execute(args); // <2>
+        System.exit(exitCode); // <3>
     }
 
     @Override
@@ -101,12 +101,12 @@ class CheckSum implements Callable<Integer> {
 }
 ----
 
-Implement `Runnable` or `Callable`, and your command can be <<Executing Commands,executed>> in one line of code.
-The example above uses the `CommandLine.execute` method
+Implement `Runnable` or `Callable` ➊, and your command can be <<Executing Commands,executed>> in one line of code.
+The example above uses the `CommandLine.execute` method ➋
 to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic.
-Applications can call `System.exit` with the returned exit code to signal success or failure to their caller.
+Applications can call `System.exit` ➌ with the returned exit code to signal success or failure to their caller.
 
-The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute adds `--help` and `--version` options to your application.
+The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute ➍ adds `--help` and `--version` options to your application.
 
 
 == Getting Started
