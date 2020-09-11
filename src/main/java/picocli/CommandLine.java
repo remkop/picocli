@@ -5625,6 +5625,11 @@ public class CommandLine {
                 this.caseInsensitive = caseInsensitive;
             }
 
+            /** Returns the locale of the map. */
+            public Locale getLocale() {
+                return locale;
+            }
+
             /**
              * Returns the case-sensitive key of the specified case-insensitive key if {@code isCaseSensitive()}.
              * Otherwise, the specified case-insensitive key is returned.
