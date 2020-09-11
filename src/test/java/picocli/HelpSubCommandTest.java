@@ -215,6 +215,7 @@ public class HelpSubCommandTest {
         assertEquals(String.format("Hi, colorScheme.ansi is OFF%n"), systemOutRule.getLog());
         assertEquals(String.format("Hello, colorScheme.ansi is OFF%n"), systemErrRule.getLog());
     }
+
     @Test
     public void testHelpSubcommandWithValidCommand() {
         @Command(subcommands = {HelpTest.Sub.class, HelpCommand.class})
@@ -225,6 +226,24 @@ public class HelpSubCommandTest {
                 .setOut(new PrintWriter(sw))
                 .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
                 .execute("help", "sub");
+
+        String expected = String.format("" +
+                "Usage: <main class> sub%n" +
+                "This is a subcommand%n");
+        assertEquals(expected, sw.toString());
+    }
+
+    @Test
+    public void testHelpSubcommandWithCaseInsensitiveValidCommand() {
+        @Command(subcommands = {HelpTest.Sub.class, HelpCommand.class})
+        class App implements Runnable{ public void run(){}}
+
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setOut(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .setSubcommandsCaseInsensitive(true)
+                .execute("help", "SUB");
 
         String expected = String.format("" +
                 "Usage: <main class> sub%n" +
@@ -245,6 +264,28 @@ public class HelpSubCommandTest {
 
         String expected = String.format("" +
                 "Unknown subcommand 'abcd'.%n" +
+                "Usage: <main class> [-hV] [COMMAND]%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "Commands:%n" +
+                "  sub   This is a subcommand%n" +
+                "  help  Displays help information about the specified command%n");
+        assertEquals(expected, sw.toString());
+    }
+
+    @Test
+    public void testHelpSubcommandWithCaseSensitiveInvalidCommand() {
+        @Command(mixinStandardHelpOptions = true, subcommands = {HelpTest.Sub.class, HelpCommand.class})
+        class App implements Runnable{ public void run(){}}
+
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setErr(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .execute("help", "SUB");
+
+        String expected = String.format("" +
+                "Unknown subcommand 'SUB'.%n" +
                 "Usage: <main class> [-hV] [COMMAND]%n" +
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n" +
@@ -392,7 +433,7 @@ public class HelpSubCommandTest {
     }
 
     @Test
-    public void testUsage_NoHeaderIfAllSubcommandHidden() {
+    public void testUsageNoHeaderIfAllSubcommandHidden() {
         @Command(name = "foo", description = "This is a foo sub-command", hidden = true) class Foo { }
         @Command(name = "bar", description = "This is a foo sub-command", hidden = true) class Bar { }
         @Command(name = "app", abbreviateSynopsis = true) class App { }
@@ -410,7 +451,7 @@ public class HelpSubCommandTest {
     }
 
     @Test
-    public void testHelp_allSubcommands() {
+    public void testHelpAllSubcommands() {
         @Command(name = "foo", description = "This is a visible subcommand") class Foo { }
         @Command(name = "bar", description = "This is a hidden subcommand", hidden = true) class Bar { }
         @Command(name = "app", subcommands = {Foo.class, Bar.class}) class App { }
