@@ -8,6 +8,10 @@
 //:source-highlighter: highlightjs
 //:highlightjs-theme: darkula
 :icons: font
+ifdef::env-github[]
+:caution-caption: :fire:
+:tip-caption: :bulb:
+endif::[]
 
 image::https://picocli.info/images/logo/horizontal-400x150.png[picocli,height="150px"]
 

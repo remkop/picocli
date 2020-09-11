@@ -9,6 +9,9 @@
 :source-highlighter: coderay
 :icons: font
 :imagesdir: images
+ifdef::env-github[]
+:note-caption: :information_source:
+endif::[]
 
 The `CliBuilder` class for quickly and concisely building command line applications has been renewed in Apache Groovy 2.5.
 This two-part article highlights what is new.

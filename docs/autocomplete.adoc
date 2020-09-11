@@ -10,6 +10,9 @@
 :source-highlighter: coderay
 :icons: font
 :imagesdir: images
+ifdef::env-github[]
+:tip-caption: :bulb:
+endif::[]
 
 [link=https://github.com/remkop/picocli]
 image::https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png[Fork me on GitHub,float="right"]

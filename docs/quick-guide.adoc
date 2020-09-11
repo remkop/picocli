@@ -10,6 +10,11 @@
 :source-highlighter: coderay
 :icons: font
 :imagesdir: images
+ifdef::env-github[]
+:caution-caption: :fire:
+:important-caption: :heavy_exclamation_mark:
+:note-caption: :information_source:
+endif::[]
 
 This is the Quick Guide. For more detail, see the full user manual at http://picocli.info[http://picocli.info].
 
