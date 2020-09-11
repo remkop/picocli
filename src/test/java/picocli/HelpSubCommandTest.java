@@ -252,6 +252,43 @@ public class HelpSubCommandTest {
     }
 
     @Test
+    public void testHelpSubcommandWithAbbreviatedValidCommand() {
+        @Command(subcommands = {HelpTest.Sub.class, HelpCommand.class})
+        class App implements Runnable{ public void run(){}}
+
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setOut(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .setAbbreviatedSubcommandsAllowed(true)
+                .execute("help", "s");
+
+        String expected = String.format("" +
+                "Usage: <main class> sub%n" +
+                "This is a subcommand%n");
+        assertEquals(expected, sw.toString());
+    }
+
+    @Test
+    public void testHelpSubcommandWithAbbreviatedCaseInsensitiveValidCommand() {
+        @Command(subcommands = {HelpTest.Sub.class, HelpCommand.class})
+        class App implements Runnable{ public void run(){}}
+
+        StringWriter sw = new StringWriter();
+        new CommandLine(new App())
+                .setOut(new PrintWriter(sw))
+                .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
+                .setAbbreviatedSubcommandsAllowed(true)
+                .setSubcommandsCaseInsensitive(true)
+                .execute("help", "S");
+
+        String expected = String.format("" +
+                "Usage: <main class> sub%n" +
+                "This is a subcommand%n");
+        assertEquals(expected, sw.toString());
+    }
+
+    @Test
     public void testHelpSubcommandWithInvalidCommand() {
         @Command(mixinStandardHelpOptions = true, subcommands = {HelpTest.Sub.class, HelpCommand.class})
         class App implements Runnable{ public void run(){}}
