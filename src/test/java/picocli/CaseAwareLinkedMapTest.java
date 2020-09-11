@@ -7,6 +7,10 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
 import picocli.CommandLine.Model.CaseAwareLinkedMap;
 
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
 import static org.junit.Assert.*;
 
 public class CaseAwareLinkedMapTest {
@@ -21,6 +25,24 @@ public class CaseAwareLinkedMapTest {
     @Test
     public void testDefaultCaseSensitivity() {
         assertFalse(new CaseAwareLinkedMap<String, String>().isCaseInsensitive());
+    }
+
+    @Test
+    public void testDefaultLocale() {
+        assertEquals(Locale.ENGLISH, new CaseAwareLinkedMap<String, String>().getLocale());
+    }
+
+    @Test
+    public void testCopyConstructor() {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("foo", "bar");
+        map.put("FOO", "BAR");
+        CaseAwareLinkedMap<String, String> copy = new CaseAwareLinkedMap<String, String>(map);
+        assertFalse(copy.isCaseInsensitive());
+        assertEquals(Locale.ENGLISH, copy.getLocale());
+        assertEquals(2, copy.size());
+        assertEquals("bar", copy.get("foo"));
+        assertEquals("BAR", copy.get("FOO"));
     }
 
     @Test
