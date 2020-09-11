@@ -42,16 +42,16 @@ When used as a library, the application calls the `CommandLine.parseArgs` method
 public class ProgrammaticCommand {
 
     public static void main(String[] args) {
-        CommandSpec spec = CommandSpec.create();
+        CommandSpec spec = CommandSpec.create(); // <1>
         spec.mixinStandardHelpOptions(true); // usageHelp and versionHelp options
         spec.addOption(OptionSpec.builder("-c", "--count")
                 .paramLabel("COUNT")
                 .type(int.class)
-                .description("number of times to execute").build());
+                .description("number of times to execute").build()); // <2>
         spec.addPositional(PositionalParamSpec.builder()
                 .paramLabel("FILES")
                 .type(List.class).auxiliaryTypes(File.class) // List<File>
-                .description("The files to process").build());
+                .description("The files to process").build()); // <3>
         CommandLine commandLine = new CommandLine(spec);
 
         // set an execution strategy (the run(ParseResult) method) that will be called
@@ -78,16 +78,19 @@ public class ProgrammaticCommand {
     }
 }
 ----
+<1> `CommandSpec`
+<2> `OptionSpec`
+<3> `PositionalParamSpec`
 
 == Configuration
 The following classes are the main model classes used to configure the parser:
 
-* `CommandSpec`
-* `OptionSpec`
-* `PositionalParamSpec`
+* <<CommandSpec,`CommandSpec`>>
+* <<OptionSpec,`OptionSpec`>>
+* <<PositionalParamSpec,`PositionalParamSpec`>>
 
 
-=== `CommandSpec`
+=== CommandSpec
 
 ==== Command Name and Version
 `CommandSpec` models a command. It has a name and a version, both of which may be empty.  For example:
@@ -167,7 +170,7 @@ CommandSpec cmd = CommandSpec.create()
     .addSubcommand("help", helpSubcommand);
 ----
 
-=== `OptionSpec`
+=== OptionSpec
 `OptionSpec` models a command option. An `OptionSpec` must have at least one name, which is used during parsing to match command line arguments. Other attributes can be left empty and picocli will give them a reasonable default value. This defaulting is why `OptionSpec` objects are created with a builder: this allows you to specify only some attributes and let picocli initialise the other attributes. For example, if only the option’s name is specified, picocli assumes the option takes no parameters (arity = 0), and is of type `boolean`. Another example, if arity is larger than `1`, picocli sets the type to `List` and the `auxiliary type` to `String`.
 
 Once an `OptionSpec` is constructed, its configuration becomes immutable, but its `value` can still be modified. Usually the value is set during command line parsing when a command line argument matches one of the option names.
@@ -176,7 +179,7 @@ The value is set via the getter and setter _bindings_. We’ll come back to bind
 
 Similar to the annotation API, `OptionSpec` objects have `help`, `usageHelp` and `versionHelp` attributes. When the parser matches an option that was marked with any of these attributes, it will no longer validate that all required arguments exist. See the section below on the `parseWithHandler(s)` methods that automatically print help when requested.
 
-=== `PositionalParamSpec`
+=== PositionalParamSpec
 
 `PositionalParamSpec` objects don’t have names, but have an index range instead. A single `PositionalParamSpec` object can capture multiple positional parameters. The default index range is set to `0..*` (all indices). A command may have multiple `PositionalParamSpec` objects to capture positional parameters at different index ranges. This can be useful if positional parameters at different index ranges have different data types.
 
@@ -495,4 +498,4 @@ public class MyApp {
 }
 ----
 
-For more detail, see the https://picocli.info/#execute[Executing Commands] section of the user manual.
+For more details, see the https://picocli.info/#execute[Executing Commands] section of the user manual.
