@@ -162,39 +162,39 @@ public class Example {
             PicocliCommands picocliCommands = new PicocliCommands(Example::workDir, cmd);
 
             Parser parser = new DefaultParser();
-            Terminal terminal = TerminalBuilder.builder().build();
+            try (Terminal terminal = TerminalBuilder.builder().build()) {
+                SystemRegistry systemRegistry = new SystemRegistryImpl(parser, terminal, Example::workDir, null);
+                systemRegistry.setCommandRegistries(builtins, picocliCommands);
 
-            SystemRegistry systemRegistry = new SystemRegistryImpl(parser, terminal, Example::workDir, null);
-            systemRegistry.setCommandRegistries(builtins, picocliCommands);
+                LineReader reader = LineReaderBuilder.builder()
+                        .terminal(terminal)
+                        .completer(systemRegistry.completer())
+                        .parser(parser)
+                        .variable(LineReader.LIST_MAX, 50)   // max tab completion candidates
+                        .build();
+                builtins.setLineReader(reader);
+                commands.setReader(reader);
+                new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TipType.COMPLETER);
+                KeyMap<Binding> keyMap = reader.getKeyMaps().get("main");
+                keyMap.bind(new Reference("tailtip-toggle"), KeyMap.alt("s"));
 
-            LineReader reader = LineReaderBuilder.builder()
-                    .terminal(terminal)
-                    .completer(systemRegistry.completer())
-                    .parser(parser)
-                    .variable(LineReader.LIST_MAX, 50)   // max tab completion candidates
-                    .build();
-            builtins.setLineReader(reader);
-            commands.setReader(reader);
-            new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TipType.COMPLETER);
-            KeyMap<Binding> keyMap = reader.getKeyMaps().get("main");
-            keyMap.bind(new Reference("tailtip-toggle"), KeyMap.alt("s"));
+                String prompt = "prompt> ";
+                String rightPrompt = null;
 
-            String prompt = "prompt> ";
-            String rightPrompt = null;
-
-            // start the shell and process input until the user quits with Ctrl-D
-            String line;
-            while (true) {
-                try {
-                    systemRegistry.cleanUp();
-                    line = reader.readLine(prompt, rightPrompt, (MaskingCallback) null, null);
-                    systemRegistry.execute(line);
-                } catch (UserInterruptException e) {
-                    // Ignore
-                } catch (EndOfFileException e) {
-                    return;
-                } catch (Exception e) {
-                    systemRegistry.trace(e);
+                // start the shell and process input until the user quits with Ctrl-D
+                String line;
+                while (true) {
+                    try {
+                        systemRegistry.cleanUp();
+                        line = reader.readLine(prompt, rightPrompt, (MaskingCallback) null, null);
+                        systemRegistry.execute(line);
+                    } catch (UserInterruptException e) {
+                        // Ignore
+                    } catch (EndOfFileException e) {
+                        return;
+                    } catch (Exception e) {
+                        systemRegistry.trace(e);
+                    }
                 }
             }
         } catch (Throwable t) {
