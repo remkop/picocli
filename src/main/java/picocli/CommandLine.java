@@ -13942,12 +13942,13 @@ public class CommandLine {
             if (parent == null) { return; }
             Help.ColorScheme colors = colorScheme != null ? colorScheme : Help.defaultColorScheme(ansi);
             if (commands.length > 0) {
+                Map<String, CommandLine> parentSubcommands = parent.getCommandSpec().subcommands();
                 String fullName = commands[0];
                 if (parent.isAbbreviatedSubcommandsAllowed()) {
-                    fullName = AbbreviationMatcher.match(parent.getCommandSpec().subcommands().keySet(), commands[0],
-                            parent.getCommandSpec().subcommandsCaseInsensitive(), self);
+                    fullName = AbbreviationMatcher.match(parentSubcommands.keySet(), fullName,
+                            parent.isSubcommandsCaseInsensitive(), self);
                 }
-                CommandLine subcommand = parent.getCommandSpec().subcommands().get(fullName);
+                CommandLine subcommand = parentSubcommands.get(fullName);
                 if (subcommand != null) {
                     if (outWriter != null) {
                         subcommand.usage(outWriter, colors);
