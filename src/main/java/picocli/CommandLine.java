@@ -365,7 +365,8 @@ public class CommandLine {
      * @since 0.9.7
      */
     public Map<String, CommandLine> getSubcommands() {
-        return new LinkedHashMap<String, CommandLine>(getCommandSpec().subcommands());
+        return new CaseAwareLinkedMap<String, CommandLine>(
+                (CaseAwareLinkedMap<String, CommandLine>) getCommandSpec().subcommands());
     }
     /**
      * Returns the command that this is a subcommand of, or {@code null} if this is a top-level command.
@@ -5557,9 +5558,9 @@ public class CommandLine {
 
             private final LinkedHashMap<K, V> targetMap = new LinkedHashMap<K, V>();
             private final HashMap<K, K> keyMap = new HashMap<K, K>();
-            private final Locale locale;
-            private final Set<K> keySet;
+            private final Set<K> keySet = new CaseAwareKeySet();
             private boolean caseInsensitive = false;
+            private final Locale locale;
 
             /**
              * Constructs an empty LinkedCaseAwareMap instance with {@link java.util.Locale#ENGLISH}.
@@ -5574,7 +5575,19 @@ public class CommandLine {
              */
             public CaseAwareLinkedMap(Locale locale) {
                 this.locale = locale;
-                this.keySet = new CaseAwareKeySet();
+            }
+
+            /**
+             * Constructs a CaseAwareLinkedMap instance with the same mappings, case sensitivity and locale as the specified map.
+             * @param map the map whose mappings, case sensitivity and locale are to be placed in this map
+             * @throws NullPointerException if the specified map is null
+             */
+            public CaseAwareLinkedMap(CaseAwareLinkedMap<K, V> map) {
+                targetMap.putAll(map.targetMap);
+                keyMap.putAll(map.keyMap);
+                keySet.addAll(map.keySet);
+                caseInsensitive = map.caseInsensitive;
+                locale = map.locale;
             }
 
             static boolean isCaseConvertible(Class<?> clazz) {
@@ -13924,7 +13937,7 @@ public class CommandLine {
             if (parent == null) { return; }
             Help.ColorScheme colors = colorScheme != null ? colorScheme : Help.defaultColorScheme(ansi);
             if (commands.length > 0) {
-                CommandLine subcommand = parent.getSubcommands().get(commands[0]);
+                CommandLine subcommand = parent.getCommandSpec().subcommands().get(commands[0]);
                 if (subcommand != null) {
                     if (outWriter != null) {
                         subcommand.usage(outWriter, colors);
