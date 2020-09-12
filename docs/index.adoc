@@ -6,7 +6,7 @@
 :toc: left
 :numbered:
 :toclevels: 2
-:toc-title: Table of contents
+:toc-title: Features
 :source-highlighter: coderay
 //:source-highlighter: highlightjs
 //:highlightjs-theme: darkula
@@ -35,11 +35,11 @@ image:logo/horizontal.png[picocli the Mighty Tiny Command Line Interface,width=8
 The user manual for the latest release is at http://picocli.info.
 For the busy and impatient: there is also a link:quick-guide.html[Quick Guide].
 
-== Introducing Picocli
+== Introduction
 Picocli is a one-file framework for creating Java command line applications with almost zero code.
 Picocli aims to be the easiest way to create rich command line applications that can run on and off the JVM.
 
-=== Features
+=== Overview
 Picocli supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more and generates highly customizable usage help messages with <<ANSI Colors and Styles,ANSI colors and styles>>.
 Picocli-based applications can have link:autocomplete.html[command line TAB completion] showing available options, option parameters and subcommands, for any level of nested subcommands.
 Picocli-based applications can be ahead-of-time compiled to a image:https://www.graalvm.org/resources/img/logo-colored.svg[GraalVM]
@@ -50,6 +50,8 @@ Picocli <<Generate Man Page Documentation,generates beautiful documentation>> fo
 Another distinguishing feature of picocli is how it aims
 to let users run picocli-based applications without requiring picocli as an external dependency:
 all the source code lives in a single file, to encourage application authors to include it _in source form_.
+
+This is how it works: you annotate your class and picocli initializes it from the command line arguments, converting the input to strongly typed values in the fields of your class. If your class implements `Runnable` or `Callable`, you can let picocli kick off your application after parsing is successfully completed.
 
 === Sample application
 Let's get started by looking at minimal picocli-based command line application. This fully working sample app may be used to calculate the checksum(s) of one or more file(s) given as command line parameter(s):
@@ -72,25 +74,25 @@ import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.concurrent.Callable;
 
-@Command(name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0", // <8>
+@Command(name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0",
          description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
-class CheckSum implements Callable<Integer> { // <1>
+class CheckSum implements Callable<Integer> {
 
-    @Parameters(index = "0", description = "The file whose checksum to calculate.") // <2>
+    @Parameters(index = "0", description = "The file whose checksum to calculate.")
     private File file; // <4>
 
-    @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...") // <3>
-    private String algorithm = "MD5"; // <4>
+    @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
+    private String algorithm = "MD5";
 
     // this example implements Callable, so parsing, error handling and handling user
     // requests for usage help or version help can be done with one line of code.
     public static void main(String... args) {
-        int exitCode = new CommandLine(new CheckSum()).execute(args); // <5>
-        System.exit(exitCode); // <7>
+        int exitCode = new CommandLine(new CheckSum()).execute(args);
+        System.exit(exitCode);
     }
 
     @Override
-    public Integer call() throws Exception { // your business logic // <6>
+    public Integer call() throws Exception { // your business logic
         byte[] fileContents = Files.readAllBytes(file.toPath());
         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
         System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1, digest));
@@ -99,7 +101,9 @@ class CheckSum implements Callable<Integer> { // <1>
 }
 ----
 
-_This is how it works_: Create a class ➊ that represents your command and annotate this class with @Command ➑. Let this class implement `Runnable` or `Callable` and picocli will kick off your application after parsing is successfully completed. Then, annotate the fields or methods of the command class with @Parameters ➋ and/or @Option ➌ to declare what positional parameters and/or options your application expects. Picocli will convert the command line arguments given to your app to strongly typed values in the fields ➍ of your class. In the `main` method of your class, use the `CommandLine.execute` method ➎ to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic ➏. Once your business logic finished, you may call `System.exit` ➐ to return an exit code to your caller, indicating success or failure of your business logic. Additionally, you may make use of the <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute ➑  which adds `--help` and `--version` options to your application.
+Create a class that represents your command and annotate this class with `@Command`. Let this class implement `Runnable` or `Callable` and your command can be <<Executing Commands,executed>> in one line of code. Annotate the fields of the command class with `@Option` or `@Parameters` to declare the options and positional parameters of your application. Use the `CommandLine.execute` method to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic. Eventually, your application may call `System.exit` with the returned exit code to signal success or failure to their caller.
+
+The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute adds --help and --version options to your application.
 
 TIP: Picocli also provides a <<Programmatic API,programmatic API>>, separately from the annotations API.
 
