@@ -23,8 +23,13 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1155] DOC: Fix sample code in chapter "Validation". Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1157] DOC: Fix typo "a argument group" in user manual. Thanks to sabrina for raising this.
 * [#1160] DOC: Added section [Was a Value Defaulted?](https://picocli.info/#_was_a_value_defaulted) to the user manual.
-* [#1161] DOC: Fix typo 4,2 in user manual. Thanks to sabrina for raising this.
+* [#1161] DOC: Fix typo "4,2" (should be 4.2) in user manual. Thanks to sabrina for raising this.
 * [#1165] DOC: Fix jline3 example: add `AnsiConsole::systemUninstall` in `finally` clause. Thanks to [David Walluck](https://github.com/dwalluck) for raising this.
+* [#1168][#1169] DOC: Ensure `org.jline.terminal.Terminal` is closed when done. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
+* [#1167] DOC: Fix broken links in Quick Guide. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
+* [#1171] DOC: Various documentation improvements. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1170] TEST: Ensure ANSI is disabled in `ManPageGeneratorTest` regardless of environment. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
+* [#1166][#1103] TEST: Ensure ANSI is disabled in `TracerTest` regardless of environment. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 
 ## <a name="4.5.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
