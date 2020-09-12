@@ -365,10 +365,7 @@ public class CommandLine {
      * @since 0.9.7
      */
     public Map<String, CommandLine> getSubcommands() {
-        CaseAwareLinkedMap<String, CommandLine> subcommands = new CaseAwareLinkedMap<String, CommandLine>();
-        subcommands.setCaseInsensitive(isSubcommandsCaseInsensitive());
-        subcommands.putAll(getCommandSpec().subcommands());
-        return subcommands;
+        return new CaseAwareLinkedMap<String, CommandLine>(getCommandSpec().commands);
     }
     /**
      * Returns the command that this is a subcommand of, or {@code null} if this is a top-level command.
@@ -5580,14 +5577,15 @@ public class CommandLine {
             }
 
             /**
-             * Constructs a {@code CaseAwareLinkedMap} instance with the same mappings as the specified map.
-             * The {@code CaseAwareLinkedMap} instance is created with a default locale {@link java.util.Locale#ENGLISH}.
-             * @param map the map whose mappings are to be placed in this map
+             * Constructs a {@code CaseAwareLinkedMap} instance with the same mappings, case-sensitivity and locale as the specified map.
+             * @param map the map whose mappings, case-sensitivity and locale are to be placed in this map
              * @throws NullPointerException if the specified map is null
              */
-            public CaseAwareLinkedMap(Map<? extends K, ? extends V> map) {
-                this(ENGLISH);
-                putAll(map);
+            public CaseAwareLinkedMap(CaseAwareLinkedMap<? extends K, ? extends V> map) {
+                this.targetMap.putAll(map.targetMap);
+                this.keyMap.putAll(map.keyMap);
+                this.caseInsensitive = map.caseInsensitive;
+                this.locale = map.locale;
             }
 
             static boolean isCaseConvertible(Class<?> clazz) {
