@@ -44,14 +44,14 @@ public class ProgrammaticCommand {
     public static void main(String[] args) {
         CommandSpec spec = CommandSpec.create(); // <1>
         spec.mixinStandardHelpOptions(true); // usageHelp and versionHelp options
-        spec.addOption(OptionSpec.builder("-c", "--count")
+        spec.addOption(OptionSpec.builder("-c", "--count") // <2>
                 .paramLabel("COUNT")
                 .type(int.class)
-                .description("number of times to execute").build()); // <2>
-        spec.addPositional(PositionalParamSpec.builder()
+                .description("number of times to execute").build());
+        spec.addPositional(PositionalParamSpec.builder() // <3>
                 .paramLabel("FILES")
                 .type(List.class).auxiliaryTypes(File.class) // List<File>
-                .description("The files to process").build()); // <3>
+                .description("The files to process").build());
         CommandLine commandLine = new CommandLine(spec);
 
         // set an execution strategy (the run(ParseResult) method) that will be called

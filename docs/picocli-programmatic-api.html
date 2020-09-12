@@ -536,9 +536,9 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_example">2. Example</a></li>
 <li><a href="#_configuration">3. Configuration</a>
 <ul class="sectlevel2">
-<li><a href="#_commandspec">3.1. <code>CommandSpec</code></a></li>
-<li><a href="#_optionspec">3.2. <code>OptionSpec</code></a></li>
-<li><a href="#_positionalparamspec">3.3. <code>PositionalParamSpec</code></a></li>
+<li><a href="#_commandspec">3.1. CommandSpec</a></li>
+<li><a href="#_optionspec">3.2. OptionSpec</a></li>
+<li><a href="#_positionalparamspec">3.3. PositionalParamSpec</a></li>
 <li><a href="#_bindings">3.4. Bindings</a></li>
 </ul>
 </li>
@@ -629,13 +629,13 @@ When used as a library, the application calls the <code>CommandLine.parseArgs</c
 <pre class="CodeRay highlight"><code data-lang="java"><span class="directive">public</span> <span class="type">class</span> <span class="class">ProgrammaticCommand</span> {
 
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
-        CommandSpec spec = CommandSpec.create();
+        CommandSpec spec = CommandSpec.create(); <i class="conum" data-value="1"></i><b>(1)</b>
         spec.mixinStandardHelpOptions(<span class="predefined-constant">true</span>); <span class="comment">// usageHelp and versionHelp options</span>
-        spec.addOption(OptionSpec.builder(<span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--count</span><span class="delimiter">&quot;</span></span>)
+        spec.addOption(OptionSpec.builder(<span class="string"><span class="delimiter">&quot;</span><span class="content">-c</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--count</span><span class="delimiter">&quot;</span></span>) <i class="conum" data-value="2"></i><b>(2)</b>
                 .paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">COUNT</span><span class="delimiter">&quot;</span></span>)
                 .type(<span class="type">int</span>.class)
                 .description(<span class="string"><span class="delimiter">&quot;</span><span class="content">number of times to execute</span><span class="delimiter">&quot;</span></span>).build());
-        spec.addPositional(PositionalParamSpec.builder()
+        spec.addPositional(PositionalParamSpec.builder() <i class="conum" data-value="3"></i><b>(3)</b>
                 .paramLabel(<span class="string"><span class="delimiter">&quot;</span><span class="content">FILES</span><span class="delimiter">&quot;</span></span>)
                 .type(<span class="predefined-type">List</span>.class).auxiliaryTypes(<span class="predefined-type">File</span>.class) <span class="comment">// List&lt;File&gt;</span>
                 .description(<span class="string"><span class="delimiter">&quot;</span><span class="content">The files to process</span><span class="delimiter">&quot;</span></span>).build());
@@ -666,6 +666,22 @@ When used as a library, the application calls the <code>CommandLine.parseArgs</c
 }</code></pre>
 </div>
 </div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td><code>CommandSpec</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td><code>OptionSpec</code></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td><code>PositionalParamSpec</code></td>
+</tr>
+</table>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -677,18 +693,18 @@ When used as a library, the application calls the <code>CommandLine.parseArgs</c
 <div class="ulist">
 <ul>
 <li>
-<p><code>CommandSpec</code></p>
+<p><a href="#_commandspec"><code>CommandSpec</code></a></p>
 </li>
 <li>
-<p><code>OptionSpec</code></p>
+<p><a href="#_optionspec"><code>OptionSpec</code></a></p>
 </li>
 <li>
-<p><code>PositionalParamSpec</code></p>
+<p><a href="#_positionalparamspec"><code>PositionalParamSpec</code></a></p>
 </li>
 </ul>
 </div>
 <div class="sect2">
-<h3 id="_commandspec">3.1. <code>CommandSpec</code></h3>
+<h3 id="_commandspec">3.1. CommandSpec</h3>
 <div class="sect3">
 <h4 id="_command_name_and_version">3.1.1. Command Name and Version</h4>
 <div class="paragraph">
@@ -790,7 +806,7 @@ CommandSpec cmd = CommandSpec.create()
 </div>
 </div>
 <div class="sect2">
-<h3 id="_optionspec">3.2. <code>OptionSpec</code></h3>
+<h3 id="_optionspec">3.2. OptionSpec</h3>
 <div class="paragraph">
 <p><code>OptionSpec</code> models a command option. An <code>OptionSpec</code> must have at least one name, which is used during parsing to match command line arguments. Other attributes can be left empty and picocli will give them a reasonable default value. This defaulting is why <code>OptionSpec</code> objects are created with a builder: this allows you to specify only some attributes and let picocli initialise the other attributes. For example, if only the option’s name is specified, picocli assumes the option takes no parameters (arity = 0), and is of type <code>boolean</code>. Another example, if arity is larger than <code>1</code>, picocli sets the type to <code>List</code> and the <code>auxiliary type</code> to <code>String</code>.</p>
 </div>
@@ -805,7 +821,7 @@ CommandSpec cmd = CommandSpec.create()
 </div>
 </div>
 <div class="sect2">
-<h3 id="_positionalparamspec">3.3. <code>PositionalParamSpec</code></h3>
+<h3 id="_positionalparamspec">3.3. PositionalParamSpec</h3>
 <div class="paragraph">
 <p><code>PositionalParamSpec</code> objects don’t have names, but have an index range instead. A single <code>PositionalParamSpec</code> object can capture multiple positional parameters. The default index range is set to <code>0..*</code> (all indices). A command may have multiple <code>PositionalParamSpec</code> objects to capture positional parameters at different index ranges. This can be useful if positional parameters at different index ranges have different data types.</p>
 </div>
@@ -1180,7 +1196,7 @@ ParseResult subResult = parseResult.subcommand();
 </div>
 </div>
 <div class="paragraph">
-<p>For more detail, see the <a href="https://picocli.info/#execute">Executing Commands</a> section of the user manual.</p>
+<p>For more details, see the <a href="https://picocli.info/#execute">Executing Commands</a> section of the user manual.</p>
 </div>
 </div>
 </div>
@@ -1189,7 +1205,7 @@ ParseResult subResult = parseResult.subcommand();
 <div id="footer">
 <div id="footer-text">
 Version 4.5.1<br>
-Last updated 2020-08-26 12:25:32 +0900
+Last updated 2020-09-12 14:39:45 +0900
 </div>
 </div>
 </body>
