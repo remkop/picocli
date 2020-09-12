@@ -34,7 +34,7 @@ public class CaseAwareLinkedMapTest {
 
     @Test
     public void testCopyConstructor() {
-        Map<String, String> map = new HashMap<String, String>();
+        CaseAwareLinkedMap<String, String> map = new CaseAwareLinkedMap<String, String>();
         map.put("foo", "bar");
         map.put("FOO", "BAR");
         CaseAwareLinkedMap<String, String> copy = new CaseAwareLinkedMap<String, String>(map);
