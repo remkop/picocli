@@ -532,7 +532,12 @@ table.CodeRay td.code>pre{padding:0}
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
 <ul class="sectlevel1">
-<li><a href="#_introduction">1. Introduction</a></li>
+<li><a href="#_introduction">1. Introduction</a>
+<ul class="sectlevel2">
+<li><a href="#_overview">1.1. Overview</a></li>
+<li><a href="#_example_application">1.2. Example application</a></li>
+</ul>
+</li>
 <li><a href="#_getting_started">2. Getting Started</a>
 <ul class="sectlevel2">
 <li><a href="#_add_as_external_dependency">2.1. Add as External Dependency</a></li>
@@ -854,30 +859,30 @@ For the busy and impatient: there is also a <a href="quick-guide.html">Quick Gui
 <h2 id="_introduction"><a class="anchor" href="#_introduction"></a>1. Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Picocli aims to be the easiest way to create rich command line applications that can run on and off the JVM.</p>
-</div>
-<div class="paragraph">
 <p>Picocli is a one-file framework for creating Java command line applications with almost zero code.
-Supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more.
-Generates highly customizable usage help messages with <a href="#_ansi_colors_and_styles">ANSI colors and styles</a>.
+Picocli aims to be the easiest way to create rich command line applications that can run on and off the JVM.</p>
+</div>
+<div class="sect2">
+<h3 id="_overview"><a class="anchor" href="#_overview"></a>1.1. Overview</h3>
+<div class="paragraph">
+<p>Picocli supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more and generates highly customizable usage help messages with <a href="#_ansi_colors_and_styles">ANSI colors and styles</a>.
 Picocli-based applications can have <a href="autocomplete.html">command line TAB completion</a> showing available options, option parameters and subcommands, for any level of nested subcommands.
 Picocli-based applications can be ahead-of-time compiled to a <span class="image"><img src="https://www.graalvm.org/resources/img/logo-colored.svg" alt="GraalVM"></span>
 <a href="#_graalvm_native_image">native image</a>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.</p>
 </div>
 <div class="paragraph">
-<p><span class="image"><img src="images/checksum-usage-help.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
-</div>
-<div class="paragraph">
 <p>Picocli <a href="#_generate_man_page_documentation">generates beautiful documentation</a> for your application (HTML, PDF and Unix man pages).</p>
 </div>
 <div class="paragraph">
-<p>Another distinguishing feature of picocli is how it aims
-to let users run picocli-based applications without requiring picocli as an external dependency:
+<div class="title">An example usage help message with ANSI colors and styles</div>
+<p><span class="image"><img src="images/checksum-usage-help.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
+</div>
+<div class="paragraph">
+<p>Another distinguishing feature of picocli is how it aims to let users run picocli-based applications without requiring picocli as an external dependency:
 all the source code lives in a single file, to encourage application authors to include it <em>in source form</em>.</p>
 </div>
 <div class="paragraph">
-<p>How it works: annotate your class and picocli initializes it from the command line arguments,
-converting the input to strongly typed values in the fields of your class.</p>
+<p>How it works: annotate your class and picocli initializes it from the command line arguments, converting the input to strongly typed values in the fields of your class.</p>
 </div>
 <div class="admonitionblock tip">
 <table>
@@ -890,6 +895,12 @@ picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 </td>
 </tr>
 </table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_example_application"><a class="anchor" href="#_example_application"></a>1.2. Example application</h3>
+<div class="paragraph">
+<p>The example below shows a short but fully functional picocli-based <code>checksum</code> command line application:</p>
 </div>
 <div id="CheckSum-application" class="listingblock">
 <div class="title">A full working example picocli-based command line application</div>
@@ -933,13 +944,11 @@ picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 </div>
 </div>
 <div class="paragraph">
-<p>Implement <code>Runnable</code> or <code>Callable</code>, and your command can be <a href="#execute">executed</a> in one line of code.
-The example above uses the <code>CommandLine.execute</code> method
-to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic.
-Applications can call <code>System.exit</code> with the returned exit code to signal success or failure to their caller.</p>
+<p>Implement <code>Runnable</code> or <code>Callable</code> and your command can be <a href="#execute">executed</a> in one line of code. The example <code>main</code> method calls <code>CommandLine.execute</code> to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic. Applications can call <code>System.exit</code> with the returned exit code to signal success or failure to their caller.</p>
 </div>
 <div class="paragraph">
 <p>The <a href="#_mixin_standard_help_options">mixinStandardHelpOptions</a> attribute adds <code>--help</code> and <code>--version</code> options to your application.</p>
+</div>
 </div>
 </div>
 </div>
@@ -3149,7 +3158,7 @@ For optional groups (groups with <code>multiplicity = "0..1"</code> - the defaul
 <div class="sect2">
 <h3 id="_mutually_dependent_options"><a class="anchor" href="#_mutually_dependent_options"></a>8.2. Mutually Dependent Options</h3>
 <div class="sect3">
-<h4 id="_overview"><a class="anchor" href="#_overview"></a>8.2.1. Overview</h4>
+<h4 id="_overview_2"><a class="anchor" href="#_overview_2"></a>8.2.1. Overview</h4>
 <div class="paragraph">
 <p>Annotate a field or method with <code>@ArgGroup(exclusive = false)</code> to create a group of dependent options and positional parameters that must co-occur. For example:</p>
 </div>
@@ -10190,7 +10199,7 @@ The generated AsciiDoc files can be converted to HTML, PDF and unix man pages wi
 <p>See the <a href="https://github.com/remkop/picocli/tree/master/picocli-codegen#generate-documentation">Generate Documentation</a> section of the <a href="https://github.com/remkop/picocli/tree/master/picocli-codegen">picocli-codegen README</a> for details on how to generate and customize this documentation.</p>
 </div>
 <div class="paragraph">
-<p>The man pages for the picocli built-in tools were created with this tool:</p>
+<p>To see some examples, the man pages for the picocli built-in tools were created with this tool:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -10989,7 +10998,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.1<br>
-Last updated 2020-08-26 12:49:06 +0900
+Last updated 2020-09-13 12:00:12 +0900
 </div>
 </div>
 </body>

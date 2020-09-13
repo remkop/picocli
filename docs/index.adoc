@@ -47,19 +47,20 @@ Picocli-based applications can be ahead-of-time compiled to a image:https://www.
 
 Picocli <<Generate Man Page Documentation,generates beautiful documentation>> for your application (HTML, PDF and Unix man pages).
 
-Another distinguishing feature of picocli is how it aims
-to let users run picocli-based applications without requiring picocli as an external dependency:
-all the source code lives in a single file, to encourage application authors to include it _in source form_.
-
-This is how it works: you annotate your class and picocli initializes it from the command line arguments, converting the input to strongly typed values in the fields of your class. If your class implements `Runnable` or `Callable`, you can let picocli kick off your application after parsing is successfully completed.
-
-=== Sample application
-Let's get started by looking at minimal picocli-based command line application. This fully working sample app may be used to calculate the checksum(s) of one or more file(s) given as command line parameter(s):
-
-.Synopsis of sample application
+.An example usage help message with ANSI colors and styles
 image:checksum-usage-help.png[Screenshot of usage help with Ansi codes enabled]
 
-.Source code of sample application
+Another distinguishing feature of picocli is how it aims to let users run picocli-based applications without requiring picocli as an external dependency:
+all the source code lives in a single file, to encourage application authors to include it _in source form_.
+
+How it works: annotate your class and picocli initializes it from the command line arguments, converting the input to strongly typed values in the fields of your class.
+
+TIP: Picocli also provides a <<Programmatic API,programmatic API>>, separately from the annotations API.
+
+=== Example application
+The example below shows a short but fully functional picocli-based `checksum` command line application:
+
+.A full working example picocli-based command line application
 [[CheckSum-application]]
 [source,java]
 ----
@@ -79,7 +80,7 @@ import java.util.concurrent.Callable;
 class CheckSum implements Callable<Integer> {
 
     @Parameters(index = "0", description = "The file whose checksum to calculate.")
-    private File file; // <4>
+    private File file;
 
     @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
     private String algorithm = "MD5";
@@ -101,13 +102,11 @@ class CheckSum implements Callable<Integer> {
 }
 ----
 
-Create a class that represents your command and annotate this class with `@Command`. Let this class implement `Runnable` or `Callable` and your command can be <<Executing Commands,executed>> in one line of code. Annotate the fields of the command class with `@Option` or `@Parameters` to declare the options and positional parameters of your application. Use the `CommandLine.execute` method to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic. Eventually, your application may call `System.exit` with the returned exit code to signal success or failure to their caller.
+Implement `Runnable` or `Callable` and your command can be <<Executing Commands,executed>> in one line of code. The example `main` method calls `CommandLine.execute` to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic. Applications can call `System.exit` with the returned exit code to signal success or failure to their caller.
 
-The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute adds --help and --version options to your application.
+The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute adds `--help` and `--version` options to your application.
 
-TIP: Picocli also provides a <<Programmatic API,programmatic API>>, separately from the annotations API.
-
-== Setting up your picocli based project
+== Getting Started
 You can add picocli as an external dependency to your project, or you can include it as source.
 
 === Add as External Dependency
@@ -6845,7 +6844,7 @@ The generated AsciiDoc files can be converted to HTML, PDF and unix man pages wi
 
 See the link:https://github.com/remkop/picocli/tree/master/picocli-codegen#generate-documentation[Generate Documentation] section of the link:https://github.com/remkop/picocli/tree/master/picocli-codegen[picocli-codegen README] for details on how to generate and customize this documentation.
 
-The man pages for the picocli built-in tools were created with this tool:
+To see some examples, the man pages for the picocli built-in tools were created with this tool:
 
 * link:man/gen-manpage.html[gen-manpage] (`picocli.codegen.docgen.manpage.ManPageGenerator`)
 * link:man/picocli.AutoComplete.html[picocli.AutoComplete] (`picocli.AutoComplete`)

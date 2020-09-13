@@ -19,57 +19,83 @@ endif::[]
 This is the Quick Guide. For more detail, see the full user manual at http://picocli.info[http://picocli.info].
 
 == What is picocli
-Picocli is a Java library and mini-framework for creating command line applications with almost no code.
+Picocli is a one-file framework for creating Java command line applications with almost zero code.
+Picocli aims to be the easiest way to create rich command line applications that can run on and off the JVM.
 
 Picocli supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more.
 It generates highly customizable usage help messages with <<ANSI Colors and Styles,ANSI colors and styles>>.
 Picocli-based applications can have link:autocomplete.html[command line TAB completion] showing available options, option parameters and subcommands, for any level of nested subcommands.
+Picocli-based applications can be ahead-of-time compiled to a image:https://www.graalvm.org/resources/img/logo-colored.svg[GraalVM]
+link:https://picocli.info/#_graalvm_native_image[native image], with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.
+
+Picocli link:https://picocli.info/#_generate_man_page_documentation[generates beautiful documentation] for your application (HTML, PDF and Unix man pages).
 
 .Example usage help message
 image:ExampleUsageANSI.png[Screenshot of usage help with Ansi codes enabled]
 
-== Sample application
-Let’s get started by looking at minimal picocli-based command line application. This fully working sample app converts one or more words given as command line arguments into ASCII art and prints them out:
+[NOTE]
+====
+This document uses picocli's annotation API.
+For applications that cannot use the annotations, there is also a link:picocli-programmatic-api.html[programmatic API] for defining what options and positional parameters to expect, and for handling parse results.
+The programmatic API is not covered in this Quick Guide.
+====
+
+== Example application: ASCIIArt
+Below we show a small but fully functional example picocli-based command line application: `ASCIIArt`.
+
+`ASCIIArt` converts one or more arguments into ASCII art and prints them out. It can be used as follows:
 
 .Invoking the command
 ----
-$ ASCIIArt --font=speed Picocli is great
-_____________                  __________    _____                                      _____ 
-___  __ \__(_)____________________  /__(_)   ___(_)_______   _______ __________________ __  /_
-__  /_/ /_  /_  ___/  __ \  ___/_  /__  /    __  /__  ___/   __  __ `/_  ___/  _ \  __ `/  __/
-_  ____/_  / / /__ / /_/ / /__ _  / _  /     _  / _(__  )    _  /_/ /_  /   /  __/ /_/ // /_  
-/_/     /_/  \___/ \____/\___/ /_/  /_/      /_/  /____/     _\__, / /_/    \___/\__,_/ \__/  
-                                                             /____/                           
+$ java -cp "myapp.jar;picocli-4.5.1.jar" ASCIIArt --font=speed Hello picocli
+______  __    ___________                  _____                  __________
+___  / / /_______  /__  /_____     ___________(_)____________________  /__(_)
+__  /_/ /_  _ \_  /__  /_  __ \    ___  __ \_  /_  ___/  __ \  ___/_  /__  /
+_  __  / /  __/  / _  / / /_/ /    __  /_/ /  / / /__ / /_/ / /__ _  / _  /
+/_/ /_/  \___//_/  /_/  \____/     _  .___//_/  \___/ \____/\___/ /_/  /_/
+                                   /_/
 ----
 
-.Synopsis of command
-----
-$ ASCIIArt --help
-Usage: ASCIIArt [-hV] [-f=<font>] [word1 [word2]...]
-      [word1 [word2]...]   Words to be translated into ASCII art.
-  -f, --font=<font>        Font list: https://artii.herokuapp.com/fonts_list
-  -h, --help               Show this help message and exit.
-  -V, --version            Print version information and exit.
-----
+[TIP]
+====
+The user manual has details on link:https://picocli.info/#_packaging_your_application[packaging your CLI application] so that users can invoke it simply with:
 
-.Source Code
+----
+ASCIIArt --font=speed Hello picocli
+----
+====
+
+The source code of our `ASCIIArt` example is fairly small:
+
+.ASCIIArt source code
 [source,java]
 ----
-@Command(name = "ASCIIArt", mixinStandardHelpOptions = true) // <8>
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+
+import java.util.Scanner;
+import java.net.URL;
+import static java.lang.String.format;
+
+@Command(name = "ASCIIArt", version = "ASCIIArt 1.0", mixinStandardHelpOptions = true) // <2>
 public class ASCIIArt implements Callable<Integer> { // <1>
 
-    @Parameters(paramLabel = "word1 [word2]", description = "Words to be translated into ASCII art.") // <2>
-    private String[] words = { "Hello,", "world!" }; // <4>
+    @Option(names = { "-f", "--font" }, // <3>
+      description = "Font list: https://artii.herokuapp.com/fonts_list")
+    String font = "standard";
 
-    @Option(names = { "-f", "--font" }, description = "Font list: https://artii.herokuapp.com/fonts_list") // <3>
-    String font = "standard"; // <4>
+    @Parameters(paramLabel = "word1 [word2]", // <4>
+               description = "Words to be translated into ASCII art.")
+    private String[] words = { "Hello,", "world!" }; // <5>
 
     @Override
     public Integer call() { // your business logic <6>
         String text = String.join("+", words);
-        String URL = String.format("http://artii.herokuapp.com/make?text=%s&font=%s", text, font);
+        String url = format("http://artii.herokuapp.com/make?text=%s&font=%s", text, font);
 
-        try (java.util.Scanner s = new java.util.Scanner(new java.net.URL(URL).openStream())) {
+        try (Scanner s = new Scanner(new URL(url).openStream())) {
             System.out.println(s.useDelimiter("\\A").next());
         } catch (Exception e) {
             System.err.println("Invalid font or invalid text given!");
@@ -79,18 +105,43 @@ public class ASCIIArt implements Callable<Integer> { // <1>
     }
 
     public static void main(String[] args) {
-        int exitCode = new CommandLine(new ASCIIArt()).execute(args); // <5>
-        System.exit(exitCode); // <7>
+        int exitCode = new CommandLine(new ASCIIArt()).execute(args); // <7>
+        System.exit(exitCode); // <8>
     }
 }
 ----
 
-_How to get started quickly_: Create a class ➊ that represents your command and annotate this class with @Command ➑. Let this class implement `Runnable` or `Callable` and picocli will kick off your application after parsing is successfully completed. Then, annotate the fields or methods of the command class with @Parameters ➋ and/or @Option ➌ to declare what positional parameters and/or options your application expects. Picocli will convert the command line arguments given to your app to strongly typed values in the fields ➍ of your class. In the `main` method of your class, use the `CommandLine.execute` method ➎ to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic ➏. Once your business logic finished, you may call `System.exit` ➐ to return an exit code to your caller, indicating success or failure of your business logic. Additionally, you may make use of the <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute ➑  which adds `--help` and `--version` options to your application.
+Let's break it down into small steps:
+
+<1> Create a class that implements `Runnable` or `Callable`. This is your command.
+<2> Annotate the class with `@Command` and give it a name. The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute adds `--help` and `--version` options to your application.
+<3> For each option in your application, add an `@Option`-annotated field to your command class. This example shows how you can give the options names and a description, there are many other attributes.
+<4> For each positional parameter, add a `@Parameters`-annotated field to your command class.
+<5> Picocli will convert the command line arguments to strongly typed values and will inject these values into the annotated fields.
+<6> Define your business logic in the `run` or `call` method of your class. This method is called after parsing is successfully completed.
+<7> In the `main` method of your class, use the `CommandLine.execute` method bootstrap your application.
+    This will parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic.
+<8> The `CommandLine.execute` method returns an exit code. Your application can call `System.exit` with this exit code to signal success or failure to the calling process.
+
+This is the basic skeleton of almost any picocli application.
+
+TIP: See the link:http://picocli.info/[reference manual] for more variations, like using the annotations on methods.
+
+Like any professional command line application, `ASCIIArt` has `--help` and `--version` options.
+The `--help` option shows the user how to use the application.
+Picocli generates this usage help message automatically:
+
+.Usage help message of our `ASCIIArt` command
+----
+$ ASCIIArt --help
+Usage: ASCIIArt [-hV] [-f=<font>] [word1 [word2]...]
+      [word1 [word2]...]   Words to be translated into ASCII art.
+  -f, --font=<font>        Font list: https://artii.herokuapp.com/fonts_list
+  -h, --help               Show this help message and exit.
+  -V, --version            Print version information and exit.
+----
 
 
-
-
-NOTE: For applications that cannot use the annotations, there is also a link:picocli-programmatic-api.html[programmatic API] for defining what options and positional parameters to expect, and a programmatic API for handling parse results. The programmatic API is not covered in this Quick Guide.
 
 == Options and Parameters
 Command line arguments can be separated into _options_  and _positional parameters_.

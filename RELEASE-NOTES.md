@@ -29,6 +29,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1168][#1169] DOC: Ensure `org.jline.terminal.Terminal` is closed when done. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 * [#1167] DOC: Fix broken links in Quick Guide. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1171] DOC: Various documentation improvements. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1173] DOC: Improve example applications for the user manual and Quick Guide. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1170] TEST: Ensure ANSI is disabled in `ManPageGeneratorTest` regardless of environment. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 * [#1166][#1103] TEST: Ensure ANSI is disabled in `TracerTest` regardless of environment. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 

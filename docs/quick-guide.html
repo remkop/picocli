@@ -533,7 +533,7 @@ table.CodeRay td.code>pre{padding:0}
 <div id="toctitle">Features</div>
 <ul class="sectlevel1">
 <li><a href="#_what_is_picocli">1. What is picocli</a></li>
-<li><a href="#_how_to_use_it">2. How to Use it</a></li>
+<li><a href="#_example_application_asciiart">2. Example application: ASCIIArt</a></li>
 <li><a href="#_options_and_parameters">3. Options and Parameters</a></li>
 <li><a href="#_strongly_typed_everything">4. Strongly Typed Everything</a></li>
 <li><a href="#_required_arguments">5. Required Arguments</a></li>
@@ -563,25 +563,22 @@ table.CodeRay td.code>pre{padding:0}
 <h2 id="_what_is_picocli">1. What is picocli</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Picocli is a Java library and mini-framework for creating command line applications with almost no code.</p>
+<p>Picocli is a one-file framework for creating Java command line applications with almost zero code.
+Picocli aims to be the easiest way to create rich command line applications that can run on and off the JVM.</p>
 </div>
 <div class="paragraph">
 <p>Picocli supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more.
 It generates highly customizable usage help messages with <a href="#_ansi_colors_and_styles">ANSI colors and styles</a>.
-Picocli-based applications can have <a href="autocomplete.html">command line TAB completion</a> showing available options, option parameters and subcommands, for any level of nested subcommands.</p>
+Picocli-based applications can have <a href="autocomplete.html">command line TAB completion</a> showing available options, option parameters and subcommands, for any level of nested subcommands.
+Picocli-based applications can be ahead-of-time compiled to a <span class="image"><img src="https://www.graalvm.org/resources/img/logo-colored.svg" alt="GraalVM"></span>
+<a href="https://picocli.info/#_graalvm_native_image">native image</a>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.</p>
+</div>
+<div class="paragraph">
+<p>Picocli <a href="https://picocli.info/#_generate_man_page_documentation">generates beautiful documentation</a> for your application (HTML, PDF and Unix man pages).</p>
 </div>
 <div class="paragraph">
 <div class="title">Example usage help message</div>
 <p><span class="image"><img src="images/ExampleUsageANSI.png" alt="Screenshot of usage help with Ansi codes enabled"></span></p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_how_to_use_it">2. How to Use it</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Create a class that represents your command and annotate this class with <code>@Command</code>. Then, annotate the fields or methods of the command class with <code>@Option</code> or <code>@Parameters</code> to declare what options and positional parameters your application expects. While parsing the command line, picocli will initialize these fields based on the command line arguments.
-If your class implements <code>Runnable</code> or <code>Callable</code>, you can let picocli kick off your application after parsing is successfully completed.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -590,43 +587,173 @@ If your class implements <code>Runnable</code> or <code>Callable</code>, you can
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-For applications that cannot use the annotations, there is also a <a href="picocli-3.0-programmatic-api.html">programmatic API</a> for defining what options and positional parameters to expect, and a programmatic API for handling parse results. The programmatic API is not covered in this Quick Guide.
+<div class="paragraph">
+<p>This document uses picocli&#8217;s annotation API.
+For applications that cannot use the annotations, there is also a <a href="picocli-programmatic-api.html">programmatic API</a> for defining what options and positional parameters to expect, and for handling parse results.
+The programmatic API is not covered in this Quick Guide.</p>
+</div>
 </td>
 </tr>
 </table>
 </div>
-<div class="sect2">
-<h3 id="_example">2.1. Example</h3>
-<div class="paragraph">
-<p>Here is a small example application that performs parsing and error handling in one line of code, leveraging the <a href="#_executing_commands">execute API</a> which was newly introduced with <code>picocli 4.0</code>. The <a href="#_mixin_standard_help_options">mixinStandardHelpOptions</a> attribute adds usage help and version help options your application.</p>
 </div>
-<div id="CheckSum-application" class="listingblock">
-<div class="title">Picocli-based example command line application</div>
+</div>
+<div class="sect1">
+<h2 id="_example_application_asciiart">2. Example application: ASCIIArt</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Below we show a small but fully functional example picocli-based command line application: <code>ASCIIArt</code>.</p>
+</div>
+<div class="paragraph">
+<p><code>ASCIIArt</code> converts one or more arguments into ASCII art and prints them out. It can be used as follows:</p>
+</div>
+<div class="listingblock">
+<div class="title">Invoking the command</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Prints the checksum (MD5 by default) of a file to STDOUT.</span><span class="delimiter">&quot;</span></span>,
-         name = <span class="string"><span class="delimiter">&quot;</span><span class="content">checksum</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">checksum 3.0</span><span class="delimiter">&quot;</span></span>)
-<span class="type">class</span> <span class="class">CheckSum</span> <span class="directive">implements</span> <span class="predefined-type">Callable</span>&lt;<span class="predefined-type">Integer</span>&gt; {
+<pre>$ java -cp "myapp.jar;picocli-4.5.1.jar" ASCIIArt --font=speed Hello picocli
+______  __    ___________                  _____                  __________
+___  / / /_______  /__  /_____     ___________(_)____________________  /__(_)
+__  /_/ /_  _ \_  /__  /_  __ \    ___  __ \_  /_  ___/  __ \  ___/_  /__  /
+_  __  / /  __/  / _  / / /_/ /    __  /_/ /  / / /__ / /_/ / /__ _  / _  /
+/_/ /_/  \___//_/  /_/  \____/     _  .___//_/  \___/ \____/\___/ /_/  /_/
+                                   /_/</pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The user manual has details on <a href="https://picocli.info/#_packaging_your_application">packaging your CLI application</a> so that users can invoke it simply with:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>ASCIIArt --font=speed Hello picocli</pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The source code of our <code>ASCIIArt</code> example is fairly small:</p>
+</div>
+<div class="listingblock">
+<div class="title">ASCIIArt source code</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">picocli.CommandLine</span>;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.Command</span>;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.Option</span>;
+<span class="keyword">import</span> <span class="include">picocli.CommandLine.Parameters</span>;
 
-    <span class="annotation">@Parameters</span>(index = <span class="string"><span class="delimiter">&quot;</span><span class="content">0</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">The file whose checksum to calculate.</span><span class="delimiter">&quot;</span></span>)
-    <span class="directive">private</span> <span class="predefined-type">File</span> file;
+<span class="keyword">import</span> <span class="include">java.util.Scanner</span>;
+<span class="keyword">import</span> <span class="include">java.net.URL</span>;
+<span class="keyword">import</span> <span class="include">static</span> <span class="include">java.lang.String.format</span>;
 
-    <span class="annotation">@Option</span>(names = {<span class="string"><span class="delimiter">&quot;</span><span class="content">-a</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--algorithm</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">MD5, SHA-1, SHA-256, ...</span><span class="delimiter">&quot;</span></span>)
-    <span class="directive">private</span> <span class="predefined-type">String</span> algorithm = <span class="string"><span class="delimiter">&quot;</span><span class="content">SHA-1</span><span class="delimiter">&quot;</span></span>;
+<span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">ASCIIArt</span><span class="delimiter">&quot;</span></span>, version = <span class="string"><span class="delimiter">&quot;</span><span class="content">ASCIIArt 1.0</span><span class="delimiter">&quot;</span></span>, mixinStandardHelpOptions = <span class="predefined-constant">true</span>) <i class="conum" data-value="2"></i><b>(2)</b>
+<span class="directive">public</span> <span class="type">class</span> <span class="class">ASCIIArt</span> <span class="directive">implements</span> <span class="predefined-type">Callable</span>&lt;<span class="predefined-type">Integer</span>&gt; { <i class="conum" data-value="1"></i><b>(1)</b>
 
-    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span>... args) <span class="directive">throws</span> <span class="exception">Exception</span> {
-        <span class="type">int</span> exitCode = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> CheckSum()).execute(args);
-        <span class="predefined-type">System</span>.exit(exitCode);
-    }
+    <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-f</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--font</span><span class="delimiter">&quot;</span></span> }, <i class="conum" data-value="3"></i><b>(3)</b>
+      description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Font list: https://artii.herokuapp.com/fonts_list</span><span class="delimiter">&quot;</span></span>)
+    <span class="predefined-type">String</span> font = <span class="string"><span class="delimiter">&quot;</span><span class="content">standard</span><span class="delimiter">&quot;</span></span>;
+
+    <span class="annotation">@Parameters</span>(paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">word1 [word2]</span><span class="delimiter">&quot;</span></span>, <i class="conum" data-value="4"></i><b>(4)</b>
+               description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Words to be translated into ASCII art.</span><span class="delimiter">&quot;</span></span>)
+    <span class="directive">private</span> <span class="predefined-type">String</span><span class="type">[]</span> words = { <span class="string"><span class="delimiter">&quot;</span><span class="content">Hello,</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">world!</span><span class="delimiter">&quot;</span></span> }; <i class="conum" data-value="5"></i><b>(5)</b>
 
     <span class="annotation">@Override</span>
-    <span class="directive">public</span> <span class="predefined-type">Integer</span> call() <span class="directive">throws</span> <span class="exception">Exception</span> {
-        <span class="type">byte</span><span class="type">[]</span> fileContents = Files.readAllBytes(file.toPath());
-        <span class="type">byte</span><span class="type">[]</span> digest = <span class="predefined-type">MessageDigest</span>.getInstance(algorithm).digest(fileContents);
-        <span class="predefined-type">System</span>.out.println(javax.xml.bind.DatatypeConverter.printHexBinary(digest));
+    <span class="directive">public</span> <span class="predefined-type">Integer</span> call() { <span class="comment">// your business logic </span><i class="conum" data-value="6"></i><b>(6)</b>
+        <span class="predefined-type">String</span> text = <span class="predefined-type">String</span>.join(<span class="string"><span class="delimiter">&quot;</span><span class="content">+</span><span class="delimiter">&quot;</span></span>, words);
+        <span class="predefined-type">String</span> url = format(<span class="string"><span class="delimiter">&quot;</span><span class="content">http://artii.herokuapp.com/make?text=%s&amp;font=%s</span><span class="delimiter">&quot;</span></span>, text, font);
+
+        <span class="keyword">try</span> (<span class="predefined-type">Scanner</span> s = <span class="keyword">new</span> <span class="predefined-type">Scanner</span>(<span class="keyword">new</span> <span class="predefined-type">URL</span>(url).openStream())) {
+            <span class="predefined-type">System</span>.out.println(s.useDelimiter(<span class="string"><span class="delimiter">&quot;</span><span class="char">\\</span><span class="content">A</span><span class="delimiter">&quot;</span></span>).next());
+        } <span class="keyword">catch</span> (<span class="exception">Exception</span> e) {
+            <span class="predefined-type">System</span>.err.println(<span class="string"><span class="delimiter">&quot;</span><span class="content">Invalid font or invalid text given!</span><span class="delimiter">&quot;</span></span>);
+            <span class="keyword">return</span> <span class="integer">1</span>;
+        }
         <span class="keyword">return</span> <span class="integer">0</span>;
+    }
+
+    <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
+        <span class="type">int</span> exitCode = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> ASCIIArt()).execute(args); <i class="conum" data-value="7"></i><b>(7)</b>
+        <span class="predefined-type">System</span>.exit(exitCode); <i class="conum" data-value="8"></i><b>(8)</b>
     }
 }</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s break it down into small steps:</p>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Create a class that implements <code>Runnable</code> or <code>Callable</code>. This is your command.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Annotate the class with <code>@Command</code> and give it a name. The <a href="#_mixin_standard_help_options">mixinStandardHelpOptions</a> attribute adds <code>--help</code> and <code>--version</code> options to your application.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>For each option in your application, add an <code>@Option</code>-annotated field to your command class. This example shows how you can give the options names and a description, there are many other attributes.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>For each positional parameter, add a <code>@Parameters</code>-annotated field to your command class.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Picocli will convert the command line arguments to strongly typed values and will inject these values into the annotated fields.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="6"></i><b>6</b></td>
+<td>Define your business logic in the <code>run</code> or <code>call</code> method of your class. This method is called after parsing is successfully completed.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="7"></i><b>7</b></td>
+<td>In the <code>main</code> method of your class, use the <code>CommandLine.execute</code> method bootstrap your application.
+This will parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="8"></i><b>8</b></td>
+<td>The <code>CommandLine.execute</code> method returns an exit code. Your application can call <code>System.exit</code> with this exit code to signal success or failure to the calling process.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This is the basic skeleton of almost any picocli application.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+See the <a href="http://picocli.info/">reference manual</a> for more variations, like using the annotations on methods.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Like any professional command line application, <code>ASCIIArt</code> has <code>--help</code> and <code>--version</code> options.
+The <code>--help</code> option shows the user how to use the application.
+Picocli generates this usage help message automatically:</p>
+</div>
+<div class="listingblock">
+<div class="title">Usage help message of our <code>ASCIIArt</code> command</div>
+<div class="content">
+<pre>$ ASCIIArt --help
+Usage: ASCIIArt [-hV] [-f=&lt;font&gt;] [word1 [word2]...]
+      [word1 [word2]...]   Words to be translated into ASCII art.
+  -f, --font=&lt;font&gt;        Font list: https://artii.herokuapp.com/fonts_list
+  -h, --help               Show this help message and exit.
+  -V, --version            Print version information and exit.</pre>
 </div>
 </div>
 </div>
@@ -1659,7 +1786,7 @@ adding subcommands.
 </div>
 </div>
 <div class="paragraph">
-<p>You may be interested in the <a href="#Convenience Methods for Subcommands">convenience methods for subcommands</a> to reduce error handling and other boilerplate code in your application.</p>
+<p>As of Picocli 4.0, you may use the <a href="#_executing_commands"><code>execute</code> method</a> to reduce error handling and other boilerplate code in your application.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1667,7 +1794,7 @@ adding subcommands.
 <div class="paragraph">
 <p>In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands.
 The <code>@ParentCommand</code> annotation makes it easy for subcommands to access their parent command options: subcommand fields annotated with <code>@ParentCommand</code> are initialized with a reference to the parent command.
-The user manual has an example showing <a href="https://picocli.info/#__code_parentcommand_code_annotation">how to use the <code>@ParentCommand</code> annotation</a>.</p>
+The user manual has an example showing <a href="https://picocli.info/#parentcommand-annotation">how to use the <code>@ParentCommand</code> annotation</a>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -2101,7 +2228,7 @@ Your stars keep me going! :-)</p>
 <div id="footer">
 <div id="footer-text">
 Version 4.5.1<br>
-Last updated 2020-08-26 12:25:32 +0900
+Last updated 2020-09-13 18:47:22 +0900
 </div>
 </div>
 </body>
