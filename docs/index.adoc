@@ -36,11 +36,14 @@ The user manual for the latest release is at http://picocli.info.
 For the busy and impatient: there is also a link:quick-guide.html[Quick Guide].
 
 == Introduction
-Picocli is a one-file framework for creating Java command line applications with almost zero code.
 Picocli aims to be the easiest way to create rich command line applications that can run on and off the JVM.
+Considering picocli?
+Check https://github.com/remkop/picocli/wiki/Feedback-from-Users[what happy users say] about picocli.
+
 
 === Overview
-Picocli supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more and generates highly customizable usage help messages with <<ANSI Colors and Styles,ANSI colors and styles>>.
+Picocli is a one-file framework for creating Java command line applications with almost zero code.
+It supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more and generates highly customizable usage help messages with <<ANSI Colors and Styles,ANSI colors and styles>>.
 Picocli-based applications can have link:autocomplete.html[command line TAB completion] showing available options, option parameters and subcommands, for any level of nested subcommands.
 Picocli-based applications can be ahead-of-time compiled to a image:https://www.graalvm.org/resources/img/logo-colored.svg[GraalVM]
 <<GraalVM Native Image,native image>>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.
@@ -93,7 +96,7 @@ class CheckSum implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() throws Exception { // your business logic
+    public Integer call() throws Exception { // your business logic goes here...
         byte[] fileContents = Files.readAllBytes(file.toPath());
         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
         System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1, digest));
@@ -101,8 +104,13 @@ class CheckSum implements Callable<Integer> {
     }
 }
 ----
+// Note: this example deliberately does not have the callouts and detailed explanation of the Quick Guide;
+// in this document we want to keep the introduction section very light-weight and high-level.
+// The goal of the introduction is to show how easy picocli is.
+// (The rest of this document has plenty of details.)
 
-Implement `Runnable` or `Callable` and your command can be <<Executing Commands,executed>> in one line of code. The example `main` method calls `CommandLine.execute` to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic. Applications can call `System.exit` with the returned exit code to signal success or failure to their caller.
+Implement `Runnable` or `Callable` and your command can be <<Executing Commands,executed>> in one line of code.
+The example `main` method calls `CommandLine.execute` to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic. Applications can call `System.exit` with the returned exit code to signal success or failure to their caller.
 
 The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute adds `--help` and `--version` options to your application.
 
