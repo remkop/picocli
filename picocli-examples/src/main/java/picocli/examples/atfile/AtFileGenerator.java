@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
- * This example shows how to use a custom "help" option to generate @files (argument files)
+ * This example shows how to use a custom "help" option to generate {@literal @}files (argument files)
  * when requested by the user.
  *
  * See https://github.com/remkop/picocli/issues/1163
@@ -76,15 +76,11 @@ public class AtFileGenerator implements Callable<Integer> {
     }
 
     private List<String> argsWithoutGenerateAtFileOption() {
-        List<String> args = spec.commandLine().getParseResult().originalArgs(); // or expandedArgs()?
+        List<String> args = spec.commandLine().getParseResult().originalArgs();
         List<String> result = new ArrayList<>();
         for (int i = 0; i < args.size(); i++) {
-            if (AT_FILE_OPTION_NAME.equals(args.get(i))) {
+            if (AT_FILE_OPTION_NAME.equals(args.get(i))) { // ignoring abbreviations and case-insensitive parsing mode...
                 ++i; // skip the file name
-                if (!args.get(i).equals(generateAtFile.getName())) {
-                    throw new IllegalStateException("Expected " + AT_FILE_OPTION_NAME
-                            + " to be followed by " + generateAtFile + " but was " + args.get(i));
-                }
             } else if (!args.get(i).startsWith(AT_FILE_OPTION_NAME + spec.parser().separator())) {
                 result.add(args.get(i));
             }
@@ -126,7 +122,13 @@ public class AtFileGenerator implements Callable<Integer> {
     public static void main(String[] args) throws IOException {
         if (args.length > 0) {
             System.exit(new CommandLine(new AtFileGenerator()).execute(args));
+        } else {
+            test();
         }
+    }
+
+    static void test() throws IOException {
+        String[] args;
         File atFile = File.createTempFile("picocliAtFile", ".txt");
         args = new String[] {
                 "#other-param", "param\t with\\spaces and tabs", "-x=3", //--required omitted
