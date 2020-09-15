@@ -893,7 +893,7 @@ all the source code lives in a single file, to encourage application authors to 
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separately from the annotations API.
+Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separately from the annotations API.
 </td>
 </tr>
 </table>
@@ -946,7 +946,8 @@ picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 </div>
 </div>
 <div class="paragraph">
-<p>Implement <code>Runnable</code> or <code>Callable</code> and your command can be <a href="#execute">executed</a> in one line of code. The example <code>main</code> method calls <code>CommandLine.execute</code> to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic. Applications can call <code>System.exit</code> with the returned exit code to signal success or failure to their caller.</p>
+<p>Implement <code>Runnable</code> or <code>Callable</code> and your command can be <a href="#execute">executed</a> in one line of code.
+The example <code>main</code> method calls <code>CommandLine.execute</code> to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic. Applications can call <code>System.exit</code> with the returned exit code to signal success or failure to their caller.</p>
 </div>
 <div class="paragraph">
 <p>The <a href="#_mixin_standard_help_options">mixinStandardHelpOptions</a> attribute adds <code>--help</code> and <code>--version</code> options to your application.</p>
@@ -1754,7 +1755,23 @@ with an additional '@' symbol, e.g. '@@somearg' will become '@somearg' and not b
 </div>
 <div class="paragraph">
 <p>This feature is similar to the 'Command Line Argument File' processing supported by gcc, javadoc and javac.
-The documentation for these tools shows further examples.</p>
+The documentation for these tools has more details.
+See for example the documentation for <a href="https://docs.oracle.com/en/java/javase/14/docs/specs/man/java.html#java-command-line-argument-files">java Command-Line Argument Files</a>.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If you think your users may find this feature (@files) useful, you could consider adding an option to your application that generates an @file for the specified arguments.
+The <code>picocli-examples</code> module on GitHub has an <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/atfile/AtFileGenerator.java">example</a> to get you started.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect3">
@@ -1770,7 +1787,7 @@ See <a href="#_show_at_files">Show At Files</a> for details.</p>
 <p>From picocli 3.8.1, a simpler argument file format is also supported where every line (except empty lines and comment lines)
 is interpreted as a single argument. Arguments containing whitespace do not need to be quoted,
 but it is not possible to have arguments with embedded newlines or to have empty string arguments without quotes.
-From picocli 3.9, this simpler argument format is fully compatible with <a href="http://jcommander.org/#__syntax">JCommander</a>'s <code>@-file</code> argument file format.</p>
+From picocli 3.9, this simpler argument format is fully compatible with <a href="http://jcommander.org/#_syntax">JCommander</a>'s <code>@-file</code> argument file format.</p>
 </div>
 <div class="paragraph">
 <p>You can tell picocli to use the simplified argument file format programmatically with <code>CommandLine.setUseSimplifiedAtFiles(true)</code>,
