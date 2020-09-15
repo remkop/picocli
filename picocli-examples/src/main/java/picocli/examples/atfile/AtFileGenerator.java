@@ -42,11 +42,11 @@ public class AtFileGenerator implements Callable<Integer> {
     @Option(names = AT_FILE_OPTION_NAME,
             help = true, // don't validate required args if --generate-at-file is specified
             description = "Specify this option to generate an @file")
-    File generateAtFile;
+    File atFile;
 
     @Override
     public Integer call() throws IOException {
-        if (generateAtFile != null) {
+        if (atFile != null) {
             tryWriteAtFile();
             return 0;
         }
@@ -56,14 +56,14 @@ public class AtFileGenerator implements Callable<Integer> {
     }
 
     private void tryWriteAtFile() throws IOException {
-        if (!generateAtFile.exists() || (generateAtFile.exists() && confirmOverwriteOrExit())) {
+        if (!atFile.exists() || (atFile.exists() && confirmOverwriteOrExit())) {
             writeAtFile(argsWithoutGenerateAtFileOption());
         }
     }
 
     private boolean confirmOverwriteOrExit() {
         while (System.console() != null) { // overwrite unconditionally if no interactive console
-            String line = System.console().readLine("%s exists. Overwrite? (y/n)", generateAtFile);
+            String line = System.console().readLine("%s exists. Overwrite? (y/n)", atFile);
             if (line == null || "n".equalsIgnoreCase(line)) {
                 System.err.println("Aborted, file was not modified.");
                 System.exit(3);
@@ -89,8 +89,8 @@ public class AtFileGenerator implements Callable<Integer> {
     }
 
     private void writeAtFile(List<String> args) throws IOException {
-        try (PrintWriter pw = new PrintWriter(new FileWriter(generateAtFile))) {
-            pw.printf("# @%s argument file generated for %s on %s%n", generateAtFile, spec.qualifiedName(), new Date());
+        try (PrintWriter pw = new PrintWriter(new FileWriter(atFile))) {
+            pw.printf("# @%s argument file generated for %s on %s%n", atFile, spec.qualifiedName(), new Date());
             for (String arg : args) {
                 pw.println(quoteAndEscapeBackslashes(arg));
             }
