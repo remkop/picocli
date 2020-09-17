@@ -190,6 +190,16 @@ public class PicocliCommands implements CommandRegistry {
         return out;
     }
 
+    // For JLine >= 3.16.0
+    @Override
+    public Object invoke(CommandRegistry.CommandSession session, String command, Object[] args) throws Exception {
+        List<String> arguments = new ArrayList<>();
+        arguments.add( command );
+        arguments.addAll( Arrays.stream( args ).map( Object::toString ).collect( Collectors.toList() ) );
+        cmd.execute( arguments.toArray( new String[0] ) );
+        return null;
+    }
+
     // @Override This method was removed in JLine 3.16.0; keep it in case this component is used with an older version of JLine
     public Object execute(CommandRegistry.CommandSession session, String command, String[] args) throws Exception {
         List<String> arguments = new ArrayList<>();
