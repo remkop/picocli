@@ -3,21 +3,13 @@ package picocli.examples.customhelp;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Help;
-import picocli.CommandLine.Help.Ansi.Text;
 import picocli.CommandLine.Help.ColorScheme;
 import picocli.CommandLine.IHelpFactory;
-import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Option;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
-
-import static picocli.CommandLine.ScopeType.INHERIT;
 
 /**
  * Demonstrates how to use a custom {@link IHelpFactory} and subclassing {@code Help}
