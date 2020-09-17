@@ -33,15 +33,31 @@ The picocli user manual is [here](https://picocli.info), and the GitHub project 
 ## Command Completer
 `PicocliJLineCompleter` is a small component that generates completion candidates to allow users to
 get command line TAB auto-completion for a picocli-based application running in a JLine 3 shell.
+It does not use JLine's `TailTipWidgets` terminal status bar and can be used with older versions of JLine.
 
 ## PicocliCommands
-`PicocliCommands` is a small component, analogous to JLine's `Builtins`, that takes a `picocli.CommandLine`
-object with a picocli-based command hierarchy and creates a JLine `SystemCompleter` for all commands
-in the hierarchy to set up command TAB completion in JLine.
-In addition, it makes a `org.jline.builtins.Widgets.CmdDesc` object available for each command,
-which allows a detailed description of the command and its options to be displayed
-in the JLine `TailTipWidgets` terminal status bar.
+Completion with description.
 
+`PicocliCommands` is a small component, analogous to JLine's `Builtins`, that takes a `picocli.CommandLine`
+object with a picocli-based command hierarchy and creates a JLine `SystemCompleter` for all commands in the hierarchy to set up command TAB completion in JLine.
+In addition, it makes a `org.jline.builtins.Widgets.CmdDesc` object available for each command,
+which allows a detailed description of the command and its options to be displayed in the JLine `TailTipWidgets` terminal status bar.
+This component requires JLine 3.14.1 or greater.
+
+### PicocliCommands Version Compatibility
+
+The JLine `TailTipWidgets` terminal status bar is still under development, and the JLine API has undergone some backwards incompatible changes.
+As a result, applications that use the `PicocliCommands` component for completion must take care to use compatible versions.
+
+The following versions of `jline` and `picocli-shell-jline3` are compatible:
+
+| JLine Version  | Picocli Version |
+| -------------- | --------------- |
+| 3.13.2 - 3.14.0 | 4.1.2 - 4.2.0 |
+| 3.14.1  | 4.3.0 - 4.3.2 |
+| 3.15.0 -  | 4.4.0 -  |
+
+See [examples for the older versions](https://github.com/remkop/picocli/wiki/JLine-3-Examples).
 
 ## Demo
 
@@ -51,7 +67,7 @@ JLine [Wiki](https://github.com/jline/jline3/wiki) and some more [Demos](https:/
 
 ## Example
 
-The following example requires JJLine 3.14.1 and Picocli 4.3+.
+The following example requires JLine 3.15+ and Picocli 4.4+.
 
 See examples for older versions on the [wiki](https://github.com/remkop/picocli/wiki/JLine-3-Examples).
 

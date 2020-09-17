@@ -32,6 +32,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1173] DOC: Improve example applications for the user manual and Quick Guide. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1170] TEST: Ensure ANSI is disabled in `ManPageGeneratorTest` regardless of environment. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 * [#1166][#1103] TEST: Ensure ANSI is disabled in `TracerTest` regardless of environment. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
+* [#1175] DOC: section on compatible versions to `picocli-shell-jline3/README.md`. Thanks to [Nick Cross](https://github.com/rnc) for raising this.
 
 ## <a name="4.5.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
