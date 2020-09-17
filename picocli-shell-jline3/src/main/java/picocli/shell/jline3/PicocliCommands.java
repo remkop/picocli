@@ -190,7 +190,7 @@ public class PicocliCommands implements CommandRegistry {
         return out;
     }
 
-    @Override
+    // @Override This method was removed in JLine 3.16.0; keep it in case this component is used with an older version of JLine
     public Object execute(CommandRegistry.CommandSession session, String command, String[] args) throws Exception {
         List<String> arguments = new ArrayList<>();
         arguments.add(command);
@@ -209,7 +209,7 @@ public class PicocliCommands implements CommandRegistry {
         return aliasCommand;
     }
 
-    @Override
+    // @Override This method was removed in JLine 3.16.0; keep it in case this component is used with an older version of JLine
     public CmdDesc commandDescription(String command) {
         return null;
     }
