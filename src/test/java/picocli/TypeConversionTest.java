@@ -514,7 +514,7 @@ public class TypeConversionTest {
     }
     @Test
     public void testInetAddressConvertersInvalidError() {
-        parseInvalidValue("-InetAddress", "%$::a?*!a", "java.net.UnknownHostException: ");
+        parseInvalidValue("-InetAddress", "test.invalid", "java.net.UnknownHostException: ");
     }
     @Test
     public void testUUIDConvertersInvalidError() {
