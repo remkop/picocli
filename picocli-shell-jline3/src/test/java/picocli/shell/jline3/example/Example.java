@@ -1,17 +1,16 @@
 package picocli.shell.jline3.example;
 
 import org.fusesource.jansi.AnsiConsole;
-import org.jline.builtins.Builtins;
-import org.jline.builtins.Widgets.TailTipWidgets;
-import org.jline.builtins.Widgets.TailTipWidgets.TipType;
+import org.jline.console.SystemRegistry;
+import org.jline.console.impl.Builtins;
+import org.jline.console.impl.SystemRegistryImpl;
 import org.jline.keymap.KeyMap;
-import org.jline.builtins.SystemRegistry;
-import org.jline.builtins.SystemRegistryImpl;
 import org.jline.reader.*;
 import org.jline.reader.impl.DefaultParser;
 import org.jline.reader.impl.LineReaderImpl;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
+import org.jline.widget.TailTipWidgets;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -153,7 +152,7 @@ public class Example {
         try {
             // set up JLine built-in commands
             Builtins builtins = new Builtins(Example::workDir, null, null);
-            builtins.rename(org.jline.builtins.Builtins.Command.TTOP, "top");
+            builtins.rename(Builtins.Command.TTOP, "top");
             builtins.alias("zle", "widget");
             builtins.alias("bindkey", "keymap");
             // set up picocli commands
@@ -174,7 +173,8 @@ public class Example {
                         .build();
                 builtins.setLineReader(reader);
                 commands.setReader(reader);
-                new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TipType.COMPLETER);
+                TailTipWidgets widgets = new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TailTipWidgets.TipType.COMPLETER);
+                widgets.enable();
                 KeyMap<Binding> keyMap = reader.getKeyMaps().get("main");
                 keyMap.bind(new Reference("tailtip-toggle"), KeyMap.alt("s"));
 
