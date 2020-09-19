@@ -67,25 +67,30 @@ JLine [Wiki](https://github.com/jline/jline3/wiki) and some more [Demos](https:/
 
 ## Example
 
-The following example requires JLine 3.15+ and Picocli 4.4+.
+### Older versions
 
 See examples for older versions on the [wiki](https://github.com/remkop/picocli/wiki/JLine-3-Examples).
+
+* [Example for JLine 3.13.2 and Picocli 4.1.2](https://github.com/remkop/picocli/wiki/JLine-3-Examples#example-for-jline-3132-and-picocli-412)
+* [Example for JLine 3.14.1 and Picocli 4.3.0 - 4.3.2](https://github.com/remkop/picocli/wiki/JLine-3-Examples#example-for-jline-3141-and-picocli-430---432)
+* [Example for JLine 3.15 and Picocli 4.4+](https://github.com/remkop/picocli/wiki/JLine-3-Examples#example-for-jline-315-and-picocli-44)
+
+### JLine 3.16 and Picocli 4.4+ Example
 
 ```java
 package picocli.shell.jline3.example;
 
 import org.fusesource.jansi.AnsiConsole;
-import org.jline.builtins.Builtins;
-import org.jline.builtins.Widgets.TailTipWidgets;
-import org.jline.builtins.Widgets.TailTipWidgets.TipType;
+import org.jline.console.SystemRegistry;
+import org.jline.console.impl.Builtins;
+import org.jline.console.impl.SystemRegistryImpl;
 import org.jline.keymap.KeyMap;
-import org.jline.builtins.SystemRegistry;
-import org.jline.builtins.SystemRegistryImpl;
 import org.jline.reader.*;
 import org.jline.reader.impl.DefaultParser;
 import org.jline.reader.impl.LineReaderImpl;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
+import org.jline.widget.TailTipWidgets;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -102,7 +107,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Example that demonstrates how to build an interactive shell with JLine3 and picocli.
- * @since 4.5.1
+ * This example requires JLine 3.16+ and picocli 4.4+.
  */
 public class Example {
 
@@ -227,7 +232,7 @@ public class Example {
         try {
             // set up JLine built-in commands
             Builtins builtins = new Builtins(Example::workDir, null, null);
-            builtins.rename(org.jline.builtins.Builtins.Command.TTOP, "top");
+            builtins.rename(Builtins.Command.TTOP, "top");
             builtins.alias("zle", "widget");
             builtins.alias("bindkey", "keymap");
             // set up picocli commands
@@ -248,7 +253,8 @@ public class Example {
                         .build();
                 builtins.setLineReader(reader);
                 commands.setReader(reader);
-                new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TipType.COMPLETER);
+                TailTipWidgets widgets = new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TailTipWidgets.TipType.COMPLETER);
+                widgets.enable();
                 KeyMap<Binding> keyMap = reader.getKeyMaps().get("main");
                 keyMap.bind(new Reference("tailtip-toggle"), KeyMap.alt("s"));
 

@@ -35,6 +35,8 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1179] TEST: Use `.invalid` domain name for `InetAddress` test. Thanks to [David Phillips](https://github.com/electrum) for the pull request.
 * [#1178] BUILD: Run Travis build on macOS. Thanks to [David Phillips](https://github.com/electrum) for the pull request.
 * [#1175] DOC: section on compatible versions to `picocli-shell-jline3/README.md`. Thanks to [Nick Cross](https://github.com/rnc) for raising this.
+* [#1176] DOC: Update JLine `picocli-shell-jline3` example to 3.16.0. Thanks to [Nick Cross](https://github.com/rnc) for the pull request.
+
 
 ## <a name="4.5.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
