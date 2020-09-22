@@ -26,6 +26,11 @@ public class CustomParamList {
             description = "Demonstrates how to create a custom left-aligned param list.")
     static class App {
         @Parameters(paramLabel = "Other", description = "Some positional parameter") String str;
+        @Parameters(paramLabel = "Another", description = {
+                "Some positional parameter with a very very long description that spans multiple lines",
+                "And has multiple paragraphs"
+        })
+        String str2;
     }
 
     static class MyHelpFactory implements IHelpFactory {
@@ -66,10 +71,13 @@ public class CustomParamList {
         cmd.setHelpFactory(new MyHelpFactory());
 
         String expected = String.format("" +
-                "Usage: CustomParamList [-hV] Other%n" +
+                "Usage: CustomParamList [-hV] Other Another%n" +
                 "Demonstrates how to create a custom left-aligned param list.%n" +
                 "positional arguments:%n" +
                 "  Other           Some positional parameter%n" +
+                "  Another         Some positional parameter with a very very long description%n" +
+                "                    that spans multiple lines%n" +
+                "                  And has multiple paragraphs%n" +
                 "optional arguments:%n" +
                 "  -h, --help      Show this help message and exit.%n" +
                 "  -V, --version   Print version information and exit.%n");
