@@ -40,7 +40,9 @@ For applications that cannot use the annotations, there is also a link:picocli-p
 The programmatic API is not covered in this Quick Guide.
 ====
 
-== Example application: ASCIIArt
+== Example applications
+
+=== Basic example application: ASCIIArt
 Below we show a small but fully functional example picocli-based command line application: `ASCIIArt`.
 
 `ASCIIArt` converts one or more arguments into ASCII art and prints them out. It can be used as follows:
@@ -141,10 +143,114 @@ Usage: ASCIIArt [-hV] [-f=<font>] [word1 [word2]...]
   -V, --version            Print version information and exit.
 ----
 
+=== Example application with subcommands: ISO Code resolver
+Below we show another small but fully functional example picocli-based command line application which explains the use of subcommands: `ISO Code resolver`.
+
+The `ISOCodeResolver` application has two subcommands `language` and `country` that may be used to either resolve either language or country code(s) following ISO standard. The app can be used as follows:
+
+.Resolving two letter language codes
+----
+$ java -cp "myapp.jar;picocli-4.5.1.jar" ISOCodeResolver language de cs en sd se
+de: German
+cs: Czech
+en: English
+sd: Sindhi
+se: Northern Sami
+----
+
+.Resolving two letter country codes
+----
+$ java -cp "myapp.jar;picocli-4.5.1.jar" ISOCodeResolver country cn fr th ro no
+CN: China
+FR: France
+TH: Thailand
+RO: Romania
+NO: Norway
+----
+
+The source code of our second `ISOCodeResolver` example is also fairly small:
+
+.ISOCodeResolver source code
+[source,java]
+----
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.Spec;
+import java.util.Locale;
+
+@Command(name = "ISOCodeResolver", subcommands = { SubcommandAsClass.class, CommandLine.HelpCommand.class }, // <2>
+         description = "Resolve ISO country codes (ISO-3166-1) or language codes (ISO 639-1/-2)")
+public class ISOCodeResolver implements Runnable { // <1>
+    @Spec CommandSpec spec;
+
+    @Command(name = "country", description = "Resolve ISO country code (ISO-3166-1)") // <3>
+    void subCommandViaMethod(@Parameters(arity = "1..*", paramLabel = "<code 1> <code 2>",
+                 description = "country code(s) to be resolved") String[] countryCodes) {
+        for (String code : countryCodes) {
+            System.out.println(String.format("%s: %s", code.toUpperCase(), new Locale("", code).getDisplayCountry()));
+        }
+    }
+
+    @Override
+    public void run() {
+        throw new ParameterException(spec.commandLine(), "Specify a subcommand");
+    }
+
+    public static void main(String[] args) {
+        int exitCode = new CommandLine(new ISOCodeResolver()).execute(args);  // <5>
+        System.exit(exitCode);  // <6>
+    }
+}
+
+@Command(name = "language", description = "Resolve ISO language code (ISO 639-1 or -2)") // <4>
+class SubcommandAsClass implements Runnable {
+
+    @Parameters(arity = "1..*", paramLabel = "<code> <code2>", description = "language code(s)")
+    private String[] languageCodes;
+
+    @Override
+    public void run() {
+        for (String code : languageCodes) {
+            System.out.println(String.format("%s: %s", code.toLowerCase(), new Locale(code).getDisplayLanguage()));
+        }
+    }
+}
+----
+
+Let's break it down into small steps:
+
+<1> Create a class that implements `Runnable` or `Callable`. This is your main command.
+<2> Annotate the class with `@Command` and give it a name. By specifying the https://picocli.info/apidocs/picocli/CommandLine.HelpCommand.html[CommandLine.HelpCommand] class as subcommand inside the annotation, we can add the pre-built `help` subcommand to your application.
+<3> Custom subcommands may be added you main command in two different ways. The easiest way is to add an `@Command`-annotated method to your main command class. If your subcommand can take options and/or positional parameters, you have to annotate the method's argument variable with `@Option` and/or `@Parameters` annotations. In the example above, once the user invokes the subcommand `country`, the associated method `subCommandViaMethod` gets called.
+<4> In larger applications, it is common to code subcommands inside their own `@Command`-annotated class. In the example above, the `SubcommandAsClass` class represents the `language` subcommand. Once the user invokes this subcommand, the overridden method `run` of this class gets called. To be recognized as subcommand by the main app, the subcommand class must be given in the `subcommands` attribute of the `@Command@` annotation of the main class (subcommands = { SubcommandAsClass.class, ... } ❷).
+<5> In the `main` method of your main `ÌSOCodeResolver` class, we use the `CommandLine.execute` method to bootstrap our application.
+    This will parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic of the associated subcommands.
+<6> The `CommandLine.execute` method returns an exit code. Your application can call `System.exit` with this exit code to signal success or failure to the calling process.
+
+This is the basic skeleton of an picocli application with subcommands.
+
+TIP: See the link:https://picocli.info/#_subcommands/[Subcommands chapter] of the reference manual for more details and aspects of subcommands.
+
+In addition to the two user defined subcommands, the `ISOCodeResolver` app offers a `help` subcommand, which will show usage instructions to the user.
+Picocli generates this usage help message automatically:
+
+.Usage help message of our `ASCIIArt` command
+----
+$ ISOCodeResolver help
+Usage: ISOCodeResolver [COMMAND]
+Resolve ISO country codes (ISO-3166-1) or language codes (ISO 639-1 or -2)
+Commands:
+  help      Displays help information about the specified command
+  country   Resolve ISO country code (ISO-3166-1, Alpha-2 code)
+  language  Resolve ISO language code (ISO 639-1 or -2, two/three letters)
+----
 
 
 == Options and Parameters
-Command line arguments can be separated into _options_  and _positional parameters_.
+Command line arguments can be separated into _options_ and _positional parameters_.
 Options have a name, positional parameters are usually the values that follow the options,
 but they may be mixed.
 
@@ -1033,7 +1139,7 @@ Commands with a user object that implements `Runnable` can implement the `IExitC
 
 By default, the `execute` method returns `CommandLine.ExitCode.OK` (`0`) on success, `CommandLine.ExitCode.SOFTWARE` (`1`) when an exception occurred in the Runnable, Callable or command method, and `CommandLine.ExitCode.USAGE` (`2`) for invalid input. (These are common values according to https://stackoverflow.com/questions/1101957/are-there-any-standard-exit-status-codes-in-linux/40484670#40484670[this StackOverflow answer]). This can be customized with the `@Command` annotation. For example:
 
-```java 
+```java
 @Command(exitCodeOnInvalidInput = 123,
    exitCodeOnExecutionException = 456)
 ```
