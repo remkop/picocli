@@ -13,6 +13,7 @@
 :icons: font
 :imagesdir: images
 :sectanchors:
+:linkattrs:
 ifdef::env-github[]
 :caution-caption: :fire:
 :important-caption: :heavy_exclamation_mark:
@@ -809,7 +810,7 @@ If the user specifies invalid input, custom type converters should throw an exce
 Any exception is fine, and will result in a message like the below being displayed to the user:
 
 ----
-Invalid value for option '-a': cannot convert 'xxxinvalidinput' to InetSocketAddress (java.lang.IllegalArgumentException: Invalid format: must be 'host:port' but was 'xxxinvalidinput')
+Invalid value for option '--socket-address': cannot convert 'xxxinvalidinput' to InetSocketAddress (java.lang.IllegalArgumentException: Invalid format: must be 'host:port' but was 'xxxinvalidinput')
 ----
 
 The above error message is generic and is reasonable for many exceptions, but sometimes you want more control over the error message displayed to the user.
@@ -817,7 +818,7 @@ To achieve this, throw a `picocli.CommandLine.TypeConversionException` instead.
 When a `TypeConversionException` is thrown, picocli will show an error message that indicates the problematic option, followed by the exception message text. The resulting output looks something like this:
 
 ----
-Invalid value for option '-a': Invalid format: must be 'host:port' but was 'xxxinvalidinput'
+Invalid value for option '--socket-address': Invalid format: must be 'host:port' but was 'xxxinvalidinput'
 ----
 
 Below is an example custom converter that throws a `TypeConversionException`:
@@ -841,7 +842,7 @@ class InetSocketAddressConverter implements ITypeConverter<InetSocketAddress> {
 }
 ----
 
-The `picocli-examples` module on GitHub has a runnable https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/typeconverter/InetSocketAddressConverterDemo.java[example].
+The `picocli-examples` module on GitHub has a minimal working https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/typeconverter/InetSocketAddressConverterDemo.java[example] which you can run in our https://www.jdoodle.com/embed/v0/2mxo?stdin=1&arg=1[online-editor^].
 
 === Option-specific Type Converters
 Picocli 2.2 added a `converter` attribute to the `@Option` and `@Parameter` annotations. This allows a specific option or positional parameter to use a different converter than would be used by default based on the type of the field.
