@@ -145,10 +145,10 @@ Usage: ASCIIArt [-hV] [-f=<font>] [word1 [word2]...]
 ----
 
 === Subcommands Example: ISO Code Resolver
-Below we show another small but fully functional example picocli-based command line application which explains the use of subcommands: `ISO Code resolver`.
+Below we show another small but fully functional example picocli-based command line application which explains the use of subcommands: `ISOCodeResolver`.
 
-The `ISOCodeResolver` application has two subcommands, `language` and `country`, that may be used to either resolve either languages or country codes following the ISO standards (ISO-3166-1 for country codes, and ISO 639-1/639-2 for language codes).
-The app can be used as follows:
+This application has two subcommands, `language` and `country`, that resolve languages or country codes following the ISO standards (ISO-3166-1 for country codes, and ISO-639-1/639-2 for language codes).
+The application can be used as follows:
 
 .Resolving two letter language codes
 ----
@@ -170,7 +170,7 @@ RO: Romania
 NO: Norway
 ----
 
-The source code of our second `ISOCodeResolver` example is also fairly small:
+The code below shows how `ISOCodeResolver` defines its subcommands:
 
 .ISOCodeResolver source code
 [source,java]
@@ -207,7 +207,7 @@ public class ISOCodeResolver { // <1>
 }
 
 @Command(name = "language",
-  description = "Resolves one ore more ISO language codes (ISO 639-1 or 639-2)") // <4>
+  description = "Resolves one ore more ISO language codes (ISO-639-1 or 639-2)") // <4>
 class SubcommandAsClass implements Runnable {
 
     @Parameters(arity = "1..*", paramLabel = "<languageCode>", description = "language code(s)")
@@ -225,30 +225,39 @@ class SubcommandAsClass implements Runnable {
 
 Let's break it down into small steps:
 
-<1> When the main command does not implement `Runnable` or `Callable`, users must specify a subcommand (subcommands become mandatory).
-<2> Annotate the class with `@Command` and give it a name. By specifying the https://picocli.info/apidocs/picocli/CommandLine.HelpCommand.html[CommandLine.HelpCommand] class as subcommand inside the annotation, we can add the pre-built `help` subcommand to your application.
-<3> Custom subcommands may be added you main command in two different ways. The easiest way is to add an `@Command`-annotated method to your main command class. If your subcommand can take options and/or positional parameters, you have to annotate the method's argument variable with `@Option` and/or `@Parameters` annotations. In the example above, once the user invokes the subcommand `country`, the associated method `subCommandViaMethod` gets called.
-<4> In larger applications, it is common to code subcommands inside their own `@Command`-annotated class. In the example above, the `SubcommandAsClass` class represents the `language` subcommand. Once the user invokes this subcommand, the overridden method `run` of this class gets called. To be recognized as subcommand by the main app, the subcommand class must be given in the `subcommands` attribute of the `@Command@` annotation of the main class (subcommands = { SubcommandAsClass.class, ... } ❷).
-<5> In the `main` method of your main `ÌSOCodeResolver` class, we use the `CommandLine.execute` method to bootstrap our application.
+<1> When the top-level command does not implement `Runnable` or `Callable`, users must specify a subcommand (subcommands become mandatory).
+    This is optional: simply implement `Runnable` or `Callable` if the parent command can be executed by itself without subcommands in your application.
+<2> Annotate the class with `@Command` and give it a name.
+    Note that we also specify the https://picocli.info/apidocs/picocli/CommandLine.HelpCommand.html[CommandLine.HelpCommand] class as subcommand in the annotation, to add the built-in `help` subcommand.
+<3> Custom subcommands can be added to the top-level command in two ways.
+    The easiest way is to add a `@Command`-annotated method to the command class.
+    For each option and positional parameter of the subcommand, add a method argument, and annotate these method argument with the `@Option` or `@Parameters` annotation.
+    In the example above, once the user invokes the subcommand `country`, the associated method `subCommandViaMethod` gets called.
+<4> In larger applications, it is common to create a separate `@Command`-annotated class for each subcommand.
+    In the example above, the `SubcommandAsClass` class represents the `language` subcommand.
+    Once the user invokes this subcommand, the overridden `run` method of this class is called.
+    To register the subcommand, specify the subcommand class in the `subcommands` attribute of the `@Command` annotation of the parent command (subcommands = { SubcommandAsClass.class, ... } ❷).
+<5> In the `main` method of our `ISOCodeResolver` class, we use the `CommandLine.execute` method to bootstrap our application.
     This will parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic of the associated subcommands.
-<6> The `CommandLine.execute` method returns an exit code. Your application can call `System.exit` with this exit code to signal success or failure to the calling process.
+<6> The `CommandLine.execute` method returns an exit code.
+    The application can call `System.exit` with this exit code to signal success or failure to the calling process.
 
 This is the basic skeleton of an picocli application with subcommands.
 
 TIP: See the link:https://picocli.info/#_subcommands/[Subcommands chapter] of the reference manual for more details and aspects of subcommands.
 
-In addition to the two user defined subcommands, the `ISOCodeResolver` app offers a `help` subcommand, which will show usage instructions to the user.
+In addition to the two user defined subcommands, the `ISOCodeResolver` app offers a `help` subcommand, which prints the usage help message to the console.
 Picocli generates this usage help message automatically:
 
-.Usage help message of our `ASCIIArt` command
+.Usage help message of our `ISOCodeResolver` command
 ----
 $ ISOCodeResolver help
 Usage: ISOCodeResolver [COMMAND]
-Resolve ISO country codes (ISO-3166-1) or language codes (ISO 639-1 or -2)
+Resolves ISO country codes (ISO-3166-1) or language codes (ISO-639-1/-2)
 Commands:
   help      Displays help information about the specified command
-  country   Resolve ISO country code (ISO-3166-1, Alpha-2 code)
-  language  Resolve ISO language code (ISO 639-1 or -2, two/three letters)
+  country   Resolves ISO country codes (ISO-3166-1)
+  language  Resolves one ore more ISO language codes (ISO-639-1 or 639-2)
 ----
 
 
