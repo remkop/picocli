@@ -790,6 +790,33 @@ RO: Romania
 NO: Norway</pre>
 </div>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The user manual has details on <a href="https://picocli.info/#_packaging_your_application">packaging your CLI application</a> so that users can invoke these commands simply with:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>ISOCodeResolver language de cs en sd se</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>and</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>ISOCodeResolver country cn fr th ro no</pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>The code below shows how <code>ISOCodeResolver</code> defines its subcommands:</p>
 </div>
@@ -863,7 +890,7 @@ Note that we also specify the <a href="https://picocli.info/apidocs/picocli/Comm
 <td><i class="conum" data-value="3"></i><b>3</b></td>
 <td>Custom subcommands can be added to the top-level command in two ways.
 The easiest way is to add a <code>@Command</code>-annotated method to the command class.
-For each option and positional parameter of the subcommand, add a method argument, and annotate these method argument with the <code>@Option</code> or <code>@Parameters</code> annotation.
+For each option and positional parameter of the subcommand, add a method argument, and annotate these method arguments with the <code>@Option</code> or <code>@Parameters</code> annotation.
 In the example above, once the user invokes the subcommand <code>country</code>, the associated method <code>subCommandViaMethod</code> gets called.</td>
 </tr>
 <tr>
