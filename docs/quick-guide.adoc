@@ -51,7 +51,7 @@ Below we show a small but fully functional example picocli-based command line ap
 
 .Invoking the command
 ----
-$ java -cp "myapp.jar;picocli-4.5.1.jar" ASCIIArt --font=speed Hello picocli
+$ java -cp "myapp.jar;picocli-4.5.2-SNAPSHOT.jar" ASCIIArt --font=speed Hello picocli
 ______  __    ___________                  _____                  __________
 ___  / / /_______  /__  /_____     ___________(_)____________________  /__(_)
 __  /_/ /_  _ \_  /__  /_  __ \    ___  __ \_  /_  ___/  __ \  ___/_  /__  /
@@ -153,7 +153,7 @@ The application can be used as follows:
 
 .Resolving two letter language codes
 ----
-$ java -cp "myapp.jar;picocli-4.5.1.jar" ISOCodeResolver language de cs en sd se
+$ java -cp "myapp.jar;picocli-4.5.2-SNAPSHOT.jar" ISOCodeResolver language de cs en sd se
 de: German
 cs: Czech
 en: English
@@ -163,13 +163,29 @@ se: Northern Sami
 
 .Resolving two letter country codes
 ----
-$ java -cp "myapp.jar;picocli-4.5.1.jar" ISOCodeResolver country cn fr th ro no
+$ java -cp "myapp.jar;picocli-4.5.2-SNAPSHOT.jar" ISOCodeResolver country cn fr th ro no
 CN: China
 FR: France
 TH: Thailand
 RO: Romania
 NO: Norway
 ----
+
+[TIP]
+====
+The user manual has details on link:https://picocli.info/#_packaging_your_application[packaging your CLI application] so that users can invoke these commands simply with:
+
+----
+ISOCodeResolver language de cs en sd se
+----
+
+and
+
+----
+ISOCodeResolver country cn fr th ro no
+----
+====
+
 
 The code below shows how `ISOCodeResolver` defines its subcommands:
 
@@ -279,7 +295,7 @@ Let's break it down into small steps:
     Note that we also specify the https://picocli.info/apidocs/picocli/CommandLine.HelpCommand.html[CommandLine.HelpCommand] class as subcommand in the annotation, to add the built-in `help` subcommand.
 <3> Custom subcommands can be added to the top-level command in two ways.
     The easiest way is to add a `@Command`-annotated method to the command class.
-    For each option and positional parameter of the subcommand, add a method argument, and annotate these method argument with the `@Option` or `@Parameters` annotation.
+    For each option and positional parameter of the subcommand, add a method argument, and annotate these method arguments with the `@Option` or `@Parameters` annotation.
     In the example above, once the user invokes the subcommand `country`, the associated method `subCommandViaMethod` gets called.
 <4> In larger applications, it is common to create a separate `@Command`-annotated class for each subcommand.
     In the example above, the `SubcommandAsClass` class represents the `language` subcommand.

@@ -4524,7 +4524,7 @@ Picocli makes it very easy to have commands with subcommands, and sub-subcommand
 If you want to jump ahead and see some examples first, these resources may be helpful:
 
 * The <<Executing Subcommands>> section below has an example that uses both the `@Command(subcommands = <class>)` syntax and the `@Command`-annotated method syntax.
-* The Quick Guide shows example code of a minimal, fully working https://picocli.info/quick-guide.html#_subcommands_example_iso_code_resolver[example application] featuring subcommands, together with a detailed explanation of this minimal app.
+* The Quick Guide has an https://picocli.info/quick-guide.html#_subcommands_example_iso_code_resolver[example application] featuring subcommands, with a detailed explanation.
 * The `picocli-examples` code module has a https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/subcommands[subcommand section] with several minimal code samples, explaining the use of subcommands both via https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubCmdsViaMethods.java[methods] and when defined in their own https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubcommandDemo.java[class].
 * The `picocli-examples` code module also shows subcommand examples in other languages, like https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/scala/picocli/examples/scala/subcommands[Scala] and https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/subcommands[Kotlin], as well as https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/subcommands[Java].
 
