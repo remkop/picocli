@@ -707,21 +707,22 @@ table.CodeRay td.code>pre{padding:0}
 </li>
 <li><a href="#_subcommands">17. Subcommands</a>
 <ul class="sectlevel2">
-<li><a href="#_registering_subcommands_declaratively">17.1. Registering Subcommands Declaratively</a></li>
-<li><a href="#_registering_subcommands_programmatically">17.2. Registering Subcommands Programmatically</a></li>
-<li><a href="#_subcommand_aliases">17.3. Subcommand Aliases</a></li>
-<li><a href="#_subcommands_as_methods">17.4. Subcommands as Methods</a></li>
+<li><a href="#_subcommand_examples">17.1. Subcommand Examples</a></li>
+<li><a href="#_registering_subcommands_declaratively">17.2. Registering Subcommands Declaratively</a></li>
+<li><a href="#_subcommands_as_methods">17.3. Subcommands as Methods</a></li>
+<li><a href="#_registering_subcommands_programmatically">17.4. Registering Subcommands Programmatically</a></li>
 <li><a href="#_executing_subcommands">17.5. Executing Subcommands</a></li>
 <li><a href="#_initialization_before_execution">17.6. Initialization Before Execution</a></li>
 <li><a href="#parentcommand-annotation">17.7. <code>@ParentCommand</code> Annotation</a></li>
-<li><a href="#_inherited_options">17.8. Inherited Options</a></li>
-<li><a href="#_manually_parsing_subcommands">17.9. Manually Parsing Subcommands</a></li>
-<li><a href="#_nested_sub_subcommands">17.10. Nested sub-Subcommands</a></li>
-<li><a href="#_repeatable_subcommands">17.11. Repeatable Subcommands</a></li>
-<li><a href="#_usage_help_for_subcommands">17.12. Usage Help for Subcommands</a></li>
-<li><a href="#_hidden_subcommands">17.13. Hidden Subcommands</a></li>
-<li><a href="#_help_subcommands">17.14. Help Subcommands</a></li>
-<li><a href="#_required_subcommands">17.15. Required Subcommands</a></li>
+<li><a href="#_subcommand_aliases">17.8. Subcommand Aliases</a></li>
+<li><a href="#_inherited_options">17.9. Inherited Options</a></li>
+<li><a href="#_manually_parsing_subcommands">17.10. Manually Parsing Subcommands</a></li>
+<li><a href="#_nested_sub_subcommands">17.11. Nested sub-Subcommands</a></li>
+<li><a href="#_repeatable_subcommands">17.12. Repeatable Subcommands</a></li>
+<li><a href="#_usage_help_for_subcommands">17.13. Usage Help for Subcommands</a></li>
+<li><a href="#_hidden_subcommands">17.14. Hidden Subcommands</a></li>
+<li><a href="#_help_subcommands">17.15. Help Subcommands</a></li>
+<li><a href="#_required_subcommands">17.16. Required Subcommands</a></li>
 </ul>
 </li>
 <li><a href="#_reuse">18. Reuse</a>
@@ -951,6 +952,20 @@ The example <code>main</code> method calls <code>CommandLine.execute</code> to p
 </div>
 <div class="paragraph">
 <p>The <a href="#_mixin_standard_help_options">mixinStandardHelpOptions</a> attribute adds <code>--help</code> and <code>--version</code> options to your application.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The picocli Quick Guide shows some <a href="https://picocli.info/quick-guide.html#_example_applications">sample applications</a> with detailed explanations.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -7251,10 +7266,37 @@ See the <a href="https://github.com/remkop/picocli/blob/master/src/test/java/pic
 <div class="sect1">
 <h2 id="_subcommands"><a class="anchor" href="#_subcommands"></a>17. Subcommands</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_registering_subcommands_declaratively"><a class="anchor" href="#_registering_subcommands_declaratively"></a>17.1. Registering Subcommands Declaratively</h3>
 <div class="paragraph">
-<p>From v0.9.8, picocli supports registering subcommands declaratively with the <code>@Command</code> annotation&#8217;s <code>subcommands</code> attribute.</p>
+<p>Sophisticated command-line tools, like the prominent <code>git</code> tool, have many subcommands (e.g., <code>commit</code>, <code>push</code>, …), each with its own set of options and positional parameters.
+Picocli makes it very easy to have commands with subcommands, and sub-subcommands, to any level of depth.</p>
+</div>
+<div class="sect2">
+<h3 id="_subcommand_examples"><a class="anchor" href="#_subcommand_examples"></a>17.1. Subcommand Examples</h3>
+<div class="paragraph">
+<p>If you want to jump ahead and see some examples first, these resources may be helpful:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The <a href="#_executing_subcommands">Executing Subcommands</a> section has an example showing both the <code>@Command(subcommands = &lt;class&gt;)</code> as well as the <code>@Command</code>-annotated method syntax.</p>
+</li>
+<li>
+<p>The Quick Guide shows example code of a minimal, fully working <a href="https://picocli.info/quick-guide.html#_subcommands_example_iso_code_resolver">example application</a> featuring subcommands, together with a detailed explanation of this minimal app.</p>
+</li>
+<li>
+<p>The <code>picocli-examples</code> code module has a <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/subcommands">subcommand section</a> with several minimal code samples, explaining the use of subcommands both via <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubCmdsViaMethods.java">methods</a> and when defined in their own <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubcommandDemo.java">class</a>.</p>
+</li>
+<li>
+<p>The <code>picocli-examples</code> code module also shows subcommand examples in other languages, like <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/scala/picocli/examples/scala/subcommands">Scala</a> and <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/subcommands">Kotlin</a>, as well as <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/subcommands">Java</a>.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_registering_subcommands_declaratively"><a class="anchor" href="#_registering_subcommands_declaratively"></a>17.2. Registering Subcommands Declaratively</h3>
+<div class="paragraph">
+<p>Subcommands can be registered declaratively with the <code>@Command</code> annotation&#8217;s <code>subcommands</code> attribute since picocli 0.9.8.
+This is the recommended way when you want to use the picocli <a href="#_annotation_processor">annotation processor</a> to <a href="#_generate_man_page_documentation">generate documentation</a>, <a href="#_tab_autocomplete">autocompletion scripts</a> or <a href="#_graalvm_native_image">GraalVM configuration files</a>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -7293,7 +7335,18 @@ Command names are case-sensitive by default, but this is <a href="#_case_sensiti
 </div>
 </div>
 <div class="sect2">
-<h3 id="_registering_subcommands_programmatically"><a class="anchor" href="#_registering_subcommands_programmatically"></a>17.2. Registering Subcommands Programmatically</h3>
+<h3 id="_subcommands_as_methods"><a class="anchor" href="#_subcommands_as_methods"></a>17.3. Subcommands as Methods</h3>
+<div class="paragraph">
+<p>As of picocli 3.6 it is possible to register subcommands in a very compact manner by having a <code>@Command</code> class with <code>@Command</code>-annotated methods.
+The methods are automatically <a href="#_subcommand_methods">registered as subcommands</a> of the enclosing <code>@Command</code> class.
+See the <a href="#command-methods">command methods</a> section for more details and examples.</p>
+</div>
+<div class="paragraph">
+<p>The <a href="https://github.com/remkop/picocli/blob/master/picocli-examples"><code>picocli-examples</code></a> module has an  minimal example application, demonstrating the definition of subcommands via methods. This example was coded in <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubCmdsViaMethods.java">Java</a>, <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/subcommands/SubCmdsViaMethods.kt">Kotlin</a> and <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/scala/picocli/examples/scala/subcommands/SubCmdsViaMethods.scala">Scala</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_registering_subcommands_programmatically"><a class="anchor" href="#_registering_subcommands_programmatically"></a>17.4. Registering Subcommands Programmatically</h3>
 <div class="paragraph">
 <p>Subcommands can be registered with the <code>CommandLine.addSubcommand</code> method.
 You pass in the name of the command and the annotated object to populate with the subcommand options.
@@ -7336,35 +7389,6 @@ adding subcommands.
 </td>
 </tr>
 </table>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_subcommand_aliases"><a class="anchor" href="#_subcommand_aliases"></a>17.3. Subcommand Aliases</h3>
-<div class="paragraph">
-<p>Commands may optionally define an <code>aliases</code> attribute to provide alternate names for commands that will be recognized by the parser. Aliases are displayed in the default help output. For example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>, aliases = {<span class="string"><span class="delimiter">&quot;</span><span class="content">st</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Show the working tree status.</span><span class="delimiter">&quot;</span></span>)
-<span class="type">class</span> <span class="class">GitStatus</span> { ... }</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Would result in this help fragment:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>status, st    Show the working tree status.</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_subcommands_as_methods"><a class="anchor" href="#_subcommands_as_methods"></a>17.4. Subcommands as Methods</h3>
-<div class="paragraph">
-<p>As of picocli 3.6 it is possible to register subcommands in a very compact manner by having a <code>@Command</code> class with <code>@Command</code>-annotated methods. The methods are automatically <a href="#_subcommand_methods">registered as subcommands</a> of the <code>@Command</code> class.</p>
-</div>
-<div class="paragraph">
-<p>The <a href="https://github.com/remkop/picocli/blob/master/picocli-examples"><code>picocli-examples</code></a> module has an  minimal example application, demonstrating the definition of subcommands via methods. This example was coded in <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubCmdsViaMethods.java">Java</a>, <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/subcommands/SubCmdsViaMethods.kt">Kotlin</a> and <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/scala/picocli/examples/scala/subcommands/SubCmdsViaMethods.scala">Scala</a>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -7566,7 +7590,27 @@ The <code>List</code> subcommand can use the <code>@ParentCommand</code> annotat
 </div>
 </div>
 <div class="sect2">
-<h3 id="_inherited_options"><a class="anchor" href="#_inherited_options"></a>17.8. Inherited Options</h3>
+<h3 id="_subcommand_aliases"><a class="anchor" href="#_subcommand_aliases"></a>17.8. Subcommand Aliases</h3>
+<div class="paragraph">
+<p>Commands may optionally define an <code>aliases</code> attribute to provide alternate names for commands that will be recognized by the parser. Aliases are displayed in the default help output. For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">status</span><span class="delimiter">&quot;</span></span>, aliases = {<span class="string"><span class="delimiter">&quot;</span><span class="content">st</span><span class="delimiter">&quot;</span></span>}, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Show the working tree status.</span><span class="delimiter">&quot;</span></span>)
+<span class="type">class</span> <span class="class">GitStatus</span> { ... }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Would result in this help fragment:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>status, st    Show the working tree status.</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_inherited_options"><a class="anchor" href="#_inherited_options"></a>17.9. Inherited Options</h3>
 <div class="paragraph">
 <p>Picocli 4.3 adds support for "inherited" options.
 Options defined with <code>scope = ScopeType.INHERIT</code> are shared with all subcommands (and sub-subcommands, to any level of depth).
@@ -7648,7 +7692,7 @@ Alternatively, for such subcommands, sharing options via <a href="#_mixins">mixi
 </div>
 </div>
 <div class="sect2">
-<h3 id="_manually_parsing_subcommands"><a class="anchor" href="#_manually_parsing_subcommands"></a>17.9. Manually Parsing Subcommands</h3>
+<h3 id="_manually_parsing_subcommands"><a class="anchor" href="#_manually_parsing_subcommands"></a>17.10. Manually Parsing Subcommands</h3>
 <div class="paragraph">
 <p>For the following example, we assume we created an alias <code>git</code> that invokes our Java application. This could also be a script or a function that calls our Java program:</p>
 </div>
@@ -7721,28 +7765,9 @@ See also the previous section, <a href="#_executing_subcommands">Executing Subco
 </div>
 </div>
 <div class="sect2">
-<h3 id="_nested_sub_subcommands"><a class="anchor" href="#_nested_sub_subcommands"></a>17.10. Nested sub-Subcommands</h3>
+<h3 id="_nested_sub_subcommands"><a class="anchor" href="#_nested_sub_subcommands"></a>17.11. Nested sub-Subcommands</h3>
 <div class="paragraph">
-<p>The specified object can be an annotated object or a
-<code>CommandLine</code> instance with its own nested subcommands. For example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MainCommand())
-    .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd1</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> ChildCommand1())
-    .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd2</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> ChildCommand2())
-    .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> ChildCommand3())
-        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub1</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> GrandChild3Command1())
-        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub2</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> GrandChild3Command2())
-        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> GrandChild3Command3())
-            .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3sub1</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> GreatGrandChild3Command3_1())
-            .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3sub2</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> GreatGrandChild3Command3_2())
-        )
-    );</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Declaratively, subcommands can be nested by specifying the <code>subcommands</code> attribute on subcommand classes:</p>
+<p>When registering subcommands declaratively, subcommands can be nested by specifying the <code>subcommands</code> attribute on subcommand classes:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -7766,18 +7791,37 @@ See also the previous section, <a href="#_executing_subcommands">Executing Subco
 </div>
 </div>
 <div class="paragraph">
+<p>When registering subcommands programmatically, the object passed to the <code>addSubcommand</code> method can be an annotated object or a <code>CommandLine</code> instance with its own nested subcommands.
+For example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">CommandLine commandLine = <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> MainCommand())
+    .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd1</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> ChildCommand1())
+    .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd2</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> ChildCommand2())
+    .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> ChildCommand3())
+        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub1</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> GrandChild3Command1())
+        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub2</span><span class="delimiter">&quot;</span></span>,                 <span class="keyword">new</span> GrandChild3Command2())
+        .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> CommandLine(<span class="keyword">new</span> GrandChild3Command3())
+            .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3sub1</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> GreatGrandChild3Command3_1())
+            .addSubcommand(<span class="string"><span class="delimiter">&quot;</span><span class="content">cmd3sub3sub2</span><span class="delimiter">&quot;</span></span>, <span class="keyword">new</span> GreatGrandChild3Command3_2())
+        )
+    );</code></pre>
+</div>
+</div>
+<div class="paragraph">
 <p>By default, the usage help message only shows the subcommands of the specified command,
 and not the nested sub-subcommands. This can be customized by specifying your own <a href="#_reordering_sections"><code>IHelpSectionRenderer</code></a> for the command list section.
 The <code>picocli-examples</code> module has an <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/customhelp/ShowCommandHierarchy.java">example</a> that shows how to accomplish this.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_repeatable_subcommands"><a class="anchor" href="#_repeatable_subcommands"></a>17.11. Repeatable Subcommands</h3>
+<h3 id="_repeatable_subcommands"><a class="anchor" href="#_repeatable_subcommands"></a>17.12. Repeatable Subcommands</h3>
 <div class="paragraph">
 <p>From picocli 4.2, it is possible to specify that a command&#8217;s subcommands can be specified multiple times by marking it with <code>@Command(subcommandsRepeatable = true)</code>.</p>
 </div>
 <div class="sect3">
-<h4 id="_example_4"><a class="anchor" href="#_example_4"></a>17.11.1. Example</h4>
+<h4 id="_example_4"><a class="anchor" href="#_example_4"></a>17.12.1. Example</h4>
 <div class="paragraph">
 <p>Below is an example where the top-level command <code>myapp</code> is marked as <code>subcommandsRepeatable = true</code>.
 This command has three subcommands, <code>add</code>, <code>list</code> and <code>send-report</code>:</p>
@@ -7822,7 +7866,7 @@ This invocation is valid because <code>myapp</code> is marked with <code>subcomm
 </div>
 </div>
 <div class="sect3">
-<h4 id="_repeatable_subcommands_specification"><a class="anchor" href="#_repeatable_subcommands_specification"></a>17.11.2. Repeatable Subcommands Specification</h4>
+<h4 id="_repeatable_subcommands_specification"><a class="anchor" href="#_repeatable_subcommands_specification"></a>17.12.2. Repeatable Subcommands Specification</h4>
 <div class="paragraph">
 <p>Normally, <code>subcommandsRepeatable</code> is <code>false</code>, so for each command, only one of its subcommands can be specified, potentially followed by only one sub-subcommand of that subcommand, etc.
 In mathematical terms, a valid sequence of commands and subcommands can be represented by a <em>directed rooted tree</em> that starts at the top-level command. This is illustrated by the diagram below.</p>
@@ -7860,7 +7904,7 @@ myapp add -x=item1 -w=0.2 myapp</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_repeatable_subcommands_execution"><a class="anchor" href="#_repeatable_subcommands_execution"></a>17.11.3. Repeatable Subcommands Execution</h4>
+<h4 id="_repeatable_subcommands_execution"><a class="anchor" href="#_repeatable_subcommands_execution"></a>17.12.3. Repeatable Subcommands Execution</h4>
 <div class="paragraph">
 <p>The default <a href="#_executing_commands_with_subcommands"><code>IExecutionStrategy</code></a> (<code>picocli.CommandLine.RunLast</code>) only executes the last subcommands <em>with the same parent</em>. For example, if</p>
 </div>
@@ -7875,7 +7919,7 @@ myapp add -x=item1 -w=0.2 myapp</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_help_for_subcommands"><a class="anchor" href="#_usage_help_for_subcommands"></a>17.12. Usage Help for Subcommands</h3>
+<h3 id="_usage_help_for_subcommands"><a class="anchor" href="#_usage_help_for_subcommands"></a>17.13. Usage Help for Subcommands</h3>
 <div class="paragraph">
 <p>After registering subcommands, calling the <code>commandLine.usage</code> method will show a usage help message that includes all registered subcommands. For example:</p>
 </div>
@@ -7987,7 +8031,7 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hidden_subcommands"><a class="anchor" href="#_hidden_subcommands"></a>17.13. Hidden Subcommands</h3>
+<h3 id="_hidden_subcommands"><a class="anchor" href="#_hidden_subcommands"></a>17.14. Hidden Subcommands</h3>
 <div class="paragraph">
 <p>Commands with the <code>hidden</code> attribute set to <code>true</code> will not be shown in the usage help message of their parent command.</p>
 </div>
@@ -8018,7 +8062,7 @@ Commands:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_help_subcommands"><a class="anchor" href="#_help_subcommands"></a>17.14. Help Subcommands</h3>
+<h3 id="_help_subcommands"><a class="anchor" href="#_help_subcommands"></a>17.15. Help Subcommands</h3>
 <div class="paragraph">
 <p>Commands with the <code>helpCommand</code> attribute set to <code>true</code> are treated as help commands.
 When picocli encounters a help command on the command line, required options and required positional parameters of the parent command
@@ -8034,7 +8078,7 @@ are not validated (similar to <a href="#_help_options">help options</a>).</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_required_subcommands"><a class="anchor" href="#_required_subcommands"></a>17.15. Required Subcommands</h3>
+<h3 id="_required_subcommands"><a class="anchor" href="#_required_subcommands"></a>17.16. Required Subcommands</h3>
 <div class="paragraph">
 <p>For some command suites, it does not make sense to invoke the top-level command by itself, and the user is required to specify a subcommand.</p>
 </div>
@@ -11017,7 +11061,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.1<br>
-Last updated 2020-09-14 17:48:42 +0900
+Last updated 2020-09-27 20:57:58 +0900
 </div>
 </div>
 </body>

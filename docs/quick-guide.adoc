@@ -11,6 +11,7 @@
 :icons: font
 :imagesdir: images
 :linkattrs:
+:sectanchors:
 ifdef::env-github[]
 :caution-caption: :fire:
 :important-caption: :heavy_exclamation_mark:
@@ -43,7 +44,7 @@ The programmatic API is not covered in this Quick Guide.
 
 == Example applications
 
-=== Basic example application: ASCIIArt
+=== Basic example: ASCIIArt
 Below we show a small but fully functional example picocli-based command line application: `ASCIIArt`.
 
 `ASCIIArt` converts one or more arguments into ASCII art and prints them out. It can be used as follows:
@@ -144,10 +145,11 @@ Usage: ASCIIArt [-hV] [-f=<font>] [word1 [word2]...]
   -V, --version            Print version information and exit.
 ----
 
-=== Example application with subcommands: ISO Code resolver
+=== Subcommands Example: ISO Code Resolver
 Below we show another small but fully functional example picocli-based command line application which explains the use of subcommands: `ISO Code resolver`.
 
-The `ISOCodeResolver` application has two subcommands `language` and `country` that may be used to either resolve either language or country code(s) following ISO standard. The app can be used as follows:
+The `ISOCodeResolver` application has two subcommands, `language` and `country`, that may be used to either resolve either languages or country codes following the ISO standards (ISO-3166-1 for country codes, and ISO 639-1/639-2 for language codes).
+The app can be used as follows:
 
 .Resolving two letter language codes
 ----
@@ -171,13 +173,107 @@ NO: Norway
 
 The source code of our second `ISOCodeResolver` example is also fairly small:
 
+.ISOCodeResolver source code
+[source,java]
+----
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.Spec;
+import java.util.Locale;
+
+@Command(name = "ISOCodeResolver", subcommands = { SubcommandAsClass.class, CommandLine.HelpCommand.class }, // <2>
+         description = "Resolve ISO country codes (ISO-3166-1) or language codes (ISO 639-1/-2)")
+public class ISOCodeResolver implements Runnable { // <1>
+    @Spec CommandSpec spec;
+
+    @Command(name = "country", description = "Resolve ISO country code (ISO-3166-1)") // <3>
+    void subCommandViaMethod(@Parameters(arity = "1..*", paramLabel = "<code 1> <code 2>",
+                 description = "country code(s) to be resolved") String[] countryCodes) {
+        for (String code : countryCodes) {
+            System.out.println(String.format("%s: %s", code.toUpperCase(), new Locale("", code).getDisplayCountry()));
+        }
+    }
 ++++
 <div data-pym-src="https://www.jdoodle.com/embed/v0/2mpW?stdin=1&arg=1"></div>
 ++++
+.ISOCodeResolver source code
+[source,java]
+----
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.Spec;
+import java.util.Locale;
+
+@Command(name = "ISOCodeResolver",
+  subcommands = { SubcommandAsClass.class, CommandLine.HelpCommand.class }, // <2>
+  description = "Resolves ISO country codes (ISO-3166-1) or language codes (ISO 639-1/-2)")
+public class ISOCodeResolver { // <1>
+    @Spec CommandSpec spec;
+
+    @Command(name = "country", description = "Resolves ISO country codes (ISO-3166-1)") // <3>
+    void subCommandViaMethod(
+            @Parameters(arity = "1..*", paramLabel = "<countryCode>",
+                  description = "country code(s) to be resolved") String[] countryCodes) {
+
+        for (String code : countryCodes) {
+            System.out.printf("%s: %s",
+                    code.toUpperCase(), new Locale("", code).getDisplayCountry());
+        }
+    }
+
+    public static void main(String[] args) {
+        int exitCode = new CommandLine(new ISOCodeResolver()).execute(args);  // <5>
+        System.exit(exitCode);  // <6>
+    }
+}
+
+@Command(name = "language", description = "Resolve ISO language code (ISO 639-1 or -2)") // <4>
+class SubcommandAsClass implements Runnable {
+
+    @Parameters(arity = "1..*", paramLabel = "<code> <code2>", description = "language code(s)")
+    private String[] languageCodes;
+
+    @Override
+    public void run() {
+        for (String code : languageCodes) {
+            System.out.println(String.format("%s: %s", code.toLowerCase(), new Locale(code).getDisplayLanguage()));
+        }
+    }
+}
+----
+
+    public static void main(String[] args) {
+        int exitCode = new CommandLine(new ISOCodeResolver()).execute(args);  // <5>
+        System.exit(exitCode);  // <6>
+    }
+}
+
+@Command(name = "language",
+  description = "Resolves one ore more ISO language codes (ISO 639-1 or 639-2)") // <4>
+class SubcommandAsClass implements Runnable {
+
+    @Parameters(arity = "1..*", paramLabel = "<languageCode>", description = "language code(s)")
+    private String[] languageCodes;
+
+    @Override
+    public void run() {
+        for (String code : languageCodes) {
+            System.out.printf("%s: %s",
+                    code.toLowerCase(), new Locale(code).getDisplayLanguage());
+        }
+    }
+}
+----
 
 Let's break it down into small steps:
 
-<1> Create a class that implements `Runnable` or `Callable`. This is your main command.
+<1> When the main command does not implement `Runnable` or `Callable`, users must specify a subcommand (subcommands become mandatory).
 <2> Annotate the class with `@Command` and give it a name. By specifying the https://picocli.info/apidocs/picocli/CommandLine.HelpCommand.html[CommandLine.HelpCommand] class as subcommand inside the annotation, we can add the pre-built `help` subcommand to your application.
 <3> Custom subcommands may be added you main command in two different ways. The easiest way is to add an `@Command`-annotated method to your main command class. If your subcommand can take options and/or positional parameters, you have to annotate the method's argument variable with `@Option` and/or `@Parameters` annotations. In the example above, once the user invokes the subcommand `country`, the associated method `subCommandViaMethod` gets called.
 <4> In larger applications, it is common to code subcommands inside their own `@Command`-annotated class. In the example above, the `SubcommandAsClass` class represents the `language` subcommand. Once the user invokes this subcommand, the overridden method `run` of this class gets called. To be recognized as subcommand by the main app, the subcommand class must be given in the `subcommands` attribute of the `@Command@` annotation of the main class (subcommands = { SubcommandAsClass.class, ... } ❷).

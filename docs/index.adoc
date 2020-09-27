@@ -117,7 +117,7 @@ The <<Mixin Standard Help Options,mixinStandardHelpOptions>> attribute adds `--h
 
 [TIP]
 ====
-You may find more https://picocli.info/quick-guide.html#_example_applications[sample applications] in the picocli quick guide, they are explained in detail there.
+The picocli Quick Guide shows some https://picocli.info/quick-guide.html#_example_applications[sample applications] with detailed explanations.
 ====
 
 == Getting Started
@@ -4516,20 +4516,23 @@ See the https://github.com/remkop/picocli/blob/master/src/test/java/picocli/Cust
 
 == Subcommands
 
-Sophisticated command-line tools, like the prominent `git` tool have many subcommands (like `commit`, `push`, …), each with its own set of options and or positional parameters. Fortunately, subcommands are first class citizens inside picocli, they may be declared either <<Registering Subcommands Declaratively,declaratively>> or <<Registering Subcommands Programmatically,programmatically>>.
+Sophisticated command-line tools, like the prominent `git` tool, have many subcommands (e.g., `commit`, `push`, …), each with its own set of options and positional parameters.
+Picocli makes it very easy to have commands with subcommands, and sub-subcommands, to any level of depth.
 
-=== Getting started
+=== Subcommand Examples
 
-In order to get you started quickly, these resources might be helpful:
+If you want to jump ahead and see some examples first, these resources may be helpful:
 
-* Inside the quick guide, you may find the example code of a minimal, fully working https://picocli.info/quick-guide.html#_example_application_with_subcommands:_iso_code_resolver[`example application`] featuring subcommands, together with a detailed explanation of this minimal app.
-* Inside the picocli code repository https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/subcommands[subcommand section] helds several minimal code samples, explaining the use of subcommands both via https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubCmdsViaMethods.java[methods] and via definition inside their own https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubcommandDemo.java[classes].
-* These subcommand examples were coded not only in https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/subcommands[`Java`], they are also available for the https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/scala/picocli/examples/scala/subcommands[Scala] and https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/subcommands[Kotlin] programming languages.
+* The <<Executing Subcommands>> section has an example showing both the `@Command(subcommands = <class>)` as well as the `@Command`-annotated method syntax.
+* The Quick Guide shows example code of a minimal, fully working https://picocli.info/quick-guide.html#_subcommands_example_iso_code_resolver[example application] featuring subcommands, together with a detailed explanation of this minimal app.
+* The `picocli-examples` code module has a https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/subcommands[subcommand section] with several minimal code samples, explaining the use of subcommands both via https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubCmdsViaMethods.java[methods] and when defined in their own https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubcommandDemo.java[class].
+* The `picocli-examples` code module also shows subcommand examples in other languages, like https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/scala/picocli/examples/scala/subcommands[Scala] and https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/subcommands[Kotlin], as well as https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/subcommands[Java].
 
 
 === Registering Subcommands Declaratively
 
-From v0.9.8, picocli supports registering subcommands declaratively with the `@Command` annotation's `subcommands` attribute.
+Subcommands can be registered declaratively with the `@Command` annotation's `subcommands` attribute since picocli 0.9.8.
+This is the recommended way when you want to use the picocli <<Annotation Processor,annotation processor>> to <<Generate Man Page Documentation,generate documentation>>, <<TAB Autocomplete,autocompletion scripts>> or <<GraalVM Native Image,GraalVM configuration files>>.
 
 [source,java]
 ----
@@ -4561,6 +4564,13 @@ Prior to picocli 4.2, the declared subcommands were instantiated immediately whe
 
 From picocli 4.2, the declared subcommands are not instantiated until they are matched on the command line, unless they have a `@Spec` or `@ParentObject`-annotated field; these are injected during initialization, and in order to inject them the subcommand is instantiated during initialization.
 
+=== Subcommands as Methods
+As of picocli 3.6 it is possible to register subcommands in a very compact manner by having a `@Command` class with `@Command`-annotated methods.
+The methods are automatically <<Subcommand Methods, registered as subcommands>> of the enclosing `@Command` class.
+See the <<command-methods, command methods>> section for more details and examples.
+
+The https://github.com/remkop/picocli/blob/master/picocli-examples[`picocli-examples`] module has an  minimal example application, demonstrating the definition of subcommands via methods. This example was coded in https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubCmdsViaMethods.java[Java], https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/subcommands/SubCmdsViaMethods.kt[Kotlin] and https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/scala/picocli/examples/scala/subcommands/SubCmdsViaMethods.scala[Scala].
+
 === Registering Subcommands Programmatically
 Subcommands can be registered with the `CommandLine.addSubcommand` method.
 You pass in the name of the command and the annotated object to populate with the subcommand options.
@@ -4591,25 +4601,6 @@ CAUTION: _Note on custom type converters:_ custom type converters are registered
 sub-subcommands that were added _before_ the custom type was registered.
 To ensure a custom type converter is available to all subcommands, register the type converter last, after
 adding subcommands.
-
-=== Subcommand Aliases
-Commands may optionally define an `aliases` attribute to provide alternate names for commands that will be recognized by the parser. Aliases are displayed in the default help output. For example:
-[source,java]
-----
-@Command(name = "status", aliases = {"st"}, description = "Show the working tree status.")
-class GitStatus { ... }
-----
-
-Would result in this help fragment:
-
-----
-status, st    Show the working tree status.
-----
-
-=== Subcommands as Methods
-As of picocli 3.6 it is possible to register subcommands in a very compact manner by having a `@Command` class with `@Command`-annotated methods. The methods are automatically <<Subcommand Methods, registered as subcommands>> of the `@Command` class.
-
-The https://github.com/remkop/picocli/blob/master/picocli-examples[`picocli-examples`] module has an  minimal example application, demonstrating the definition of subcommands via methods. This example was coded in https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/subcommands/SubCmdsViaMethods.java[Java], https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/subcommands/SubCmdsViaMethods.kt[Kotlin] and https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/scala/picocli/examples/scala/subcommands/SubCmdsViaMethods.scala[Scala].
 
 === Executing Subcommands
 
@@ -4791,6 +4782,20 @@ class List implements Runnable {
 }
 ----
 
+=== Subcommand Aliases
+Commands may optionally define an `aliases` attribute to provide alternate names for commands that will be recognized by the parser. Aliases are displayed in the default help output. For example:
+[source,java]
+----
+@Command(name = "status", aliases = {"st"}, description = "Show the working tree status.")
+class GitStatus { ... }
+----
+
+Would result in this help fragment:
+
+----
+status, st    Show the working tree status.
+----
+
 === Inherited Options
 Picocli 4.3 adds support for "inherited" options.
 Options defined with `scope = ScopeType.INHERIT` are shared with all subcommands (and sub-subcommands, to any level of depth).
@@ -4919,25 +4924,8 @@ You may be interested in the <<Executing Commands,execute method>> to reduce err
 See also the previous section, <<Executing Subcommands>>.
 
 === Nested sub-Subcommands
-The specified object can be an annotated object or a
-`CommandLine` instance with its own nested subcommands. For example:
 
-[source,java]
-----
-CommandLine commandLine = new CommandLine(new MainCommand())
-    .addSubcommand("cmd1",                 new ChildCommand1())
-    .addSubcommand("cmd2",                 new ChildCommand2())
-    .addSubcommand("cmd3", new CommandLine(new ChildCommand3())
-        .addSubcommand("cmd3sub1",                 new GrandChild3Command1())
-        .addSubcommand("cmd3sub2",                 new GrandChild3Command2())
-        .addSubcommand("cmd3sub3", new CommandLine(new GrandChild3Command3())
-            .addSubcommand("cmd3sub3sub1", new GreatGrandChild3Command3_1())
-            .addSubcommand("cmd3sub3sub2", new GreatGrandChild3Command3_2())
-        )
-    );
-----
-
-Declaratively, subcommands can be nested by specifying the `subcommands` attribute on subcommand classes:
+When registering subcommands declaratively, subcommands can be nested by specifying the `subcommands` attribute on subcommand classes:
 [source,java]
 ----
 @Command(name = "main", subcommands = {
@@ -4957,6 +4945,24 @@ class ChildCommand3 { }
     GreatGrandChild3Command3_2.class })
 class GrandChild3Command3 { }
 ...
+----
+
+When registering subcommands programmatically, the object passed to the `addSubcommand` method can be an annotated object or a `CommandLine` instance with its own nested subcommands.
+For example:
+
+[source,java]
+----
+CommandLine commandLine = new CommandLine(new MainCommand())
+    .addSubcommand("cmd1",                 new ChildCommand1())
+    .addSubcommand("cmd2",                 new ChildCommand2())
+    .addSubcommand("cmd3", new CommandLine(new ChildCommand3())
+        .addSubcommand("cmd3sub1",                 new GrandChild3Command1())
+        .addSubcommand("cmd3sub2",                 new GrandChild3Command2())
+        .addSubcommand("cmd3sub3", new CommandLine(new GrandChild3Command3())
+            .addSubcommand("cmd3sub3sub1", new GreatGrandChild3Command3_1())
+            .addSubcommand("cmd3sub3sub2", new GreatGrandChild3Command3_2())
+        )
+    );
 ----
 
 By default, the usage help message only shows the subcommands of the specified command,
