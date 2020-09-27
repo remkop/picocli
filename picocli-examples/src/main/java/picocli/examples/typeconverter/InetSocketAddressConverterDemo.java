@@ -1,3 +1,10 @@
+/**
+ * Picocli: Custom converter demo
+ * Explanation: <a href="https://picocli.info/#_handling_invalid_input">Picocli user manual</a>
+ * Discussion: <a href="https://github.com/remkop/picocli/issues/972">GitHub issue</a>
+ * Origin of source code: <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/typeconverter">GitHub</a>
+ * @author Remko Popma
+ */
 package picocli.examples.typeconverter;
 
 import picocli.CommandLine;
@@ -7,7 +14,7 @@ import picocli.CommandLine.TypeConversionException;
 
 import java.net.InetSocketAddress;
 
-public class InetSocketAddressConverterDemo {
+public class InetSocketAddressConverterDemo implements Runnable {
 
     static class InetSocketAddressConverter implements ITypeConverter<InetSocketAddress> {
         @Override
@@ -23,13 +30,18 @@ public class InetSocketAddressConverterDemo {
         }
     }
 
-    @Option(names = "-a", converter = InetSocketAddressConverter.class)
+    @Option(names = { "-s", "--socket-address" }, converter = InetSocketAddressConverter.class)
     InetSocketAddress address;
 
     public static void main(String[] args) {
-        new CommandLine(new InetSocketAddressConverterDemo()).execute("-a=xxxinvalidinput");
+        new CommandLine(new InetSocketAddressConverterDemo()).execute("--socket-address=invalidInputWithoutColon");
 
         // try this also:
-        //new CommandLine(new InetSocketAddressConverterDemo()).execute("-a=xxxinvalidinput:xxx");
+        //new CommandLine(new InetSocketAddressConverterDemo()).execute("--socket-address=invalidInputWithColon:xxx");
+    }
+
+    @Override
+    public void run() {
+        System.out.println(String.format("Valid socket address given: host: %s, port: %s", address.getHostString(), address.getPort()));
     }
 }
