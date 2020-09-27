@@ -762,11 +762,11 @@ Usage: ASCIIArt [-hV] [-f=&lt;font&gt;] [word1 [word2]...]
 <div class="sect2">
 <h3 id="_subcommands_example_iso_code_resolver"><a class="anchor" href="#_subcommands_example_iso_code_resolver"></a>2.2. Subcommands Example: ISO Code Resolver</h3>
 <div class="paragraph">
-<p>Below we show another small but fully functional example picocli-based command line application which explains the use of subcommands: <code>ISO Code resolver</code>.</p>
+<p>Below we show another small but fully functional example picocli-based command line application which explains the use of subcommands: <code>ISOCodeResolver</code>.</p>
 </div>
 <div class="paragraph">
-<p>The <code>ISOCodeResolver</code> application has two subcommands, <code>language</code> and <code>country</code>, that may be used to either resolve either languages or country codes following the ISO standards (ISO-3166-1 for country codes, and ISO 639-1/639-2 for language codes).
-The app can be used as follows:</p>
+<p>This application has two subcommands, <code>language</code> and <code>country</code>, that resolve languages or country codes following the ISO standards (ISO-3166-1 for country codes, and ISO-639-1/639-2 for language codes).
+The application can be used as follows:</p>
 </div>
 <div class="listingblock">
 <div class="title">Resolving two letter language codes</div>
@@ -791,7 +791,7 @@ NO: Norway</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The source code of our second <code>ISOCodeResolver</code> example is also fairly small:</p>
+<p>The code below shows how <code>ISOCodeResolver</code> defines its subcommands:</p>
 </div>
 <div class="listingblock">
 <div class="title">ISOCodeResolver source code</div>
@@ -828,7 +828,7 @@ NO: Norway</pre>
 }
 
 <span class="annotation">@Command</span>(name = <span class="string"><span class="delimiter">&quot;</span><span class="content">language</span><span class="delimiter">&quot;</span></span>,
-  description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Resolves one ore more ISO language codes (ISO 639-1 or 639-2)</span><span class="delimiter">&quot;</span></span>) <i class="conum" data-value="4"></i><b>(4)</b>
+  description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Resolves one ore more ISO language codes (ISO-639-1 or 639-2)</span><span class="delimiter">&quot;</span></span>) <i class="conum" data-value="4"></i><b>(4)</b>
 <span class="type">class</span> <span class="class">SubcommandAsClass</span> <span class="directive">implements</span> <span class="predefined-type">Runnable</span> {
 
     <span class="annotation">@Parameters</span>(arity = <span class="string"><span class="delimiter">&quot;</span><span class="content">1..*</span><span class="delimiter">&quot;</span></span>, paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">&lt;languageCode&gt;</span><span class="delimiter">&quot;</span></span>, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">language code(s)</span><span class="delimiter">&quot;</span></span>)
@@ -851,28 +851,37 @@ NO: Norway</pre>
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>When the main command does not implement <code>Runnable</code> or <code>Callable</code>, users must specify a subcommand (subcommands become mandatory).</td>
+<td>When the top-level command does not implement <code>Runnable</code> or <code>Callable</code>, users must specify a subcommand (subcommands become mandatory).
+This is optional: simply implement <code>Runnable</code> or <code>Callable</code> if the parent command can be executed by itself without subcommands in your application.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>Annotate the class with <code>@Command</code> and give it a name. By specifying the <a href="https://picocli.info/apidocs/picocli/CommandLine.HelpCommand.html">CommandLine.HelpCommand</a> class as subcommand inside the annotation, we can add the pre-built <code>help</code> subcommand to your application.</td>
+<td>Annotate the class with <code>@Command</code> and give it a name.
+Note that we also specify the <a href="https://picocli.info/apidocs/picocli/CommandLine.HelpCommand.html">CommandLine.HelpCommand</a> class as subcommand in the annotation, to add the built-in <code>help</code> subcommand.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="3"></i><b>3</b></td>
-<td>Custom subcommands may be added you main command in two different ways. The easiest way is to add an <code>@Command</code>-annotated method to your main command class. If your subcommand can take options and/or positional parameters, you have to annotate the method&#8217;s argument variable with <code>@Option</code> and/or <code>@Parameters</code> annotations. In the example above, once the user invokes the subcommand <code>country</code>, the associated method <code>subCommandViaMethod</code> gets called.</td>
+<td>Custom subcommands can be added to the top-level command in two ways.
+The easiest way is to add a <code>@Command</code>-annotated method to the command class.
+For each option and positional parameter of the subcommand, add a method argument, and annotate these method argument with the <code>@Option</code> or <code>@Parameters</code> annotation.
+In the example above, once the user invokes the subcommand <code>country</code>, the associated method <code>subCommandViaMethod</code> gets called.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="4"></i><b>4</b></td>
-<td>In larger applications, it is common to code subcommands inside their own <code>@Command</code>-annotated class. In the example above, the <code>SubcommandAsClass</code> class represents the <code>language</code> subcommand. Once the user invokes this subcommand, the overridden method <code>run</code> of this class gets called. To be recognized as subcommand by the main app, the subcommand class must be given in the <code>subcommands</code> attribute of the <code>@Command@</code> annotation of the main class (subcommands = { SubcommandAsClass.class, &#8230;&#8203; } ❷).</td>
+<td>In larger applications, it is common to create a separate <code>@Command</code>-annotated class for each subcommand.
+In the example above, the <code>SubcommandAsClass</code> class represents the <code>language</code> subcommand.
+Once the user invokes this subcommand, the overridden <code>run</code> method of this class is called.
+To register the subcommand, specify the subcommand class in the <code>subcommands</code> attribute of the <code>@Command</code> annotation of the parent command (subcommands = { SubcommandAsClass.class, &#8230;&#8203; } ❷).</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="5"></i><b>5</b></td>
-<td>In the <code>main</code> method of your main <code>ÌSOCodeResolver</code> class, we use the <code>CommandLine.execute</code> method to bootstrap our application.
+<td>In the <code>main</code> method of our <code>ISOCodeResolver</code> class, we use the <code>CommandLine.execute</code> method to bootstrap our application.
 This will parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic of the associated subcommands.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="6"></i><b>6</b></td>
-<td>The <code>CommandLine.execute</code> method returns an exit code. Your application can call <code>System.exit</code> with this exit code to signal success or failure to the calling process.</td>
+<td>The <code>CommandLine.execute</code> method returns an exit code.
+The application can call <code>System.exit</code> with this exit code to signal success or failure to the calling process.</td>
 </tr>
 </table>
 </div>
@@ -892,19 +901,19 @@ See the <a href="https://picocli.info/#_subcommands/">Subcommands chapter</a> of
 </table>
 </div>
 <div class="paragraph">
-<p>In addition to the two user defined subcommands, the <code>ISOCodeResolver</code> app offers a <code>help</code> subcommand, which will show usage instructions to the user.
+<p>In addition to the two user defined subcommands, the <code>ISOCodeResolver</code> app offers a <code>help</code> subcommand, which prints the usage help message to the console.
 Picocli generates this usage help message automatically:</p>
 </div>
 <div class="listingblock">
-<div class="title">Usage help message of our <code>ASCIIArt</code> command</div>
+<div class="title">Usage help message of our <code>ISOCodeResolver</code> command</div>
 <div class="content">
 <pre>$ ISOCodeResolver help
 Usage: ISOCodeResolver [COMMAND]
-Resolve ISO country codes (ISO-3166-1) or language codes (ISO 639-1 or -2)
+Resolves ISO country codes (ISO-3166-1) or language codes (ISO-639-1/-2)
 Commands:
   help      Displays help information about the specified command
-  country   Resolve ISO country code (ISO-3166-1, Alpha-2 code)
-  language  Resolve ISO language code (ISO 639-1 or -2, two/three letters)</pre>
+  country   Resolves ISO country codes (ISO-3166-1)
+  language  Resolves one ore more ISO language codes (ISO-639-1 or 639-2)</pre>
 </div>
 </div>
 </div>
@@ -2380,7 +2389,7 @@ Your stars keep me going! :-)</p>
 <div id="footer">
 <div id="footer-text">
 Version 4.5.1<br>
-Last updated 2020-09-27 21:01:57 +0900
+Last updated 2020-09-28 08:32:42 +0900
 </div>
 </div>
 </body>
