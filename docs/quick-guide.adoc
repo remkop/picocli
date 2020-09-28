@@ -11,6 +11,7 @@
 :icons: font
 :imagesdir: images
 :linkattrs:
+:sectanchors:
 ifdef::env-github[]
 :caution-caption: :fire:
 :important-caption: :heavy_exclamation_mark:
@@ -41,14 +42,16 @@ For applications that cannot use the annotations, there is also a link:picocli-p
 The programmatic API is not covered in this Quick Guide.
 ====
 
-== Example application: ASCIIArt
+== Example applications
+
+=== Basic example: ASCIIArt
 Below we show a small but fully functional example picocli-based command line application: `ASCIIArt`.
 
 `ASCIIArt` converts one or more arguments into ASCII art and prints them out. It can be used as follows:
 
 .Invoking the command
 ----
-$ java -cp "myapp.jar;picocli-4.5.1.jar" ASCIIArt --font=speed Hello picocli
+$ java -cp "myapp.jar;picocli-4.5.2-SNAPSHOT.jar" ASCIIArt --font=speed Hello picocli
 ______  __    ___________                  _____                  __________
 ___  / / /_______  /__  /_____     ___________(_)____________________  /__(_)
 __  /_/ /_  _ \_  /__  /_  __ \    ___  __ \_  /_  ___/  __ \  ___/_  /__  /
@@ -142,10 +145,141 @@ Usage: ASCIIArt [-hV] [-f=<font>] [word1 [word2]...]
   -V, --version            Print version information and exit.
 ----
 
+=== Subcommands Example: ISO Code Resolver
+Below we show another small but fully functional example picocli-based command line application which explains the use of subcommands: `ISOCodeResolver`.
+
+This application has two subcommands, `language` and `country`, that resolve languages or country codes following the ISO standards (ISO-3166-1 for country codes, and ISO-639-1/639-2 for language codes).
+The application can be used as follows:
+
+.Resolving two letter language codes
+----
+$ java -cp "myapp.jar;picocli-4.5.2-SNAPSHOT.jar" ISOCodeResolver language de cs en sd se
+de: German
+cs: Czech
+en: English
+sd: Sindhi
+se: Northern Sami
+----
+
+.Resolving two letter country codes
+----
+$ java -cp "myapp.jar;picocli-4.5.2-SNAPSHOT.jar" ISOCodeResolver country cn fr th ro no
+CN: China
+FR: France
+TH: Thailand
+RO: Romania
+NO: Norway
+----
+
+[TIP]
+====
+The user manual has details on link:https://picocli.info/#_packaging_your_application[packaging your CLI application] so that users can invoke these commands simply with:
+
+----
+ISOCodeResolver language de cs en sd se
+----
+
+and
+
+----
+ISOCodeResolver country cn fr th ro no
+----
+====
+
+
+The code below shows how `ISOCodeResolver` defines its subcommands:
+
+.ISOCodeResolver source code
+[source,java]
+----
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.Spec;
+import java.util.Locale;
+
+@Command(name = "ISOCodeResolver",
+  subcommands = { SubcommandAsClass.class, CommandLine.HelpCommand.class }, // <2>
+  description = "Resolves ISO country codes (ISO-3166-1) or language codes (ISO 639-1/-2)")
+public class ISOCodeResolver { // <1>
+    @Spec CommandSpec spec;
+
+    @Command(name = "country", description = "Resolves ISO country codes (ISO-3166-1)") // <3>
+    void subCommandViaMethod(
+            @Parameters(arity = "1..*", paramLabel = "<countryCode>",
+                  description = "country code(s) to be resolved") String[] countryCodes) {
+
+        for (String code : countryCodes) {
+            System.out.printf("%s: %s",
+                    code.toUpperCase(), new Locale("", code).getDisplayCountry());
+        }
+    }
+
+    public static void main(String[] args) {
+        int exitCode = new CommandLine(new ISOCodeResolver()).execute(args);  // <5>
+        System.exit(exitCode);  // <6>
+    }
+}
+
+@Command(name = "language",
+  description = "Resolves one ore more ISO language codes (ISO-639-1 or 639-2)") // <4>
+class SubcommandAsClass implements Runnable {
+
+    @Parameters(arity = "1..*", paramLabel = "<languageCode>", description = "language code(s)")
+    private String[] languageCodes;
+
+    @Override
+    public void run() {
+        for (String code : languageCodes) {
+            System.out.printf("%s: %s",
+                    code.toLowerCase(), new Locale(code).getDisplayLanguage());
+        }
+    }
+}
+----
+
+Let's break it down into small steps:
+
+<1> When the top-level command does not implement `Runnable` or `Callable`, users must specify a subcommand (subcommands become mandatory).
+    This is optional: simply implement `Runnable` or `Callable` if the parent command can be executed by itself without subcommands in your application.
+<2> Annotate the class with `@Command` and give it a name.
+    Note that we also specify the https://picocli.info/apidocs/picocli/CommandLine.HelpCommand.html[CommandLine.HelpCommand] class as subcommand in the annotation, to add the built-in `help` subcommand.
+<3> Custom subcommands can be added to the top-level command in two ways.
+    The easiest way is to add a `@Command`-annotated method to the command class.
+    For each option and positional parameter of the subcommand, add a method argument, and annotate these method arguments with the `@Option` or `@Parameters` annotation.
+    In the example above, once the user invokes the subcommand `country`, the associated method `subCommandViaMethod` gets called.
+<4> In larger applications, it is common to create a separate `@Command`-annotated class for each subcommand.
+    In the example above, the `SubcommandAsClass` class represents the `language` subcommand.
+    Once the user invokes this subcommand, the overridden `run` method of this class is called.
+    To register the subcommand, specify the subcommand class in the `subcommands` attribute of the `@Command` annotation of the parent command (subcommands = { SubcommandAsClass.class, ... } ❷).
+<5> In the `main` method of our `ISOCodeResolver` class, we use the `CommandLine.execute` method to bootstrap our application.
+    This will parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic of the associated subcommands.
+<6> The `CommandLine.execute` method returns an exit code.
+    The application can call `System.exit` with this exit code to signal success or failure to the calling process.
+
+This is the basic skeleton of an picocli application with subcommands.
+
+TIP: See the link:https://picocli.info/#_subcommands/[Subcommands chapter] of the reference manual for more details and aspects of subcommands.
+
+In addition to the two user defined subcommands, the `ISOCodeResolver` app offers a `help` subcommand, which prints the usage help message to the console.
+Picocli generates this usage help message automatically:
+
+.Usage help message of our `ISOCodeResolver` command
+----
+$ ISOCodeResolver help
+Usage: ISOCodeResolver [COMMAND]
+Resolves ISO country codes (ISO-3166-1) or language codes (ISO-639-1/-2)
+Commands:
+  help      Displays help information about the specified command
+  country   Resolves ISO country codes (ISO-3166-1)
+  language  Resolves one ore more ISO language codes (ISO-639-1 or 639-2)
+----
 
 
 == Options and Parameters
-Command line arguments can be separated into _options_  and _positional parameters_.
+Command line arguments can be separated into _options_ and _positional parameters_.
 Options have a name, positional parameters are usually the values that follow the options,
 but they may be mixed.
 
@@ -1034,7 +1168,7 @@ Commands with a user object that implements `Runnable` can implement the `IExitC
 
 By default, the `execute` method returns `CommandLine.ExitCode.OK` (`0`) on success, `CommandLine.ExitCode.SOFTWARE` (`1`) when an exception occurred in the Runnable, Callable or command method, and `CommandLine.ExitCode.USAGE` (`2`) for invalid input. (These are common values according to https://stackoverflow.com/questions/1101957/are-there-any-standard-exit-status-codes-in-linux/40484670#40484670[this StackOverflow answer]). This can be customized with the `@Command` annotation. For example:
 
-```java 
+```java
 @Command(exitCodeOnInvalidInput = 123,
    exitCodeOnExecutionException = 456)
 ```
