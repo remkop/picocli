@@ -10,6 +10,7 @@
 :source-highlighter: coderay
 :icons: font
 :imagesdir: images
+:linkattrs:
 :sectanchors:
 ifdef::env-github[]
 :caution-caption: :fire:
