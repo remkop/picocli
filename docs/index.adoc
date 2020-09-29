@@ -5402,7 +5402,7 @@ class AdvancedMixin {
 
 ==== Accessing the Parent Command from a Mixin
 
-Since picocli 4.2, <<_parentcommand_annotation,`@ParentCommand`-annotated>> fields can be used in mixins.
+Since picocli 4.2, <<parentcommand-annotation,`@ParentCommand`-annotated>> fields can be used in mixins.
 This injects a reference to the parent command of the mixee into the mixin.
 Here is an example implementation:
 

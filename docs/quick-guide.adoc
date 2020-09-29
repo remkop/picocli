@@ -1140,7 +1140,7 @@ CAUTION: Older versions of picocli had some limited exit code support where pico
 
 === Generating an Exit Code
 
-`@Command`-annotated classes that implement `Callable` and `@Command`-<<command-methods,annotated methods>> can simply return an `int` or `Integer`, and this value will be returned from `CommandLine.execute`. For example:
+`@Command`-annotated classes that implement `Callable` and `@Command`-link:https://picocli.info/#command-methods[annotated methods] can simply return an `int` or `Integer`, and this value will be returned from `CommandLine.execute`. For example:
 
 ```java
 @Command(name = "greet")
