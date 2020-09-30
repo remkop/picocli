@@ -98,6 +98,7 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 
 ### Articles & Presentations
 #### English
+* [Picocli subcommands - One program, many purposes](https://aragost.com/blog/java/picocli-subcommands.html) (2020-09-22) by [Jonas Andersen](https://twitter.com/PrimusAlgo).
 * [How to build a CLI app in Java using jbang and picocli](https://www.twilio.com/blog/cli-app-java-jbang-picocli) (2020-08-13) by [Matthew Gilliard](https://twitter.com/MaximumGilliard).
 * [VIDEO] [Tuesday Java Lunch & Learn. This week: picocli](https://m.twitch.tv/videos/706906131) (2020-08-11) by MaximumGilliard - twitch.tv.
 * [Building a GitHub Dependents Scraper with Quarkus and Picocli](https://blog.marcnuri.com/github-dependents-scraper-quarkus-picocli/) (2020-07-31) by [Marc Nuri](https://twitter.com/MarcNuri).
