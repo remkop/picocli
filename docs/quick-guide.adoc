@@ -5,7 +5,7 @@
 :revdate: 2020-08-26
 :toc: left
 :numbered:
-:toclevels: 1
+:toclevels: 2
 :toc-title: Features
 :source-highlighter: coderay
 :icons: font
@@ -51,13 +51,16 @@ Below we show a small but fully functional example picocli-based command line ap
 
 .Invoking the command
 ----
-$ java -cp "myapp.jar;picocli-4.5.2-SNAPSHOT.jar" ASCIIArt --font=speed Hello picocli
-______  __    ___________                  _____                  __________
-___  / / /_______  /__  /_____     ___________(_)____________________  /__(_)
-__  /_/ /_  _ \_  /__  /_  __ \    ___  __ \_  /_  ___/  __ \  ___/_  /__  /
-_  __  / /  __/  / _  / / /_/ /    __  /_/ /  / / /__ / /_/ / /__ _  / _  /
-/_/ /_/  \___//_/  /_/  \____/     _  .___//_/  \___/ \____/\___/ /_/  /_/
-                                   /_/
+$ java -cp "myapp.jar;picocli-4.5.2-SNAPSHOT.jar" ASCIIArt --font-size=9 Hello picocli
+       #   #       #  #                 #                  #  #                                                                                 
+       #   #       #  #                                    #                                                                                    
+       #   #  ***  #  #  ****     #***  #  **#  ****  **#  #  #                                                                                 
+       #####  ***  #  #  ****     #***  #  **   ****  **   #  #                                                                                 
+       #   #  *#*  #  #  *  *     #  *  #  *    *  *  *    #  #                                                                                 
+       #   #  **   #  #  ****     #***  #  **   ****  **   #  #                                                                                 
+       #   #  **#  #  #  ****     #***  #  **#  ****  **#  #  #                                                                                 
+                                  #                                                                                                             
+                                  *
 ----
 
 [TIP]
@@ -65,47 +68,42 @@ _  __  / /  __/  / _  / / /_/ /    __  /_/ /  / / /__ / /_/ / /__ _  / _  /
 The user manual has details on link:https://picocli.info/#_packaging_your_application[packaging your CLI application] so that users can invoke it simply with:
 
 ----
-ASCIIArt --font=speed Hello picocli
+ASCIIArt --font-size=9 Hello picocli
 ----
 ====
 
-The source code of our `ASCIIArt` example is fairly small:
+==== Online execution
 
-.ASCIIArt source code
+++++
+<div data-pym-src="https://www.jdoodle.com/embed/v0/2nfL?stdin=1&arg=1"></div>
+++++
+
+==== Source code, explained
+
+.ASCIIArt source code, shortened
 [source,java]
 ----
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
-
-import java.util.Scanner;
-import java.net.URL;
-import static java.lang.String.format;
+// some exports omitted for the sake of brevity
 
 @Command(name = "ASCIIArt", version = "ASCIIArt 1.0", mixinStandardHelpOptions = true) // <2>
-public class ASCIIArt implements Callable<Integer> { // <1>
+public class ASCIIArt implements Runnable { // <1>
 
-    @Option(names = { "-f", "--font" }, // <3>
-      description = "Font list: https://artii.herokuapp.com/fonts_list")
-    String font = "standard";
+    @Option(names = { "-s", "--font-size" }, description = "Font size") // <3>
+    int fontSize = 19;
 
-    @Parameters(paramLabel = "word1 [word2]", // <4>
+    @Parameters(paramLabel = "word1 [word2]", defaultValue = "Hello, picocli", // <4>
                description = "Words to be translated into ASCII art.")
-    private String[] words = { "Hello,", "world!" }; // <5>
+    private String[] words = { "Hello,", "picocli" }; // <5>
 
     @Override
-    public Integer call() { // your business logic <6>
-        String text = String.join("+", words);
-        String url = format("http://artii.herokuapp.com/make?text=%s&font=%s", text, font);
-
-        try (Scanner s = new Scanner(new URL(url).openStream())) {
-            System.out.println(s.useDelimiter("\\A").next());
-        } catch (Exception e) {
-            System.err.println("Invalid font or invalid text given!");
-            return 1;
+    public void run() { // <6>
+        // code for generation of ASCII art graphics
+        // omitted for the sake of brevity
         }
-        return 0;
     }
 
     public static void main(String[] args) {
@@ -138,11 +136,11 @@ Picocli generates this usage help message automatically:
 .Usage help message of our `ASCIIArt` command
 ----
 $ ASCIIArt --help
-Usage: ASCIIArt [-hV] [-f=<font>] [word1 [word2]...]
-      [word1 [word2]...]   Words to be translated into ASCII art.
-  -f, --font=<font>        Font list: https://artii.herokuapp.com/fonts_list
-  -h, --help               Show this help message and exit.
-  -V, --version            Print version information and exit.
+Usage: ASCIIArt [-hV] [-s=<fontsize>] [word1 [word2]...]
+      [word1 [word2]...]      Words to be translated into ASCII art.
+  -s, --font-size=<fontSize>  Font size
+  -h, --help                  Show this help message and exit.
+  -V, --version               Print version information and exit.
 ----
 
 === Subcommands Example: ISO Code Resolver
@@ -186,8 +184,13 @@ ISOCodeResolver country cn fr th ro no
 ----
 ====
 
+==== Online execution
 
-The code below shows how `ISOCodeResolver` defines its subcommands:
+++++
+<div data-pym-src="https://www.jdoodle.com/embed/v0/2mpW?stdin=1&arg=1"></div>
+++++
+
+==== Source code, explained
 
 .ISOCodeResolver source code
 [source,java]
@@ -1259,3 +1262,6 @@ To keep this Quick Guide short (or at least, short-ish) some things had to be le
 Don't forget to star icon:star-o[] the link:https://github.com/remkop/picocli[project on GitHub] if you like it!
 Your stars keep me going! :-)
 
+++++
+<script src="https://www.jdoodle.com/assets/jdoodle-pym.min.js" type="text/javascript"></script>
+++++
