@@ -18,6 +18,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.5.2-fixes"></a> Fixed issues
+* [#1186] Enhancement: Auto-enable ANSI colors on MSYS2 (Git for Windows, MSYS2-based Windows Terminal shells, etc.). Thanks to [Sysmat](https://github.com/sysmat) for raising this.
 * [#1162] Bugfix: Abbreviated options are not matched if value attached with '=' separator (like `-x=3`). Thanks to [Chris Laprun](https://github.com/metacosm) for raising this.
 * [#1156][#1172] Bugfix: the built-in `HelpCommand` now respects subcommands case-sensitivity and abbreviations. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#1158] DOC: Fix broken links to GraalVM repo. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
