@@ -16,6 +16,7 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Locale;
 
 import static org.junit.Assert.*;
 import static picocli.TestUtil.usageString;
@@ -110,10 +111,11 @@ public class HelpAnsiTest {
         System.clearProperty("picocli.ansi");
         boolean isWindows = System.getProperty("os.name").startsWith("Windows");
         boolean isXterm   = System.getenv("TERM") != null && System.getenv("TERM").startsWith("xterm");
+        boolean isCygwin  = System.getenv("TERM") != null && System.getenv("TERM").toLowerCase(Locale.ENGLISH).contains("cygwin");
         boolean hasOsType = System.getenv("OSTYPE") != null; // null on Windows unless on Cygwin or MSYS
         boolean isAtty    = (isWindows && (isXterm || hasOsType)) // cygwin pseudo-tty
                 || hasConsole();
-        assertEquals((isAtty && (!isWindows || isXterm || hasOsType)) || isJansiConsoleInstalled(), Ansi.AUTO.enabled());
+        assertEquals((isAtty && (!isWindows || isXterm || isCygwin || hasOsType)) || isJansiConsoleInstalled(), Ansi.AUTO.enabled());
 
         if (isWindows && !Ansi.AUTO.enabled()) {
             AnsiConsole.systemInstall();
@@ -675,6 +677,24 @@ public class HelpAnsiTest {
     }
 
     @Test
+    public void testAnsiIsCygwinDependsOnEnvironmentVariable() {
+        environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
+        assertFalse(Ansi.isCygwin());
+
+        environmentVariables.set("TERM", "random value");
+        assertFalse(Ansi.isCygwin());
+
+        environmentVariables.set("TERM", "xterm");
+        assertFalse(Ansi.isCygwin());
+
+        environmentVariables.set("TERM", "xterm cygwin");
+        assertTrue(Ansi.isCygwin());
+
+        environmentVariables.set("TERM", "cygwin");
+        assertTrue(Ansi.isCygwin());
+    }
+
+    @Test
     public void testAnsiHasOstypeDependsOnEnvironmentVariable() {
         environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
         assertFalse(Ansi.hasOsType());
@@ -687,7 +707,7 @@ public class HelpAnsiTest {
     }
 
     @Test
-    public void testAnsiIsPseudoTtyDependsOnWindowsXtermOrOsType() {
+    public void testAnsiIsPseudoTtyDependsOnWindowsXtermOrCygwinOrOsType() {
         System.setProperty("os.name", "MMIX");
         environmentVariables.clear(ANSI_ENVIRONMENT_VARIABLES);
         assertFalse("OSTYPE and XTERM are not set", Ansi.isPseudoTTY());
@@ -704,6 +724,8 @@ public class HelpAnsiTest {
         assertTrue("restored", Ansi.isPseudoTTY());
         environmentVariables.clear("OSTYPE");
         assertTrue("Missing OSTYPE, but TERM=xterm", Ansi.isPseudoTTY());
+        environmentVariables.set("TERM", "abcygwinxyz");
+        assertTrue("Missing OSTYPE, but TERM=cygwin", Ansi.isPseudoTTY());
 
         environmentVariables.set("OSTYPE", "anything");
         assertTrue("restored", Ansi.isPseudoTTY());
@@ -951,6 +973,8 @@ public class HelpAnsiTest {
         assertTrue(Ansi.isWindows());
         environmentVariables.set("TERM", "xterm"); // fake Cygwin
         assertTrue(Ansi.isPseudoTTY());
+        environmentVariables.set("TERM", "cygwin"); // fake Cygwin
+        assertTrue(Ansi.isPseudoTTY());
 
         assertFalse(Ansi.isJansiConsoleInstalled());
 
@@ -1009,6 +1033,10 @@ public class HelpAnsiTest {
         assertFalse(Ansi.hintEnabled());
 
         environmentVariables.set("TERM", "xterm");
+        assertTrue(Ansi.isPseudoTTY());
+        assertTrue("If have Cygwin pseudo-TTY, enabled on Windows", Ansi.AUTO.enabled());
+
+        environmentVariables.set("TERM", "cygwin");
         assertTrue(Ansi.isPseudoTTY());
         assertTrue("If have Cygwin pseudo-TTY, enabled on Windows", Ansi.AUTO.enabled());
 

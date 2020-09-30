@@ -16402,6 +16402,7 @@ public class CommandLine {
             static final boolean isWindows()    { return System.getProperty("os.name").toLowerCase().contains("win"); }
             static final boolean isMac()        { return System.getProperty("os.name").toLowerCase().contains("mac"); }
             static final boolean isXterm()      { return System.getenv("TERM") != null && System.getenv("TERM").startsWith("xterm"); }
+            static final boolean isCygwin()     { return System.getenv("TERM") != null && System.getenv("TERM").toLowerCase(ENGLISH).contains("cygwin"); }
             // null on Windows unless on Cygwin or MSYS
             static final boolean hasOsType()    { return System.getenv("OSTYPE") != null; }
 
@@ -16428,7 +16429,7 @@ public class CommandLine {
                 catch (Throwable reflectionFailed) { return true; }
             }
             /** Cygwin and MSYS use pseudo-tty and console is always null... */
-            static boolean isPseudoTTY() { return isWindows() && (isXterm() || hasOsType()); }
+            static boolean isPseudoTTY() { return isWindows() && (isXterm() || isCygwin() || hasOsType()); }
 
             static boolean ansiPossible() {
                 if (forceDisabled())                          { return false; }
@@ -16436,7 +16437,7 @@ public class CommandLine {
                 if (isWindows() && isJansiConsoleInstalled()) { return true; } // #630 JVM crash loading jansi.AnsiConsole on Linux
                 if (hintDisabled())                           { return false; }
                 if (!isTTY() && !isPseudoTTY())               { return false; }
-                return hintEnabled() || !isWindows() || isXterm() || hasOsType();
+                return hintEnabled() || !isWindows() || isXterm() || isCygwin() || hasOsType();
             }
             static boolean isJansiConsoleInstalled() {
                 try {
