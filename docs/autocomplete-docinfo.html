@@ -1,0 +1,62 @@
+<style>
+ .listingblock:hover .clipboard {
+     display: block;
+ }
+
+ .clipboard {
+     display: none;
+     border: 0;
+     font-size: .75em;
+     text-transform: uppercase;
+     font-weight: 500;
+     padding: 6px;
+     color: #999;
+     position: absolute;
+     top: .425rem;
+     right: .5rem;
+     background: transparent;
+ }
+
+ code + .clipboard {
+    top: -0.05rem !important;
+     right: 3rem !important;
+ }
+
+ .clipboard:hover, .clipboard:focus, .clipboard:active {
+     outline: 0;
+     background-color: #eee9e6;
+ }
+</style>
+<script>
+$(function() {
+
+var pre = document.getElementsByTagName('pre');
+for (var i = 0; i < pre.length; i++) {
+    var b = document.createElement('input');
+    b.setAttribute('role', 'button');
+    b.setAttribute('type', 'button');
+    b.value = 'Copy';
+    b.className = 'clipboard';
+
+    if (pre[i].childNodes.length === 1 && pre[i].childNodes[0].nodeType === 3) {
+        var div = document.createElement('div');
+        div.textContent = pre[i].textContent;
+        pre[i].textContent = '';
+        pre[i].appendChild(div);
+    }
+    pre[i].appendChild(b);
+ }
+
+new ClipboardJS('.clipboard', {
+    text: function(b) {
+        return b.parentNode.innerText;
+    }
+}).on('success', function(e) {
+        e.clearSelection();
+        e.trigger.value = 'Copied';
+        setTimeout(function() {
+            e.trigger.value = 'Copy';
+        }, 2000);
+    });
+});
+</script>

@@ -2,6 +2,7 @@
 :author: Remko Popma
 :source-highlighter: coderay
 :icons: font
+:docinfo: shared-head,private-head
 ifdef::env-github[]
 :note-caption: :information_source:
 :tip-caption: :bulb:
