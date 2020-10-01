@@ -10,6 +10,7 @@
 :source-highlighter: coderay
 :icons: font
 :imagesdir: images
+:docinfo: shared-head,private-head
 ifdef::env-github[]
 :tip-caption: :bulb:
 endif::[]

@@ -12,6 +12,7 @@
 :imagesdir: images
 :linkattrs:
 :sectanchors:
+:docinfo: shared-head,private-head
 ifdef::env-github[]
 :caution-caption: :fire:
 :important-caption: :heavy_exclamation_mark:
