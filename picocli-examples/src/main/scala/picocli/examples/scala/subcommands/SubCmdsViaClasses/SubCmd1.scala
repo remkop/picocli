@@ -5,7 +5,7 @@ import picocli.CommandLine.{Command, HelpCommand, Parameters}
 
 @Command(name = "country", description = Array("Resolve ISO country code (ISO-3166-1, Alpha-2 code)"))
 class SubCmd1 extends Runnable  {
-  @Parameters(arity = "1..*n", paramLabel = "<country code1> <country code2>",
+  @Parameters(arity = "1..*n", paramLabel = "<country code>",
     description = Array("country code(s) to be resolved"))
   val countryCodes = new Array[String](0)
 
