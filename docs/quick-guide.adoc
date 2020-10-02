@@ -5,7 +5,7 @@
 :revdate: 2020-08-26
 :toc: left
 :numbered:
-:toclevels: 2
+:toclevels: 1 // show little detail in the TOC, to make this document less intimidating
 :toc-title: Features
 :source-highlighter: coderay
 :icons: font
@@ -42,9 +42,8 @@ For applications that cannot use the annotations, there is also a link:picocli-p
 The programmatic API is not covered in this Quick Guide.
 ====
 
-== Example applications
 
-=== Basic example: ASCIIArt
+== [[_example_applications]][[Basic_example_ASCIIArt]]Basic example
 Below we show a small but fully functional example picocli-based command line application: `ASCIIArt`.
 
 `ASCIIArt` converts one or more arguments into ASCII art and prints them out. It can be used as follows:
@@ -72,13 +71,21 @@ ASCIIArt --font-size=9 Hello picocli
 ----
 ====
 
-==== Online execution
+=== ASCIIArt execution: try it!
+
+[NOTE]
+====
+The content below shows the source code of the `ASCIIArt` example, embedded in the page using technology provided by https://www.jdoodle.com[jdoodle.com] that allows online execution.
+If the content is not displaying correctly, try opening https://www.jdoodle.com/embed/v0/2nfL?stdin=1&arg=1[this link] in a separate browser tab.
+====
+
+Execute the `ASCIIArt` example by clicking the blue `Execute` button below.
 
 ++++
 <div data-pym-src="https://www.jdoodle.com/embed/v0/2nfL?stdin=1&arg=1"></div>
 ++++
 
-==== Source code, explained
+=== ASCIIArt source code explained
 
 .ASCIIArt source code, shortened
 [source,java]
@@ -143,7 +150,8 @@ Usage: ASCIIArt [-hV] [-s=<fontsize>] [word1 [word2]...]
   -V, --version               Print version information and exit.
 ----
 
-=== Subcommands Example: ISO Code Resolver
+
+== [[Subcommands_Example_ISOCodeResolver]]Subcommands Example
 Below we show another small but fully functional example picocli-based command line application which explains the use of subcommands: `ISOCodeResolver`.
 
 This application has two subcommands, `language` and `country`, that resolve languages or country codes following the ISO standards (ISO-3166-1 for country codes, and ISO-639-1/639-2 for language codes).
@@ -184,13 +192,20 @@ ISOCodeResolver country cn fr th ro no
 ----
 ====
 
-==== Online execution
+=== ISOCodeResolver execution: try it!
+[NOTE]
+====
+The content below shows the source code of the `ISOCodeResolver` example, embedded in the page using technology provided by https://www.jdoodle.com[jdoodle.com] that allows online execution.
+If the content is not displaying correctly, try opening https://www.jdoodle.com/embed/v0/2mpW?stdin=1&arg=1[this link] in a separate browser tab.
+====
+
+Execute the `ISOCodeResolver` example by clicking the blue `Execute` button below.
 
 ++++
 <div data-pym-src="https://www.jdoodle.com/embed/v0/2mpW?stdin=1&arg=1"></div>
 ++++
 
-==== Source code, explained
+=== ISOCodeResolver source code explained
 
 .ISOCodeResolver source code
 [source,java]
