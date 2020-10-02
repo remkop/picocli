@@ -65,6 +65,15 @@ TIP: Picocli also provides a <<Programmatic API,programmatic API>>, separately f
 === Example application
 The example below shows a short but fully functional picocli-based `checksum` command line application:
 
+[TIP]
+====
+You might want to run the `checksum` application online first.
+To do so, https://www.jdoodle.com/embed/v0/2mQM?stdin=1&arg=1[open^] the source code in a separate browser tab and press the blue `Execute` button below.
+This prints the checksum of the file `/etc/hosts` to the console.
+Then type a file name (e.g. `/usr/bin/java` or `/proc/cpuinfo`) into the text field `Commandline Arguments` and execute the program again.
+Fill in `--help` to get usage instructions.
+====
+
 .A full working example picocli-based command line application
 [[CheckSum-application]]
 [source,java]
