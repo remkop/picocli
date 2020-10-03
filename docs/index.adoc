@@ -71,9 +71,9 @@ You can https://www.jdoodle.com/embed/v0/2mQM?stdin=1&arg=1[run this example onl
 Try it without arguments, with an option like `--help` or `--version`, or with a file name like `/usr/bin/java` or `/proc/cpuinfo` as command line argument.
 ====
 
-.A full working example picocli-based command line application
-[[CheckSum-application]]
-[source,java]
+.Java
+[[Checksum-App-Java]]
+[source,java,role="primary"]
 ----
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -116,6 +116,45 @@ class CheckSum implements Callable<Integer> {
 // in this document we want to keep the introduction section very light-weight and high-level.
 // The goal of the introduction is to show how easy picocli is.
 // (The rest of this document has plenty of details.)
+
+.Kotlin
+[[CheckSum-App-Kotlin]]
+[source,kotlin,role="secondary"]
+----
+package picocli.examples.kotlin
+
+import picocli.CommandLine
+import picocli.CommandLine.Command
+import picocli.CommandLine.Option
+import picocli.CommandLine.Parameters
+import java.io.File
+import java.math.BigInteger
+import java.nio.file.Files
+import java.security.MessageDigest
+import java.util.concurrent.Callable
+import kotlin.system.exitProcess
+
+@Command(name = "checksum", mixinStandardHelpOptions = true, version = ["checksum 4.5.1"],
+    description = ["Prints the checksum (MD5 by default) of a file to STDOUT."])
+class Checksum : Callable<Int> {
+
+    @Parameters(index = "0", description = ["The file whose checksum to calculate."])
+    lateinit var file: File
+
+    @Option(names = ["-a", "--algorithm"], description = ["MD5, SHA-1, SHA-256, …"])
+    var algorithm = "MD5"
+
+    override fun call(): Int {
+            val fileContents = Files.readAllBytes(file.toPath())
+            val digest = MessageDigest.getInstance(algorithm).digest(fileContents)
+            println(("%0" + digest.size * 2 + "x").format(BigInteger(1, digest)))
+        return 0
+    }
+}
+
+fun main(args: Array<String>) : Unit = exitProcess(CommandLine(Checksum()).execute(*args))
+----
+
 
 Implement `Runnable` or `Callable` and your command can be <<Executing Commands,executed>> in one line of code.
 The example `main` method calls `CommandLine.execute` to parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic. Applications can call `System.exit` with the returned exit code to signal success or failure to their caller.
@@ -237,7 +276,7 @@ See the https://github.com/remkop/picocli/tree/master/picocli-codegen[`picocli-c
 
 === Running the Application
 
-After we successfully compiled our <<CheckSum-application,example `CheckSum` application>>, let's quickly look at how to run it.
+After we successfully compiled our <<Checksum-App-Java,example `CheckSum` application>>, let's quickly look at how to run it.
 
 There are many ways to run picocli-based applications, depending on whether we included picocli as source, created a jar for our application or not, and whether we created a shaded jar (also known as uber-jar) containing all dependencies.
 
