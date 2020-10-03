@@ -558,29 +558,7 @@ The programmatic API is not covered in this Quick Guide.</p>
 </table>
 </div>
 <div class="sect2">
-<h3 id="_asciiart_execution_try_it"><a class="anchor" href="#_asciiart_execution_try_it"></a>2.1. ASCIIArt execution: try it!</h3>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>The content below shows the source code of the <code>ASCIIArt</code> example, embedded in the page using technology provided by <a href="https://www.jdoodle.com">jdoodle.com</a> that allows online execution.
-If the content is not displaying correctly, try opening <a href="https://www.jdoodle.com/embed/v0/2nfL?stdin=1&amp;arg=1">this link</a> in a separate browser tab.</p>
-</div>
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>Execute the <code>ASCIIArt</code> example by clicking the blue <code>Execute</code> button below.</p>
-</div>
-<div data-pym-src="https://www.jdoodle.com/embed/v0/2nfL?stdin=1&arg=1"></div>
-</div>
-<div class="sect2">
-<h3 id="_asciiart_source_code_explained"><a class="anchor" href="#_asciiart_source_code_explained"></a>2.2. ASCIIArt source code explained</h3>
+<h3 id="_asciiart_source_code_explained"><a class="anchor" href="#_asciiart_source_code_explained"></a>2.1. ASCIIArt source code explained</h3>
 <div class="listingblock">
 <div class="title">ASCIIArt source code, shortened</div>
 <div class="content">
@@ -596,14 +574,15 @@ If the content is not displaying correctly, try opening <a href="https://www.jdo
     <span class="annotation">@Option</span>(names = { <span class="string"><span class="delimiter">&quot;</span><span class="content">-s</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">--font-size</span><span class="delimiter">&quot;</span></span> }, description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Font size</span><span class="delimiter">&quot;</span></span>) <i class="conum" data-value="3"></i><b>(3)</b>
     <span class="type">int</span> fontSize = <span class="integer">19</span>;
 
-    <span class="annotation">@Parameters</span>(paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">word</span><span class="delimiter">&quot;</span></span>, defaultValue = <span class="string"><span class="delimiter">&quot;</span><span class="content">Hello, picocli</span><span class="delimiter">&quot;</span></span>, <i class="conum" data-value="4"></i><b>(4)</b>
+    <span class="annotation">@Parameters</span>(paramLabel = <span class="string"><span class="delimiter">&quot;</span><span class="content">&lt;word&gt;</span><span class="delimiter">&quot;</span></span>, defaultValue = <span class="string"><span class="delimiter">&quot;</span><span class="content">Hello, picocli</span><span class="delimiter">&quot;</span></span>, <i class="conum" data-value="4"></i><b>(4)</b>
                description = <span class="string"><span class="delimiter">&quot;</span><span class="content">Words to be translated into ASCII art.</span><span class="delimiter">&quot;</span></span>)
     <span class="directive">private</span> <span class="predefined-type">String</span><span class="type">[]</span> words = { <span class="string"><span class="delimiter">&quot;</span><span class="content">Hello,</span><span class="delimiter">&quot;</span></span>, <span class="string"><span class="delimiter">&quot;</span><span class="content">picocli</span><span class="delimiter">&quot;</span></span> }; <i class="conum" data-value="5"></i><b>(5)</b>
 
     <span class="annotation">@Override</span>
     <span class="directive">public</span> <span class="type">void</span> run() { <i class="conum" data-value="6"></i><b>(6)</b>
-        <span class="comment">// code for generation of ASCII art graphics</span>
-        <span class="comment">// omitted for the sake of brevity</span>
+        <span class="comment">// The business logic of the command goes here...</span>
+        <span class="comment">// In this case, code for generation of ASCII art graphics</span>
+        <span class="comment">// (omitted for the sake of brevity).</span>
     }
 
     <span class="directive">public</span> <span class="directive">static</span> <span class="type">void</span> main(<span class="predefined-type">String</span><span class="type">[]</span> args) {
@@ -677,13 +656,35 @@ Picocli generates this usage help message automatically:</p>
 <div class="title">Usage help message of our <code>ASCIIArt</code> command</div>
 <div class="content">
 <pre>$ ASCIIArt --help
-Usage: ASCIIArt [-hV] [-s=&lt;fontsize&gt;] [word1 [word2]...]
-      [word1 [word2]...]      Words to be translated into ASCII art.
+Usage: ASCIIArt [-hV] [-s=&lt;fontsize&gt;] [&lt;word&gt;...]
+      [&lt;word&gt;...]             Words to be translated into ASCII art.
   -s, --font-size=&lt;fontSize&gt;  Font size
   -h, --help                  Show this help message and exit.
   -V, --version               Print version information and exit.</pre>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_asciiart_execution_try_it"><a class="anchor" href="#_asciiart_execution_try_it"></a>2.2. ASCIIArt execution: try it!</h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The content below shows the source code of the <code>ASCIIArt</code> example, embedded in the page using technology provided by <a href="https://www.jdoodle.com">jdoodle.com</a> that allows online execution.
+If the content is not displaying correctly, try opening <a href="https://www.jdoodle.com/embed/v0/2nfL?stdin=1&amp;arg=1">this link</a> in a separate browser tab.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Execute the <code>ASCIIArt</code> example by clicking the blue <code>Execute</code> button below.</p>
+</div>
+<div data-pym-src="https://www.jdoodle.com/embed/v0/2nfL?stdin=1&arg=1"></div>
 </div>
 </div>
 </div>
@@ -747,29 +748,7 @@ NO: Norway</pre>
 </table>
 </div>
 <div class="sect2">
-<h3 id="_isocoderesolver_execution_try_it"><a class="anchor" href="#_isocoderesolver_execution_try_it"></a>3.1. ISOCodeResolver execution: try it!</h3>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>The content below shows the source code of the <code>ISOCodeResolver</code> example, embedded in the page using technology provided by <a href="https://www.jdoodle.com">jdoodle.com</a> that allows online execution.
-If the content is not displaying correctly, try opening <a href="https://www.jdoodle.com/embed/v0/2mpW?stdin=1&amp;arg=1">this link</a> in a separate browser tab.</p>
-</div>
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>Execute the <code>ISOCodeResolver</code> example by clicking the blue <code>Execute</code> button below.</p>
-</div>
-<div data-pym-src="https://www.jdoodle.com/embed/v0/2mpW?stdin=1&arg=1"></div>
-</div>
-<div class="sect2">
-<h3 id="_isocoderesolver_source_code_explained"><a class="anchor" href="#_isocoderesolver_source_code_explained"></a>3.2. ISOCodeResolver source code explained</h3>
+<h3 id="_isocoderesolver_source_code_explained"><a class="anchor" href="#_isocoderesolver_source_code_explained"></a>3.1. ISOCodeResolver source code explained</h3>
 <div class="listingblock">
 <div class="title">ISOCodeResolver source code</div>
 <div class="content">
@@ -893,6 +872,28 @@ Commands:
   language  Resolves one ore more ISO language codes (ISO-639-1 or 639-2)</pre>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_isocoderesolver_execution_try_it"><a class="anchor" href="#_isocoderesolver_execution_try_it"></a>3.2. ISOCodeResolver execution: try it!</h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The content below shows the source code of the <code>ISOCodeResolver</code> example, embedded in the page using technology provided by <a href="https://www.jdoodle.com">jdoodle.com</a> that allows online execution.
+If the content is not displaying correctly, try opening <a href="https://www.jdoodle.com/embed/v0/2mpW?stdin=1&amp;arg=1">this link</a> in a separate browser tab.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Execute the <code>ISOCodeResolver</code> example by clicking the blue <code>Execute</code> button below.</p>
+</div>
+<div data-pym-src="https://www.jdoodle.com/embed/v0/2mpW?stdin=1&arg=1"></div>
 </div>
 </div>
 </div>

@@ -71,19 +71,6 @@ ASCIIArt --font-size=9 Hello picocli
 ----
 ====
 
-=== ASCIIArt execution: try it!
-
-[NOTE]
-====
-The content below shows the source code of the `ASCIIArt` example, embedded in the page using technology provided by https://www.jdoodle.com[jdoodle.com] that allows online execution.
-If the content is not displaying correctly, try opening https://www.jdoodle.com/embed/v0/2nfL?stdin=1&arg=1[this link] in a separate browser tab.
-====
-
-Execute the `ASCIIArt` example by clicking the blue `Execute` button below.
-
-++++
-<div data-pym-src="https://www.jdoodle.com/embed/v0/2nfL?stdin=1&arg=1"></div>
-++++
 
 === ASCIIArt source code explained
 
@@ -108,8 +95,9 @@ public class ASCIIArt implements Runnable { // <1>
 
     @Override
     public void run() { // <6>
-        // code for generation of ASCII art graphics
-        // omitted for the sake of brevity
+        // The business logic of the command goes here...
+        // In this case, code for generation of ASCII art graphics
+        // (omitted for the sake of brevity).
     }
 
     public static void main(String[] args) {
@@ -128,7 +116,7 @@ Let's break it down into small steps:
 <5> Picocli will convert the command line arguments to strongly typed values and will inject these values into the annotated fields.
 <6> Define your business logic in the `run` or `call` method of your class. This method is called after parsing is successfully completed.
 <7> In the `main` method of your class, use the `CommandLine.execute` method bootstrap your application.
-    This will parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic.
+This will parse the command line, handle errors, handle requests for usage and version help, and invoke the business logic.
 <8> The `CommandLine.execute` method returns an exit code. Your application can call `System.exit` with this exit code to signal success or failure to the calling process.
 
 This is the basic skeleton of almost any picocli application.
@@ -142,12 +130,26 @@ Picocli generates this usage help message automatically:
 .Usage help message of our `ASCIIArt` command
 ----
 $ ASCIIArt --help
-Usage: ASCIIArt [-hV] [-s=<fontsize>] [word1 [word2]...]
-      [word1 [word2]...]      Words to be translated into ASCII art.
+Usage: ASCIIArt [-hV] [-s=<fontsize>] [<word>...]
+      [<word>...]             Words to be translated into ASCII art.
   -s, --font-size=<fontSize>  Font size
   -h, --help                  Show this help message and exit.
   -V, --version               Print version information and exit.
 ----
+
+=== ASCIIArt execution: try it!
+
+[NOTE]
+====
+The content below shows the source code of the `ASCIIArt` example, embedded in the page using technology provided by https://www.jdoodle.com[jdoodle.com] that allows online execution.
+If the content is not displaying correctly, try opening https://www.jdoodle.com/embed/v0/2nfL?stdin=1&arg=1[this link] in a separate browser tab.
+====
+
+Execute the `ASCIIArt` example by clicking the blue `Execute` button below.
+
+++++
+<div data-pym-src="https://www.jdoodle.com/embed/v0/2nfL?stdin=1&arg=1"></div>
+++++
 
 
 == [[Subcommands_Example_ISOCodeResolver]]Subcommands Example
@@ -190,19 +192,6 @@ and
 ISOCodeResolver country cn fr th ro no
 ----
 ====
-
-=== ISOCodeResolver execution: try it!
-[NOTE]
-====
-The content below shows the source code of the `ISOCodeResolver` example, embedded in the page using technology provided by https://www.jdoodle.com[jdoodle.com] that allows online execution.
-If the content is not displaying correctly, try opening https://www.jdoodle.com/embed/v0/2mpW?stdin=1&arg=1[this link] in a separate browser tab.
-====
-
-Execute the `ISOCodeResolver` example by clicking the blue `Execute` button below.
-
-++++
-<div data-pym-src="https://www.jdoodle.com/embed/v0/2mpW?stdin=1&arg=1"></div>
-++++
 
 === ISOCodeResolver source code explained
 
@@ -293,6 +282,19 @@ Commands:
   country   Resolves ISO country codes (ISO-3166-1)
   language  Resolves one ore more ISO language codes (ISO-639-1 or 639-2)
 ----
+
+=== ISOCodeResolver execution: try it!
+[NOTE]
+====
+The content below shows the source code of the `ISOCodeResolver` example, embedded in the page using technology provided by https://www.jdoodle.com[jdoodle.com] that allows online execution.
+If the content is not displaying correctly, try opening https://www.jdoodle.com/embed/v0/2mpW?stdin=1&arg=1[this link] in a separate browser tab.
+====
+
+Execute the `ISOCodeResolver` example by clicking the blue `Execute` button below.
+
+++++
+<div data-pym-src="https://www.jdoodle.com/embed/v0/2mpW?stdin=1&arg=1"></div>
+++++
 
 
 == Options and Parameters
