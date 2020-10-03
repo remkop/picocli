@@ -13413,6 +13413,9 @@ public class CommandLine {
             if (commandSpec.optionsMap().containsKey(arg)) { // -v or -f or --file (not attached to param or other option)
                 return true;
             }
+            if (commandSpec.negatedOptionsByNameMap.containsKey(arg)) { // negated option like --no-verbose
+                return true;
+            }
             // [#828] Subcommands should not be parsed as option values for options with optional parameters.
             if (commandSpec.subcommands().containsKey(arg)) {
                 return true;

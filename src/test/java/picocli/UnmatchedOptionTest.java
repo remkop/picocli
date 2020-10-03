@@ -140,6 +140,16 @@ public class UnmatchedOptionTest {
     }
 
     @Test
+    public void testSingleValueOptionDoesNotConsumeNegatedActualOption() {
+        class App {
+            @Option(names = "--x", negatable = true) boolean x;
+            @Option(names = "-y") String y;
+        }
+
+        expect(new App(), "Expected parameter for option '-y' but found '--no-x'", MissingParameterException.class, "-y", "--no-x");
+    }
+
+    @Test
     public void testSingleValueOptionCanConsumeQuotedActualOption() {
         class App {
             @Option(names = "-x") int x;
