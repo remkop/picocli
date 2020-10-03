@@ -102,7 +102,7 @@ public class ASCIIArt implements Runnable { // <1>
     @Option(names = { "-s", "--font-size" }, description = "Font size") // <3>
     int fontSize = 19;
 
-    @Parameters(paramLabel = "word1 [word2]", defaultValue = "Hello, picocli", // <4>
+    @Parameters(paramLabel = "<word>", defaultValue = "Hello, picocli", // <4>
                description = "Words to be translated into ASCII art.")
     private String[] words = { "Hello,", "picocli" }; // <5>
 
@@ -110,7 +110,6 @@ public class ASCIIArt implements Runnable { // <1>
     public void run() { // <6>
         // code for generation of ASCII art graphics
         // omitted for the sake of brevity
-        }
     }
 
     public static void main(String[] args) {
