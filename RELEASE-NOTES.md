@@ -41,6 +41,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1190] DOC: Improve InetSocketAddressConverter demo. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1192] DOC: Fix broken links in documentation. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1196] DOC: Quick Guide examples can now be executed on the documentation page via [JDoodle.com](https://www.jdoodle.com). Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1199] DOC: Fix `paramLabel` in examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1192] Dependency Upgrade: Bump AsciiDoctor to 2.1.0 from 1.6.2. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 ## <a name="4.5.2-deprecated"></a> Deprecations

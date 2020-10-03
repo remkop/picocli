@@ -14,7 +14,7 @@ public class SubCmdsViaMethods implements Runnable {
     @Spec CommandSpec spec;
     
     @Command(name = "country", description = "Resolve ISO country code (ISO-3166-1, Alpha-2 code)")
-    void country(@Parameters(arity = "1..*", paramLabel = "<country code 1> <country code 2>",
+    void country(@Parameters(arity = "1..*", paramLabel = "<country code>",
                  description = "country code(s) to be resolved") String[] countryCodes) {
         for (String code : countryCodes) {
             System.out.println(String.format("%s: %s", code.toUpperCase(), new Locale("", code).getDisplayCountry()));
@@ -22,7 +22,7 @@ public class SubCmdsViaMethods implements Runnable {
     }
 
     @Command(name = "language", description = "Resolve ISO language code (ISO 639-1 or -2, two/three letters)")
-    void language(@Parameters(arity = "1..*", paramLabel = "<language code 1> <language code 2>",
+    void language(@Parameters(arity = "1..*", paramLabel = "<language code>",
                   description = "language code(s) to be resolved") String[] languageCodes) {
         for (String code : languageCodes) {
             System.out.println(String.format("%s: %s", code.toLowerCase(), new Locale(code).getDisplayLanguage()));
