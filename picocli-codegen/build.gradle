@@ -126,12 +126,14 @@ task generateManpageAsciiDoc(type: JavaExec) {
     }
 }
 
-apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'org.asciidoctor.jvm.convert'
 asciidoctor {
     dependsOn(generateManpageAsciiDoc)
     sourceDir = file("${project.buildDir}/picocli-generated-docs")
     outputDir = file("${project.buildDir}/docs")
     logDocuments = true
-    backends 'manpage', 'html5'
+    outputOptions {
+        backends = ['manpage', 'html5']
+    }
 }
 javadoc.dependsOn('asciidoctor')
