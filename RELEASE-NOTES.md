@@ -45,6 +45,8 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1200] DOC: User manual `checksum` example can now be executed on the documentation page via [JDoodle.com](https://www.jdoodle.com). Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1199] DOC: Fix `paramLabel` in examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1198] DOC: Add copy button to code blocks. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1201] DOC: Checksum example: add Kotlin source code on second tab. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1202] DOC: Update to latest Asciidoctor gradle plugin. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1192] Dependency Upgrade: Bump AsciiDoctor to 2.1.0 from 1.6.2. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 ## <a name="4.5.2-deprecated"></a> Deprecations
