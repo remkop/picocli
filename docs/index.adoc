@@ -82,7 +82,7 @@ import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.concurrent.Callable;
 
-@Command(name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.5",
+@Command(name = "checksum", mixinStandardHelpOptions = true, version = "checksum 4.0",
          description = "Prints the checksum (MD5 by default) of a file to STDOUT.")
 class CheckSum implements Callable<Integer> {
 
@@ -92,19 +92,19 @@ class CheckSum implements Callable<Integer> {
     @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
     private String algorithm = "MD5";
 
-    // this example implements Callable, so parsing, error handling and handling user
-    // requests for usage help or version help can be done with one line of code.
-    public static void main(String... args) {
-        int exitCode = new CommandLine(new CheckSum()).execute(args);
-        System.exit(exitCode);
-    }
-
     @Override
     public Integer call() throws Exception { // your business logic goes here...
         byte[] fileContents = Files.readAllBytes(file.toPath());
         byte[] digest = MessageDigest.getInstance(algorithm).digest(fileContents);
         System.out.printf("%0" + (digest.length*2) + "x%n", new BigInteger(1, digest));
         return 0;
+    }
+
+    // this example implements Callable, so parsing, error handling and handling user
+    // requests for usage help or version help can be done with one line of code.
+    public static void main(String... args) {
+        int exitCode = new CommandLine(new CheckSum()).execute(args);
+        System.exit(exitCode);
     }
 }
 ----
@@ -113,28 +113,56 @@ class CheckSum implements Callable<Integer> {
 // The goal of the introduction is to show how easy picocli is.
 // (The rest of this document has plenty of details.)
 
-.Groovy Script
+.Groovy
+[[CheckSum-App-Groovy]]
+[source,groovy,role="secondary"]
+----
+@Grab('info.picocli:picocli-groovy:4.5.1')
+import picocli.CommandLine
+import static picocli.CommandLine.*
+
+import java.security.MessageDigest
+import java.util.concurrent.Callable
+
+@Command(name = 'checksum', mixinStandardHelpOptions = true, version = 'checksum 4.0',
+  description = 'Prints the checksum (MD5 by default) of a file to STDOUT.')
+class Checksum implements Callable<Integer> {
+
+    @Parameters(index = '0', description = 'The file whose checksum to calculate.')
+    File file
+
+    @Option(names = ['-a', '--algorithm'], description = 'MD5, SHA-1, SHA-256, ...')
+    String algorithm = 'MD5'
+
+    Integer call() throws Exception {
+        println MessageDigest.getInstance(algorithm).digest(file.bytes).encodeHex().toString()
+        0
+    }
+
+    static void main(String[] args) {
+        System.exit(new CommandLine(new Checksum()).execute(args))
+    }
+}
+----
+
+.Groovy script
 [[CheckSum-App-Groovy-Script]]
 [source,groovy,role="secondary"]
 ----
+@Grab('info.picocli:picocli-groovy:4.5.1')
 import static picocli.CommandLine.*
 import groovy.transform.Field
 import java.security.MessageDigest
 
-@Grab('info.picocli:picocli-groovy:4.5.1')
-@Command(description = "Prints the checksum (MD5 by default) of a file to STDOUT.",
-        version = "checksum 4.5.1")
+@Command(name = 'checksum', mixinStandardHelpOptions = true, version = 'checksum 4.0',
+  description = 'Prints the checksum (MD5 by default) of a file to STDOUT.')
 @picocli.groovy.PicocliScript
 
-@Parameters(arity = "1", description = "The file whose checksum to calculate.")
-@Field private File file
+@Parameters(index = '0', description = 'The file whose checksum to calculate.')
+@Field File file
 
-@Option(names = ["-a", "--algorithm"], description = ["MD5, SHA-1, SHA-256, …"])
-@Field private String algorithm = "MD5"
-
-@Option(names = ["-h", "--help"], usageHelp = true,
-        description = "Show this help message and exit.")
-@Field private boolean helpRequested
+@Option(names = ['-a', '--algorithm'], description = 'MD5, SHA-1, SHA-256, ...')
+@Field String algorithm = 'MD5'
 
 println MessageDigest.getInstance(algorithm).digest(file.bytes).encodeHex().toString()
 ----
@@ -155,14 +183,14 @@ import java.security.MessageDigest
 import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 
-@Command(name = "checksum", mixinStandardHelpOptions = true, version = ["checksum 4.5.1"],
+@Command(name = "checksum", mixinStandardHelpOptions = true, version = ["checksum 4.0"],
     description = ["Prints the checksum (MD5 by default) of a file to STDOUT."])
 class Checksum : Callable<Int> {
 
     @Parameters(index = "0", description = ["The file whose checksum to calculate."])
     lateinit var file: File
 
-    @Option(names = ["-a", "--algorithm"], description = ["MD5, SHA-1, SHA-256, …"])
+    @Option(names = ["-a", "--algorithm"], description = ["MD5, SHA-1, SHA-256, ..."])
     var algorithm = "MD5"
 
     override fun call(): Int {
@@ -180,23 +208,23 @@ fun main(args: Array<String>) : Unit = exitProcess(CommandLine(Checksum()).execu
 [[CheckSum-App-Scala]]
 [source,scala,role="secondary"]
 ----
-import java.io.File
-import java.util.concurrent.Callable
-import java.math.BigInteger
-import java.nio.file.Files
-import java.security.MessageDigest
-
 import picocli.CommandLine
 import picocli.CommandLine.{Command, Option, Parameters}
 
-@Command(name = "checksum", version = Array("Checksum 4.5"),  mixinStandardHelpOptions = true,
+import java.io.File
+import java.math.BigInteger
+import java.nio.file.Files
+import java.security.MessageDigest
+import java.util.concurrent.Callable
+
+@Command(name = "checksum", mixinStandardHelpOptions = true, version = Array("checksum 4.0"),
   description = Array("Prints the checksum (MD5 by default) of a file to STDOUT."))
 class Checksum extends Callable[Int] {
 
-  @Parameters(index = "0..*", description = Array("The file whose checksum to calculate."))
+  @Parameters(index = "0", description = Array("The file whose checksum to calculate."))
   private val file : File = null
 
-  @Option(names = Array("-a", "--algorithm"), description = Array("MD5, SHA-1, SHA-256, …"))
+  @Option(names = Array("-a", "--algorithm"), description = Array("MD5, SHA-1, SHA-256, ..."))
   private var algorithm = "MD5"
 
   def call(): Int = {

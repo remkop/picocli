@@ -995,13 +995,6 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-a"</span><span class="o">,</span> <span class="s">"--algorithm"</span><span class="o">},</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"MD5, SHA-1, SHA-256, ..."</span><span class="o">)</span>
     <span class="kd">private</span> <span class="nc">String</span> <span class="n">algorithm</span> <span class="o">=</span> <span class="s">"MD5"</span><span class="o">;</span>
 
-    <span class="c1">// this example implements Callable, so parsing, error handling and handling user</span>
-    <span class="c1">// requests for usage help or version help can be done with one line of code.</span>
-    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">...</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
-        <span class="kt">int</span> <span class="n">exitCode</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">CheckSum</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
-        <span class="nc">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="n">exitCode</span><span class="o">);</span>
-    <span class="o">}</span>
-
     <span class="nd">@Override</span>
     <span class="kd">public</span> <span class="nc">Integer</span> <span class="nf">call</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span> <span class="c1">// your business logic goes here...</span>
         <span class="kt">byte</span><span class="o">[]</span> <span class="n">fileContents</span> <span class="o">=</span> <span class="nc">Files</span><span class="o">.</span><span class="na">readAllBytes</span><span class="o">(</span><span class="n">file</span><span class="o">.</span><span class="na">toPath</span><span class="o">());</span>
@@ -1009,7 +1002,66 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
         <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">"%0"</span> <span class="o">+</span> <span class="o">(</span><span class="n">digest</span><span class="o">.</span><span class="na">length</span><span class="o">*</span><span class="mi">2</span><span class="o">)</span> <span class="o">+</span> <span class="s">"x%n"</span><span class="o">,</span> <span class="k">new</span> <span class="nc">BigInteger</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="n">digest</span><span class="o">));</span>
         <span class="k">return</span> <span class="mi">0</span><span class="o">;</span>
     <span class="o">}</span>
+
+    <span class="c1">// this example implements Callable, so parsing, error handling and handling user</span>
+    <span class="c1">// requests for usage help or version help can be done with one line of code.</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">...</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">exitCode</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">CheckSum</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="n">exitCode</span><span class="o">);</span>
+    <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div id="CheckSum-App-Groovy" class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.5.1'</span><span class="o">)</span>
+<span class="kn">import</span> <span class="nn">picocli.CommandLine</span>
+<span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.*</span>
+
+<span class="kn">import</span> <span class="nn">java.security.MessageDigest</span>
+<span class="kn">import</span> <span class="nn">java.util.concurrent.Callable</span>
+
+<span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">'checksum'</span><span class="o">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">version</span> <span class="o">=</span> <span class="s1">'checksum 4.0'</span><span class="o">,</span>
+  <span class="n">description</span> <span class="o">=</span> <span class="s1">'Prints the checksum (MD5 by default) of a file to STDOUT.'</span><span class="o">)</span>
+<span class="kd">class</span> <span class="nc">Checksum</span> <span class="kd">implements</span> <span class="n">Callable</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="o">{</span>
+
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s1">'0'</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s1">'The file whose checksum to calculate.'</span><span class="o">)</span>
+    <span class="n">File</span> <span class="n">file</span>
+
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">[</span><span class="s1">'-a'</span><span class="o">,</span> <span class="s1">'--algorithm'</span><span class="o">],</span> <span class="n">description</span> <span class="o">=</span> <span class="s1">'MD5, SHA-1, SHA-256, ...'</span><span class="o">)</span>
+    <span class="n">String</span> <span class="n">algorithm</span> <span class="o">=</span> <span class="s1">'MD5'</span>
+
+    <span class="n">Integer</span> <span class="nf">call</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+        <span class="n">println</span> <span class="n">MessageDigest</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">algorithm</span><span class="o">).</span><span class="na">digest</span><span class="o">(</span><span class="n">file</span><span class="o">.</span><span class="na">bytes</span><span class="o">).</span><span class="na">encodeHex</span><span class="o">().</span><span class="na">toString</span><span class="o">()</span>
+        <span class="mi">0</span>
+    <span class="o">}</span>
+
+    <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="k">new</span> <span class="n">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="n">Checksum</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">))</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div id="CheckSum-App-Groovy-Script" class="listingblock secondary">
+<div class="title">Groovy script</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.5.1'</span><span class="o">)</span>
+<span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.*</span>
+<span class="kn">import</span> <span class="nn">groovy.transform.Field</span>
+<span class="kn">import</span> <span class="nn">java.security.MessageDigest</span>
+
+<span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">'checksum'</span><span class="o">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">version</span> <span class="o">=</span> <span class="s1">'checksum 4.0'</span><span class="o">,</span>
+  <span class="n">description</span> <span class="o">=</span> <span class="s1">'Prints the checksum (MD5 by default) of a file to STDOUT.'</span><span class="o">)</span>
+<span class="nd">@picocli.groovy.PicocliScript</span>
+
+<span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s1">'0'</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s1">'The file whose checksum to calculate.'</span><span class="o">)</span>
+<span class="nd">@Field</span> <span class="n">File</span> <span class="n">file</span>
+
+<span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">[</span><span class="s1">'-a'</span><span class="o">,</span> <span class="s1">'--algorithm'</span><span class="o">],</span> <span class="n">description</span> <span class="o">=</span> <span class="s1">'MD5, SHA-1, SHA-256, ...'</span><span class="o">)</span>
+<span class="nd">@Field</span> <span class="n">String</span> <span class="n">algorithm</span> <span class="o">=</span> <span class="s1">'MD5'</span>
+
+<span class="n">println</span> <span class="n">MessageDigest</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">algorithm</span><span class="o">).</span><span class="na">digest</span><span class="o">(</span><span class="n">file</span><span class="o">.</span><span class="na">bytes</span><span class="o">).</span><span class="na">encodeHex</span><span class="o">().</span><span class="na">toString</span><span class="o">()</span></code></pre>
 </div>
 </div>
 <div id="CheckSum-App-Kotlin" class="listingblock secondary">
@@ -1027,7 +1079,7 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <span class="k">import</span> <span class="nn">java.util.concurrent.Callable</span>
 <span class="k">import</span> <span class="nn">kotlin.system.exitProcess</span>
 
-<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"checksum"</span><span class="p">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">version</span> <span class="p">=</span> <span class="p">[</span><span class="s">"checksum 4.5.1"</span><span class="p">],</span>
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"checksum"</span><span class="p">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">version</span> <span class="p">=</span> <span class="p">[</span><span class="s">"checksum 4.0"</span><span class="p">],</span>
     <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Prints the checksum (MD5 by default) of a file to STDOUT."</span><span class="p">])</span>
 <span class="kd">class</span> <span class="nc">Checksum</span> <span class="p">:</span> <span class="nc">Callable</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;</span> <span class="p">{</span>
 
@@ -1046,6 +1098,43 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <span class="p">}</span>
 
 <span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">:</span> <span class="nc">Unit</span> <span class="p">=</span> <span class="nf">exitProcess</span><span class="p">(</span><span class="nc">CommandLine</span><span class="p">(</span><span class="nc">Checksum</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">))</span></code></pre>
+</div>
+</div>
+<div id="CheckSum-App-Scala" class="listingblock secondary">
+<div class="title">Scala</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="scala"><span class="k">import</span> <span class="nn">picocli.CommandLine</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine.</span><span class="o">{</span><span class="nc">Command</span><span class="o">,</span> <span class="nc">Option</span><span class="o">,</span> <span class="nc">Parameters</span><span class="o">}</span>
+
+<span class="k">import</span> <span class="nn">java.io.File</span>
+<span class="k">import</span> <span class="nn">java.math.BigInteger</span>
+<span class="k">import</span> <span class="nn">java.nio.file.Files</span>
+<span class="k">import</span> <span class="nn">java.security.MessageDigest</span>
+<span class="k">import</span> <span class="nn">java.util.concurrent.Callable</span>
+
+<span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"checksum"</span><span class="o">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="k">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">version</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"checksum 4.0"</span><span class="o">),</span>
+  <span class="n">description</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"Prints the checksum (MD5 by default) of a file to STDOUT."</span><span class="o">))</span>
+<span class="k">class</span> <span class="nc">Checksum</span> <span class="k">extends</span> <span class="nc">Callable</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="o">{</span>
+
+  <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="k">=</span> <span class="s">"0"</span><span class="o">,</span> <span class="n">description</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"The file whose checksum to calculate."</span><span class="o">))</span>
+  <span class="k">private</span> <span class="k">val</span> <span class="nv">file</span> <span class="k">:</span> <span class="kt">File</span> <span class="o">=</span> <span class="kc">null</span>
+
+  <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"-a"</span><span class="o">,</span> <span class="s">"--algorithm"</span><span class="o">),</span> <span class="n">description</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"MD5, SHA-1, SHA-256, ..."</span><span class="o">))</span>
+  <span class="k">private</span> <span class="k">var</span> <span class="n">algorithm</span> <span class="k">=</span> <span class="s">"MD5"</span>
+
+  <span class="k">def</span> <span class="nf">call</span><span class="o">()</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="k">val</span> <span class="nv">fileContents</span> <span class="k">=</span> <span class="nv">Files</span><span class="o">.</span><span class="py">readAllBytes</span><span class="o">(</span><span class="nv">file</span><span class="o">.</span><span class="py">toPath</span><span class="o">)</span>
+    <span class="k">val</span> <span class="nv">digest</span> <span class="k">=</span> <span class="nv">MessageDigest</span><span class="o">.</span><span class="py">getInstance</span><span class="o">(</span><span class="n">algorithm</span><span class="o">).</span><span class="py">digest</span><span class="o">(</span><span class="n">fileContents</span><span class="o">)</span>
+    <span class="nf">println</span><span class="o">((</span><span class="s">"%0"</span> <span class="o">+</span> <span class="nv">digest</span><span class="o">.</span><span class="py">size</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="s">"x"</span><span class="o">).</span><span class="py">format</span><span class="o">(</span><span class="k">new</span> <span class="nc">BigInteger</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="n">digest</span><span class="o">)))</span>
+    <span class="mi">0</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="k">object</span> <span class="nc">Checksum</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="nf">main</span><span class="o">(</span><span class="n">args</span><span class="k">:</span> <span class="kt">Array</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="nv">System</span><span class="o">.</span><span class="py">exit</span><span class="o">(</span><span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">Checksum</span><span class="o">()).</span><span class="py">execute</span><span class="o">(</span><span class="n">args</span><span class="k">:</span> <span class="k">_</span><span class="kt">*</span><span class="o">))</span>
+  <span class="o">}</span>
+<span class="o">}</span></code></pre>
 </div>
 </div>
 <div class="admonitionblock tip">
@@ -11176,7 +11265,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.1<br>
-Last updated 2020-10-06 11:25:57 +0900
+Last updated 2020-10-08 10:21:14 +0900
 </div>
 </div>
 <style>
