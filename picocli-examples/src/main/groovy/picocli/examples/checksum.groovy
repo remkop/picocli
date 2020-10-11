@@ -1,22 +1,32 @@
 package picocli.examples
 
-@Grab('info.picocli:picocli-groovy:4.1.1')
-@GrabExclude('org.codehaus.groovy:groovy-all')
-@picocli.groovy.PicocliScript
-import groovy.transform.Field
-import java.security.MessageDigest
+@Grab('info.picocli:picocli-groovy:4.5.1')
+import picocli.CommandLine
 import static picocli.CommandLine.*
 
-@Parameters(arity = "1", paramLabel = "FILE", description = "The file(s) whose checksum to calculate.")
-@Field private File[] files
+import java.security.MessageDigest
+import java.util.concurrent.Callable
 
-@Option(names = ["-a", "--algorithm"], description = ["MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512,",
-        "  or any other MessageDigest algorithm."])
-@Field private String algorithm = "MD5"
+@Command(name = 'checksum', mixinStandardHelpOptions = true, version = 'checksum 4.0',
+        description = 'Print a checksum of each specified FILE, using the specified MessageDigest algorithm.')
+class Checksum implements Callable<Integer> {
 
-@Option(names = ["-h", "--help"], usageHelp = true, description = "Show this help message and exit.")
-@Field private boolean helpRequested
+    @Parameters(arity = '1', paramLabel = 'FILE', description = 'The file(s) whose checksum to calculate.')
+    File[] files
 
-files.each {
-    println MessageDigest.getInstance(algorithm).digest(it.bytes).encodeHex().toString() + "\t" + it
+    @Option(names = ['-a', '--algorithm'], description = ['MD2, MD5, SHA-1, SHA-256, SHA-384, SHA-512,',
+            '  or any other MessageDigest algorithm.'])
+    String algorithm = 'MD5'
+
+    Integer call() throws Exception {
+        files.each {
+            byte[] digest = MessageDigest.getInstance(algorithm).digest(it.bytes)
+            println digest.encodeHex().toString() + "\t" + it
+        }
+        0
+    }
+
+    static void main(String[] args) {
+        System.exit(new CommandLine(new Checksum()).execute(args))
+    }
 }
