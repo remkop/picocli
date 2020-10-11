@@ -258,6 +258,7 @@ asciidoctor {
     outputDir = file('build/docs')
     logDocuments = true
     configurations 'tabbedCodeExt'
+    baseDirFollowsSourceDir()
 //    backends 'pdf', 'html'
 //    attributes 'sourcedir': file('docs') //project.sourceSets.main.java.srcDirs[0]
 ////    attributes 'pdf-stylesdir': 'theme',
