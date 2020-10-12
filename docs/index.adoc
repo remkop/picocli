@@ -4753,7 +4753,8 @@ This will allow you to parse the command line, deal with requests for help and r
 
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "foo", subcommands = Bar.class)
 class Foo implements Callable<Integer> {
@@ -4786,7 +4787,39 @@ class Bar implements Callable<Integer> {
         return 45;
     }
 }
+----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "foo", subcommands = [ Bar::class ])
+class Foo : Callable<Int> {
+    @Option(names = ["-x"]) var x: Int = 0
+
+    override fun call(): Int {
+        println("hi from foo, x=$x")
+        var ok : Boolean = true
+        return if (ok) 0 else 1 // exit code
+    }
+}
+
+fun main(args: Array<String>) : Unit = exitProcess(CommandLine(Foo()).execute(*args))
+
+@Command(name = "bar", description = ["I'm a subcommand of `foo`"])
+class Bar : Callable<Int> {
+    @Option(names = ["-y"]) var y: Int = 0
+
+    override fun call(): Int {
+        println("hi form bar, y=$y")
+        return 23
+    }
+
+    @Command(name = "baz", description = ["I'm a subcommand of `bar`"])
+    fun baz( @CommandLine.Option(names = ["-z"]) z : Int) : Int {
+        println("hi from baz, z=$z")
+        return 45
+    }
+}
 ----
 
 To test our example on Linux, we created an alias `foo` that invokes our Java application. This could also be a script or a function that calls our Java program:
