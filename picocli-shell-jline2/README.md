@@ -33,6 +33,16 @@ get command line TAB auto-completion for a picocli-based application running in 
 
 ## Example
 
+### Maven 
+
+```xml
+<dependency>
+    <groupId>info.picocli</groupId>
+    <artifactId>picocli-shell-jline2</artifactId>
+    <version>4.5.1</version>
+</dependency>
+```
+
 ```java
 import java.io.IOException;
 import java.io.PrintWriter;

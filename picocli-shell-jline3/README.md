@@ -67,6 +67,16 @@ JLine [Wiki](https://github.com/jline/jline3/wiki) and some more [Demos](https:/
 
 ## Example
 
+### Maven 
+
+```xml
+<dependency>
+    <groupId>info.picocli</groupId>
+    <artifactId>picocli-shell-jline3</artifactId>
+    <version>4.5.1</version>
+</dependency>
+```
+
 ### Older versions
 
 See examples for older versions on the [wiki](https://github.com/remkop/picocli/wiki/JLine-3-Examples).
