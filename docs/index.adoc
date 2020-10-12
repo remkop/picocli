@@ -4230,9 +4230,9 @@ Usage: myapp [-hV] [-o=<outputFolder>]
 The minimum value that can be specified for `longOptionsMaxWidth` is 20, the maximum value is the <<Usage Width,usage width>> minus `20`.
 
 == ANSI Colors and Styles
-=== Colorized Example
-
 Using colors in your command's output does not just look good: by *contrasting* important elements like option names from the rest of the message, it *reduces the cognitive load* on the user.
+
+=== Colorized Example
 
 Below shows the same usage help message as shown in <<Expanded Example>>, with ANSI escape codes enabled.
 
