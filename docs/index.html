@@ -1972,8 +1972,10 @@ Check <a href="https://github.com/remkop/picocli/wiki/Feedback-from-Users">what 
 <h3 id="_overview"><a class="anchor" href="#_overview"></a>1.1. Overview</h3>
 <div class="paragraph">
 <p>Picocli is a one-file framework for creating Java command line applications with almost zero code.
-It supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more and generates highly customizable usage help messages with <a href="#_ansi_colors_and_styles">ANSI colors and styles</a>.
-Picocli-based applications can have <a href="autocomplete.html">command line TAB completion</a> showing available options, option parameters and subcommands, for any level of nested subcommands.
+It supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more. It generates highly customizable usage help messages that use <a href="#_ansi_colors_and_styles">ANSI colors and styles</a> to contrast important elements and reduce the cognitive load on the user.</p>
+</div>
+<div class="paragraph">
+<p>Picocli-based applications can have <a href="autocomplete.html">command line TAB completion</a> showing available options, option parameters and subcommands, for any level of nested subcommands.
 Picocli-based applications can be ahead-of-time compiled to a <span class="image"><img src="https://www.graalvm.org/resources/img/logo-colored.svg" alt="GraalVM"></span>
 <a href="#_graalvm_native_image">native image</a>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.</p>
 </div>
@@ -7857,6 +7859,9 @@ but by default this column does not grow larger than 20 characters.</p>
 <div class="sectionbody">
 <div class="sect2">
 <h3 id="_colorized_example"><a class="anchor" href="#_colorized_example"></a>15.1. Colorized Example</h3>
+<div class="paragraph">
+<p>Using colors in your command&#8217;s output does not just look good: by <strong>contrasting</strong> important elements like option names from the rest of the message, it <strong>reduces the cognitive load</strong> on the user.</p>
+</div>
 <div class="paragraph">
 <p>Below shows the same usage help message as shown in <a href="#_expanded_example">Expanded Example</a>, with ANSI escape codes enabled.</p>
 </div>

@@ -46,7 +46,8 @@ Check https://github.com/remkop/picocli/wiki/Feedback-from-Users[what happy user
 
 === Overview
 Picocli is a one-file framework for creating Java command line applications with almost zero code.
-It supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more and generates highly customizable usage help messages with <<ANSI Colors and Styles,ANSI colors and styles>>.
+It supports a variety of command line syntax styles including POSIX, GNU, MS-DOS and more. It generates highly customizable usage help messages that use <<ANSI Colors and Styles,ANSI colors and styles>> to contrast important elements and reduce the cognitive load on the user.
+
 Picocli-based applications can have link:autocomplete.html[command line TAB completion] showing available options, option parameters and subcommands, for any level of nested subcommands.
 Picocli-based applications can be ahead-of-time compiled to a image:https://www.graalvm.org/resources/img/logo-colored.svg[GraalVM]
 <<GraalVM Native Image,native image>>, with extremely fast startup time and lower memory requirements, which can be distributed as a single executable file.
@@ -4230,6 +4231,8 @@ The minimum value that can be specified for `longOptionsMaxWidth` is 20, the max
 
 == ANSI Colors and Styles
 === Colorized Example
+
+Using colors in your command's output does not just look good: by *contrasting* important elements like option names from the rest of the message, it *reduces the cognitive load* on the user.
 
 Below shows the same usage help message as shown in <<Expanded Example>>, with ANSI escape codes enabled.
 
