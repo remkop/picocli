@@ -8636,17 +8636,17 @@ The specified name is used by the parser to recognize subcommands in the command
 <div class="title">Kotlin</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">commandLine</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">Git</span><span class="p">())</span>
-        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"status"</span><span class="p">,</span> <span class="nc">GitStatus</span><span class="p">())</span>
-        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"commit"</span><span class="p">,</span> <span class="nc">GitCommit</span><span class="p">())</span>
-        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"add"</span><span class="p">,</span> <span class="nc">GitAdd</span><span class="p">())</span>
-        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"branch"</span><span class="p">,</span> <span class="nc">GitBranch</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"status"</span><span class="p">,</span>   <span class="nc">GitStatus</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"commit"</span><span class="p">,</span>   <span class="nc">GitCommit</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"add"</span><span class="p">,</span>      <span class="nc">GitAdd</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"branch"</span><span class="p">,</span>   <span class="nc">GitBranch</span><span class="p">())</span>
         <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"checkout"</span><span class="p">,</span> <span class="nc">GitCheckout</span><span class="p">())</span>
-        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"clone"</span><span class="p">,</span> <span class="nc">GitClone</span><span class="p">())</span>
-        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"diff"</span><span class="p">,</span> <span class="nc">GitDiff</span><span class="p">())</span>
-        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"merge"</span><span class="p">,</span> <span class="nc">GitMerge</span><span class="p">())</span>
-        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"push"</span><span class="p">,</span> <span class="nc">GitPush</span><span class="p">())</span>
-        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"rebase"</span><span class="p">,</span> <span class="nc">GitRebase</span><span class="p">())</span>
-        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"tag"</span><span class="p">,</span> <span class="nc">GitTag</span><span class="p">())</span></code></pre>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"clone"</span><span class="p">,</span>    <span class="nc">GitClone</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"diff"</span><span class="p">,</span>     <span class="nc">GitDiff</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"merge"</span><span class="p">,</span>    <span class="nc">GitMerge</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"push"</span><span class="p">,</span>     <span class="nc">GitPush</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"rebase"</span><span class="p">,</span>   <span class="nc">GitRebase</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"tag"</span><span class="p">,</span>      <span class="nc">GitTag</span><span class="p">())</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -8722,8 +8722,8 @@ adding subcommands.
 <div class="listingblock secondary">
 <div class="title">Kotlin</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"foo"</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span> <span class="nc">Bar</span><span class="o">::</span><span class="kd">class</span> <span class="err">])
-class </span><span class="nc">Foo</span> <span class="p">:</span> <span class="nc">Callable</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;</span> <span class="p">{</span>
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"foo"</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span><span class="nc">Bar</span><span class="o">::</span><span class="k">class</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">Foo</span> <span class="p">:</span> <span class="nc">Callable</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;</span> <span class="p">{</span>
     <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">x</span><span class="p">:</span> <span class="nc">Int</span> <span class="p">=</span> <span class="mi">0</span>
 
     <span class="k">override</span> <span class="k">fun</span> <span class="nf">call</span><span class="p">():</span> <span class="nc">Int</span> <span class="p">{</span>
@@ -8753,7 +8753,8 @@ class </span><span class="nc">Foo</span> <span class="p">:</span> <span class="n
 </div>
 </div>
 <div class="paragraph">
-<p>To test our example on Linux, we created an alias <code>foo</code> that invokes our Java application. This could also be a script or a function that calls our Java program:</p>
+<p>To test our example on Linux, we created an alias <code>foo</code> that invokes our Java application.
+This could also be a script or a function that calls our Java program:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -8845,8 +8846,9 @@ With a single command, you can simply do this in the beginning of the <code>run<
 <div class="listingblock secondary">
 <div class="title">Kotlin</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@CommandLine</span><span class="p">.</span><span class="nc">Command</span><span class="p">(</span><span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span><span class="nc">Sub1</span><span class="o">::</span><span class="k">class</span><span class="p">,</span> <span class="nc">Sub2</span><span class="o">::</span><span class="k">class</span><span class="p">,</span> <span class="nc">Sub3</span><span class="o">::</span><span class="k">class</span><span class="p">])</span>
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span><span class="nc">Sub1</span><span class="o">::</span><span class="k">class</span><span class="p">,</span> <span class="nc">Sub2</span><span class="o">::</span><span class="k">class</span><span class="p">,</span> <span class="nc">Sub3</span><span class="o">::</span><span class="k">class</span><span class="p">])</span>
 <span class="kd">class</span> <span class="nc">MyApp</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+
     <span class="c1">// A reference to this method can be used as a custom execution strategy</span>
     <span class="c1">// that first calls the init() method,</span>
     <span class="c1">// and then delegates to the default execution strategy.</span>
@@ -8884,15 +8886,18 @@ With a single command, you can simply do this in the beginning of the <code>run<
 <div class="sect2">
 <h3 id="parentcommand-annotation"><a class="anchor" href="#parentcommand-annotation"></a>17.7. <code>@ParentCommand</code> Annotation</h3>
 <div class="paragraph">
-<p>In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.</p>
+<p>In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands.
+Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.</p>
 </div>
 <div class="paragraph">
-<p>The <code>@ParentCommand</code> annotation introduced in picocli 2.2 makes it easy for subcommands to access their parent command options: subcommand fields annotated with <code>@ParentCommand</code> are initialized with a reference to the parent command. For example:</p>
+<p>The <code>@ParentCommand</code> annotation introduced in picocli 2.2 makes it easy for subcommands to access their parent command options:
+subcommand fields annotated with <code>@ParentCommand</code> are initialized with a reference to the parent command.
+For example:</p>
 </div>
 <div class="listingblock primary">
 <div class="title">Java</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"fileutils"</span><span class="o">,</span> <span class="n">subcommands</span> <span class="o">=</span> <span class="nc">List</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"fileutils"</span><span class="o">,</span> <span class="n">subcommands</span> <span class="o">=</span> <span class="nc">ListFiles</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">FileUtils</span> <span class="o">{</span>
 
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-d"</span><span class="o">,</span> <span class="s">"--directory"</span><span class="o">},</span>
@@ -8904,7 +8909,7 @@ With a single command, you can simply do this in the beginning of the <code>run<
 <div class="listingblock secondary">
 <div class="title">Kotlin</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@CommandLine</span><span class="p">.</span><span class="nc">Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"fileutils"</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span><span class="nc">List</span><span class="o">::</span><span class="k">class</span><span class="p">])</span>
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"fileutils"</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span><span class="nc">ListFiles</span><span class="o">::</span><span class="k">class</span><span class="p">])</span>
 <span class="kd">class</span> <span class="nc">FileUtils</span> <span class="p">{</span>
 
     <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-d"</span><span class="p">,</span> <span class="s">"--directory"</span><span class="p">],</span>
@@ -8915,13 +8920,13 @@ With a single command, you can simply do this in the beginning of the <code>run<
 </div>
 <div class="paragraph">
 <p>The above top-level command has a <code>--directory</code> option that applies to its subcommands.
-The <code>List</code> subcommand can use the <code>@ParentCommand</code> annotation to get a reference to the parent command, so it can easily access the parent command options.</p>
+The <code>ListFiles</code> subcommand can use the <code>@ParentCommand</code> annotation to get a reference to the parent command, so it can easily access the parent command options.</p>
 </div>
 <div class="listingblock primary">
 <div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"list"</span><span class="o">)</span>
-<span class="kd">class</span> <span class="nc">List</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
+<span class="kd">class</span> <span class="nc">ListFiles</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
 
     <span class="nd">@ParentCommand</span>
     <span class="kd">private</span> <span class="nc">FileUtils</span> <span class="n">parent</span><span class="o">;</span> <span class="c1">// picocli injects reference to parent command</span>
@@ -8954,7 +8959,7 @@ The <code>List</code> subcommand can use the <code>@ParentCommand</code> annotat
 <div class="title">Kotlin</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"list"</span><span class="p">)</span>
-<span class="kd">class</span> <span class="nc">List</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+<span class="kd">class</span> <span class="nc">ListFiles</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
 
     <span class="nd">@ParentCommand</span>
     <span class="k">private</span> <span class="kd">val</span> <span class="py">parent</span><span class="p">:</span> <span class="nc">FileUtils</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span> <span class="c1">// picocli injects reference to parent command</span>
@@ -8964,7 +8969,7 @@ The <code>List</code> subcommand can use the <code>@ParentCommand</code> annotat
     <span class="k">private</span> <span class="kd">var</span> <span class="py">recursive</span> <span class="p">=</span> <span class="k">false</span>
 
     <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
-            <span class="nf">list</span><span class="p">(</span><span class="nc">File</span><span class="p">(</span><span class="n">parent</span><span class="o">!!</span><span class="p">.</span><span class="n">baseDirectory</span><span class="p">,</span> <span class="s">"."</span><span class="p">))</span>
+        <span class="nf">list</span><span class="p">(</span><span class="nc">File</span><span class="p">(</span><span class="n">parent</span><span class="o">!!</span><span class="p">.</span><span class="n">baseDirectory</span><span class="p">,</span> <span class="s">"."</span><span class="p">))</span>
     <span class="p">}</span>
 
     <span class="k">private</span> <span class="k">fun</span> <span class="nf">list</span><span class="p">(</span><span class="n">dir</span><span class="p">:</span> <span class="nc">File</span><span class="p">)</span> <span class="p">{</span>
@@ -12463,7 +12468,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.1<br>
-Last updated 2020-10-14 06:59:30 +0900
+Last updated 2020-10-14 07:13:19 +0900
 </div>
 </div>
 <style>

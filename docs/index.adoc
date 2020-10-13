@@ -4756,17 +4756,17 @@ CommandLine commandLine = new CommandLine(new Git())
 [source,kotlin,role="secondary"]
 ----
 val commandLine = CommandLine(Git())
-        .addSubcommand("status", GitStatus())
-        .addSubcommand("commit", GitCommit())
-        .addSubcommand("add", GitAdd())
-        .addSubcommand("branch", GitBranch())
+        .addSubcommand("status",   GitStatus())
+        .addSubcommand("commit",   GitCommit())
+        .addSubcommand("add",      GitAdd())
+        .addSubcommand("branch",   GitBranch())
         .addSubcommand("checkout", GitCheckout())
-        .addSubcommand("clone", GitClone())
-        .addSubcommand("diff", GitDiff())
-        .addSubcommand("merge", GitMerge())
-        .addSubcommand("push", GitPush())
-        .addSubcommand("rebase", GitRebase())
-        .addSubcommand("tag", GitTag())
+        .addSubcommand("clone",    GitClone())
+        .addSubcommand("diff",     GitDiff())
+        .addSubcommand("merge",    GitMerge())
+        .addSubcommand("push",     GitPush())
+        .addSubcommand("rebase",   GitRebase())
+        .addSubcommand("tag",      GitTag())
 ----
 
 It is strongly recommended that subcommands have a `@Command` annotation with `name` and `description` attributes.
@@ -4827,7 +4827,7 @@ class Bar implements Callable<Integer> {
 .Kotlin
 [source,kotlin,role="secondary"]
 ----
-@Command(name = "foo", subcommands = [ Bar::class ])
+@Command(name = "foo", subcommands = [Bar::class])
 class Foo : Callable<Int> {
     @Option(names = ["-x"]) var x: Int = 0
 
@@ -4857,7 +4857,8 @@ class Bar : Callable<Int> {
 }
 ----
 
-To test our example on Linux, we created an alias `foo` that invokes our Java application. This could also be a script or a function that calls our Java program:
+To test our example on Linux, we created an alias `foo` that invokes our Java application.
+This could also be a script or a function that calls our Java program:
 [source,bash]
 ----
 alias foo='java Foo'
@@ -4941,8 +4942,9 @@ class MyApp implements Runnable {
 .Kotlin
 [source,kotlin,role="secondary"]
 ----
-@CommandLine.Command(subcommands = [Sub1::class, Sub2::class, Sub3::class])
+@Command(subcommands = [Sub1::class, Sub2::class, Sub3::class])
 class MyApp : Runnable {
+
     // A reference to this method can be used as a custom execution strategy
     // that first calls the init() method,
     // and then delegates to the default execution strategy.
@@ -4976,14 +4978,17 @@ The https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java
 
 [#parentcommand-annotation]
 === `@ParentCommand` Annotation
-In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands. Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.
+In command line applications with subcommands, options of the top level command are often intended as "global" options that apply to all the subcommands.
+Prior to picocli 2.2, subcommands had no easy way to access their parent command options unless the parent command made these values available in a global variable.
 
-The `@ParentCommand` annotation introduced in picocli 2.2 makes it easy for subcommands to access their parent command options: subcommand fields annotated with `@ParentCommand` are initialized with a reference to the parent command. For example:
+The `@ParentCommand` annotation introduced in picocli 2.2 makes it easy for subcommands to access their parent command options:
+subcommand fields annotated with `@ParentCommand` are initialized with a reference to the parent command.
+For example:
 
 .Java
 [source,java,role="primary"]
 ----
-@Command(name = "fileutils", subcommands = List.class)
+@Command(name = "fileutils", subcommands = ListFiles.class)
 class FileUtils {
 
     @Option(names = {"-d", "--directory"},
@@ -4995,7 +5000,7 @@ class FileUtils {
 .Kotlin
 [source,kotlin,role="secondary"]
 ----
-@CommandLine.Command(name = "fileutils", subcommands = [List::class])
+@Command(name = "fileutils", subcommands = [ListFiles::class])
 class FileUtils {
 
     @Option(names = ["-d", "--directory"],
@@ -5005,13 +5010,13 @@ class FileUtils {
 ----
 
 The above top-level command has a `--directory` option that applies to its subcommands.
-The `List` subcommand can use the `@ParentCommand` annotation to get a reference to the parent command, so it can easily access the parent command options.
+The `ListFiles` subcommand can use the `@ParentCommand` annotation to get a reference to the parent command, so it can easily access the parent command options.
 
 .Java
 [source,java,role="primary"]
 ----
 @Command(name = "list")
-class List implements Runnable {
+class ListFiles implements Runnable {
 
     @ParentCommand
     private FileUtils parent; // picocli injects reference to parent command
@@ -5044,7 +5049,7 @@ class List implements Runnable {
 [source,kotlin,role="secondary"]
 ----
 @Command(name = "list")
-class List : Runnable {
+class ListFiles : Runnable {
 
     @ParentCommand
     private val parent: FileUtils? = null // picocli injects reference to parent command
@@ -5054,7 +5059,7 @@ class List : Runnable {
     private var recursive = false
 
     override fun run() {
-            list(File(parent!!.baseDirectory, "."))
+        list(File(parent!!.baseDirectory, "."))
     }
 
     private fun list(dir: File) {
