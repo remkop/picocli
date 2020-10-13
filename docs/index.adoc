@@ -4673,7 +4673,8 @@ If you want to jump ahead and see some examples first, these resources may be he
 Subcommands can be registered declaratively with the `@Command` annotation's `subcommands` attribute since picocli 0.9.8.
 This is the recommended way when you want to use the picocli <<Annotation Processor,annotation processor>> to <<Generate Man Page Documentation,generate documentation>>, <<TAB Autocomplete,autocompletion scripts>> or <<GraalVM Native Image,GraalVM configuration files>>.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(subcommands = {
     GitStatus.class,
@@ -4688,6 +4689,25 @@ This is the recommended way when you want to use the picocli <<Annotation Proces
     GitRebase.class,
     GitTag.class
 })
+public class Git { ... }
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(subcommands = [
+    GitStatus::class,
+    GitCommit::class,
+    GitAdd::class,
+    GitBranch::class,
+    GitCheckout::class,
+    GitClone::class,
+    GitDiff::class,
+    GitMerge::class,
+    GitPush::class,
+    GitRebase::class,
+    GitTag::class
+])
 public class Git { ... }
 ----
 
@@ -4715,7 +4735,8 @@ Subcommands can be registered with the `CommandLine.addSubcommand` method.
 You pass in the name of the command and the annotated object to populate with the subcommand options.
 The specified name is used by the parser to recognize subcommands in the command line arguments.
 
-[source,java]
+.Java
+[source,java,,role="primary"]
 ----
 CommandLine commandLine = new CommandLine(new Git())
         .addSubcommand("status",   new GitStatus())
@@ -4730,6 +4751,24 @@ CommandLine commandLine = new CommandLine(new Git())
         .addSubcommand("rebase",   new GitRebase())
         .addSubcommand("tag",      new GitTag());
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val commandLine = CommandLine(Git())
+        .addSubcommand("status", GitStatus())
+        .addSubcommand("commit", GitCommit())
+        .addSubcommand("add", GitAdd())
+        .addSubcommand("branch", GitBranch())
+        .addSubcommand("checkout", GitCheckout())
+        .addSubcommand("clone", GitClone())
+        .addSubcommand("diff", GitDiff())
+        .addSubcommand("merge", GitMerge())
+        .addSubcommand("push", GitPush())
+        .addSubcommand("rebase", GitRebase())
+        .addSubcommand("tag", GitTag())
+----
+
 It is strongly recommended that subcommands have a `@Command` annotation with `name` and `description` attributes.
 
 From picocli 3.1, the usage help synopsis of the subcommand shows not only the subcommand name but also the parent command name.
@@ -4870,7 +4909,8 @@ With a single command, you can simply do this in the beginning of the `run` or `
 
 One idea is to put the shared initialization logic in a custom execution strategy. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(subcommands = {Sub1.class, Sub2.class, Sub3.class})
 class MyApp implements Runnable {
@@ -4894,7 +4934,39 @@ class MyApp implements Runnable {
                 .execute(args);
     }
 
-    //...
+    // ...
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@CommandLine.Command(subcommands = [Sub1::class, Sub2::class, Sub3::class])
+class MyApp : Runnable {
+    // A reference to this method can be used as a custom execution strategy
+    // that first calls the init() method,
+    // and then delegates to the default execution strategy.
+    private fun executionStrategy(parseResult: ParseResult): Int {
+        init() // custom initialization to be done before executing any command or subcommand
+        return RunLast().execute(parseResult) // default execution strategy
+    }
+
+    private fun init() {
+        // ...
+    }
+
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val app = MyApp()
+            CommandLine(app)
+                .setExecutionStrategy {
+                     parseResult: ParseResult -> app.executionStrategy(parseResult) }
+                .execute(*args)
+        }
+    }
+
+    // ...
 }
 ----
 
@@ -4908,7 +4980,8 @@ In command line applications with subcommands, options of the top level command 
 
 The `@ParentCommand` annotation introduced in picocli 2.2 makes it easy for subcommands to access their parent command options: subcommand fields annotated with `@ParentCommand` are initialized with a reference to the parent command. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "fileutils", subcommands = List.class)
 class FileUtils {
@@ -4919,10 +4992,23 @@ class FileUtils {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@CommandLine.Command(name = "fileutils", subcommands = [List::class])
+class FileUtils {
+
+    @Option(names = ["-d", "--directory"],
+            description = ["this option applies to all subcommands"])
+    var baseDirectory: File? = null
+}
+----
+
 The above top-level command has a `--directory` option that applies to its subcommands.
 The `List` subcommand can use the `@ParentCommand` annotation to get a reference to the parent command, so it can easily access the parent command options.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "list")
 class List implements Runnable {
@@ -4954,11 +5040,52 @@ class List implements Runnable {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "list")
+class List : Runnable {
+
+    @ParentCommand
+    private val parent: FileUtils? = null // picocli injects reference to parent command
+
+    @Option(names = ["-r", "--recursive"],
+            description = ["Recursively list subdirectories"])
+    private var recursive = false
+
+    override fun run() {
+            list(File(parent!!.baseDirectory, "."))
+    }
+
+    private fun list(dir: File) {
+        println(dir.absolutePath)
+        if (dir.isDirectory) {
+            for (f in dir.listFiles()) {
+                if (f.isDirectory && recursive) {
+                    list(f)
+                } else {
+                    println(f.absolutePath)
+                }
+            }
+        }
+    }
+}
+----
+
 === Subcommand Aliases
 Commands may optionally define an `aliases` attribute to provide alternate names for commands that will be recognized by the parser. Aliases are displayed in the default help output. For example:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "status", aliases = {"st"}, description = "Show the working tree status.")
+class GitStatus { ... }
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "status", aliases = ["st"], description = ["Show the working tree status."])
 class GitStatus { ... }
 ----
 
