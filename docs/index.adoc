@@ -2686,11 +2686,7 @@ public class User implements Runnable {
 
     @Override
     public String toString() {
-        return "User{" +
-                "name='" + name + '\'' +
-                ", age=" + age +
-                ", email='" + email + '\'' +
-                '}';
+        return String.format("User{name='%s', age=%s, email='%s'}", name, age, email);
     }
 
     public static void main(String... args) {
