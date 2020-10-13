@@ -31,9 +31,7 @@ The picocli user manual is [here](https://picocli.info), and the GitHub project 
 `PicocliJLineCompleter` is a small component that generates completion candidates to allow users to
 get command line TAB auto-completion for a picocli-based application running in a JLine 2 shell.
 
-## Example
-
-### Maven 
+## Maven 
 
 ```xml
 <dependency>
@@ -42,6 +40,8 @@ get command line TAB auto-completion for a picocli-based application running in 
     <version>4.5.1</version>
 </dependency>
 ```
+
+## Example
 
 ```java
 import java.io.IOException;
