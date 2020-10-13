@@ -50,6 +50,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1203] DOC: Replace 'coderay' source code highlighter with 'rouge' to support Kotlin, Scala and Groovy. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1205] DOC: User manual `checksum` example: add more tabs for Groovy, Groovy script and Scala. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1208] DOC: Fix: Show copy buttons in code blocks with latest Asciidoctor gradle plugin. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1209] DOC: Show Maven coordinates in JLine2/3 README. Thanks to [Jiří Holuša](https://github.com/Holmistr) for the pull request.
 * [#1192] Dependency Upgrade: Bump AsciiDoctor to 2.1.0 from 1.6.2. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 ## <a name="4.5.2-deprecated"></a> Deprecations
