@@ -439,7 +439,7 @@ publishing {
 
 /*
 Release procedure:
-1. edit version numbers: remove -SNAPSHOT classifier
+1. edit version numbers: remove -SNAPSHOT classifier; edit releaseDate
 2. gradlew bumpVersion
 3. check modified files
 4. gradlew clean build

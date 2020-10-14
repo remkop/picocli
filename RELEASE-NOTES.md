@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="4.5.2"></a> Picocli 4.5.2 (UNRELEASED)
+# <a name="4.5.2"></a> Picocli 4.5.2
 The picocli community is pleased to announce picocli 4.5.2.
 
 This release contains bug fixes and enhancements:
@@ -13,7 +13,7 @@ This release contains bug fixes and enhancements:
 * The user manual now has tabs showing examples in languages other than Java.
   This is a work in progress: many examples still only have a Java version.
   Contributions welcome!
-* Many, many documentation enhancements, most of which were contributed by the community.
+* Many, many documentation enhancements, most of which contributed by the community.
 
 Many thanks to the picocli community who contributed 28 pull requests in this release!
 Please see the Fixed Issues section below for the individual contributors. Great work!

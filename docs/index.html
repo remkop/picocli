@@ -1475,163 +1475,88 @@ new ClipboardJS('.clipboard', {
 });
 </script>
 <style>
-
 .hidden {
-
     display: none;
-
 }
-
-
 
 .switch {
-
     border-width: 1px 1px 0 1px;
-
     border-style: solid;
-
     border-color: #7a2518;
-
     display: inline-block;
-
 }
-
-
 
 .switch--item {
-
     padding: 10px;
-
     background-color: #ffffff;
-
     color: #7a2518;
-
     display: inline-block;
-
     cursor: pointer;
-
 }
-
-
 
 .switch--item.selected {
-
     background-color: #7a2519;
-
     color: #ffffff;
-
 }
-
-
 
 </style>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
-
 <script type="text/javascript">
-
 function addBlockSwitches() {
-
     $('.primary').each(function() {
-
         primary = $(this);
-
         createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
-
         primary.children('.title').remove();
-
     });
-
     $('.secondary').each(function(idx, node) {
-
         secondary = $(node);
-
         primary = findPrimary(secondary);
-
         switchItem = createSwitchItem(secondary, primary.children('.switch'));
-
         switchItem.content.addClass('hidden');
-
         findPrimary(secondary).append(switchItem.content);
-
         secondary.remove();
-
     });
-
 }
-
-
 
 function createBlockSwitch(primary) {
-
     blockSwitch = $('<div class="switch"></div>');
-
     primary.prepend(blockSwitch);
-
     return blockSwitch;
-
 }
-
-
 
 function findPrimary(secondary) {
-
     candidate = secondary.prev();
-
     while (!candidate.is('.primary')) {
-
         candidate = candidate.prev();
-
     }
-
     return candidate;
-
 }
-
-
 
 function createSwitchItem(block, blockSwitch) {
-
     blockName = block.children('.title').text();
-
     content = block.children('.content').first().append(block.next('.colist'));
-
     item = $('<div class="switch--item">' + blockName + '</div>');
-
     item.on('click', '', content, function(e) {
-
         $(this).addClass('selected');
-
         $(this).siblings().removeClass('selected');
-
         e.data.siblings('.content').addClass('hidden');
-
         e.data.removeClass('hidden');
-
     });
-
     blockSwitch.append(item);
-
     return {'item': item, 'content': content};
-
 }
-
-
 
 $(addBlockSwitches);
 
-
-
 </script>
-
 
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 4.5.1,</span>
-<span id="revdate">2020-08-26</span>
+<span id="revnumber">version 4.5.2,</span>
+<span id="revdate">2020-10-14</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -2231,7 +2156,7 @@ The example <code>main</code> method calls <code>CommandLine.execute</code> to p
 <h4 id="_gradle"><a class="anchor" href="#_gradle"></a>2.1.1. Gradle</h4>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.5.1'</pre>
+<pre>compile 'info.picocli:picocli:4.5.2'</pre>
 </div>
 </div>
 </div>
@@ -2242,7 +2167,7 @@ The example <code>main</code> method calls <code>CommandLine.execute</code> to p
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.5.1&lt;/version&gt;
+  &lt;version&gt;4.5.2&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -2307,7 +2232,7 @@ In most cases no further configuration is needed when generating a native image.
       &lt;path&gt;
         &lt;groupId&gt;info.picocli&lt;/groupId&gt;
         &lt;artifactId&gt;picocli-codegen&lt;/artifactId&gt;
-        &lt;version&gt;4.5.1&lt;/version&gt;
+        &lt;version&gt;4.5.2&lt;/version&gt;
       &lt;/path&gt;
     &lt;/annotationProcessorPaths&gt;
     &lt;compilerArgs&gt;
@@ -2326,8 +2251,8 @@ In most cases no further configuration is needed when generating a native image.
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code>dependencies {
-    compile 'info.picocli:picocli:4.5.1'
-    annotationProcessor 'info.picocli:picocli-codegen:4.5.1'
+    compile 'info.picocli:picocli:4.5.2'
+    annotationProcessor 'info.picocli:picocli-codegen:4.5.2'
 }</code></pre>
 </div>
 </div>
@@ -2350,7 +2275,7 @@ then replace <code>annotationProcessor</code> with <code>kapt</code>:</p>
 <pre class="rouge highlight"><code>apply plugin: 'kotlin-kapt' // required
 dependencies {
     // ...
-    kapt 'info.picocli:picocli-codegen:4.5.1'
+    kapt 'info.picocli:picocli-codegen:4.5.2'
 }</code></pre>
 </div>
 </div>
@@ -2393,7 +2318,7 @@ dependencies {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.5.1.jar:checksum.jar"</span> CheckSum <span class="nt">--algorithm</span> SHA-1 hello.txt</code></pre>
+<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.5.2.jar:checksum.jar"</span> CheckSum <span class="nt">--algorithm</span> SHA-1 hello.txt</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -8288,7 +8213,7 @@ This overrides the value of system property <code>picocli.ansi</code>. For examp
 <p>ANSI is disabled when environment variable <a href="https://conemu.github.io/en/AnsiEscapeCodes.html#Environment_variable"><code>ConEmuANSI == OFF</code></a>.</p>
 </li>
 <li>
-<p>ANSI is disabled when Picocli <a href="https://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term"><em>guesses</em></a> the program&#8217;s output stream is not connected to a terminal: when <code>System.console()</code> returns <code>null</code>. This check is omitted if picocli <em>guesses</em> the program is running in a Windows <a href="https://www.cygwin.com/">Cygwin</a>, <a href="http://www.mingw.org/wiki/MSYS">MSYS</a> or <a href="https://www.msys2.org/">MSYS2</a> environment: when system property <code>os.name</code> starts with <code>"Windows"</code> and either environment variable <code>TERM</code> starts with <code>xterm</code> or environment variable <code>OSTYPE</code> is defined.</p>
+<p>ANSI is disabled when Picocli <a href="https://stackoverflow.com/questions/1403772/how-can-i-check-if-a-java-programs-input-output-streams-are-connected-to-a-term"><em>guesses</em></a> the program&#8217;s output stream is not connected to a terminal: when <code>System.console()</code> returns <code>null</code>. This check is omitted if picocli <em>guesses</em> the program is running in a Windows <a href="https://www.cygwin.com/">Cygwin</a>, <a href="http://www.mingw.org/wiki/MSYS">MSYS</a> or <a href="https://www.msys2.org/">MSYS2</a> environment: when system property <code>os.name</code> starts with <code>"Windows"</code> and either environment variable <code>TERM</code> contains <code>cygwin</code> or starts with <code>xterm</code> or environment variable <code>OSTYPE</code> is defined.</p>
 </li>
 <li>
 <p>ANSI is enabled when environment variable <a href="https://github.com/adoxa/ansicon/blob/master/readme.txt"><code>ANSICON</code></a> is defined.</p>
@@ -8303,7 +8228,7 @@ This overrides the value of system property <code>picocli.ansi</code>. For examp
 <p>ANSI is enabled when picocli detects the program is running in a non-Windows OS (system property <code>os.name</code> does not start with <code>"Windows"</code>).</p>
 </li>
 <li>
-<p>ANSI is enabled when picocli <em>guesses</em> the program is running in a <a href="https://www.cygwin.com/">Cygwin</a>, <a href="http://www.mingw.org/wiki/MSYS">MSYS</a> or <a href="https://www.msys2.org/">MSYS2</a> environment (either environment variable <code>TERM</code> starts with <code>xterm</code> or environment variable <code>OSTYPE</code> is defined).</p>
+<p>ANSI is enabled when picocli <em>guesses</em> the program is running in a <a href="https://www.cygwin.com/">Cygwin</a>, <a href="http://www.mingw.org/wiki/MSYS">MSYS</a> or <a href="https://www.msys2.org/">MSYS2</a> environment (either environment variable <code>TERM</code> contains <code>cygwin</code> or starts with <code>xterm</code> or environment variable <code>OSTYPE</code> is defined).</p>
 </li>
 </ol>
 </div>
@@ -11262,7 +11187,7 @@ To use this custom factory, add the following dependency:</p>
 <pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>picocli-spring-boot-starter<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>4.5.1<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span>4.5.2<span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -11272,7 +11197,7 @@ To use this custom factory, add the following dependency:</p>
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code>dependencies {
-    compile "info.picocli:picocli-spring-boot-starter:4.5.1"
+    compile "info.picocli:picocli-spring-boot-starter:4.5.2"
 }</code></pre>
 </div>
 </div>
@@ -11966,7 +11891,7 @@ test {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.5.1.jar;myapp.jar"</span> org.myorg.MyMainClass <span class="nt">--option</span><span class="o">=</span>value arg0 arg1</code></pre>
+<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.5.2.jar;myapp.jar"</span> org.myorg.MyMainClass <span class="nt">--option</span><span class="o">=</span>value arg0 arg1</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -11990,7 +11915,7 @@ test {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash"><span class="nb">alias </span><span class="nv">mycommand</span><span class="o">=</span><span class="s1">'java -cp "/path/to/picocli-4.5.1.jar:/path/to/myapp.jar" org.myorg.MainClass'</span></code></pre>
+<pre class="rouge highlight"><code data-lang="bash"><span class="nb">alias </span><span class="nv">mycommand</span><span class="o">=</span><span class="s1">'java -cp "/path/to/picocli-4.5.2.jar:/path/to/myapp.jar" org.myorg.MainClass'</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -12067,7 +11992,7 @@ you can then create a native image by invoking the <code>native-image</code> com
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>path/to/native-image -cp picocli-4.5.1.jar --static -jar myapp.jar</pre>
+<pre>path/to/native-image -cp picocli-4.5.2.jar --static -jar myapp.jar</pre>
 </div>
 </div>
 <div class="admonitionblock caution">
@@ -12207,7 +12132,7 @@ The script body is executed if the user input was valid and did not request usag
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.5.1'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.5.2'</span><span class="o">)</span>
 <span class="nd">@GrabConfig</span><span class="o">(</span><span class="n">systemClassLoader</span><span class="o">=</span><span class="kc">true</span><span class="o">)</span>
 <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"myScript"</span><span class="o">,</span>
         <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="c1">// add --help and --version options</span>
@@ -12236,7 +12161,7 @@ The script body is executed if the user input was valid and did not request usag
 </td>
 <td class="content">
 When upgrading scripts to picocli 4.0, just changing the version number is not enough!
-Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.5.1')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.5.1')</code> will not work,
+Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.5.2')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.5.2')</code> will not work,
 because the <code>@picocli.groovy.PicocliScript</code> annotation class and supporting classes have been moved into a separate module, <code>picocli-groovy</code>.
 </td>
 </tr>
@@ -12260,7 +12185,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.5.1'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.5.2'</span><span class="o">)</span>
 <span class="nd">@GrabExclude</span><span class="o">(</span><span class="s1">'org.codehaus.groovy:groovy-all'</span><span class="o">)</span> <span class="c1">// work around GROOVY-7613</span>
 <span class="o">...</span></code></pre>
 </div>
@@ -12451,7 +12376,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_gradle_3"><a class="anchor" href="#_gradle_3"></a>37.1. Gradle</h3>
 <div class="listingblock">
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.5.1'</pre>
+<pre>compile 'info.picocli:picocli:4.5.2'</pre>
 </div>
 </div>
 </div>
@@ -12462,7 +12387,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <pre>&lt;dependency&gt;
   &lt;groupId&gt;info.picocli&lt;/groupId&gt;
   &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.5.1&lt;/version&gt;
+  &lt;version&gt;4.5.2&lt;/version&gt;
 &lt;/dependency&gt;</pre>
 </div>
 </div>
@@ -12471,7 +12396,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_scala_sbt"><a class="anchor" href="#_scala_sbt"></a>37.3. Scala SBT</h3>
 <div class="listingblock">
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "4.5.1"</pre>
+<pre>libraryDependencies += "info.picocli" % "picocli" % "4.5.2"</pre>
 </div>
 </div>
 </div>
@@ -12479,7 +12404,7 @@ See the <a href="#_source">source code</a> below. Copy and paste it into a file 
 <h3 id="_ivy"><a class="anchor" href="#_ivy"></a>37.4. Ivy</h3>
 <div class="listingblock">
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.5.1" /&gt;</pre>
+<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.5.2" /&gt;</pre>
 </div>
 </div>
 </div>
@@ -12495,8 +12420,8 @@ This facilitates including it in your project in source form to avoid having an 
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.5.1<br>
-Last updated 2020-10-14 12:00:03 +0900
+Version 4.5.2<br>
+Last updated 2020-10-14 20:34:46 +0900
 </div>
 </div>
 <style>

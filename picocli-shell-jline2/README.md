@@ -37,7 +37,7 @@ get command line TAB auto-completion for a picocli-based application running in 
 <dependency>
     <groupId>info.picocli</groupId>
     <artifactId>picocli-shell-jline2</artifactId>
-    <version>4.5.1</version>
+    <version>4.5.2</version>
 </dependency>
 ```
 
