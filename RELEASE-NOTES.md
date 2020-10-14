@@ -22,6 +22,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1162] Bugfix: Abbreviated options are not matched if value attached with '=' separator (like `-x=3`). Thanks to [Chris Laprun](https://github.com/metacosm) for raising this.
 * [#1156][#1172] Bugfix: the built-in `HelpCommand` now respects subcommands case-sensitivity and abbreviations. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#1197] Bugfix: required parameters should not consume negated options. Thanks to [Kevin Turner](https://github.com/keturn) for raising this.
+* [#1213] Bugfix: `@Parameters` in `@ArgGroup` should not result in `ArithmeticException: / by zero`. Thanks to [Loren Keagle](https://github.com/LorenKeagle) for raising this. 
 * [#1158] DOC: Fix broken links to GraalVM repo. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1155] DOC: Fix sample code in chapter "Validation". Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1157] DOC: Fix typo "a argument group" in user manual. Thanks to sabrina for raising this.

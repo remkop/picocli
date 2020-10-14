@@ -3875,4 +3875,29 @@ public class ArgGroupTest {
                 "                    the list of positional parameters.%n");
         assertEquals(expected, new CommandLine(new Group()).getUsageMessage());
     }
+
+    static class Issue1213Arithmetic {
+        @ArgGroup(exclusive = false, validate = false, heading = "scan source options%n")
+        SourceOptions sourceOptions;
+
+        static class SourceOptions {
+
+            @Parameters(paramLabel = "FILE")
+            List<File> reportFiles;
+
+            @Option(names = {"-b", "--build-id"}, paramLabel = "Build ID")
+            List<Integer> buildIds;
+
+            @Option(names = {"-a", "--app-name"}, paramLabel = "App Name")
+            List<String> appNames;
+        }
+    }
+    @Test
+    public void testArithmeticException1213() {
+        new CommandLine(new Issue1213Arithmetic()).parseArgs("a");
+
+        Issue1213Arithmetic bean = new Issue1213Arithmetic();
+        new CommandLine(bean).parseArgs("a", "b");
+        assertEquals(Arrays.asList(new File("a"), new File("b")), bean.sourceOptions.reportFiles);
+    }
 }

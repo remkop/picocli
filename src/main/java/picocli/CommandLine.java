@@ -11975,7 +11975,7 @@ public class CommandLine {
                 int localPosition = accumulatedPosition - startPosition;
                 if (mayCreateNewMatch) {
                     int positionalParamCount = positionalParam.group().localPositionalParamCount();
-                    localPosition %= positionalParamCount;
+                    if (positionalParamCount != 0) { localPosition %= positionalParamCount; } // #1213 prevent ArithmeticException: / by zero
                 }
                 return positionalParam.index().contains(localPosition) && !lastMatch().hasMatchedValueAtPosition(positionalParam, accumulatedPosition);
             }
