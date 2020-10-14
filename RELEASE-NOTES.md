@@ -3,7 +3,20 @@
 # <a name="4.5.2"></a> Picocli 4.5.2 (UNRELEASED)
 The picocli community is pleased to announce picocli 4.5.2.
 
-This release contains bug fixes and enhancements.
+This release contains bug fixes and enhancements:
+
+* Auto-enable ANSI colors on MSYS2 terminals.
+* Abbreviated options are now matched correctly even when value attached with '=' separator.
+* The built-in `HelpCommand` now respects subcommands case-sensitivity and abbreviations.
+* Required parameters no longer consume negated options.
+* Positional parameters in Argument Groups no longer result in `ArithmeticException: / by zero` exceptions.
+* The user manual now has tabs showing examples in languages other than Java.
+  This is a work in progress: many examples still only have a Java version.
+  Contributions welcome!
+* Many, many documentation enhancements, most of which were contributed by the community.
+
+Many thanks to the picocli community who contributed 28 pull requests in this release!
+Please see the Fixed Issues section below for the individual contributors. Great work!
 
 This is the seventy-fourth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -15,7 +28,9 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#4.5.2-breaking-changes)
 
 ## <a name="4.5.2-new"></a> New and Noteworthy
-
+The user manual now has tabs showing examples in languages other than Java.
+This is a work in progress: many examples still only have a Java version.
+Contributions welcome!
 
 ## <a name="4.5.2-fixes"></a> Fixed issues
 * [#1186] Enhancement: Auto-enable ANSI colors on MSYS2 (Git for Windows, MSYS2-based Windows Terminal shells, etc.). Thanks to [Sysmat](https://github.com/sysmat) for raising this.
@@ -33,10 +48,6 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1167] DOC: Fix broken links in Quick Guide. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1171] DOC: Various documentation improvements. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1173] DOC: Improve example applications for the user manual and Quick Guide. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-* [#1170] TEST: Ensure ANSI is disabled in `ManPageGeneratorTest` regardless of environment. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
-* [#1166][#1103] TEST: Ensure ANSI is disabled in `TracerTest` regardless of environment. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
-* [#1179] TEST: Use `.invalid` domain name for `InetAddress` test. Thanks to [David Phillips](https://github.com/electrum) for the pull request.
-* [#1178] BUILD: Run Travis build on macOS. Thanks to [David Phillips](https://github.com/electrum) for the pull request.
 * [#1175] DOC: section on compatible versions to `picocli-shell-jline3/README.md`. Thanks to [Nick Cross](https://github.com/rnc) for raising this.
 * [#1176] DOC: Update JLine `picocli-shell-jline3` example to 3.16.0. Thanks to [Nick Cross](https://github.com/rnc) for the pull request.
 * [#890][#1187] DOC: Extend and improve subcommands documentation. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
@@ -54,6 +65,10 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1209] DOC: Show Maven coordinates in JLine2/3 README. Thanks to [Jiří Holuša](https://github.com/Holmistr) for the pull request.
 * [#1210] DOC: User manual `subcommands` example: add tab with Kotlin source code. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1211] DOC: User manual `subcommands` section: add several tabs with Kotlin source code. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1170] TEST: Ensure ANSI is disabled in `ManPageGeneratorTest` regardless of environment. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
+* [#1166][#1103] TEST: Ensure ANSI is disabled in `TracerTest` regardless of environment. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
+* [#1179] TEST: Use `.invalid` domain name for `InetAddress` test. Thanks to [David Phillips](https://github.com/electrum) for the pull request.
+* [#1178] BUILD: Run Travis build on macOS. Thanks to [David Phillips](https://github.com/electrum) for the pull request.
 * [#1192] Dependency Upgrade: Bump AsciiDoctor to 2.1.0 from 1.6.2. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 ## <a name="4.5.2-deprecated"></a> Deprecations
