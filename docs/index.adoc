@@ -118,7 +118,7 @@ class CheckSum implements Callable<Integer> {
 [[CheckSum-App-Groovy]]
 [source,groovy,role="secondary"]
 ----
-@Grab('info.picocli:picocli-groovy:4.5.1')
+@Grab('info.picocli:picocli-groovy:4.5.3-SNAPSHOT')
 import picocli.CommandLine
 import static picocli.CommandLine.*
 
@@ -150,7 +150,7 @@ class Checksum implements Callable<Integer> {
 [[CheckSum-App-Groovy-Script]]
 [source,groovy,role="secondary"]
 ----
-@Grab('info.picocli:picocli-groovy:4.5.1')
+@Grab('info.picocli:picocli-groovy:4.5.3-SNAPSHOT')
 import static picocli.CommandLine.*
 import groovy.transform.Field
 import java.security.MessageDigest
