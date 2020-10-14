@@ -4706,8 +4706,8 @@ public class Git { ... }
     GitMerge::class,
     GitPush::class,
     GitRebase::class,
-    GitTag::class
-])
+    GitTag::class]
+)
 public class Git { ... }
 ----
 
