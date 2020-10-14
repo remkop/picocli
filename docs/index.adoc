@@ -5392,6 +5392,17 @@ By default, the usage help message only shows the subcommands of the specified c
 and not the nested sub-subcommands. This can be customized by specifying your own <<Reordering Sections,`IHelpSectionRenderer`>> for the command list section.
 The `picocli-examples` module has an https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/customhelp/ShowCommandHierarchy.java[example] that shows how to accomplish this.
 
+To get usage help for nested subcommands, either set `mixinStandardHelpOptions = true` in all commands in the hierarchy, and/or add `picocli.CommandLine.HelpCommand` to the subcommands of all commands. Then you can get help message for a nested (sub-)subcommand like this:
+
+[source,bash]
+----
+$ main cmd3 cmd3sub3 cmd3sub3sub1 --help      # mixinStandardHelpOptions
+Usage: main cmd3 cmd3sub3 cmd3sub3sub1 [-hV] [-y=<y>] ...
+...
+$ main cmd3 cmd3sub3 help cmd3sub3sub1        # HelpCommand
+Usage: main cmd3 cmd3sub3 cmd3sub3sub1 [-y=<y>] ... [COMMAND]
+...
+----
 
 === Repeatable Subcommands
 From picocli 4.2, it is possible to specify that a command's subcommands can be specified multiple times by marking it with `@Command(subcommandsRepeatable = true)`.
