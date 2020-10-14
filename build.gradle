@@ -355,14 +355,13 @@ task bumpVersion {
     }
 }
 task copyCodeGenDocs(type: Copy) {
-    from('build/docs/html5/man/') { include 'index.html' }
+    from('build/docs/man/') { include 'index.html' }
     from('picocli-codegen/build/docs/html5/') { include '*.html' }
     into 'docs/man'
 }
 task copyDocs(type: Copy) {
     dependsOn(copyCodeGenDocs)
-    from('build/docs/html5/') { include '*.html' }
-    from('build/docs/')       { exclude 'html5'}
+    from('build/docs/')
     into 'docs'
 }
 
