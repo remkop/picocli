@@ -5118,7 +5118,8 @@ Inherited options currently cannot be used in <<Argument Groups>>.
 
 Below is an example where an inherited option is used to configure logging.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "app", subcommands = Sub.class)
 class App implements Runnable {
@@ -5149,6 +5150,42 @@ class Sub implements Runnable {
 
     public void run() {
         logger.debug("-y={}", y);
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "app", subcommands = [Sub::class])
+class App : Runnable {
+    private val logger = LogManager.getLogger(App::class.java)
+
+    @Option(names = ["-x"], scope = ScopeType.LOCAL) // option is not shared by default
+    var x = 0
+
+    @Option(names = ["-v"], scope = ScopeType.INHERIT) // option is shared with subcommands
+    fun setVerbose(verbose: BooleanArray) {
+        // Configure log4j.
+        // (This is a simplistic example: a real application may use more levels and
+        // perhaps configure only the ConsoleAppender level instead of the root log level.)
+        Configurator.setRootLevel(if (verbose.size > 0) Level.DEBUG else Level.INFO)
+    }
+
+    override fun run() {
+        logger.debug("-x={}", x)
+    }
+}
+
+@Command(name = "sub")
+class Sub : Runnable {
+    private val logger = LogManager.getLogger(Sub::class.java)
+
+    @Option(names = ["-y"])
+    var y = 0
+
+    override fun run() {
+        logger.debug("-y={}", y)
     }
 }
 ----
@@ -5192,7 +5229,9 @@ git --git-dir=/home/rpopma/picocli status -sb -uno
 Where `git` (actually `java picocli.Demo$Git`) is the top-level command, followed by a global option and a subcommand `status` with its own options.
 
 Setting up the parser and parsing the command line could look like this:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 public static void main(String... args) {
     // Set up the parser
@@ -5211,12 +5250,32 @@ public static void main(String... args) {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+fun main(args: Array<String>) {
+    // Set up the parser
+    val commandLine = CommandLine(Git())
+
+    // add subcommands programmatically (not necessary if the parent command
+    // declaratively registers the subcommands via annotation)
+    commandLine.addSubcommand("status",   GitStatus())
+               .addSubcommand("commit",   GitCommit())
+               // ...
+
+    // Invoke the parseArgs method to parse the arguments
+    val parsed = commandLine.parseArgs(*args)
+    handleParseResult(parsed)
+}
+----
+
 The `CommandLine.parseArgs` method returns a `ParseResult` that can be queried to get information about
 the top-level command (the Java class invoked by `git` in this example).
 The `ParseResult.subcommand()` method returns a nested `ParseResult` if the parser found a subcommand.
 This can be recursively queried until the last nested subcommand was found and the `ParseResult.subcommand()` method returns `null`.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 private void handleParseResult(ParseResult parsed) {
     assert parsed.subcommand() != null : "at least 1 command and 1 subcommand found";
@@ -5236,13 +5295,36 @@ private void handleParseResult(ParseResult parsed) {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+private fun handleParseResult(parsed: CommandLine.ParseResult) {
+    assert(parsed.subcommand() != null) { "at least 1 command and 1 subcommand found" }
+
+    val sub = parsed.subcommand()
+    assert(parsed.commandSpec().userObject().javaClass == Git::class.java) { "main command" }
+    assert(sub.commandSpec().userObject().javaClass == GitStatus::class.java) { "subcommand" }
+
+    val git = parsed.commandSpec().userObject() as Git
+    assert(git.gitDir == File("/home/rpopma/picocli"))
+
+    val gitstatus = sub.commandSpec().userObject() as GitStatus
+    assert(gitstatus.shortFormat)               { "git status -s" }
+    assert(gitstatus.branchInfo)                { "git status -b" }
+    assert(!gitstatus.showIgnored)              { "git status --showIgnored not specified" }
+    assert(gitstatus.mode === GitStatusMode.no) { "git status -u=no" }
+}
+----
+
 You may be interested in the <<Executing Commands,execute method>> to reduce error handling and other boilerplate code in your application.
 See also the previous section, <<Executing Subcommands>>.
 
 === Nested sub-Subcommands
 
 When registering subcommands declaratively, subcommands can be nested by specifying the `subcommands` attribute on subcommand classes:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "main", subcommands = {
     ChildCommand1.class,
@@ -5260,7 +5342,32 @@ class ChildCommand3 { }
     GreatGrandChild3Command3_1.class,
     GreatGrandChild3Command3_2.class })
 class GrandChild3Command3 { }
-...
+// ...
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "main", subcommands = [
+    ChildCommand1::class,
+    ChildCommand2::class,
+    ChildCommand3::class]
+)
+class MainCommand { }
+
+@CommandLine.Command(name = "cmd3", subcommands = [
+    GrandChild3Command1::class,
+    GrandChild3Command2::class,
+    GrandChild3Command3::class]
+)
+class ChildCommand3 { }
+
+@CommandLine.Command(name = "cmd3sub3", subcommands = [
+    GreatGrandChild3Command3_1::class,
+    GreatGrandChild3Command3_2::class]
+)
+class GrandChild3Command3 {}
+// ...
 ----
 
 When registering subcommands programmatically, the object passed to the `addSubcommand` method can be an annotated object or a `CommandLine` instance with its own nested subcommands.
