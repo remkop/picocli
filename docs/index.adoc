@@ -5202,8 +5202,9 @@ public static void main(String... args) {
     // declaratively registers the subcommands via annotation)
     commandLine.addSubcommand("status",   new GitStatus())
                .addSubcommand("commit",   new GitCommit())
-                ...
-
+               // ...
+               ;
+               
     // Invoke the parseArgs method to parse the arguments
     ParseResult parsed = commandLine.parseArgs(args);
     handleParseResult(parsed);
@@ -5218,20 +5219,20 @@ This can be recursively queried until the last nested subcommand was found and t
 [source,java]
 ----
 private void handleParseResult(ParseResult parsed) {
-    assert parsed.subcommand() != null : "at least 1 command and 1 subcommand found"
+    assert parsed.subcommand() != null : "at least 1 command and 1 subcommand found";
 
     ParseResult sub = parsed.subcommand();
-    assert parsed.commandSpec().userObject().getClass() == Git.class       : "main command"
-    assert    sub.commandSpec().userObject().getClass() == GitStatus.class : "subcommand"
+    assert parsed.commandSpec().userObject().getClass() == Git.class       : "main command";
+    assert    sub.commandSpec().userObject().getClass() == GitStatus.class : "subcommand";
 
     Git git = (Git) parsed.commandSpec().userObject();
     assert git.gitDir.equals(new File("/home/rpopma/picocli"));
 
     GitStatus gitstatus = (GitStatus) sub.commandSpec().userObject();
-    assert  gitstatus.shortFormat              : "git status -s"
-    assert  gitstatus.branchInfo               : "git status -b"
-    assert !gitstatus.showIgnored              : "git status --showIgnored not specified"
-    assert  gitstatus.mode == GitStatusMode.no : "git status -u=no"
+    assert  gitstatus.shortFormat              : "git status -s";
+    assert  gitstatus.branchInfo               : "git status -b";
+    assert !gitstatus.showIgnored              : "git status --showIgnored not specified";
+    assert  gitstatus.mode == GitStatusMode.no : "git status -u=no";
 }
 ----
 
