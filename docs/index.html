@@ -4346,6 +4346,20 @@ The field&#8217;s type refers to the class containing the options and positional
 <div class="paragraph">
 <p>Picocli will instantiate this class when needed to capture command line argument values in the <code>@Option</code> and <code>@Parameters</code>-annotated fields and methods of this class.</p>
 </div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><a href="#_inherited_options">Inherited Options</a> currently cannot be used in Argument Groups.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 <div class="sect2">
 <h3 id="_mutually_exclusive_options"><a class="anchor" href="#_mutually_exclusive_options"></a>8.1. Mutually Exclusive Options</h3>
 <div class="paragraph">
@@ -8574,9 +8588,9 @@ This is the recommended way when you want to use the picocli <a href="#_annotati
     <span class="nc">GitMerge</span><span class="o">::</span><span class="k">class</span><span class="p">,</span>
     <span class="nc">GitPush</span><span class="o">::</span><span class="k">class</span><span class="p">,</span>
     <span class="nc">GitRebase</span><span class="o">::</span><span class="k">class</span><span class="p">,</span>
-    <span class="nc">GitTag</span><span class="o">::</span><span class="kd">class</span>
-<span class="err">])
-public class </span><span class="nc">Git</span> <span class="p">{</span> <span class="o">..</span><span class="p">.</span> <span class="p">}</span></code></pre>
+    <span class="nc">GitTag</span><span class="o">::</span><span class="k">class</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="k">public</span> <span class="kd">class</span> <span class="nc">Git</span> <span class="p">{</span> <span class="o">..</span><span class="p">.</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -9022,6 +9036,20 @@ The <code>ListFiles</code> subcommand can use the <code>@ParentCommand</code> an
 <p>Picocli 4.3 adds support for "inherited" options.
 Options defined with <code>scope = ScopeType.INHERIT</code> are shared with all subcommands (and sub-subcommands, to any level of depth).
 Applications can define an inherited option on the top-level command, in one place, to allow end users to specify this option anywhere: not only on the top-level command, but also on any of the subcommands and nested sub-subcommands.</p>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Inherited options currently cannot be used in <a href="#_argument_groups">Argument Groups</a>.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p>Below is an example where an inherited option is used to configure logging.</p>
@@ -12468,7 +12496,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.1<br>
-Last updated 2020-10-14 07:13:19 +0900
+Last updated 2020-10-14 12:00:03 +0900
 </div>
 </div>
 <style>

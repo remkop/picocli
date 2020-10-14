@@ -1696,6 +1696,12 @@ The field's type refers to the class containing the options and positional param
 
 Picocli will instantiate this class when needed to capture command line argument values in the `@Option` and `@Parameters`-annotated fields and methods of this class.
 
+
+[CAUTION]
+====
+<<Inherited Options>> currently cannot be used in Argument Groups.
+====
+
 === Mutually Exclusive Options
 
 Annotate a field or method with `@ArgGroup(exclusive = true)` to create a group of mutually exclusive options and positional parameters. For example:
@@ -5104,6 +5110,11 @@ status, st    Show the working tree status.
 Picocli 4.3 adds support for "inherited" options.
 Options defined with `scope = ScopeType.INHERIT` are shared with all subcommands (and sub-subcommands, to any level of depth).
 Applications can define an inherited option on the top-level command, in one place, to allow end users to specify this option anywhere: not only on the top-level command, but also on any of the subcommands and nested sub-subcommands.
+
+[CAUTION]
+====
+Inherited options currently cannot be used in <<Argument Groups>>.
+====
 
 Below is an example where an inherited option is used to configure logging.
 
