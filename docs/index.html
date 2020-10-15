@@ -2445,7 +2445,8 @@ You may be interested in this <a href="http://catb.org/~esr/writings/taoup/html/
 <div class="paragraph">
 <p>The below example shows options with one or more names, options that take an option parameter, and a <a href="#_help_options">help</a> option.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">Tar</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-c"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"create a new archive"</span><span class="o">)</span>
@@ -2462,10 +2463,29 @@ You may be interested in this <a href="http://catb.org/~esr/writings/taoup/html/
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">Tar</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-c"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"create a new archive"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">create</span> <span class="p">:</span> <span class="nc">Boolean</span> <span class="p">=</span> <span class="k">false</span><span class="p">;</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-f"</span><span class="p">,</span> <span class="s">"--file"</span><span class="p">],</span> <span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"ARCHIVE"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"the archive file"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">archive</span> <span class="p">:</span> <span class="nc">File</span><span class="p">;</span>
+
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"FILE"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"one ore more files to archive"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">files</span> <span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;;</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-h"</span><span class="p">,</span> <span class="s">"--help"</span><span class="p">],</span> <span class="n">usageHelp</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"display a help message"</span><span class="p">])</span>
+    <span class="k">private</span> <span class="kd">var</span> <span class="py">helpRequested</span> <span class="p">:</span> <span class="nc">Boolean</span> <span class="p">=</span> <span class="k">false</span><span class="p">;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>Picocli matches the option names to set the field values.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"-c"</span><span class="o">,</span> <span class="s">"--file"</span><span class="o">,</span> <span class="s">"result.tar"</span><span class="o">,</span> <span class="s">"file1.txt"</span><span class="o">,</span> <span class="s">"file2.txt"</span> <span class="o">};</span>
 <span class="nc">Tar</span> <span class="n">tar</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Tar</span><span class="o">();</span>
@@ -2475,6 +2495,19 @@ You may be interested in this <a href="http://catb.org/~esr/writings/taoup/html/
 <span class="k">assert</span>  <span class="n">tar</span><span class="o">.</span><span class="na">create</span><span class="o">;</span>
 <span class="k">assert</span>  <span class="n">tar</span><span class="o">.</span><span class="na">archive</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="s">"result.tar"</span><span class="o">));</span>
 <span class="k">assert</span>  <span class="nc">Arrays</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">tar</span><span class="o">.</span><span class="na">files</span><span class="o">,</span> <span class="k">new</span> <span class="nc">File</span><span class="o">[]</span> <span class="o">{</span><span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="s">"file1.txt"</span><span class="o">),</span> <span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="s">"file2.txt"</span><span class="o">)});</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">args1</span> <span class="p">=</span> <span class="nf">arrayOf</span><span class="p">(</span><span class="s">"-c"</span><span class="p">,</span> <span class="s">"--file"</span><span class="p">,</span> <span class="s">"result.tar"</span><span class="p">,</span> <span class="s">"file1.txt"</span><span class="p">,</span> <span class="s">"file2.txt"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="py">tar</span> <span class="p">=</span> <span class="nc">Tar</span><span class="p">()</span>
+<span class="nc">CommandLine</span><span class="p">(</span><span class="n">tar</span><span class="p">).</span><span class="nf">parseArgs</span><span class="p">(*</span><span class="n">args1</span><span class="p">);</span>
+
+<span class="nf">assert</span><span class="p">(!</span><span class="n">tar</span><span class="p">.</span><span class="n">helpRequested</span><span class="p">)</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">tar</span><span class="p">.</span><span class="n">create</span><span class="p">)</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">tar</span><span class="p">.</span><span class="n">archive</span><span class="p">.</span><span class="nf">equals</span><span class="p">(</span><span class="nc">File</span><span class="p">(</span><span class="s">"result.tar"</span><span class="p">)))</span>
+<span class="nf">assert</span><span class="p">(</span><span class="nc">Arrays</span><span class="p">.</span><span class="nf">equals</span><span class="p">(</span><span class="n">tar</span><span class="p">.</span><span class="n">files</span><span class="p">,</span> <span class="n">arrayOf</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;(</span><span class="nc">File</span><span class="p">(</span><span class="s">"file1.txt"</span><span class="p">),</span> <span class="nc">File</span><span class="p">(</span><span class="s">"file2.txt"</span><span class="p">))))</span></code></pre>
 </div>
 </div>
 </div>
@@ -2506,7 +2539,8 @@ From picocli 3.9.6, interactive options can use type <code>char[]</code> instead
 <div class="paragraph">
 <p>Example usage:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">Login</span> <span class="kd">implements</span> <span class="nc">Callable</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">&gt;</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-u"</span><span class="o">,</span> <span class="s">"--user"</span><span class="o">},</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"User name"</span><span class="o">)</span>
@@ -2535,12 +2569,49 @@ From picocli 3.9.6, interactive options can use type <code>char[]</code> instead
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">Login</span> <span class="p">:</span> <span class="nc">Callable</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-u"</span><span class="p">,</span> <span class="s">"--user"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"User name"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">user</span><span class="p">:</span> <span class="nc">String</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-p"</span><span class="p">,</span> <span class="s">"--password"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Passphrase"</span><span class="p">],</span> <span class="n">interactive</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">password</span><span class="p">:</span> <span class="nc">CharArray</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">call</span><span class="p">():</span> <span class="nc">Int</span> <span class="p">{</span>
+        <span class="kd">val</span> <span class="py">bytes</span> <span class="p">=</span> <span class="nc">ByteArray</span><span class="p">(</span><span class="n">password</span><span class="p">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="k">in</span> <span class="n">bytes</span><span class="p">.</span><span class="n">indices</span><span class="p">)</span> <span class="p">{</span> <span class="n">bytes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">=</span> <span class="n">password</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="nf">toByte</span><span class="p">()</span> <span class="p">}</span>
+
+        <span class="kd">val</span> <span class="py">md</span> <span class="p">=</span> <span class="nc">MessageDigest</span><span class="p">.</span><span class="nf">getInstance</span><span class="p">(</span><span class="s">"SHA-256"</span><span class="p">)</span>
+        <span class="n">md</span><span class="p">.</span><span class="nf">update</span><span class="p">(</span><span class="n">bytes</span><span class="p">)</span>
+
+        <span class="nf">println</span><span class="p">((</span><span class="s">"Hi %s, your password is hashed to %s."</span><span class="p">).</span><span class="nf">format</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="nf">base64</span><span class="p">(</span><span class="n">md</span><span class="p">.</span><span class="nf">digest</span><span class="p">())))</span>
+
+        <span class="c1">// null out the arrays when done</span>
+        <span class="nc">Arrays</span><span class="p">.</span><span class="nf">fill</span><span class="p">(</span><span class="n">bytes</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="nf">toByte</span><span class="p">())</span>
+        <span class="nc">Arrays</span><span class="p">.</span><span class="nf">fill</span><span class="p">(</span><span class="n">password</span><span class="p">,</span> <span class="sc">' '</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="k">fun</span> <span class="nf">base64</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="nc">ByteArray</span><span class="p">):</span> <span class="nc">String</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>When this command is invoked like this:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">Login</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="s">"-u"</span><span class="o">,</span> <span class="s">"user123"</span><span class="o">,</span> <span class="s">"-p"</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nc">CommandLine</span><span class="p">(</span><span class="nc">Login</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(</span><span class="s">"-u"</span><span class="p">,</span> <span class="s">"user123"</span><span class="p">,</span> <span class="s">"-p"</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2572,13 +2643,24 @@ After the user enters a password value and presses enter, the <code>call()</code
 <div class="paragraph">
 <p>For example, if an application has these options:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--user"</span><span class="o">)</span>
 <span class="nc">String</span> <span class="n">user</span><span class="o">;</span>
 
 <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--password"</span><span class="o">,</span> <span class="n">arity</span> <span class="o">=</span> <span class="s">"0..1"</span><span class="o">,</span> <span class="n">interactive</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
 <span class="kt">char</span><span class="o">[]</span> <span class="n">password</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--user"</span><span class="p">])</span>
+<span class="k">lateinit</span> <span class="kd">var</span> <span class="py">user</span><span class="p">:</span> <span class="nc">String</span>
+
+<span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--password"</span><span class="p">],</span> <span class="n">arity</span> <span class="p">=</span> <span class="s">"0..1"</span><span class="p">,</span> <span class="n">interactive</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
+<span class="k">lateinit</span> <span class="kd">var</span> <span class="py">password</span><span class="p">:</span> <span class="nc">CharArray</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2648,7 +2730,8 @@ one or more single-character options without option-arguments, followed by at mo
 <div class="paragraph">
 <p>For example, given this annotated class:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">ClusteredShortOptions</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-a"</span><span class="o">)</span> <span class="kt">boolean</span> <span class="n">aaa</span><span class="o">;</span>
@@ -2658,19 +2741,30 @@ one or more single-character options without option-arguments, followed by at mo
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">ClusteredShortOptions</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-a"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">aaa</span> <span class="p">=</span> <span class="k">false</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-b"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">bbb</span> <span class="p">=</span> <span class="k">false</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-c"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">ccc</span> <span class="p">=</span> <span class="k">false</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-f"</span><span class="p">])</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">file</span><span class="p">:</span> <span class="nc">String</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>The following command line arguments are all equivalent and parsing them will give the same result:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">abcfInputFile</span><span class="o">.</span><span class="na">txt</span>
-<span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">abcf</span><span class="o">=</span><span class="nc">InputFile</span><span class="o">.</span><span class="na">txt</span>
-<span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">abc</span> <span class="o">-</span><span class="n">f</span><span class="o">=</span><span class="nc">InputFile</span><span class="o">.</span><span class="na">txt</span>
-<span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">ab</span> <span class="o">-</span><span class="n">cf</span><span class="o">=</span><span class="nc">InputFile</span><span class="o">.</span><span class="na">txt</span>
-<span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">a</span> <span class="o">-</span><span class="n">b</span> <span class="o">-</span><span class="n">c</span> <span class="o">-</span><span class="n">fInputFile</span><span class="o">.</span><span class="na">txt</span>
-<span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">a</span> <span class="o">-</span><span class="n">b</span> <span class="o">-</span><span class="n">c</span> <span class="o">-</span><span class="n">f</span> <span class="nc">InputFile</span><span class="o">.</span><span class="na">txt</span>
-<span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">a</span> <span class="o">-</span><span class="n">b</span> <span class="o">-</span><span class="n">c</span> <span class="o">-</span><span class="n">f</span><span class="o">=</span><span class="nc">InputFile</span><span class="o">.</span><span class="na">txt</span>
-<span class="o">...</span></code></pre>
+<pre class="rouge highlight"><code data-lang="bash">&lt;<span class="nb">command</span><span class="o">&gt;</span> <span class="nt">-abcfInputFile</span>.txt
+&lt;<span class="nb">command</span><span class="o">&gt;</span> <span class="nt">-abcf</span><span class="o">=</span>InputFile.txt
+&lt;<span class="nb">command</span><span class="o">&gt;</span> <span class="nt">-abc</span> <span class="nt">-f</span><span class="o">=</span>InputFile.txt
+&lt;<span class="nb">command</span><span class="o">&gt;</span> <span class="nt">-ab</span> <span class="nt">-cf</span><span class="o">=</span>InputFile.txt
+&lt;<span class="nb">command</span><span class="o">&gt;</span> <span class="nt">-a</span> <span class="nt">-b</span> <span class="nt">-c</span> <span class="nt">-fInputFile</span>.txt
+&lt;<span class="nb">command</span><span class="o">&gt;</span> <span class="nt">-a</span> <span class="nt">-b</span> <span class="nt">-c</span> <span class="nt">-f</span> InputFile.txt
+&lt;<span class="nb">command</span><span class="o">&gt;</span> <span class="nt">-a</span> <span class="nt">-b</span> <span class="nt">-c</span> <span class="nt">-f</span><span class="o">=</span>InputFile.txt
+...</code></pre>
 </div>
 </div>
 </div>
@@ -2679,11 +2773,20 @@ one or more single-character options without option-arguments, followed by at mo
 <div class="paragraph">
 <p>Boolean options usually don&#8217;t need a parameter: it is enough to specify the option name on the command line.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">BooleanOptions</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">)</span> <span class="kt">boolean</span> <span class="n">x</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">BooleanOptions</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="k">false</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2715,7 +2818,8 @@ If the <code>-x</code> option is specified multiple times on the command line, t
 <div class="paragraph">
 <p>From picocli 4.0, boolean options can be <code>negatable</code>.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"negatable-options-demo"</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">NegatableOptionsDemo</span> <span class="o">{</span>
@@ -2723,6 +2827,17 @@ If the <code>-x</code> option is specified multiple times on the command line, t
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-XX:+PrintGCDetails"</span><span class="o">,</span> <span class="n">negatable</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span> <span class="kt">boolean</span> <span class="n">printGCDetails</span><span class="o">;</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-XX:-UseG1GC"</span><span class="o">,</span>        <span class="n">negatable</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span> <span class="kt">boolean</span> <span class="n">useG1GC</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"negatable-options-demo"</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">NegatableOptionsDemo</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--verbose"</span><span class="p">],</span>           <span class="n">negatable</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="kd">var</span> <span class="py">verbose</span> <span class="p">=</span> <span class="k">false</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-XX:+PrintGCDetails"</span><span class="p">],</span> <span class="n">negatable</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="kd">var</span> <span class="py">printGCDetails</span> <span class="p">=</span> <span class="k">false</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-XX:-UseG1GC"</span><span class="p">],</span>        <span class="n">negatable</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="kd">var</span> <span class="py">useG1GC</span> <span class="p">=</span> <span class="k">true</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2760,11 +2875,20 @@ Short option names are not given a negative alias by default. (This is <a href="
 <div class="paragraph">
 <p>When a negatable option is <code>true</code> by default, give it the negative name. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--no-backup"</span><span class="o">,</span> <span class="n">negatable</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span>
   <span class="n">description</span> <span class="o">=</span> <span class="s">"Make a backup. True by default."</span><span class="o">)</span>
 <span class="kt">boolean</span> <span class="n">backup</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--no-backup"</span><span class="p">],</span> <span class="n">negatable</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span>
+  <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Make a backup. True by default."</span><span class="p">])</span>
+<span class="kd">var</span> <span class="py">backup</span> <span class="p">=</span> <span class="k">true</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2796,7 +2920,8 @@ Array or collection fields can capture multiple values.</p>
 <div class="paragraph">
 <p>For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">PositionalParameters</span> <span class="o">{</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"0"</span><span class="o">)</span>    <span class="nc">InetAddress</span> <span class="n">host</span><span class="o">;</span>
@@ -2808,10 +2933,24 @@ Array or collection fields can capture multiple values.</p>
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">PositionalParameters</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"0"</span><span class="p">)</span>    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">host</span><span class="p">:</span> <span class="nc">InetAddress</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"1"</span><span class="p">)</span>    <span class="kd">var</span> <span class="py">port</span> <span class="p">=</span> <span class="mi">0</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"2..*"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">files</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;</span>
+
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">hidden</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>   <span class="c1">// "hidden": don't show this parameter in usage help message</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">allParameters</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span> <span class="c1">// no "index" attribute: captures _all_ arguments</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>Picocli initializes fields with the values at the specified index in the arguments array.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"localhost"</span><span class="o">,</span> <span class="s">"12345"</span><span class="o">,</span> <span class="s">"file1.txt"</span><span class="o">,</span> <span class="s">"file2.txt"</span> <span class="o">};</span>
 <span class="nc">PositionalParameters</span> <span class="n">params</span> <span class="o">=</span> <span class="nc">CommandLine</span><span class="o">.</span><span class="na">populateCommand</span><span class="o">(</span><span class="k">new</span> <span class="nc">PositionalParameters</span><span class="o">(),</span> <span class="n">args</span><span class="o">);</span>
@@ -2821,6 +2960,19 @@ Array or collection fields can capture multiple values.</p>
 <span class="k">assert</span> <span class="nc">Arrays</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">params</span><span class="o">.</span><span class="na">files</span><span class="o">,</span> <span class="k">new</span> <span class="nc">File</span><span class="o">[]</span> <span class="o">{</span><span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="s">"file1.txt"</span><span class="o">),</span> <span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="s">"file2.txt"</span><span class="o">)});</span>
 
 <span class="k">assert</span> <span class="n">params</span><span class="o">.</span><span class="na">allParameters</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="nc">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="n">args</span><span class="o">));</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">args</span> <span class="p">=</span> <span class="nf">arrayOf</span><span class="p">(</span><span class="s">"localhost"</span><span class="p">,</span> <span class="s">"12345"</span><span class="p">,</span> <span class="s">"file1.txt"</span><span class="p">,</span> <span class="s">"file2.txt"</span><span class="p">)</span>
+<span class="kd">val</span> <span class="py">params</span><span class="p">:</span> <span class="nc">PositionalParameters</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nf">populateCommand</span><span class="p">(</span><span class="nc">PositionalParameters</span><span class="p">(),</span> <span class="p">*</span><span class="n">args</span><span class="p">)</span>
+
+<span class="nf">assert</span><span class="p">(</span><span class="n">params</span><span class="p">.</span><span class="n">host</span><span class="p">.</span><span class="nf">getHostName</span><span class="p">().</span><span class="nf">equals</span><span class="p">(</span><span class="s">"localhost"</span><span class="p">))</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">params</span><span class="p">.</span><span class="n">port</span> <span class="p">===</span> <span class="mi">12345</span><span class="p">)</span>
+<span class="nf">assert</span><span class="p">(</span><span class="nc">Arrays</span><span class="p">.</span><span class="nf">equals</span><span class="p">(</span><span class="n">params</span><span class="p">.</span><span class="n">files</span><span class="p">,</span> <span class="nf">arrayOf</span><span class="p">(</span><span class="nc">File</span><span class="p">(</span><span class="s">"file1.txt"</span><span class="p">),</span> <span class="nc">File</span><span class="p">(</span><span class="s">"file2.txt"</span><span class="p">))))</span>
+
+<span class="nf">assert</span><span class="p">(</span><span class="n">params</span><span class="p">.</span><span class="n">allParameters</span><span class="p">.</span><span class="nf">equals</span><span class="p">(</span><span class="nc">Arrays</span><span class="p">.</span><span class="nf">asList</span><span class="p">(*</span><span class="n">args</span><span class="p">)))</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2884,7 +3036,8 @@ For applications with <a href="#option-parameters-methods"><code>@Parameters</co
 <div class="paragraph">
 <p>For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">Mixed</span> <span class="o">{</span>
     <span class="nd">@Parameters</span>
@@ -2895,10 +3048,23 @@ For applications with <a href="#option-parameters-methods"><code>@Parameters</co
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">Mixed</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">positional</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-o"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">options</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>Any command line argument that is not an option or subcommand is interpreted as a positional parameter.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"param0"</span><span class="o">,</span> <span class="s">"-o"</span><span class="o">,</span> <span class="s">"AAA"</span><span class="o">,</span> <span class="s">"param1"</span><span class="o">,</span> <span class="s">"param2"</span><span class="o">,</span> <span class="s">"-o"</span><span class="o">,</span> <span class="s">"BBB"</span><span class="o">,</span> <span class="s">"param3"</span> <span class="o">};</span>
 <span class="nc">Mixed</span> <span class="n">mixed</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Mixed</span><span class="o">();</span>
@@ -2908,6 +3074,17 @@ For applications with <a href="#option-parameters-methods"><code>@Parameters</co
 <span class="k">assert</span> <span class="n">mixed</span><span class="o">.</span><span class="na">options</span><span class="o">.</span><span class="na">equals</span>   <span class="o">(</span><span class="nc">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="s">"AAA"</span><span class="o">,</span> <span class="s">"BBB"</span><span class="o">));</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">args</span> <span class="p">=</span> <span class="nf">arrayOf</span><span class="p">(</span><span class="s">"param0"</span><span class="p">,</span> <span class="s">"-o"</span><span class="p">,</span> <span class="s">"AAA"</span><span class="p">,</span> <span class="s">"param1"</span><span class="p">,</span> <span class="s">"param2"</span><span class="p">,</span> <span class="s">"-o"</span><span class="p">,</span> <span class="s">"BBB"</span><span class="p">,</span> <span class="s">"param3"</span><span class="p">)</span>
+<span class="kd">val</span> <span class="py">mixed</span> <span class="p">=</span> <span class="nc">Mixed</span><span class="p">()</span>
+<span class="nc">CommandLine</span><span class="p">(</span><span class="n">mixed</span><span class="p">).</span><span class="nf">parseArgs</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+
+<span class="nf">assert</span><span class="p">(</span><span class="n">mixed</span><span class="p">.</span><span class="n">positional</span> <span class="p">==</span> <span class="nc">Arrays</span><span class="p">.</span><span class="nf">asList</span><span class="p">(</span><span class="s">"param0"</span><span class="p">,</span> <span class="s">"param1"</span><span class="p">,</span> <span class="s">"param2"</span><span class="p">,</span> <span class="s">"param3"</span><span class="p">))</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">mixed</span><span class="p">.</span><span class="n">options</span> <span class="p">==</span> <span class="nc">Arrays</span><span class="p">.</span><span class="nf">asList</span><span class="p">(</span><span class="s">"AAA"</span><span class="p">,</span> <span class="s">"BBB"</span><span class="p">))</span></code></pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_double_dash"><a class="anchor" href="#_double_dash"></a>3.8. Double dash (<code>--</code>)</h3>
@@ -2915,7 +3092,8 @@ For applications with <a href="#option-parameters-methods"><code>@Parameters</co
 <p>When one of the command line arguments is just two dashes without any characters attached (<code>--</code>),
 picocli interprets all following arguments as positional parameters, even arguments that match an option name.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">DoubleDashDemo</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-v"</span><span class="o">)</span>     <span class="kt">boolean</span> <span class="n">verbose</span><span class="o">;</span>
@@ -2924,10 +3102,21 @@ picocli interprets all following arguments as positional parameters, even argume
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">DoubleDashDemo</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-v"</span><span class="p">])</span>     <span class="kd">var</span> <span class="py">verbose</span> <span class="p">=</span> <span class="k">false</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-files"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">files</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;?</span> <span class="p">=</span> <span class="k">null</span>
+    <span class="nd">@Parameters</span>                 <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">params</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>The <code>--</code> end-of-options delimiter clarifies which of the arguments are positional parameters:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"-v"</span><span class="o">,</span> <span class="s">"--"</span><span class="o">,</span> <span class="s">"-files"</span><span class="o">,</span> <span class="s">"file1"</span><span class="o">,</span> <span class="s">"file2"</span> <span class="o">};</span>
 <span class="nc">DoubleDashDemo</span> <span class="n">demo</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">DoubleDashDemo</span><span class="o">();</span>
@@ -2936,6 +3125,18 @@ picocli interprets all following arguments as positional parameters, even argume
 <span class="k">assert</span> <span class="n">demo</span><span class="o">.</span><span class="na">verbose</span><span class="o">;</span>
 <span class="k">assert</span> <span class="n">demo</span><span class="o">.</span><span class="na">files</span> <span class="o">==</span> <span class="kc">null</span><span class="o">;</span>
 <span class="k">assert</span> <span class="n">demo</span><span class="o">.</span><span class="na">params</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="nc">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="s">"-files"</span><span class="o">,</span> <span class="s">"file1"</span><span class="o">,</span> <span class="s">"file2"</span><span class="o">));</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">args</span> <span class="p">=</span> <span class="nf">arrayOf</span><span class="p">(</span><span class="s">"-v"</span><span class="p">,</span> <span class="s">"--"</span><span class="p">,</span> <span class="s">"-files"</span><span class="p">,</span> <span class="s">"file1"</span><span class="p">,</span> <span class="s">"file2"</span><span class="p">)</span>
+<span class="kd">val</span> <span class="py">demo</span> <span class="p">=</span> <span class="nc">DoubleDashDemo</span><span class="p">()</span>
+<span class="nc">CommandLine</span><span class="p">(</span><span class="n">demo</span><span class="p">).</span><span class="nf">parseArgs</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+
+<span class="nf">assert</span><span class="p">(</span><span class="n">demo</span><span class="p">.</span><span class="n">verbose</span><span class="p">)</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">demo</span><span class="p">.</span><span class="n">files</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">demo</span><span class="p">.</span><span class="n">params</span> <span class="p">==</span> <span class="nc">Arrays</span><span class="p">.</span><span class="nf">asList</span><span class="p">(</span><span class="s">"-files"</span><span class="p">,</span> <span class="s">"file1"</span><span class="p">,</span> <span class="s">"file2"</span><span class="p">))</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -9054,7 +9255,8 @@ Applications can define an inherited option on the top-level command, in one pla
 <div class="paragraph">
 <p>Below is an example where an inherited option is used to configure logging.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"app"</span><span class="o">,</span> <span class="n">subcommands</span> <span class="o">=</span> <span class="nc">Sub</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">App</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
@@ -9087,6 +9289,42 @@ Applications can define an inherited option on the top-level command, in one pla
         <span class="n">logger</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">"-y={}"</span><span class="o">,</span> <span class="n">y</span><span class="o">);</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"app"</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span><span class="nc">Sub</span><span class="o">::</span><span class="k">class</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">App</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="k">private</span> <span class="kd">val</span> <span class="py">logger</span> <span class="p">=</span> <span class="nc">LogManager</span><span class="p">.</span><span class="nf">getLogger</span><span class="p">(</span><span class="nc">App</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">)</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">],</span> <span class="n">scope</span> <span class="p">=</span> <span class="nc">ScopeType</span><span class="p">.</span><span class="nc">LOCAL</span><span class="p">)</span> <span class="c1">// option is not shared by default</span>
+    <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="mi">0</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-v"</span><span class="p">],</span> <span class="n">scope</span> <span class="p">=</span> <span class="nc">ScopeType</span><span class="p">.</span><span class="nc">INHERIT</span><span class="p">)</span> <span class="c1">// option is shared with subcommands</span>
+    <span class="k">fun</span> <span class="nf">setVerbose</span><span class="p">(</span><span class="n">verbose</span><span class="p">:</span> <span class="nc">BooleanArray</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Configure log4j.</span>
+        <span class="c1">// (This is a simplistic example: a real application may use more levels and</span>
+        <span class="c1">// perhaps configure only the ConsoleAppender level instead of the root log level.)</span>
+        <span class="nc">Configurator</span><span class="p">.</span><span class="nf">setRootLevel</span><span class="p">(</span><span class="k">if</span> <span class="p">(</span><span class="n">verbose</span><span class="p">.</span><span class="n">size</span> <span class="p">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="nc">Level</span><span class="p">.</span><span class="nc">DEBUG</span> <span class="k">else</span> <span class="nc">Level</span><span class="p">.</span><span class="nc">INFO</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">logger</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s">"-x={}"</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"sub"</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">Sub</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="k">private</span> <span class="kd">val</span> <span class="py">logger</span> <span class="p">=</span> <span class="nc">LogManager</span><span class="p">.</span><span class="nf">getLogger</span><span class="p">(</span><span class="nc">Sub</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">)</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-y"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">y</span> <span class="p">=</span> <span class="mi">0</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">logger</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s">"-y={}"</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -9150,7 +9388,8 @@ Alternatively, for such subcommands, sharing options via <a href="#_mixins">mixi
 <div class="paragraph">
 <p>Setting up the parser and parsing the command line could look like this:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">...</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
     <span class="c1">// Set up the parser</span>
@@ -9160,12 +9399,32 @@ Alternatively, for such subcommands, sharing options via <a href="#_mixins">mixi
     <span class="c1">// declaratively registers the subcommands via annotation)</span>
     <span class="n">commandLine</span><span class="o">.</span><span class="na">addSubcommand</span><span class="o">(</span><span class="s">"status"</span><span class="o">,</span>   <span class="k">new</span> <span class="nc">GitStatus</span><span class="o">())</span>
                <span class="o">.</span><span class="na">addSubcommand</span><span class="o">(</span><span class="s">"commit"</span><span class="o">,</span>   <span class="k">new</span> <span class="nc">GitCommit</span><span class="o">())</span>
-                <span class="o">...</span>
+               <span class="c1">// ...</span>
+               <span class="o">;</span>
 
     <span class="c1">// Invoke the parseArgs method to parse the arguments</span>
     <span class="nc">ParseResult</span> <span class="n">parsed</span> <span class="o">=</span> <span class="n">commandLine</span><span class="o">.</span><span class="na">parseArgs</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
     <span class="n">handleParseResult</span><span class="o">(</span><span class="n">parsed</span><span class="o">);</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="c1">// Set up the parser</span>
+    <span class="kd">val</span> <span class="py">commandLine</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">Git</span><span class="p">())</span>
+
+    <span class="c1">// add subcommands programmatically (not necessary if the parent command</span>
+    <span class="c1">// declaratively registers the subcommands via annotation)</span>
+    <span class="n">commandLine</span><span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"status"</span><span class="p">,</span>   <span class="nc">GitStatus</span><span class="p">())</span>
+               <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"commit"</span><span class="p">,</span>   <span class="nc">GitCommit</span><span class="p">())</span>
+               <span class="c1">// ...</span>
+
+    <span class="c1">// Invoke the parseArgs method to parse the arguments</span>
+    <span class="kd">val</span> <span class="py">parsed</span> <span class="p">=</span> <span class="n">commandLine</span><span class="p">.</span><span class="nf">parseArgs</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+    <span class="nf">handleParseResult</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -9174,24 +9433,46 @@ the top-level command (the Java class invoked by <code>git</code> in this exampl
 The <code>ParseResult.subcommand()</code> method returns a nested <code>ParseResult</code> if the parser found a subcommand.
 This can be recursively queried until the last nested subcommand was found and the <code>ParseResult.subcommand()</code> method returns <code>null</code>.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">private</span> <span class="kt">void</span> <span class="nf">handleParseResult</span><span class="o">(</span><span class="nc">ParseResult</span> <span class="n">parsed</span><span class="o">)</span> <span class="o">{</span>
-    <span class="k">assert</span> <span class="n">parsed</span><span class="o">.</span><span class="na">subcommand</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">:</span> <span class="s">"at least 1 command and 1 subcommand found"</span>
+    <span class="k">assert</span> <span class="n">parsed</span><span class="o">.</span><span class="na">subcommand</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">:</span> <span class="s">"at least 1 command and 1 subcommand found"</span><span class="o">;</span>
 
     <span class="nc">ParseResult</span> <span class="n">sub</span> <span class="o">=</span> <span class="n">parsed</span><span class="o">.</span><span class="na">subcommand</span><span class="o">();</span>
-    <span class="k">assert</span> <span class="n">parsed</span><span class="o">.</span><span class="na">commandSpec</span><span class="o">().</span><span class="na">userObject</span><span class="o">().</span><span class="na">getClass</span><span class="o">()</span> <span class="o">==</span> <span class="nc">Git</span><span class="o">.</span><span class="na">class</span>       <span class="o">:</span> <span class="s">"main command"</span>
-    <span class="k">assert</span>    <span class="n">sub</span><span class="o">.</span><span class="na">commandSpec</span><span class="o">().</span><span class="na">userObject</span><span class="o">().</span><span class="na">getClass</span><span class="o">()</span> <span class="o">==</span> <span class="nc">GitStatus</span><span class="o">.</span><span class="na">class</span> <span class="o">:</span> <span class="s">"subcommand"</span>
+    <span class="k">assert</span> <span class="n">parsed</span><span class="o">.</span><span class="na">commandSpec</span><span class="o">().</span><span class="na">userObject</span><span class="o">().</span><span class="na">getClass</span><span class="o">()</span> <span class="o">==</span> <span class="nc">Git</span><span class="o">.</span><span class="na">class</span>       <span class="o">:</span> <span class="s">"main command"</span><span class="o">;</span>
+    <span class="k">assert</span>    <span class="n">sub</span><span class="o">.</span><span class="na">commandSpec</span><span class="o">().</span><span class="na">userObject</span><span class="o">().</span><span class="na">getClass</span><span class="o">()</span> <span class="o">==</span> <span class="nc">GitStatus</span><span class="o">.</span><span class="na">class</span> <span class="o">:</span> <span class="s">"subcommand"</span><span class="o">;</span>
 
     <span class="nc">Git</span> <span class="n">git</span> <span class="o">=</span> <span class="o">(</span><span class="nc">Git</span><span class="o">)</span> <span class="n">parsed</span><span class="o">.</span><span class="na">commandSpec</span><span class="o">().</span><span class="na">userObject</span><span class="o">();</span>
     <span class="k">assert</span> <span class="n">git</span><span class="o">.</span><span class="na">gitDir</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="s">"/home/rpopma/picocli"</span><span class="o">));</span>
 
     <span class="nc">GitStatus</span> <span class="n">gitstatus</span> <span class="o">=</span> <span class="o">(</span><span class="nc">GitStatus</span><span class="o">)</span> <span class="n">sub</span><span class="o">.</span><span class="na">commandSpec</span><span class="o">().</span><span class="na">userObject</span><span class="o">();</span>
-    <span class="k">assert</span>  <span class="n">gitstatus</span><span class="o">.</span><span class="na">shortFormat</span>              <span class="o">:</span> <span class="s">"git status -s"</span>
-    <span class="k">assert</span>  <span class="n">gitstatus</span><span class="o">.</span><span class="na">branchInfo</span>               <span class="o">:</span> <span class="s">"git status -b"</span>
-    <span class="k">assert</span> <span class="o">!</span><span class="n">gitstatus</span><span class="o">.</span><span class="na">showIgnored</span>              <span class="o">:</span> <span class="s">"git status --showIgnored not specified"</span>
-    <span class="k">assert</span>  <span class="n">gitstatus</span><span class="o">.</span><span class="na">mode</span> <span class="o">==</span> <span class="nc">GitStatusMode</span><span class="o">.</span><span class="na">no</span> <span class="o">:</span> <span class="s">"git status -u=no"</span>
+    <span class="k">assert</span>  <span class="n">gitstatus</span><span class="o">.</span><span class="na">shortFormat</span>              <span class="o">:</span> <span class="s">"git status -s"</span><span class="o">;</span>
+    <span class="k">assert</span>  <span class="n">gitstatus</span><span class="o">.</span><span class="na">branchInfo</span>               <span class="o">:</span> <span class="s">"git status -b"</span><span class="o">;</span>
+    <span class="k">assert</span> <span class="o">!</span><span class="n">gitstatus</span><span class="o">.</span><span class="na">showIgnored</span>              <span class="o">:</span> <span class="s">"git status --showIgnored not specified"</span><span class="o">;</span>
+    <span class="k">assert</span>  <span class="n">gitstatus</span><span class="o">.</span><span class="na">mode</span> <span class="o">==</span> <span class="nc">GitStatusMode</span><span class="o">.</span><span class="na">no</span> <span class="o">:</span> <span class="s">"git status -u=no"</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">private</span> <span class="k">fun</span> <span class="nf">handleParseResult</span><span class="p">(</span><span class="n">parsed</span><span class="p">:</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nc">ParseResult</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nf">assert</span><span class="p">(</span><span class="n">parsed</span><span class="p">.</span><span class="nf">subcommand</span><span class="p">()</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span> <span class="s">"at least 1 command and 1 subcommand found"</span> <span class="p">}</span>
+
+    <span class="kd">val</span> <span class="py">sub</span> <span class="p">=</span> <span class="n">parsed</span><span class="p">.</span><span class="nf">subcommand</span><span class="p">()</span>
+    <span class="nf">assert</span><span class="p">(</span><span class="n">parsed</span><span class="p">.</span><span class="nf">commandSpec</span><span class="p">().</span><span class="nf">userObject</span><span class="p">().</span><span class="n">javaClass</span> <span class="p">==</span> <span class="nc">Git</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">)</span> <span class="p">{</span> <span class="s">"main command"</span> <span class="p">}</span>
+    <span class="nf">assert</span><span class="p">(</span><span class="n">sub</span><span class="p">.</span><span class="nf">commandSpec</span><span class="p">().</span><span class="nf">userObject</span><span class="p">().</span><span class="n">javaClass</span> <span class="p">==</span> <span class="nc">GitStatus</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">)</span> <span class="p">{</span> <span class="s">"subcommand"</span> <span class="p">}</span>
+
+    <span class="kd">val</span> <span class="py">git</span> <span class="p">=</span> <span class="n">parsed</span><span class="p">.</span><span class="nf">commandSpec</span><span class="p">().</span><span class="nf">userObject</span><span class="p">()</span> <span class="k">as</span> <span class="nc">Git</span>
+    <span class="nf">assert</span><span class="p">(</span><span class="n">git</span><span class="p">.</span><span class="n">gitDir</span> <span class="p">==</span> <span class="nc">File</span><span class="p">(</span><span class="s">"/home/rpopma/picocli"</span><span class="p">))</span>
+
+    <span class="kd">val</span> <span class="py">gitstatus</span> <span class="p">=</span> <span class="n">sub</span><span class="p">.</span><span class="nf">commandSpec</span><span class="p">().</span><span class="nf">userObject</span><span class="p">()</span> <span class="k">as</span> <span class="nc">GitStatus</span>
+    <span class="nf">assert</span><span class="p">(</span><span class="n">gitstatus</span><span class="p">.</span><span class="n">shortFormat</span><span class="p">)</span>               <span class="p">{</span> <span class="s">"git status -s"</span> <span class="p">}</span>
+    <span class="nf">assert</span><span class="p">(</span><span class="n">gitstatus</span><span class="p">.</span><span class="n">branchInfo</span><span class="p">)</span>                <span class="p">{</span> <span class="s">"git status -b"</span> <span class="p">}</span>
+    <span class="nf">assert</span><span class="p">(!</span><span class="n">gitstatus</span><span class="p">.</span><span class="n">showIgnored</span><span class="p">)</span>              <span class="p">{</span> <span class="s">"git status --showIgnored not specified"</span> <span class="p">}</span>
+    <span class="nf">assert</span><span class="p">(</span><span class="n">gitstatus</span><span class="p">.</span><span class="n">mode</span> <span class="p">===</span> <span class="nc">GitStatusMode</span><span class="p">.</span><span class="n">no</span><span class="p">)</span> <span class="p">{</span> <span class="s">"git status -u=no"</span> <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -9204,7 +9485,8 @@ See also the previous section, <a href="#_executing_subcommands">Executing Subco
 <div class="paragraph">
 <p>When registering subcommands declaratively, subcommands can be nested by specifying the <code>subcommands</code> attribute on subcommand classes:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"main"</span><span class="o">,</span> <span class="n">subcommands</span> <span class="o">=</span> <span class="o">{</span>
     <span class="nc">ChildCommand1</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>
@@ -9222,14 +9504,40 @@ See also the previous section, <a href="#_executing_subcommands">Executing Subco
     <span class="n">GreatGrandChild3Command3_1</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>
     <span class="n">GreatGrandChild3Command3_2</span><span class="o">.</span><span class="na">class</span> <span class="o">})</span>
 <span class="kd">class</span> <span class="nc">GrandChild3Command3</span> <span class="o">{</span> <span class="o">}</span>
-<span class="o">...</span></code></pre>
+<span class="c1">// ...</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"main"</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span>
+    <span class="nc">ChildCommand1</span><span class="o">::</span><span class="k">class</span><span class="p">,</span>
+    <span class="nc">ChildCommand2</span><span class="o">::</span><span class="k">class</span><span class="p">,</span>
+    <span class="nc">ChildCommand3</span><span class="o">::</span><span class="k">class</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="kd">class</span> <span class="nc">MainCommand</span> <span class="p">{</span> <span class="p">}</span>
+
+<span class="nd">@CommandLine</span><span class="p">.</span><span class="nc">Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"cmd3"</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span>
+    <span class="nc">GrandChild3Command1</span><span class="o">::</span><span class="k">class</span><span class="p">,</span>
+    <span class="nc">GrandChild3Command2</span><span class="o">::</span><span class="k">class</span><span class="p">,</span>
+    <span class="nc">GrandChild3Command3</span><span class="o">::</span><span class="k">class</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="kd">class</span> <span class="nc">ChildCommand3</span> <span class="p">{</span> <span class="p">}</span>
+
+<span class="nd">@CommandLine</span><span class="p">.</span><span class="nc">Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"cmd3sub3"</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span>
+    <span class="nc">GreatGrandChild3Command3_1</span><span class="o">::</span><span class="k">class</span><span class="p">,</span>
+    <span class="nc">GreatGrandChild3Command3_2</span><span class="o">::</span><span class="k">class</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="kd">class</span> <span class="nc">GrandChild3Command3</span> <span class="p">{}</span>
+<span class="c1">// ...</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>When registering subcommands programmatically, the object passed to the <code>addSubcommand</code> method can be an annotated object or a <code>CommandLine</code> instance with its own nested subcommands.
 For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">CommandLine</span> <span class="n">commandLine</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MainCommand</span><span class="o">())</span>
     <span class="o">.</span><span class="na">addSubcommand</span><span class="o">(</span><span class="s">"cmd1"</span><span class="o">,</span>                 <span class="k">new</span> <span class="nc">ChildCommand1</span><span class="o">())</span>
@@ -9244,10 +9552,39 @@ For example:</p>
     <span class="o">);</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">commandLine</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MainCommand</span><span class="p">())</span>
+    <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"cmd1"</span><span class="p">,</span>             <span class="nc">ChildCommand1</span><span class="p">())</span>
+    <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"cmd2"</span><span class="p">,</span>             <span class="nc">ChildCommand2</span><span class="p">())</span>
+    <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"cmd3"</span><span class="p">,</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">ChildCommand3</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"cmd3sub1"</span><span class="p">,</span>             <span class="nc">GrandChild3Command1</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"cmd3sub2"</span><span class="p">,</span>             <span class="nc">GrandChild3Command2</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"cmd3sub3"</span><span class="p">,</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">GrandChild3Command3</span><span class="p">())</span>
+            <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"cmd3sub3sub1"</span><span class="p">,</span> <span class="nc">GreatGrandChild3Command3_1</span><span class="p">())</span>
+            <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"cmd3sub3sub2"</span><span class="p">,</span> <span class="nc">GreatGrandChild3Command3_2</span><span class="p">())</span>
+        <span class="p">)</span>
+    <span class="p">)</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>By default, the usage help message only shows the subcommands of the specified command,
 and not the nested sub-subcommands. This can be customized by specifying your own <a href="#_reordering_sections"><code>IHelpSectionRenderer</code></a> for the command list section.
 The <code>picocli-examples</code> module has an <a href="https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/customhelp/ShowCommandHierarchy.java">example</a> that shows how to accomplish this.</p>
+</div>
+<div class="paragraph">
+<p>To get usage help for nested subcommands, either set <code>mixinStandardHelpOptions = true</code> in all commands in the hierarchy, and/or add <code>picocli.CommandLine.HelpCommand</code> to the subcommands of all commands. Then you can get help message for a nested (sub-)subcommand like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash"><span class="nv">$ </span>main cmd3 cmd3sub3 cmd3sub3sub1 <span class="nt">--help</span>      <span class="c"># mixinStandardHelpOptions</span>
+Usage: main cmd3 cmd3sub3 cmd3sub3sub1 <span class="o">[</span><span class="nt">-hV</span><span class="o">]</span> <span class="o">[</span><span class="nt">-y</span><span class="o">=</span>&lt;y&gt;] ...
+...
+<span class="nv">$ </span>main cmd3 cmd3sub3 <span class="nb">help </span>cmd3sub3sub1        <span class="c"># HelpCommand</span>
+Usage: main cmd3 cmd3sub3 cmd3sub3sub1 <span class="o">[</span><span class="nt">-y</span><span class="o">=</span>&lt;y&gt;] ... <span class="o">[</span>COMMAND]
+...</code></pre>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -9261,7 +9598,8 @@ The <code>picocli-examples</code> module has an <a href="https://github.com/remk
 <p>Below is an example where the top-level command <code>myapp</code> is marked as <code>subcommandsRepeatable = true</code>.
 This command has three subcommands, <code>add</code>, <code>list</code> and <code>send-report</code>:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"myapp"</span><span class="o">,</span> <span class="n">subcommandsRepeatable</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">MyApp</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
@@ -9279,6 +9617,30 @@ This command has three subcommands, <code>add</code>, <code>list</code> and <cod
         <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyApp</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"myapp"</span><span class="p">,</span> <span class="n">subcommandsRepeatable</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">MyApp</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+
+    <span class="nd">@Command</span>
+    <span class="k">fun</span> <span class="nf">add</span><span class="p">(</span><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">])</span> <span class="n">x</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span> <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-w"</span><span class="p">])</span> <span class="n">w</span><span class="p">:</span> <span class="nc">Double</span><span class="p">)</span> <span class="p">{</span> <span class="o">..</span><span class="p">.</span> <span class="p">}</span>
+
+    <span class="nd">@Command</span>
+    <span class="k">fun</span> <span class="nf">list</span><span class="p">(</span><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--where"</span><span class="p">])</span> <span class="k">where</span><span class="p">:</span> <span class="nc">String</span><span class="p">)</span> <span class="p">{</span> <span class="o">..</span><span class="p">.</span> <span class="p">}</span>
+
+    <span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"send-report"</span><span class="p">)</span>
+    <span class="k">fun</span> <span class="nf">sendReport</span><span class="p">(</span><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--to"</span><span class="p">],</span> <span class="n">split</span> <span class="p">=</span> <span class="s">","</span><span class="p">)</span> <span class="n">recipients</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span> <span class="o">..</span><span class="p">.</span> <span class="p">}</span>
+
+    <span class="k">companion</span> <span class="k">object</span> <span class="p">{</span>
+        <span class="nd">@JvmStatic</span>
+        <span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+            <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyApp</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -9358,7 +9720,8 @@ myapp add <span class="nt">-x</span><span class="o">=</span>item1 <span class="n
 <div class="paragraph">
 <p>After registering subcommands, calling the <code>commandLine.usage</code> method will show a usage help message that includes all registered subcommands. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">CommandLine</span> <span class="n">commandLine</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">Git</span><span class="o">());</span>
 
@@ -9368,6 +9731,19 @@ myapp add <span class="nt">-x</span><span class="o">=</span>item1 <span class="n
 <span class="n">commandLine</span><span class="o">.</span><span class="na">addSubcommand</span><span class="o">(</span><span class="s">"commit"</span><span class="o">,</span>   <span class="k">new</span> <span class="nc">GitCommit</span><span class="o">());</span>
 <span class="o">...</span>
 <span class="n">commandLine</span><span class="o">.</span><span class="na">usage</span><span class="o">(</span><span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">commandLine</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">Git</span><span class="p">())</span>
+
+<span class="c1">// add subcommands programmatically (not necessary if the parent command</span>
+<span class="c1">// declaratively registers the subcommands via annotation)</span>
+<span class="n">commandLine</span><span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"status"</span><span class="p">,</span>   <span class="nc">GitStatus</span><span class="p">())</span>
+<span class="n">commandLine</span><span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"commit"</span><span class="p">,</span>   <span class="nc">GitCommit</span><span class="p">())</span>
+
+<span class="n">commandLine</span><span class="p">.</span><span class="nf">usage</span><span class="p">(</span><span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -9406,10 +9782,11 @@ The most commonly used git commands are:
 <div class="paragraph">
 <p>The above usage help message is produced from the annotations on the class below:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"git"</span><span class="o">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span>
-        <span class="n">version</span> <span class="o">=</span> <span class="s">"subcommand demo - picocli 3.0"</span><span class="o">,</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="s">"subcommand demo - picocli 4.0"</span><span class="o">,</span>
         <span class="n">subcommands</span> <span class="o">=</span> <span class="nc">HelpCommand</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>
         <span class="n">description</span> <span class="o">=</span> <span class="s">"Git is a fast, scalable, distributed revision control "</span> <span class="o">+</span>
                       <span class="s">"system with an unusually rich command set that provides both "</span> <span class="o">+</span>
@@ -9417,9 +9794,26 @@ The most commonly used git commands are:
         <span class="n">commandListHeading</span> <span class="o">=</span> <span class="s">"%nCommands:%n%nThe most commonly used git commands are:%n"</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">Git</span> <span class="o">{</span>
 
-  <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--git-dir"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Set the path to the repository."</span><span class="o">)</span>
-  <span class="kd">private</span> <span class="nc">File</span> <span class="n">gitDir</span><span class="o">;</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--git-dir"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Set the path to the repository."</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">File</span> <span class="n">gitDir</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"git"</span><span class="p">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span>
+        <span class="n">version</span> <span class="p">=</span> <span class="p">[</span><span class="s">"subcommand demo - picocli 4.0"</span><span class="p">],</span>
+        <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span><span class="nc">HelpCommand</span><span class="o">::</span><span class="k">class</span><span class="p">],</span>
+        <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Git is a fast, scalable, distributed revision control "</span> <span class="p">+</span>
+                       <span class="s">"system with an unusually rich command set that provides both "</span> <span class="p">+</span>
+                       <span class="s">"high-level operations and full access to internals."</span><span class="p">],</span>
+        <span class="n">commandListHeading</span> <span class="p">=</span> <span class="s">"%nCommands:%n%nThe most commonly used git commands are:%n"</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">Git</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--git-dir"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Set the path to the repository."</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">gitDir</span> <span class="p">:</span> <span class="nc">File</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -9446,7 +9840,8 @@ For example, if the <code>git</code> command has a <code>commit</code> subcomman
 <p>If a subcommand explicitly wants to show the usage help message, the <code>@Spec</code> annotation may be useful.
 The injected <code>CommandSpec</code> has its parent command initialized correctly, so the usage help can show the fully qualified name of the subcommand.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"commit"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"..."</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">Commit</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
@@ -9458,6 +9853,22 @@ The injected <code>CommandSpec</code> has its parent command initialized correct
         <span class="o">}</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"commit"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"..."</span><span class="p">]</span> <span class="p">)</span>
+<span class="kd">class</span> <span class="nc">Commit</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="nd">@Spec</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">spec</span><span class="p">:</span> <span class="nc">CommandSpec</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nf">shouldShowHelp</span><span class="p">())</span> <span class="p">{</span>
+            <span class="n">spec</span><span class="p">.</span><span class="nf">commandLine</span><span class="p">().</span><span class="nf">usage</span><span class="p">(</span><span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -9473,7 +9884,8 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 <div class="paragraph">
 <p>For example, the <code>bar</code> subcommand below is annotated as <code>hidden = true</code>:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"foo"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"This is a visible subcommand"</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">Foo</span> <span class="o">{</span> <span class="o">}</span>
@@ -9485,12 +9897,25 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 <span class="kd">class</span> <span class="nc">App</span> <span class="o">{</span> <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"foo"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"This is a visible subcommand"</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">Foo</span> <span class="p">{</span> <span class="p">}</span>
+
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"bar"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"This is a hidden subcommand"</span><span class="p">],</span> <span class="n">hidden</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">Bar</span> <span class="p">{</span> <span class="p">}</span>
+
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"app"</span><span class="p">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span><span class="nc">Foo</span><span class="o">::</span><span class="k">class</span><span class="p">,</span> <span class="nc">Bar</span><span class="o">::</span><span class="k">class</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">App</span> <span class="p">{</span> <span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>The usage help message for <code>App</code> looks like the below. Note that the <code>bar</code> subcommand is not shown:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>Usage: app
+<pre>Usage: app [COMMAND]
 Commands:
   foo  This is a visible subcommand</pre>
 </div>
@@ -9526,23 +9951,47 @@ are not validated (similar to <a href="#_help_options">help options</a>).</p>
 <div class="paragraph">
 <p>Prior to picocli 4.3, applications could indicate that subcommands are required by letting the top-level command throw a <code>ParameterException</code>. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"git"</span><span class="o">,</span> <span class="n">synopsisSubcommandLabel</span> <span class="o">=</span> <span class="s">"COMMAND"</span><span class="o">,</span> <span class="n">subcommands</span> <span class="o">=</span> <span class="o">{</span> <span class="o">...</span> <span class="o">})</span>
 <span class="kd">class</span> <span class="nc">Git</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
     <span class="nd">@Spec</span> <span class="nc">CommandSpec</span> <span class="n">spec</span><span class="o">;</span>
+
     <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
         <span class="k">throw</span> <span class="k">new</span> <span class="nf">ParameterException</span><span class="o">(</span><span class="n">spec</span><span class="o">.</span><span class="na">commandLine</span><span class="o">(),</span> <span class="s">"Missing required subcommand"</span><span class="o">);</span>
     <span class="o">}</span>
+
     <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">...</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
         <span class="nc">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">Git</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">));</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"git"</span><span class="p">,</span> <span class="n">synopsisSubcommandLabel</span> <span class="p">=</span> <span class="s">"COMMAND"</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span> <span class="o">..</span><span class="p">.</span> <span class="p">])</span>
+<span class="kd">class</span> <span class="nc">Git</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="nd">@Spec</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">spec</span><span class="p">:</span> <span class="nc">CommandSpec</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">throw</span> <span class="nc">ParameterException</span><span class="p">(</span><span class="n">spec</span><span class="p">.</span><span class="nf">commandLine</span><span class="p">(),</span> <span class="s">"Missing required subcommand"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">companion</span> <span class="k">object</span> <span class="p">{</span>
+        <span class="nd">@JvmStatic</span>
+        <span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+            <span class="nf">exitProcess</span><span class="p">(</span><span class="nc">CommandLine</span><span class="p">(</span><span class="nc">Git</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">))</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
-<p>By default, the synopsis of a command with subcommands shows <code>[COMMAND]</code>, indicating that a subcommand can optionally be specified.
-To show that the subcommand is mandatory, set the <code>synopsisSubcommandLabel</code> attribute to <code>COMMAND</code>, without the <code>[</code> and <code>]</code> brackets.</p>
+<p>By default, the synopsis of a command with subcommands shows a trailing <code>[COMMAND]</code>, indicating that a subcommand can optionally be specified.
+To show that the subcommand is mandatory, use the <code>synopsisSubcommandLabel</code> attribute to replace this string with <code>COMMAND</code> (without the <code>[</code> and <code>]</code> brackets).</p>
 </div>
 </div>
 </div>
@@ -12496,7 +12945,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.2<br>
-Last updated 2020-10-14 20:34:46 +0900
+Last updated 2020-10-16 07:21:37 +0900
 </div>
 </div>
 <style>
