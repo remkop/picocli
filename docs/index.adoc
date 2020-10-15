@@ -414,7 +414,9 @@ Option names are case-sensitive by default, but this is <<Case Sensitivity,custo
 TIP: You may be interested in this http://catb.org/~esr/writings/taoup/html/ch10s05.html#id2948149[list of common option names]. Following these conventions may make your application more intuitive to use for experienced users.
 
 The below example shows options with one or more names, options that take an option parameter, and a <<Help Options,help>> option.
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 class Tar {
     @Option(names = "-c", description = "create a new archive")
@@ -430,8 +432,29 @@ class Tar {
     private boolean helpRequested = false;
 }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class Tar : Runnable {
+    @Option(names = ["-c"], description = ["create a new archive"])
+    var create : Boolean = false;
+
+    @Option(names = ["-f", "--file"], paramLabel = "ARCHIVE", description = ["the archive file"])
+    lateinit var archive : File;
+
+    @Parameters(paramLabel = "FILE", description = ["one ore more files to archive"])
+    lateinit var files : Array<File>;
+
+    @Option(names = ["-h", "--help"], usageHelp = true, description = ["display a help message"])
+    private var helpRequested : Boolean = false;
+}
+----
+
 Picocli matches the option names to set the field values.
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 String[] args = { "-c", "--file", "result.tar", "file1.txt", "file2.txt" };
 Tar tar = new Tar();
@@ -441,6 +464,19 @@ assert !tar.helpRequested;
 assert  tar.create;
 assert  tar.archive.equals(new File("result.tar"));
 assert  Arrays.equals(tar.files, new File[] {new File("file1.txt"), new File("file2.txt")});
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val args1 = arrayOf("-c", "--file", "result.tar", "file1.txt", "file2.txt")
+var tar = Tar()
+CommandLine(tar).parseArgs(*args1);
+
+assert(!tar.helpRequested)
+assert(tar.create)
+assert(tar.archive.equals(File("result.tar")))
+assert(Arrays.equals(tar.files, arrayOf<File>(File("file1.txt"), File("file2.txt"))))
 ----
 
 === Interactive (Password) Options
@@ -456,7 +492,8 @@ From picocli 3.9.6, interactive options can use type `char[]` instead of String,
 
 Example usage:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class Login implements Callable<Integer> {
     @Option(names = {"-u", "--user"}, description = "User name")
@@ -484,11 +521,51 @@ class Login implements Callable<Integer> {
     private String base64(byte[] arr) { /* ... */ }
 }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class Login : Callable<Int> {
+    @Option(names = ["-u", "--user"], description = ["User name"])
+    var user: String? = null
+
+    @Option(names = ["-p", "--password"], description = ["Passphrase"], interactive = true)
+    lateinit var password: CharArray
+
+    override fun call(): Int {
+        val bytes = ByteArray(password.size)
+        for (i in bytes.indices) { bytes[i] = password[i].toByte() }
+
+        val md = MessageDigest.getInstance("SHA-256")
+        md.update(bytes)
+
+        println(("Hi %s, your password is hashed to %s.").format(user, base64(md.digest())))
+
+        // null out the arrays when done
+        Arrays.fill(bytes, 0.toByte())
+        Arrays.fill(password, ' ')
+
+        return 0
+    }
+
+    private fun base64(arr: ByteArray): String { /* ... */ }
+}
+----
+
 When this command is invoked like this:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 new CommandLine(new Login()).execute("-u", "user123", "-p");
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+CommandLine(Login()).execute("-u", "user123", "-p")
+----
+
 Then the user will be prompted to enter a value:
 
 [source]
@@ -509,13 +586,24 @@ The default <<Arity,arity>> for interactive options is zero, meaning that the op
 
 For example, if an application has these options:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Option(names = "--user")
 String user;
 
 @Option(names = "--password", arity = "0..1", interactive = true)
 char[] password;
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["--user"])
+lateinit var user: String
+
+@Option(names = ["--password"], arity = "0..1", interactive = true)
+lateinit var password: CharArray
 ----
 
 With the following input, the `password` field will be initialized to `"123"` without prompting the user for input:
@@ -556,7 +644,9 @@ one or more single-character options without option-arguments, followed by at mo
 
 
 For example, given this annotated class:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 class ClusteredShortOptions {
     @Option(names = "-a") boolean aaa;
@@ -565,9 +655,21 @@ class ClusteredShortOptions {
     @Option(names = "-f") String  file;
 }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class ClusteredShortOptions {
+    @Option(names = ["-a"]) var aaa = false
+    @Option(names = ["-b"]) var bbb = false
+    @Option(names = ["-c"]) var ccc = false
+    @Option(names = ["-f"]) lateinit var file: String
+}
+----
+
 The following command line arguments are all equivalent and parsing them will give the same result:
 
-[source,java]
+[source,bash]
 ----
 <command> -abcfInputFile.txt
 <command> -abcf=InputFile.txt
@@ -582,10 +684,19 @@ The following command line arguments are all equivalent and parsing them will gi
 === Boolean Options
 Boolean options usually don't need a parameter: it is enough to specify the option name on the command line.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class BooleanOptions {
     @Option(names = "-x") boolean x;
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class BooleanOptions {
+    @Option(names = ["-x"]) var x = false
 }
 ----
 
@@ -604,14 +715,27 @@ This is enough in most cases, but picocli offers alternatives for applications t
 
 From picocli 4.0, boolean options can be `negatable`.
 
-```java
+.Java
+[source,java,role="primary"]
+----
 @Command(name = "negatable-options-demo")
 class NegatableOptionsDemo {
     @Option(names = "--verbose",           negatable = true) boolean verbose;
     @Option(names = "-XX:+PrintGCDetails", negatable = true) boolean printGCDetails;
     @Option(names = "-XX:-UseG1GC",        negatable = true) boolean useG1GC = true;
 }
-```
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "negatable-options-demo")
+class NegatableOptionsDemo {
+    @Option(names = ["--verbose"],           negatable = true) var verbose = false
+    @Option(names = ["-XX:+PrintGCDetails"], negatable = true) var printGCDetails = false
+    @Option(names = ["-XX:-UseG1GC"],        negatable = true) var useG1GC = true
+}
+----
 
 When an option is negatable, picocli will recognize negative aliases of the option on the command line.
 
@@ -637,11 +761,20 @@ If the negated form of the option is found, for example `--no-verbose`, the valu
 ====
 When a negatable option is `true` by default, give it the negative name. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Option(names = "--no-backup", negatable = true,
   description = "Make a backup. True by default.")
 boolean backup = true;
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["--no-backup"], negatable = true,
+  description = ["Make a backup. True by default."])
+var backup = true
 ----
 
 When end users specify `--no-backup` on the command line, the value is set to `false`.
@@ -662,7 +795,8 @@ The `index` attribute accepts _range_ values, so an annotation like `@Parameters
 
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class PositionalParameters {
     @Parameters(index = "0")    InetAddress host;
@@ -674,8 +808,23 @@ class PositionalParameters {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class PositionalParameters {
+    @Parameters(index = "0")    lateinit var host: InetAddress
+    @Parameters(index = "1")    var port = 0
+    @Parameters(index = "2..*") lateinit var files: Array<File>
+
+    @Parameters(hidden = true)   // "hidden": don't show this parameter in usage help message
+    lateinit var allParameters: List<String> // no "index" attribute: captures _all_ arguments
+}
+----
+
 Picocli initializes fields with the values at the specified index in the arguments array.
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 String[] args = { "localhost", "12345", "file1.txt", "file2.txt" };
 PositionalParameters params = CommandLine.populateCommand(new PositionalParameters(), args);
@@ -685,7 +834,19 @@ assert params.port == 12345;
 assert Arrays.equals(params.files, new File[] {new File("file1.txt"), new File("file2.txt")});
 
 assert params.allParameters.equals(Arrays.asList(args));
+----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val args = arrayOf("localhost", "12345", "file1.txt", "file2.txt")
+val params: PositionalParameters = CommandLine.populateCommand(PositionalParameters(), *args)
+
+assert(params.host.getHostName().equals("localhost"))
+assert(params.port === 12345)
+assert(Arrays.equals(params.files, arrayOf(File("file1.txt"), File("file2.txt"))))
+
+assert(params.allParameters.equals(Arrays.asList(*args)))
 ----
 
 See <<Strongly Typed Everything>> for which types are supported out of the box and how to add custom types.
@@ -719,7 +880,8 @@ From picocli 2.0, positional parameters can be specified anywhere on the command
 
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class Mixed {
     @Parameters
@@ -730,8 +892,22 @@ class Mixed {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class Mixed {
+    @Parameters
+    lateinit var positional: List<String>
+
+    @Option(names = ["-o"])
+    lateinit var options: List<String>
+}
+----
+
 Any command line argument that is not an option or subcommand is interpreted as a positional parameter.
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 String[] args = { "param0", "-o", "AAA", "param1", "param2", "-o", "BBB", "param3" };
 Mixed mixed = new Mixed();
@@ -741,11 +917,23 @@ assert mixed.positional.equals(Arrays.asList("param0", "param1", "param2", "para
 assert mixed.options.equals   (Arrays.asList("AAA", "BBB"));
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val args = arrayOf("param0", "-o", "AAA", "param1", "param2", "-o", "BBB", "param3")
+val mixed = Mixed()
+CommandLine(mixed).parseArgs(*args)
+
+assert(mixed.positional == Arrays.asList("param0", "param1", "param2", "param3"))
+assert(mixed.options == Arrays.asList("AAA", "BBB"))
+----
+
 === Double dash (`--`)
 When one of the command line arguments is just two dashes without any characters attached (`--`),
 picocli interprets all following arguments as positional parameters, even arguments that match an option name.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class DoubleDashDemo {
     @Option(names = "-v")     boolean verbose;
@@ -754,8 +942,20 @@ class DoubleDashDemo {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class DoubleDashDemo {
+    @Option(names = ["-v"])     var verbose = false
+    @Option(names = ["-files"]) var files: List<String>? = null
+    @Parameters                 lateinit var params: List<String>
+}
+----
+
 The `--` end-of-options delimiter clarifies which of the arguments are positional parameters:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 String[] args = { "-v", "--", "-files", "file1", "file2" };
 DoubleDashDemo demo = new DoubleDashDemo();
@@ -764,6 +964,18 @@ new CommandLine(demo).parseArgs(args);
 assert demo.verbose;
 assert demo.files == null;
 assert demo.params.equals(Arrays.asList("-files", "file1", "file2"));
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val args = arrayOf("-v", "--", "-files", "file1", "file2")
+val demo = DoubleDashDemo()
+CommandLine(demo).parseArgs(*args)
+
+assert(demo.verbose)
+assert(demo.files == null)
+assert(demo.params == Arrays.asList("-files", "file1", "file2"))
 ----
 
 A custom delimiter can be configured with `CommandLine.setEndOfOptionsDelimiter(String)`.
@@ -2228,7 +2440,7 @@ assert 3 == new CommandLine(new Gesture()).execute();
 
 By default, the `execute` method returns `CommandLine.ExitCode.OK` (`0`) on success, `CommandLine.ExitCode.SOFTWARE` (`1`) when an exception occurred in the Runnable, Callable or command method, and `CommandLine.ExitCode.USAGE` (`2`) for invalid input. (These are common values according to https://stackoverflow.com/questions/1101957/are-there-any-standard-exit-status-codes-in-linux/40484670#40484670[this StackOverflow answer]). This can be customized with the `@Command` annotation. For example:
 
-```java 
+```java
 @Command(exitCodeOnInvalidInput = 123,
    exitCodeOnExecutionException = 456)
 ```
@@ -5243,7 +5455,7 @@ public static void main(String... args) {
                .addSubcommand("commit",   new GitCommit())
                // ...
                ;
-               
+
     // Invoke the parseArgs method to parse the arguments
     ParseResult parsed = commandLine.parseArgs(args);
     handleParseResult(parsed);
@@ -5373,7 +5585,8 @@ class GrandChild3Command3 {}
 When registering subcommands programmatically, the object passed to the `addSubcommand` method can be an annotated object or a `CommandLine` instance with its own nested subcommands.
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 CommandLine commandLine = new CommandLine(new MainCommand())
     .addSubcommand("cmd1",                 new ChildCommand1())
@@ -5386,6 +5599,22 @@ CommandLine commandLine = new CommandLine(new MainCommand())
             .addSubcommand("cmd3sub3sub2", new GreatGrandChild3Command3_2())
         )
     );
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val commandLine = CommandLine(MainCommand())
+    .addSubcommand("cmd1",             ChildCommand1())
+    .addSubcommand("cmd2",             ChildCommand2())
+    .addSubcommand("cmd3", CommandLine(ChildCommand3())
+        .addSubcommand("cmd3sub1",             GrandChild3Command1())
+        .addSubcommand("cmd3sub2",             GrandChild3Command2())
+        .addSubcommand("cmd3sub3", CommandLine(GrandChild3Command3())
+            .addSubcommand("cmd3sub3sub1", GreatGrandChild3Command3_1())
+            .addSubcommand("cmd3sub3sub2", GreatGrandChild3Command3_2())
+        )
+    )
 ----
 
 By default, the usage help message only shows the subcommands of the specified command,
@@ -5411,7 +5640,8 @@ From picocli 4.2, it is possible to specify that a command's subcommands can be 
 Below is an example where the top-level command `myapp` is marked as `subcommandsRepeatable = true`.
 This command has three subcommands, `add`, `list` and `send-report`:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "myapp", subcommandsRepeatable = true)
 class MyApp implements Runnable {
@@ -5427,6 +5657,30 @@ class MyApp implements Runnable {
 
     public static void main(String... args) {
         new CommandLine(new MyApp()).execute(args);
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "myapp", subcommandsRepeatable = true)
+class MyApp : Runnable {
+
+    @Command
+    fun add(@Option(names = ["-x"]) x: String, @Option(names = ["-w"]) w: Double) { ... }
+
+    @Command
+    fun list(@Option(names = ["--where"]) where: String) { ... }
+
+    @Command(name = "send-report")
+    fun sendReport(@Option(names = ["--to"], split = ",") recipients: Array<String>) { ... }
+
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            CommandLine(MyApp()).execute(*args)
+        }
     }
 }
 ----
@@ -5490,7 +5744,8 @@ is invoked, only the last two sub-subcommands `subsub-B1` and `subsub-B2` (who b
 === Usage Help for Subcommands
 After registering subcommands, calling the `commandLine.usage` method will show a usage help message that includes all registered subcommands. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 CommandLine commandLine = new CommandLine(new Git());
 
@@ -5501,6 +5756,20 @@ commandLine.addSubcommand("commit",   new GitCommit());
 ...
 commandLine.usage(System.out);
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val commandLine = CommandLine(Git())
+
+// add subcommands programmatically (not necessary if the parent command
+// declaratively registers the subcommands via annotation)
+commandLine.addSubcommand("status",   GitStatus())
+commandLine.addSubcommand("commit",   GitCommit())
+
+commandLine.usage(System.out)
+----
+
 The usage help message shows the commands in the order they were registered:
 
 [#subcommand-help]
@@ -5533,10 +5802,12 @@ The most commonly used git commands are:
 The description of each subcommand in the command list is taken from the subcommand's first `header` line, or the first `description` line if it does not have a `header` defined.
 
 The above usage help message is produced from the annotations on the class below:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "git", mixinStandardHelpOptions = true,
-        version = "subcommand demo - picocli 3.0",
+        version = "subcommand demo - picocli 4.0",
         subcommands = HelpCommand.class,
         description = "Git is a fast, scalable, distributed revision control " +
                       "system with an unusually rich command set that provides both " +
@@ -5544,8 +5815,25 @@ The above usage help message is produced from the annotations on the class below
         commandListHeading = "%nCommands:%n%nThe most commonly used git commands are:%n")
 class Git {
 
-  @Option(names = "--git-dir", description = "Set the path to the repository.")
-  private File gitDir;
+    @Option(names = "--git-dir", description = "Set the path to the repository.")
+    private File gitDir;
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "git", mixinStandardHelpOptions = true,
+        version = ["subcommand demo - picocli 4.0"],
+        subcommands = [HelpCommand::class],
+        description = ["Git is a fast, scalable, distributed revision control " +
+                       "system with an unusually rich command set that provides both " +
+                       "high-level operations and full access to internals."],
+        commandListHeading = "%nCommands:%n%nThe most commonly used git commands are:%n")
+class Git : Runnable {
+
+    @Option(names = ["--git-dir"], description = ["Set the path to the repository."])
+    lateinit var gitDir : File
 }
 ----
 
@@ -5560,13 +5848,30 @@ For example, if the `git` command has a `commit` subcommand, the usage help for 
 If a subcommand explicitly wants to show the usage help message, the `@Spec` annotation may be useful.
 The injected `CommandSpec` has its parent command initialized correctly, so the usage help can show the fully qualified name of the subcommand.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "commit", description = "...")
 class Commit implements Runnable {
     @Spec CommandSpec spec;
 
     public void run() {
+        if (shouldShowHelp()) {
+            spec.commandLine().usage(System.out);
+        }
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "commit", description = ["..."] )
+class Commit : Runnable {
+    @Spec
+    lateinit var spec: CommandSpec
+
+    override fun run() {
         if (shouldShowHelp()) {
             spec.commandLine().usage(System.out);
         }
@@ -5584,7 +5889,8 @@ Commands with the `hidden` attribute set to `true` will not be shown in the usag
 
 For example, the `bar` subcommand below is annotated as `hidden = true`:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "foo", description = "This is a visible subcommand")
 class Foo { }
@@ -5595,9 +5901,23 @@ class Bar { }
 @Command(name = "app", subcommands = {Foo.class, Bar.class})
 class App { }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "foo", description = ["This is a visible subcommand"])
+class Foo { }
+
+@Command(name = "bar", description = ["This is a hidden subcommand"], hidden = true)
+class Bar { }
+
+@Command(name = "app", mixinStandardHelpOptions = true, subcommands = [Foo::class, Bar::class])
+class App { }
+----
+
 The usage help message for `App` looks like the below. Note that the `bar` subcommand is not shown:
 ----
-Usage: app
+Usage: app [COMMAND]
 Commands:
   foo  This is a visible subcommand
 ----
@@ -5625,22 +5945,46 @@ Then, when the user specifies only the top-level command, without a subcommand, 
 
 Prior to picocli 4.3, applications could indicate that subcommands are required by letting the top-level command throw a `ParameterException`. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "git", synopsisSubcommandLabel = "COMMAND", subcommands = { ... })
 class Git implements Runnable {
     @Spec CommandSpec spec;
+
     public void run() {
         throw new ParameterException(spec.commandLine(), "Missing required subcommand");
     }
+
     public static void main(String... args) {
         System.exit(new CommandLine(new Git()).execute(args));
     }
 }
 ----
 
-By default, the synopsis of a command with subcommands shows `[COMMAND]`, indicating that a subcommand can optionally be specified.
-To show that the subcommand is mandatory, set the `synopsisSubcommandLabel` attribute to `COMMAND`, without the `[` and `]` brackets.
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "git", synopsisSubcommandLabel = "COMMAND", subcommands = [ ... ])
+class Git : Runnable {
+    @Spec
+    lateinit var spec: CommandSpec
+
+    override fun run() {
+        throw ParameterException(spec.commandLine(), "Missing required subcommand")
+    }
+
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            exitProcess(CommandLine(Git()).execute(*args))
+        }
+    }
+}
+----
+
+By default, the synopsis of a command with subcommands shows a trailing `[COMMAND]`, indicating that a subcommand can optionally be specified.
+To show that the subcommand is mandatory, use the `synopsisSubcommandLabel` attribute to replace this string with `COMMAND` (without the `[` and `]` brackets).
 
 
 == Reuse
@@ -7631,7 +7975,7 @@ Use `jlink` with the `--launcher` option to generate launcher scripts for your a
 See https://medium.com/azulsystems/using-jlink-to-build-java-runtimes-for-non-modular-applications-9568c5e70ef4[this article] for using jlink for non-modular applications.
 
 === jpackage
-jpackage is a packaging tool according to https://openjdk.java.net/jeps/343[JEP 343] which ships with JDK 14. 
+jpackage is a packaging tool according to https://openjdk.java.net/jeps/343[JEP 343] which ships with JDK 14.
 JPackage can take the custom light-weight JRE produced by `jlink` and create an installer and a native application launcher.
 The result is a Java "application image" that is a single directory in the filesystem containing
 the native application launcher, resources and configuration files,
