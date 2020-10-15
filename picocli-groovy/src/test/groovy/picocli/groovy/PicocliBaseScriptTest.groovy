@@ -384,4 +384,45 @@ class Message {
         shell.evaluate script
         assertEquals("Hi world!", baos.toString().trim())
     }
+
+
+    @Test
+    public void testSubcommandMethods1191() {
+
+        String script = '''
+//@Grab('info.picocli:picocli-groovy:4.5.1')
+//@GrabConfig(systemClassLoader = true)
+@Command(name = "picocli",
+        mixinStandardHelpOptions = true,
+        version = '1.0.0',
+        subcommands = [ HelpCommand.class ],
+        description = 'sub command test')
+
+@picocli.groovy.PicocliScript
+import static picocli.CommandLine.*
+
+@Override
+Object run() {
+    return getOrCreateCommandLine().execute(getScriptArguments())
+}
+
+@Command(description = "Record changes to the repository")
+void commit(@Option(names = ["-m", "--message"]) String commitMessage,
+            @Option(names = "--squash", paramLabel = "<commit>") String squash,
+            @Parameters(paramLabel = "<file>") File[] files) {
+
+    println "commit ${files}"
+}
+
+println "done"
+'''
+        GroovyShell shell = new GroovyShell(new Binding())
+        shell.context.setVariable('args', ["commit", "picocli.groovy"] as String[])
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setOut(new PrintStream(baos))
+        Object result = shell.evaluate script
+        assertEquals("commit [picocli.groovy]", baos.toString().trim())
+        assertEquals(0, result)
+    }
 }
