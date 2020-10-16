@@ -5068,7 +5068,7 @@ class Bar : Callable<Int> {
     }
 
     @Command(name = "baz", description = ["I'm a subcommand of `bar`"])
-    fun baz( @CommandLine.Option(names = ["-z"]) z : Int) : Int {
+    fun baz( @Option(names = ["-z"]) z : Int) : Int {
         println("hi from baz, z=$z")
         return 45
     }
@@ -5567,14 +5567,14 @@ class GrandChild3Command3 { }
 )
 class MainCommand { }
 
-@CommandLine.Command(name = "cmd3", subcommands = [
+@Command(name = "cmd3", subcommands = [
     GrandChild3Command1::class,
     GrandChild3Command2::class,
     GrandChild3Command3::class]
 )
 class ChildCommand3 { }
 
-@CommandLine.Command(name = "cmd3sub3", subcommands = [
+@Command(name = "cmd3sub3", subcommands = [
     GreatGrandChild3Command3_1::class,
     GreatGrandChild3Command3_2::class]
 )
@@ -5997,7 +5997,8 @@ Picocli will walk the class hierarchy to check for annotations, so `@Options`, `
 
 Below is an example class, `ReusableOptions`, that defines some usage help attributes and a `--verbose` option that we want to reuse.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(synopsisHeading      = "%nUsage:%n%n",
          descriptionHeading   = "%nDescription:%n%n",
@@ -6007,18 +6008,49 @@ Below is an example class, `ReusableOptions`, that defines some usage help attri
 public class ReusableOptions {
 
     @Option(names = { "-v", "--verbose" }, description = {
-        "Specify multiple -v options to increase verbosity.",
-        "For example, `-v -v -v` or `-vvv`" })
+            "Specify multiple -v options to increase verbosity.",
+            "For example, `-v -v -v` or `-vvv`" })
     protected boolean[] verbosity = new boolean[0];
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(synopsisHeading      = "%nUsage:%n%n",
+         descriptionHeading   = "%nDescription:%n%n",
+         parameterListHeading = "%nParameters:%n%n",
+         optionListHeading    = "%nOptions:%n%n",
+         commandListHeading   = "%nCommands:%n%n")
+public open class ReusableOptions {
+
+    @Option(names = ["-v", "--verbose"], description = [
+            "Specify multiple -v options to increase verbosity.",
+            "For example, `-v -v -v` or `-vvv`"])
+    protected var verbosity = BooleanArray(0)
+}
+----
+
+
 Now, any command defined in a class that extends `ReusableOptions` will inherit the `--verbose` option, and generate a usage help message in the same spacious style. Example code:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "zip", description = "Example reuse by subclassing")
-public class MyCommand extends ReusableOptions { ... }
+public class MyCommand extends ReusableOptions { /* ... */ }
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "zip", description = ["Example reuse by subclassing"])
+class MyCommand : ReusableOptions(), Runnable {
+
+    override fun run() {
+        // ...
+    }
+}
 ----
 
 === Mixins
@@ -6035,7 +6067,8 @@ Alternatively, mixins can be installed programmatically by calling the `CommandL
 
 The examples below again use the sample `ReusableOptions` class as the mixin:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(synopsisHeading      = "%nUsage:%n%n",
          descriptionHeading   = "%nDescription:%n%n",
@@ -6045,9 +6078,26 @@ The examples below again use the sample `ReusableOptions` class as the mixin:
 public class ReusableOptions {
 
     @Option(names = { "-v", "--verbose" }, description = {
-        "Specify multiple -v options to increase verbosity.",
-        "For example, `-v -v -v` or `-vvv`" })
+            "Specify multiple -v options to increase verbosity.",
+            "For example, `-v -v -v` or `-vvv`" })
     protected boolean[] verbosity = new boolean[0];
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(synopsisHeading      = "%nUsage:%n%n",
+         descriptionHeading   = "%nDescription:%n%n",
+         parameterListHeading = "%nParameters:%n%n",
+         optionListHeading    = "%nOptions:%n%n",
+         commandListHeading   = "%nCommands:%n%n")
+open class ReusableOptions {
+
+    @Option(names = ["-v", "--verbose"], description = [
+            "Specify multiple -v options to increase verbosity.",
+            "For example, `-v -v -v` or `-vvv`"])
+    protected var verbosity = BooleanArray(0)
 }
 ----
 
@@ -6058,7 +6108,8 @@ Similarly, a <<Subcommands as Methods,`@Command`-annotated method>> can include 
 All picocli annotations found in the mixin class are added to the command (the "mixee").
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "zip", description = "Example reuse with @Mixin annotation.")
 public class MyCommand {
@@ -6073,16 +6124,45 @@ public class MyCommand {
     }
 }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "zip", description = ["Example reuse with @Mixin annotation."])
+public class MyCommand {
+
+    // adds the options defined in ReusableOptions to this command
+    @Mixin
+    lateinit var myMixin: ReusableOptions
+
+    @Command
+    fun subcmd(@Mixin opts: ReusableOptions) : Unit {
+        // ...
+    }
+}
+----
+
 In addition to adding the options, subcommands and command attributes of the mixed-in object to the command,
 the mixed-in object is also injected into the field annotated with `@Mixin`, making it trivial for the command to reference the mixed-in object if necessary.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 MyCommand cmd = new MyCommand();
 new CommandLine(cmd).parseArgs("-vvv");
 
 // the options defined in ReusableOptions have been added to the `MyCommand` command
 assert cmd.myMixin.verbosity.length == 3;
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val cmd = MyCommand()
+CommandLine(cmd).parseArgs("-vvv")
+
+// the options defined in ReusableOptions have been added to the `MyCommand` command
+assert(cmd.myMixin.verbosity.size == 3)
 ----
 
 Mixins added with the `@Mixin` annotation can also be accessed via the map returned by `CommandLine.getMixins`.
