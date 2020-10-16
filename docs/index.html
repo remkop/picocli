@@ -8960,7 +8960,7 @@ adding subcommands.
     <span class="p">}</span>
 
     <span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"baz"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"I'm a subcommand of `bar`"</span><span class="p">])</span>
-    <span class="k">fun</span> <span class="nf">baz</span><span class="p">(</span> <span class="nd">@CommandLine</span><span class="p">.</span><span class="nc">Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-z"</span><span class="p">])</span> <span class="n">z</span> <span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">:</span> <span class="nc">Int</span> <span class="p">{</span>
+    <span class="k">fun</span> <span class="nf">baz</span><span class="p">(</span> <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-z"</span><span class="p">])</span> <span class="n">z</span> <span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">:</span> <span class="nc">Int</span> <span class="p">{</span>
         <span class="nf">println</span><span class="p">(</span><span class="s">"hi from baz, z=$z"</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">45</span>
     <span class="p">}</span>
@@ -9517,14 +9517,14 @@ See also the previous section, <a href="#_executing_subcommands">Executing Subco
 <span class="p">)</span>
 <span class="kd">class</span> <span class="nc">MainCommand</span> <span class="p">{</span> <span class="p">}</span>
 
-<span class="nd">@CommandLine</span><span class="p">.</span><span class="nc">Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"cmd3"</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span>
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"cmd3"</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span>
     <span class="nc">GrandChild3Command1</span><span class="o">::</span><span class="k">class</span><span class="p">,</span>
     <span class="nc">GrandChild3Command2</span><span class="o">::</span><span class="k">class</span><span class="p">,</span>
     <span class="nc">GrandChild3Command3</span><span class="o">::</span><span class="k">class</span><span class="p">]</span>
 <span class="p">)</span>
 <span class="kd">class</span> <span class="nc">ChildCommand3</span> <span class="p">{</span> <span class="p">}</span>
 
-<span class="nd">@CommandLine</span><span class="p">.</span><span class="nc">Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"cmd3sub3"</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span>
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"cmd3sub3"</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span>
     <span class="nc">GreatGrandChild3Command3_1</span><span class="o">::</span><span class="k">class</span><span class="p">,</span>
     <span class="nc">GreatGrandChild3Command3_2</span><span class="o">::</span><span class="k">class</span><span class="p">]</span>
 <span class="p">)</span>
@@ -10012,7 +10012,8 @@ Picocli will walk the class hierarchy to check for annotations, so <code>@Option
 <div class="paragraph">
 <p>Below is an example class, <code>ReusableOptions</code>, that defines some usage help attributes and a <code>--verbose</code> option that we want to reuse.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">synopsisHeading</span>      <span class="o">=</span> <span class="s">"%nUsage:%n%n"</span><span class="o">,</span>
          <span class="n">descriptionHeading</span>   <span class="o">=</span> <span class="s">"%nDescription:%n%n"</span><span class="o">,</span>
@@ -10022,19 +10023,49 @@ Picocli will walk the class hierarchy to check for annotations, so <code>@Option
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">ReusableOptions</span> <span class="o">{</span>
 
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"-v"</span><span class="o">,</span> <span class="s">"--verbose"</span> <span class="o">},</span> <span class="n">description</span> <span class="o">=</span> <span class="o">{</span>
-        <span class="s">"Specify multiple -v options to increase verbosity."</span><span class="o">,</span>
-        <span class="s">"For example, `-v -v -v` or `-vvv`"</span> <span class="o">})</span>
+            <span class="s">"Specify multiple -v options to increase verbosity."</span><span class="o">,</span>
+            <span class="s">"For example, `-v -v -v` or `-vvv`"</span> <span class="o">})</span>
     <span class="kd">protected</span> <span class="kt">boolean</span><span class="o">[]</span> <span class="n">verbosity</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">boolean</span><span class="o">[</span><span class="mi">0</span><span class="o">];</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">synopsisHeading</span>      <span class="p">=</span> <span class="s">"%nUsage:%n%n"</span><span class="p">,</span>
+         <span class="n">descriptionHeading</span>   <span class="p">=</span> <span class="s">"%nDescription:%n%n"</span><span class="p">,</span>
+         <span class="n">parameterListHeading</span> <span class="p">=</span> <span class="s">"%nParameters:%n%n"</span><span class="p">,</span>
+         <span class="n">optionListHeading</span>    <span class="p">=</span> <span class="s">"%nOptions:%n%n"</span><span class="p">,</span>
+         <span class="n">commandListHeading</span>   <span class="p">=</span> <span class="s">"%nCommands:%n%n"</span><span class="p">)</span>
+<span class="k">public</span> <span class="k">open</span> <span class="kd">class</span> <span class="nc">ReusableOptions</span> <span class="p">{</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-v"</span><span class="p">,</span> <span class="s">"--verbose"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span>
+            <span class="s">"Specify multiple -v options to increase verbosity."</span><span class="p">,</span>
+            <span class="s">"For example, `-v -v -v` or `-vvv`"</span><span class="p">])</span>
+    <span class="k">protected</span> <span class="kd">var</span> <span class="py">verbosity</span> <span class="p">=</span> <span class="nc">BooleanArray</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>Now, any command defined in a class that extends <code>ReusableOptions</code> will inherit the <code>--verbose</code> option, and generate a usage help message in the same spacious style. Example code:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"zip"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Example reuse by subclassing"</span><span class="o">)</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyCommand</span> <span class="kd">extends</span> <span class="nc">ReusableOptions</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span></code></pre>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyCommand</span> <span class="kd">extends</span> <span class="nc">ReusableOptions</span> <span class="o">{</span> <span class="cm">/* ... */</span> <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"zip"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Example reuse by subclassing"</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">MyCommand</span> <span class="p">:</span> <span class="nc">ReusableOptions</span><span class="p">(),</span> <span class="nc">Runnable</span> <span class="p">{</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// ...</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -10057,7 +10088,8 @@ Alternatively, mixins can be installed programmatically by calling the <code>Com
 <div class="paragraph">
 <p>The examples below again use the sample <code>ReusableOptions</code> class as the mixin:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">synopsisHeading</span>      <span class="o">=</span> <span class="s">"%nUsage:%n%n"</span><span class="o">,</span>
          <span class="n">descriptionHeading</span>   <span class="o">=</span> <span class="s">"%nDescription:%n%n"</span><span class="o">,</span>
@@ -10067,10 +10099,27 @@ Alternatively, mixins can be installed programmatically by calling the <code>Com
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">ReusableOptions</span> <span class="o">{</span>
 
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"-v"</span><span class="o">,</span> <span class="s">"--verbose"</span> <span class="o">},</span> <span class="n">description</span> <span class="o">=</span> <span class="o">{</span>
-        <span class="s">"Specify multiple -v options to increase verbosity."</span><span class="o">,</span>
-        <span class="s">"For example, `-v -v -v` or `-vvv`"</span> <span class="o">})</span>
+            <span class="s">"Specify multiple -v options to increase verbosity."</span><span class="o">,</span>
+            <span class="s">"For example, `-v -v -v` or `-vvv`"</span> <span class="o">})</span>
     <span class="kd">protected</span> <span class="kt">boolean</span><span class="o">[]</span> <span class="n">verbosity</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">boolean</span><span class="o">[</span><span class="mi">0</span><span class="o">];</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">synopsisHeading</span>      <span class="p">=</span> <span class="s">"%nUsage:%n%n"</span><span class="p">,</span>
+         <span class="n">descriptionHeading</span>   <span class="p">=</span> <span class="s">"%nDescription:%n%n"</span><span class="p">,</span>
+         <span class="n">parameterListHeading</span> <span class="p">=</span> <span class="s">"%nParameters:%n%n"</span><span class="p">,</span>
+         <span class="n">optionListHeading</span>    <span class="p">=</span> <span class="s">"%nOptions:%n%n"</span><span class="p">,</span>
+         <span class="n">commandListHeading</span>   <span class="p">=</span> <span class="s">"%nCommands:%n%n"</span><span class="p">)</span>
+<span class="k">open</span> <span class="kd">class</span> <span class="nc">ReusableOptions</span> <span class="p">{</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-v"</span><span class="p">,</span> <span class="s">"--verbose"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span>
+            <span class="s">"Specify multiple -v options to increase verbosity."</span><span class="p">,</span>
+            <span class="s">"For example, `-v -v -v` or `-vvv`"</span><span class="p">])</span>
+    <span class="k">protected</span> <span class="kd">var</span> <span class="py">verbosity</span> <span class="p">=</span> <span class="nc">BooleanArray</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="sect3">
@@ -10081,7 +10130,8 @@ Similarly, a <a href="#_subcommands_as_methods"><code>@Command</code>-annotated 
 All picocli annotations found in the mixin class are added to the command (the "mixee").
 For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"zip"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Example reuse with @Mixin annotation."</span><span class="o">)</span>
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyCommand</span> <span class="o">{</span>
@@ -10097,17 +10147,45 @@ For example:</p>
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"zip"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Example reuse with @Mixin annotation."</span><span class="p">])</span>
+<span class="k">public</span> <span class="kd">class</span> <span class="nc">MyCommand</span> <span class="p">{</span>
+
+    <span class="c1">// adds the options defined in ReusableOptions to this command</span>
+    <span class="nd">@Mixin</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">myMixin</span><span class="p">:</span> <span class="nc">ReusableOptions</span>
+
+    <span class="nd">@Command</span>
+    <span class="k">fun</span> <span class="nf">subcmd</span><span class="p">(</span><span class="nd">@Mixin</span> <span class="n">opts</span><span class="p">:</span> <span class="nc">ReusableOptions</span><span class="p">)</span> <span class="p">:</span> <span class="nc">Unit</span> <span class="p">{</span>
+        <span class="c1">// ...</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>In addition to adding the options, subcommands and command attributes of the mixed-in object to the command,
 the mixed-in object is also injected into the field annotated with <code>@Mixin</code>, making it trivial for the command to reference the mixed-in object if necessary.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">MyCommand</span> <span class="n">cmd</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">MyCommand</span><span class="o">();</span>
 <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="n">cmd</span><span class="o">).</span><span class="na">parseArgs</span><span class="o">(</span><span class="s">"-vvv"</span><span class="o">);</span>
 
 <span class="c1">// the options defined in ReusableOptions have been added to the `MyCommand` command</span>
 <span class="k">assert</span> <span class="n">cmd</span><span class="o">.</span><span class="na">myMixin</span><span class="o">.</span><span class="na">verbosity</span><span class="o">.</span><span class="na">length</span> <span class="o">==</span> <span class="mi">3</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">MyCommand</span><span class="p">()</span>
+<span class="nc">CommandLine</span><span class="p">(</span><span class="n">cmd</span><span class="p">).</span><span class="nf">parseArgs</span><span class="p">(</span><span class="s">"-vvv"</span><span class="p">)</span>
+
+<span class="c1">// the options defined in ReusableOptions have been added to the `MyCommand` command</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">myMixin</span><span class="p">.</span><span class="n">verbosity</span><span class="p">.</span><span class="n">size</span> <span class="p">==</span> <span class="mi">3</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -12945,7 +13023,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.2<br>
-Last updated 2020-10-16 07:21:37 +0900
+Last updated 2020-10-17 07:53:58 +0900
 </div>
 </div>
 <style>
