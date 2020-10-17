@@ -6175,7 +6175,8 @@ Here is an example mixin class `MyLogger`.
 It has an option `-v` that can be specified multiple times to increase verbosity.
 The `MyLogger` class also provides some methods like `debug` and `trace` that can be used to print messages to the standard error stream.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 public class MyLogger {
 
@@ -6203,9 +6204,40 @@ public class MyLogger {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class MyLogger {
+
+    @Option(names = ["-v", "--verbose"],
+            description = ["Increase verbosity. Specify multiple times to increase (-vvv)."])
+    var verbosity = BooleanArray(0)
+
+    fun info(pattern: String, vararg params: Any) {
+        log(0, pattern, *params)
+    }
+
+    fun debug(pattern: String, vararg params: Any) {
+        log(1, pattern, *params)
+    }
+
+    fun trace(pattern: String, vararg params: Any) {
+        log(2, pattern, *params)
+    }
+
+    private fun log(level: Int, pattern: String, vararg params: Any) {
+        if (verbosity.size > level) {
+            System.err.printf(pattern, *params)
+        }
+    }
+}
+----
+
+
 An application could use the mixin like this:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class MyApp implements Runnable {
 
@@ -6223,6 +6255,29 @@ class MyApp implements Runnable {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class MyApp : Runnable {
+
+    @Mixin
+    lateinit var myLogger: MyLogger
+
+    override fun run() {
+        myLogger.info("Hello info%n")
+        myLogger.debug("Hello debug%n")
+        myLogger.trace("Hello trace%n")
+    }
+
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            exitProcess(CommandLine(MyApp()).execute(*args))
+        }
+    }
+}
+----
+
 ==== Accessing the Mixee from a Mixin
 
 Sometimes you need to write a Mixin class that accesses the mixee (the command where it is mixed in).
@@ -6233,7 +6288,8 @@ By default, the `CommandSpec` of the enclosing class is injected into a `@Spec`-
 This can be useful when a mixin contains logic that is common to many commands.
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class AdvancedMixin {
     @Spec(Spec.Target.MIXEE) CommandSpec mixee;
@@ -6257,6 +6313,35 @@ class AdvancedMixin {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import java.util.function.IntConsumer
+import java.util.function.IntSupplier
+// ...
+
+class AdvancedMixin {
+    @Spec(Spec.Target.MIXEE)
+    lateinit var mixee: CommandSpec
+
+    /**
+     * When the -x option is specified on any subcommand,
+     * multiply its value with another integer supplied by this subcommand
+     * and set the result on the top-level command.
+     * @param x the value of the -x option
+     */
+    @Option(names = ["-x"])
+    fun setValue(x: Int) {
+        // get another value from the command we are mixed into
+        val y = (mixee.userObject() as IntSupplier).asInt
+
+        val product = x * y
+
+        // set the result on the top-level (root) command
+        (mixee.root().userObject() as IntConsumer).accept(product)
+    }
+}
+----
 
 ==== Accessing the Parent Command from a Mixin
 
@@ -6264,7 +6349,8 @@ Since picocli 4.2, <<parentcommand-annotation,`@ParentCommand`-annotated>> field
 This injects a reference to the parent command of the mixee into the mixin.
 Here is an example implementation:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 // Define a mixin that delegates to the parent command.
 class MyMixin {
@@ -6304,6 +6390,51 @@ class Sub implements Runnable{
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+// Define a mixin that delegates to the parent command.
+class MyMixin {
+    @ParentCommand
+    lateinit var top: Top
+
+    @Option(names = ["-v", "--verbose"])
+    fun setVerbose(verbose: Boolean) { top.verbose = verbose }
+}
+
+// An example Top-level command with a subcommand.
+// The `-v` option can be specified on the top-level command as well as its subcommands.
+@Command(subcommands = [Sub::class])
+class Top : Runnable {
+    @Option(names = ["-v", "--verbose"])
+    var verbose = false
+
+    fun verbose(pattern: String, vararg params: Any) {
+        if (verbose) {
+            System.out.printf(pattern, *params)
+        }
+    }
+
+    override fun run() { verbose("Hello from top%n") }
+
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            CommandLine(Top()).execute(*args)
+        }
+    }
+}
+
+// Subcommand classes can mix in the `-v` option with a @Mixin-annotated field.
+@Command(name = "sub")
+class Sub : Runnable {
+    @Mixin
+    lateinit var mymixin: MyMixin
+
+    override fun run() { mymixin.top.verbose("Hello from sub%n") }
+}
+----
+
 With this, the `-v` option can be specified on the top-level command as well as its subcommands, so all of the below are valid invocations:
 
 ----
@@ -6317,17 +6448,28 @@ All of these invocations will print some output, since the `-v` option was speci
 ==== Adding Mixins Programmatically
 The below example shows how a mixin can be added programmatically with the `CommandLine.addMixin` method.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 CommandLine commandLine = new CommandLine(new MyCommand());
 
 ReusableOptions mixin = new ReusableOptions();
-commandline.addMixin("myMixin", mixin);
+commandLine.addMixin("myMixin", mixin);
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val commandLine = CommandLine(MyCommand())
+
+val mixin = ReusableOptions()
+commandLine.addMixin("myMixin", mixin)
 ----
 
 Programmatically added mixins can be accessed via the map returned by `CommandLine.getMixins`. Continuing from the previous example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 commandLine.parseArgs("-vvv");
 
@@ -6336,7 +6478,15 @@ assert mixin == commandLine.getMixins().get("myMixin");
 assert mixin.verbosity.length == 3;
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+commandLine.parseArgs("-vvv")
 
+// the options defined in ReusableOptions have been added to the zip command
+assert(mixin === commandLine.mixins["myMixin"])
+assert(mixin.verbosity.size == 3)
+----
 
 === Use Case: Configure Log Level with a Global Option
 
