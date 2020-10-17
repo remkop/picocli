@@ -4954,7 +4954,7 @@ You pass in the name of the command and the annotated object to populate with th
 The specified name is used by the parser to recognize subcommands in the command line arguments.
 
 .Java
-[source,java,,role="primary"]
+[source,java,role="primary"]
 ----
 CommandLine commandLine = new CommandLine(new Git())
         .addSubcommand("status",   new GitStatus())
@@ -6356,6 +6356,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.Spec;
 import static picocli.CommandLine.Spec.Target.MIXEE;
 
@@ -6420,6 +6426,7 @@ class MyApp implements Runnable {
     }
 }
 
+@Command(name = "sub")
 class Sub implements Runnable {
     private static Logger logger = LogManager.getLogger();
 
@@ -6442,7 +6449,6 @@ class Sub implements Runnable {
     }
 }
 ----
-
 
 With this, the `-v` option can be specified on the top-level command as well as the subcommands, so all of the below are valid invocations:
 
