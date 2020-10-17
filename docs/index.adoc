@@ -6349,20 +6349,15 @@ The example below shows a class that uses Log4j for logging, and has a "global" 
 The `@Spec(MIXEE)`-annotated field allows the mixin to climb the command hierarchy and store the "verbosity" value in a single place.
 When the application is started, a custom execution strategy is used to configure the log level from that single value.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.core.config.Configurator;
 
 import picocli.CommandLine;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Mixin;
+import picocli.CommandLine.*;
 import picocli.CommandLine.Model.CommandSpec;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.ParseResult;
-import picocli.CommandLine.Spec;
 import static picocli.CommandLine.Spec.Target.MIXEE;
 
 class LoggingMixin {
@@ -6446,6 +6441,103 @@ class Sub implements Runnable {
         logger.debug("Hi (debugging) from app sub subsubmethod");
         logger.info ("Hi (info)      from app sub subsubmethod");
         logger.warn ("Hi (warning)   from app sub subsubmethod");
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import org.apache.logging.log4j.*
+import org.apache.logging.log4j.core.config.Configurator
+
+import picocli.CommandLine
+import picocli.CommandLine.*
+import picocli.CommandLine.Model.CommandSpec
+
+class LoggingMixin {
+    @Spec(Spec.Target.MIXEE)
+    private lateinit var mixee : CommandSpec// spec of the command where the @Mixin is used
+    var verbosity = BooleanArray(0)
+
+    /**
+     * Sets the specified verbosity on the LoggingMixin of the top-level command.
+     * @param verbosity the new verbosity value
+     */
+    @Option(
+        names = ["-v", "--verbose"], description = [
+                 "Specify multiple -v options to increase verbosity.",
+                 "For example, `-v -v -v` or `-vvv`"]
+    )
+    fun setVerbose(verbosity: BooleanArray) {
+        // Each subcommand that mixes in the LoggingMixin has its own instance
+        // of this class, so there may be many LoggingMixin instances.
+        // We want to store the verbosity value in a single, central place,
+        // so we find the top-level command,
+        // and store the verbosity level on our top-level command's LoggingMixin.
+        (mixee.root().userObject() as MyApp).loggingMixin.verbosity = verbosity
+    }
+}
+
+@Command(name = "app", subcommands = [Sub::class])
+class MyApp : Runnable {
+    @Mixin
+    lateinit var loggingMixin: LoggingMixin
+    override fun run() {
+        logger.trace("Starting... (trace) from app")
+        logger.debug("Starting... (debug) from app")
+        logger.info ("Starting... (info)  from app")
+        logger.warn ("Starting... (warn)  from app")
+    }
+
+    private fun calcLogLevel(): Level {
+        return when (loggingMixin.verbosity.size) {
+            0 -> Level.WARN
+            1 -> Level.INFO
+            2 -> Level.DEBUG
+            else -> Level.TRACE
+        }
+    }
+
+    // A reference to this method can be used as a custom execution strategy
+    // that first configures Log4j based on the specified verbosity level,
+    // and then delegates to the default execution strategy.
+    private fun executionStrategy(parseResult: ParseResult): Int {
+        Configurator.setRootLevel(calcLogLevel()) // configure log4j
+        return RunLast().execute(parseResult) // default execution strategy
+    }
+
+    companion object {
+        private val logger: Logger = LogManager.getLogger(MyApp::class.java)
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val app = MyApp()
+            CommandLine(app)
+                .setExecutionStrategy { parseResult: ParseResult -> app.executionStrategy(parseResult) }
+                .execute(*args)
+        }
+    }
+}
+
+@Command(name = "sub")
+class Sub : Runnable {
+    @Mixin
+    lateinit var loggingMixin: LoggingMixin
+    private val logger: Logger = LogManager.getLogger()
+
+    override fun run() {
+        logger.trace("Hi (tracing)   from app sub")
+        logger.debug("Hi (debugging) from app sub")
+        logger.info ("Hi (info)      from app sub")
+        logger.warn ("Hi (warning)   from app sub")
+    }
+
+    @Command
+    fun subsubmethod(@Mixin loggingMixin: LoggingMixin?) {
+        logger.trace("Hi (tracing)   from app sub subsubmethod")
+        logger.debug("Hi (debugging) from app sub subsubmethod")
+        logger.info ("Hi (info)      from app sub subsubmethod")
+        logger.warn ("Hi (warning)   from app sub subsubmethod")
     }
 }
 ----
