@@ -1130,7 +1130,7 @@ NOTE: Java 8 lambdas make it easy to register custom converters:
 
 [source,java]
 ----
-CommandLine cl = new CommandLine(app)
+CommandLine cl = new CommandLine(app);
 cl.registerConverter(Locale.class, s -> new Locale.Builder().setLanguageTag(s).build());
 cl.registerConverter(Cipher.class, s -> Cipher.getInstance(s));
 ----
