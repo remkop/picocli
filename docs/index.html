@@ -2468,16 +2468,16 @@ You may be interested in this <a href="http://catb.org/~esr/writings/taoup/html/
 <div class="content">
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">Tar</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
     <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-c"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"create a new archive"</span><span class="p">])</span>
-    <span class="kd">var</span> <span class="py">create</span> <span class="p">:</span> <span class="nc">Boolean</span> <span class="p">=</span> <span class="k">false</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="py">create</span><span class="p">:</span> <span class="nc">Boolean</span> <span class="p">=</span> <span class="k">false</span><span class="p">;</span>
 
     <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-f"</span><span class="p">,</span> <span class="s">"--file"</span><span class="p">],</span> <span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"ARCHIVE"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"the archive file"</span><span class="p">])</span>
-    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">archive</span> <span class="p">:</span> <span class="nc">File</span><span class="p">;</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">archive</span><span class="p">:</span> <span class="nc">File</span><span class="p">;</span>
 
     <span class="nd">@Parameters</span><span class="p">(</span><span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"FILE"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"one ore more files to archive"</span><span class="p">])</span>
-    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">files</span> <span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;;</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">files</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;;</span>
 
     <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-h"</span><span class="p">,</span> <span class="s">"--help"</span><span class="p">],</span> <span class="n">usageHelp</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"display a help message"</span><span class="p">])</span>
-    <span class="k">private</span> <span class="kd">var</span> <span class="py">helpRequested</span> <span class="p">:</span> <span class="nc">Boolean</span> <span class="p">=</span> <span class="k">false</span><span class="p">;</span>
+    <span class="k">private</span> <span class="kd">var</span> <span class="py">helpRequested</span><span class="p">:</span> <span class="nc">Boolean</span> <span class="p">=</span> <span class="k">false</span><span class="p">;</span>
 <span class="p">}</span></code></pre>
 </div>
 </div>
@@ -3404,17 +3404,31 @@ Java 8 lambdas make it easy to register custom converters:
 </tr>
 </table>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="nc">CommandLine</span> <span class="n">cl</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="n">app</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="java"><span class="nc">CommandLine</span> <span class="n">cl</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="n">app</span><span class="o">);</span>
 <span class="n">cl</span><span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Locale</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">s</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="nc">Locale</span><span class="o">.</span><span class="na">Builder</span><span class="o">().</span><span class="na">setLanguageTag</span><span class="o">(</span><span class="n">s</span><span class="o">).</span><span class="na">build</span><span class="o">());</span>
 <span class="n">cl</span><span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Cipher</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">s</span> <span class="o">-&gt;</span> <span class="nc">Cipher</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">s</span><span class="o">));</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="n">val</span> <span class="n">cl</span> <span class="o">=</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="n">app</span><span class="o">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nl">Locale:</span><span class="o">:</span><span class="kd">class</span><span class="err">.</span><span class="nc">java</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nl">s:</span> <span class="nc">String</span><span class="o">?</span> <span class="o">-&gt;</span> <span class="nc">Locale</span><span class="o">.</span><span class="na">Builder</span><span class="o">().</span><span class="na">setLanguageTag</span><span class="o">(</span><span class="n">s</span><span class="o">).</span><span class="na">build</span><span class="o">()</span>
+<span class="o">}</span>
+<span class="n">cl</span><span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nl">Cipher:</span><span class="o">:</span><span class="kd">class</span><span class="err">.</span><span class="nc">java</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nc">Cipher</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">it</span><span class="o">)</span>
+<span class="o">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>After registering custom converters, call the <code>execute(String&#8230;&#8203;)</code> or <code>parseArgs(String&#8230;&#8203;)</code> method on the <code>CommandLine</code> instance where the converters are registered. (The static <code>populateCommand</code> method cannot be used.) For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">App</span> <span class="o">{</span>
     <span class="nd">@Parameters</span> <span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Locale</span> <span class="n">locale</span><span class="o">;</span>
@@ -3422,16 +3436,50 @@ Java 8 lambdas make it easy to register custom converters:
 <span class="o">}</span></code></pre>
 </div>
 </div>
-<div class="listingblock">
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="nc">App</span> <span class="n">app</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">App</span><span class="o">();</span>
-<span class="nc">CommandLine</span> <span class="n">commandLine</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="n">app</span><span class="o">)</span>
-    <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Locale</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">s</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="nc">Locale</span><span class="o">.</span><span class="na">Builder</span><span class="o">().</span><span class="na">setLanguageTag</span><span class="o">(</span><span class="n">s</span><span class="o">).</span><span class="na">build</span><span class="o">())</span>
-    <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Cipher</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">s</span> <span class="o">-&gt;</span> <span class="nc">Cipher</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">s</span><span class="o">));</span>
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">java.util.Locale</span>
+<span class="k">import</span> <span class="nn">javax.crypto.Cipher</span>
+<span class="c1">// ...</span>
 
-<span class="n">commandLine</span><span class="o">.</span><span class="na">parseArgs</span><span class="o">(</span><span class="s">"-a"</span><span class="o">,</span> <span class="s">"AES/CBC/NoPadding"</span><span class="o">,</span> <span class="s">"en-GB"</span><span class="o">);</span>
-<span class="k">assert</span> <span class="n">app</span><span class="o">.</span><span class="na">locale</span><span class="o">.</span><span class="na">toLanguageTag</span><span class="o">().</span><span class="na">equals</span><span class="o">(</span><span class="s">"en-GB"</span><span class="o">);</span>
-<span class="k">assert</span> <span class="n">app</span><span class="o">.</span><span class="na">cipher</span><span class="o">.</span><span class="na">getAlgorithm</span><span class="o">().</span><span class="na">equals</span><span class="o">(</span><span class="s">"AES/CBC/NoPadding"</span><span class="o">);</span></code></pre>
+<span class="kd">class</span> <span class="nc">App</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">locale</span><span class="p">:</span> <span class="nc">Locale</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-a"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">cipher</span><span class="p">:</span> <span class="nc">Cipher</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nc">App</span> <span class="n">app</span> <span class="p">=</span> <span class="n">new</span> <span class="nc">App</span><span class="p">();</span>
+<span class="nc">CommandLine</span> <span class="n">commandLine</span> <span class="p">=</span> <span class="n">new</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">registerConverter</span><span class="p">(</span><span class="nc">Locale</span><span class="p">.</span><span class="k">class</span><span class="p">,</span> <span class="n">s</span> <span class="p">-&gt;</span> <span class="n">new</span> <span class="nc">Locale</span><span class="p">.</span><span class="nc">Builder</span><span class="p">().</span><span class="nf">setLanguageTag</span><span class="p">(</span><span class="n">s</span><span class="p">).</span><span class="nf">build</span><span class="p">())</span>
+    <span class="p">.</span><span class="nf">registerConverter</span><span class="p">(</span><span class="nc">Cipher</span><span class="p">.</span><span class="k">class</span><span class="p">,</span> <span class="n">s</span> <span class="p">-&gt;</span> <span class="nc">Cipher</span><span class="p">.</span><span class="nf">getInstance</span><span class="p">(</span><span class="n">s</span><span class="p">));</span>
+
+<span class="n">commandLine</span><span class="p">.</span><span class="nf">parseArgs</span><span class="p">(</span><span class="s">"-a"</span><span class="p">,</span> <span class="s">"AES/CBC/NoPadding"</span><span class="p">,</span> <span class="s">"en-GB"</span><span class="p">);</span>
+<span class="n">assert</span> <span class="n">app</span><span class="p">.</span><span class="n">locale</span><span class="p">.</span><span class="nf">toLanguageTag</span><span class="p">().</span><span class="nf">equals</span><span class="p">(</span><span class="s">"en-GB"</span><span class="p">);</span>
+<span class="n">assert</span> <span class="n">app</span><span class="p">.</span><span class="n">cipher</span><span class="p">.</span><span class="nf">getAlgorithm</span><span class="p">().</span><span class="nf">equals</span><span class="p">(</span><span class="s">"AES/CBC/NoPadding"</span><span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">app</span> <span class="p">=</span> <span class="nc">App</span><span class="p">()</span>
+<span class="kd">val</span> <span class="py">commandLine</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">registerConverter</span><span class="p">(</span><span class="nc">Locale</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">s</span><span class="p">:</span> <span class="nc">String</span><span class="p">?</span> <span class="p">-&gt;</span> <span class="nc">Locale</span><span class="p">.</span><span class="nc">Builder</span><span class="p">().</span><span class="nf">setLanguageTag</span><span class="p">(</span><span class="n">s</span><span class="p">).</span><span class="nf">build</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="p">.</span><span class="nf">registerConverter</span><span class="p">(</span><span class="nc">Cipher</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nc">Cipher</span><span class="p">.</span><span class="nf">getInstance</span><span class="p">(</span><span class="n">it</span><span class="p">)</span>
+    <span class="p">}</span>
+
+<span class="n">commandLine</span><span class="p">.</span><span class="nf">parseArgs</span><span class="p">(</span><span class="s">"-a"</span><span class="p">,</span> <span class="s">"AES/CBC/NoPadding"</span><span class="p">,</span> <span class="s">"en-GB"</span><span class="p">)</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">app</span><span class="p">.</span><span class="n">locale</span><span class="p">.</span><span class="nf">toLanguageTag</span><span class="p">()</span> <span class="p">==</span> <span class="s">"en-GB"</span><span class="p">)</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">app</span><span class="p">.</span><span class="n">cipher</span><span class="p">.</span><span class="n">algorithm</span> <span class="p">==</span> <span class="s">"AES/CBC/NoPadding"</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="admonitionblock caution">
@@ -3474,7 +3522,8 @@ When a <code>TypeConversionException</code> is thrown, picocli will show an erro
 <div class="paragraph">
 <p>Below is an example custom converter that throws a <code>TypeConversionException</code>:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">java.net.InetSocketAddress</span><span class="o">;</span>
 
@@ -3484,13 +3533,33 @@ When a <code>TypeConversionException</code> is thrown, picocli will show an erro
         <span class="kt">int</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="na">lastIndexOf</span><span class="o">(</span><span class="sc">':'</span><span class="o">);</span>
         <span class="k">if</span> <span class="o">(</span><span class="n">pos</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
             <span class="k">throw</span> <span class="k">new</span> <span class="nf">TypeConversionException</span><span class="o">(</span>
-                    <span class="s">"Invalid format: must be 'host:port' but was '"</span> <span class="o">+</span> <span class="n">value</span> <span class="o">+</span> <span class="s">"'"</span><span class="o">);</span>
+                <span class="s">"Invalid format: must be 'host:port' but was '"</span> <span class="o">+</span> <span class="n">value</span> <span class="o">+</span> <span class="s">"'"</span><span class="o">);</span>
         <span class="o">}</span>
         <span class="nc">String</span> <span class="n">adr</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">pos</span><span class="o">);</span>
         <span class="kt">int</span> <span class="n">port</span> <span class="o">=</span> <span class="nc">Integer</span><span class="o">.</span><span class="na">parseInt</span><span class="o">(</span><span class="n">value</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="o">));</span>
         <span class="k">return</span> <span class="k">new</span> <span class="nf">InetSocketAddress</span><span class="o">(</span><span class="n">adr</span><span class="o">,</span> <span class="n">port</span><span class="o">);</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">java.net.InetSocketAddress</span>
+<span class="c1">// ...</span>
+
+<span class="kd">class</span> <span class="nc">InetSocketAddressConverter</span> <span class="p">:</span> <span class="nc">ITypeConverter</span><span class="p">&lt;</span><span class="nc">InetSocketAddress</span><span class="p">&gt;</span> <span class="p">{</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">convert</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nc">String</span><span class="p">):</span> <span class="nc">InetSocketAddress</span> <span class="p">{</span>
+        <span class="kd">val</span> <span class="py">pos</span> <span class="p">=</span> <span class="n">value</span><span class="p">.</span><span class="nf">lastIndexOf</span><span class="p">(</span><span class="sc">':'</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">pos</span> <span class="p">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">throw</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nc">TypeConversionException</span><span class="p">(</span>
+                <span class="s">"Invalid format: must be 'host:port' but was '$value'"</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="kd">val</span> <span class="py">adr</span> <span class="p">=</span> <span class="n">value</span><span class="p">.</span><span class="nf">substring</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+        <span class="kd">val</span> <span class="py">port</span> <span class="p">=</span> <span class="n">value</span><span class="p">.</span><span class="nf">substring</span><span class="p">(</span><span class="n">pos</span> <span class="p">+</span> <span class="mi">1</span><span class="p">).</span><span class="nf">toInt</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nc">InetSocketAddress</span><span class="p">(</span><span class="n">adr</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -3508,7 +3577,8 @@ When a <code>TypeConversionException</code> is thrown, picocli will show an erro
 <div class="paragraph">
 <p>Example usage:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">App</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--sqlType"</span><span class="o">,</span> <span class="n">converter</span> <span class="o">=</span> <span class="nc">SqlTypeConverter</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
@@ -3516,10 +3586,20 @@ When a <code>TypeConversionException</code> is thrown, picocli will show an erro
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">App</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--sqlType"</span><span class="p">],</span> <span class="n">converter</span> <span class="p">=</span> <span class="p">[</span><span class="nc">SqlTypeConverter</span><span class="o">::</span><span class="k">class</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">sqlType</span> <span class="p">=</span> <span class="mi">0</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>Example implementation:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">SqlTypeConverter</span> <span class="kd">implements</span> <span class="nc">ITypeConverter</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">&gt;</span> <span class="o">{</span>
     <span class="kd">public</span> <span class="nc">Integer</span> <span class="nf">convert</span><span class="o">(</span><span class="nc">String</span> <span class="n">value</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
@@ -3529,10 +3609,28 @@ When a <code>TypeConversionException</code> is thrown, picocli will show an erro
             <span class="k">case</span> <span class="s">"BINARY"</span> <span class="o">:</span> <span class="k">return</span> <span class="nc">Types</span><span class="o">.</span><span class="na">BINARY</span><span class="o">;</span>
             <span class="k">case</span> <span class="s">"BIT"</span>    <span class="o">:</span> <span class="k">return</span> <span class="nc">Types</span><span class="o">.</span><span class="na">BIT</span><span class="o">;</span>
             <span class="k">case</span> <span class="s">"BLOB"</span>   <span class="o">:</span> <span class="k">return</span> <span class="nc">Types</span><span class="o">.</span><span class="na">BLOB</span><span class="o">;</span>
-            <span class="o">...</span>
+            <span class="c1">// ...</span>
         <span class="o">}</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">SqlTypeConverter</span> <span class="p">:</span> <span class="nc">ITypeConverter</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;</span> <span class="p">{</span>
+    <span class="nd">@Throws</span><span class="p">(</span><span class="nc">Exception</span><span class="o">::</span><span class="k">class</span><span class="p">)</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">convert</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nc">String</span><span class="p">):</span> <span class="nc">Int</span> <span class="p">{</span>
+        <span class="k">when</span> <span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+            <span class="s">"ARRAY"</span>  <span class="p">-&gt;</span> <span class="k">return</span> <span class="nc">Types</span><span class="p">.</span><span class="nc">ARRAY</span>
+            <span class="s">"BIGINT"</span> <span class="p">-&gt;</span> <span class="k">return</span> <span class="nc">Types</span><span class="p">.</span><span class="nc">BIGINT</span>
+            <span class="s">"BINARY"</span> <span class="p">-&gt;</span> <span class="k">return</span> <span class="nc">Types</span><span class="p">.</span><span class="nc">BINARY</span>
+            <span class="s">"BIT"</span>    <span class="p">-&gt;</span> <span class="k">return</span> <span class="nc">Types</span><span class="p">.</span><span class="nc">BIT</span>
+            <span class="s">"BLOB"</span>   <span class="p">-&gt;</span> <span class="k">return</span> <span class="nc">Types</span><span class="p">.</span><span class="nc">BLOB</span>
+            <span class="c1">// ...</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -3565,7 +3663,8 @@ picocli will infer the collection element type from the generic type.
 The array or collection elements can be any type for which a <a href="#_strongly_typed_everything">converter</a> is registered.
 For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">java.util.regex.Pattern</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">java.io.File</span><span class="o">;</span>
@@ -3579,10 +3678,37 @@ For example:</p>
 <span class="o">}</span></code></pre>
 </div>
 </div>
-<div class="listingblock">
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">java.io.File</span>
+<span class="k">import</span> <span class="nn">java.util.regex.Pattern</span>
+<span class="c1">// ...</span>
+
+<span class="kd">class</span> <span class="nc">Convert</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-patterns"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"the regex patterns to use"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">patterns</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">Pattern</span><span class="p">&gt;</span>
+
+    <span class="nd">@Parameters</span><span class="p">(</span> <span class="cm">/* type = [File::class], */</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"the files to convert"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">files</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;</span> <span class="c1">// picocli infers type from the generic type</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"-patterns"</span><span class="o">,</span> <span class="s">"a*b"</span><span class="o">,</span> <span class="s">"-patterns"</span><span class="o">,</span> <span class="s">"[a-e][i-u]"</span><span class="o">,</span> <span class="s">"file1.txt"</span><span class="o">,</span> <span class="s">"file2.txt"</span> <span class="o">};</span>
 <span class="nc">Convert</span> <span class="n">convert</span> <span class="o">=</span> <span class="nc">CommandLine</span><span class="o">.</span><span class="na">populateCommand</span><span class="o">(</span><span class="k">new</span> <span class="nc">Convert</span><span class="o">(),</span> <span class="n">args</span><span class="o">);</span>
+
+<span class="c1">// convert.patterns now has two Pattern objects</span>
+<span class="c1">// convert.files now has two File objects</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">args</span> <span class="p">=</span> <span class="nf">arrayOf</span><span class="p">(</span><span class="s">"-patterns"</span><span class="p">,</span> <span class="s">"a*b"</span><span class="p">,</span> <span class="s">"-patterns"</span><span class="p">,</span> <span class="s">"[a-e][i-u]"</span><span class="p">,</span> <span class="s">"file1.txt"</span><span class="p">,</span> <span class="s">"file2.txt"</span><span class="p">)</span>
+<span class="kd">val</span> <span class="py">convert</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nf">populateCommand</span><span class="p">(</span><span class="nc">Convert</span><span class="p">(),</span> <span class="p">*</span><span class="n">args</span><span class="p">)</span>
 
 <span class="c1">// convert.patterns now has two Pattern objects</span>
 <span class="c1">// convert.files now has two File objects</span></code></pre>
@@ -3621,7 +3747,8 @@ as long as a <a href="#_strongly_typed_everything">converter</a> is registered f
 Key and value types are inferred from the map&#8217;s generic type parameters.
 For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">java.net.InetAddress</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">java.net.Proxy.Type</span><span class="o">;</span>
@@ -3634,6 +3761,23 @@ For example:</p>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-u"</span><span class="o">,</span> <span class="s">"--timeUnit"</span><span class="o">})</span>
     <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">TimeUnit</span><span class="o">,</span> <span class="nc">Long</span><span class="o">&gt;</span> <span class="n">timeout</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">java.net.InetAddress</span>
+<span class="k">import</span> <span class="nn">java.net.Proxy</span>
+<span class="k">import</span> <span class="nn">java.util.concurrent.TimeUnit</span>
+<span class="c1">// ...</span>
+
+<span class="kd">class</span> <span class="nc">MapDemo</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-p"</span><span class="p">,</span> <span class="s">"--proxyHost"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">proxies</span><span class="p">:</span> <span class="nc">Map</span><span class="p">&lt;</span><span class="nc">Proxy</span><span class="err">.</span><span class="nc">Type</span><span class="p">,</span> <span class="nc">InetAddress</span><span class="p">&gt;</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-u"</span><span class="p">,</span> <span class="s">"--timeUnit"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">timeout</span><span class="p">:</span> <span class="nc">Map</span><span class="p">&lt;</span><span class="nc">TimeUnit</span><span class="p">,</span> <span class="nc">Long</span><span class="p">&gt;</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -3674,7 +3818,8 @@ See the <a href="#_split_regex">Split Regex</a> section for details.</p>
 The <code>type</code> attribute can be used to control for each field what concrete class the string value should be converted to.
 For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">App</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--big"</span><span class="o">,</span> <span class="n">type</span> <span class="o">=</span> <span class="nc">BigDecimal</span><span class="o">.</span><span class="na">class</span><span class="o">)</span> <span class="c1">// concrete Number subclass</span>
@@ -3688,6 +3833,21 @@ For example:</p>
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">App</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--big"</span><span class="p">],</span> <span class="n">type</span> <span class="p">=</span> <span class="p">[</span><span class="nc">BigDecimal</span><span class="o">::</span><span class="k">class</span><span class="p">])</span> <span class="c1">// concrete Number subclass</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">big</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">Number</span><span class="p">&gt;</span> <span class="c1">// array type with abstract component class</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--small"</span><span class="p">],</span> <span class="n">type</span> <span class="p">=</span> <span class="p">[</span><span class="nc">Short</span><span class="o">::</span><span class="k">class</span><span class="p">])</span> <span class="c1">// other Number subclass</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">small</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">Number</span><span class="p">&gt;</span>
+
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">type</span> <span class="p">=</span> <span class="p">[</span><span class="nc">StringBuilder</span><span class="o">::</span><span class="k">class</span><span class="p">])</span> <span class="c1">// StringBuilder implements CharSequence</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">address</span><span class="p">:</span> <span class="nc">CharSequence</span> <span class="c1">// interface type</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="sect3">
 <h4 id="_maps_and_collections_with_abstract_elements"><a class="anchor" href="#_maps_and_collections_with_abstract_elements"></a>4.6.1. Maps and Collections with Abstract Elements</h4>
 <div class="paragraph">
@@ -3696,7 +3856,8 @@ For example:</p>
 <div class="paragraph">
 <p>The <code>type</code> attribute can be specified to convert to a stronger type than String. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">TypeDemo</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">)</span>  <span class="c1">// not enough information to convert</span>
@@ -3710,6 +3871,21 @@ For example:</p>
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">TypeDemo</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">])</span>              <span class="c1">// not enough information to convert</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">weaklyTyped</span><span class="p">:</span> <span class="nc">Map</span><span class="p">&lt;</span><span class="err">*</span><span class="p">,</span> <span class="err">*</span><span class="p">&gt;</span> <span class="c1">// String keys and values are added as is</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-y"</span><span class="p">],</span> <span class="n">type</span> <span class="p">=</span> <span class="p">[</span><span class="nc">Short</span><span class="o">::</span><span class="k">class</span><span class="p">,</span> <span class="nc">BigDecimal</span><span class="o">::</span><span class="k">class</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">stronglyTyped</span><span class="p">:</span> <span class="nc">Map</span><span class="p">&lt;</span><span class="k">out</span> <span class="nc">Number</span><span class="p">,</span> <span class="nc">Number</span><span class="p">&gt;</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-s"</span><span class="p">],</span> <span class="n">type</span> <span class="p">=</span> <span class="p">[</span><span class="nc">CharBuffer</span><span class="o">::</span><span class="k">class</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">text</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">CharSequence</span><span class="p">&gt;</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -3719,7 +3895,7 @@ For example:</p>
 Not only will picocli validate the input, it allows you to <a href="#_show_default_values">show all values</a> in the usage help message with <code>@Option(description = "Valid values: ${COMPLETION-CANDIDATES}")</code>. It also allows command line completion to suggest completion candidates for the values of this option.</p>
 </div>
 <div class="paragraph">
-<p>Enum value matching is case-sensitive by default, but from 3.4 this can be controlled with <code>CommandLine::setCaseInsensitiveEnumValuesAllowed</code> and <code>CommandSpec::caseInsensitiveEnumValuesAllowed</code>.</p>
+<p>Enum value matching is case-sensitive by default, but as of picocli 3.4 this can be controlled with <code>CommandLine::setCaseInsensitiveEnumValuesAllowed</code> and <code>CommandSpec::caseInsensitiveEnumValuesAllowed</code>.</p>
 </div>
 </div>
 </div>
@@ -6905,23 +7081,36 @@ was requested, and invoke <code>CommandLine::usage</code> or <code>CommandLine::
 <div class="sect3">
 <h4 id="_command_version_attribute"><a class="anchor" href="#_command_version_attribute"></a>13.1.1. Command <code>version</code> Attribute</h4>
 <div class="paragraph">
-<p>Since v0.9.8, applications can specify version information in the <code>version</code> attribute of the <code>@Command</code> annotation.</p>
+<p>As of picocli 0.9.8, applications can specify version information in the <code>version</code> attribute of the <code>@Command</code> annotation.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">version</span> <span class="o">=</span> <span class="s">"1.0"</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">VersionedCommand</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"-V"</span><span class="o">,</span> <span class="s">"--version"</span> <span class="o">},</span> <span class="n">versionHelp</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span>
             <span class="n">description</span> <span class="o">=</span> <span class="s">"print version information and exit"</span><span class="o">)</span>
     <span class="kt">boolean</span> <span class="n">versionRequested</span><span class="o">;</span>
-    <span class="o">...</span></code></pre>
+    <span class="cm">/* ... */</span> <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">version</span> <span class="p">=</span> <span class="p">[</span><span class="s">"1.0"</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">VersionedCommand</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-V"</span><span class="p">,</span> <span class="s">"--version"</span><span class="p">],</span> <span class="n">versionHelp</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span>
+            <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"print version information and exit"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">versionRequested</span> <span class="p">=</span> <span class="k">false</span>
+    <span class="cm">/* ... */</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>The <code>CommandLine.printVersionHelp(PrintStream)</code> method extracts the version information from this
 annotation and prints it to the specified <code>PrintStream</code>.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">CommandLine</span> <span class="n">commandLine</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">VersionedCommand</span><span class="o">());</span>
 <span class="n">commandLine</span><span class="o">.</span><span class="na">parseArgs</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
@@ -6931,16 +7120,35 @@ annotation and prints it to the specified <code>PrintStream</code>.</p>
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">commandLine</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">VersionedCommand</span><span class="p">())</span>
+<span class="n">commandLine</span><span class="p">.</span><span class="nf">parseArgs</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">commandLine</span><span class="p">.</span><span class="n">isVersionHelpRequested</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">commandLine</span><span class="p">.</span><span class="nf">printVersionHelp</span><span class="p">(</span><span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">)</span>
+    <span class="k">return</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_multi_line_version_info"><a class="anchor" href="#_multi_line_version_info"></a>13.1.2. Multi-line Version Info</h4>
 <div class="paragraph">
 <p>The <code>version</code> may specify multiple Strings. Each will be printed on a separate line.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">version</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"Versioned Command 1.0"</span><span class="o">,</span> <span class="s">"Build 12345"</span><span class="o">,</span> <span class="s">"(c) 2017"</span> <span class="o">})</span>
-<span class="kd">class</span> <span class="nc">VersionedCommand</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span></code></pre>
+<span class="kd">class</span> <span class="nc">VersionedCommand</span> <span class="o">{</span> <span class="cm">/* ... */</span> <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">version</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Versioned Command 1.0"</span><span class="p">,</span> <span class="s">"Build 12345"</span><span class="p">,</span> <span class="s">"(c) 2017"</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">VersionedCommand</span> <span class="p">{</span> <span class="cm">/* */</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -6957,16 +7165,28 @@ Build 12345
 <div class="sect3">
 <h4 id="_version_info_with_variables"><a class="anchor" href="#_version_info_with_variables"></a>13.1.3. Version Info With Variables</h4>
 <div class="paragraph">
-<p>Since 4.0, the version strings may contain <a href="#_variable_interpolation">system properties and environment variables</a>. For example:</p>
+<p>As of picocli 4.0, the version strings may contain <a href="#_variable_interpolation">system properties and environment variables</a>. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">version</span> <span class="o">=</span> <span class="o">{</span>
     <span class="s">"Versioned Command 1.0"</span><span class="o">,</span>
     <span class="s">"Picocli "</span> <span class="o">+</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.</span><span class="na">VERSION</span><span class="o">,</span>
     <span class="s">"JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})"</span><span class="o">,</span>
     <span class="s">"OS: ${os.name} ${os.version} ${os.arch}"</span><span class="o">})</span>
-<span class="kd">class</span> <span class="nc">VersionedCommand</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span></code></pre>
+<span class="kd">class</span> <span class="nc">VersionedCommand</span> <span class="o">{</span> <span class="cm">/* ... */</span> <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">version</span> <span class="p">=</span> <span class="p">[</span>
+    <span class="s">"Versioned Command 1.0"</span><span class="p">,</span>
+    <span class="s">"Picocli "</span> <span class="p">+</span> <span class="n">picocli</span><span class="p">.</span><span class="nc">CommandLine</span><span class="p">.</span><span class="nc">VERSION</span><span class="p">,</span>
+    <span class="s">"JVM: \${java.version} (\${java.vendor} \${java.vm.name} \${java.vm.version})"</span><span class="p">,</span>
+    <span class="s">"OS: \${os.name} \${os.version} \${os.arch}"</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">VersionedCommand</span> <span class="p">{</span> <span class="cm">/* */</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -6986,13 +7206,24 @@ OS: Linux 4.4.0-17134-Microsoft amd64</pre>
 <div class="paragraph">
 <p>The version strings may contain <a href="#_usage_help_with_styles_and_colors">markup</a> to show ANSI styles and colors. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">version</span> <span class="o">=</span> <span class="o">{</span>
         <span class="s">"@|yellow Versioned Command 1.0|@"</span><span class="o">,</span>
         <span class="s">"@|blue Build 12345|@"</span><span class="o">,</span>
         <span class="s">"@|red,bg(white) (c) 2017|@"</span> <span class="o">})</span>
-<span class="kd">class</span> <span class="nc">VersionedCommand</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span></code></pre>
+<span class="kd">class</span> <span class="nc">VersionedCommand</span> <span class="o">{</span> <span class="cm">/* ... */</span> <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">version</span> <span class="p">=</span> <span class="p">[</span>
+        <span class="s">"@|yellow Versioned Command 1.0|@"</span><span class="p">,</span>
+        <span class="s">"@|blue Build 12345|@"</span><span class="p">,</span>
+        <span class="s">"@|red,bg(white) (c) 2017|@"</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">VersionedCommand</span> <span class="p">{</span> <span class="cm">/* */</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7005,25 +7236,44 @@ OS: Linux 4.4.0-17134-Microsoft amd64</pre>
 <div class="sect3">
 <h4 id="_version_info_with_format_specifiers"><a class="anchor" href="#_version_info_with_format_specifiers"></a>13.1.5. Version Info With Format Specifiers</h4>
 <div class="paragraph">
-<p>From picocli 1.0, the <code>version</code> may contain <a href="#_format_specifiers">format specifiers</a>:</p>
+<p>As of picocli 1.0, the <code>version</code> may contain <a href="#_format_specifiers">format specifiers</a>:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">version</span> <span class="o">=</span> <span class="o">{</span>
     <span class="s">"Versioned Command 1.0"</span><span class="o">,</span>
     <span class="s">"Build %1$s"</span><span class="o">,</span>
     <span class="s">"(c) 2017, licensed to %2$s"</span> <span class="o">})</span>
-<span class="kd">class</span> <span class="nc">VersionedCommand</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span></code></pre>
+<span class="kd">class</span> <span class="nc">VersionedCommand</span> <span class="o">{</span> <span class="cm">/* ... */</span> <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">version</span> <span class="p">=</span> <span class="p">[</span>
+        <span class="s">"Versioned Command 1.0"</span><span class="p">,</span>
+        <span class="s">"Build %1\$s"</span><span class="p">,</span>
+        <span class="s">"(c) 2017, licensed to %2\$s"</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">VersionedCommand</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>Format argument values can be passed to the <code>printVersionHelp</code> method:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span> <span class="o">=</span> <span class="o">{</span><span class="s">"1234"</span><span class="o">,</span> <span class="nc">System</span><span class="o">.</span><span class="na">getProperty</span><span class="o">(</span><span class="s">"user.name"</span><span class="o">)};</span>
 <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">VersionedCommand</span><span class="o">())</span>
     <span class="o">.</span><span class="na">printVersionHelp</span><span class="o">(</span><span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">,</span> <span class="nc">Help</span><span class="o">.</span><span class="na">Ansi</span><span class="o">.</span><span class="na">AUTO</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">args</span> <span class="p">=</span> <span class="nf">arrayOf</span><span class="p">(</span><span class="s">"1234"</span><span class="p">,</span> <span class="nc">System</span><span class="p">.</span><span class="nf">getProperty</span><span class="p">(</span><span class="s">"user.name"</span><span class="p">))</span>
+<span class="nc">CommandLine</span><span class="p">(</span><span class="nc">VersionedCommand</span><span class="p">()).</span><span class="nf">printVersionHelp</span><span class="p">(</span><span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">,</span> <span class="nc">Help</span><span class="p">.</span><span class="nc">Ansi</span><span class="p">.</span><span class="nc">AUTO</span><span class="p">,</span> <span class="p">*</span><span class="n">args</span><span class="p">)</span></code></pre>
 </div>
 </div>
 </div>
@@ -7033,14 +7283,22 @@ OS: Linux 4.4.0-17134-Microsoft amd64</pre>
 <div class="sect3">
 <h4 id="_command_versionprovider_attribute"><a class="anchor" href="#_command_versionprovider_attribute"></a>13.2.1. Command <code>versionProvider</code> Attribute</h4>
 <div class="paragraph">
-<p>From picocli 2.2, the <code>@Command</code> annotation supports a <code>versionProvider</code> attribute.
+<p>As of picocli 2.2, the <code>@Command</code> annotation supports a <code>versionProvider</code> attribute.
 Applications may specify a <code>IVersionProvider</code> implementation in this attribute, and picocli will instantiate this class
 and invoke it to collect version information.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">versionProvider</span> <span class="o">=</span> <span class="n">com</span><span class="o">.</span><span class="na">my</span><span class="o">.</span><span class="na">custom</span><span class="o">.</span><span class="na">ManifestVersionProvider</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
-<span class="kd">class</span> <span class="nc">App</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span></code></pre>
+<span class="kd">class</span> <span class="nc">App</span> <span class="o">{</span> <span class="cm">/* ... */</span> <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">versionProvider</span> <span class="p">=</span> <span class="n">com</span><span class="p">.</span><span class="n">my</span><span class="p">.</span><span class="n">custom</span><span class="p">.</span><span class="nc">ManifestVersionProvider</span><span class="o">::</span><span class="k">class</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">App</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7083,13 +7341,24 @@ and a build-generated version properties file-based
 <div class="paragraph">
 <p>For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">VersionProviderWithVariables</span> <span class="kd">implements</span> <span class="nc">IVersionProvider</span> <span class="o">{</span>
     <span class="kd">public</span> <span class="nc">String</span><span class="o">[]</span> <span class="nf">getVersion</span><span class="o">()</span> <span class="o">{</span>
         <span class="k">return</span> <span class="k">new</span> <span class="nc">String</span><span class="o">[]</span> <span class="o">{</span> <span class="s">"${COMMAND-FULL-NAME} version 1.0"</span> <span class="o">};</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">VersionProviderWithVariables</span> <span class="p">:</span> <span class="nc">IVersionProvider</span> <span class="p">{</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">getVersion</span><span class="p">():</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nf">arrayOf</span><span class="p">(</span><span class="s">"\${COMMAND-FULL-NAME} version 1.0"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7103,7 +7372,7 @@ of any command that uses this version provider.</p>
 <div class="sect3">
 <h4 id="_injecting_commandspec_into_a_iversionprovider"><a class="anchor" href="#_injecting_commandspec_into_a_iversionprovider"></a>13.2.4. Injecting <code>CommandSpec</code> Into a <code>IVersionProvider</code></h4>
 <div class="paragraph">
-<p>From picocli 4.2.0, <code>IVersionProvider</code> implementations can have <code>@Spec</code>-annotated fields. If such a field
+<p>As of picocli 4.2.0, <code>IVersionProvider</code> implementations can have <code>@Spec</code>-annotated fields. If such a field
 exists, picocli will inject the <code>CommandSpec</code> of the command that uses this version provider.
 This gives the version provider access to the full command hierarchy,
 and may make it easier to implement version providers that can be reused among multiple commands.</p>
@@ -7111,7 +7380,8 @@ and may make it easier to implement version providers that can be reused among m
 <div class="paragraph">
 <p>For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">MyVersionProvider</span> <span class="kd">implements</span> <span class="nc">IVersionProvider</span> <span class="o">{</span>
     <span class="nd">@Spec</span> <span class="nc">CommandSpec</span> <span class="n">spec</span><span class="o">;</span>
@@ -7120,6 +7390,19 @@ and may make it easier to implement version providers that can be reused among m
         <span class="k">return</span> <span class="k">new</span> <span class="nc">String</span><span class="o">[]</span> <span class="o">{</span> <span class="s">"Version info for "</span> <span class="o">+</span> <span class="n">spec</span><span class="o">.</span><span class="na">qualifiedName</span><span class="o">()</span> <span class="o">};</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">MyVersionProvider</span> <span class="p">:</span> <span class="nc">IVersionProvider</span> <span class="p">{</span>
+    <span class="nd">@Spec</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">spec</span><span class="p">:</span> <span class="nc">CommandSpec</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">getVersion</span><span class="p">():</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nf">arrayOf</span><span class="p">(</span><span class="s">"Version info for "</span> <span class="p">+</span> <span class="n">spec</span><span class="p">.</span><span class="nf">qualifiedName</span><span class="p">())</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -7357,7 +7640,7 @@ We want the usage help message to show this.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>From picocli 4.0, this can be customized with the <code>synopsisSubcommandLabel</code> attribute.</p>
+<p>As of picocli 4.0, this can be customized with the <code>synopsisSubcommandLabel</code> attribute.</p>
 </div>
 <div class="paragraph">
 <p>For example, to clarify that a <a href="#_required_subcommands">subcommand is mandatory</a>, an application may specify <code>COMMAND</code>, without the <code>[</code> and <code>]</code> brackets:</p>
@@ -8943,7 +9226,7 @@ adding subcommands.
 
     <span class="k">override</span> <span class="k">fun</span> <span class="nf">call</span><span class="p">():</span> <span class="nc">Int</span> <span class="p">{</span>
         <span class="nf">println</span><span class="p">(</span><span class="s">"hi from foo, x=$x"</span><span class="p">)</span>
-        <span class="kd">var</span> <span class="py">ok</span> <span class="p">:</span> <span class="nc">Boolean</span> <span class="p">=</span> <span class="k">true</span>
+        <span class="kd">var</span> <span class="py">ok</span><span class="p">:</span> <span class="nc">Boolean</span> <span class="p">=</span> <span class="k">true</span>
         <span class="k">return</span> <span class="k">if</span> <span class="p">(</span><span class="n">ok</span><span class="p">)</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span> <span class="c1">// exit code</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -8960,7 +9243,7 @@ adding subcommands.
     <span class="p">}</span>
 
     <span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"baz"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"I'm a subcommand of `bar`"</span><span class="p">])</span>
-    <span class="k">fun</span> <span class="nf">baz</span><span class="p">(</span> <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-z"</span><span class="p">])</span> <span class="n">z</span> <span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">:</span> <span class="nc">Int</span> <span class="p">{</span>
+    <span class="k">fun</span> <span class="nf">baz</span><span class="p">(</span> <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-z"</span><span class="p">])</span> <span class="n">z</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">:</span> <span class="nc">Int</span> <span class="p">{</span>
         <span class="nf">println</span><span class="p">(</span><span class="s">"hi from baz, z=$z"</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">45</span>
     <span class="p">}</span>
@@ -9812,7 +10095,7 @@ The most commonly used git commands are:
 <span class="kd">class</span> <span class="nc">Git</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
 
     <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--git-dir"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Set the path to the repository."</span><span class="p">])</span>
-    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">gitDir</span> <span class="p">:</span> <span class="nc">File</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">gitDir</span><span class="p">:</span> <span class="nc">File</span>
 <span class="p">}</span></code></pre>
 </div>
 </div>
@@ -10202,7 +10485,8 @@ the mixed-in object is also injected into the field annotated with <code>@Mixin<
 It has an option <code>-v</code> that can be specified multiple times to increase verbosity.
 The <code>MyLogger</code> class also provides some methods like <code>debug</code> and <code>trace</code> that can be used to print messages to the standard error stream.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyLogger</span> <span class="o">{</span>
 
@@ -10230,10 +10514,40 @@ The <code>MyLogger</code> class also provides some methods like <code>debug</cod
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">MyLogger</span> <span class="p">{</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-v"</span><span class="p">,</span> <span class="s">"--verbose"</span><span class="p">],</span>
+            <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Increase verbosity. Specify multiple times to increase (-vvv)."</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">verbosity</span> <span class="p">=</span> <span class="nc">BooleanArray</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">fun</span> <span class="nf">info</span><span class="p">(</span><span class="n">pattern</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span> <span class="k">vararg</span> <span class="n">params</span><span class="p">:</span> <span class="nc">Any</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nf">log</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="p">*</span><span class="n">params</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fun</span> <span class="nf">debug</span><span class="p">(</span><span class="n">pattern</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span> <span class="k">vararg</span> <span class="n">params</span><span class="p">:</span> <span class="nc">Any</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nf">log</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="p">*</span><span class="n">params</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">fun</span> <span class="nf">trace</span><span class="p">(</span><span class="n">pattern</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span> <span class="k">vararg</span> <span class="n">params</span><span class="p">:</span> <span class="nc">Any</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nf">log</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="p">*</span><span class="n">params</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="k">fun</span> <span class="nf">log</span><span class="p">(</span><span class="n">level</span><span class="p">:</span> <span class="nc">Int</span><span class="p">,</span> <span class="n">pattern</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span> <span class="k">vararg</span> <span class="n">params</span><span class="p">:</span> <span class="nc">Any</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span><span class="p">.</span><span class="n">size</span> <span class="p">&gt;</span> <span class="n">level</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nc">System</span><span class="p">.</span><span class="n">err</span><span class="p">.</span><span class="nf">printf</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="p">*</span><span class="n">params</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>An application could use the mixin like this:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">MyApp</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
 
@@ -10251,6 +10565,29 @@ The <code>MyLogger</code> class also provides some methods like <code>debug</cod
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">MyApp</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+
+    <span class="nd">@Mixin</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">myLogger</span><span class="p">:</span> <span class="nc">MyLogger</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">myLogger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="s">"Hello info%n"</span><span class="p">)</span>
+        <span class="n">myLogger</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s">"Hello debug%n"</span><span class="p">)</span>
+        <span class="n">myLogger</span><span class="p">.</span><span class="nf">trace</span><span class="p">(</span><span class="s">"Hello trace%n"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">companion</span> <span class="k">object</span> <span class="p">{</span>
+        <span class="nd">@JvmStatic</span>
+        <span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+            <span class="nf">exitProcess</span><span class="p">(</span><span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyApp</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">))</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_accessing_the_mixee_from_a_mixin"><a class="anchor" href="#_accessing_the_mixee_from_a_mixin"></a>18.2.3. Accessing the Mixee from a Mixin</h4>
@@ -10265,7 +10602,8 @@ The <code>MyLogger</code> class also provides some methods like <code>debug</cod
 This can be useful when a mixin contains logic that is common to many commands.
 For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">AdvancedMixin</span> <span class="o">{</span>
     <span class="nd">@Spec</span><span class="o">(</span><span class="nc">Spec</span><span class="o">.</span><span class="na">Target</span><span class="o">.</span><span class="na">MIXEE</span><span class="o">)</span> <span class="nc">CommandSpec</span> <span class="n">mixee</span><span class="o">;</span>
@@ -10289,6 +10627,36 @@ For example:</p>
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">java.util.function.IntConsumer</span>
+<span class="k">import</span> <span class="nn">java.util.function.IntSupplier</span>
+<span class="c1">// ...</span>
+
+<span class="kd">class</span> <span class="nc">AdvancedMixin</span> <span class="p">{</span>
+    <span class="nd">@Spec</span><span class="p">(</span><span class="nc">Spec</span><span class="p">.</span><span class="nc">Target</span><span class="p">.</span><span class="nc">MIXEE</span><span class="p">)</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">mixee</span><span class="p">:</span> <span class="nc">CommandSpec</span>
+
+    <span class="cm">/**</span><span class="err">
+</span><span class="cm">     * When the -x option is specified on any subcommand,</span><span class="err">
+</span><span class="cm">     * multiply its value with another integer supplied by this subcommand</span><span class="err">
+</span><span class="cm">     * and set the result on the top-level command.</span><span class="err">
+</span><span class="cm">     * @param x the value of the -x option</span><span class="err">
+</span><span class="cm">     */</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">])</span>
+    <span class="k">fun</span> <span class="nf">setValue</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// get another value from the command we are mixed into</span>
+        <span class="kd">val</span> <span class="py">y</span> <span class="p">=</span> <span class="p">(</span><span class="n">mixee</span><span class="p">.</span><span class="nf">userObject</span><span class="p">()</span> <span class="k">as</span> <span class="nc">IntSupplier</span><span class="p">).</span><span class="n">asInt</span>
+
+        <span class="kd">val</span> <span class="py">product</span> <span class="p">=</span> <span class="n">x</span> <span class="p">*</span> <span class="n">y</span>
+
+        <span class="c1">// set the result on the top-level (root) command</span>
+        <span class="p">(</span><span class="n">mixee</span><span class="p">.</span><span class="nf">root</span><span class="p">().</span><span class="nf">userObject</span><span class="p">()</span> <span class="k">as</span> <span class="nc">IntConsumer</span><span class="p">).</span><span class="nf">accept</span><span class="p">(</span><span class="n">product</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_accessing_the_parent_command_from_a_mixin"><a class="anchor" href="#_accessing_the_parent_command_from_a_mixin"></a>18.2.4. Accessing the Parent Command from a Mixin</h4>
@@ -10297,7 +10665,8 @@ For example:</p>
 This injects a reference to the parent command of the mixee into the mixin.
 Here is an example implementation:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="c1">// Define a mixin that delegates to the parent command.</span>
 <span class="kd">class</span> <span class="nc">MyMixin</span> <span class="o">{</span>
@@ -10337,6 +10706,51 @@ Here is an example implementation:</p>
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="c1">// Define a mixin that delegates to the parent command.</span>
+<span class="kd">class</span> <span class="nc">MyMixin</span> <span class="p">{</span>
+    <span class="nd">@ParentCommand</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">top</span><span class="p">:</span> <span class="nc">Top</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-v"</span><span class="p">,</span> <span class="s">"--verbose"</span><span class="p">])</span>
+    <span class="k">fun</span> <span class="nf">setVerbose</span><span class="p">(</span><span class="n">verbose</span><span class="p">:</span> <span class="nc">Boolean</span><span class="p">)</span> <span class="p">{</span> <span class="n">top</span><span class="p">.</span><span class="n">verbose</span> <span class="p">=</span> <span class="n">verbose</span> <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// An example Top-level command with a subcommand.</span>
+<span class="c1">// The `-v` option can be specified on the top-level command as well as its subcommands.</span>
+<span class="nd">@Command</span><span class="p">(</span><span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span><span class="nc">Sub</span><span class="o">::</span><span class="k">class</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">Top</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-v"</span><span class="p">,</span> <span class="s">"--verbose"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">verbose</span> <span class="p">=</span> <span class="k">false</span>
+
+    <span class="k">fun</span> <span class="nf">verbose</span><span class="p">(</span><span class="n">pattern</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span> <span class="k">vararg</span> <span class="n">params</span><span class="p">:</span> <span class="nc">Any</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">verbose</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">.</span><span class="nf">printf</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="p">*</span><span class="n">params</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span> <span class="nf">verbose</span><span class="p">(</span><span class="s">"Hello from top%n"</span><span class="p">)</span> <span class="p">}</span>
+
+    <span class="k">companion</span> <span class="k">object</span> <span class="p">{</span>
+        <span class="nd">@JvmStatic</span>
+        <span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+            <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">Top</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Subcommand classes can mix in the `-v` option with a @Mixin-annotated field.</span>
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"sub"</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">Sub</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="nd">@Mixin</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">mymixin</span><span class="p">:</span> <span class="nc">MyMixin</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span> <span class="n">mymixin</span><span class="p">.</span><span class="n">top</span><span class="p">.</span><span class="nf">verbose</span><span class="p">(</span><span class="s">"Hello from sub%n"</span><span class="p">)</span> <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>With this, the <code>-v</code> option can be specified on the top-level command as well as its subcommands, so all of the below are valid invocations:</p>
 </div>
@@ -10356,24 +10770,45 @@ java Top sub -v</pre>
 <div class="paragraph">
 <p>The below example shows how a mixin can be added programmatically with the <code>CommandLine.addMixin</code> method.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">CommandLine</span> <span class="n">commandLine</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyCommand</span><span class="o">());</span>
 
 <span class="nc">ReusableOptions</span> <span class="n">mixin</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ReusableOptions</span><span class="o">();</span>
-<span class="n">commandline</span><span class="o">.</span><span class="na">addMixin</span><span class="o">(</span><span class="s">"myMixin"</span><span class="o">,</span> <span class="n">mixin</span><span class="o">);</span></code></pre>
+<span class="n">commandLine</span><span class="o">.</span><span class="na">addMixin</span><span class="o">(</span><span class="s">"myMixin"</span><span class="o">,</span> <span class="n">mixin</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">commandLine</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyCommand</span><span class="p">())</span>
+
+<span class="kd">val</span> <span class="py">mixin</span> <span class="p">=</span> <span class="nc">ReusableOptions</span><span class="p">()</span>
+<span class="n">commandLine</span><span class="p">.</span><span class="nf">addMixin</span><span class="p">(</span><span class="s">"myMixin"</span><span class="p">,</span> <span class="n">mixin</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>Programmatically added mixins can be accessed via the map returned by <code>CommandLine.getMixins</code>. Continuing from the previous example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="n">commandLine</span><span class="o">.</span><span class="na">parseArgs</span><span class="o">(</span><span class="s">"-vvv"</span><span class="o">);</span>
 
 <span class="c1">// the options defined in ReusableOptions have been added to the zip command</span>
 <span class="k">assert</span> <span class="n">mixin</span> <span class="o">==</span> <span class="n">commandLine</span><span class="o">.</span><span class="na">getMixins</span><span class="o">().</span><span class="na">get</span><span class="o">(</span><span class="s">"myMixin"</span><span class="o">);</span>
 <span class="k">assert</span> <span class="n">mixin</span><span class="o">.</span><span class="na">verbosity</span><span class="o">.</span><span class="na">length</span> <span class="o">==</span> <span class="mi">3</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="n">commandLine</span><span class="p">.</span><span class="nf">parseArgs</span><span class="p">(</span><span class="s">"-vvv"</span><span class="p">)</span>
+
+<span class="c1">// the options defined in ReusableOptions have been added to the zip command</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">mixin</span> <span class="p">===</span> <span class="n">commandLine</span><span class="p">.</span><span class="n">mixins</span><span class="p">[</span><span class="s">"myMixin"</span><span class="p">])</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">mixin</span><span class="p">.</span><span class="n">verbosity</span><span class="p">.</span><span class="n">size</span> <span class="p">==</span> <span class="mi">3</span><span class="p">)</span></code></pre>
 </div>
 </div>
 </div>
@@ -10392,14 +10827,15 @@ declaring a <a href="#spec-annotation"><code>@Spec(MIXEE)</code>-annotated</a> f
 The <code>@Spec(MIXEE)</code>-annotated field allows the mixin to climb the command hierarchy and store the "verbosity" value in a single place.
 When the application is started, a custom execution strategy is used to configure the log level from that single value.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">org.apache.logging.log4j.Level</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.apache.logging.log4j.LogManager</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.apache.logging.log4j.Logger</span><span class="o">;</span>
+<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">org.apache.logging.log4j.*</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">org.apache.logging.log4j.core.config.Configurator</span><span class="o">;</span>
 
-<span class="kn">import</span> <span class="nn">picocli.CommandLine.Spec</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">picocli.CommandLine</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">picocli.CommandLine.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">picocli.CommandLine.Model.CommandSpec</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.</span><span class="na">Spec</span><span class="o">.</span><span class="na">Target</span><span class="o">.</span><span class="na">MIXEE</span><span class="o">;</span>
 
 <span class="kd">class</span> <span class="nc">LoggingMixin</span> <span class="o">{</span>
@@ -10463,6 +10899,7 @@ When the application is started, a custom execution strategy is used to configur
     <span class="o">}</span>
 <span class="o">}</span>
 
+<span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"sub"</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">Sub</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
     <span class="kd">private</span> <span class="kd">static</span> <span class="nc">Logger</span> <span class="n">logger</span> <span class="o">=</span> <span class="nc">LogManager</span><span class="o">.</span><span class="na">getLogger</span><span class="o">();</span>
 
@@ -10484,6 +10921,103 @@ When the application is started, a custom execution strategy is used to configur
         <span class="n">logger</span><span class="o">.</span><span class="na">warn</span> <span class="o">(</span><span class="s">"Hi (warning)   from app sub subsubmethod"</span><span class="o">);</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">org.apache.logging.log4j.*</span>
+<span class="k">import</span> <span class="nn">org.apache.logging.log4j.core.config.Configurator</span>
+
+<span class="k">import</span> <span class="nn">picocli.CommandLine</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine.*</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine.Model.CommandSpec</span>
+
+<span class="kd">class</span> <span class="nc">LoggingMixin</span> <span class="p">{</span>
+    <span class="nd">@Spec</span><span class="p">(</span><span class="nc">Spec</span><span class="p">.</span><span class="nc">Target</span><span class="p">.</span><span class="nc">MIXEE</span><span class="p">)</span>
+    <span class="k">private</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">mixee</span><span class="p">:</span> <span class="nc">CommandSpec</span><span class="c1">// spec of the command where the @Mixin is used</span>
+    <span class="kd">var</span> <span class="py">verbosity</span> <span class="p">=</span> <span class="nc">BooleanArray</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="cm">/**</span><span class="err">
+</span><span class="cm">     * Sets the specified verbosity on the LoggingMixin of the top-level command.</span><span class="err">
+</span><span class="cm">     * @param verbosity the new verbosity value</span><span class="err">
+</span><span class="cm">     */</span>
+    <span class="nd">@Option</span><span class="p">(</span>
+        <span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-v"</span><span class="p">,</span> <span class="s">"--verbose"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span>
+                 <span class="s">"Specify multiple -v options to increase verbosity."</span><span class="p">,</span>
+                 <span class="s">"For example, `-v -v -v` or `-vvv`"</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="k">fun</span> <span class="nf">setVerbose</span><span class="p">(</span><span class="n">verbosity</span><span class="p">:</span> <span class="nc">BooleanArray</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Each subcommand that mixes in the LoggingMixin has its own instance</span>
+        <span class="c1">// of this class, so there may be many LoggingMixin instances.</span>
+        <span class="c1">// We want to store the verbosity value in a single, central place,</span>
+        <span class="c1">// so we find the top-level command,</span>
+        <span class="c1">// and store the verbosity level on our top-level command's LoggingMixin.</span>
+        <span class="p">(</span><span class="n">mixee</span><span class="p">.</span><span class="nf">root</span><span class="p">().</span><span class="nf">userObject</span><span class="p">()</span> <span class="k">as</span> <span class="nc">MyApp</span><span class="p">).</span><span class="n">loggingMixin</span><span class="p">.</span><span class="n">verbosity</span> <span class="p">=</span> <span class="n">verbosity</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"app"</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span><span class="nc">Sub</span><span class="o">::</span><span class="k">class</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">MyApp</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="nd">@Mixin</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">loggingMixin</span><span class="p">:</span> <span class="nc">LoggingMixin</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">logger</span><span class="p">.</span><span class="nf">trace</span><span class="p">(</span><span class="s">"Starting... (trace) from app"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s">"Starting... (debug) from app"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="p">.</span><span class="nf">info</span> <span class="p">(</span><span class="s">"Starting... (info)  from app"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="p">.</span><span class="nf">warn</span> <span class="p">(</span><span class="s">"Starting... (warn)  from app"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="k">fun</span> <span class="nf">calcLogLevel</span><span class="p">():</span> <span class="nc">Level</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">when</span> <span class="p">(</span><span class="n">loggingMixin</span><span class="p">.</span><span class="n">verbosity</span><span class="p">.</span><span class="n">size</span><span class="p">)</span> <span class="p">{</span>
+            <span class="mi">0</span> <span class="p">-&gt;</span> <span class="nc">Level</span><span class="p">.</span><span class="nc">WARN</span>
+            <span class="mi">1</span> <span class="p">-&gt;</span> <span class="nc">Level</span><span class="p">.</span><span class="nc">INFO</span>
+            <span class="mi">2</span> <span class="p">-&gt;</span> <span class="nc">Level</span><span class="p">.</span><span class="nc">DEBUG</span>
+            <span class="k">else</span> <span class="p">-&gt;</span> <span class="nc">Level</span><span class="p">.</span><span class="nc">TRACE</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// A reference to this method can be used as a custom execution strategy</span>
+    <span class="c1">// that first configures Log4j based on the specified verbosity level,</span>
+    <span class="c1">// and then delegates to the default execution strategy.</span>
+    <span class="k">private</span> <span class="k">fun</span> <span class="nf">executionStrategy</span><span class="p">(</span><span class="n">parseResult</span><span class="p">:</span> <span class="nc">ParseResult</span><span class="p">):</span> <span class="nc">Int</span> <span class="p">{</span>
+        <span class="nc">Configurator</span><span class="p">.</span><span class="nf">setRootLevel</span><span class="p">(</span><span class="nf">calcLogLevel</span><span class="p">())</span> <span class="c1">// configure log4j</span>
+        <span class="k">return</span> <span class="nc">RunLast</span><span class="p">().</span><span class="nf">execute</span><span class="p">(</span><span class="n">parseResult</span><span class="p">)</span> <span class="c1">// default execution strategy</span>
+    <span class="p">}</span>
+
+    <span class="k">companion</span> <span class="k">object</span> <span class="p">{</span>
+        <span class="k">private</span> <span class="kd">val</span> <span class="py">logger</span><span class="p">:</span> <span class="nc">Logger</span> <span class="p">=</span> <span class="nc">LogManager</span><span class="p">.</span><span class="nf">getLogger</span><span class="p">(</span><span class="nc">MyApp</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">)</span>
+        <span class="nd">@JvmStatic</span>
+        <span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+            <span class="kd">val</span> <span class="py">app</span> <span class="p">=</span> <span class="nc">MyApp</span><span class="p">()</span>
+            <span class="nc">CommandLine</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+                <span class="p">.</span><span class="nf">setExecutionStrategy</span> <span class="p">{</span> <span class="n">parseResult</span><span class="p">:</span> <span class="nc">ParseResult</span> <span class="p">-&gt;</span> <span class="n">app</span><span class="p">.</span><span class="nf">executionStrategy</span><span class="p">(</span><span class="n">parseResult</span><span class="p">)</span> <span class="p">}</span>
+                <span class="p">.</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"sub"</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">Sub</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="nd">@Mixin</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">loggingMixin</span><span class="p">:</span> <span class="nc">LoggingMixin</span>
+    <span class="k">private</span> <span class="kd">val</span> <span class="py">logger</span><span class="p">:</span> <span class="nc">Logger</span> <span class="p">=</span> <span class="nc">LogManager</span><span class="p">.</span><span class="nf">getLogger</span><span class="p">()</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">logger</span><span class="p">.</span><span class="nf">trace</span><span class="p">(</span><span class="s">"Hi (tracing)   from app sub"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s">"Hi (debugging) from app sub"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="p">.</span><span class="nf">info</span> <span class="p">(</span><span class="s">"Hi (info)      from app sub"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="p">.</span><span class="nf">warn</span> <span class="p">(</span><span class="s">"Hi (warning)   from app sub"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="nd">@Command</span>
+    <span class="k">fun</span> <span class="nf">subsubmethod</span><span class="p">(</span><span class="nd">@Mixin</span> <span class="n">loggingMixin</span><span class="p">:</span> <span class="nc">LoggingMixin</span><span class="p">?)</span> <span class="p">{</span>
+        <span class="n">logger</span><span class="p">.</span><span class="nf">trace</span><span class="p">(</span><span class="s">"Hi (tracing)   from app sub subsubmethod"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s">"Hi (debugging) from app sub subsubmethod"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="p">.</span><span class="nf">info</span> <span class="p">(</span><span class="s">"Hi (info)      from app sub subsubmethod"</span><span class="p">)</span>
+        <span class="n">logger</span><span class="p">.</span><span class="nf">warn</span> <span class="p">(</span><span class="s">"Hi (warning)   from app sub subsubmethod"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -13023,7 +13557,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.2<br>
-Last updated 2020-10-17 07:53:58 +0900
+Last updated 2020-10-19 08:05:28 +0900
 </div>
 </div>
 <style>
