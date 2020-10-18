@@ -223,7 +223,7 @@ import java.util.concurrent.Callable
 class Checksum extends Callable[Int] {
 
   @Parameters(index = "0", description = Array("The file whose checksum to calculate."))
-  private val file : File = null
+  private val file: File = null
 
   @Option(names = Array("-a", "--algorithm"), description = Array("MD5, SHA-1, SHA-256, ..."))
   private var algorithm = "MD5"
@@ -438,16 +438,16 @@ class Tar {
 ----
 class Tar : Runnable {
     @Option(names = ["-c"], description = ["create a new archive"])
-    var create : Boolean = false;
+    var create: Boolean = false;
 
     @Option(names = ["-f", "--file"], paramLabel = "ARCHIVE", description = ["the archive file"])
-    lateinit var archive : File;
+    lateinit var archive: File;
 
     @Parameters(paramLabel = "FILE", description = ["one ore more files to archive"])
-    lateinit var files : Array<File>;
+    lateinit var files: Array<File>;
 
     @Option(names = ["-h", "--help"], usageHelp = true, description = ["display a help message"])
-    private var helpRequested : Boolean = false;
+    private var helpRequested: Boolean = false;
 }
 ----
 
@@ -1128,16 +1128,30 @@ Custom type converters can be registered with the `CommandLine.registerConverter
 
 NOTE: Java 8 lambdas make it easy to register custom converters:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 CommandLine cl = new CommandLine(app);
 cl.registerConverter(Locale.class, s -> new Locale.Builder().setLanguageTag(s).build());
 cl.registerConverter(Cipher.class, s -> Cipher.getInstance(s));
 ----
 
+.Kotlin
+[source,java,role="secondary"]
+----
+val cl = CommandLine(app)
+cl.registerConverter(Locale::class.java) {
+    s: String? -> Locale.Builder().setLanguageTag(s).build()
+}
+cl.registerConverter(Cipher::class.java) {
+    Cipher.getInstance(it)
+}
+----
+
 After registering custom converters, call the `execute(String...)` or `parseArgs(String...)` method on the `CommandLine` instance where the converters are registered. (The static `populateCommand` method cannot be used.) For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class App {
     @Parameters java.util.Locale locale;
@@ -1145,7 +1159,24 @@ class App {
 }
 ----
 
-[source,java]
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import java.util.Locale
+import javax.crypto.Cipher
+// ...
+
+class App {
+    @Parameters
+    lateinit var locale: Locale
+
+    @Option(names = ["-a"])
+    lateinit var cipher: Cipher
+}
+----
+
+.Java
+[source,kotlin,role="primary"]
 ----
 App app = new App();
 CommandLine commandLine = new CommandLine(app)
@@ -1155,6 +1186,23 @@ CommandLine commandLine = new CommandLine(app)
 commandLine.parseArgs("-a", "AES/CBC/NoPadding", "en-GB");
 assert app.locale.toLanguageTag().equals("en-GB");
 assert app.cipher.getAlgorithm().equals("AES/CBC/NoPadding");
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val app = App()
+val commandLine = CommandLine(app)
+    .registerConverter(Locale::class.java) {
+        s: String? -> Locale.Builder().setLanguageTag(s).build()
+    }
+    .registerConverter(Cipher::class.java) {
+        Cipher.getInstance(it)
+    }
+
+commandLine.parseArgs("-a", "AES/CBC/NoPadding", "en-GB")
+assert(app.locale.toLanguageTag() == "en-GB")
+assert(app.cipher.algorithm == "AES/CBC/NoPadding")
 ----
 
 CAUTION: _Note on subcommands:_ the specified converter will be registered with the `CommandLine` object
@@ -1181,7 +1229,8 @@ Invalid value for option '--socket-address': Invalid format: must be 'host:port'
 
 Below is an example custom converter that throws a `TypeConversionException`:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 import java.net.InetSocketAddress;
 
@@ -1191,11 +1240,31 @@ class InetSocketAddressConverter implements ITypeConverter<InetSocketAddress> {
         int pos = value.lastIndexOf(':');
         if (pos < 0) {
             throw new TypeConversionException(
-                    "Invalid format: must be 'host:port' but was '" + value + "'");
+                "Invalid format: must be 'host:port' but was '" + value + "'");
         }
         String adr = value.substring(0, pos);
         int port = Integer.parseInt(value.substring(pos + 1));
         return new InetSocketAddress(adr, port);
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import java.net.InetSocketAddress
+// ...
+
+class InetSocketAddressConverter : ITypeConverter<InetSocketAddress> {
+    override fun convert(value: String): InetSocketAddress {
+        val pos = value.lastIndexOf(':')
+        if (pos < 0) {
+            throw CommandLine.TypeConversionException(
+                "Invalid format: must be 'host:port' but was '$value'")
+        }
+        val adr = value.substring(0, pos)
+        val port = value.substring(pos + 1).toInt()
+        return InetSocketAddress(adr, port)
     }
 }
 ----
@@ -1209,7 +1278,8 @@ For example, for a specific field you may want to use a converter that maps the 
 
 Example usage:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class App {
     @Option(names = "--sqlType", converter = SqlTypeConverter.class)
@@ -1217,8 +1287,19 @@ class App {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class App {
+    @Option(names = ["--sqlType"], converter = [SqlTypeConverter::class])
+    var sqlType = 0
+}
+----
+
 Example implementation:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 class SqlTypeConverter implements ITypeConverter<Integer> {
     public Integer convert(String value) throws Exception {
@@ -1228,7 +1309,25 @@ class SqlTypeConverter implements ITypeConverter<Integer> {
             case "BINARY" : return Types.BINARY;
             case "BIT"    : return Types.BIT;
             case "BLOB"   : return Types.BLOB;
-            ...
+            // ...
+        }
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class SqlTypeConverter : ITypeConverter<Int> {
+    @Throws(Exception::class)
+    override fun convert(value: String): Int {
+        when (value) {
+            "ARRAY"  -> return Types.ARRAY
+            "BIGINT" -> return Types.BIGINT
+            "BINARY" -> return Types.BINARY
+            "BIT"    -> return Types.BIT
+            "BLOB"   -> return Types.BLOB
+            // ...
         }
     }
 }
@@ -1249,7 +1348,8 @@ Multiple parameters can be captured together in a single array or `Collection` f
 The array or collection elements can be any type for which a <<Strongly Typed Everything,converter>> is registered.
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 import java.util.regex.Pattern;
 import java.io.File;
@@ -1263,10 +1363,37 @@ class Convert {
 }
 ----
 
-[source,java]
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import java.io.File
+import java.util.regex.Pattern
+// ...
+
+class Convert {
+    @Option(names = ["-patterns"], description = ["the regex patterns to use"])
+    lateinit var patterns: Array<Pattern>
+
+    @Parameters( /* type = [File::class], */ description = ["the files to convert"])
+    lateinit var files: List<File> // picocli infers type from the generic type
+}
+----
+
+.Java
+[source,java,role="primary"]
 ----
 String[] args = { "-patterns", "a*b", "-patterns", "[a-e][i-u]", "file1.txt", "file2.txt" };
 Convert convert = CommandLine.populateCommand(new Convert(), args);
+
+// convert.patterns now has two Pattern objects
+// convert.files now has two File objects
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val args = arrayOf("-patterns", "a*b", "-patterns", "[a-e][i-u]", "file1.txt", "file2.txt")
+val convert = CommandLine.populateCommand(Convert(), *args)
 
 // convert.patterns now has two Pattern objects
 // convert.files now has two File objects
@@ -1290,7 +1417,8 @@ as long as a <<Strongly Typed Everything,converter>> is registered for both the 
 Key and value types are inferred from the map's generic type parameters.
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 import java.net.InetAddress;
 import java.net.Proxy.Type;
@@ -1304,6 +1432,24 @@ class MapDemo {
     Map<TimeUnit, Long> timeout;
 }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import java.net.InetAddress
+import java.net.Proxy
+import java.util.concurrent.TimeUnit
+// ...
+
+class MapDemo {
+    @Option(names = ["-p", "--proxyHost"])
+    lateinit var proxies: Map<Proxy.Type, InetAddress>
+
+    @Option(names = ["-u", "--timeUnit"])
+    lateinit var timeout: Map<TimeUnit, Long>
+}
+----
+
 Map options may be specified multiple times with different key-value pairs. (See <<Multiple Values>>.)
 
 [source,bash]
@@ -1325,7 +1471,8 @@ The field's type can be an interface or an abstract class.
 The `type` attribute can be used to control for each field what concrete class the string value should be converted to.
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class App {
     @Option(names = "--big", type = BigDecimal.class) // concrete Number subclass
@@ -1339,11 +1486,28 @@ class App {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class App {
+    @Option(names = ["--big"], type = [BigDecimal::class]) // concrete Number subclass
+    lateinit var big: Array<Number> // array type with abstract component class
+
+    @Option(names = ["--small"], type = [Short::class]) // other Number subclass
+    lateinit var small: Array<Number>
+
+    @Parameters(type = [StringBuilder::class]) // StringBuilder implements CharSequence
+    lateinit var address: CharSequence // interface type
+}
+----
+
 ==== Maps and Collections with Abstract Elements
 For raw maps and collections, or when using generics with unbounded wildcards like `Map<?, ?>`, or when the type parameters are themselves abstract classes like `List<CharSequence>` or `Map<? extends Number, ? super Number>`, there is not enough information to convert to a stronger type. By default, the raw String values are added as is to such collections.
 
 The `type` attribute can be specified to convert to a stronger type than String. For example:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 class TypeDemo {
     @Option(names = "-x")  // not enough information to convert
@@ -1357,11 +1521,26 @@ class TypeDemo {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class TypeDemo {
+    @Option(names = ["-x"])              // not enough information to convert
+    lateinit var weaklyTyped: Map<*, *> // String keys and values are added as is
+
+    @Option(names = ["-y"], type = [Short::class, BigDecimal::class])
+    lateinit var stronglyTyped: Map<out Number, Number>
+
+    @Option(names = ["-s"], type = [CharBuffer::class])
+    lateinit var text: List<CharSequence>
+}
+----
+
 === Enum Types
 It is encouraged to use `enum` types for options or positional parameters with a limited set of valid values.
 Not only will picocli validate the input, it allows you to <<Show Default Values,show all values>> in the usage help message with `@Option(description = "Valid values: ${COMPLETION-CANDIDATES}")`. It also allows command line completion to suggest completion candidates for the values of this option.
 
-Enum value matching is case-sensitive by default, but from 3.4 this can be controlled with `CommandLine::setCaseInsensitiveEnumValuesAllowed` and `CommandSpec::caseInsensitiveEnumValuesAllowed`.
+Enum value matching is case-sensitive by default, but as of picocli 3.4 this can be controlled with `CommandLine::setCaseInsensitiveEnumValuesAllowed` and `CommandSpec::caseInsensitiveEnumValuesAllowed`.
 
 == Default Values
 It is possible to define a default value for an option or positional parameter, that is assigned when the user did not specify this option or positional parameter on the command line.
@@ -5162,7 +5341,7 @@ class Foo : Callable<Int> {
 
     override fun call(): Int {
         println("hi from foo, x=$x")
-        var ok : Boolean = true
+        var ok: Boolean = true
         return if (ok) 0 else 1 // exit code
     }
 }
@@ -5179,7 +5358,7 @@ class Bar : Callable<Int> {
     }
 
     @Command(name = "baz", description = ["I'm a subcommand of `bar`"])
-    fun baz( @Option(names = ["-z"]) z : Int) : Int {
+    fun baz( @Option(names = ["-z"]) z: Int) : Int {
         println("hi from baz, z=$z")
         return 45
     }
@@ -5944,7 +6123,7 @@ class Git {
 class Git : Runnable {
 
     @Option(names = ["--git-dir"], description = ["Set the path to the repository."])
-    lateinit var gitDir : File
+    lateinit var gitDir: File
 }
 ----
 
@@ -6718,7 +6897,7 @@ import picocli.CommandLine.Model.CommandSpec
 
 class LoggingMixin {
     @Spec(Spec.Target.MIXEE)
-    private lateinit var mixee : CommandSpec// spec of the command where the @Mixin is used
+    private lateinit var mixee: CommandSpec// spec of the command where the @Mixin is used
     var verbosity = BooleanArray(0)
 
     /**
