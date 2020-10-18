@@ -3580,21 +3580,35 @@ was requested, and invoke `CommandLine::usage` or `CommandLine::printVersionHelp
 == Version Help
 === Static Version Information
 ==== Command `version` Attribute
-Since v0.9.8, applications can specify version information in the `version` attribute of the `@Command` annotation.
+As of picocli 0.9.8, applications can specify version information in the `version` attribute of the `@Command` annotation.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(version = "1.0")
 class VersionedCommand {
     @Option(names = { "-V", "--version" }, versionHelp = true,
             description = "print version information and exit")
     boolean versionRequested;
-    ...
+    /* ... */ }
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(version = ["1.0"])
+class VersionedCommand {
+    @Option(names = ["-V", "--version"], versionHelp = true,
+            description = ["print version information and exit"])
+    var versionRequested = false
+    /* ... */ }
 ----
 
 The `CommandLine.printVersionHelp(PrintStream)` method extracts the version information from this
 annotation and prints it to the specified `PrintStream`.
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 CommandLine commandLine = new CommandLine(new VersionedCommand());
 commandLine.parseArgs(args);
@@ -3604,14 +3618,34 @@ if (commandLine.isVersionHelpRequested()) {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val commandLine = CommandLine(VersionedCommand())
+commandLine.parseArgs(*args)
+if (commandLine.isVersionHelpRequested) {
+    commandLine.printVersionHelp(System.out)
+    return
+}
+----
+
 ==== Multi-line Version Info
 The `version` may specify multiple Strings. Each will be printed on a separate line.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(version = { "Versioned Command 1.0", "Build 12345", "(c) 2017" })
-class VersionedCommand { ... }
+class VersionedCommand { /* ... */ }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(version = ["Versioned Command 1.0", "Build 12345", "(c) 2017"])
+class VersionedCommand { /* */ }
+----
+
 The `CommandLine.printVersionHelp(PrintStream)` method will print the above as:
 
 ----
@@ -3621,16 +3655,30 @@ Build 12345
 ----
 
 ==== Version Info With Variables
-Since 4.0, the version strings may contain <<Variable Interpolation,system properties and environment variables>>. For example:
-[source,java]
+As of picocli 4.0, the version strings may contain <<Variable Interpolation,system properties and environment variables>>. For example:
+
+.Java
+[source,java,role="primary"]
 ----
 @Command(version = {
     "Versioned Command 1.0",
     "Picocli " + picocli.CommandLine.VERSION,
     "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
     "OS: ${os.name} ${os.version} ${os.arch}"})
-class VersionedCommand { ... }
+class VersionedCommand { /* ... */ }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(version = [
+    "Versioned Command 1.0",
+    "Picocli " + picocli.CommandLine.VERSION,
+    "JVM: \${java.version} (\${java.vendor} \${java.vm.name} \${java.vm.version})",
+    "OS: \${os.name} \${os.version} \${os.arch}"])
+class VersionedCommand { /* */ }
+----
+
 Depending on your environment, that may print something like:
 
 ----
@@ -3644,48 +3692,88 @@ OS: Linux 4.4.0-17134-Microsoft amd64
 
 The version strings may contain <<Usage Help with Styles and Colors,markup>> to show ANSI styles and colors. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(version = {
         "@|yellow Versioned Command 1.0|@",
         "@|blue Build 12345|@",
         "@|red,bg(white) (c) 2017|@" })
-class VersionedCommand { ... }
+class VersionedCommand { /* ... */ }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(version = [
+        "@|yellow Versioned Command 1.0|@",
+        "@|blue Build 12345|@",
+        "@|red,bg(white) (c) 2017|@"])
+class VersionedCommand { /* */ }
+----
+
 The markup will be rendered as ANSI escape codes on supported systems.
 
 image:VersionInfoWithColors.png[Screenshot of version information containing markup with Ansi styles and colors]
 
 ==== Version Info With Format Specifiers
-From picocli 1.0, the `version` may contain <<Format Specifiers,format specifiers>>:
+As of picocli 1.0, the `version` may contain <<Format Specifiers,format specifiers>>:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(version = {
     "Versioned Command 1.0",
     "Build %1$s",
     "(c) 2017, licensed to %2$s" })
-class VersionedCommand { ... }
+class VersionedCommand { /* ... */ }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(version = [
+        "Versioned Command 1.0",
+        "Build %1\$s",
+        "(c) 2017, licensed to %2\$s"])
+class VersionedCommand { /* ... */ }
+----
+
 Format argument values can be passed to the `printVersionHelp` method:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 String[] args = {"1234", System.getProperty("user.name")};
 new CommandLine(new VersionedCommand())
     .printVersionHelp(System.out, Help.Ansi.AUTO, args);
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val args = arrayOf("1234", System.getProperty("user.name"))
+CommandLine(VersionedCommand()).printVersionHelp(System.out, Help.Ansi.AUTO, *args)
+----
+
 === Dynamic Version Information
 ==== Command `versionProvider` Attribute
-From picocli 2.2, the `@Command` annotation supports a `versionProvider` attribute.
+As of picocli 2.2, the `@Command` annotation supports a `versionProvider` attribute.
 Applications may specify a `IVersionProvider` implementation in this attribute, and picocli will instantiate this class
 and invoke it to collect version information.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(versionProvider = com.my.custom.ManifestVersionProvider.class)
-class App { ... }
+class App { /* ... */ }
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(versionProvider = com.my.custom.ManifestVersionProvider::class)
+class App { /* ... */ }
 ----
 
 This is useful when the version of an application should be detected dynamically at runtime.
@@ -3718,14 +3806,24 @@ The version strings returned from the `IVersionProvider` may contain <<Variable 
 
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class VersionProviderWithVariables implements IVersionProvider {
     public String[] getVersion() {
         return new String[] { "${COMMAND-FULL-NAME} version 1.0" };
     }
 }
+----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class VersionProviderWithVariables : IVersionProvider {
+    override fun getVersion(): Array<String> {
+        return arrayOf("\${COMMAND-FULL-NAME} version 1.0")
+    }
+}
 ----
 
 The above example version provider will show the fully qualified command name (that is, preceded by its parent fully qualified command name)
@@ -3735,14 +3833,15 @@ This is one way to create a version provider that can be reused across multiple 
 
 ==== Injecting `CommandSpec` Into a `IVersionProvider`
 
-From picocli 4.2.0, `IVersionProvider` implementations can have `@Spec`-annotated fields. If such a field
+As of picocli 4.2.0, `IVersionProvider` implementations can have `@Spec`-annotated fields. If such a field
 exists, picocli will inject the `CommandSpec` of the command that uses this version provider.
 This gives the version provider access to the full command hierarchy,
 and may make it easier to implement version providers that can be reused among multiple commands.
 
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class MyVersionProvider implements IVersionProvider {
     @Spec CommandSpec spec;
@@ -3753,6 +3852,18 @@ class MyVersionProvider implements IVersionProvider {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class MyVersionProvider : IVersionProvider {
+    @Spec
+    lateinit var spec: CommandSpec
+
+    override fun getVersion(): Array<String> {
+        return arrayOf("Version info for " + spec.qualifiedName())
+    }
+}
+----
 
 == Usage Help
 === Compact Example
@@ -3915,7 +4026,7 @@ For commands with <<Usage Help for Subcommands,subcommands>>, the string `[COMMA
 Usage: <cmd> [OPTIONS] FILES [COMMAND]
 ----
 
-From picocli 4.0, this can be customized with the `synopsisSubcommandLabel` attribute.
+As of picocli 4.0, this can be customized with the `synopsisSubcommandLabel` attribute.
 
 For example, to clarify that a <<Required Subcommands,subcommand is mandatory>>, an application may specify `COMMAND`, without the `[` and `]` brackets:
 
