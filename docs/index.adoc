@@ -4053,50 +4053,77 @@ Concatenate FILE(s), or standard input, to standard output.
       FILE                 Files whose contents to display
   -A, --show-all           equivalent to -vET
   -b, --number-nonblank    number nonempty output lines, overrides -n
-  -e                       equivalent to -vET
+  -e                       equivalent to -vE
   -E, --show-ends          display $ at end of each line
   -n, --number             number all output lines
   -s, --squeeze-blank      suppress repeated empty output lines
   -t                       equivalent to -vT
   -T, --show-tabs          display TAB characters as ^I
   -u                       (ignored)
-  -v, --show-nonprinting   use ^ and M- notation, except for LDF and TAB
+  -v, --show-nonprinting   use ^ and M- notation, except for LFD and TAB
       --help               display this help and exit
       --version            output version information and exit
 Copyright(c) 2017
 ----
 
 The usage help message is generated from annotation attributes, like below:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "cat", footer = "Copyright(c) 2017",
          description = "Concatenate FILE(s), or standard input, to standard output.")
 class Cat {
 
-  @Parameters(paramLabel = "FILE", description = "Files whose contents to display")
-  List<File> files;
+    @Parameters(paramLabel = "FILE", description = "Files whose contents to display")
+    List<File> files;
 
-  @Option(names = "--help", usageHelp = true, description = "display this help and exit")
-  boolean help;
+    @Option(names = "--help", usageHelp = true, description = "display this help and exit")
+    boolean help;
 
-  @Option(names = "-t",                 description = "equivalent to -vT")  boolean t;
-  @Option(names = "-e",                 description = "equivalent to -vET") boolean e;
-  @Option(names = {"-A", "--show-all"}, description = "equivalent to -vET") boolean all;
+    @Option(names = "-t",                 description = "equivalent to -vT")  boolean t;
+    @Option(names = "-e",                 description = "equivalent to -vE")  boolean e;
+    @Option(names = {"-A", "--show-all"}, description = "equivalent to -vET") boolean all;
 
-  // ...
+    // ...
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "cat", footer = ["Copyright(c) 2017"],
+         description = ["Concatenate FILE(s), or standard input, to standard output."])
+class Cat {
+
+    @Parameters(paramLabel = "FILE", description = ["Files whose contents to display"])
+    lateinit var files: List<File>
+
+    @Option(names = ["--help"], usageHelp = true, description = ["display this help and exit"])
+    var help = false
+
+    @Option(names = ["-t"],               description = ["equivalent to -vT"])  var t = false
+    @Option(names = ["-e"],               description = ["equivalent to -vE"])  var e = false
+    @Option(names = ["-A", "--show-all"], description = ["equivalent to -vET"]) var all = false
+
+    // ...
 }
 ----
 
 === Command Name
 In the above example, the program name is taken from the `name` attribute of the `Command` annotation:
-[source,java]
+
+.Java / Kotlin
+[source,java,role="primary"]
 ----
 @Command(name = "cat")
 ----
+
 Without a `name` attribute, picocli will show a generic `<main class>` in the synopsis:
 ----
 Usage: <main class> [-AbeEnstTuv] [--help] [--version] [FILE...]
 ----
+
 === Parameter Labels
 Non-boolean options require a value. The usage help should explain this, and picocli shows the option parameter
 in the synopsis and in the option list. By default, the field name is shown in `<` and `>` fish brackets.
@@ -4109,22 +4136,46 @@ Usage: <main class> [-f=FILE] [-n=<number>] NUM <host>
   -n= <number>   a number option
 ----
 Some annotated fields in the below example class have a `paramLabel` attribute and others don't:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 @Command()
 class ParamLabels {
     @Option(names = "-f",    description = "a file",       paramLabel = "FILE") File f;
     @Option(names = "-n",    description = "a number option")                   int number;
     @Parameters(index = "0", description = "number param", paramLabel = "NUM")  int n;
-    @Parameters(index = "1", description = "the host parameter")                InetAddress host;
+    @Parameters(index = "1", description = "the host parameter")               InetAddress host;
 }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command
+class ParamLabels {
+    @Option(names = ["-f"], description = ["a file"], paramLabel = "FILE")
+    lateinit var f: File
+
+    @Option(names = ["-n"], description = ["a number option"])
+    var number = 0
+
+    @Parameters(index = "0", description = ["number param"], paramLabel = "NUM")
+    var n = 0
+
+    @Parameters(index = "1", description = ["the host parameter"])
+    lateinit var host: InetAddress
+}
+----
+
 NOTE: For demonstration purposes the above example mixes the all-uppercase (e.g., `NUM`) style label and the fish bracket (e.g., `<number>`) style labels. For real applications, mixing these label styles should be avoided. An application should consistently use only one style.
 
 
 === Unsorted Option List
 By default the options list displays options in alphabetical order. Use the `sortOptions = false` attribute to display options in the order they are declared in your class.
-[source,java]
+
+.Java / Kotlin
+[source,java,role="primary"]
 ----
 @Command(sortOptions = false)
 ----
@@ -4144,10 +4195,18 @@ The regular expression in the `split` attribute may be quite different from what
 The example below uses the plus (`+`) character as a separator.
 The regular expression in the `split` attribute uses backslash (`\`) characters to make sure that the plus character is treated as a literal.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Parameters(split = "\\+", splitSynopsisLabel = "+", paramLabel = "VALUE")
 List<String> values;
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Parameters(split = "\\+", splitSynopsisLabel = "+", paramLabel = "VALUE")
+lateinit var values: List<String>
 ----
 
 However, end users can type simply  `A+B+C` (using the plus character separator), not  `A\+B\+C`.
@@ -4167,13 +4226,26 @@ If a command is very complex and has many options, it is sometimes desirable to 
 Usage: <main class> [OPTIONS] [<files>...]
 ----
 Note that the positional parameters are not abbreviated.
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 @Command(abbreviateSynopsis = true)
 class App {
     @Parameters File[] files;
     @Option(names = {"--count", "-c"}) int count;
-    ....
+    // ...
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(abbreviateSynopsis = true)
+class App {
+    @Parameters lateinit var files: Array<File>
+    @Option(names = ["--count", "-c"]) var count = 0
+    // ...
 }
 ----
 
@@ -4186,7 +4258,9 @@ Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
   or:  ln [OPTION]... -t DIRECTORY TARGET...  (4th form)
 ----
 To produce a synopsis like the above, specify the literal text in the `customSynopsis` attribute:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 @Command(synopsisHeading = "", customSynopsis = {
         "Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)",
@@ -4194,9 +4268,19 @@ To produce a synopsis like the above, specify the literal text in the `customSyn
         "  or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)",
         "  or:  ln [OPTION]... -t DIRECTORY TARGET...  (4th form)",
 })
-class Ln { ... }
+class Ln { /* ... */ }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(synopsisHeading = "", mixinStandardHelpOptions = true, customSynopsis = ["""
+Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
+   or: ln [OPTION]... TARGET                  (2nd form)
+   or: ln [OPTION]... TARGET... DIRECTORY     (3rd form)
+   or:  ln [OPTION]... -t DIRECTORY TARGET...  (4th form)"""])
+class Ln { /* ... */ }
+----
 
 === Synopsis Subcommand Label
 For commands with <<Usage Help for Subcommands,subcommands>>, the string `[COMMAND]` is appended to the end of the synopsis (whether the synopsis is <<Abbreviated Synopsis,abbreviated>> or not). This looks something like this:
@@ -4209,18 +4293,30 @@ As of picocli 4.0, this can be customized with the `synopsisSubcommandLabel` att
 
 For example, to clarify that a <<Required Subcommands,subcommand is mandatory>>, an application may specify `COMMAND`, without the `[` and `]` brackets:
 
-[source,java]
+.Java / Kotlin
+[source,java,role="primary"]
 ----
 @Command(name = "git", synopsisSubcommandLabel = "COMMAND")
-class Git { ... }
+class Git { /* ... */ }
 ----
 
 An application with a limited number of subcommands may want to show them all in the synopsis, for example:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "fs", synopsisSubcommandLabel = "(list | add | delete)",
          subcommands = {List.class, Add.class, Delete.class}, mixinStandardHelpOptions = true)
-class Fs { ... }
+class Fs { /* ... */ }
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "fs", synopsisSubcommandLabel = "(list | add | delete)",
+         subcommands = [List::class, Add::class, Delete::class],
+         mixinStandardHelpOptions = true)
+class Fs { /* ... */ }
 ----
 
 This will show the following synopsis:
@@ -4242,19 +4338,37 @@ By default, the usage help message does not display <<Generating an Exit Code,ex
 Applications that call `System.exit` need to configure the `exitCodeListHeading` and `exitCodeList` annotation attributes.
 For example:
 
-```java
+.Java
+[source,java,role="primary"]
+----
 @Command(mixinStandardHelpOptions = true,
-        exitCodeListHeading = "Exit Codes:%n",
-        exitCodeList = {
-            " 0:Successful program execution",
-            "64:Usage error: user input for the command was incorrect, " +
-                    "e.g., the wrong number of arguments, a bad flag, " +
-                    "a bad syntax in a parameter, etc.",
-            "70:Internal software error: an exception occurred when invoking " +
-                    "the business logic of this command."})
+         exitCodeListHeading = "Exit Codes:%n",
+         exitCodeList = {
+             " 0:Successful program execution",
+             "64:Usage error: user input for the command was incorrect, " +
+                     "e.g., the wrong number of arguments, a bad flag, " +
+                     "a bad syntax in a parameter, etc.",
+             "70:Internal software error: an exception occurred when invoking " +
+                     "the business logic of this command."})
 class App {}
 new CommandLine(new App()).usage(System.out);
-```
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(mixinStandardHelpOptions = true,
+         exitCodeListHeading = "Exit Codes:%n",
+         exitCodeList = [
+             " 0:Successful program execution",
+             "64:Usage error: user input for the command was incorrect,"  +
+                    "e.g., the wrong number of arguments, a bad flag, " +
+                    "a bad syntax in a parameter, etc.",
+             "70:Internal software error: an exception occurred when invoking " +
+                    "the business logic of this command."])
+class App {}
+fun main(args: Array<String>) : Unit = CommandLine(App()).usage(System.out)
+----
 
 This will print the following usage help message to the console:
 
@@ -4283,20 +4397,39 @@ where each element of the array is displayed on a separate line in the usage hel
 
 === Section Headings
 Section headers can be used to make usage message layout appear more spacious. The example below demonstrates the use of embedded line separator (`%n`) format specifiers:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "commit",
-        sortOptions = false,
-        headerHeading = "Usage:%n%n",
-        synopsisHeading = "%n",
-        descriptionHeading = "%nDescription:%n%n",
-        parameterListHeading = "%nParameters:%n",
-        optionListHeading = "%nOptions:%n",
-        header = "Record changes to the repository.",
-        description = "Stores the current contents of the index in a new commit " +
-                "along with a log message from the user describing the changes.")
-class GitCommit { ... }
+         sortOptions = false,
+         headerHeading = "Usage:%n%n",
+         synopsisHeading = "%n",
+         descriptionHeading = "%nDescription:%n%n",
+         parameterListHeading = "%nParameters:%n",
+         optionListHeading = "%nOptions:%n",
+         header = "Record changes to the repository.",
+         description = "Stores the current contents of the index in a new commit " +
+                 "along with a log message from the user describing the changes.")
+class GitCommit { /* ... */ }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "commit",
+         sortOptions = false,
+         headerHeading = "Usage:%n%n",
+         synopsisHeading = "%n",
+         descriptionHeading = "%nDescription:%n%n",
+         parameterListHeading = "%nParameters:%n",
+         optionListHeading = "%nOptions:%n",
+         header = ["Record changes to the repository."],
+         description = ["Stores the current contents of the index in a new commit " +
+                 "along with a log message from the user describing the changes."])
+class GitCommit { /* ... */ }
+----
+
 The usage help message generated from this class is shown below in <<Expanded Example>>.
 
 
@@ -4355,12 +4488,14 @@ The annotated class that this usage help message is generated from is shown in <
 === Option-Parameter Separators
 The separator displayed between options and option parameters (`=` by default)
 in the synopsis and the option list can be configured with the `separator` attribute.
-[source,java]
+
+.Java / Kotlin
+[source,java,role="primary"]
 ----
 @Command(separator = " ")
 ----
 
-NOTE: the `@Command(separator = " ")` annotation also affects how picocli parses the command line.  See also <<Custom Separators>>.
+NOTE: The `@Command(separator = " ")` annotation also affects how picocli parses the command line.  See also <<Custom Separators>>.
 
 
 === Hidden Options and Parameters
@@ -4370,7 +4505,8 @@ by default each of these fields would be shown in the usage message, which would
 
 For example, the `all` field below is annotated as `hidden = true`:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command()
 class App {
@@ -4381,6 +4517,24 @@ class App {
     @Parameters(hidden = true) String[] all;
 }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command
+class App {
+    @Parameters(index = "0",    description = ["destination host"])
+    lateinit var host: InetAddress
+    @Parameters(index = "1",    description = ["destination port"])
+    var port = 0
+    @Parameters(index = "2..*", description = ["files to transfer"])
+    lateinit var files: Array<String>
+
+    @Parameters(hidden = true)
+    lateinit var all: Array<String>
+}
+----
+
 The above will generate the following usage help message, where the `all` field is not shown:
 ----
 Usage: <main class> <host> <port> [<files>...]
@@ -4397,12 +4551,24 @@ From picocli 4.2, an entry for `@<filename>` can be shown in the options and par
 
 Example command:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "myapp", showAtFileInUsageHelp = true,
-        mixinStandardHelpOptions = true, description = "Example command.")
+         mixinStandardHelpOptions = true, description = "Example command.")
 class MyApp {
     @Parameters(description = "A file.") File file;
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "myapp", showAtFileInUsageHelp = true,
+         mixinStandardHelpOptions = true, description = ["Example command."])
+class MyApp {
+    @Parameters(description = ["A file."])
+    lateinit var file: File
 }
 ----
 
@@ -4423,11 +4589,11 @@ By default, the `@<filename>` entry is shown before the positional parameters in
 
 This can be changed with the <<Usage Help API,Help API>> for reordering sections. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_AT_FILE_PARAMETER;
 import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_COMMAND_LIST_HEADING;
-import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_OPTION_LIST_HEADING;
 
 @Command(name = "myapp", showAtFileInUsageHelp = true,
         mixinStandardHelpOptions = true, description = "Example command.")
@@ -4442,6 +4608,32 @@ class MyApp {
         cmd.setHelpSectionKeys(copy);
 
         cmd.usage(System.out);
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_COMMAND_LIST_HEADING
+import picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_AT_FILE_PARAMETER
+// ...
+
+@Command(name = "myapp", showAtFileInUsageHelp = true,
+         mixinStandardHelpOptions = true, description = ["Example command."])
+class MyApp {
+    @Parameters(description = ["A file."]) lateinit var file: File
+
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val cmd = CommandLine(MyApp())
+            val copy: MutableList<String> = ArrayList(cmd.helpSectionKeys)
+            copy.remove(SECTION_KEY_AT_FILE_PARAMETER)
+            copy.add(copy.indexOf(SECTION_KEY_COMMAND_LIST_HEADING), SECTION_KEY_AT_FILE_PARAMETER)
+            cmd.helpSectionKeys = copy
+            cmd.usage(System.out)
+        }
     }
 }
 ----
@@ -4468,7 +4660,8 @@ By setting the above variables in either system properties, environment variable
 
 For example, if we define these system properties:
 
-[source,java]
+.Java / Kotlin
+[source,java,role="primary"]
 ----
 System.setProperty("picocli.atfile.label", "my@@@@file");
 System.setProperty("picocli.atfile.description", "@files rock!");
@@ -4493,18 +4686,30 @@ The `descriptionKey` for the `@<filename>` entry in resource bundles is:
 
 === Show End of Options
 
-From picocli 4.3, an entry for the `--` <<Double dash (`--`),End of Options delimiter>> can be shown in the options list of the usage help message of a command with the `@Command(showEndOfOptionsDelimiterInUsageHelp = true)` annotation.
+As of picocli 4.3, an entry for the `--` <<Double dash (`--`),End of Options delimiter>> can be shown in the options list of the usage help message of a command with the `@Command(showEndOfOptionsDelimiterInUsageHelp = true)` annotation.
 
 ==== Example
 
 Example command:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "myapp", showEndOfOptionsDelimiterInUsageHelp = true,
-        mixinStandardHelpOptions = true, description = "Example command.")
+         mixinStandardHelpOptions = true, description = "Example command.")
 class MyApp {
     @Parameters(description = "A file.") File file;
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "myapp", showEndOfOptionsDelimiterInUsageHelp = true,
+         mixinStandardHelpOptions = true, description = ["Example command."])
+class MyApp {
+    @Parameters(description = ["A file."])
+    lateinit var file: File
 }
 ----
 
@@ -4526,11 +4731,11 @@ By default, the `--` End of Options entry is shown between the options and the p
 
 This can be changed with the <<Usage Help API,Help API>> for reordering sections. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_END_OF_OPTIONS;
 import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_OPTION_LIST;
-import static picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_OPTION_LIST_HEADING;
 
 @Command(name = "myapp", showEndOfOptionsDelimiterInUsageHelp = true,
         mixinStandardHelpOptions = true, description = "Example command.")
@@ -4545,6 +4750,34 @@ class MyApp {
         cmd.setHelpSectionKeys(copy);
 
         cmd.usage(System.out);
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_OPTION_LIST
+import picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_END_OF_OPTIONS
+// ...
+
+@Command(name = "myapp", showEndOfOptionsDelimiterInUsageHelp = true,
+         mixinStandardHelpOptions = true, description = ["Example command."])
+class MyApp {
+    @Parameters(description = ["A file."])
+    lateinit var file: File
+
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val cmd = CommandLine(MyApp())
+            val copy: MutableList<String> = ArrayList(cmd.helpSectionKeys)
+            copy.remove(SECTION_KEY_END_OF_OPTIONS)
+            copy.add(copy.indexOf(SECTION_KEY_OPTION_LIST), SECTION_KEY_END_OF_OPTIONS)
+            cmd.helpSectionKeys = copy
+
+            cmd.usage(System.out)
+        }
     }
 }
 ----
@@ -4571,7 +4804,8 @@ By setting the above variable in either system properties, environment variables
 
 For example, if we define this system property:
 
-[source,java]
+.Java / Kotlin
+[source,java,role="primary"]
 ----
 System.setProperty("picocli.endofoptions.description", "End of options. Remainder are positional parameters.");
 ----
@@ -4587,7 +4821,6 @@ Example command.
   --              End of options. Remainder are positional parameters.
 ----
 
-
 The description of the End of Options delimiter entry can also be specified in a <<Internationalization,resource bundle>> for internationalization and localization.
 The `descriptionKey` for the End of Options delimiter entry in resource bundles is:
 
@@ -4602,7 +4835,8 @@ Picocli uses reflection to get the default values from the annotated fields.
 The <<Variable Interpolation,variable>> is replaced with the default value regardless of the `@Command(showDefaultValues)` attribute
 and regardless of the `@Option(showDefaultValues)` or `@Parameters(showDefaultValues)` attribute.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class DefaultValues {
     @Option(names = {"-f", "--file"}, defaultValue = "config.xml",
@@ -4612,9 +4846,22 @@ class DefaultValues {
 
 CommandLine.usage(new DefaultValues(), System.out);
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class DefaultValues {
+    @Option(names = ["-f", "--file"], defaultValue = "config.xml",
+        description = ["the file to use (default: \${DEFAULT-VALUE})"])
+    lateinit var file: File
+}
+
+fun main(args: Array<String>) = CommandLine(DefaultValues()).usage(System.out)
+----
+
 This produces the following usage help:
 ----
-Usage: <main class> -f=<file>
+Usage: <main class> [-f=<file>]
   -f, --file=<file>   the file to use (default: config.xml)
 ----
 
@@ -4624,7 +4871,8 @@ specifying the <<Variable Interpolation,variable>> `${COMPLETION-CANDIDATES}` in
 
 This works for java `enum` classes and for options or positional parameters of non-enum types for which completion candidates are specified.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 enum Lang { java, groovy, kotlin, javascript, frege, clojure }
 
@@ -4643,6 +4891,26 @@ class ValidValuesDemo {
 
 CommandLine.usage(new ValidValuesDemo(), System.out);
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+enum class Lang { java, groovy, kotlin, javascript, frege, clojure }
+
+class MyAbcCandidates : ArrayList<String?>(listOf("A", "B", "C"))
+
+class ValidValuesDemo {
+    @Option(names = ["-l"], description = ["Enum values: \${COMPLETION-CANDIDATES}"])
+    lateinit var lang: Lang
+
+    @Option(names = ["-o"], completionCandidates = MyAbcCandidates::class,
+            description = ["Candidates: \${COMPLETION-CANDIDATES}"])
+    lateinit var option: String
+}
+
+fun main(args: Array<String>) = CommandLine(ValidValuesDemo()).usage(System.out)
+----
+
 This produces the following usage help:
 ----
 Usage: <main class> [-l=<lang>] [-o=<option>]
@@ -4668,7 +4936,8 @@ These legacy mechanisms still work but for maximum flexibility use the variables
 === Required-Option Marker
 Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with the <<Abbreviated Synopsis,`abbreviateSynopsis`>> attribute. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(requiredOptionMarker = '*', abbreviateSynopsis = true)
 class Example {
@@ -4676,6 +4945,20 @@ class Example {
     @Option(names = {"-b", "--beta"}, required = true, description = "mandatory beta") String beta;
 }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(requiredOptionMarker = '*', abbreviateSynopsis = true)
+class Example {
+    @Option(names = ["-a", "--alpha"], description = ["optional alpha"])
+    lateinit var alpha: String
+
+    @Option(names = ["-b", "--beta"], required = true, description = ["mandatory beta"])
+    lateinit var beta: String
+}
+----
+
 Produces the following usage help message:
 ----
 Usage: <main class> [OPTIONS]
