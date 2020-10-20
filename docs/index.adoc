@@ -3604,7 +3604,8 @@ If one of the arguments specified on the command line is a "help" option, picocl
 
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Option(names = {"-V", "--version"}, versionHelp = true, description = "display version info")
 boolean versionInfoRequested;
@@ -3612,14 +3613,36 @@ boolean versionInfoRequested;
 @Option(names = {"-h", "--help"}, usageHelp = true, description = "display this help message")
 boolean usageHelpRequested;
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["-V", "--version"], versionHelp = true, description = ["display version info"])
+var versionInfoRequested = false
+
+@Option(names = ["-h", "--help"], usageHelp = true, description = ["display this help message"])
+var usageHelpRequested = false
+----
+
 Use these attributes for options that request the usage help message or version information to be shown on the console.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 App app = CommandLine.populateCommand(new App(), args);
 if (app.usageHelpRequested) {
-   CommandLine.usage(new App(), System.out);
-   return;
+    CommandLine.usage(new App(), System.out);
+    return;
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val app: App = CommandLine.populateCommand(App(), *args)
+if (app.usageHelpRequested) {
+    CommandLine.usage(App(), System.out)
+    return
 }
 ----
 
@@ -3629,26 +3652,44 @@ usage help or version information was requested (without inspecting the annotate
 * `CommandLine::isUsageHelpRequested` returns `true` if the parser matched an option annotated with `usageHelp=true`
 * `CommandLine::isVersionHelpRequested` returns `true` if the parser matched an option annotated with `versionHelp=true`
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 CommandLine commandLine = new CommandLine(new App());
 commandLine.parseArgs(args);
 if (commandLine.isUsageHelpRequested()) {
-   commandLine.usage(System.out);
-   return;
+    commandLine.usage(System.out);
+    return;
 } else if (commandLine.isVersionHelpRequested()) {
-   commandLine.printVersionHelp(System.out);
-   return;
+    commandLine.printVersionHelp(System.out);
+    return;
 }
 // ... run App's business logic
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val commandLine = CommandLine(App())
+commandLine.parseArgs(*args)
+if (commandLine.isUsageHelpRequested) {
+    commandLine.usage(System.out)
+    return
+} else if (commandLine.isVersionHelpRequested) {
+    commandLine.printVersionHelp(System.out)
+    return
+}
+// ... run App's business logic
+----
+
 See also <<Printing Help Automatically>>.
 
 === Mixin Standard Help Options
 Picocli 3.0 introduced the `mixinStandardHelpOptions` command attribute. When this attribute is set to `true`, picocli adds a <<Mixins,mixin>> to the
 command that adds <<Help Options,`usageHelp`>> and <<Help Options,`versionHelp`>> options to the command. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(mixinStandardHelpOptions = true, version = "auto help demo - picocli 3.0")
 class AutoHelpDemo implements Runnable {
@@ -3656,7 +3697,20 @@ class AutoHelpDemo implements Runnable {
     @Option(names = "--option", description = "Some option.")
     String option;
 
-    @Override public void run() { ... }
+    @Override public void run() { /* ... */ }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(mixinStandardHelpOptions = true, version = ["auto help demo - picocli 3.0"])
+class AutoHelpDemo : Runnable {
+
+    @Option(names = ["--option"], description = ["Some option."])
+    lateinit var option: String
+
+    override fun run() { /* ... */ }
 }
 ----
 
@@ -3670,15 +3724,28 @@ Usage: <main class> [-hV] [--option=<option>]
 ----
 
 === Built-in Help Subcommand
-From 3.0, picocli provides a `help` subcommand (`picocli.CommandLine.HelpCommand`) that can be installed as a subcommand
+As of version 3.0, picocli provides a `help` subcommand (`picocli.CommandLine.HelpCommand`) that can be installed as a subcommand
 on any application command. It prints usage help for the parent command or sibling subcommands. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 import picocli.CommandLine.HelpCommand;
 
 @Command(name = "myapp", subcommands = {HelpCommand.class, Subcommand.class})
 class MyCommand implements Runnable {
+    // ...
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import picocli.CommandLine.HelpCommand
+// ...
+
+@Command(name = "myapp", subcommands = [HelpCommand::class, Subcommand::class])
+class MyCommand : Runnable {
     // ...
 }
 ----
@@ -3698,7 +3765,8 @@ myapp help
 === Custom Help Subcommands
 Custom help subcommands should mark themselves as a <<Help Subcommands,help command>> to tell picocli not to throw a `MissingParameterException` when required options are missing.
 
-[source,java]
+.Java / Kotlin
+[source,java,role="primary"]
 ----
 @Command(helpCommand = true)
 ----
@@ -3733,7 +3801,7 @@ public interface IHelpCommandInitializable2 {
 
 === Printing Help Automatically
 
-From picocli 2.0, the <<Executing Commands,convenience methods>> will automatically print usage help and version information
+As of picocli 2.0, the <<Executing Commands,convenience methods>> will automatically print usage help and version information
 when a help option was specified on the command line (options annotated with the `versionHelp` or `usageHelp` attribute - but not the `help` attribute).
 
 The same holds for the `mixinStandardHelpOptions` attribute, the built-in `HelpCommand` and any custom help subcommands marked as a <<Help Subcommands,help command>>.
