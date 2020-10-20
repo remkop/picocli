@@ -2022,7 +2022,9 @@ An alternative is to avoid the use of optional parameters and use the default ar
 == Required Arguments
 === Required Options
 Options can be marked `required` to make it mandatory for the user to specify them on the command line. When a required option is not specified, a `MissingParameterException` is thrown from the `parse` method. For example:
-[source, java]
+
+.Java
+[source,java,role="primary"]
 ----
 class MandatoryOption {
     @Option(names = "-n", required = true, description = "mandatory number")
@@ -2032,6 +2034,19 @@ class MandatoryOption {
     File[] files;
 }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class MandatoryOption {
+    @Option(names = ["-n"], required = true, description = ["mandatory number"])
+    var number = 0
+
+    @Parameters
+    lateinit var files: Array<File>
+}
+----
+
 The following command line arguments would result in an exception complaining that `number` is missing:
 ----
 // invalid: missing option -n
@@ -2047,7 +2062,9 @@ The following command line arguments would be accepted:
 Single-value `@Parameters` are always mandatory, because single-value positional parameters <<Positional Parameter Arity,have `arity = "1"`>> by default.
 
 The `arity` attribute can be used to make multi-value `@Parameters` mandatory:
-[source, java]
+
+.Java
+[source,java,role="primary"]
 ----
 class BothOptionAndParametersMandatory {
     @Parameters(arity = "1..*", description = "at least one File")
@@ -2057,6 +2074,19 @@ class BothOptionAndParametersMandatory {
     int number;
 }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class BothOptionAndParametersMandatory {
+    @Parameters(arity = "1..*", description = ["at least one File"])
+    lateinit var files: Array<File>
+
+    @Option(names = ["-n"], required = true, description = ["mandatory number"])
+    var number = 0
+}
+----
+
 The following command line arguments would result in an exception complaining that `files` are missing:
 ----
 // invalid: missing file parameters
