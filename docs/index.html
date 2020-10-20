@@ -2157,7 +2157,7 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <span class="k">class</span> <span class="nc">Checksum</span> <span class="k">extends</span> <span class="nc">Callable</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="o">{</span>
 
   <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="k">=</span> <span class="s">"0"</span><span class="o">,</span> <span class="n">description</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"The file whose checksum to calculate."</span><span class="o">))</span>
-  <span class="k">private</span> <span class="k">val</span> <span class="nv">file</span> <span class="k">:</span> <span class="kt">File</span> <span class="o">=</span> <span class="kc">null</span>
+  <span class="k">private</span> <span class="k">val</span> <span class="nv">file</span><span class="k">:</span> <span class="kt">File</span> <span class="o">=</span> <span class="kc">null</span>
 
   <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"-a"</span><span class="o">,</span> <span class="s">"--algorithm"</span><span class="o">),</span> <span class="n">description</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"MD5, SHA-1, SHA-256, ..."</span><span class="o">))</span>
   <span class="k">private</span> <span class="k">var</span> <span class="n">algorithm</span> <span class="k">=</span> <span class="s">"MD5"</span>
@@ -7424,14 +7424,14 @@ Concatenate FILE(s), or standard input, to standard output.
       FILE                 Files whose contents to display
   -A, --show-all           equivalent to -vET
   -b, --number-nonblank    number nonempty output lines, overrides -n
-  -e                       equivalent to -vET
+  -e                       equivalent to -vE
   -E, --show-ends          display $ at end of each line
   -n, --number             number all output lines
   -s, --squeeze-blank      suppress repeated empty output lines
   -t                       equivalent to -vT
   -T, --show-tabs          display TAB characters as ^I
   -u                       (ignored)
-  -v, --show-nonprinting   use ^ and M- notation, except for LDF and TAB
+  -v, --show-nonprinting   use ^ and M- notation, except for LFD and TAB
       --help               display this help and exit
       --version            output version information and exit
 Copyright(c) 2017</pre>
@@ -7440,24 +7440,46 @@ Copyright(c) 2017</pre>
 <div class="paragraph">
 <p>The usage help message is generated from annotation attributes, like below:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"cat"</span><span class="o">,</span> <span class="n">footer</span> <span class="o">=</span> <span class="s">"Copyright(c) 2017"</span><span class="o">,</span>
          <span class="n">description</span> <span class="o">=</span> <span class="s">"Concatenate FILE(s), or standard input, to standard output."</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">Cat</span> <span class="o">{</span>
 
-  <span class="nd">@Parameters</span><span class="o">(</span><span class="n">paramLabel</span> <span class="o">=</span> <span class="s">"FILE"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Files whose contents to display"</span><span class="o">)</span>
-  <span class="nc">List</span><span class="o">&lt;</span><span class="nc">File</span><span class="o">&gt;</span> <span class="n">files</span><span class="o">;</span>
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">paramLabel</span> <span class="o">=</span> <span class="s">"FILE"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Files whose contents to display"</span><span class="o">)</span>
+    <span class="nc">List</span><span class="o">&lt;</span><span class="nc">File</span><span class="o">&gt;</span> <span class="n">files</span><span class="o">;</span>
 
-  <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--help"</span><span class="o">,</span> <span class="n">usageHelp</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"display this help and exit"</span><span class="o">)</span>
-  <span class="kt">boolean</span> <span class="n">help</span><span class="o">;</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--help"</span><span class="o">,</span> <span class="n">usageHelp</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"display this help and exit"</span><span class="o">)</span>
+    <span class="kt">boolean</span> <span class="n">help</span><span class="o">;</span>
 
-  <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-t"</span><span class="o">,</span>                 <span class="n">description</span> <span class="o">=</span> <span class="s">"equivalent to -vT"</span><span class="o">)</span>  <span class="kt">boolean</span> <span class="n">t</span><span class="o">;</span>
-  <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-e"</span><span class="o">,</span>                 <span class="n">description</span> <span class="o">=</span> <span class="s">"equivalent to -vET"</span><span class="o">)</span> <span class="kt">boolean</span> <span class="n">e</span><span class="o">;</span>
-  <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-A"</span><span class="o">,</span> <span class="s">"--show-all"</span><span class="o">},</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"equivalent to -vET"</span><span class="o">)</span> <span class="kt">boolean</span> <span class="n">all</span><span class="o">;</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-t"</span><span class="o">,</span>                 <span class="n">description</span> <span class="o">=</span> <span class="s">"equivalent to -vT"</span><span class="o">)</span>  <span class="kt">boolean</span> <span class="n">t</span><span class="o">;</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-e"</span><span class="o">,</span>                 <span class="n">description</span> <span class="o">=</span> <span class="s">"equivalent to -vE"</span><span class="o">)</span>  <span class="kt">boolean</span> <span class="n">e</span><span class="o">;</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-A"</span><span class="o">,</span> <span class="s">"--show-all"</span><span class="o">},</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"equivalent to -vET"</span><span class="o">)</span> <span class="kt">boolean</span> <span class="n">all</span><span class="o">;</span>
 
-  <span class="c1">// ...</span>
+    <span class="c1">// ...</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"cat"</span><span class="p">,</span> <span class="n">footer</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Copyright(c) 2017"</span><span class="p">],</span>
+         <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Concatenate FILE(s), or standard input, to standard output."</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">Cat</span> <span class="p">{</span>
+
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"FILE"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Files whose contents to display"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">files</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--help"</span><span class="p">],</span> <span class="n">usageHelp</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"display this help and exit"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">help</span> <span class="p">=</span> <span class="k">false</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-t"</span><span class="p">],</span>               <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"equivalent to -vT"</span><span class="p">])</span>  <span class="kd">var</span> <span class="py">t</span> <span class="p">=</span> <span class="k">false</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-e"</span><span class="p">],</span>               <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"equivalent to -vE"</span><span class="p">])</span>  <span class="kd">var</span> <span class="py">e</span> <span class="p">=</span> <span class="k">false</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-A"</span><span class="p">,</span> <span class="s">"--show-all"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"equivalent to -vET"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">all</span> <span class="p">=</span> <span class="k">false</span>
+
+    <span class="c1">// ...</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -7466,7 +7488,8 @@ Copyright(c) 2017</pre>
 <div class="paragraph">
 <p>In the above example, the program name is taken from the <code>name</code> attribute of the <code>Command</code> annotation:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java / Kotlin</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"cat"</span><span class="o">)</span></code></pre>
 </div>
@@ -7499,7 +7522,8 @@ Use the <code>paramLabel</code> attribute to display a different name. For examp
 <div class="paragraph">
 <p>Some annotated fields in the below example class have a <code>paramLabel</code> attribute and others don&#8217;t:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">()</span>
 <span class="kd">class</span> <span class="nc">ParamLabels</span> <span class="o">{</span>
@@ -7508,6 +7532,25 @@ Use the <code>paramLabel</code> attribute to display a different name. For examp
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"0"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"number param"</span><span class="o">,</span> <span class="n">paramLabel</span> <span class="o">=</span> <span class="s">"NUM"</span><span class="o">)</span>  <span class="kt">int</span> <span class="n">n</span><span class="o">;</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"1"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"the host parameter"</span><span class="o">)</span>                <span class="nc">InetAddress</span> <span class="n">host</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span>
+<span class="kd">class</span> <span class="nc">ParamLabels</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-f"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"a file"</span><span class="p">],</span> <span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"FILE"</span><span class="p">)</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">f</span><span class="p">:</span> <span class="nc">File</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-n"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"a number option"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">number</span> <span class="p">=</span> <span class="mi">0</span>
+
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"0"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"number param"</span><span class="p">],</span> <span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"NUM"</span><span class="p">)</span>
+    <span class="kd">var</span> <span class="py">n</span> <span class="p">=</span> <span class="mi">0</span>
+
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"1"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"the host parameter"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">host</span><span class="p">:</span> <span class="nc">InetAddress</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="admonitionblock note">
@@ -7528,7 +7571,8 @@ For demonstration purposes the above example mixes the all-uppercase (e.g., <cod
 <div class="paragraph">
 <p>By default the options list displays options in alphabetical order. Use the <code>sortOptions = false</code> attribute to display options in the order they are declared in your class.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java / Kotlin</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">sortOptions</span> <span class="o">=</span> <span class="kc">false</span><span class="o">)</span></code></pre>
 </div>
@@ -7555,10 +7599,18 @@ The regular expression in the <code>split</code> attribute may be quite differen
 <p>The example below uses the plus (<code>+</code>) character as a separator.
 The regular expression in the <code>split</code> attribute uses backslash (<code>\</code>) characters to make sure that the plus character is treated as a literal.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Parameters</span><span class="o">(</span><span class="n">split</span> <span class="o">=</span> <span class="s">"\\+"</span><span class="o">,</span> <span class="n">splitSynopsisLabel</span> <span class="o">=</span> <span class="s">"+"</span><span class="o">,</span> <span class="n">paramLabel</span> <span class="o">=</span> <span class="s">"VALUE"</span><span class="o">)</span>
 <span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">values</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Parameters</span><span class="p">(</span><span class="n">split</span> <span class="p">=</span> <span class="s">"\\+"</span><span class="p">,</span> <span class="n">splitSynopsisLabel</span> <span class="p">=</span> <span class="s">"+"</span><span class="p">,</span> <span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"VALUE"</span><span class="p">)</span>
+<span class="k">lateinit</span> <span class="kd">var</span> <span class="py">values</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7590,14 +7642,26 @@ We want the usage help message to show this.</p>
 <div class="paragraph">
 <p>Note that the positional parameters are not abbreviated.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">abbreviateSynopsis</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">App</span> <span class="o">{</span>
     <span class="nd">@Parameters</span> <span class="nc">File</span><span class="o">[]</span> <span class="n">files</span><span class="o">;</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"--count"</span><span class="o">,</span> <span class="s">"-c"</span><span class="o">})</span> <span class="kt">int</span> <span class="n">count</span><span class="o">;</span>
-    <span class="o">....</span>
+    <span class="c1">// ...</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">abbreviateSynopsis</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">App</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">files</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--count"</span><span class="p">,</span> <span class="s">"-c"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">count</span> <span class="p">=</span> <span class="mi">0</span>
+    <span class="c1">// ...</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -7617,7 +7681,8 @@ We want the usage help message to show this.</p>
 <div class="paragraph">
 <p>To produce a synopsis like the above, specify the literal text in the <code>customSynopsis</code> attribute:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">synopsisHeading</span> <span class="o">=</span> <span class="s">""</span><span class="o">,</span> <span class="n">customSynopsis</span> <span class="o">=</span> <span class="o">{</span>
         <span class="s">"Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)"</span><span class="o">,</span>
@@ -7625,7 +7690,18 @@ We want the usage help message to show this.</p>
         <span class="s">"  or:  ln [OPTION]... TARGET... DIRECTORY     (3rd form)"</span><span class="o">,</span>
         <span class="s">"  or:  ln [OPTION]... -t DIRECTORY TARGET...  (4th form)"</span><span class="o">,</span>
 <span class="o">})</span>
-<span class="kd">class</span> <span class="nc">Ln</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span></code></pre>
+<span class="kd">class</span> <span class="nc">Ln</span> <span class="o">{</span> <span class="cm">/* ... */</span> <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">synopsisHeading</span> <span class="p">=</span> <span class="s">""</span><span class="p">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">customSynopsis</span> <span class="p">=</span> <span class="p">[</span><span class="s">"""
+Usage: ln [OPTION]... [-T] TARGET LINK_NAME   (1st form)
+   or: ln [OPTION]... TARGET                  (2nd form)
+   or: ln [OPTION]... TARGET... DIRECTORY     (3rd form)
+   or:  ln [OPTION]... -t DIRECTORY TARGET...  (4th form)"""</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">Ln</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -7645,20 +7721,31 @@ We want the usage help message to show this.</p>
 <div class="paragraph">
 <p>For example, to clarify that a <a href="#_required_subcommands">subcommand is mandatory</a>, an application may specify <code>COMMAND</code>, without the <code>[</code> and <code>]</code> brackets:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java / Kotlin</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"git"</span><span class="o">,</span> <span class="n">synopsisSubcommandLabel</span> <span class="o">=</span> <span class="s">"COMMAND"</span><span class="o">)</span>
-<span class="kd">class</span> <span class="nc">Git</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span></code></pre>
+<span class="kd">class</span> <span class="nc">Git</span> <span class="o">{</span> <span class="cm">/* ... */</span> <span class="o">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>An application with a limited number of subcommands may want to show them all in the synopsis, for example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"fs"</span><span class="o">,</span> <span class="n">synopsisSubcommandLabel</span> <span class="o">=</span> <span class="s">"(list | add | delete)"</span><span class="o">,</span>
          <span class="n">subcommands</span> <span class="o">=</span> <span class="o">{</span><span class="nc">List</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="nc">Add</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="nc">Delete</span><span class="o">.</span><span class="na">class</span><span class="o">},</span> <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
-<span class="kd">class</span> <span class="nc">Fs</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span></code></pre>
+<span class="kd">class</span> <span class="nc">Fs</span> <span class="o">{</span> <span class="cm">/* ... */</span> <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"fs"</span><span class="p">,</span> <span class="n">synopsisSubcommandLabel</span> <span class="p">=</span> <span class="s">"(list | add | delete)"</span><span class="p">,</span>
+         <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span><span class="nc">List</span><span class="o">::</span><span class="k">class</span><span class="p">,</span> <span class="nc">Add</span><span class="o">::</span><span class="k">class</span><span class="p">,</span> <span class="nc">Delete</span><span class="o">::</span><span class="k">class</span><span class="p">],</span>
+         <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">Fs</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7689,19 +7776,36 @@ We want the usage help message to show this.</p>
 Applications that call <code>System.exit</code> need to configure the <code>exitCodeListHeading</code> and <code>exitCodeList</code> annotation attributes.
 For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span>
-        <span class="n">exitCodeListHeading</span> <span class="o">=</span> <span class="s">"Exit Codes:%n"</span><span class="o">,</span>
-        <span class="n">exitCodeList</span> <span class="o">=</span> <span class="o">{</span>
-            <span class="s">" 0:Successful program execution"</span><span class="o">,</span>
-            <span class="s">"64:Usage error: user input for the command was incorrect, "</span> <span class="o">+</span>
-                    <span class="s">"e.g., the wrong number of arguments, a bad flag, "</span> <span class="o">+</span>
-                    <span class="s">"a bad syntax in a parameter, etc."</span><span class="o">,</span>
-            <span class="s">"70:Internal software error: an exception occurred when invoking "</span> <span class="o">+</span>
-                    <span class="s">"the business logic of this command."</span><span class="o">})</span>
+         <span class="n">exitCodeListHeading</span> <span class="o">=</span> <span class="s">"Exit Codes:%n"</span><span class="o">,</span>
+         <span class="n">exitCodeList</span> <span class="o">=</span> <span class="o">{</span>
+             <span class="s">" 0:Successful program execution"</span><span class="o">,</span>
+             <span class="s">"64:Usage error: user input for the command was incorrect, "</span> <span class="o">+</span>
+                     <span class="s">"e.g., the wrong number of arguments, a bad flag, "</span> <span class="o">+</span>
+                     <span class="s">"a bad syntax in a parameter, etc."</span><span class="o">,</span>
+             <span class="s">"70:Internal software error: an exception occurred when invoking "</span> <span class="o">+</span>
+                     <span class="s">"the business logic of this command."</span><span class="o">})</span>
 <span class="kd">class</span> <span class="nc">App</span> <span class="o">{}</span>
 <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">App</span><span class="o">()).</span><span class="na">usage</span><span class="o">(</span><span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span>
+         <span class="n">exitCodeListHeading</span> <span class="p">=</span> <span class="s">"Exit Codes:%n"</span><span class="p">,</span>
+         <span class="n">exitCodeList</span> <span class="p">=</span> <span class="p">[</span>
+             <span class="s">" 0:Successful program execution"</span><span class="p">,</span>
+             <span class="s">"64:Usage error: user input for the command was incorrect,"</span>  <span class="p">+</span>
+                    <span class="s">"e.g., the wrong number of arguments, a bad flag, "</span> <span class="p">+</span>
+                    <span class="s">"a bad syntax in a parameter, etc."</span><span class="p">,</span>
+             <span class="s">"70:Internal software error: an exception occurred when invoking "</span> <span class="p">+</span>
+                    <span class="s">"the business logic of this command."</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">App</span> <span class="p">{}</span>
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">:</span> <span class="nc">Unit</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">App</span><span class="p">()).</span><span class="nf">usage</span><span class="p">(</span><span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7753,19 +7857,36 @@ where each element of the array is displayed on a separate line in the usage hel
 <div class="paragraph">
 <p>Section headers can be used to make usage message layout appear more spacious. The example below demonstrates the use of embedded line separator (<code>%n</code>) format specifiers:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"commit"</span><span class="o">,</span>
-        <span class="n">sortOptions</span> <span class="o">=</span> <span class="kc">false</span><span class="o">,</span>
-        <span class="n">headerHeading</span> <span class="o">=</span> <span class="s">"Usage:%n%n"</span><span class="o">,</span>
-        <span class="n">synopsisHeading</span> <span class="o">=</span> <span class="s">"%n"</span><span class="o">,</span>
-        <span class="n">descriptionHeading</span> <span class="o">=</span> <span class="s">"%nDescription:%n%n"</span><span class="o">,</span>
-        <span class="n">parameterListHeading</span> <span class="o">=</span> <span class="s">"%nParameters:%n"</span><span class="o">,</span>
-        <span class="n">optionListHeading</span> <span class="o">=</span> <span class="s">"%nOptions:%n"</span><span class="o">,</span>
-        <span class="n">header</span> <span class="o">=</span> <span class="s">"Record changes to the repository."</span><span class="o">,</span>
-        <span class="n">description</span> <span class="o">=</span> <span class="s">"Stores the current contents of the index in a new commit "</span> <span class="o">+</span>
-                <span class="s">"along with a log message from the user describing the changes."</span><span class="o">)</span>
-<span class="kd">class</span> <span class="nc">GitCommit</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span></code></pre>
+         <span class="n">sortOptions</span> <span class="o">=</span> <span class="kc">false</span><span class="o">,</span>
+         <span class="n">headerHeading</span> <span class="o">=</span> <span class="s">"Usage:%n%n"</span><span class="o">,</span>
+         <span class="n">synopsisHeading</span> <span class="o">=</span> <span class="s">"%n"</span><span class="o">,</span>
+         <span class="n">descriptionHeading</span> <span class="o">=</span> <span class="s">"%nDescription:%n%n"</span><span class="o">,</span>
+         <span class="n">parameterListHeading</span> <span class="o">=</span> <span class="s">"%nParameters:%n"</span><span class="o">,</span>
+         <span class="n">optionListHeading</span> <span class="o">=</span> <span class="s">"%nOptions:%n"</span><span class="o">,</span>
+         <span class="n">header</span> <span class="o">=</span> <span class="s">"Record changes to the repository."</span><span class="o">,</span>
+         <span class="n">description</span> <span class="o">=</span> <span class="s">"Stores the current contents of the index in a new commit "</span> <span class="o">+</span>
+                 <span class="s">"along with a log message from the user describing the changes."</span><span class="o">)</span>
+<span class="kd">class</span> <span class="nc">GitCommit</span> <span class="o">{</span> <span class="cm">/* ... */</span> <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"commit"</span><span class="p">,</span>
+         <span class="n">sortOptions</span> <span class="p">=</span> <span class="k">false</span><span class="p">,</span>
+         <span class="n">headerHeading</span> <span class="p">=</span> <span class="s">"Usage:%n%n"</span><span class="p">,</span>
+         <span class="n">synopsisHeading</span> <span class="p">=</span> <span class="s">"%n"</span><span class="p">,</span>
+         <span class="n">descriptionHeading</span> <span class="p">=</span> <span class="s">"%nDescription:%n%n"</span><span class="p">,</span>
+         <span class="n">parameterListHeading</span> <span class="p">=</span> <span class="s">"%nParameters:%n"</span><span class="p">,</span>
+         <span class="n">optionListHeading</span> <span class="p">=</span> <span class="s">"%nOptions:%n"</span><span class="p">,</span>
+         <span class="n">header</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Record changes to the repository."</span><span class="p">],</span>
+         <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Stores the current contents of the index in a new commit "</span> <span class="p">+</span>
+                 <span class="s">"along with a log message from the user describing the changes."</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">GitCommit</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7836,7 +7957,8 @@ Options:
 <p>The separator displayed between options and option parameters (<code>=</code> by default)
 in the synopsis and the option list can be configured with the <code>separator</code> attribute.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java / Kotlin</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">separator</span> <span class="o">=</span> <span class="s">" "</span><span class="o">)</span></code></pre>
 </div>
@@ -7848,7 +7970,7 @@ in the synopsis and the option list can be configured with the <code>separator</
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-the <code>@Command(separator = " ")</code> annotation also affects how picocli parses the command line.  See also <a href="#_custom_separators">Custom Separators</a>.
+The <code>@Command(separator = " ")</code> annotation also affects how picocli parses the command line.  See also <a href="#_custom_separators">Custom Separators</a>.
 </td>
 </tr>
 </table>
@@ -7864,7 +7986,8 @@ by default each of these fields would be shown in the usage message, which would
 <div class="paragraph">
 <p>For example, the <code>all</code> field below is annotated as <code>hidden = true</code>:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">()</span>
 <span class="kd">class</span> <span class="nc">App</span> <span class="o">{</span>
@@ -7874,6 +7997,23 @@ by default each of these fields would be shown in the usage message, which would
 
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">hidden</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span> <span class="nc">String</span><span class="o">[]</span> <span class="n">all</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span>
+<span class="kd">class</span> <span class="nc">App</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"0"</span><span class="p">,</span>    <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"destination host"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">host</span><span class="p">:</span> <span class="nc">InetAddress</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"1"</span><span class="p">,</span>    <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"destination port"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">port</span> <span class="p">=</span> <span class="mi">0</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"2..*"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"files to transfer"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">files</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span>
+
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">hidden</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">all</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7898,13 +8038,25 @@ by default each of these fields would be shown in the usage message, which would
 <div class="paragraph">
 <p>Example command:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"myapp"</span><span class="o">,</span> <span class="n">showAtFileInUsageHelp</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span>
-        <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Example command."</span><span class="o">)</span>
+         <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Example command."</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">MyApp</span> <span class="o">{</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">description</span> <span class="o">=</span> <span class="s">"A file."</span><span class="o">)</span> <span class="nc">File</span> <span class="n">file</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"myapp"</span><span class="p">,</span> <span class="n">showAtFileInUsageHelp</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span>
+         <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Example command."</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">MyApp</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"A file."</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">file</span><span class="p">:</span> <span class="nc">File</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7929,11 +8081,11 @@ Example command.
 <div class="paragraph">
 <p>This can be changed with the <a href="#_usage_help_api">Help API</a> for reordering sections. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.</span><span class="na">Model</span><span class="o">.</span><span class="na">UsageMessageSpec</span><span class="o">.</span><span class="na">SECTION_KEY_AT_FILE_PARAMETER</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.</span><span class="na">Model</span><span class="o">.</span><span class="na">UsageMessageSpec</span><span class="o">.</span><span class="na">SECTION_KEY_COMMAND_LIST_HEADING</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.</span><span class="na">Model</span><span class="o">.</span><span class="na">UsageMessageSpec</span><span class="o">.</span><span class="na">SECTION_KEY_OPTION_LIST_HEADING</span><span class="o">;</span>
 
 <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"myapp"</span><span class="o">,</span> <span class="n">showAtFileInUsageHelp</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span>
         <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Example command."</span><span class="o">)</span>
@@ -7950,6 +8102,32 @@ Example command.
         <span class="n">cmd</span><span class="o">.</span><span class="na">usage</span><span class="o">(</span><span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">);</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_COMMAND_LIST_HEADING</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_AT_FILE_PARAMETER</span>
+<span class="c1">// ...</span>
+
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"myapp"</span><span class="p">,</span> <span class="n">showAtFileInUsageHelp</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span>
+         <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Example command."</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">MyApp</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"A file."</span><span class="p">])</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">file</span><span class="p">:</span> <span class="nc">File</span>
+
+    <span class="k">companion</span> <span class="k">object</span> <span class="p">{</span>
+        <span class="nd">@JvmStatic</span>
+        <span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+            <span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyApp</span><span class="p">())</span>
+            <span class="kd">val</span> <span class="py">copy</span><span class="p">:</span> <span class="nc">MutableList</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span> <span class="p">=</span> <span class="nc">ArrayList</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">helpSectionKeys</span><span class="p">)</span>
+            <span class="n">copy</span><span class="p">.</span><span class="nf">remove</span><span class="p">(</span><span class="nc">SECTION_KEY_AT_FILE_PARAMETER</span><span class="p">)</span>
+            <span class="n">copy</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">copy</span><span class="p">.</span><span class="nf">indexOf</span><span class="p">(</span><span class="nc">SECTION_KEY_COMMAND_LIST_HEADING</span><span class="p">),</span> <span class="nc">SECTION_KEY_AT_FILE_PARAMETER</span><span class="p">)</span>
+            <span class="n">cmd</span><span class="p">.</span><span class="n">helpSectionKeys</span> <span class="p">=</span> <span class="n">copy</span>
+            <span class="n">cmd</span><span class="p">.</span><span class="nf">usage</span><span class="p">(</span><span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7987,7 +8165,8 @@ Example command.
 <div class="paragraph">
 <p>For example, if we define these system properties:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java / Kotlin</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="s">"picocli.atfile.label"</span><span class="o">,</span> <span class="s">"my@@@@file"</span><span class="o">);</span>
 <span class="nc">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="s">"picocli.atfile.description"</span><span class="o">,</span> <span class="s">"@files rock!"</span><span class="o">);</span></code></pre>
@@ -8022,20 +8201,32 @@ The <code>descriptionKey</code> for the <code>@&lt;filename&gt;</code> entry in 
 <div class="sect2">
 <h3 id="_show_end_of_options"><a class="anchor" href="#_show_end_of_options"></a>14.18. Show End of Options</h3>
 <div class="paragraph">
-<p>From picocli 4.3, an entry for the <code>--</code> <a href="#_double_dash">End of Options delimiter</a> can be shown in the options list of the usage help message of a command with the <code>@Command(showEndOfOptionsDelimiterInUsageHelp = true)</code> annotation.</p>
+<p>As of picocli 4.3, an entry for the <code>--</code> <a href="#_double_dash">End of Options delimiter</a> can be shown in the options list of the usage help message of a command with the <code>@Command(showEndOfOptionsDelimiterInUsageHelp = true)</code> annotation.</p>
 </div>
 <div class="sect3">
 <h4 id="_example_3"><a class="anchor" href="#_example_3"></a>14.18.1. Example</h4>
 <div class="paragraph">
 <p>Example command:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"myapp"</span><span class="o">,</span> <span class="n">showEndOfOptionsDelimiterInUsageHelp</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span>
-        <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Example command."</span><span class="o">)</span>
+         <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Example command."</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">MyApp</span> <span class="o">{</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">description</span> <span class="o">=</span> <span class="s">"A file."</span><span class="o">)</span> <span class="nc">File</span> <span class="n">file</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"myapp"</span><span class="p">,</span> <span class="n">showEndOfOptionsDelimiterInUsageHelp</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span>
+         <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Example command."</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">MyApp</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"A file."</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">file</span><span class="p">:</span> <span class="nc">File</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -8061,11 +8252,11 @@ Example command.
 <div class="paragraph">
 <p>This can be changed with the <a href="#_usage_help_api">Help API</a> for reordering sections. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.</span><span class="na">Model</span><span class="o">.</span><span class="na">UsageMessageSpec</span><span class="o">.</span><span class="na">SECTION_KEY_END_OF_OPTIONS</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.</span><span class="na">Model</span><span class="o">.</span><span class="na">UsageMessageSpec</span><span class="o">.</span><span class="na">SECTION_KEY_OPTION_LIST</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.</span><span class="na">Model</span><span class="o">.</span><span class="na">UsageMessageSpec</span><span class="o">.</span><span class="na">SECTION_KEY_OPTION_LIST_HEADING</span><span class="o">;</span>
 
 <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"myapp"</span><span class="o">,</span> <span class="n">showEndOfOptionsDelimiterInUsageHelp</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span>
         <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Example command."</span><span class="o">)</span>
@@ -8082,6 +8273,34 @@ Example command.
         <span class="n">cmd</span><span class="o">.</span><span class="na">usage</span><span class="o">(</span><span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">);</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_OPTION_LIST</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine.Model.UsageMessageSpec.SECTION_KEY_END_OF_OPTIONS</span>
+<span class="c1">// ...</span>
+
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"myapp"</span><span class="p">,</span> <span class="n">showEndOfOptionsDelimiterInUsageHelp</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span>
+         <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Example command."</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">MyApp</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"A file."</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">file</span><span class="p">:</span> <span class="nc">File</span>
+
+    <span class="k">companion</span> <span class="k">object</span> <span class="p">{</span>
+        <span class="nd">@JvmStatic</span>
+        <span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+            <span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyApp</span><span class="p">())</span>
+            <span class="kd">val</span> <span class="py">copy</span><span class="p">:</span> <span class="nc">MutableList</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span> <span class="p">=</span> <span class="nc">ArrayList</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">helpSectionKeys</span><span class="p">)</span>
+            <span class="n">copy</span><span class="p">.</span><span class="nf">remove</span><span class="p">(</span><span class="nc">SECTION_KEY_END_OF_OPTIONS</span><span class="p">)</span>
+            <span class="n">copy</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">copy</span><span class="p">.</span><span class="nf">indexOf</span><span class="p">(</span><span class="nc">SECTION_KEY_OPTION_LIST</span><span class="p">),</span> <span class="nc">SECTION_KEY_END_OF_OPTIONS</span><span class="p">)</span>
+            <span class="n">cmd</span><span class="p">.</span><span class="n">helpSectionKeys</span> <span class="p">=</span> <span class="n">copy</span>
+
+            <span class="n">cmd</span><span class="p">.</span><span class="nf">usage</span><span class="p">(</span><span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -8117,7 +8336,8 @@ Example command.
 <div class="paragraph">
 <p>For example, if we define this system property:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java / Kotlin</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="s">"picocli.endofoptions.description"</span><span class="o">,</span> <span class="s">"End of options. Remainder are positional parameters."</span><span class="o">);</span></code></pre>
 </div>
@@ -8161,7 +8381,8 @@ Picocli uses reflection to get the default values from the annotated fields.</p>
 <p>The <a href="#_variable_interpolation">variable</a> is replaced with the default value regardless of the <code>@Command(showDefaultValues)</code> attribute
 and regardless of the <code>@Option(showDefaultValues)</code> or <code>@Parameters(showDefaultValues)</code> attribute.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">DefaultValues</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-f"</span><span class="o">,</span> <span class="s">"--file"</span><span class="o">},</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"config.xml"</span><span class="o">,</span>
@@ -8172,12 +8393,24 @@ and regardless of the <code>@Option(showDefaultValues)</code> or <code>@Paramete
 <span class="nc">CommandLine</span><span class="o">.</span><span class="na">usage</span><span class="o">(</span><span class="k">new</span> <span class="nc">DefaultValues</span><span class="o">(),</span> <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">);</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">DefaultValues</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-f"</span><span class="p">,</span> <span class="s">"--file"</span><span class="p">],</span> <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"config.xml"</span><span class="p">,</span>
+        <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"the file to use (default: \${DEFAULT-VALUE})"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">file</span><span class="p">:</span> <span class="nc">File</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">DefaultValues</span><span class="p">()).</span><span class="nf">usage</span><span class="p">(</span><span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">)</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>This produces the following usage help:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>Usage: &lt;main class&gt; -f=&lt;file&gt;
+<pre>Usage: &lt;main class&gt; [-f=&lt;file&gt;]
   -f, --file=&lt;file&gt;   the file to use (default: config.xml)</pre>
 </div>
 </div>
@@ -8191,7 +8424,8 @@ specifying the <a href="#_variable_interpolation">variable</a> <code>${COMPLETIO
 <div class="paragraph">
 <p>This works for java <code>enum</code> classes and for options or positional parameters of non-enum types for which completion candidates are specified.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">enum</span> <span class="nc">Lang</span> <span class="o">{</span> <span class="n">java</span><span class="o">,</span> <span class="n">groovy</span><span class="o">,</span> <span class="n">kotlin</span><span class="o">,</span> <span class="n">javascript</span><span class="o">,</span> <span class="n">frege</span><span class="o">,</span> <span class="n">clojure</span> <span class="o">}</span>
 
@@ -8209,6 +8443,25 @@ specifying the <a href="#_variable_interpolation">variable</a> <code>${COMPLETIO
 <span class="o">}</span>
 
 <span class="nc">CommandLine</span><span class="o">.</span><span class="na">usage</span><span class="o">(</span><span class="k">new</span> <span class="nc">ValidValuesDemo</span><span class="o">(),</span> <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">enum</span> <span class="kd">class</span> <span class="nc">Lang</span> <span class="p">{</span> <span class="n">java</span><span class="p">,</span> <span class="n">groovy</span><span class="p">,</span> <span class="n">kotlin</span><span class="p">,</span> <span class="n">javascript</span><span class="p">,</span> <span class="n">frege</span><span class="p">,</span> <span class="n">clojure</span> <span class="p">}</span>
+
+<span class="kd">class</span> <span class="nc">MyAbcCandidates</span> <span class="p">:</span> <span class="nc">ArrayList</span><span class="p">&lt;</span><span class="nc">String</span><span class="err">?</span><span class="p">&gt;(</span><span class="nf">listOf</span><span class="p">(</span><span class="s">"A"</span><span class="p">,</span> <span class="s">"B"</span><span class="p">,</span> <span class="s">"C"</span><span class="p">))</span>
+
+<span class="kd">class</span> <span class="nc">ValidValuesDemo</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-l"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Enum values: \${COMPLETION-CANDIDATES}"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">lang</span><span class="p">:</span> <span class="nc">Lang</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-o"</span><span class="p">],</span> <span class="n">completionCandidates</span> <span class="p">=</span> <span class="nc">MyAbcCandidates</span><span class="o">::</span><span class="k">class</span><span class="p">,</span>
+            <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Candidates: \${COMPLETION-CANDIDATES}"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">option</span><span class="p">:</span> <span class="nc">String</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">ValidValuesDemo</span><span class="p">()).</span><span class="nf">usage</span><span class="p">(</span><span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -8256,13 +8509,27 @@ This attribute accepts three values:</p>
 <div class="paragraph">
 <p>Required options can be marked in the option list by the character specified with the <code>requiredOptionMarker</code> attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with the <a href="#_abbreviated_synopsis"><code>abbreviateSynopsis</code></a> attribute. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">requiredOptionMarker</span> <span class="o">=</span> <span class="sc">'*'</span><span class="o">,</span> <span class="n">abbreviateSynopsis</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">Example</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-a"</span><span class="o">,</span> <span class="s">"--alpha"</span><span class="o">},</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"optional alpha"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">alpha</span><span class="o">;</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-b"</span><span class="o">,</span> <span class="s">"--beta"</span><span class="o">},</span> <span class="n">required</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"mandatory beta"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">beta</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">requiredOptionMarker</span> <span class="p">=</span> <span class="sc">'*'</span><span class="p">,</span> <span class="n">abbreviateSynopsis</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">Example</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-a"</span><span class="p">,</span> <span class="s">"--alpha"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"optional alpha"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">alpha</span><span class="p">:</span> <span class="nc">String</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-b"</span><span class="p">,</span> <span class="s">"--beta"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"mandatory beta"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">beta</span><span class="p">:</span> <span class="nc">String</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -13557,7 +13824,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.2<br>
-Last updated 2020-10-19 08:05:28 +0900
+Last updated 2020-10-20 16:59:38 +0900
 </div>
 </div>
 <style>

@@ -4145,7 +4145,7 @@ class ParamLabels {
     @Option(names = "-f",    description = "a file",       paramLabel = "FILE") File f;
     @Option(names = "-n",    description = "a number option")                   int number;
     @Parameters(index = "0", description = "number param", paramLabel = "NUM")  int n;
-    @Parameters(index = "1", description = "the host parameter")               InetAddress host;
+    @Parameters(index = "1", description = "the host parameter")                InetAddress host;
 }
 ----
 
