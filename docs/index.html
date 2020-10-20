@@ -4614,7 +4614,8 @@ One idea is to <a href="#_show_end_of_options">show the end-of-options</a> delim
 <div class="paragraph">
 <p>Options can be marked <code>required</code> to make it mandatory for the user to specify them on the command line. When a required option is not specified, a <code>MissingParameterException</code> is thrown from the <code>parse</code> method. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">MandatoryOption</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-n"</span><span class="o">,</span> <span class="n">required</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"mandatory number"</span><span class="o">)</span>
@@ -4623,6 +4624,18 @@ One idea is to <a href="#_show_end_of_options">show the end-of-options</a> delim
     <span class="nd">@Parameters</span>
     <span class="nc">File</span><span class="o">[]</span> <span class="n">files</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">MandatoryOption</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-n"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"mandatory number"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">number</span> <span class="p">=</span> <span class="mi">0</span>
+
+    <span class="nd">@Parameters</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">files</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4652,7 +4665,8 @@ One idea is to <a href="#_show_end_of_options">show the end-of-options</a> delim
 <div class="paragraph">
 <p>The <code>arity</code> attribute can be used to make multi-value <code>@Parameters</code> mandatory:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">BothOptionAndParametersMandatory</span> <span class="o">{</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">arity</span> <span class="o">=</span> <span class="s">"1..*"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"at least one File"</span><span class="o">)</span>
@@ -4661,6 +4675,18 @@ One idea is to <a href="#_show_end_of_options">show the end-of-options</a> delim
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-n"</span><span class="o">,</span> <span class="n">required</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"mandatory number"</span><span class="o">)</span>
     <span class="kt">int</span> <span class="n">number</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">BothOptionAndParametersMandatory</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">arity</span> <span class="p">=</span> <span class="s">"1..*"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"at least one File"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">files</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-n"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"mandatory number"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">number</span> <span class="p">=</span> <span class="mi">0</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -6858,7 +6884,8 @@ If one of the arguments specified on the command line is a "help" option, picocl
 <div class="paragraph">
 <p>For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-V"</span><span class="o">,</span> <span class="s">"--version"</span><span class="o">},</span> <span class="n">versionHelp</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"display version info"</span><span class="o">)</span>
 <span class="kt">boolean</span> <span class="n">versionInfoRequested</span><span class="o">;</span>
@@ -6867,16 +6894,37 @@ If one of the arguments specified on the command line is a "help" option, picocl
 <span class="kt">boolean</span> <span class="n">usageHelpRequested</span><span class="o">;</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-V"</span><span class="p">,</span> <span class="s">"--version"</span><span class="p">],</span> <span class="n">versionHelp</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"display version info"</span><span class="p">])</span>
+<span class="kd">var</span> <span class="py">versionInfoRequested</span> <span class="p">=</span> <span class="k">false</span>
+
+<span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-h"</span><span class="p">,</span> <span class="s">"--help"</span><span class="p">],</span> <span class="n">usageHelp</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"display this help message"</span><span class="p">])</span>
+<span class="kd">var</span> <span class="py">usageHelpRequested</span> <span class="p">=</span> <span class="k">false</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>Use these attributes for options that request the usage help message or version information to be shown on the console.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">App</span> <span class="n">app</span> <span class="o">=</span> <span class="nc">CommandLine</span><span class="o">.</span><span class="na">populateCommand</span><span class="o">(</span><span class="k">new</span> <span class="nc">App</span><span class="o">(),</span> <span class="n">args</span><span class="o">);</span>
 <span class="k">if</span> <span class="o">(</span><span class="n">app</span><span class="o">.</span><span class="na">usageHelpRequested</span><span class="o">)</span> <span class="o">{</span>
-   <span class="nc">CommandLine</span><span class="o">.</span><span class="na">usage</span><span class="o">(</span><span class="k">new</span> <span class="nc">App</span><span class="o">(),</span> <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">);</span>
-   <span class="k">return</span><span class="o">;</span>
+    <span class="nc">CommandLine</span><span class="o">.</span><span class="na">usage</span><span class="o">(</span><span class="k">new</span> <span class="nc">App</span><span class="o">(),</span> <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">);</span>
+    <span class="k">return</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">app</span><span class="p">:</span> <span class="nc">App</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nf">populateCommand</span><span class="p">(</span><span class="nc">App</span><span class="p">(),</span> <span class="p">*</span><span class="n">args</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">app</span><span class="p">.</span><span class="n">usageHelpRequested</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nc">CommandLine</span><span class="p">.</span><span class="nf">usage</span><span class="p">(</span><span class="nc">App</span><span class="p">(),</span> <span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">)</span>
+    <span class="k">return</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -6893,17 +6941,33 @@ usage help or version information was requested (without inspecting the annotate
 </li>
 </ul>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">CommandLine</span> <span class="n">commandLine</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">App</span><span class="o">());</span>
 <span class="n">commandLine</span><span class="o">.</span><span class="na">parseArgs</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
 <span class="k">if</span> <span class="o">(</span><span class="n">commandLine</span><span class="o">.</span><span class="na">isUsageHelpRequested</span><span class="o">())</span> <span class="o">{</span>
-   <span class="n">commandLine</span><span class="o">.</span><span class="na">usage</span><span class="o">(</span><span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">);</span>
-   <span class="k">return</span><span class="o">;</span>
+    <span class="n">commandLine</span><span class="o">.</span><span class="na">usage</span><span class="o">(</span><span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">);</span>
+    <span class="k">return</span><span class="o">;</span>
 <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">commandLine</span><span class="o">.</span><span class="na">isVersionHelpRequested</span><span class="o">())</span> <span class="o">{</span>
-   <span class="n">commandLine</span><span class="o">.</span><span class="na">printVersionHelp</span><span class="o">(</span><span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">);</span>
-   <span class="k">return</span><span class="o">;</span>
+    <span class="n">commandLine</span><span class="o">.</span><span class="na">printVersionHelp</span><span class="o">(</span><span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">);</span>
+    <span class="k">return</span><span class="o">;</span>
 <span class="o">}</span>
+<span class="c1">// ... run App's business logic</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">commandLine</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">App</span><span class="p">())</span>
+<span class="n">commandLine</span><span class="p">.</span><span class="nf">parseArgs</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">commandLine</span><span class="p">.</span><span class="n">isUsageHelpRequested</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">commandLine</span><span class="p">.</span><span class="nf">usage</span><span class="p">(</span><span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">)</span>
+    <span class="k">return</span>
+<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">commandLine</span><span class="p">.</span><span class="n">isVersionHelpRequested</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">commandLine</span><span class="p">.</span><span class="nf">printVersionHelp</span><span class="p">(</span><span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">)</span>
+    <span class="k">return</span>
+<span class="p">}</span>
 <span class="c1">// ... run App's business logic</span></code></pre>
 </div>
 </div>
@@ -6917,7 +6981,8 @@ usage help or version information was requested (without inspecting the annotate
 <p>Picocli 3.0 introduced the <code>mixinStandardHelpOptions</code> command attribute. When this attribute is set to <code>true</code>, picocli adds a <a href="#_mixins">mixin</a> to the
 command that adds <a href="#_help_options"><code>usageHelp</code></a> and <a href="#_help_options"><code>versionHelp</code></a> options to the command. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">version</span> <span class="o">=</span> <span class="s">"auto help demo - picocli 3.0"</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">AutoHelpDemo</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
@@ -6925,8 +6990,21 @@ command that adds <a href="#_help_options"><code>usageHelp</code></a> and <a hre
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--option"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Some option."</span><span class="o">)</span>
     <span class="nc">String</span> <span class="n">option</span><span class="o">;</span>
 
-    <span class="nd">@Override</span> <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span>
+    <span class="nd">@Override</span> <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span> <span class="cm">/* ... */</span> <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">version</span> <span class="p">=</span> <span class="p">[</span><span class="s">"auto help demo - picocli 3.0"</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">AutoHelpDemo</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--option"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Some option."</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">option</span><span class="p">:</span> <span class="nc">String</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -6945,10 +7023,11 @@ The usage help message for the above example looks like this:</p>
 <div class="sect2">
 <h3 id="_built_in_help_subcommand"><a class="anchor" href="#_built_in_help_subcommand"></a>12.3. Built-in Help Subcommand</h3>
 <div class="paragraph">
-<p>From 3.0, picocli provides a <code>help</code> subcommand (<code>picocli.CommandLine.HelpCommand</code>) that can be installed as a subcommand
+<p>As of version 3.0, picocli provides a <code>help</code> subcommand (<code>picocli.CommandLine.HelpCommand</code>) that can be installed as a subcommand
 on any application command. It prints usage help for the parent command or sibling subcommands. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">picocli.CommandLine.HelpCommand</span><span class="o">;</span>
 
@@ -6956,6 +7035,18 @@ on any application command. It prints usage help for the parent command or sibli
 <span class="kd">class</span> <span class="nc">MyCommand</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
     <span class="c1">// ...</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">picocli.CommandLine.HelpCommand</span>
+<span class="c1">// ...</span>
+
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"myapp"</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span><span class="nc">HelpCommand</span><span class="o">::</span><span class="k">class</span><span class="p">,</span> <span class="nc">Subcommand</span><span class="o">::</span><span class="k">class</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">MyCommand</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -6980,7 +7071,8 @@ on any application command. It prints usage help for the parent command or sibli
 <div class="paragraph">
 <p>Custom help subcommands should mark themselves as a <a href="#_help_subcommands">help command</a> to tell picocli not to throw a <code>MissingParameterException</code> when required options are missing.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java / Kotlin</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">helpCommand</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span></code></pre>
 </div>
@@ -7019,7 +7111,7 @@ commands with access to the parent command and sibling commands, whether to use 
 <div class="sect2">
 <h3 id="_printing_help_automatically"><a class="anchor" href="#_printing_help_automatically"></a>12.5. Printing Help Automatically</h3>
 <div class="paragraph">
-<p>From picocli 2.0, the <a href="#execute">convenience methods</a> will automatically print usage help and version information
+<p>As of picocli 2.0, the <a href="#execute">convenience methods</a> will automatically print usage help and version information
 when a help option was specified on the command line (options annotated with the <code>versionHelp</code> or <code>usageHelp</code> attribute - but not the <code>help</code> attribute).</p>
 </div>
 <div class="paragraph">
@@ -13824,7 +13916,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.2<br>
-Last updated 2020-10-20 16:59:38 +0900
+Last updated 2020-10-21 06:54:47 +0900
 </div>
 </div>
 <style>
