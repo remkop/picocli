@@ -45,20 +45,25 @@ import picocli.CommandLine;
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
 public class PicocliScriptASTTransformation extends AbstractASTTransformation {
 
-    private static final Class<PicocliScript> MY_CLASS = PicocliScript.class;
+    private static final Class<PicocliScript> MY_CLASS1 = PicocliScript.class;
+    private static final Class<PicocliScript2> MY_CLASS2 = PicocliScript2.class;
     private static final Class<CommandLine.Command> COMMAND_CLASS = CommandLine.Command.class;
-    private static final Class<PicocliBaseScript> BASE_SCRIPT_CLASS = PicocliBaseScript.class;
-    private static final ClassNode MY_TYPE = ClassHelper.make(MY_CLASS);
+    private static final Class<PicocliBaseScript> BASE_SCRIPT1_CLASS = PicocliBaseScript.class;
+    private static final Class<PicocliBaseScript2> BASE_SCRIPT2_CLASS = PicocliBaseScript2.class;
+    private static final ClassNode MY_TYPE1 = ClassHelper.make(MY_CLASS1);
+    private static final ClassNode MY_TYPE2 = ClassHelper.make(MY_CLASS2);
     private static final ClassNode COMMAND_TYPE = ClassHelper.make(COMMAND_CLASS);
-    private static final ClassNode BASE_SCRIPT_TYPE = ClassHelper.make(BASE_SCRIPT_CLASS);
-    private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
+    private static final ClassNode BASE_SCRIPT1_TYPE = ClassHelper.make(BASE_SCRIPT1_CLASS);
+    private static final ClassNode BASE_SCRIPT2_TYPE = ClassHelper.make(BASE_SCRIPT2_CLASS);
+    private static final String MY_TYPE_NAME1 = "@" + MY_TYPE1.getNameWithoutPackage();
+    private static final String MY_TYPE_NAME2 = "@" + MY_TYPE2.getNameWithoutPackage();
     private static final Parameter[] CONTEXT_CTOR_PARAMETERS = {new Parameter(ClassHelper.BINDING_TYPE, "context")};
 
     public void visit(ASTNode[] nodes, SourceUnit source) {
         init(nodes, source);
         AnnotatedNode parent = (AnnotatedNode) nodes[1];
         AnnotationNode node = (AnnotationNode) nodes[0];
-        if (!MY_TYPE.equals(node.getClassNode())) return;
+        if (!MY_TYPE1.equals(node.getClassNode()) && !MY_TYPE2.equals(node.getClassNode())) return;
 
         if (parent instanceof DeclarationExpression) {
             changeBaseScriptTypeFromDeclaration(source, (DeclarationExpression) parent, node);
@@ -69,14 +74,34 @@ public class PicocliScriptASTTransformation extends AbstractASTTransformation {
         }
     }
 
+    private static ClassNode scriptType(final AnnotationNode node) {
+        if (MY_TYPE1.equals(node.getClassNode())) {
+            return BASE_SCRIPT1_TYPE;
+        }
+        if (MY_TYPE2.equals(node.getClassNode())) {
+            return BASE_SCRIPT2_TYPE;
+        }
+        throw new IllegalStateException("Expected annotation @PicocliScript or @PicocliScript2, but was " + node.getClassNode());
+    }
+
+    private static String annotationTypeName(final AnnotationNode node) {
+        if (MY_TYPE1.equals(node.getClassNode())) {
+            return MY_TYPE_NAME1;
+        }
+        if (MY_TYPE2.equals(node.getClassNode())) {
+            return MY_TYPE_NAME2;
+        }
+        throw new IllegalStateException("Expected annotation @PicocliScript or @PicocliScript2, but was " + node.getClassNode());
+    }
+
     private void changeBaseScriptTypeFromPackageOrImport(final SourceUnit source, final AnnotatedNode parent, final AnnotationNode node) {
         Expression value = node.getMember("value");
         ClassNode scriptType;
         if (value == null) {
-            scriptType = BASE_SCRIPT_TYPE;
+            scriptType = scriptType(node);
         } else {
             if (!(value instanceof ClassExpression)) {
-                addError("Annotation " + MY_TYPE_NAME + " member 'value' should be a class literal.", value);
+                addError("Annotation " + annotationTypeName(node) + " member 'value' should be a class literal.", value);
                 return;
             }
             scriptType = value.getType();
@@ -95,7 +120,7 @@ public class PicocliScriptASTTransformation extends AbstractASTTransformation {
 
     private void changeBaseScriptTypeFromDeclaration(final SourceUnit source, final DeclarationExpression de, final AnnotationNode node) {
         if (de.isMultipleAssignmentDeclaration()) {
-            addError("Annotation " + MY_TYPE_NAME + " not supported with multiple assignment notation.", de);
+            addError("Annotation " + annotationTypeName(node) + " not supported with multiple assignment notation.", de);
             return;
         }
 
@@ -103,16 +128,16 @@ public class PicocliScriptASTTransformation extends AbstractASTTransformation {
         ClassNode baseScriptType = de.getVariableExpression().getType().getPlainNodeReference();
         if (baseScriptType.isScript()) {
             if (!(de.getRightExpression() instanceof EmptyExpression)) {
-                addError("Annotation " + MY_TYPE_NAME + " not supported with variable assignment.", de);
+                addError("Annotation " + annotationTypeName(node) + " not supported with variable assignment.", de);
                 return;
             }
             de.setRightExpression(new VariableExpression("this"));
         } else {
-            baseScriptType = BASE_SCRIPT_TYPE;
+            baseScriptType = scriptType(node);
         }
         Expression value = node.getMember("value");
         if (value != null) {
-            addError("Annotation " + MY_TYPE_NAME + " cannot have member 'value' if used on a declaration.", value);
+            addError("Annotation " + annotationTypeName(node) + " cannot have member 'value' if used on a declaration.", value);
             return;
         }
 
@@ -122,7 +147,7 @@ public class PicocliScriptASTTransformation extends AbstractASTTransformation {
 
     private void changeBaseScriptType(final SourceUnit source, final AnnotatedNode parent, final ClassNode cNode, final ClassNode baseScriptType, final AnnotationNode node) {
         if (!cNode.isScriptBody()) {
-            addError("Annotation " + MY_TYPE_NAME + " can only be used within a Script.", parent);
+            addError("Annotation " + annotationTypeName(node) + " can only be used within a Script.", parent);
             return;
         }
 
