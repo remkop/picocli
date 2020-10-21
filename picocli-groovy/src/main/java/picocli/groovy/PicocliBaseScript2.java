@@ -75,7 +75,9 @@ public abstract class PicocliBaseScript2 extends Script implements Callable<Obje
      * Parses the command line and initializes {@code @Field} variables
      * annotated with {@code @Option} or {@code @Parameters} before executing the script body.
      * Also takes care of error handling and common use cases like requests for usage help.
-     * </p><p>
+     * </p>
+     * <h1>Execution</h1>
+     * <p>
      * Here is a break-down of the steps the base class takes before the statements in the script body are executed:
      * </p>
      * <ol>
@@ -83,22 +85,38 @@ public abstract class PicocliBaseScript2 extends Script implements Callable<Obje
      *     The {@code CommandLine} instance is cached in the {@code commandLine} property
      *     (so it can be referred to in script code with
      *     {@code this.commandLine}). {@code CommandLine} creation and initialization may be
-     *     customized by overriding {@link #createCommandLine()}.</li>
+     *     customized by overriding {@link #createCommandLine()} or {@link #customize(CommandLine)}.</li>
      *   <li>The {@link CommandLine#execute(String...)} method is called with the script arguments.
      *     This initialises all {@code @Field} variables annotated with {@link CommandLine.Option} or
      *     {@link CommandLine.Parameters}, unless the user input was invalid.</li>
-     *   <li>If the user input was invalid, an error message and the usage message are printed to standard err and the
-     *     script exits. This may be customized by overriding {@link #createCommandLine()} and setting a custom
+     *   <li>If the user input was invalid, the command line arguments are printed to standard err, followed by,
+     *     an error message and the usage message.
+     *     Then, the script exits.
+     *     This may be customized by overriding {@link #customize(CommandLine)} and setting a custom
      *     {@link IParameterExceptionHandler} on the {@code CommandLine} instance.</li>
      *   <li>Otherwise, if the user input requested version help or usage help, the version string or usage help message is
      *     printed to standard err and the script exits.</li>
-     *   <li>If the script implements {@code Runnable} or {@code Callable}, its {@code run} (or {@code call}) method
-     *     is called. The script may support subcommands. In that case only the last specified subcommand is run or called
-     *     if it implements {@code Runnable} or {@code Callable}. This may be customized by overriding
-     *     {@link #createCommandLine()} and setting a custom
+     *   <li>The script may support subcommands. In that case only the last specified subcommand is invoked.
+     *     This may be customized by overriding
+     *     {@link #customize(CommandLine)} and setting a custom
      *     {@link picocli.CommandLine.IExecutionStrategy} on the {@code CommandLine} instance.</li>
-     *   <li>Finally, the script body is executed.</li>
+     *   <li>If no subcommand was specified, the script body is executed.</li>
+     *   <li>If an exception occurs during execution, this exception is rethrown.</li>
      * </ol>
+     * <h1>Exit Code</h1>
+     * <p>
+     *     Scripts that want to control the exit code need to override the {@link #run()} method and call {@code System.exit}.
+     *     For example:
+     * </p><pre>{@code
+     * @Override
+     * public Object run() {
+     *     try {
+     *         super.run();
+     *     } finally {
+     *         System.exit(exitCode);
+     *     }
+     * }
+     * }</pre>
      * @return The result of the script evaluation.
      */
     @Override
