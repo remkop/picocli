@@ -3003,7 +3003,8 @@ Methods annotated with `@Option` and `@Parameters` can do simple input validatio
 
 The following example validates that the value specified for the `--prime` option is a prime number:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class SingleOptionValidationExample {
     private int prime;
@@ -3030,13 +3031,42 @@ class SingleOptionValidationExample {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class SingleOptionValidationExample {
+    private var prime = 0
+
+    @Spec lateinit var spec : CommandSpec // injected by picocli
+
+    @Option(names = ["-p", "--prime"], paramLabel = "NUMBER")
+    fun setPrimeNumber(value: Int) {
+        var invalid = false
+        for (i in 2..value / 2) {
+            if (value % i == 0) {
+                invalid = true
+                break
+            }
+        }
+        if (invalid) {
+            throw ParameterException(spec.commandLine(),
+                String.format("Invalid value '%s' for option '--prime': " +
+                              "value is not a prime number.", value))
+        }
+        prime = value
+    }
+    // ...
+}
+----
+
 ==== Validating Option Combinations
 Another common scenario is that the combination of multiple options and positional parameters is valid.
 One way to accomplish this is to perform such validation at the beginning of the business logic.
 
 The following example validates that at least one of the `--xml`, `--csv`, or `--json` options is specified:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "myapp", mixinStandardHelpOptions = true, version = "myapp 0.1")
 class MultiOptionValidationExample implements Runnable {
@@ -3070,6 +3100,41 @@ class MultiOptionValidationExample implements Runnable {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "myapp", mixinStandardHelpOptions = true, version = ["myapp 0.1"])
+class MultiOptionValidationExample : Runnable {
+    @Option(names = ["--xml"])  var xmlFiles: List<File>? = null
+    @Option(names = ["--csv"])  var csvFiles: List<File>? = null
+    @Option(names = ["--json"]) var jsonFiles: List<File>? = null
+
+    @Spec lateinit var spec : CommandSpec // injected by picocli
+
+     override fun run() {
+        validate()
+
+        // remaining business logic here
+    }
+
+    private fun validate() {
+        if (missing(xmlFiles) && missing(csvFiles) && missing(jsonFiles)) {
+            throw ParameterException(spec.commandLine(),
+                "Missing option: at least one of the " +
+                "'--xml', '--csv', or '--json' options must be specified.")
+        }
+    }
+
+    private fun missing(list: List<*>?): Boolean {
+        return list == null || list.isEmpty()
+    }
+}
+
+fun main(args: Array<String>) {
+    exitProcess(CommandLine(MultiOptionValidationExample()).execute(*args))
+}
+----
+
 ==== JSR-380 BeanValidation
 If you want to keep your validation declarative and annotation-based, take a look at https://jcp.org/en/jsr/detail?id=380[JSR 380].
 
@@ -3077,7 +3142,8 @@ JSR-380 is a specification of the Java API for bean validation, part of JavaEE a
 
 The picocli wiki has a https://github.com/remkop/picocli/wiki/JSR-380-BeanValidation[full example], below is a snippet:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
@@ -3087,8 +3153,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.constraints.*;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 // Example inspired by https://www.baeldung.com/javax-validation
@@ -3142,7 +3206,63 @@ public class User implements Runnable {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import picocli.CommandLine
+import picocli.CommandLine.Model.CommandSpec
+import picocli.CommandLine.*
 
+import javax.validation.ConstraintViolation
+import javax.validation.Validation
+import javax.validation.Validator
+import javax.validation.constraints.*
+
+// Example inspired by https://www.baeldung.com/javax-validation
+class User : Runnable {
+
+    @NotNull(message = "Name cannot be null")
+    @CommandLine.Option(names = ["-n", "--name"], description = ["mandatory"])
+    private lateinit var name: String
+
+    @Min(value = 18, message = "Age should not be less than 18")
+    @Max(value = 150, message = "Age should not be greater than 150")
+    @Option(names = ["-a", "--age"], description = ["between 18-150"])
+    private var age = 0
+
+    @Email(message = "Email should be valid")
+    @Option(names = ["-e", "--email"], description = ["valid email"])
+    private lateinit var email: String
+
+    @Spec
+    lateinit var spec: CommandSpec
+    override fun toString(): String {
+        return "User{name=$name, age=$age, email=$email}"
+    }
+
+    override fun run() {
+        validate()
+
+        // remaining business logic here
+    }
+
+    private fun validate() {
+        val validator: Validator = Validation.buildDefaultValidatorFactory().validator
+        val violations: Set<ConstraintViolation<User>> = validator.validate(this)
+        if (violations.isNotEmpty()) {
+            var errorMsg = ""
+            for (violation in violations) {
+                errorMsg += "ERROR: ${violation.message}\n"
+            }
+            throw CommandLine.ParameterException(spec.commandLine(), errorMsg)
+        }
+    }
+}
+
+fun main(args: Array<String>) {
+    CommandLine(User()).execute(*args)
+}
+----
 
 == Parser Configuration
 
