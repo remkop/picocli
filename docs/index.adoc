@@ -2667,13 +2667,22 @@ Parsing the command line arguments is the first step. A robust real-world applic
 
 Picocli 4.0 introduces an `execute` method for handling all of the above scenarios in a single line of code. For example:
 
-```java
+.Java
+[source,java,role="primary"]
+----
 new CommandLine(new MyApp()).execute(args);
-```
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+CommandLine(MyApp()).execute(*args)
+----
 
 With the `execute` method, application code can be *extremely compact*:
 
-[source,java,linenumbers]
+.Java
+[source,java,linenumbers,role="primary"]
 ----
 @Command(name = "myapp", mixinStandardHelpOptions = true, version = "1.0")
 class MyApp implements Callable<Integer> {
@@ -2689,6 +2698,26 @@ class MyApp implements Callable<Integer> {
     public static void main(String... args) { // bootstrap the application
         System.exit(new CommandLine(new MyApp()).execute(args));
     }
+}
+----
+
+.Kotlin
+[source,kotlin,linenumbers,role="secondary"]
+----
+@Command(name = "myapp", mixinStandardHelpOptions = true, version = ["1.0"])
+class MyApp : Callable<Int> {
+
+    @Option(names = ["-x"])
+    var x = 0
+
+    override fun call(): Int { // business logic
+        println("x=$x")
+        return 123 // exit code
+    }
+}
+
+fun main(args: Array<String>) { // bootstrap the application
+    exitProcess(CommandLine(MyApp()).execute(*args))
 }
 ----
 
@@ -2708,12 +2737,24 @@ Many command line applications return an https://en.wikipedia.org/wiki/Exit_stat
 
 The `CommandLine.execute` method introduced in picocli 4.0 returns an `int`, and applications can use this return value to call `System.exit` if desired. For example:
 
-```java
+.Java
+[source,java,role="primary"]
+----
 public static void main(String... args) {
   int exitCode = new CommandLine(new MyApp()).execute(args);
   System.exit(exitCode);
 }
-```
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+fun main(args: Array<String>) {
+    val exitCode = CommandLine(MyApp()).execute(*args)
+    exitProcess(exitCode)
+}
+----
+
 
 CAUTION: Older versions of picocli had some limited exit code support where picocli would call `System.exit`, but this is now deprecated.
 
@@ -2721,7 +2762,9 @@ CAUTION: Older versions of picocli had some limited exit code support where pico
 
 `@Command`-annotated classes that implement `Callable` and `@Command`-<<command-methods,annotated methods>> can simply return an `int` or `Integer`, and this value will be returned from `CommandLine.execute`. For example:
 
-```java
+.Java
+[source,java,role="primary"]
+----
 @Command(name = "greet")
 class Greet implements Callable<Integer> {
     public Integer call() {
@@ -2739,11 +2782,35 @@ class Greet implements Callable<Integer> {
 
 assert 1 == new CommandLine(new Greet()).execute();
 assert 2 == new CommandLine(new Greet()).execute("shout");
-```
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "greet")
+class Greet : Callable<Int> {
+    override fun call(): Int {
+        println("hi")
+        return 1
+    }
+
+    // define a "shout" subcommand with a @Command-annotated method
+    @Command
+    fun shout(): Int {
+        println("HI!")
+        return 2
+    }
+}
+
+assert(1 == CommandLine(Greet()).execute())
+assert(2 == CommandLine(Greet()).execute("shout"))
+----
 
 Commands with a user object that implements `Runnable` can implement the `IExitCodeGenerator` interface to generate an exit code. For example:
 
-```java
+.Java
+[source,java,role="primary"]
+----
 @Command(name = "wave")
 class Gesture implements Runnable, IExitCodeGenerator {
 
@@ -2757,20 +2824,42 @@ class Gesture implements Runnable, IExitCodeGenerator {
 }
 
 assert 3 == new CommandLine(new Gesture()).execute();
-```
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "wave")
+class Gesture : Runnable, IExitCodeGenerator {
+
+    override fun run() {
+        println("wave")
+    }
+
+    override fun getExitCode(): Int {
+        return 3
+    }
+}
+
+assert(3 == CommandLine(Gesture()).execute())
+----
 
 === Exception Exit Codes
 
 By default, the `execute` method returns `CommandLine.ExitCode.OK` (`0`) on success, `CommandLine.ExitCode.SOFTWARE` (`1`) when an exception occurred in the Runnable, Callable or command method, and `CommandLine.ExitCode.USAGE` (`2`) for invalid input. (These are common values according to https://stackoverflow.com/questions/1101957/are-there-any-standard-exit-status-codes-in-linux/40484670#40484670[this StackOverflow answer]). This can be customized with the `@Command` annotation. For example:
 
-```java
+.Java / Kotlin
+[source,java,role="primary"]
+----
 @Command(exitCodeOnInvalidInput = 123,
    exitCodeOnExecutionException = 456)
-```
+----
 
 Additionally, applications can configure a `IExitCodeExceptionMapper` to map a specific exception to an exit code:
 
-```java
+.Java
+[source,java,role="primary"]
+----
 class MyMapper implements IExitCodeExceptionMapper {
     @Override
     public int getExitCode(Throwable t) {
@@ -2780,7 +2869,19 @@ class MyMapper implements IExitCodeExceptionMapper {
         return 1;
     }
 }
-```
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class MyMapper : IExitCodeExceptionMapper {
+    override fun getExitCode(t: Throwable): Int {
+        return if (t is FileNotFoundException) {
+            74
+        } else 1
+    }
+}
+----
 
 When the end user specified invalid input, the `execute` method prints an error message followed by the usage help message of the command, and returns an exit code. This can be <<Invalid User Input,customized>> by configuring a `IParameterExceptionHandler`.
 
@@ -2816,17 +2917,31 @@ The sections below show some common usages and how the same can be achieved with
 
 ==== Customizing Output Streams and ANSI settings
 
-.Before:
+Before:
 
-```java
+.Java
+[source,java,role="primary"]
+----
 PrintStream out = // output stream for user-requested help
 PrintStream err = // output stream for error messages
 Ansi ansi = // to use ANSI colors and styles or not
 CommandLine.run(new MyRunnable(), out, err, ansi, args);
-```
+----
 
-.After:
-```java
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val out: PrintStream = // output stream for user-requested help
+val err: PrintStream = // output stream for error messages
+val ansi: Ansi = // to use ANSI colors and styles or not
+CommandLine.run(MyRunnable(), out, err, ansi, *args)
+----
+
+After:
+
+.Java
+[source,java,role="primary"]
+----
 PrintWriter out = // output stream for user-requested help
 PrintWriter err = // output stream for error messages
 Ansi ansi = // to use ANSI colors and styles or not
@@ -2837,7 +2952,22 @@ CommandLine cmd = new CommandLine(new MyRunnable())
         .setColorScheme(Help.defaultColorScheme(ansi));
 
 int exitCode = cmd.execute(args);
-```
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+var out: PrintWriter = // output stream for user-requested help
+var err: PrintWriter = // output stream for error messages
+val ansi: Ansi = // to use ANSI colors and styles or not
+
+val cmd = CommandLine(MyRunnable())
+        .setOut(out)
+        .setErr(err)
+        .setColorScheme(Help.defaultColorScheme(ansi));
+
+val exitCode = cmd.execute(*args)
+----
 
 ==== Return Value from Callable or Method
 
