@@ -1550,19 +1550,44 @@ It is possible to define a default value for an option or positional parameter, 
 The recommended way to give an option or positional parameter a default value is to use the `defaultValue` annotation attribute. This works correctly with argument groups, `@Option` and `@Parameters`-annotated methods, and allows annotation processors to detect and use default values.
 
 For <<option-parameters-methods,@Option and @Parameters-annotated methods>> and <<command-methods,@Command-annotated methods>>, there is no alternative but to use the `defaultValue` annotation attribute. For example, for an annotated interface:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 interface Spec {
     @Option(names = "-c", defaultValue = "123", description = "... ${DEFAULT-VALUE} ...")
     int count();
 }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+interface Spec {
+    @Option(names = ["-c"], defaultValue = "123", description = ["... \${DEFAULT-VALUE} ..."])
+    fun count(): Int
+}
+----
+
 Example of using the `defaultValue` attribute in the option of a command method:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 class CommandMethod {
     @Command(description = "Do something.")
     void doit(@Option(names = "-c", defaultValue = "123") int count) {
+        // ...
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class CommandMethod {
+    @Command(description = ["Do something."])
+    fun doit(@Option(names = ["-c"], defaultValue = "123") count: Int) {
         // ...
     }
 }
@@ -1573,10 +1598,19 @@ Note that you can use the `${DEFAULT-VALUE}` <<Predefined Variables,variable>> i
 
 === Field Values
 For annotated fields, it is possible to declare the field with a value:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 @Option(names = "-c", description = "The count (default: ${DEFAULT-VALUE})")
 int count = 123; // default value is 123
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["-c"], description = ["The count (default: \${DEFAULT-VALUE})"])
+var count = 123 // default value is 123
 ----
 
 [WARNING]
@@ -1590,9 +1624,17 @@ Defining a default value by assigning a value at the field declaration has limit
 === Default Provider
 Finally, you can specify a default provider in the `@Command` annotation:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(defaultValueProvider = MyDefaultProvider.class)
+class MyCommand // ...
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(defaultValueProvider = MyDefaultProvider::class)
 class MyCommand // ...
 ----
 
@@ -1629,11 +1671,21 @@ implementation that loads default values from a properties file.
 
 By default, this implementation tries to find a properties file named `.${COMMAND-NAME}.properties` in the user home directory, where `${COMMAND-NAME}` is the name of the command. If a command has aliases in addition to its name, these aliases are also used to try to find the properties file. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 import picocli.CommandLine.PropertiesDefaultProvider;
 // ...
 @Command(name = "git", defaultValueProvider = PropertiesDefaultProvider.class)
+class Git { }
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import picocli.CommandLine.PropertiesDefaultProvider;
+// ...
+@Command(name = "git", defaultValueProvider = PropertiesDefaultProvider::class)
 class Git { }
 ----
 
@@ -1642,12 +1694,22 @@ The location of the properties file can also be controlled with system property 
 
 The location of the properties file may also be specified programmatically. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 CommandLine cmd = new CommandLine(new MyCommand());
 File defaultsFile = new File("path/to/config/mycommand.properties");
 cmd.setDefaultValueProvider(new PropertiesDefaultProvider(defaultsFile));
 cmd.execute(args);
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val cmd = CommandLine(MyCommand())
+val defaultsFile = File("path/to/config/mycommand.properties")
+cmd.defaultValueProvider = PropertiesDefaultProvider(defaultsFile)
+cmd.execute(*args)
 ----
 
 ==== PropertiesDefaultProvider Format
@@ -1690,7 +1752,8 @@ This is different from the `defaultValue`, which is assigned if the option is no
 
 For example:
 
-[source, java]
+.Java
+[source, java,role="primary"]
 ----
 class FallbackValueDemo implements Runnable {
     @Option(names = "-x", arity = "0..1",
@@ -1706,6 +1769,25 @@ class FallbackValueDemo implements Runnable {
     }
 }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class FallbackValueDemo : Runnable {
+    @Option(names = ["-x"], arity = "0..1",
+            defaultValue = "-1", fallbackValue = "-2",
+            description = ["Option with optional parameter. Default: \${DEFAULT-VALUE}, " +
+                           "if specified without parameter: \${FALLBACK-VALUE}"])
+    var x = 0
+
+    override fun run() { println("x = $x") }
+}
+
+fun main(args: Array<String>) {
+    CommandLine(FallbackValueDemo()).execute(*args)
+}
+----
+
 Gives the following results:
 [source, bash]
 ----
@@ -1735,7 +1817,8 @@ and `ParseResult::matchedOptionValue` to get the (type-converted) value that was
 
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "defaults", mixinStandardHelpOptions = true, version = "defaults 0.1")
 public class DefaultValueDemo implements Runnable {
@@ -1768,7 +1851,38 @@ public class DefaultValueDemo implements Runnable {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "defaults", mixinStandardHelpOptions = true, version = ["defaults 0.1"])
+class DefaultValueDemo<T> : Runnable {
 
+    @Option(names = ["-x"])
+    var x = 10
+
+    @Option(names = ["-y"], defaultValue = "20")
+    var y = 0
+
+    @Spec lateinit var spec: CommandSpec
+    
+    override fun run() {
+        val pr: ParseResult = spec.commandLine().parseResult
+
+        for (option in spec.options()) {
+            val name = option.longestName()
+            println("$name was specified: ${pr.hasMatchedOption(option)}")
+            println("$name=${pr.matchedOptionValue(name, -1)} " +
+                    "(-1 means this option was not matched on command line)")
+            println("$name=${option.getValue<T>()} (arg value or default)")
+            println()
+        }
+    }
+}
+
+fun main(args: Array<String>) {
+    CommandLine(DefaultValueDemo<Any>()).execute(*args)
+}
+----
 
 == Multiple Values
 Multi-valued options and positional parameters are annotated fields that can capture multiple values from the command line.
