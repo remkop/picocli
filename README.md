@@ -234,7 +234,7 @@ Glad to see more people are using picocli. We must be doing something right. :-)
 
 ### Help to promote picocli
 If you like picocli, there are a few things you can do to help:
-* Star picocli on GitHub!
+* Give picocli a star on GitHub!
 * Tweet about picocli! What do you like about it? How has it helped you? How is it different from the alternatives?
 * Upvote my [Quora answer](https://www.quora.com/What-is-the-best-way-to-parse-command-line-arguments-with-Java/answer/Remko-Popma) to "What is the best way to parse command-line arguments with Java?"
 * Upvote my [StackOverflow answer](https://stackoverflow.com/a/43780433/1446916) to "How do I parse command line arguments in Java?"
