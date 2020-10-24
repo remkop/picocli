@@ -17237,8 +17237,17 @@ public class CommandLine {
         }
         private static String describe(List<String> unmatch, CommandLine cmd) {
             String plural = unmatch.size() == 1 ? "" : "s";
+            if (isUnknownOption(unmatch, cmd)) {
+                return "Unknown option" + plural;
+            }
             String at = unmatch.size() == 1 ? " at" : " from";
-            return isUnknownOption(unmatch, cmd) ? "Unknown option" + plural : "Unmatched argument" + plural + at + " index " + (cmd.interpreter.parseResultBuilder == null ? "0" : cmd.interpreter.parseResultBuilder.originalArgList.indexOf(unmatch.get(0)));
+            int index = 0;
+            ParseResult.Builder prb = cmd.interpreter.parseResultBuilder;
+            if (prb != null) {
+                List<String> potentiallyUnmatched = prb.originalArgList.subList(prb.matchedArgsList.size(), prb.originalArgList.size());
+                index = potentiallyUnmatched.indexOf(unmatch.get(0)) + prb.matchedArgsList.size();
+            }
+            return "Unmatched argument" + plural + at + " index " + index;
         }
         static String quoteElements(List<String> list) {
             String result = "", suffix = "";
