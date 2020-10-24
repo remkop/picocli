@@ -2971,43 +2971,91 @@ val exitCode = cmd.execute(*args)
 
 ==== Return Value from Callable or Method
 
-.Before:
+Before:
 
-```java
+.Java
+[source,java,role="primary"]
+----
 class MyCallable implements Callable<MyResult> {
-    public MyResult call() { ... }
+    public MyResult call() { /* ... */ }
 }
 
 MyResult result = CommandLine.call(new MyCallable(), args);
-```
+----
 
-.After:
-```java
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class MyCallable : Callable<MyResult> {
+    override fun call(): MyResult { /* ... */ }
+}
+
+val result: MyResult = CommandLine.call(MyCallable(), *args)
+----
+
+After:
+
+.Java
+[source,java,role="primary"]
+----
 CommandLine cmd = new CommandLine(new MyCallable());
 int exitCode = cmd.execute(args);
 MyResult result = cmd.getExecutionResult();
-```
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val cmd = CommandLine(MyCallable())
+val exitCode = cmd.execute(*args)
+val result: MyResult = cmd.getExecutionResult()
+----
 
 ==== Invoking Command Methods
 
-.Before:
+Before:
 
-```java
+.Java
+[source,java,role="primary"]
+----
 class MyCommand {
     @Command
     public MyResult doit(@Option(names = "-x") int x) { ... }
 }
 
 MyResult result = CommandLine.invoke("doit", MyCommand.class, args);
-```
+----
 
-.After:
-```java
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class MyCommand {
+    @Command
+    fun doit(@Option(names = ["-x"]) x: Int) : MyResult{ /* ... */ }
+}
+
+val result = CommandLine.invoke("doit", MyCommand::class.java, *args) as MyResult
+----
+
+After:
+
+.Java
+[source,java,role="primary"]
+----
 Method doit = CommandLine.getCommandMethods(MyCommand.class, "doit").get(0);
 CommandLine cmd = new CommandLine(doit);
 int exitCode = cmd.execute(args);
 MyResult result = cmd.getExecutionResult();
-```
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val doit: Method = CommandLine.getCommandMethods(MyCommand::class.java, "doit")[0]
+val cmd = CommandLine(doit)
+val exitCode = cmd.execute(*args)
+val result: MyResult = cmd.getExecutionResult()
+----
 
 ==== Executing Commands with Subcommands
 
@@ -3017,8 +3065,10 @@ The `IParseResultHandler2` interface has been deprecated in picocli 4.0 in favor
 * the `RunFirst` handler prints help if requested, and otherwise executes the _top-level_ command as a `Runnable`, `Callable` or `Method`
 * the `RunAll` handler prints help if requested, and otherwise executes _all_ commands and subcommands that the user specified on the command line as `Runnable`, `Callable` or `Method` tasks
 
-.Before
-[source,java]
+Before
+
+.Java
+[source,java,role="primary"]
 ----
 CommandLine cmd = new CommandLine(MyTopLevelCommand())
         .addSubcommand("status",   new GitStatus())
@@ -3027,8 +3077,20 @@ CommandLine cmd = new CommandLine(MyTopLevelCommand())
 List<Object> result = cmd.parseWithHandler(new RunAll(), args);
 ----
 
-.After
-[source,java]
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val cmd = CommandLine(MyTopLevelCommand())
+        .addSubcommand("status",   GitStatus())
+        .addSubcommand("commit",   GitCommit())
+        .addSubcommand("add",      GitAdd())
+val result = cmd.parseWithHandler<List<Any>>(CommandLine.RunAll(), args)}
+----
+
+After
+
+.Java
+[source,java,role="primary"]
 ----
 CommandLine cmd = new CommandLine(MyTopLevelCommand())
         .addSubcommand("status",   new GitStatus())
@@ -3040,9 +3102,23 @@ cmd.setExecutionStrategy(new RunAll());
 int exitCode = cmd.execute(args);
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val cmd = CommandLine(MyTopLevelCommand())
+        .addSubcommand("status",   GitStatus())
+        .addSubcommand("commit",   GitCommit())
+        .addSubcommand("add",      GitAdd())
+
+// the default is RunLast, this can be customized:
+cmd.executionStrategy = RunAll()
+val exitCode = cmd.execute(*args)
+----
+
 The `ParseResult` can be used to get the return value from a Callable or Method subcommand:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 // getting return value from Callable or Method command
 Object topResult = cmd.getExecutionResult();
@@ -3052,6 +3128,20 @@ ParseResult parseResult = cmd.getParseResult();
 if (parseResult.subcommand() != null) {
     CommandLine sub = parseResult.subcommand().commandSpec().commandLine();
     Object subResult = sub.getExecutionResult();
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+// getting return value from Callable or Method command
+val topResult: Int = cmd.getExecutionResult()
+
+// getting return value from Callable or Method subcommand
+val parseResult = cmd.parseResult
+if (parseResult.subcommand() != null) {
+    val sub: CommandLine = parseResult.subcommand().commandSpec().commandLine()
+    val subResult = sub.getExecutionResult<Int>()
 }
 ----
 
@@ -3067,8 +3157,8 @@ The example below covers the following common scenarios:
 . If none of the above, run the business logic of the application.
 . Handle any errors that occurred in the business logic.
 
-
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 Callable<Object> callable = new MyCallable();
 CommandLine cmd = new CommandLine(callable);
@@ -3102,6 +3192,44 @@ try {
 } catch (Exception ex) {
     ex.printStackTrace(cmd.getErr());
     return cmd.getCommandSpec().exitCodeOnExecutionException();
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val callable: Callable<Int> = MyCallable()
+val cmd = CommandLine(callable)
+return try {
+    val parseResult = cmd.parseArgs(*args)
+
+    // Did user request usage help (--help)?
+    if (cmd.isUsageHelpRequested) {
+        cmd.usage(cmd.out)
+        cmd.commandSpec.exitCodeOnUsageHelp()
+
+        // Did user request version help (--version)?
+    } else if (cmd.isVersionHelpRequested) {
+        cmd.printVersionHelp(cmd.out)
+        return cmd.commandSpec.exitCodeOnVersionHelp()
+    }
+    // invoke the business logic
+    val result = callable.call()
+    cmd.setExecutionResult(result)
+    cmd.commandSpec.exitCodeOnSuccess()
+
+    // invalid user input: print error message and usage help
+} catch (ex: ParameterException) {
+    cmd.err.println(ex.message)
+    if (!UnmatchedArgumentException.printSuggestions(ex, cmd.err)) {
+        ex.commandLine.usage(cmd.err)
+    }
+    cmd.commandSpec.exitCodeOnInvalidInput()
+
+    // exception occurred in business logic
+} catch (ex: Exception) {
+    ex.printStackTrace(cmd.err)
+    cmd.commandSpec.exitCodeOnExecutionException()
 }
 ----
 
@@ -3142,18 +3270,28 @@ Usage: grep [OPTION]... PATTERN [FILE]...
 Try 'grep --help' for more information.
 ----
 
-
 You can customize how your application handles invalid user input by setting a custom `IParameterExceptionHandler`:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 new CommandLine(new MyApp())
     .setParameterExceptionHandler(new ShortErrorMessageHandler())
     .execute(args);
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+CommandLine(MyApp())
+    .setParameterExceptionHandler(ShortErrorMessageHandler())
+    .execute(*args)
+----
+
 Where the `IParameterExceptionHandler` implementation could be something like this:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 class ShortErrorMessageHandler implements IParameterExceptionHandler {
 
@@ -3180,6 +3318,34 @@ class ShortErrorMessageHandler implements IParameterExceptionHandler {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class ShortErrorMessageHandler : IParameterExceptionHandler {
+
+    override fun handleParseException(ex: ParameterException, args: Array<String>): Int {
+        val cmd = ex.commandLine
+        val err = cmd.err
+
+        // if tracing at DEBUG level, show the location of the issue
+        if ("DEBUG".equals(System.getProperty("picocli.trace"), ignoreCase = true)) {
+            err.println(cmd.colorScheme.stackTraceText(ex))
+        }
+
+        err.println(cmd.colorScheme.errorText(ex.message)) // bold red
+        UnmatchedArgumentException.printSuggestions(ex, err)
+        err.print(cmd.help.fullSynopsis())
+
+        val spec = cmd.commandSpec
+        err.print("Try '${spec.qualifiedName()} --help' for more information.%n")
+
+        return if (cmd.exitCodeExceptionMapper != null)
+            cmd.exitCodeExceptionMapper.getExitCode(ex)
+            else spec.exitCodeOnInvalidInput()
+    }
+}
+----
+
 ==== Business Logic Exceptions
 
 When the business logic throws an exception, this exception is caught and passed to the `IExecutionExceptionHandler`.
@@ -3190,15 +3356,26 @@ This is sufficient for most applications.
 If you have designed your business logic to throw exceptions with user-facing error messages, you want to print this error message instead of the stack trace.
 This can be accomplished by installing a custom `IExecutionExceptionHandler`, like this:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 new CommandLine(new MyApp())
     .setExecutionExceptionHandler(new PrintExceptionMessageHandler())
     .execute(args);
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+CommandLine(MyApp())
+    .setExecutionExceptionHandler(PrintExceptionMessageHandler())
+    .execute(*args)
+----
+
 Where the `IExecutionExceptionHandler` implementation could look something like this:
-[source,java]
+
+.Java
+[source,java,role=primary]
 ----
 class PrintExceptionMessageHandler implements IExecutionExceptionHandler {
     public int handleExecutionException(Exception ex,
@@ -3211,6 +3388,24 @@ class PrintExceptionMessageHandler implements IExecutionExceptionHandler {
         return cmd.getExitCodeExceptionMapper() != null
                     ? cmd.getExitCodeExceptionMapper().getExitCode(ex)
                     : cmd.getCommandSpec().exitCodeOnExecutionException();
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class PrintExceptionMessageHandler : IExecutionExceptionHandler {
+    override fun handleExecutionException(ex: Exception,
+                                          cmd: CommandLine,
+                                          parseResult: ParseResult): Int {
+
+        // bold red error message
+        cmd.err.println(cmd.colorScheme.errorText(ex.message))
+
+        return if (cmd.exitCodeExceptionMapper != null)
+            cmd.exitCodeExceptionMapper.getExitCode(ex)
+            else cmd.commandSpec.exitCodeOnExecutionException()
     }
 }
 ----
