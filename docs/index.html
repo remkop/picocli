@@ -5865,29 +5865,56 @@ The sections below show some common usages and how the same can be achieved with
 </div>
 <div class="sect3">
 <h4 id="_return_value_from_callable_or_method"><a class="anchor" href="#_return_value_from_callable_or_method"></a>9.6.2. Return Value from Callable or Method</h4>
-<div class="listingblock">
-<div class="title">Before:</div>
+<div class="paragraph">
+<p>Before:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">MyCallable</span> <span class="kd">implements</span> <span class="nc">Callable</span><span class="o">&lt;</span><span class="nc">MyResult</span><span class="o">&gt;</span> <span class="o">{</span>
-    <span class="kd">public</span> <span class="nc">MyResult</span> <span class="nf">call</span><span class="o">()</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span>
+    <span class="kd">public</span> <span class="nc">MyResult</span> <span class="nf">call</span><span class="o">()</span> <span class="o">{</span> <span class="cm">/* ... */</span> <span class="o">}</span>
 <span class="o">}</span>
 
 <span class="nc">MyResult</span> <span class="n">result</span> <span class="o">=</span> <span class="nc">CommandLine</span><span class="o">.</span><span class="na">call</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyCallable</span><span class="o">(),</span> <span class="n">args</span><span class="o">);</span></code></pre>
 </div>
 </div>
-<div class="listingblock">
-<div class="title">After:</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">MyCallable</span> <span class="p">:</span> <span class="nc">Callable</span><span class="p">&lt;</span><span class="nc">MyResult</span><span class="p">&gt;</span> <span class="p">{</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">call</span><span class="p">():</span> <span class="nc">MyResult</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">val</span> <span class="py">result</span><span class="p">:</span> <span class="nc">MyResult</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="nc">MyCallable</span><span class="p">(),</span> <span class="p">*</span><span class="n">args</span><span class="p">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">CommandLine</span> <span class="n">cmd</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyCallable</span><span class="o">());</span>
 <span class="kt">int</span> <span class="n">exitCode</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
 <span class="nc">MyResult</span> <span class="n">result</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="na">getExecutionResult</span><span class="o">();</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyCallable</span><span class="p">())</span>
+<span class="kd">val</span> <span class="py">exitCode</span> <span class="p">=</span> <span class="n">cmd</span><span class="p">.</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+<span class="kd">val</span> <span class="py">result</span><span class="p">:</span> <span class="nc">MyResult</span> <span class="p">=</span> <span class="n">cmd</span><span class="p">.</span><span class="nf">getExecutionResult</span><span class="p">()</span></code></pre>
+</div>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_invoking_command_methods"><a class="anchor" href="#_invoking_command_methods"></a>9.6.3. Invoking Command Methods</h4>
-<div class="listingblock">
-<div class="title">Before:</div>
+<div class="paragraph">
+<p>Before:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">MyCommand</span> <span class="o">{</span>
     <span class="nd">@Command</span>
@@ -5897,13 +5924,36 @@ The sections below show some common usages and how the same can be achieved with
 <span class="nc">MyResult</span> <span class="n">result</span> <span class="o">=</span> <span class="nc">CommandLine</span><span class="o">.</span><span class="na">invoke</span><span class="o">(</span><span class="s">"doit"</span><span class="o">,</span> <span class="nc">MyCommand</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span></code></pre>
 </div>
 </div>
-<div class="listingblock">
-<div class="title">After:</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">MyCommand</span> <span class="p">{</span>
+    <span class="nd">@Command</span>
+    <span class="k">fun</span> <span class="nf">doit</span><span class="p">(</span><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">])</span> <span class="n">x</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">:</span> <span class="nc">MyResult</span><span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">val</span> <span class="py">result</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nf">invoke</span><span class="p">(</span><span class="s">"doit"</span><span class="p">,</span> <span class="nc">MyCommand</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">,</span> <span class="p">*</span><span class="n">args</span><span class="p">)</span> <span class="k">as</span> <span class="nc">MyResult</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">Method</span> <span class="n">doit</span> <span class="o">=</span> <span class="nc">CommandLine</span><span class="o">.</span><span class="na">getCommandMethods</span><span class="o">(</span><span class="nc">MyCommand</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">"doit"</span><span class="o">).</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
 <span class="nc">CommandLine</span> <span class="n">cmd</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="n">doit</span><span class="o">);</span>
 <span class="kt">int</span> <span class="n">exitCode</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
 <span class="nc">MyResult</span> <span class="n">result</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="na">getExecutionResult</span><span class="o">();</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">doit</span><span class="p">:</span> <span class="nc">Method</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nf">getCommandMethods</span><span class="p">(</span><span class="nc">MyCommand</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">,</span> <span class="s">"doit"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="n">doit</span><span class="p">)</span>
+<span class="kd">val</span> <span class="py">exitCode</span> <span class="p">=</span> <span class="n">cmd</span><span class="p">.</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+<span class="kd">val</span> <span class="py">result</span><span class="p">:</span> <span class="nc">MyResult</span> <span class="p">=</span> <span class="n">cmd</span><span class="p">.</span><span class="nf">getExecutionResult</span><span class="p">()</span></code></pre>
 </div>
 </div>
 </div>
@@ -5925,8 +5975,11 @@ The sections below show some common usages and how the same can be achieved with
 </li>
 </ul>
 </div>
-<div class="listingblock">
-<div class="title">Before</div>
+<div class="paragraph">
+<p>Before</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">CommandLine</span> <span class="n">cmd</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="nc">MyTopLevelCommand</span><span class="o">())</span>
         <span class="o">.</span><span class="na">addSubcommand</span><span class="o">(</span><span class="s">"status"</span><span class="o">,</span>   <span class="k">new</span> <span class="nc">GitStatus</span><span class="o">())</span>
@@ -5935,8 +5988,21 @@ The sections below show some common usages and how the same can be achieved with
 <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Object</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="na">parseWithHandler</span><span class="o">(</span><span class="k">new</span> <span class="nc">RunAll</span><span class="o">(),</span> <span class="n">args</span><span class="o">);</span></code></pre>
 </div>
 </div>
-<div class="listingblock">
-<div class="title">After</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyTopLevelCommand</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"status"</span><span class="p">,</span>   <span class="nc">GitStatus</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"commit"</span><span class="p">,</span>   <span class="nc">GitCommit</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"add"</span><span class="p">,</span>      <span class="nc">GitAdd</span><span class="p">())</span>
+<span class="kd">val</span> <span class="py">result</span> <span class="p">=</span> <span class="n">cmd</span><span class="p">.</span><span class="n">parseWithHandler</span><span class="p">&lt;</span><span class="nc">List</span><span class="p">&lt;</span><span class="nc">Any</span><span class="p">&gt;&gt;(</span><span class="nc">CommandLine</span><span class="p">.</span><span class="nc">RunAll</span><span class="p">(),</span> <span class="n">args</span><span class="p">)}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">CommandLine</span> <span class="n">cmd</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="nc">MyTopLevelCommand</span><span class="o">())</span>
         <span class="o">.</span><span class="na">addSubcommand</span><span class="o">(</span><span class="s">"status"</span><span class="o">,</span>   <span class="k">new</span> <span class="nc">GitStatus</span><span class="o">())</span>
@@ -5948,10 +6014,24 @@ The sections below show some common usages and how the same can be achieved with
 <span class="kt">int</span> <span class="n">exitCode</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyTopLevelCommand</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"status"</span><span class="p">,</span>   <span class="nc">GitStatus</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"commit"</span><span class="p">,</span>   <span class="nc">GitCommit</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">addSubcommand</span><span class="p">(</span><span class="s">"add"</span><span class="p">,</span>      <span class="nc">GitAdd</span><span class="p">())</span>
+
+<span class="c1">// the default is RunLast, this can be customized:</span>
+<span class="n">cmd</span><span class="p">.</span><span class="n">executionStrategy</span> <span class="p">=</span> <span class="nc">RunAll</span><span class="p">()</span>
+<span class="kd">val</span> <span class="py">exitCode</span> <span class="p">=</span> <span class="n">cmd</span><span class="p">.</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>The <code>ParseResult</code> can be used to get the return value from a Callable or Method subcommand:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="c1">// getting return value from Callable or Method command</span>
 <span class="nc">Object</span> <span class="n">topResult</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="na">getExecutionResult</span><span class="o">();</span>
@@ -5962,6 +6042,20 @@ The sections below show some common usages and how the same can be achieved with
     <span class="nc">CommandLine</span> <span class="n">sub</span> <span class="o">=</span> <span class="n">parseResult</span><span class="o">.</span><span class="na">subcommand</span><span class="o">().</span><span class="na">commandSpec</span><span class="o">().</span><span class="na">commandLine</span><span class="o">();</span>
     <span class="nc">Object</span> <span class="n">subResult</span> <span class="o">=</span> <span class="n">sub</span><span class="o">.</span><span class="na">getExecutionResult</span><span class="o">();</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="c1">// getting return value from Callable or Method command</span>
+<span class="kd">val</span> <span class="py">topResult</span><span class="p">:</span> <span class="nc">Int</span> <span class="p">=</span> <span class="n">cmd</span><span class="p">.</span><span class="nf">getExecutionResult</span><span class="p">()</span>
+
+<span class="c1">// getting return value from Callable or Method subcommand</span>
+<span class="kd">val</span> <span class="py">parseResult</span> <span class="p">=</span> <span class="n">cmd</span><span class="p">.</span><span class="n">parseResult</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">parseResult</span><span class="p">.</span><span class="nf">subcommand</span><span class="p">()</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">val</span> <span class="py">sub</span><span class="p">:</span> <span class="nc">CommandLine</span> <span class="p">=</span> <span class="n">parseResult</span><span class="p">.</span><span class="nf">subcommand</span><span class="p">().</span><span class="nf">commandSpec</span><span class="p">().</span><span class="nf">commandLine</span><span class="p">()</span>
+    <span class="kd">val</span> <span class="py">subResult</span> <span class="p">=</span> <span class="n">sub</span><span class="p">.</span><span class="n">getExecutionResult</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;()</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -5993,7 +6087,8 @@ The sections below show some common usages and how the same can be achieved with
 </li>
 </ol>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">Callable</span><span class="o">&lt;</span><span class="nc">Object</span><span class="o">&gt;</span> <span class="n">callable</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">MyCallable</span><span class="o">();</span>
 <span class="nc">CommandLine</span> <span class="n">cmd</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="n">callable</span><span class="o">);</span>
@@ -6028,6 +6123,44 @@ The sections below show some common usages and how the same can be achieved with
     <span class="n">ex</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">(</span><span class="n">cmd</span><span class="o">.</span><span class="na">getErr</span><span class="o">());</span>
     <span class="k">return</span> <span class="n">cmd</span><span class="o">.</span><span class="na">getCommandSpec</span><span class="o">().</span><span class="na">exitCodeOnExecutionException</span><span class="o">();</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">callable</span><span class="p">:</span> <span class="nc">Callable</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;</span> <span class="p">=</span> <span class="nc">MyCallable</span><span class="p">()</span>
+<span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="n">callable</span><span class="p">)</span>
+<span class="k">return</span> <span class="k">try</span> <span class="p">{</span>
+    <span class="kd">val</span> <span class="py">parseResult</span> <span class="p">=</span> <span class="n">cmd</span><span class="p">.</span><span class="nf">parseArgs</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="c1">// Did user request usage help (--help)?</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">isUsageHelpRequested</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">cmd</span><span class="p">.</span><span class="nf">usage</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="k">out</span><span class="p">)</span>
+        <span class="n">cmd</span><span class="p">.</span><span class="n">commandSpec</span><span class="p">.</span><span class="nf">exitCodeOnUsageHelp</span><span class="p">()</span>
+
+        <span class="c1">// Did user request version help (--version)?</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">isVersionHelpRequested</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">cmd</span><span class="p">.</span><span class="nf">printVersionHelp</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="k">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cmd</span><span class="p">.</span><span class="n">commandSpec</span><span class="p">.</span><span class="nf">exitCodeOnVersionHelp</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="c1">// invoke the business logic</span>
+    <span class="kd">val</span> <span class="py">result</span> <span class="p">=</span> <span class="n">callable</span><span class="p">.</span><span class="nf">call</span><span class="p">()</span>
+    <span class="n">cmd</span><span class="p">.</span><span class="nf">setExecutionResult</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="n">cmd</span><span class="p">.</span><span class="n">commandSpec</span><span class="p">.</span><span class="nf">exitCodeOnSuccess</span><span class="p">()</span>
+
+    <span class="c1">// invalid user input: print error message and usage help</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">ex</span><span class="p">:</span> <span class="nc">ParameterException</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">cmd</span><span class="p">.</span><span class="n">err</span><span class="p">.</span><span class="nf">println</span><span class="p">(</span><span class="n">ex</span><span class="p">.</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(!</span><span class="nc">UnmatchedArgumentException</span><span class="p">.</span><span class="nf">printSuggestions</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">cmd</span><span class="p">.</span><span class="n">err</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">ex</span><span class="p">.</span><span class="n">commandLine</span><span class="p">.</span><span class="nf">usage</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="n">cmd</span><span class="p">.</span><span class="n">commandSpec</span><span class="p">.</span><span class="nf">exitCodeOnInvalidInput</span><span class="p">()</span>
+
+    <span class="c1">// exception occurred in business logic</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">ex</span><span class="p">:</span> <span class="nc">Exception</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">ex</span><span class="p">.</span><span class="nf">printStackTrace</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">err</span><span class="p">)</span>
+    <span class="n">cmd</span><span class="p">.</span><span class="n">commandSpec</span><span class="p">.</span><span class="nf">exitCodeOnExecutionException</span><span class="p">()</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -6079,17 +6212,27 @@ Try 'grep --help' for more information.</pre>
 <div class="paragraph">
 <p>You can customize how your application handles invalid user input by setting a custom <code>IParameterExceptionHandler</code>:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyApp</span><span class="o">())</span>
     <span class="o">.</span><span class="na">setParameterExceptionHandler</span><span class="o">(</span><span class="k">new</span> <span class="nc">ShortErrorMessageHandler</span><span class="o">())</span>
     <span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyApp</span><span class="p">())</span>
+    <span class="p">.</span><span class="nf">setParameterExceptionHandler</span><span class="p">(</span><span class="nc">ShortErrorMessageHandler</span><span class="p">())</span>
+    <span class="p">.</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>Where the <code>IParameterExceptionHandler</code> implementation could be something like this:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">ShortErrorMessageHandler</span> <span class="kd">implements</span> <span class="nc">IParameterExceptionHandler</span> <span class="o">{</span>
 
@@ -6116,6 +6259,34 @@ Try 'grep --help' for more information.</pre>
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">ShortErrorMessageHandler</span> <span class="p">:</span> <span class="nc">IParameterExceptionHandler</span> <span class="p">{</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">handleParseException</span><span class="p">(</span><span class="n">ex</span><span class="p">:</span> <span class="nc">ParameterException</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;):</span> <span class="nc">Int</span> <span class="p">{</span>
+        <span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="n">ex</span><span class="p">.</span><span class="n">commandLine</span>
+        <span class="kd">val</span> <span class="py">err</span> <span class="p">=</span> <span class="n">cmd</span><span class="p">.</span><span class="n">err</span>
+
+        <span class="c1">// if tracing at DEBUG level, show the location of the issue</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s">"DEBUG"</span><span class="p">.</span><span class="nf">equals</span><span class="p">(</span><span class="nc">System</span><span class="p">.</span><span class="nf">getProperty</span><span class="p">(</span><span class="s">"picocli.trace"</span><span class="p">),</span> <span class="n">ignoreCase</span> <span class="p">=</span> <span class="k">true</span><span class="p">))</span> <span class="p">{</span>
+            <span class="n">err</span><span class="p">.</span><span class="nf">println</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">colorScheme</span><span class="p">.</span><span class="nf">stackTraceText</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
+        <span class="p">}</span>
+
+        <span class="n">err</span><span class="p">.</span><span class="nf">println</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">colorScheme</span><span class="p">.</span><span class="nf">errorText</span><span class="p">(</span><span class="n">ex</span><span class="p">.</span><span class="n">message</span><span class="p">))</span> <span class="c1">// bold red</span>
+        <span class="nc">UnmatchedArgumentException</span><span class="p">.</span><span class="nf">printSuggestions</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+        <span class="n">err</span><span class="p">.</span><span class="nf">print</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">help</span><span class="p">.</span><span class="nf">fullSynopsis</span><span class="p">())</span>
+
+        <span class="kd">val</span> <span class="py">spec</span> <span class="p">=</span> <span class="n">cmd</span><span class="p">.</span><span class="n">commandSpec</span>
+        <span class="n">err</span><span class="p">.</span><span class="nf">print</span><span class="p">(</span><span class="s">"Try '${spec.qualifiedName()} --help' for more information.%n"</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="k">if</span> <span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">exitCodeExceptionMapper</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span>
+            <span class="n">cmd</span><span class="p">.</span><span class="n">exitCodeExceptionMapper</span><span class="p">.</span><span class="nf">getExitCode</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+            <span class="k">else</span> <span class="n">spec</span><span class="p">.</span><span class="nf">exitCodeOnInvalidInput</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_business_logic_exceptions"><a class="anchor" href="#_business_logic_exceptions"></a>9.8.2. Business Logic Exceptions</h4>
@@ -6130,17 +6301,27 @@ This is sufficient for most applications.</p>
 <p>If you have designed your business logic to throw exceptions with user-facing error messages, you want to print this error message instead of the stack trace.
 This can be accomplished by installing a custom <code>IExecutionExceptionHandler</code>, like this:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyApp</span><span class="o">())</span>
     <span class="o">.</span><span class="na">setExecutionExceptionHandler</span><span class="o">(</span><span class="k">new</span> <span class="nc">PrintExceptionMessageHandler</span><span class="o">())</span>
     <span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyApp</span><span class="p">())</span>
+    <span class="p">.</span><span class="nf">setExecutionExceptionHandler</span><span class="p">(</span><span class="nc">PrintExceptionMessageHandler</span><span class="p">())</span>
+    <span class="p">.</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>Where the <code>IExecutionExceptionHandler</code> implementation could look something like this:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">PrintExceptionMessageHandler</span> <span class="kd">implements</span> <span class="nc">IExecutionExceptionHandler</span> <span class="o">{</span>
     <span class="kd">public</span> <span class="kt">int</span> <span class="nf">handleExecutionException</span><span class="o">(</span><span class="nc">Exception</span> <span class="n">ex</span><span class="o">,</span>
@@ -6155,6 +6336,24 @@ This can be accomplished by installing a custom <code>IExecutionExceptionHandler
                     <span class="o">:</span> <span class="n">cmd</span><span class="o">.</span><span class="na">getCommandSpec</span><span class="o">().</span><span class="na">exitCodeOnExecutionException</span><span class="o">();</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">PrintExceptionMessageHandler</span> <span class="p">:</span> <span class="nc">IExecutionExceptionHandler</span> <span class="p">{</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">handleExecutionException</span><span class="p">(</span><span class="n">ex</span><span class="p">:</span> <span class="nc">Exception</span><span class="p">,</span>
+                                          <span class="n">cmd</span><span class="p">:</span> <span class="nc">CommandLine</span><span class="p">,</span>
+                                          <span class="n">parseResult</span><span class="p">:</span> <span class="nc">ParseResult</span><span class="p">):</span> <span class="nc">Int</span> <span class="p">{</span>
+
+        <span class="c1">// bold red error message</span>
+        <span class="n">cmd</span><span class="p">.</span><span class="n">err</span><span class="p">.</span><span class="nf">println</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">colorScheme</span><span class="p">.</span><span class="nf">errorText</span><span class="p">(</span><span class="n">ex</span><span class="p">.</span><span class="n">message</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="k">if</span> <span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">exitCodeExceptionMapper</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span>
+            <span class="n">cmd</span><span class="p">.</span><span class="n">exitCodeExceptionMapper</span><span class="p">.</span><span class="nf">getExitCode</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+            <span class="k">else</span> <span class="n">cmd</span><span class="p">.</span><span class="n">commandSpec</span><span class="p">.</span><span class="nf">exitCodeOnExecutionException</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -14289,7 +14488,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.2<br>
-Last updated 2020-10-24 16:15:11 +0900
+Last updated 2020-10-25 07:16:00 +0900
 </div>
 </div>
 <style>
