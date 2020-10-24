@@ -3914,7 +3914,8 @@ Not only will picocli validate the input, it allows you to <a href="#_show_defau
 <div class="paragraph">
 <p>For <a href="#option-parameters-methods">@Option and @Parameters-annotated methods</a> and <a href="#command-methods">@Command-annotated methods</a>, there is no alternative but to use the <code>defaultValue</code> annotation attribute. For example, for an annotated interface:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">interface</span> <span class="nc">Spec</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-c"</span><span class="o">,</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"123"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"... ${DEFAULT-VALUE} ..."</span><span class="o">)</span>
@@ -3922,10 +3923,20 @@ Not only will picocli validate the input, it allows you to <a href="#_show_defau
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">interface</span> <span class="nc">Spec</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-c"</span><span class="p">],</span> <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"123"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"... \${DEFAULT-VALUE} ..."</span><span class="p">])</span>
+    <span class="k">fun</span> <span class="nf">count</span><span class="p">():</span> <span class="nc">Int</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>Example of using the <code>defaultValue</code> attribute in the option of a command method:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">CommandMethod</span> <span class="o">{</span>
     <span class="nd">@Command</span><span class="o">(</span><span class="n">description</span> <span class="o">=</span> <span class="s">"Do something."</span><span class="o">)</span>
@@ -3933,6 +3944,17 @@ Not only will picocli validate the input, it allows you to <a href="#_show_defau
         <span class="c1">// ...</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">CommandMethod</span> <span class="p">{</span>
+    <span class="nd">@Command</span><span class="p">(</span><span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Do something."</span><span class="p">])</span>
+    <span class="k">fun</span> <span class="nf">doit</span><span class="p">(</span><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-c"</span><span class="p">],</span> <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"123"</span><span class="p">)</span> <span class="n">count</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// ...</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -3944,10 +3966,18 @@ Not only will picocli validate the input, it allows you to <a href="#_show_defau
 <div class="paragraph">
 <p>For annotated fields, it is possible to declare the field with a value:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-c"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"The count (default: ${DEFAULT-VALUE})"</span><span class="o">)</span>
 <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">123</span><span class="o">;</span> <span class="c1">// default value is 123</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-c"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"The count (default: \${DEFAULT-VALUE})"</span><span class="p">])</span>
+<span class="kd">var</span> <span class="py">count</span> <span class="p">=</span> <span class="mi">123</span> <span class="c1">// default value is 123</span></code></pre>
 </div>
 </div>
 <div class="admonitionblock warning">
@@ -3980,9 +4010,17 @@ Not only will picocli validate the input, it allows you to <a href="#_show_defau
 <div class="paragraph">
 <p>Finally, you can specify a default provider in the <code>@Command</code> annotation:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">defaultValueProvider</span> <span class="o">=</span> <span class="nc">MyDefaultProvider</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">class</span> <span class="nc">MyCommand</span> <span class="c1">// ...</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">defaultValueProvider</span> <span class="p">=</span> <span class="nc">MyDefaultProvider</span><span class="o">::</span><span class="k">class</span><span class="p">)</span>
 <span class="kd">class</span> <span class="nc">MyCommand</span> <span class="c1">// ...</span></code></pre>
 </div>
 </div>
@@ -4024,12 +4062,22 @@ implementation that loads default values from a properties file.</p>
 <div class="paragraph">
 <p>By default, this implementation tries to find a properties file named <code>.${COMMAND-NAME}.properties</code> in the user home directory, where <code>${COMMAND-NAME}</code> is the name of the command. If a command has aliases in addition to its name, these aliases are also used to try to find the properties file. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">picocli.CommandLine.PropertiesDefaultProvider</span><span class="o">;</span>
 <span class="c1">// ...</span>
 <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"git"</span><span class="o">,</span> <span class="n">defaultValueProvider</span> <span class="o">=</span> <span class="nc">PropertiesDefaultProvider</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">Git</span> <span class="o">{</span> <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">picocli.CommandLine.PropertiesDefaultProvider;</span>
+<span class="c1">// ...</span>
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"git"</span><span class="p">,</span> <span class="n">defaultValueProvider</span> <span class="p">=</span> <span class="nc">PropertiesDefaultProvider</span><span class="o">::</span><span class="k">class</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">Git</span> <span class="p">{</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4039,12 +4087,22 @@ The location of the properties file can also be controlled with system property 
 <div class="paragraph">
 <p>The location of the properties file may also be specified programmatically. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">CommandLine</span> <span class="n">cmd</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyCommand</span><span class="o">());</span>
 <span class="nc">File</span> <span class="n">defaultsFile</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="s">"path/to/config/mycommand.properties"</span><span class="o">);</span>
 <span class="n">cmd</span><span class="o">.</span><span class="na">setDefaultValueProvider</span><span class="o">(</span><span class="k">new</span> <span class="nc">PropertiesDefaultProvider</span><span class="o">(</span><span class="n">defaultsFile</span><span class="o">));</span>
 <span class="n">cmd</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyCommand</span><span class="p">())</span>
+<span class="kd">val</span> <span class="py">defaultsFile</span> <span class="p">=</span> <span class="nc">File</span><span class="p">(</span><span class="s">"path/to/config/mycommand.properties"</span><span class="p">)</span>
+<span class="n">cmd</span><span class="p">.</span><span class="n">defaultValueProvider</span> <span class="p">=</span> <span class="nc">PropertiesDefaultProvider</span><span class="p">(</span><span class="n">defaultsFile</span><span class="p">)</span>
+<span class="n">cmd</span><span class="p">.</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="sect3">
@@ -4098,7 +4156,8 @@ If such an option is specified without a value on the command line, it is assign
 <div class="paragraph">
 <p>For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">FallbackValueDemo</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">,</span> <span class="n">arity</span> <span class="o">=</span> <span class="s">"0..1"</span><span class="o">,</span>
@@ -4113,6 +4172,24 @@ If such an option is specified without a value on the command line, it is assign
        <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">FallbackValueDemo</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">FallbackValueDemo</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">],</span> <span class="n">arity</span> <span class="p">=</span> <span class="s">"0..1"</span><span class="p">,</span>
+            <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"-1"</span><span class="p">,</span> <span class="n">fallbackValue</span> <span class="p">=</span> <span class="s">"-2"</span><span class="p">,</span>
+            <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Option with optional parameter. Default: \${DEFAULT-VALUE}, "</span> <span class="p">+</span>
+                           <span class="s">"if specified without parameter: \${FALLBACK-VALUE}"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="mi">0</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span> <span class="nf">println</span><span class="p">(</span><span class="s">"x = $x"</span><span class="p">)</span> <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">FallbackValueDemo</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4153,7 +4230,8 @@ and <code>ParseResult::matchedOptionValue</code> to get the (type-converted) val
 <div class="paragraph">
 <p>For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"defaults"</span><span class="o">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">version</span> <span class="o">=</span> <span class="s">"defaults 0.1"</span><span class="o">)</span>
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">DefaultValueDemo</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
@@ -4184,6 +4262,39 @@ and <code>ParseResult::matchedOptionValue</code> to get the (type-converted) val
         <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">DefaultValueDemo</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"defaults"</span><span class="p">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">version</span> <span class="p">=</span> <span class="p">[</span><span class="s">"defaults 0.1"</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">DefaultValueDemo</span><span class="p">&lt;</span><span class="nc">T</span><span class="p">&gt;</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="mi">10</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-y"</span><span class="p">],</span> <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"20"</span><span class="p">)</span>
+    <span class="kd">var</span> <span class="py">y</span> <span class="p">=</span> <span class="mi">0</span>
+
+    <span class="nd">@Spec</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">spec</span><span class="p">:</span> <span class="nc">CommandSpec</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">val</span> <span class="py">pr</span><span class="p">:</span> <span class="nc">ParseResult</span> <span class="p">=</span> <span class="n">spec</span><span class="p">.</span><span class="nf">commandLine</span><span class="p">().</span><span class="n">parseResult</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">option</span> <span class="k">in</span> <span class="n">spec</span><span class="p">.</span><span class="nf">options</span><span class="p">())</span> <span class="p">{</span>
+            <span class="kd">val</span> <span class="py">name</span> <span class="p">=</span> <span class="n">option</span><span class="p">.</span><span class="nf">longestName</span><span class="p">()</span>
+            <span class="nf">println</span><span class="p">(</span><span class="s">"$name was specified: ${pr.hasMatchedOption(option)}"</span><span class="p">)</span>
+            <span class="nf">println</span><span class="p">(</span><span class="s">"$name=${pr.matchedOptionValue(name, -1)} "</span> <span class="p">+</span>
+                    <span class="s">"(-1 means this option was not matched on command line)"</span><span class="p">)</span>
+            <span class="nf">println</span><span class="p">(</span><span class="s">"$name=${option.getValue&lt;T&gt;()} (arg value or default)"</span><span class="p">)</span>
+            <span class="nf">println</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">DefaultValueDemo</span><span class="p">&lt;</span><span class="nc">Any</span><span class="p">&gt;()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -5337,15 +5448,23 @@ The application may need to do some programmatic validation in such cases.</p>
 <div class="paragraph">
 <p>Picocli 4.0 introduces an <code>execute</code> method for handling all of the above scenarios in a single line of code. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyApp</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyApp</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>With the <code>execute</code> method, application code can be <strong>extremely compact</strong>:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><table class="linenotable"><tbody><tr><td class="linenos gl"><pre class="lineno"> 1
  2
@@ -5377,6 +5496,42 @@ The application may need to do some programmatic validation in such cases.</p>
         <span class="nc">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyApp</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">));</span>
     <span class="o">}</span>
 <span class="o">}</span>
+</pre></td></tr></tbody></table></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><table class="linenotable"><tbody><tr><td class="linenos gl"><pre class="lineno"> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+</pre></td><td class="code"><pre><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"myapp"</span><span class="p">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">version</span> <span class="p">=</span> <span class="p">[</span><span class="s">"1.0"</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">MyApp</span> <span class="p">:</span> <span class="nc">Callable</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;</span> <span class="p">{</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="mi">0</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">call</span><span class="p">():</span> <span class="nc">Int</span> <span class="p">{</span> <span class="c1">// business logic</span>
+        <span class="nf">println</span><span class="p">(</span><span class="s">"x=$x"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">123</span> <span class="c1">// exit code</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span> <span class="c1">// bootstrap the application</span>
+    <span class="nf">exitProcess</span><span class="p">(</span><span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyApp</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">))</span>
+<span class="p">}</span>
 </pre></td></tr></tbody></table></code></pre>
 </div>
 </div>
@@ -5421,12 +5576,22 @@ The <code>execute</code> method replaces the older <code>run</code>, <code>call<
 <div class="paragraph">
 <p>The <code>CommandLine.execute</code> method introduced in picocli 4.0 returns an <code>int</code>, and applications can use this return value to call <code>System.exit</code> if desired. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">...</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
   <span class="kt">int</span> <span class="n">exitCode</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyApp</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
   <span class="nc">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="n">exitCode</span><span class="o">);</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="kd">val</span> <span class="py">exitCode</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyApp</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+    <span class="nf">exitProcess</span><span class="p">(</span><span class="n">exitCode</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="admonitionblock caution">
@@ -5447,7 +5612,8 @@ Older versions of picocli had some limited exit code support where picocli would
 <div class="paragraph">
 <p><code>@Command</code>-annotated classes that implement <code>Callable</code> and <code>@Command</code>-<a href="#command-methods">annotated methods</a> can simply return an <code>int</code> or <code>Integer</code>, and this value will be returned from <code>CommandLine.execute</code>. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"greet"</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">Greet</span> <span class="kd">implements</span> <span class="nc">Callable</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">&gt;</span> <span class="o">{</span>
@@ -5468,10 +5634,33 @@ Older versions of picocli had some limited exit code support where picocli would
 <span class="k">assert</span> <span class="mi">2</span> <span class="o">==</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">Greet</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="s">"shout"</span><span class="o">);</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"greet"</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">Greet</span> <span class="p">:</span> <span class="nc">Callable</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;</span> <span class="p">{</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">call</span><span class="p">():</span> <span class="nc">Int</span> <span class="p">{</span>
+        <span class="nf">println</span><span class="p">(</span><span class="s">"hi"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">1</span>
+    <span class="p">}</span>
+
+    <span class="c1">// define a "shout" subcommand with a @Command-annotated method</span>
+    <span class="nd">@Command</span>
+    <span class="k">fun</span> <span class="nf">shout</span><span class="p">():</span> <span class="nc">Int</span> <span class="p">{</span>
+        <span class="nf">println</span><span class="p">(</span><span class="s">"HI!"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">2</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nf">assert</span><span class="p">(</span><span class="mi">1</span> <span class="p">==</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">Greet</span><span class="p">()).</span><span class="nf">execute</span><span class="p">())</span>
+<span class="nf">assert</span><span class="p">(</span><span class="mi">2</span> <span class="p">==</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">Greet</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(</span><span class="s">"shout"</span><span class="p">))</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>Commands with a user object that implements <code>Runnable</code> can implement the <code>IExitCodeGenerator</code> interface to generate an exit code. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"wave"</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">Gesture</span> <span class="kd">implements</span> <span class="nc">Runnable</span><span class="o">,</span> <span class="nc">IExitCodeGenerator</span> <span class="o">{</span>
@@ -5488,13 +5677,32 @@ Older versions of picocli had some limited exit code support where picocli would
 <span class="k">assert</span> <span class="mi">3</span> <span class="o">==</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">Gesture</span><span class="o">()).</span><span class="na">execute</span><span class="o">();</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"wave"</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">Gesture</span> <span class="p">:</span> <span class="nc">Runnable</span><span class="p">,</span> <span class="nc">IExitCodeGenerator</span> <span class="p">{</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nf">println</span><span class="p">(</span><span class="s">"wave"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">getExitCode</span><span class="p">():</span> <span class="nc">Int</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">3</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nf">assert</span><span class="p">(</span><span class="mi">3</span> <span class="p">==</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">Gesture</span><span class="p">()).</span><span class="nf">execute</span><span class="p">())</span></code></pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_exception_exit_codes"><a class="anchor" href="#_exception_exit_codes"></a>9.3. Exception Exit Codes</h3>
 <div class="paragraph">
 <p>By default, the <code>execute</code> method returns <code>CommandLine.ExitCode.OK</code> (<code>0</code>) on success, <code>CommandLine.ExitCode.SOFTWARE</code> (<code>1</code>) when an exception occurred in the Runnable, Callable or command method, and <code>CommandLine.ExitCode.USAGE</code> (<code>2</code>) for invalid input. (These are common values according to <a href="https://stackoverflow.com/questions/1101957/are-there-any-standard-exit-status-codes-in-linux/40484670#40484670">this StackOverflow answer</a>). This can be customized with the <code>@Command</code> annotation. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java / Kotlin</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">exitCodeOnInvalidInput</span> <span class="o">=</span> <span class="mi">123</span><span class="o">,</span>
    <span class="n">exitCodeOnExecutionException</span> <span class="o">=</span> <span class="mi">456</span><span class="o">)</span></code></pre>
@@ -5503,7 +5711,8 @@ Older versions of picocli had some limited exit code support where picocli would
 <div class="paragraph">
 <p>Additionally, applications can configure a <code>IExitCodeExceptionMapper</code> to map a specific exception to an exit code:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">MyMapper</span> <span class="kd">implements</span> <span class="nc">IExitCodeExceptionMapper</span> <span class="o">{</span>
     <span class="nd">@Override</span>
@@ -5514,6 +5723,18 @@ Older versions of picocli had some limited exit code support where picocli would
         <span class="k">return</span> <span class="mi">1</span><span class="o">;</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">MyMapper</span> <span class="p">:</span> <span class="nc">IExitCodeExceptionMapper</span> <span class="p">{</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">getExitCode</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="nc">Throwable</span><span class="p">):</span> <span class="nc">Int</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">if</span> <span class="p">(</span><span class="n">t</span> <span class="k">is</span> <span class="nc">FileNotFoundException</span><span class="p">)</span> <span class="p">{</span>
+            <span class="mi">74</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="mi">1</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -5587,8 +5808,11 @@ The sections below show some common usages and how the same can be achieved with
 </div>
 <div class="sect3">
 <h4 id="_customizing_output_streams_and_ansi_settings"><a class="anchor" href="#_customizing_output_streams_and_ansi_settings"></a>9.6.1. Customizing Output Streams and ANSI settings</h4>
-<div class="listingblock">
-<div class="title">Before:</div>
+<div class="paragraph">
+<p>Before:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">PrintStream</span> <span class="n">out</span> <span class="o">=</span> <span class="c1">// output stream for user-requested help</span>
 <span class="nc">PrintStream</span> <span class="n">err</span> <span class="o">=</span> <span class="c1">// output stream for error messages</span>
@@ -5596,8 +5820,20 @@ The sections below show some common usages and how the same can be achieved with
 <span class="nc">CommandLine</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyRunnable</span><span class="o">(),</span> <span class="n">out</span><span class="o">,</span> <span class="n">err</span><span class="o">,</span> <span class="n">ansi</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span></code></pre>
 </div>
 </div>
-<div class="listingblock">
-<div class="title">After:</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">out</span><span class="p">:</span> <span class="nc">PrintStream</span> <span class="p">=</span> <span class="c1">// output stream for user-requested help</span>
+<span class="kd">val</span> <span class="py">err</span><span class="p">:</span> <span class="nc">PrintStream</span> <span class="p">=</span> <span class="c1">// output stream for error messages</span>
+<span class="kd">val</span> <span class="py">ansi</span><span class="p">:</span> <span class="nc">Ansi</span> <span class="p">=</span> <span class="c1">// to use ANSI colors and styles or not</span>
+<span class="nc">CommandLine</span><span class="p">.</span><span class="nf">run</span><span class="p">(</span><span class="nc">MyRunnable</span><span class="p">(),</span> <span class="k">out</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">ansi</span><span class="p">,</span> <span class="p">*</span><span class="n">args</span><span class="p">)</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">PrintWriter</span> <span class="n">out</span> <span class="o">=</span> <span class="c1">// output stream for user-requested help</span>
 <span class="nc">PrintWriter</span> <span class="n">err</span> <span class="o">=</span> <span class="c1">// output stream for error messages</span>
@@ -5609,6 +5845,21 @@ The sections below show some common usages and how the same can be achieved with
         <span class="o">.</span><span class="na">setColorScheme</span><span class="o">(</span><span class="nc">Help</span><span class="o">.</span><span class="na">defaultColorScheme</span><span class="o">(</span><span class="n">ansi</span><span class="o">));</span>
 
 <span class="kt">int</span> <span class="n">exitCode</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">var</span> <span class="py">out</span><span class="p">:</span> <span class="nc">PrintWriter</span> <span class="p">=</span> <span class="c1">// output stream for user-requested help</span>
+<span class="kd">var</span> <span class="py">err</span><span class="p">:</span> <span class="nc">PrintWriter</span> <span class="p">=</span> <span class="c1">// output stream for error messages</span>
+<span class="kd">val</span> <span class="py">ansi</span><span class="p">:</span> <span class="nc">Ansi</span> <span class="p">=</span> <span class="c1">// to use ANSI colors and styles or not</span>
+
+<span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyRunnable</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">setOut</span><span class="p">(</span><span class="k">out</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">setErr</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">setColorScheme</span><span class="p">(</span><span class="nc">Help</span><span class="p">.</span><span class="nf">defaultColorScheme</span><span class="p">(</span><span class="n">ansi</span><span class="p">));</span>
+
+<span class="kd">val</span> <span class="py">exitCode</span> <span class="p">=</span> <span class="n">cmd</span><span class="p">.</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span></code></pre>
 </div>
 </div>
 </div>
@@ -5978,7 +6229,8 @@ The sections below show some examples.</p>
 <div class="paragraph">
 <p>The following example validates that the value specified for the <code>--prime</code> option is a prime number:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">SingleOptionValidationExample</span> <span class="o">{</span>
     <span class="kd">private</span> <span class="kt">int</span> <span class="n">prime</span><span class="o">;</span>
@@ -6005,6 +6257,34 @@ The sections below show some examples.</p>
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">SingleOptionValidationExample</span> <span class="p">{</span>
+    <span class="k">private</span> <span class="kd">var</span> <span class="py">prime</span> <span class="p">=</span> <span class="mi">0</span>
+
+    <span class="nd">@Spec</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">spec</span> <span class="p">:</span> <span class="nc">CommandSpec</span> <span class="c1">// injected by picocli</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-p"</span><span class="p">,</span> <span class="s">"--prime"</span><span class="p">],</span> <span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"NUMBER"</span><span class="p">)</span>
+    <span class="k">fun</span> <span class="nf">setPrimeNumber</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="py">invalid</span> <span class="p">=</span> <span class="k">false</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="k">in</span> <span class="mi">2</span><span class="o">..</span><span class="n">value</span> <span class="p">/</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="p">%</span> <span class="n">i</span> <span class="p">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">invalid</span> <span class="p">=</span> <span class="k">true</span>
+                <span class="k">break</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">invalid</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">throw</span> <span class="nc">ParameterException</span><span class="p">(</span><span class="n">spec</span><span class="p">.</span><span class="nf">commandLine</span><span class="p">(),</span>
+                <span class="nc">String</span><span class="p">.</span><span class="nf">format</span><span class="p">(</span><span class="s">"Invalid value '%s' for option '--prime': "</span> <span class="p">+</span>
+                              <span class="s">"value is not a prime number."</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+        <span class="p">}</span>
+        <span class="n">prime</span> <span class="p">=</span> <span class="n">value</span>
+    <span class="p">}</span>
+    <span class="c1">// ...</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_validating_option_combinations"><a class="anchor" href="#_validating_option_combinations"></a>10.2.2. Validating Option Combinations</h4>
@@ -6015,7 +6295,8 @@ One way to accomplish this is to perform such validation at the beginning of the
 <div class="paragraph">
 <p>The following example validates that at least one of the <code>--xml</code>, <code>--csv</code>, or <code>--json</code> options is specified:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"myapp"</span><span class="o">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">version</span> <span class="o">=</span> <span class="s">"myapp 0.1"</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">MultiOptionValidationExample</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
@@ -6049,6 +6330,41 @@ One way to accomplish this is to perform such validation at the beginning of the
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"myapp"</span><span class="p">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">version</span> <span class="p">=</span> <span class="p">[</span><span class="s">"myapp 0.1"</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">MultiOptionValidationExample</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--xml"</span><span class="p">])</span>  <span class="kd">var</span> <span class="py">xmlFiles</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;?</span> <span class="p">=</span> <span class="k">null</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--csv"</span><span class="p">])</span>  <span class="kd">var</span> <span class="py">csvFiles</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;?</span> <span class="p">=</span> <span class="k">null</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--json"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">jsonFiles</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;?</span> <span class="p">=</span> <span class="k">null</span>
+
+    <span class="nd">@Spec</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">spec</span> <span class="p">:</span> <span class="nc">CommandSpec</span> <span class="c1">// injected by picocli</span>
+
+     <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nf">validate</span><span class="p">()</span>
+
+        <span class="c1">// remaining business logic here</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="k">fun</span> <span class="nf">validate</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nf">missing</span><span class="p">(</span><span class="n">xmlFiles</span><span class="p">)</span> <span class="p">&amp;&amp;</span> <span class="nf">missing</span><span class="p">(</span><span class="n">csvFiles</span><span class="p">)</span> <span class="p">&amp;&amp;</span> <span class="nf">missing</span><span class="p">(</span><span class="n">jsonFiles</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">throw</span> <span class="nc">ParameterException</span><span class="p">(</span><span class="n">spec</span><span class="p">.</span><span class="nf">commandLine</span><span class="p">(),</span>
+                <span class="s">"Missing option: at least one of the "</span> <span class="p">+</span>
+                <span class="s">"'--xml', '--csv', or '--json' options must be specified."</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="k">fun</span> <span class="nf">missing</span><span class="p">(</span><span class="n">list</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="err">*</span><span class="p">&gt;?):</span> <span class="nc">Boolean</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">list</span> <span class="p">==</span> <span class="k">null</span> <span class="p">||</span> <span class="n">list</span><span class="p">.</span><span class="nf">isEmpty</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="nf">exitProcess</span><span class="p">(</span><span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MultiOptionValidationExample</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">))</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_jsr_380_beanvalidation"><a class="anchor" href="#_jsr_380_beanvalidation"></a>10.2.3. JSR-380 BeanValidation</h4>
@@ -6061,7 +6377,8 @@ One way to accomplish this is to perform such validation at the beginning of the
 <div class="paragraph">
 <p>The picocli wiki has a <a href="https://github.com/remkop/picocli/wiki/JSR-380-BeanValidation">full example</a>, below is a snippet:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">picocli.CommandLine</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">picocli.CommandLine.Model.CommandSpec</span><span class="o">;</span>
@@ -6071,8 +6388,6 @@ One way to accomplish this is to perform such validation at the beginning of the
 <span class="kn">import</span> <span class="nn">javax.validation.Validation</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">javax.validation.Validator</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">javax.validation.constraints.*</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.util.Arrays</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">java.util.Set</span><span class="o">;</span>
 
 <span class="c1">// Example inspired by https://www.baeldung.com/javax-validation</span>
@@ -6124,6 +6439,64 @@ One way to accomplish this is to perform such validation at the beginning of the
         <span class="o">}</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">picocli.CommandLine</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine.Model.CommandSpec</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine.*</span>
+
+<span class="k">import</span> <span class="nn">javax.validation.ConstraintViolation</span>
+<span class="k">import</span> <span class="nn">javax.validation.Validation</span>
+<span class="k">import</span> <span class="nn">javax.validation.Validator</span>
+<span class="k">import</span> <span class="nn">javax.validation.constraints.*</span>
+
+<span class="c1">// Example inspired by https://www.baeldung.com/javax-validation</span>
+<span class="kd">class</span> <span class="nc">User</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+
+    <span class="nd">@NotNull</span><span class="p">(</span><span class="n">message</span> <span class="p">=</span> <span class="s">"Name cannot be null"</span><span class="p">)</span>
+    <span class="nd">@CommandLine</span><span class="p">.</span><span class="nc">Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-n"</span><span class="p">,</span> <span class="s">"--name"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"mandatory"</span><span class="p">])</span>
+    <span class="k">private</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">name</span><span class="p">:</span> <span class="nc">String</span>
+
+    <span class="nd">@Min</span><span class="p">(</span><span class="n">value</span> <span class="p">=</span> <span class="mi">18</span><span class="p">,</span> <span class="n">message</span> <span class="p">=</span> <span class="s">"Age should not be less than 18"</span><span class="p">)</span>
+    <span class="nd">@Max</span><span class="p">(</span><span class="n">value</span> <span class="p">=</span> <span class="mi">150</span><span class="p">,</span> <span class="n">message</span> <span class="p">=</span> <span class="s">"Age should not be greater than 150"</span><span class="p">)</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-a"</span><span class="p">,</span> <span class="s">"--age"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"between 18-150"</span><span class="p">])</span>
+    <span class="k">private</span> <span class="kd">var</span> <span class="py">age</span> <span class="p">=</span> <span class="mi">0</span>
+
+    <span class="nd">@Email</span><span class="p">(</span><span class="n">message</span> <span class="p">=</span> <span class="s">"Email should be valid"</span><span class="p">)</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-e"</span><span class="p">,</span> <span class="s">"--email"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"valid email"</span><span class="p">])</span>
+    <span class="k">private</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">email</span><span class="p">:</span> <span class="nc">String</span>
+
+    <span class="nd">@Spec</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">spec</span><span class="p">:</span> <span class="nc">CommandSpec</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">toString</span><span class="p">():</span> <span class="nc">String</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s">"User{name=$name, age=$age, email=$email}"</span>
+    <span class="p">}</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nf">validate</span><span class="p">()</span>
+
+        <span class="c1">// remaining business logic here</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="k">fun</span> <span class="nf">validate</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">val</span> <span class="py">validator</span><span class="p">:</span> <span class="nc">Validator</span> <span class="p">=</span> <span class="nc">Validation</span><span class="p">.</span><span class="nf">buildDefaultValidatorFactory</span><span class="p">().</span><span class="n">validator</span>
+        <span class="kd">val</span> <span class="py">violations</span><span class="p">:</span> <span class="nc">Set</span><span class="p">&lt;</span><span class="nc">ConstraintViolation</span><span class="p">&lt;</span><span class="nc">User</span><span class="p">&gt;&gt;</span> <span class="p">=</span> <span class="n">validator</span><span class="p">.</span><span class="nf">validate</span><span class="p">(</span><span class="k">this</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">violations</span><span class="p">.</span><span class="nf">isNotEmpty</span><span class="p">())</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="py">errorMsg</span> <span class="p">=</span> <span class="s">""</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">violation</span> <span class="k">in</span> <span class="n">violations</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">errorMsg</span> <span class="p">+=</span> <span class="s">"ERROR: ${violation.message}\n"</span>
+            <span class="p">}</span>
+            <span class="k">throw</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nc">ParameterException</span><span class="p">(</span><span class="n">spec</span><span class="p">.</span><span class="nf">commandLine</span><span class="p">(),</span> <span class="n">errorMsg</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">User</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -13916,7 +14289,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.2<br>
-Last updated 2020-10-21 06:54:47 +0900
+Last updated 2020-10-24 16:15:11 +0900
 </div>
 </div>
 <style>
