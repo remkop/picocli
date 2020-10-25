@@ -34,9 +34,8 @@ import java.lang.annotation.Target;
  * Also, any {@link picocli.CommandLine.Command} annotation on the same variable or import statement will be added to
  * the script class. With the {@code @Command} annotation scripts can customize elements shown in the usage message
  * like command name, description, headers, footers etc.
- * </p><p>
- * Example usage:
  * </p>
+ * <h1>Example usage</h1>
  * <pre>
  * &#64;Command(name = "myCommand", description = "does something special")
  * &#64;PicocliScript2
@@ -62,8 +61,10 @@ import java.lang.annotation.Target;
  * Otherwise, this annotation works similar to the Groovy built-in {@link groovy.transform.BaseScript}.
  * Using this annotation will override the base script set by Groovy compiler or
  * {@link org.codehaus.groovy.control.CompilerConfiguration} of {@link groovy.lang.GroovyShell}.
- * </p><p>
- * To customize further, a base script class extending {@link PicocliBaseScript2}
+ * </p>
+ * <h1>Customizing</h1>
+ * <p>
+ * To customize, a base script class extending {@link PicocliBaseScript2}
  * may be specified as the value of this annotation, for example:
  * </p><pre>
  * &#64;PicocliScript2(com.mycompany.MyScriptBaseClass)
@@ -78,6 +79,7 @@ import java.lang.annotation.Target;
  * import com.mycompany.MyScriptBaseClass
  * &#64;PicocliScript2 MyScriptBaseClass theScript;
  * </pre>
+ * <h1>PicocliBaseScript2 vs PicocliBaseScript</h1>
  * <p>
  * This class has the following improvements over {@link PicocliScript}:
  * </p>

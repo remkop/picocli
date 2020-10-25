@@ -21,8 +21,9 @@ import java.util.concurrent.Callable;
  * Scripts may install this base script via the {@link PicocliScript2} annotation or via the standard Groovy
  * {@code @groovy.transform.BaseScript(picocli.groovy.PicocliBaseScript2)} annotation, but
  * the {@code @PicocliScript2} annotation is preferred since it enables scripts to use the
- * {@code @Command} annotation. Example usage:
+ * {@code @Command} annotation.
  * </p>
+ * <h1>Example usage</h1>
  * <pre>
  * &#64;Command(name = "myCommand", description = "does something special")
  * &#64;PicocliScript2
@@ -38,7 +39,9 @@ import java.util.concurrent.Callable;
  * </p><p>
  * See the {@link #run()} method for a detailed break-down of the steps the base class takes
  * before the statements in the script body are executed.
- * </p><p>
+ * </p>
+ * <h1>PicocliBaseScript2 vs PicocliBaseScript</h1>
+ * <p>
  * This class has the following improvements over {@link PicocliBaseScript}:
  * </p>
  * <ul>
@@ -89,7 +92,7 @@ public abstract class PicocliBaseScript2 extends Script implements Callable<Obje
      *   <li>The {@link CommandLine#execute(String...)} method is called with the script arguments.
      *     This initialises all {@code @Field} variables annotated with {@link CommandLine.Option} or
      *     {@link CommandLine.Parameters}, unless the user input was invalid.</li>
-     *   <li>If the user input was invalid, the command line arguments are printed to standard err, followed by,
+     *   <li>If the user input was invalid, the command line arguments are printed to standard err, followed by
      *     an error message and the usage message.
      *     Then, the script exits.
      *     This may be customized by overriding {@link #customize(CommandLine)} and setting a custom
@@ -104,8 +107,10 @@ public abstract class PicocliBaseScript2 extends Script implements Callable<Obje
      *   <li>If an exception occurs during execution, this exception is rethrown.</li>
      * </ol>
      * <h1>Exit Code</h1>
+     * <p>After execution, the {@code PicocliBaseScript2} class sets the exit code in the {@code exitCode} property of the script.</p>
      * <p>
-     *     Scripts that want to control the exit code need to override the {@link #run()} method and call {@code System.exit}.
+     *     Scripts that want to control the exit code of the process executing the script
+     *     need to override the {@link #run()} method and call {@code System.exit}.
      *     For example:
      * </p><pre>{@code
      * @Override
