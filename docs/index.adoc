@@ -1864,7 +1864,7 @@ class DefaultValueDemo<T> : Runnable {
     var y = 0
 
     @Spec lateinit var spec: CommandSpec
-    
+
     override fun run() {
         val pr: ParseResult = spec.commandLine().parseResult
 
@@ -2241,7 +2241,8 @@ Picocli will instantiate this class when needed to capture command line argument
 
 Annotate a field or method with `@ArgGroup(exclusive = true)` to create a group of mutually exclusive options and positional parameters. For example:
 
-[source, java]
+.Java
+[source, java,role="primary"]
 ----
 @Command(name = "exclusivedemo")
 public class MutuallyExclusiveOptionsDemo {
@@ -2253,6 +2254,23 @@ public class MutuallyExclusiveOptionsDemo {
         @Option(names = "-a", required = true) int a;
         @Option(names = "-b", required = true) int b;
         @Option(names = "-c", required = true) int c;
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "exclusivedemo")
+class MutuallyExclusiveOptionsDemo {
+
+    @ArgGroup(exclusive = true, multiplicity = "1")
+    lateinit var exclusive: Exclusive
+
+    class Exclusive {
+        @Option(names = ["-a"], required = true) var a = 0
+        @Option(names = ["-b"], required = true) var b = 0
+        @Option(names = ["-c"], required = true) var c = 0
     }
 }
 ----
@@ -2273,11 +2291,12 @@ When one of the options in the group is matched, picocli creates an instance of 
 
 Note that the options are defined as `required = true`; this means required _within the group_, not required within the command.
 
-CAUTION: From picocli 4.1.2, all options in an exclusive group are automatically considered required, even if they are not marked as `required = true` in the annotations. Applications using older versions of picocli should mark all options in exclusive groups as required.
+CAUTION: As of picocli 4.1.2, all options in an exclusive group are automatically considered required, even if they are not marked as `required = true` in the annotations. Applications using older versions of picocli should mark all options in exclusive groups as required.
 
 Picocli will validate the arguments and throw a `MutuallyExclusiveArgsException` if multiple mutually exclusive arguments were specified. For example:
 
-[source, java]
+.Java
+[source,java,role="primary"]
 ----
 MutuallyExclusiveOptionsDemo example = new MutuallyExclusiveOptionsDemo();
 CommandLine cmd = new CommandLine(example);
@@ -2287,6 +2306,19 @@ try {
 } catch (MutuallyExclusiveArgsException ex) {
     assert "Error: -a=<a>, -b=<b> are mutually exclusive (specify only one)"
             .equals(ex.getMessage());
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val example = MutuallyExclusiveOptionsDemo()
+val cmd = CommandLine(example)
+
+try {
+    cmd.parseArgs("-a=1", "-b=2")
+} catch (ex: MutuallyExclusiveArgsException) {
+    assert("Error: -a=<a>, -b=<b> are mutually exclusive (specify only one)" == ex.message)
 }
 ----
 
@@ -2302,7 +2334,8 @@ For optional groups (groups with `multiplicity = "0..1"` - the default) this mea
 
 Annotate a field or method with `@ArgGroup(exclusive = false)` to create a group of dependent options and positional parameters that must co-occur. For example:
 
-[source, java]
+.Java
+[source, java,role="primary"]
 ----
 @Command(name = "co-occur")
 public class DependentOptionsDemo {
@@ -2314,6 +2347,23 @@ public class DependentOptionsDemo {
         @Option(names = "-a", required = true) int a;
         @Option(names = "-b", required = true) int b;
         @Option(names = "-c", required = true) int c;
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "co-occur")
+class DependentOptionsDemo {
+
+    @ArgGroup(exclusive = false)
+    lateinit var dependent: Dependent
+
+    class Dependent {
+        @Option(names = ["-a"], required = true) var a = 0
+        @Option(names = ["-b"], required = true) var b = 0
+        @Option(names = ["-c"], required = true) var c = 0
     }
 }
 ----
@@ -2335,7 +2385,8 @@ Note that the options are defined as `required = true`; this means required _wit
 
 Picocli will validate the arguments and throw a `MissingParameterException` if not all dependent arguments were specified. For example:
 
-[source, java]
+.Java
+[source, java,role="primary"]
 ----
 DependentOptionsDemo example = new DependentOptionsDemo();
 CommandLine cmd = new CommandLine(example);
@@ -2344,6 +2395,19 @@ try {
     cmd.parseArgs("-a=1", "-b=2");
 } catch (MissingParameterException ex) {
     assert "Error: Missing required argument(s): -c=<c>".equals(ex.getMessage());
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val example = DependentOptionsDemo()
+val cmd = CommandLine(example)
+
+try {
+    cmd.parseArgs("-a=1", "-b=2")
+} catch (ex: MissingParameterException) {
+    assert("Error: Missing required argument(s): -c=<c>" == ex.message)
 }
 ----
 
@@ -2357,7 +2421,8 @@ In mutually dependent groups it is possible to have one or more options that are
 It is useful to be able to define a co-occurring group as `(-a -b [-c])` so that both `-a -b -c` and `-a -b` are valid on the command line, but not `-a -c` for example.
 This can be implemented by marking the optional option with `required = false`, as in the below example:
 
-[source, java]
+.Java
+[source, java,role="primary"]
 ----
 @Command(name = "co-occur-with-optional-options")
 public class DependentWithOptionalOptionsDemo {
@@ -2366,9 +2431,26 @@ public class DependentWithOptionalOptionsDemo {
     DependentWithOptionalOptions group;
 
     static class DependentWithOptionalOptions {
-        @Option(names = "-a", required = true) int a;
-        @Option(names = "-b", required = true) int b;
+        @Option(names = "-a", required = true)  int a;
+        @Option(names = "-b", required = true)  int b;
         @Option(names = "-c", required = false) int c;
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "co-occur-with-optional-options")
+class DependentWithOptionalOptionsDemo {
+
+    @ArgGroup(exclusive = false, multiplicity = "1")
+    lateinit var group: DependentWithOptionalOptions
+
+    class DependentWithOptionalOptions {
+        @Option(names = ["-a"], required = true)  var a = 0
+        @Option(names = ["-b"], required = true)  var b = 0
+        @Option(names = ["-c"], required = false) var c = 0
     }
 }
 ----
@@ -2387,7 +2469,8 @@ This works for mutually exclusive or co-occurring groups, but it is also possibl
 
 Annotate a field or method with `@ArgGroup(validate = false)` to create a group for display purposes only. For example:
 
-[source, java]
+.Java
+[source, java,role="primary"]
 ----
 @Command(name = "sectiondemo", description = "Section demo")
 public class OptionSectionDemo {
@@ -2407,12 +2490,42 @@ public class OptionSectionDemo {
     static class Section2 {
         @Option(names = "-x", description = "Option X") int x;
         @Option(names = "-y", description = "Option Y") int y;
-        @Option(names = "-z", description = "Option X") int z;
+        @Option(names = "-z", description = "Option Z") int z;
     }
 
     public static void main(String[] args) {
         new CommandLine(new OptionSectionDemo()).usage(System.out);
     }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "sectiondemo", description = ["Section demo"])
+class OptionSectionDemo {
+
+    @ArgGroup(validate = false, heading = "This is the first section%n")
+    lateinit var section1: Section1
+
+    class Section1 {
+        @Option(names = ["-a"], description = ["Option A"]) var a = 0
+        @Option(names = ["-b"], description = ["Option B"]) var b = 0
+        @Option(names = ["-c"], description = ["Option C"]) var c = 0
+    }
+
+    @ArgGroup(validate = false, heading = "This is the second section%n")
+    lateinit var section2: Section2
+
+    class Section2 {
+        @Option(names = ["-x"], description = ["Option X"]) var x = 0
+        @Option(names = ["-y"], description = ["Option Y"]) var y = 0
+        @Option(names = ["-z"], description = ["Option Z"]) var z = 0
+    }
+}
+
+fun main(args: Array<String>) {
+    CommandLine(OptionSectionDemo()).usage(System.out)
 }
 ----
 
@@ -2428,7 +2541,7 @@ This is the first section
 This is the second section
   -x=<x>    Option X
   -y=<y>    Option Y
-  -z=<z>    Option X
+  -z=<z>    Option Z
 ----
 
 Note that the heading text must end with `%n` to insert a newline between the heading text and the first option.
@@ -2443,18 +2556,28 @@ Options that are not in any argument group are always displayed before the optio
 
 The ordering of option sections can be controlled with the `order` attribute. For example:
 
-[source, java]
+.Java
+[source, java,role="primary"]
 ----
 @ArgGroup(heading = "First%n", order = 1) Section1 section1;
 @ArgGroup(heading = "Next%n",  order = 2) Section2 section2;
 @ArgGroup(heading = "Last%n",  order = 3) Section3 section3;
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@ArgGroup(heading = "First%n", order = 1) lateinit var section1: Section1
+@ArgGroup(heading = "Next%n", order = 2)  lateinit var section2: Section2
+@ArgGroup(heading = "Last%n", order = 3)  lateinit var section3: Section3
+----
+
 === Repeating Composite Argument Groups
 
 The below example shows how groups can be composed of other groups, and how arrays and collections can be used to capture repeating groups (with a `multiplicity` greater than one):
 
-[source, java]
+.Java
+[source, java,role="primary"]
 ----
 @Command(name = "repeating-composite-demo")
 public class CompositeGroupDemo {
@@ -2484,6 +2607,35 @@ public class CompositeGroupDemo {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "repeating-composite-demo")
+class CompositeGroupDemo {
+    @ArgGroup(exclusive = false, multiplicity = "1..*") lateinit var composites: List<Composite>
+
+    class Composite {
+        @ArgGroup(exclusive = false, multiplicity = "0..1")
+        lateinit var dependent: Dependent
+
+        @ArgGroup(exclusive = true, multiplicity = "1")
+        lateinit var exclusive: Exclusive
+    }
+
+    class Dependent {
+        @Option(names = ["-a"], required = true) var a = 0
+        @Option(names = ["-b"], required = true) var b = 0
+        @Option(names = ["-c"], required = true) var c = 0
+    }
+
+    class Exclusive {
+        @Option(names = ["-x"], required = true) var x = false
+        @Option(names = ["-y"], required = true) var y = false
+        @Option(names = ["-z"], required = true) var z = false
+    }
+}
+----
+
 In the above example, the annotated `composites` field defines a composite group that must be specified at least once, and may be specified many times (`multiplicity = "1..*"`), on the command line. Notice that for multi-value groups the type of the `@ArgGroup`-annotated field must be a collection or an array to capture the multiple `Composite` instances that hold the values that were matched on the command line.
 
 The synopsis of this command is:
@@ -2498,7 +2650,8 @@ The `Composite` class itself contains two groups: an optional (`multiplicity = "
 
 The below example illustrates:
 
-[source, java]
+.Java
+[source, java,role="primary"]
 ----
 CompositeGroupDemo example = new CompositeGroupDemo();
 CommandLine cmd = new CommandLine(example);
@@ -2517,6 +2670,28 @@ assert c2.exclusive.y;
 assert c2.dependent.a == 2;
 assert c2.dependent.b == 2;
 assert c2.dependent.c == 2;
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val example = CompositeGroupDemo()
+val cmd = CommandLine(example)
+
+cmd.parseArgs("-x", "-a=1", "-b=1", "-c=1", "-a=2", "-b=2", "-c=2", "-y")
+assert(example.composites.size == 2)
+
+val c1 = example.composites[0]
+assert(c1.exclusive.x)
+assert(c1.dependent.a === 1)
+assert(c1.dependent.b === 1)
+assert(c1.dependent.c === 1)
+
+val c2 = example.composites[1]
+assert(c2.exclusive.y)
+assert(c2.dependent.a === 2)
+assert(c2.dependent.b === 2)
+assert(c2.dependent.c === 2)
 ----
 
 [CAUTION]
@@ -2540,12 +2715,15 @@ When options are used in argument groups, they can only define default values vi
 When defined this way, the `${DEFAULT-VALUE}` variable can be used to <<Show Default Values,show the default value>> in the description of options in an argument group. For example:
 
 .This works correctly: usage help will show the default value.
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 class GoodGroup {
     @Option(names = "-x", defaultValue = "123", description = "Default: ${DEFAULT-VALUE}")
     int x;
 }
+
 @Command(name = "good", description = "usage help shows the default value")
 class GoodExample {
     @ArgGroup GoodGroup goodGroup;
@@ -2553,6 +2731,25 @@ class GoodExample {
     public static void main(String[] args) {
         new CommandLine(new GoodExample()).usage(System.out);
     }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class GoodGroup {
+    @Option(names = ["-x"], defaultValue = "123", description = ["Default: \${DEFAULT-VALUE}"])
+    var x = 0
+}
+
+@Command(name = "good", description = ["usage help shows the default value"])
+class GoodExample {
+    @ArgGroup
+    lateinit var goodGroup: GoodGroup
+}
+
+fun main(args: Array<String>) {
+    CommandLine(GoodExample()).usage(System.out)
 }
 ----
 
@@ -2569,12 +2766,15 @@ usage help shows the default value
 Picocli will not be able to retrieve the default values that are defined by assigning a value in the declaration of an `@Option`-annotated field in a group. For example:
 
 .This does not work correctly: usage help shows `null` as the default value.
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 class BadGroup {
     @Option(names = "-x", description = "Default: ${DEFAULT-VALUE}")
-    int x = 123; // picocli cannot find this value until `BadGroup` is instantiated
+    int x = 123; // value not found until `BadGroup` is instantiated
 }
+
 @Command(name = "bad", description = "usage help shows the wrong default value")
 class BadExample {
     @ArgGroup BadGroup badGroup;
@@ -2582,6 +2782,25 @@ class BadExample {
     public static void main(String[] args) {
         new CommandLine(new BadExample()).usage(System.out);
     }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class BadGroup {
+    @Option(names = ["-x"], description = ["Default: \${DEFAULT-VALUE}"])
+    var x = 123 // value not found until `BadGroup` is instantiated
+}
+
+@Command(name = "bad", description = ["usage help shows wrong default value"])
+class BadExample {
+    @ArgGroup
+    lateinit var badGroup: BadGroup
+}
+
+fun main(args: Array<String>) {
+    CommandLine(BadExample()).usage(System.out)
 }
 ----
 
@@ -2600,7 +2819,8 @@ When a `@Parameters` positional parameter is part of a group, its `index` is the
 
 Below is an example of an application that uses a repeating group of positional parameters:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "grades", mixinStandardHelpOptions = true, version = "grades 1.0")
 public class Grades implements Runnable {
@@ -2621,6 +2841,30 @@ public class Grades implements Runnable {
     public static void main(String[] args) {
         System.exit(new CommandLine(new Grades()).execute(args));
     }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "grades", mixinStandardHelpOptions = true, version = ["grades 1.0"])
+class Grades : Runnable {
+
+    class StudentGrade {
+        @Parameters(index = "0") lateinit var name: String
+        @Parameters(index = "1") lateinit var grade: BigDecimal
+    }
+
+    @ArgGroup(exclusive = false, multiplicity = "1..*")
+    lateinit var gradeList: List<StudentGrade>
+
+    override fun run() {
+        gradeList.forEach { e -> println("${e.name}: ${e.grade}") }
+    }
+}
+
+fun main(args: Array<String>) {
+    System.exit(CommandLine(Grades()).execute(*args))
 }
 ----
 
