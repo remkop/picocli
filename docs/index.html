@@ -4879,7 +4879,8 @@ The field&#8217;s type refers to the class containing the options and positional
 <div class="paragraph">
 <p>Annotate a field or method with <code>@ArgGroup(exclusive = true)</code> to create a group of mutually exclusive options and positional parameters. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"exclusivedemo"</span><span class="o">)</span>
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">MutuallyExclusiveOptionsDemo</span> <span class="o">{</span>
@@ -4893,6 +4894,23 @@ The field&#8217;s type refers to the class containing the options and positional
         <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-c"</span><span class="o">,</span> <span class="n">required</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span> <span class="kt">int</span> <span class="n">c</span><span class="o">;</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"exclusivedemo"</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">MutuallyExclusiveOptionsDemo</span> <span class="p">{</span>
+
+    <span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">exclusive</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">multiplicity</span> <span class="p">=</span> <span class="s">"1"</span><span class="p">)</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">exclusive</span><span class="p">:</span> <span class="nc">Exclusive</span>
+
+    <span class="kd">class</span> <span class="nc">Exclusive</span> <span class="p">{</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-a"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="kd">var</span> <span class="py">a</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-b"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="kd">var</span> <span class="py">b</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-c"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="kd">var</span> <span class="py">c</span> <span class="p">=</span> <span class="mi">0</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4924,7 +4942,7 @@ In this example the group has <code>multiplicity = "1"</code>, so the group must
 <i class="fa icon-caution" title="Caution"></i>
 </td>
 <td class="content">
-From picocli 4.1.2, all options in an exclusive group are automatically considered required, even if they are not marked as <code>required = true</code> in the annotations. Applications using older versions of picocli should mark all options in exclusive groups as required.
+As of picocli 4.1.2, all options in an exclusive group are automatically considered required, even if they are not marked as <code>required = true</code> in the annotations. Applications using older versions of picocli should mark all options in exclusive groups as required.
 </td>
 </tr>
 </table>
@@ -4932,7 +4950,8 @@ From picocli 4.1.2, all options in an exclusive group are automatically consider
 <div class="paragraph">
 <p>Picocli will validate the arguments and throw a <code>MutuallyExclusiveArgsException</code> if multiple mutually exclusive arguments were specified. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">MutuallyExclusiveOptionsDemo</span> <span class="n">example</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">MutuallyExclusiveOptionsDemo</span><span class="o">();</span>
 <span class="nc">CommandLine</span> <span class="n">cmd</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="n">example</span><span class="o">);</span>
@@ -4943,6 +4962,19 @@ From picocli 4.1.2, all options in an exclusive group are automatically consider
     <span class="k">assert</span> <span class="s">"Error: -a=&lt;a&gt;, -b=&lt;b&gt; are mutually exclusive (specify only one)"</span>
             <span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">ex</span><span class="o">.</span><span class="na">getMessage</span><span class="o">());</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">example</span> <span class="p">=</span> <span class="nc">MutuallyExclusiveOptionsDemo</span><span class="p">()</span>
+<span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="n">example</span><span class="p">)</span>
+
+<span class="k">try</span> <span class="p">{</span>
+    <span class="n">cmd</span><span class="p">.</span><span class="nf">parseArgs</span><span class="p">(</span><span class="s">"-a=1"</span><span class="p">,</span> <span class="s">"-b=2"</span><span class="p">)</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">ex</span><span class="p">:</span> <span class="nc">MutuallyExclusiveArgsException</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nf">assert</span><span class="p">(</span><span class="s">"Error: -a=&lt;a&gt;, -b=&lt;b&gt; are mutually exclusive (specify only one)"</span> <span class="p">==</span> <span class="n">ex</span><span class="p">.</span><span class="n">message</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4970,7 +5002,8 @@ For optional groups (groups with <code>multiplicity = "0..1"</code> - the defaul
 <div class="paragraph">
 <p>Annotate a field or method with <code>@ArgGroup(exclusive = false)</code> to create a group of dependent options and positional parameters that must co-occur. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"co-occur"</span><span class="o">)</span>
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">DependentOptionsDemo</span> <span class="o">{</span>
@@ -4984,6 +5017,23 @@ For optional groups (groups with <code>multiplicity = "0..1"</code> - the defaul
         <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-c"</span><span class="o">,</span> <span class="n">required</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span> <span class="kt">int</span> <span class="n">c</span><span class="o">;</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"co-occur"</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">DependentOptionsDemo</span> <span class="p">{</span>
+
+    <span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">exclusive</span> <span class="p">=</span> <span class="k">false</span><span class="p">)</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">dependent</span><span class="p">:</span> <span class="nc">Dependent</span>
+
+    <span class="kd">class</span> <span class="nc">Dependent</span> <span class="p">{</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-a"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="kd">var</span> <span class="py">a</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-b"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="kd">var</span> <span class="py">b</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-c"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="kd">var</span> <span class="py">c</span> <span class="p">=</span> <span class="mi">0</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -5010,7 +5060,8 @@ In this example the group uses the default multiplicity, <code>multiplicity = "0
 <div class="paragraph">
 <p>Picocli will validate the arguments and throw a <code>MissingParameterException</code> if not all dependent arguments were specified. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">DependentOptionsDemo</span> <span class="n">example</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">DependentOptionsDemo</span><span class="o">();</span>
 <span class="nc">CommandLine</span> <span class="n">cmd</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="n">example</span><span class="o">);</span>
@@ -5020,6 +5071,19 @@ In this example the group uses the default multiplicity, <code>multiplicity = "0
 <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">MissingParameterException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
     <span class="k">assert</span> <span class="s">"Error: Missing required argument(s): -c=&lt;c&gt;"</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">ex</span><span class="o">.</span><span class="na">getMessage</span><span class="o">());</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">example</span> <span class="p">=</span> <span class="nc">DependentOptionsDemo</span><span class="p">()</span>
+<span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="n">example</span><span class="p">)</span>
+
+<span class="k">try</span> <span class="p">{</span>
+    <span class="n">cmd</span><span class="p">.</span><span class="nf">parseArgs</span><span class="p">(</span><span class="s">"-a=1"</span><span class="p">,</span> <span class="s">"-b=2"</span><span class="p">)</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">ex</span><span class="p">:</span> <span class="nc">MissingParameterException</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nf">assert</span><span class="p">(</span><span class="s">"Error: Missing required argument(s): -c=&lt;c&gt;"</span> <span class="p">==</span> <span class="n">ex</span><span class="p">.</span><span class="n">message</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="admonitionblock caution">
@@ -5046,7 +5110,8 @@ For optional groups (groups with <code>multiplicity = "0..1"</code> - the defaul
 <p>It is useful to be able to define a co-occurring group as <code>(-a -b [-c])</code> so that both <code>-a -b -c</code> and <code>-a -b</code> are valid on the command line, but not <code>-a -c</code> for example.
 This can be implemented by marking the optional option with <code>required = false</code>, as in the below example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"co-occur-with-optional-options"</span><span class="o">)</span>
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">DependentWithOptionalOptionsDemo</span> <span class="o">{</span>
@@ -5055,11 +5120,28 @@ This can be implemented by marking the optional option with <code>required = fal
     <span class="nc">DependentWithOptionalOptions</span> <span class="n">group</span><span class="o">;</span>
 
     <span class="kd">static</span> <span class="kd">class</span> <span class="nc">DependentWithOptionalOptions</span> <span class="o">{</span>
-        <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-a"</span><span class="o">,</span> <span class="n">required</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span> <span class="kt">int</span> <span class="n">a</span><span class="o">;</span>
-        <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-b"</span><span class="o">,</span> <span class="n">required</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span> <span class="kt">int</span> <span class="n">b</span><span class="o">;</span>
+        <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-a"</span><span class="o">,</span> <span class="n">required</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>  <span class="kt">int</span> <span class="n">a</span><span class="o">;</span>
+        <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-b"</span><span class="o">,</span> <span class="n">required</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>  <span class="kt">int</span> <span class="n">b</span><span class="o">;</span>
         <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-c"</span><span class="o">,</span> <span class="n">required</span> <span class="o">=</span> <span class="kc">false</span><span class="o">)</span> <span class="kt">int</span> <span class="n">c</span><span class="o">;</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"co-occur-with-optional-options"</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">DependentWithOptionalOptionsDemo</span> <span class="p">{</span>
+
+    <span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">exclusive</span> <span class="p">=</span> <span class="k">false</span><span class="p">,</span> <span class="n">multiplicity</span> <span class="p">=</span> <span class="s">"1"</span><span class="p">)</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">group</span><span class="p">:</span> <span class="nc">DependentWithOptionalOptions</span>
+
+    <span class="kd">class</span> <span class="nc">DependentWithOptionalOptions</span> <span class="p">{</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-a"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>  <span class="kd">var</span> <span class="py">a</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-b"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>  <span class="kd">var</span> <span class="py">b</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-c"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">false</span><span class="p">)</span> <span class="kd">var</span> <span class="py">c</span> <span class="p">=</span> <span class="mi">0</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -5082,7 +5164,8 @@ The <code>headingKey</code> attribute can be used to get the heading text from t
 <div class="paragraph">
 <p>Annotate a field or method with <code>@ArgGroup(validate = false)</code> to create a group for display purposes only. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"sectiondemo"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Section demo"</span><span class="o">)</span>
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">OptionSectionDemo</span> <span class="o">{</span>
@@ -5102,13 +5185,43 @@ The <code>headingKey</code> attribute can be used to get the heading text from t
     <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Section2</span> <span class="o">{</span>
         <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Option X"</span><span class="o">)</span> <span class="kt">int</span> <span class="n">x</span><span class="o">;</span>
         <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-y"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Option Y"</span><span class="o">)</span> <span class="kt">int</span> <span class="n">y</span><span class="o">;</span>
-        <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-z"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Option X"</span><span class="o">)</span> <span class="kt">int</span> <span class="n">z</span><span class="o">;</span>
+        <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-z"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Option Z"</span><span class="o">)</span> <span class="kt">int</span> <span class="n">z</span><span class="o">;</span>
     <span class="o">}</span>
 
     <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
         <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">OptionSectionDemo</span><span class="o">()).</span><span class="na">usage</span><span class="o">(</span><span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">);</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"sectiondemo"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Section demo"</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">OptionSectionDemo</span> <span class="p">{</span>
+
+    <span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">validate</span> <span class="p">=</span> <span class="k">false</span><span class="p">,</span> <span class="n">heading</span> <span class="p">=</span> <span class="s">"This is the first section%n"</span><span class="p">)</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">section1</span><span class="p">:</span> <span class="nc">Section1</span>
+
+    <span class="kd">class</span> <span class="nc">Section1</span> <span class="p">{</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-a"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Option A"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">a</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-b"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Option B"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">b</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-c"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Option C"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">c</span> <span class="p">=</span> <span class="mi">0</span>
+    <span class="p">}</span>
+
+    <span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">validate</span> <span class="p">=</span> <span class="k">false</span><span class="p">,</span> <span class="n">heading</span> <span class="p">=</span> <span class="s">"This is the second section%n"</span><span class="p">)</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">section2</span><span class="p">:</span> <span class="nc">Section2</span>
+
+    <span class="kd">class</span> <span class="nc">Section2</span> <span class="p">{</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Option X"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-y"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Option Y"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">y</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-z"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Option Z"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">z</span> <span class="p">=</span> <span class="mi">0</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">OptionSectionDemo</span><span class="p">()).</span><span class="nf">usage</span><span class="p">(</span><span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -5125,7 +5238,7 @@ This is the first section
 This is the second section
   -x=&lt;x&gt;    Option X
   -y=&lt;y&gt;    Option Y
-  -z=&lt;z&gt;    Option X</pre>
+  -z=&lt;z&gt;    Option Z</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -5155,11 +5268,20 @@ For optional groups (groups with <code>multiplicity = "0..1"</code> - the defaul
 <div class="paragraph">
 <p>The ordering of option sections can be controlled with the <code>order</code> attribute. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@ArgGroup</span><span class="o">(</span><span class="n">heading</span> <span class="o">=</span> <span class="s">"First%n"</span><span class="o">,</span> <span class="n">order</span> <span class="o">=</span> <span class="mi">1</span><span class="o">)</span> <span class="nc">Section1</span> <span class="n">section1</span><span class="o">;</span>
 <span class="nd">@ArgGroup</span><span class="o">(</span><span class="n">heading</span> <span class="o">=</span> <span class="s">"Next%n"</span><span class="o">,</span>  <span class="n">order</span> <span class="o">=</span> <span class="mi">2</span><span class="o">)</span> <span class="nc">Section2</span> <span class="n">section2</span><span class="o">;</span>
 <span class="nd">@ArgGroup</span><span class="o">(</span><span class="n">heading</span> <span class="o">=</span> <span class="s">"Last%n"</span><span class="o">,</span>  <span class="n">order</span> <span class="o">=</span> <span class="mi">3</span><span class="o">)</span> <span class="nc">Section3</span> <span class="n">section3</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">heading</span> <span class="p">=</span> <span class="s">"First%n"</span><span class="p">,</span> <span class="n">order</span> <span class="p">=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">section1</span><span class="p">:</span> <span class="nc">Section1</span>
+<span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">heading</span> <span class="p">=</span> <span class="s">"Next%n"</span><span class="p">,</span> <span class="n">order</span> <span class="p">=</span> <span class="mi">2</span><span class="p">)</span>  <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">section2</span><span class="p">:</span> <span class="nc">Section2</span>
+<span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">heading</span> <span class="p">=</span> <span class="s">"Last%n"</span><span class="p">,</span> <span class="n">order</span> <span class="p">=</span> <span class="mi">3</span><span class="p">)</span>  <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">section3</span><span class="p">:</span> <span class="nc">Section3</span></code></pre>
 </div>
 </div>
 </div>
@@ -5169,7 +5291,8 @@ For optional groups (groups with <code>multiplicity = "0..1"</code> - the defaul
 <div class="paragraph">
 <p>The below example shows how groups can be composed of other groups, and how arrays and collections can be used to capture repeating groups (with a <code>multiplicity</code> greater than one):</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"repeating-composite-demo"</span><span class="o">)</span>
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">CompositeGroupDemo</span> <span class="o">{</span>
@@ -5199,6 +5322,35 @@ For optional groups (groups with <code>multiplicity = "0..1"</code> - the defaul
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"repeating-composite-demo"</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">CompositeGroupDemo</span> <span class="p">{</span>
+    <span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">exclusive</span> <span class="p">=</span> <span class="k">false</span><span class="p">,</span> <span class="n">multiplicity</span> <span class="p">=</span> <span class="s">"1..*"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">composites</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">Composite</span><span class="p">&gt;</span>
+
+    <span class="kd">class</span> <span class="nc">Composite</span> <span class="p">{</span>
+        <span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">exclusive</span> <span class="p">=</span> <span class="k">false</span><span class="p">,</span> <span class="n">multiplicity</span> <span class="p">=</span> <span class="s">"0..1"</span><span class="p">)</span>
+        <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">dependent</span><span class="p">:</span> <span class="nc">Dependent</span>
+
+        <span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">exclusive</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">multiplicity</span> <span class="p">=</span> <span class="s">"1"</span><span class="p">)</span>
+        <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">exclusive</span><span class="p">:</span> <span class="nc">Exclusive</span>
+    <span class="p">}</span>
+
+    <span class="kd">class</span> <span class="nc">Dependent</span> <span class="p">{</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-a"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="kd">var</span> <span class="py">a</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-b"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="kd">var</span> <span class="py">b</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-c"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="kd">var</span> <span class="py">c</span> <span class="p">=</span> <span class="mi">0</span>
+    <span class="p">}</span>
+
+    <span class="kd">class</span> <span class="nc">Exclusive</span> <span class="p">{</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="k">false</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-y"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="kd">var</span> <span class="py">y</span> <span class="p">=</span> <span class="k">false</span>
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-z"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span> <span class="kd">var</span> <span class="py">z</span> <span class="p">=</span> <span class="k">false</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>In the above example, the annotated <code>composites</code> field defines a composite group that must be specified at least once, and may be specified many times (<code>multiplicity = "1..*"</code>), on the command line. Notice that for multi-value groups the type of the <code>@ArgGroup</code>-annotated field must be a collection or an array to capture the multiple <code>Composite</code> instances that hold the values that were matched on the command line.</p>
 </div>
@@ -5219,7 +5371,8 @@ For optional groups (groups with <code>multiplicity = "0..1"</code> - the defaul
 <div class="paragraph">
 <p>The below example illustrates:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">CompositeGroupDemo</span> <span class="n">example</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CompositeGroupDemo</span><span class="o">();</span>
 <span class="nc">CommandLine</span> <span class="n">cmd</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="n">example</span><span class="o">);</span>
@@ -5238,6 +5391,28 @@ For optional groups (groups with <code>multiplicity = "0..1"</code> - the defaul
 <span class="k">assert</span> <span class="n">c2</span><span class="o">.</span><span class="na">dependent</span><span class="o">.</span><span class="na">a</span> <span class="o">==</span> <span class="mi">2</span><span class="o">;</span>
 <span class="k">assert</span> <span class="n">c2</span><span class="o">.</span><span class="na">dependent</span><span class="o">.</span><span class="na">b</span> <span class="o">==</span> <span class="mi">2</span><span class="o">;</span>
 <span class="k">assert</span> <span class="n">c2</span><span class="o">.</span><span class="na">dependent</span><span class="o">.</span><span class="na">c</span> <span class="o">==</span> <span class="mi">2</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">example</span> <span class="p">=</span> <span class="nc">CompositeGroupDemo</span><span class="p">()</span>
+<span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="n">example</span><span class="p">)</span>
+
+<span class="n">cmd</span><span class="p">.</span><span class="nf">parseArgs</span><span class="p">(</span><span class="s">"-x"</span><span class="p">,</span> <span class="s">"-a=1"</span><span class="p">,</span> <span class="s">"-b=1"</span><span class="p">,</span> <span class="s">"-c=1"</span><span class="p">,</span> <span class="s">"-a=2"</span><span class="p">,</span> <span class="s">"-b=2"</span><span class="p">,</span> <span class="s">"-c=2"</span><span class="p">,</span> <span class="s">"-y"</span><span class="p">)</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">example</span><span class="p">.</span><span class="n">composites</span><span class="p">.</span><span class="n">size</span> <span class="p">==</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="kd">val</span> <span class="py">c1</span> <span class="p">=</span> <span class="n">example</span><span class="p">.</span><span class="n">composites</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">c1</span><span class="p">.</span><span class="n">exclusive</span><span class="p">.</span><span class="n">x</span><span class="p">)</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">c1</span><span class="p">.</span><span class="n">dependent</span><span class="p">.</span><span class="n">a</span> <span class="p">===</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">c1</span><span class="p">.</span><span class="n">dependent</span><span class="p">.</span><span class="n">b</span> <span class="p">===</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">c1</span><span class="p">.</span><span class="n">dependent</span><span class="p">.</span><span class="n">c</span> <span class="p">===</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="kd">val</span> <span class="py">c2</span> <span class="p">=</span> <span class="n">example</span><span class="p">.</span><span class="n">composites</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">c2</span><span class="p">.</span><span class="n">exclusive</span><span class="p">.</span><span class="n">y</span><span class="p">)</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">c2</span><span class="p">.</span><span class="n">dependent</span><span class="p">.</span><span class="n">a</span> <span class="p">===</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">c2</span><span class="p">.</span><span class="n">dependent</span><span class="p">.</span><span class="n">b</span> <span class="p">===</span> <span class="mi">2</span><span class="p">)</span>
+<span class="nf">assert</span><span class="p">(</span><span class="n">c2</span><span class="p">.</span><span class="n">dependent</span><span class="p">.</span><span class="n">c</span> <span class="p">===</span> <span class="mi">2</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="admonitionblock caution">
@@ -5274,13 +5449,14 @@ If the application assigned a non-<code>null</code> Collection in the field decl
 <div class="paragraph">
 <p>When defined this way, the <code>${DEFAULT-VALUE}</code> variable can be used to <a href="#_show_default_values">show the default value</a> in the description of options in an argument group. For example:</p>
 </div>
-<div class="listingblock">
-<div class="title">This works correctly: usage help will show the default value.</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">GoodGroup</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">,</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"123"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Default: ${DEFAULT-VALUE}"</span><span class="o">)</span>
     <span class="kt">int</span> <span class="n">x</span><span class="o">;</span>
 <span class="o">}</span>
+
 <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"good"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"usage help shows the default value"</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">GoodExample</span> <span class="o">{</span>
     <span class="nd">@ArgGroup</span> <span class="nc">GoodGroup</span> <span class="n">goodGroup</span><span class="o">;</span>
@@ -5289,6 +5465,25 @@ If the application assigned a non-<code>null</code> Collection in the field decl
         <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">GoodExample</span><span class="o">()).</span><span class="na">usage</span><span class="o">(</span><span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">);</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">GoodGroup</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">],</span> <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"123"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Default: \${DEFAULT-VALUE}"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="mi">0</span>
+<span class="p">}</span>
+
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"good"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"usage help shows the default value"</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">GoodExample</span> <span class="p">{</span>
+    <span class="nd">@ArgGroup</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">goodGroup</span><span class="p">:</span> <span class="nc">GoodGroup</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">GoodExample</span><span class="p">()).</span><span class="nf">usage</span><span class="p">(</span><span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -5311,13 +5506,14 @@ usage help shows the default value
 <div class="paragraph">
 <p>Picocli will not be able to retrieve the default values that are defined by assigning a value in the declaration of an <code>@Option</code>-annotated field in a group. For example:</p>
 </div>
-<div class="listingblock">
-<div class="title">This does not work correctly: usage help shows <code>null</code> as the default value.</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">BadGroup</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Default: ${DEFAULT-VALUE}"</span><span class="o">)</span>
-    <span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">123</span><span class="o">;</span> <span class="c1">// picocli cannot find this value until `BadGroup` is instantiated</span>
+    <span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">123</span><span class="o">;</span> <span class="c1">// value not found until `BadGroup` is instantiated</span>
 <span class="o">}</span>
+
 <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"bad"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"usage help shows the wrong default value"</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">BadExample</span> <span class="o">{</span>
     <span class="nd">@ArgGroup</span> <span class="nc">BadGroup</span> <span class="n">badGroup</span><span class="o">;</span>
@@ -5326,6 +5522,25 @@ usage help shows the default value
         <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">BadExample</span><span class="o">()).</span><span class="na">usage</span><span class="o">(</span><span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">);</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">BadGroup</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Default: \${DEFAULT-VALUE}"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="mi">123</span> <span class="c1">// value not found until `BadGroup` is instantiated</span>
+<span class="p">}</span>
+
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"bad"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"usage help shows wrong default value"</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">BadExample</span> <span class="p">{</span>
+    <span class="nd">@ArgGroup</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">badGroup</span><span class="p">:</span> <span class="nc">BadGroup</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">BadExample</span><span class="p">()).</span><span class="nf">usage</span><span class="p">(</span><span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -5352,7 +5567,8 @@ usage help shows the wrong default value
 <div class="paragraph">
 <p>Below is an example of an application that uses a repeating group of positional parameters:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"grades"</span><span class="o">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">version</span> <span class="o">=</span> <span class="s">"grades 1.0"</span><span class="o">)</span>
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">Grades</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
@@ -5374,6 +5590,30 @@ usage help shows the wrong default value
         <span class="nc">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">Grades</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">));</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"grades"</span><span class="p">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">version</span> <span class="p">=</span> <span class="p">[</span><span class="s">"grades 1.0"</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">Grades</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+
+    <span class="kd">class</span> <span class="nc">StudentGrade</span> <span class="p">{</span>
+        <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"0"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">name</span><span class="p">:</span> <span class="nc">String</span>
+        <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"1"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">grade</span><span class="p">:</span> <span class="nc">BigDecimal</span>
+    <span class="p">}</span>
+
+    <span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">exclusive</span> <span class="p">=</span> <span class="k">false</span><span class="p">,</span> <span class="n">multiplicity</span> <span class="p">=</span> <span class="s">"1..*"</span><span class="p">)</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">gradeList</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">StudentGrade</span><span class="p">&gt;</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">gradeList</span><span class="p">.</span><span class="nf">forEach</span> <span class="p">{</span> <span class="n">e</span> <span class="p">-&gt;</span> <span class="nf">println</span><span class="p">(</span><span class="s">"${e.name}: ${e.grade}"</span><span class="p">)</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="nc">System</span><span class="p">.</span><span class="nf">exit</span><span class="p">(</span><span class="nc">CommandLine</span><span class="p">(</span><span class="nc">Grades</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">))</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -9750,9 +9990,13 @@ Details of the Help API are out of scope for this document, but the following se
 <p>The usage help message is no longer hard-coded, but is now constructed from the section renderers defined in <code>CommandLine::getHelpSectionMap</code> (or <code>UsageMessageSpec::sectionMap</code> for a single <code>CommandSpec</code>).
 By default this map contains the predefined section renderers:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="c1">// The default section renderers delegate to methods in Help for their implementation</span>
+<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.</span><span class="na">Model</span><span class="o">.</span><span class="na">UsageMessageSpec</span><span class="o">.*;</span>
+<span class="c1">// ...</span>
+
+<span class="c1">// The default section renderers delegate to methods in Help for their implementation</span>
 <span class="c1">// (using Java 8 lambda notation for brevity):</span>
 <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">IHelpSectionRenderer</span><span class="o">&gt;</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;&gt;();</span>
 <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="no">SECTION_KEY_HEADER_HEADING</span><span class="o">,</span>         <span class="n">help</span> <span class="o">-&gt;</span> <span class="n">help</span><span class="o">.</span><span class="na">headerHeading</span><span class="o">());</span>
@@ -9791,6 +10035,69 @@ By default this map contains the predefined section renderers:</p>
 <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="no">SECTION_KEY_EXIT_CODE_LIST</span><span class="o">,</span>         <span class="n">help</span> <span class="o">-&gt;</span> <span class="n">help</span><span class="o">.</span><span class="na">exitCodeList</span><span class="o">());</span>
 <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="no">SECTION_KEY_FOOTER_HEADING</span><span class="o">,</span>         <span class="n">help</span> <span class="o">-&gt;</span> <span class="n">help</span><span class="o">.</span><span class="na">footerHeading</span><span class="o">());</span>
 <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="no">SECTION_KEY_FOOTER</span><span class="o">,</span>                 <span class="n">help</span> <span class="o">-&gt;</span> <span class="n">help</span><span class="o">.</span><span class="na">footer</span><span class="o">());</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">picocli.CommandLine.Model.UsageMessageSpec.*</span>
+<span class="c1">// ...</span>
+
+<span class="c1">// The default section renderers delegate to methods in Help for their implementation</span>
+<span class="c1">// (using lambda expressions for brevity):</span>
+<span class="kd">val</span> <span class="py">map</span><span class="p">:</span> <span class="nc">MutableMap</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">,</span> <span class="nc">IHelpSectionRenderer</span><span class="p">&gt;</span> <span class="p">=</span> <span class="nc">HashMap</span><span class="p">()</span>
+<span class="n">map</span><span class="p">[</span><span class="nc">SECTION_KEY_HEADER_HEADING</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">headerHeading</span><span class="p">()</span> <span class="p">}</span>
+<span class="n">map</span><span class="p">[</span><span class="nc">SECTION_KEY_HEADER</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">header</span><span class="p">()</span> <span class="p">}</span>
+
+<span class="c1">//e.g. Usage:</span>
+<span class="n">map</span><span class="p">[</span><span class="nc">SECTION_KEY_SYNOPSIS_HEADING</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">synopsisHeading</span><span class="p">()</span> <span class="p">}</span>
+
+<span class="c1">//e.g. &lt;cmd&gt; [OPTIONS] &lt;subcmd&gt; [COMMAND-OPTIONS] [ARGUMENTS]</span>
+<span class="n">map</span><span class="p">[</span><span class="nc">SECTION_KEY_SYNOPSIS</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">synopsis</span><span class="p">(</span><span class="n">help</span><span class="p">.</span><span class="nf">synopsisHeadingLength</span><span class="p">())</span> <span class="p">}</span>
+
+<span class="c1">//e.g. %nDescription:%n%n</span>
+<span class="n">map</span><span class="p">[</span><span class="nc">SECTION_KEY_DESCRIPTION_HEADING</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">descriptionHeading</span><span class="p">()</span> <span class="p">}</span>
+
+<span class="c1">//e.g. {"Converts foos to bars.", "Use options to control conversion mode."}</span>
+<span class="n">map</span><span class="p">[</span><span class="nc">SECTION_KEY_DESCRIPTION</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span>  <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">description</span><span class="p">()</span> <span class="p">}</span>
+
+<span class="c1">//e.g. %nPositional parameters:%n%n</span>
+<span class="n">map</span><span class="p">[</span><span class="nc">SECTION_KEY_PARAMETER_LIST_HEADING</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">parameterListHeading</span><span class="p">()</span> <span class="p">}</span>
+
+<span class="c1">//e.g. [FILE...] the files to convert</span>
+<span class="n">map</span><span class="p">[</span><span class="nc">SECTION_KEY_PARAMETER_LIST</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">parameterList</span><span class="p">()</span> <span class="p">}</span>
+
+<span class="c1">//e.g. %nOptions:%n%n</span>
+<span class="n">map</span><span class="p">[</span><span class="nc">SECTION_KEY_OPTION_LIST_HEADING</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">optionListHeading</span><span class="p">()</span> <span class="p">}</span>
+
+<span class="c1">//e.g. -h, --help   displays this help and exits</span>
+<span class="n">map</span><span class="p">[</span><span class="nc">SECTION_KEY_OPTION_LIST</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">optionList</span><span class="p">()</span> <span class="p">}</span>
+
+<span class="c1">//e.g. %nCommands:%n%n</span>
+<span class="n">map</span><span class="p">[</span><span class="nc">SECTION_KEY_COMMAND_LIST_HEADING</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">commandListHeading</span><span class="p">()</span> <span class="p">}</span>
+
+<span class="c1">//e.g.    add       this command adds the frup to the frooble</span>
+<span class="n">map</span><span class="p">[</span><span class="nc">SECTION_KEY_COMMAND_LIST</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">commandList</span><span class="p">()</span> <span class="p">}</span>
+<span class="n">map</span><span class="p">[</span><span class="nc">SECTION_KEY_EXIT_CODE_LIST_HEADING</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">exitCodeListHeading</span><span class="p">()</span> <span class="p">}</span>
+<span class="n">map</span><span class="p">[</span><span class="nc">SECTION_KEY_EXIT_CODE_LIST</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">exitCodeList</span><span class="p">()</span> <span class="p">}</span>
+<span class="n">map</span><span class="p">[</span><span class="nc">SECTION_KEY_FOOTER_HEADING</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">footerHeading</span><span class="p">()</span> <span class="p">}</span>
+<span class="n">map</span><span class="p">[</span><span class="nc">SECTION_KEY_FOOTER</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">footer</span><span class="p">()</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -9859,12 +10166,12 @@ By default this map contains the predefined section renderers:</p>
 <div class="paragraph">
 <p>The below example shows how to add a custom Environment Variables section to the usage help message.</p>
 </div>
-<div class="listingblock">
-<div class="title">Adding a custom Environment Variables section</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="c1">// help section keys</span>
-<span class="kd">static</span> <span class="kd">final</span> <span class="nc">String</span> <span class="no">SECTION_KEY_ENV_HEADING</span> <span class="o">=</span> <span class="s">"environmentVariablesHeading"</span><span class="o">;</span>
-<span class="kd">static</span> <span class="kd">final</span> <span class="nc">String</span> <span class="no">SECTION_KEY_ENV_DETAILS</span> <span class="o">=</span> <span class="s">"environmentVariables"</span><span class="o">;</span>
+<span class="kd">final</span> <span class="nc">String</span> <span class="no">SECTION_KEY_ENV_HEADING</span> <span class="o">=</span> <span class="s">"environmentVariablesHeading"</span><span class="o">;</span>
+<span class="kd">final</span> <span class="nc">String</span> <span class="no">SECTION_KEY_ENV_DETAILS</span> <span class="o">=</span> <span class="s">"environmentVariables"</span><span class="o">;</span>
 <span class="c1">// ...</span>
 
 <span class="c1">// the data to display</span>
@@ -9888,6 +10195,35 @@ By default this map contains the predefined section renderers:</p>
 <span class="n">cmd</span><span class="o">.</span><span class="na">setHelpSectionKeys</span><span class="o">(</span><span class="n">keys</span><span class="o">);</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="c1">// help section keys</span>
+<span class="kd">val</span> <span class="py">SECTION_KEY_ENV_HEADING</span> <span class="p">=</span> <span class="s">"environmentVariablesHeading"</span>
+<span class="kd">val</span> <span class="py">SECTION_KEY_ENV_DETAILS</span> <span class="p">=</span> <span class="s">"environmentVariables"</span>
+<span class="c1">// ...</span>
+
+<span class="c1">// the data to display</span>
+<span class="kd">val</span> <span class="py">env</span><span class="p">:</span> <span class="nc">MutableMap</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">,</span> <span class="nc">String</span><span class="p">&gt;</span> <span class="p">=</span> <span class="nc">LinkedHashMap</span><span class="p">()</span>
+<span class="n">env</span><span class="p">[</span><span class="s">"FOO"</span><span class="p">]</span> <span class="p">=</span> <span class="s">"explanation of foo"</span>
+<span class="n">env</span><span class="p">[</span><span class="s">"BAR"</span><span class="p">]</span> <span class="p">=</span> <span class="s">"explanation of bar"</span>
+<span class="n">env</span><span class="p">[</span><span class="s">"XYZ"</span><span class="p">]</span> <span class="p">=</span> <span class="s">"xxxx yyyy zzz"</span>
+
+<span class="c1">// register the custom section renderers</span>
+<span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyApp</span><span class="p">())</span>
+<span class="n">cmd</span><span class="p">.</span><span class="n">helpSectionMap</span><span class="p">[</span><span class="nc">SECTION_KEY_ENV_HEADING</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">createHeading</span><span class="p">(</span><span class="s">"Environment Variables:%n"</span><span class="p">)</span> <span class="p">}</span>
+<span class="n">cmd</span><span class="p">.</span><span class="n">helpSectionMap</span><span class="p">[</span><span class="nc">SECTION_KEY_ENV_DETAILS</span><span class="p">]</span> <span class="p">=</span>
+    <span class="nc">IHelpSectionRenderer</span> <span class="p">{</span> <span class="n">help</span><span class="p">:</span> <span class="nc">Help</span> <span class="p">-&gt;</span> <span class="n">help</span><span class="p">.</span><span class="nf">createTextTable</span><span class="p">(</span><span class="n">env</span><span class="p">).</span><span class="nf">toString</span><span class="p">()</span> <span class="p">}</span>
+
+<span class="c1">// specify the location of the new sections</span>
+<span class="kd">val</span> <span class="py">keys</span> <span class="p">=</span> <span class="nc">ArrayList</span><span class="p">(</span><span class="n">cmd</span><span class="p">.</span><span class="n">helpSectionKeys</span><span class="p">)</span>
+<span class="kd">val</span> <span class="py">index</span> <span class="p">=</span> <span class="n">keys</span><span class="p">.</span><span class="nf">indexOf</span><span class="p">(</span><span class="nc">SECTION_KEY_FOOTER_HEADING</span><span class="p">)</span>
+<span class="n">keys</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nc">SECTION_KEY_ENV_HEADING</span><span class="p">)</span>
+<span class="n">keys</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">index</span> <span class="p">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nc">SECTION_KEY_ENV_DETAILS</span><span class="p">)</span>
+<span class="n">cmd</span><span class="p">.</span><span class="n">helpSectionKeys</span> <span class="p">=</span> <span class="n">keys</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>More examples for customizing the usage help message are <a href="https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/customhelp">here</a>.</p>
 </div>
@@ -9898,9 +10234,16 @@ By default this map contains the predefined section renderers:</p>
 <div class="paragraph">
 <p>Picocli also supports unconventional option list layouts. An example of an unconventional layout is the <code>zip</code> application, which shows multiple options per row:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">CommandLine</span><span class="o">.</span><span class="na">usage</span><span class="o">(</span><span class="k">new</span> <span class="nc">ZipHelpDemo</span><span class="o">(),</span> <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nc">CommandLine</span><span class="p">.</span><span class="nf">usage</span><span class="p">(</span><span class="nc">ZipHelpDemo</span><span class="p">(),</span> <span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="listingblock">
@@ -12121,7 +12464,7 @@ picocli.endofoptions = Separates options from positional parameters.</code></pre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code>xoption = This is the description for the -x option.</code></pre>
+<pre>xoption = This is the description for the -x option.</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -12248,13 +12591,14 @@ helpCommand.command = Shared description of COMMAND parameter of built-in help s
 <h2 id="_variable_interpolation"><a class="anchor" href="#_variable_interpolation"></a>20. Variable Interpolation</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>From 4.0, picocli supports variable interpolation (variable expansion) in annotation attributes as well as in text attributes of the programmatic API.</p>
+<p>As of version 4.0, picocli supports variable interpolation (variable expansion) in annotation attributes as well as in text attributes of the programmatic API.</p>
 </div>
 <div class="sect2">
 <h3 id="_variable_interpolation_example"><a class="anchor" href="#_variable_interpolation_example"></a>20.1. Variable Interpolation Example</h3>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"status"</span><span class="o">,</span>
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"status"</span><span class="o">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span>
          <span class="n">description</span> <span class="o">=</span> <span class="s">"This command logs the ${COMMAND-NAME} for ${PARENT-COMMAND-NAME}."</span><span class="o">,</span>
          <span class="n">version</span> <span class="o">=</span> <span class="o">{</span>
             <span class="s">"Versioned Command 1.0"</span><span class="o">,</span>
@@ -12272,6 +12616,28 @@ helpCommand.command = Shared description of COMMAND parameter of built-in help s
             <span class="n">split</span> <span class="o">=</span> <span class="s">"${sys:path.separator}"</span><span class="o">)</span>
     <span class="nc">String</span><span class="o">[]</span> <span class="n">directories</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"status"</span><span class="p">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span>
+         <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"This command logs the \${COMMAND-NAME} for \${PARENT-COMMAND-NAME}."</span><span class="p">],</span>
+         <span class="n">version</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Versioned Command 1.0"</span><span class="p">,</span>
+                    <span class="s">"Picocli $VERSION"</span><span class="p">,</span>
+                    <span class="s">"JVM: \${java.version} (\${java.vendor} \${java.vm.name} \${java.vm.version})"</span><span class="p">,</span>
+                    <span class="s">"OS: \${os.name} \${os.version} \${os.arch}"</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">Status</span> <span class="p">{</span>
+    <span class="c1">// -d or --directories</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"\${dirOptionName1:--d}"</span><span class="p">,</span> <span class="s">"\${dirOptionName2:---directories}"</span><span class="p">],</span>
+            <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Specify one or more directories, "</span> <span class="p">+</span>
+                                <span class="s">"separated by '\${sys:path.separator}'."</span><span class="p">,</span>
+                           <span class="s">"The default is the user home directory (\${DEFAULT-VALUE})."</span><span class="p">],</span>
+        <span class="n">arity</span> <span class="p">=</span> <span class="s">"\${sys:dirOptionArity:-1..*}"</span><span class="p">,</span>
+        <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"\${sys:user.home}"</span><span class="p">,</span>
+        <span class="n">split</span> <span class="p">=</span> <span class="s">"\${sys:path.separator}"</span><span class="p">)</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">directories</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -14488,7 +14854,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.2<br>
-Last updated 2020-10-25 07:16:00 +0900
+Last updated 2020-10-26 06:10:11 +0900
 </div>
 </div>
 <style>

@@ -28,6 +28,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1223] DOC: User manual improvements: add tabs with Kotlin code for samples (chapter 10: Validation). Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1224] DOC: User manual improvements: add tabs with Kotlin code for samples (chapter 5: Default Values). Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1226] DOC: User manual improvements: add tabs with Kotlin code for samples (chapter 9.6 - 9.8: Executing commands). Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1228] DOC: User manual improvements: add tabs with Kotlin code for samples (chapters 8, 16, 20). Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 ## <a name="4.6.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
