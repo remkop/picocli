@@ -4107,7 +4107,8 @@ yyy"
 
 <<Negatable Options,Negatable options>> can be customized via the `INegatableOptionTransformer` interface:
 
-```java
+[source,java]
+----
 interface INegatableOptionTransformer {
     /**
      * Returns the negative form of the specified option name for the parser to recognize
@@ -4131,7 +4132,7 @@ interface INegatableOptionTransformer {
      */
     String makeSynopsis(String optionName, CommandSpec cmd);
 }
-```
+----
 
 This allows you to control:
 
@@ -4162,7 +4163,8 @@ options for the `find` command itself, but are interpreted as a separate command
 
 The example below demonstrates how to implement `find -exec` using this API:
 
-```java
+[source,java]
+----
 @Command(name = "find")
 class Find {
     @Option(names = "-exec", parameterConsumer = ExecParameterConsumer.class)
@@ -4183,7 +4185,7 @@ class ExecParameterConsumer implements IParameterConsumer {
         }
     }
 }
-```
+----
 
 == Help
 
@@ -5964,8 +5966,12 @@ Picocli 3.9 introduces new API to facilitate customizing the usage help message:
 The usage help message is no longer hard-coded, but is now constructed from the section renderers defined in `CommandLine::getHelpSectionMap` (or `UsageMessageSpec::sectionMap` for a single `CommandSpec`).
 By default this map contains the predefined section renderers:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
+import static picocli.CommandLine.Model.UsageMessageSpec.*;
+// ...
+
 // The default section renderers delegate to methods in Help for their implementation
 // (using Java 8 lambda notation for brevity):
 Map<String, IHelpSectionRenderer> map = new HashMap<>();
@@ -6007,6 +6013,69 @@ map.put(SECTION_KEY_FOOTER_HEADING,         help -> help.footerHeading());
 map.put(SECTION_KEY_FOOTER,                 help -> help.footer());
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import picocli.CommandLine.Model.UsageMessageSpec.*
+// ...
+
+// The default section renderers delegate to methods in Help for their implementation
+// (using lambda expressions for brevity):
+val map: MutableMap<String, IHelpSectionRenderer> = HashMap()
+map[SECTION_KEY_HEADER_HEADING] =
+    IHelpSectionRenderer { help: Help -> help.headerHeading() }
+map[SECTION_KEY_HEADER] =
+    IHelpSectionRenderer { help: Help -> help.header() }
+
+//e.g. Usage:
+map[SECTION_KEY_SYNOPSIS_HEADING] =
+    IHelpSectionRenderer { help: Help -> help.synopsisHeading() }
+
+//e.g. <cmd> [OPTIONS] <subcmd> [COMMAND-OPTIONS] [ARGUMENTS]
+map[SECTION_KEY_SYNOPSIS] = 
+    IHelpSectionRenderer { help: Help -> help.synopsis(help.synopsisHeadingLength()) }
+
+//e.g. %nDescription:%n%n
+map[SECTION_KEY_DESCRIPTION_HEADING] =
+    IHelpSectionRenderer { help: Help -> help.descriptionHeading() }
+
+//e.g. {"Converts foos to bars.", "Use options to control conversion mode."}
+map[SECTION_KEY_DESCRIPTION] =
+    IHelpSectionRenderer  { help: Help -> help.description() }
+
+//e.g. %nPositional parameters:%n%n
+map[SECTION_KEY_PARAMETER_LIST_HEADING] =
+    IHelpSectionRenderer { help: Help -> help.parameterListHeading() }
+
+//e.g. [FILE...] the files to convert
+map[SECTION_KEY_PARAMETER_LIST] =
+    IHelpSectionRenderer { help: Help -> help.parameterList() }
+
+//e.g. %nOptions:%n%n
+map[SECTION_KEY_OPTION_LIST_HEADING] =
+    IHelpSectionRenderer { help: Help -> help.optionListHeading() }
+
+//e.g. -h, --help   displays this help and exits
+map[SECTION_KEY_OPTION_LIST] =
+    IHelpSectionRenderer { help: Help -> help.optionList() }
+
+//e.g. %nCommands:%n%n
+map[SECTION_KEY_COMMAND_LIST_HEADING] =
+    IHelpSectionRenderer { help: Help -> help.commandListHeading() }
+
+//e.g.    add       this command adds the frup to the frooble
+map[SECTION_KEY_COMMAND_LIST] =
+    IHelpSectionRenderer { help: Help -> help.commandList() }
+map[SECTION_KEY_EXIT_CODE_LIST_HEADING] =
+    IHelpSectionRenderer { help: Help -> help.exitCodeListHeading() }
+map[SECTION_KEY_EXIT_CODE_LIST] =
+    IHelpSectionRenderer { help: Help -> help.exitCodeList() }
+map[SECTION_KEY_FOOTER_HEADING] =
+    IHelpSectionRenderer { help: Help -> help.footerHeading() }
+map[SECTION_KEY_FOOTER] =
+    IHelpSectionRenderer { help: Help -> help.footer() }
+----
+
 Applications can add, remove or replace sections in this map. The `CommandLine::getHelpSectionKeys` method (or `UsageMessageSpec::sectionKeys` for a single `CommandSpec`) returns the section keys in the order that the usage help message should render the sections. The default keys are (in order):
 
 [start=0]
@@ -6034,12 +6103,12 @@ This ordering may be modified with the `CommandLine::setHelpSectionKeys` setter 
 
 The below example shows how to add a custom Environment Variables section to the usage help message.
 
-.Adding a custom Environment Variables section
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 // help section keys
-static final String SECTION_KEY_ENV_HEADING = "environmentVariablesHeading";
-static final String SECTION_KEY_ENV_DETAILS = "environmentVariables";
+final String SECTION_KEY_ENV_HEADING = "environmentVariablesHeading";
+final String SECTION_KEY_ENV_DETAILS = "environmentVariables";
 // ...
 
 // the data to display
@@ -6063,16 +6132,53 @@ keys.add(index + 1, SECTION_KEY_ENV_DETAILS);
 cmd.setHelpSectionKeys(keys);
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+// help section keys
+val SECTION_KEY_ENV_HEADING = "environmentVariablesHeading"
+val SECTION_KEY_ENV_DETAILS = "environmentVariables"
+// ...
+
+// the data to display
+val env: MutableMap<String, String> = LinkedHashMap()
+env["FOO"] = "explanation of foo"
+env["BAR"] = "explanation of bar"
+env["XYZ"] = "xxxx yyyy zzz"
+
+// register the custom section renderers
+val cmd = CommandLine(MyApp())
+cmd.helpSectionMap[SECTION_KEY_ENV_HEADING] =
+    IHelpSectionRenderer { help: Help -> help.createHeading("Environment Variables:%n") }
+cmd.helpSectionMap[SECTION_KEY_ENV_DETAILS] =
+    IHelpSectionRenderer { help: Help -> help.createTextTable(env).toString() }
+
+// specify the location of the new sections
+val keys = ArrayList(cmd.helpSectionKeys)
+val index = keys.indexOf(SECTION_KEY_FOOTER_HEADING)
+keys.add(index, SECTION_KEY_ENV_HEADING)
+keys.add(index + 1, SECTION_KEY_ENV_DETAILS)
+cmd.helpSectionKeys = keys
+----
 
 More examples for customizing the usage help message are https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/customhelp[here].
 
 
 === Custom Layout
 Picocli also supports unconventional option list layouts. An example of an unconventional layout is the `zip` application, which shows multiple options per row:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 CommandLine.usage(new ZipHelpDemo(), System.out);
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+CommandLine.usage(ZipHelpDemo(), System.out)
+----
+
 ----
 Copyright (c) 1990-2008 Info-ZIP - Type 'zip "-L"' for software license.
 Zip 3.0 (July 5th 2008). Command:
@@ -8045,19 +8151,22 @@ picocli.endofoptions = Separates options from positional parameters.
 
 For options and positional parameters, the optional annotation attribute `descriptionKey` can be used to localize the description. For example:
 
-```java
+[source,java]
+----
 @Option(names = "-x", descriptionKey = "xoption") int x;
-```
+----
 The matching entry in the resource bundle could look like this:
-```
+----
 xoption = This is the description for the -x option.
-```
+----
 
 When the `descriptionKey` is omitted, the https://picocli.info/apidocs/picocli/CommandLine.Option.html#descriptionKey--[fallback for options] is any option name without the leading dashes, for example:
 
-```java
+[source,java]
+----
 @Option(names = {"-v", "--verbose"}) boolean[] verbose;
-```
+----
+
 The matching entry in the resource bundle could look like this:
 ----
 verbose = Show more detail during execution. \
@@ -8076,9 +8185,10 @@ FILES[0..*] = The files to process.
 ----
 
 For argument groups, use the `headingKey` to specify a resource bundle key. For example:
-```java
+[source,java]
+----
 @ArgGroup(headingKey = "myBundleKey") MyArgGroup myGroup;
-```
+----
 The matching entry in the resource bundle could look like this:
 ----
 myBundleKey = The localized heading for this argument group%n
@@ -8138,12 +8248,14 @@ userName=Specify the user name. The default is ${DEFAULT-VALUE}.
 
 == Variable Interpolation
 
-From 4.0, picocli supports variable interpolation (variable expansion) in annotation attributes as well as in text attributes of the programmatic API.
+As of version 4.0, picocli supports variable interpolation (variable expansion) in annotation attributes as well as in text attributes of the programmatic API.
 
 === Variable Interpolation Example
 
-```java
-@Command(name = "status",
+.Java
+[source,java,,role="primary"]
+----
+@Command(name = "status", mixinStandardHelpOptions = true,
          description = "This command logs the ${COMMAND-NAME} for ${PARENT-COMMAND-NAME}.",
          version = {
             "Versioned Command 1.0",
@@ -8161,7 +8273,29 @@ class Status {
             split = "${sys:path.separator}")
     String[] directories;
 }
-```
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "status", mixinStandardHelpOptions = true,
+         description = ["This command logs the \${COMMAND-NAME} for \${PARENT-COMMAND-NAME}."],
+         version = ["Versioned Command 1.0",
+                    "Picocli $VERSION",
+                    "JVM: \${java.version} (\${java.vendor} \${java.vm.name} \${java.vm.version})",
+                    "OS: \${os.name} \${os.version} \${os.arch}"])
+class Status {
+    // -d or --directories
+    @Option(names = ["\${dirOptionName1:--d}", "\${dirOptionName2:---directories}"],
+            description = ["Specify one or more directories, " +
+                                "separated by '\${sys:path.separator}'.",
+                           "The default is the user home directory (\${DEFAULT-VALUE})."],
+        arity = "\${sys:dirOptionArity:-1..*}",
+        defaultValue = "\${sys:user.home}",
+        split = "\${sys:path.separator}")
+    lateinit var directories: Array<String>
+}
+----
 
 === Predefined Variables
 
@@ -8446,7 +8580,8 @@ All options and positional parameters defined in the mixin class are added to th
 
 Example:
 
-```java
+[source,java]
+----
 class CommonParams {
     @Option(names = "-x") int x;
     @Option(names = "-y") int y;
@@ -8456,7 +8591,7 @@ class App {
     @Command
     public void doit(@Mixin CommonParams params, @Option(names = "-z") int z) {}
 }
-```
+----
 
 In the above example, the `-x` and `-y` options are added to the other options of the `doit` command.
 
@@ -8524,7 +8659,8 @@ Previously, `Collection` objects were instantiated separately without involving 
 
 It is recommended that custom factories should fall back to the default factory. Something like this:
 
-```java
+[source,java]
+----
 @Override
 public <K> K create(Class<K> clazz) throws Exception {
     try {
@@ -8533,7 +8669,7 @@ public <K> K create(Class<K> clazz) throws Exception {
         return CommandLine.defaultFactory().create(clazz); // fallback if missing
     }
 }
-```
+----
 
 
 === Automatic Parameter Indexes
