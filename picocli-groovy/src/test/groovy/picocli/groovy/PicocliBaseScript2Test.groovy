@@ -384,13 +384,7 @@ class Message {
         assertEquals("Hi world!", baos.toString().trim())
     }
 
-
-    @Test
-    public void testSubcommandMethods1191() {
-
-        String script = '''
-//@Grab('info.picocli:picocli-groovy:4.5.1')
-//@GrabConfig(systemClassLoader = true)
+    String SCRIPT_WITH_SUBCOMMAND_METHODS = '''
 @Command(name = "picocli",
         mixinStandardHelpOptions = true,
         version = '1.0.0',
@@ -411,13 +405,55 @@ int commit(@Option(names = ["-m", "--message"]) String commitMessage,
 
 println "done"
 '''
+
+    @Test
+    void testSubcommandMethods1191() {
+
         GroovyShell shell = new GroovyShell(new Binding())
         shell.context.setVariable('args', ["commit", "picocli.groovy"] as String[])
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream()
         System.setOut(new PrintStream(baos))
-        Object result = shell.evaluate script
+        Object result = shell.evaluate SCRIPT_WITH_SUBCOMMAND_METHODS
         assertEquals("commit [picocli.groovy]", baos.toString().trim())
         assertEquals(0, result)
+    }
+
+    @Test
+    void testSubcommandMethodHelp() {
+        GroovyShell shell = new GroovyShell(new Binding())
+        shell.context.setVariable('args', ["help", "commit"] as String[])
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setOut(new PrintStream(baos))
+        Object result = shell.evaluate SCRIPT_WITH_SUBCOMMAND_METHODS
+        String expected = "" +
+                "Usage: picocli commit [-m=<arg0>] [--squash=<commit>] [<file>...]%n" +
+                "Record changes to the repository%n" +
+                "      [<file>...]%n" +
+                "  -m, --message=<arg0>%n" +
+                "      --squash=<commit>"
+        assertEquals(String.format(expected), baos.toString().trim())
+        assertEquals(null, result)
+    }
+
+    @Test
+    void testMultipleSubcommandMethodsHelp() {
+        GroovyShell shell = new GroovyShell(new Binding())
+        shell.context.setVariable('args', ["--help"] as String[])
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setOut(new PrintStream(baos))
+        Object result = shell.evaluate SCRIPT_WITH_SUBCOMMAND_METHODS
+        String expected = "" +
+                "Usage: picocli [-hV] [COMMAND]%n" +
+                "sub command test%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "Commands:%n" +
+                "  help    Displays help information about the specified command%n" +
+                "  commit  Record changes to the repository"
+        assertEquals(String.format(expected), baos.toString().trim())
+        assertEquals(null, result)
     }
 }
