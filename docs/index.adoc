@@ -9373,35 +9373,133 @@ image:https://micronaut.io/images/micronaut_mini_copy_tm.svg[Micronaut Logo,widt
 
 The Micronaut microservices framework provides https://docs.micronaut.io/latest/guide/index.html#picocli[built-in support] for picocli with its `PicocliRunner` class.
 
-[source,java]
+
+Our micronaut example app provides a command line interface to a HTTP client that can be used to retrieve the number of stars for a GitHub project, leveraging the GitHub API. Owner and name (called `slug`) of the project to be queried must be given as command line parameter.
+
+To get started, you have to https://micronaut-projects.github.io/micronaut-starter/latest/guide/#installation[install] Micronaut framework first.
+Afterwards you can use the `mn`  command line interface to generate your first project `git-stars`. Don't forget the `--features http-client` option which will add the `io.micronaut:micronaut-http-client` dependency to the project.
+
+[source,bash]
 ----
-import io.micronaut.configuration.picocli.PicocliRunner;
-import io.micronaut.http.annotation.*;
-import io.micronaut.http.client.*;
+mn create-cli-app git-stars --features http-client --lang=java
+| Application created at /home/user/projects/micronaut/git-stars
+----
+
+This command will create a self contained micronaut project with picocli-support, together with its dependencies, a gradle build script and test cases.
+Open the auto-generated source file `GitStarsCommand.java` and alter and extend it so that it looks like this:
+
+.Java
+[source,java,role="primary"]
+----
+package git.stars;
+
+import java.util.Map;
 import javax.inject.Inject;
 
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
-@Command(name = "myMicronautApp")
-public class MyMicronautApp implements Runnable {
+import io.micronaut.configuration.picocli.PicocliRunner;
+import io.micronaut.http.client.annotation.*;
+import io.micronaut.http.client.*;
+
+import static io.micronaut.http.HttpRequest.*;
+
+@Command(name = "git-stars", description = "...",
+        mixinStandardHelpOptions = true)
+public class GitStarsCommand implements Runnable {
 
     @Client("https://api.github.com")
-    @Inject RxHttpClient client;
+    @Inject
+    RxHttpClient client; // example injected service
 
-    @Option(names = {"-x", "--option"}, description = "example option")
-    boolean flag;
+    @Parameters(description = "GitHub slug", paramLabel = "<owner/repo>",
+                defaultValue = "remkop/picocli")
+    String slug;
 
     public static void main(String[] args) throws Exception {
-        // let Micronaut instantiate and inject services
-        PicocliRunner.run(MyMicronautApp.class, args);
+        PicocliRunner.run(GitStarsCommand.class, args);
     }
 
     public void run() {
-        // business logic here
+        Map m = client.retrieve(GET("/repos/" + slug).header(
+                "User-Agent", "remkop-picocli"), Map.class).blockingFirst();
+        System.out.printf("%s has %s stars%n", slug, m.get("stargazers_count"));
     }
 }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+package git.stars
+
+import javax.inject.Inject
+import picocli.CommandLine.Command
+import picocli.CommandLine.Parameters
+import io.micronaut.configuration.picocli.PicocliRunner
+import io.micronaut.http.HttpRequest
+import io.micronaut.http.client.RxHttpClient
+
+@Command(
+    name = "git-stars-kotlin", description = ["..."],
+    mixinStandardHelpOptions = true
+)
+class GitStarsKotlinCommand : Runnable {
+
+    val URI_GitHub_API: String = "https://api.github.com"
+    @Inject lateinit var client: RxHttpClient // example injected service
+
+    @Parameters(description = ["GitHub slug"], paramLabel = "<owner/repo>",
+        defaultValue = "remkop/picocli")
+    lateinit var slug: String
+
+    override fun run() {
+        val req = HttpRequest.GET<Any>("${URI_GitHub_API}/repos/$slug")
+        req.header("User-Agent", "remkop-picocli")
+        val flowable = client.retrieve(req, MutableMap::class.java).blockingFirst()
+        println("$slug has ${flowable.get("stargazers_count")} stars")
+    }
+
+    companion object {
+        @JvmStatic fun main(args: Array<String>) {
+            PicocliRunner.run(GitStarsKotlinCommand::class.java, *args)
+        }
+    }
+}
+----
+
+You now can run the app using the `gradle` build tool:
+
+[source,bash]
+----
+gradle run --args="micronaut-projects/micronaut-core"
+# ...
+> Task :run
+21:12:17.660 [main] INFO  i.m.context.env.DefaultEnvironment - Established active environments: [cli]
+micronaut-projects/micronaut-core has 4245 stars
+----
+
+Using the `mn`  command line interface, you can add another command (including test case) to our project:
+
+[source,bash]
+----
+mn create-command second
+Rendered command to src/main/java/my/cli/app/SecondCommand.java
+Rendered command test to src/test/java/my/cli/app/SecondCommandTest.java
+----
+
+To run the auto generated test cases for the previously created class, simply issue:
+
+[source,bash]
+----
+mn test --tests git.stars.SecondCommandTest
+# ...
+> :test > Executing test git.stars.SecondCommandTest
+----
+
+The https://micronaut-projects.github.io/micronaut-picocli/latest/guide/#quickstart[quick start guide] for Micronaut's Picocli integration has more information, including an extended https://micronaut-projects.github.io/micronaut-picocli/latest/guide/#_an_example_http_client[code sample].
+
 
 === CDI 2.0 (JSR 365)
 If your application runs in a dependency injection container that does not offer explicit support for picocli, it may still be possible to get dependency injection in your picocli commands, subcommands and other classes like version providers, default providers, type converters, etc.
