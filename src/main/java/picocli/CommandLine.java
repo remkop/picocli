@@ -15090,7 +15090,13 @@ public class CommandLine {
             return new Layout(aColorScheme, tt, createDefaultOptionRenderer(), createDefaultParameterRenderer());
         }
 
-        private int calcLongOptionColumnWidth(List<OptionSpec> options, List<PositionalParamSpec> positionalParamSpecs, ColorScheme aColorScheme) {
+        /** Returns the width of the long options column in the usage help message.
+         * @param options the options shown in the usage help message
+         * @param positionals the positional parameters shown in the usage help message
+         * @param aColorScheme the colorscheme used in the layout to create {@linkplain Text} values
+         * @return the width of the long options column in the layout
+         * @since 4.6 */
+        public int calcLongOptionColumnWidth(List<OptionSpec> options, List<PositionalParamSpec> positionals, ColorScheme aColorScheme) {
             int max = 0;
             IOptionRenderer optionRenderer = new DefaultOptionRenderer(false, " ");
             boolean cjk = commandSpec.usageMessage().adjustLineBreaksForWideCJKCharacters();
