@@ -15619,6 +15619,18 @@ public class CommandLine {
             }
             /** Returns the section of the usage help message accumulated in the TextTable owned by this layout. */
             @Override public String toString() { return table.toString(); }
+            /** Returns the ColorScheme used to create Text objects in this layout.
+             * @since 4.6 */
+            public ColorScheme colorScheme() { return colorScheme; }
+            /** Returns the TextTable used in this layout.
+             * @since 4.6 */
+            public TextTable textTable() { return table; }
+            /** Returns the IOptionRenderer used to render options to Text before adding this text to the TextTable in this layout.
+             * @since 4.6 */
+            public IOptionRenderer optionRenderer() { return optionRenderer; }
+            /** Returns the IParameterRenderer used to render positional params to Text before adding this text to the TextTable in this layout.
+             * @since 4.6 */
+            public IParameterRenderer parameterRenderer() { return parameterRenderer; }
         }
         /** Sorts short strings before longer strings. */
         static class ShortestFirst implements Comparator<String> {

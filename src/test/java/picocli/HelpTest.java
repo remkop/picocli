@@ -2478,6 +2478,25 @@ public class HelpTest {
                 "  sub22sub1%n"), sub22);
     }
 
+    @Test
+    public void testLayoutGetters() {
+        ColorScheme colorScheme = new ColorScheme.Builder().build();
+        TextTable table = TextTable.forDefaultColumns(colorScheme, 20, 80);
+        Help.IOptionRenderer optionRenderer = Help.createMinimalOptionRenderer();
+        Help.IParameterRenderer paramRenderer = Help.createMinimalParameterRenderer();
+        Help.Layout layout = new Help.Layout(colorScheme, table, optionRenderer, paramRenderer);
+
+        assertSame(colorScheme, layout.colorScheme());
+        assertSame(table, layout.textTable());
+        assertSame(optionRenderer, layout.optionRenderer());
+        assertSame(paramRenderer, layout.parameterRenderer());
+
+        assertSame(layout.colorScheme, layout.colorScheme());
+        assertSame(layout.table, layout.textTable());
+        assertSame(layout.optionRenderer, layout.optionRenderer());
+        assertSame(layout.parameterRenderer, layout.parameterRenderer());
+    }
+
     @SuppressWarnings("deprecation")
     @Test
     public void testLayoutConstructorCreatesDefaultColumns() {
