@@ -4313,10 +4313,18 @@ and <code>ParseResult::matchedOptionValue</code> to get the (type-converted) val
 <div class="paragraph">
 <p>The simplest way to create a multi-valued option is to declare an annotated field whose type is an array, collection or a map.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-option"</span><span class="o">)</span>
 <span class="kt">int</span><span class="o">[]</span> <span class="n">values</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-option"</span><span class="p">])</span>
+<span class="k">lateinit</span> <span class="kd">var</span> <span class="py">values</span><span class="p">:</span> <span class="nc">IntArray</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4336,10 +4344,18 @@ and <code>ParseResult::matchedOptionValue</code> to get the (type-converted) val
 <div class="paragraph">
 <p>Similarly for multi-valued positional parameters:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Parameters</span>
 <span class="nc">List</span><span class="o">&lt;</span><span class="nc">TimeUnit</span><span class="o">&gt;</span> <span class="n">units</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Parameters</span>
+<span class="k">lateinit</span> <span class="kd">var</span> <span class="py">units</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">TimeUnit</span><span class="p">&gt;</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4357,13 +4373,22 @@ and <code>ParseResult::matchedOptionValue</code> to get the (type-converted) val
 <div class="sect3">
 <h4 id="_repeated_boolean_options"><a class="anchor" href="#_repeated_boolean_options"></a>6.1.3. Repeated Boolean Options</h4>
 <div class="paragraph">
-<p>Boolean options with multiple values are supported from picocli 2.1.0.</p>
+<p>Boolean options with multiple values are supported as of picocli 2.1.0.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-v"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"Specify multiple -v options to increase verbosity."</span><span class="o">,</span>
                                       <span class="s">"For example, `-v -v -v` or `-vvv`"</span><span class="o">})</span>
 <span class="kt">boolean</span><span class="o">[]</span> <span class="n">verbosity</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-v"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Specify multiple -v options to increase verbosity."</span><span class="p">,</span>
+                                        <span class="s">"For example, `-v -v -v` or `-vvv`"</span><span class="p">])</span>
+<span class="k">lateinit</span> <span class="kd">var</span> <span class="py">verbosity</span><span class="p">:</span> <span class="nc">BooleanArray</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4385,10 +4410,18 @@ and <code>ParseResult::matchedOptionValue</code> to get the (type-converted) val
 <p>Options and parameters may also specify a <code>split</code> regular expression used to split each option parameter into smaller substrings.
 Each of these substrings is converted to the type of the collection or array. See <a href="#_arrays_and_collections">Arrays and Collections</a>.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-option"</span><span class="o">,</span> <span class="n">split</span> <span class="o">=</span> <span class="s">","</span><span class="o">)</span>
 <span class="kt">int</span><span class="o">[]</span> <span class="n">values</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-option"</span><span class="p">],</span> <span class="n">split</span> <span class="p">=</span> <span class="s">","</span><span class="p">)</span>
+<span class="k">lateinit</span> <span class="kd">var</span> <span class="py">values</span><span class="p">:</span> <span class="nc">IntArray</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4402,10 +4435,18 @@ Each of these substrings is converted to the type of the collection or array. Se
 <div class="paragraph">
 <p>Similarly for <a href="#_maps">Maps</a>:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-fix"</span><span class="o">,</span> <span class="n">split</span> <span class="o">=</span> <span class="s">"\\|"</span><span class="o">,</span> <span class="n">splitSynopsisLabel</span> <span class="o">=</span> <span class="s">"|"</span><span class="o">)</span>
 <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">,</span> <span class="nc">String</span><span class="o">&gt;</span> <span class="n">message</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-fix"</span><span class="p">],</span> <span class="n">split</span> <span class="p">=</span> <span class="s">"\\|"</span><span class="p">,</span> <span class="n">splitSynopsisLabel</span> <span class="p">=</span> <span class="s">"|"</span><span class="p">)</span>
+<span class="k">lateinit</span> <span class="kd">var</span> <span class="py">message</span><span class="p">:</span> <span class="nc">Map</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">,</span> <span class="nc">String</span><span class="p">&gt;</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4445,7 +4486,8 @@ See <a href="#_split_synopsis_label">Split Synopsis Label</a> for details.</p>
 <p>The <code>arity</code> attribute can specify an exact number of required parameters, or a <em>range</em> with a minimum and a maximum number of parameters.
 The maximum can be an exact upper bound, or it can be <code>"*"</code> to denote <em>any number</em> of parameters. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">ArityDemo</span> <span class="o">{</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">arity</span> <span class="o">=</span> <span class="s">"1..3"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"one to three Files"</span><span class="o">)</span>
@@ -4457,6 +4499,21 @@ The maximum can be an exact upper bound, or it can be <code>"*"</code> to denote
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-s"</span><span class="o">,</span> <span class="n">arity</span> <span class="o">=</span> <span class="s">"1..*"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"at least one string"</span><span class="o">)</span>
     <span class="nc">String</span><span class="o">[]</span> <span class="n">strings</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">ArityDemo</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">arity</span> <span class="p">=</span> <span class="s">"1..3"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"one to three Files"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">files</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-f"</span><span class="p">],</span> <span class="n">arity</span> <span class="p">=</span> <span class="s">"2"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"exactly two floating point numbers"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">doubles</span><span class="p">:</span> <span class="nc">DoubleArray</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-s"</span><span class="p">],</span> <span class="n">arity</span> <span class="p">=</span> <span class="s">"1..*"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"at least one string"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">strings</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4509,7 +4566,8 @@ Such values are simply consumed by the option with variable arity. From picocli 
 <div class="paragraph">
 <p>For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">Ambiguous</span> <span class="o">{</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">description</span> <span class="o">=</span> <span class="s">"The file (required)."</span><span class="o">)</span>
@@ -4519,6 +4577,19 @@ Such values are simply consumed by the option with variable arity. From picocli 
       <span class="n">description</span> <span class="o">=</span> <span class="s">"Option with optional parameters"</span><span class="o">)</span>
     <span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">values</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">Ambiguous</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"The file (required)."</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">file</span><span class="p">:</span> <span class="nc">File</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-y"</span><span class="p">],</span> <span class="n">arity</span> <span class="p">=</span> <span class="s">"0..*"</span><span class="p">,</span>
+      <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Option with optional parameters"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">values</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4654,14 +4725,26 @@ the presence or absence of the option can be used like a boolean flag to trigger
 <div class="paragraph">
 <p>An example use case is an option that switches on logging when present, with an optional value to set the log level. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--syslog"</span><span class="o">,</span> <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"OFF"</span><span class="o">,</span> <span class="n">fallbackValue</span> <span class="o">=</span> <span class="s">"INFO"</span><span class="o">,</span>
-  <span class="n">description</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="o">{</span>
         <span class="s">"When specified without arguments, start sending syslog messages at INFO level."</span><span class="o">,</span>
         <span class="s">"If absent, no messages are sent to syslog."</span><span class="o">,</span>
         <span class="s">"Optionally specify a severity value. Valid values: ${COMPLETION-CANDIDATES}."</span><span class="o">})</span>
 <span class="nc">MyLogLevel</span> <span class="n">syslogLevel</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--syslog"</span><span class="p">],</span> <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"OFF"</span><span class="p">,</span> <span class="n">fallbackValue</span> <span class="p">=</span> <span class="s">"INFO"</span><span class="p">,</span>
+    <span class="n">description</span> <span class="p">=</span> <span class="p">[</span>
+        <span class="s">"When specified without arguments, start sending syslog messages at INFO level."</span><span class="p">,</span>
+        <span class="s">"If absent, no messages are sent to syslog."</span><span class="p">,</span>
+        <span class="s">"Optionally specify a severity value. Valid values: \${COMPLETION-CANDIDATES}."</span><span class="p">])</span>
+<span class="k">lateinit</span> <span class="kd">var</span> <span class="py">syslogLevel</span><span class="p">:</span> <span class="nc">MyLogLevel</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -4690,7 +4773,8 @@ the presence or absence of the option can be used like a boolean flag to trigger
 <div class="paragraph">
 <p>For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">Ambiguous</span> <span class="o">{</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">description</span> <span class="o">=</span> <span class="s">"The file (required)."</span><span class="o">)</span>
@@ -4700,6 +4784,19 @@ the presence or absence of the option can be used like a boolean flag to trigger
       <span class="n">description</span> <span class="o">=</span> <span class="s">"Option with optional parameter"</span><span class="o">)</span>
     <span class="nc">String</span> <span class="n">value</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">Ambiguous</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"The file (required)."</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">file</span><span class="p">:</span> <span class="nc">File</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">],</span> <span class="n">arity</span> <span class="p">=</span> <span class="s">"0..1"</span><span class="p">,</span>
+        <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Option with optional parameter"</span><span class="p">])</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">value</span><span class="p">:</span> <span class="nc">String</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7064,18 +7161,36 @@ This is the case regardless of abbreviations, but be aware that with abbreviated
 <div class="paragraph">
 <p>For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">AbbreviationsAndPosix</span> <span class="o">{</span>
-    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-A"</span><span class="o">)</span> <span class="kt">boolean</span> <span class="n">a</span><span class="o">;</span>
-    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-B"</span><span class="o">)</span> <span class="kt">boolean</span> <span class="n">b</span><span class="o">;</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-A"</span><span class="o">)</span>      <span class="kt">boolean</span> <span class="n">a</span><span class="o">;</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-B"</span><span class="o">)</span>      <span class="kt">boolean</span> <span class="n">b</span><span class="o">;</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-AaaBbb"</span><span class="o">)</span> <span class="kt">boolean</span> <span class="n">aaaBbb</span><span class="o">;</span>
 <span class="o">}</span>
+
 <span class="nc">AbbreviationsAndPosix</span> <span class="n">app</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">AbbreviationsAndPosix</span><span class="o">();</span>
 <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="n">app</span><span class="o">).</span><span class="na">setAbbreviatedOptionsAllowed</span><span class="o">(</span><span class="kc">true</span><span class="o">).</span><span class="na">parseArgs</span><span class="o">(</span><span class="s">"-AB"</span><span class="o">);</span>
-<span class="n">assertTrue</span><span class="o">(</span><span class="n">app</span><span class="o">.</span><span class="na">aaaBbb</span><span class="o">);</span> <span class="c1">// the long option is matched from abbreviated input -AB</span>
-<span class="n">assertFalse</span><span class="o">(</span><span class="n">app</span><span class="o">.</span><span class="na">a</span><span class="o">);</span>
-<span class="n">assertFalse</span><span class="o">(</span><span class="n">app</span><span class="o">.</span><span class="na">b</span><span class="o">);</span></code></pre>
+<span class="k">assert</span> <span class="n">app</span><span class="o">.</span><span class="na">aaaBbb</span> <span class="o">==</span> <span class="kc">true</span><span class="o">;</span> <span class="c1">// the long option is matched from abbreviated input -AB</span>
+<span class="k">assert</span> <span class="n">app</span><span class="o">.</span><span class="na">a</span> <span class="o">==</span> <span class="kc">false</span><span class="o">;</span>
+<span class="k">assert</span> <span class="n">app</span><span class="o">.</span><span class="na">b</span> <span class="o">==</span> <span class="kc">false</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">AbbreviationsAndPosix</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-A"</span><span class="p">])</span>       <span class="kd">var</span> <span class="py">a</span> <span class="p">=</span> <span class="k">false</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-B"</span><span class="p">])</span>       <span class="kd">var</span> <span class="py">b</span> <span class="p">=</span> <span class="k">false</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-AaaBbb"</span><span class="p">])</span>  <span class="kd">var</span> <span class="py">aaaBbb</span> <span class="p">=</span> <span class="k">false</span>
+<span class="p">}</span>
+
+<span class="kd">val</span> <span class="py">app</span> <span class="p">=</span> <span class="nc">AbbreviationsAndPosix</span><span class="p">()</span>
+<span class="nc">CommandLine</span><span class="p">(</span><span class="n">app</span><span class="p">).</span><span class="nf">setAbbreviatedOptionsAllowed</span><span class="p">(</span><span class="k">true</span><span class="p">).</span><span class="nf">parseArgs</span><span class="p">(</span><span class="s">"-AB"</span><span class="p">)</span>
+<span class="nf">assertTrue</span><span class="p">(</span><span class="n">app</span><span class="p">.</span><span class="n">aaaBbb</span><span class="p">)</span> <span class="c1">// the long option is matched from abbreviated input -AB</span>
+<span class="nf">assertFalse</span><span class="p">(</span><span class="n">app</span><span class="p">.</span><span class="n">a</span><span class="p">)</span>
+<span class="nf">assertFalse</span><span class="p">(</span><span class="n">app</span><span class="p">.</span><span class="n">b</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7089,9 +7204,16 @@ This is the case regardless of abbreviations, but be aware that with abbreviated
 <p>When a single-value option is specified multiple times on the command line, the default parser behaviour is to throw an <code>OverwrittenOptionException</code>.
 For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"-p"</span><span class="o">)</span> <span class="kt">int</span> <span class="n">port</span><span class="o">;</span></code></pre>
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-p"</span><span class="o">)</span> <span class="kt">int</span> <span class="n">port</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-p"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">port</span> <span class="p">=</span> <span class="mi">0</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7136,11 +7258,20 @@ unmatched arguments list returned by <code>CommandLine::getUnmatchedArguments</c
 <p>By default, an <code>UnmatchedArgumentException</code> is thrown when a command line argument cannot be assigned to an option or positional parameter.
 For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">OnlyThree</span> <span class="o">{</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">arity</span> <span class="o">=</span> <span class="s">"3"</span><span class="o">)</span> <span class="nc">String</span><span class="o">[]</span> <span class="n">values</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">OnlyThree</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">arity</span> <span class="p">=</span> <span class="s">"3"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">values</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7164,7 +7295,7 @@ When unmatched arguments are allowed, the above input will be accepted and a WAR
 <div class="sect2">
 <h3 id="unmatched-annotation"><a class="anchor" href="#unmatched-annotation"></a>11.7. <code>@Unmatched</code> annotation</h3>
 <div class="paragraph">
-<p>From picocli 3.0, fields annotated with <code>@Unmatched</code> will be populated with the unmatched arguments.
+<p>As of picocli 3.0, fields annotated with <code>@Unmatched</code> will be populated with the unmatched arguments.
 The field must be of type <code>String[]</code> or <code>List&lt;String&gt;</code>.</p>
 </div>
 <div class="paragraph">
@@ -7196,11 +7327,20 @@ Negative numbers are not considered to be unknown options, so values like <code>
 <div class="paragraph">
 <p>For example, the value <code>-z</code> is considered an unknown option when we have a command that only defines options <code>-x</code> and <code>-y</code>:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">x</span><span class="o">;</span>
 <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-y"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">y</span><span class="o">;</span>
 <span class="nd">@Parameters</span> <span class="nc">String</span><span class="o">[]</span> <span class="n">remainder</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">])</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">x</span><span class="p">:</span> <span class="nc">String</span>
+<span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-y"</span><span class="p">])</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">y</span><span class="p">:</span> <span class="nc">String</span>
+<span class="nd">@Parameters</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">remainder</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7258,31 +7398,58 @@ Setting this to <code>false</code> will result in values resembling option names
 <div class="paragraph">
 <p>For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">MyApp</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">x</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">MyApp</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">])</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">x</span><span class="p">:</span> <span class="nc">String</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>By default, a value like <code>-z</code>, which resembles an option, is accepted as the parameter for <code>-x</code>:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="nc">App</span> <span class="n">app</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">App</span><span class="o">();</span>
+<pre class="rouge highlight"><code data-lang="java"><span class="nc">MyApp</span> <span class="n">app</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">MyApp</span><span class="o">();</span>
 <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="n">app</span><span class="o">).</span><span class="na">parseArgs</span><span class="o">(</span><span class="s">"-x"</span><span class="o">,</span> <span class="s">"-z"</span><span class="o">);</span>
-<span class="n">assertEquals</span><span class="o">(</span><span class="s">"-z"</span><span class="o">,</span> <span class="n">app</span><span class="o">.</span><span class="na">x</span><span class="o">);</span></code></pre>
+<span class="k">assert</span> <span class="s">"-z"</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">app</span><span class="o">.</span><span class="na">x</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">app</span> <span class="p">=</span> <span class="nc">MyApp</span><span class="p">()</span>
+<span class="nc">CommandLine</span><span class="p">(</span><span class="n">app</span><span class="p">).</span><span class="nf">parseArgs</span><span class="p">(</span><span class="s">"-x"</span><span class="p">,</span> <span class="s">"-z"</span><span class="p">)</span>
+<span class="nf">assertEquals</span><span class="p">(</span><span class="s">"-z"</span><span class="p">,</span> <span class="n">app</span><span class="p">.</span><span class="n">x</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>After setting the <code>unmatchedOptionsAllowedAsOptionParameters</code> parser option to <code>false</code>, values resembling an option are rejected as parameter for <code>-x</code>:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">App</span><span class="o">())</span>
+<pre class="rouge highlight"><code data-lang="java"><span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">MyApp</span><span class="o">())</span>
         <span class="o">.</span><span class="na">setUnmatchedOptionsAllowedAsOptionParameters</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
         <span class="o">.</span><span class="na">parseArgs</span><span class="o">(</span><span class="s">"-x"</span><span class="o">,</span> <span class="s">"-z"</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyApp</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">setUnmatchedOptionsAllowedAsOptionParameters</span><span class="p">(</span><span class="k">false</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">parseArgs</span><span class="p">(</span><span class="s">"-x"</span><span class="p">,</span> <span class="s">"-z"</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7290,7 +7457,7 @@ Setting this to <code>false</code> will result in values resembling option names
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>"Unknown option '-z'; Expected parameter for option '-x' but found '-z'"</pre>
+<pre>"Unknown option: '-z'; Expected parameter for option '-x' but found '-z'"</pre>
 </div>
 </div>
 </div>
@@ -7301,7 +7468,8 @@ Setting this to <code>false</code> will result in values resembling option names
 <p>Since picocli 4.4, the parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes.
 For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">App</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">x</span><span class="o">;</span>
@@ -7315,9 +7483,24 @@ For example:</p>
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">App</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">x</span><span class="p">:</span> <span class="nc">String</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-y"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">y</span><span class="p">:</span> <span class="nc">String</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="kd">val</span> <span class="py">app</span> <span class="p">=</span> <span class="nc">App</span><span class="p">()</span>
+    <span class="nc">CommandLine</span><span class="p">(</span><span class="n">app</span><span class="p">).</span><span class="nf">setTrimQuotes</span><span class="p">(</span><span class="k">true</span><span class="p">).</span><span class="nf">parseArgs</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+    <span class="nf">println</span><span class="p">(</span><span class="s">"x='${app.x}', y='${app.y}'"</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>In previous versions of picocli, the above command would accept input <code>-x -y</code>, and the value <code>-y</code> would be assigned to the <code>x</code> String field.
-From picocli 4.4, the above input will be rejected with an error message indicating that the <code>-x</code> option requires a parameter.</p>
+As of picocli 4.4, the above input will be rejected with an error message indicating that the <code>-x</code> option requires a parameter.</p>
 </div>
 <div class="paragraph">
 <p>If it is necessary to accept values that match option names, such values need to be quoted.
@@ -7460,10 +7643,18 @@ languages like Clojure where idiomatic error handling does not involve throwing 
 <div class="paragraph">
 <p>Example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
-<pre class="rouge highlight"><code>@Option(names = "-x", split = ",")
-String[] parts;</code></pre>
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">,</span> <span class="n">split</span> <span class="o">=</span> <span class="s">","</span><span class="o">)</span>
+<span class="nc">String</span><span class="o">[]</span> <span class="n">parts</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">],</span> <span class="n">split</span> <span class="p">=</span> <span class="s">","</span><span class="p">)</span>
+<span class="k">lateinit</span> <span class="kd">var</span> <span class="py">parts</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7657,7 +7848,8 @@ options for the <code>find</code> command itself, but are interpreted as a separ
 <div class="paragraph">
 <p>The example below demonstrates how to implement <code>find -exec</code> using this API:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"find"</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">Find</span> <span class="o">{</span>
@@ -7679,6 +7871,31 @@ options for the <code>find</code> command itself, but are interpreted as a separ
         <span class="o">}</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"find"</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">Find</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-exec"</span><span class="p">],</span> <span class="n">parameterConsumer</span> <span class="p">=</span> <span class="nc">ExecParameterConsumer</span><span class="o">::</span><span class="k">class</span><span class="p">)</span>
+    <span class="kd">var</span> <span class="py">list</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span> <span class="p">=</span> <span class="nc">ArrayList</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="nc">ExecParameterConsumer</span> <span class="p">:</span> <span class="nc">IParameterConsumer</span> <span class="p">{</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">consumeParameters</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Stack</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;,</span> <span class="n">argSpec</span><span class="p">:</span> <span class="nc">ArgSpec</span><span class="p">,</span> <span class="n">commandSpec</span><span class="p">:</span> <span class="nc">CommandSpec</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">val</span> <span class="py">list</span> <span class="p">=</span> <span class="n">argSpec</span><span class="p">.</span><span class="n">getValue</span><span class="p">&lt;</span><span class="nc">MutableList</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;&gt;()</span>
+        <span class="k">while</span> <span class="p">(!</span><span class="n">args</span><span class="p">.</span><span class="nf">isEmpty</span><span class="p">())</span> <span class="p">{</span>
+            <span class="kd">val</span> <span class="py">arg</span> <span class="p">=</span> <span class="n">args</span><span class="p">.</span><span class="nf">pop</span><span class="p">()</span>
+            <span class="n">list</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+
+            <span class="c1">// `find -exec` semantics: stop processing after a ';' or '+' argument</span>
+            <span class="k">if</span> <span class="p">(</span><span class="s">";"</span><span class="p">.</span><span class="nf">equals</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="p">||</span> <span class="s">"+"</span><span class="p">.</span><span class="nf">equals</span><span class="p">(</span><span class="n">arg</span><span class="p">))</span> <span class="p">{</span>
+                <span class="k">break</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -9466,7 +9683,7 @@ Commands defined with <code>@Command(usageHelpWidth = NUMBER)</code> in the anno
 <div class="sect2">
 <h3 id="_auto_terminal_width"><a class="anchor" href="#_auto_terminal_width"></a>14.22. Auto (Terminal) Width</h3>
 <div class="paragraph">
-<p>From 4.0, commands defined with <code>@Command(usageHelpAutoWidth = true)</code> will try to adjust the usage message help layout to the terminal width.
+<p>As of picocli 4.0, commands defined with <code>@Command(usageHelpAutoWidth = true)</code> will try to adjust the usage message help layout to the terminal width.
 There is also programmatic API to control this via the <code>CommandLine::setUsageHelpAutoWidth</code> and <code>UsageMessageSpec::autoWidth</code> methods.</p>
 </div>
 <div class="paragraph">
@@ -9500,7 +9717,7 @@ but by default this column does not grow larger than 20 characters.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>From picocli 4.2, there is programmatic API to change this via the <code>CommandLine::setLongOptionsMaxWidth</code> and <code>UsageMessageSpec::longOptionsMaxWidth</code> methods.</p>
+<p>As of picocli 4.2, there is programmatic API to change this via the <code>CommandLine::setLongOptionsMaxWidth</code> and <code>UsageMessageSpec::longOptionsMaxWidth</code> methods.</p>
 </div>
 <div class="paragraph">
 <p>In the above example, if we call <code>commandLine.setLongOptionsMaxWidth(23)</code> before printing the usage help, we get this result:</p>
@@ -9547,9 +9764,16 @@ following a convention introduced by <a href="https://github.com/fusesource/jans
 Immediately following the <code>@|</code> is a comma-separated list of colors and styles, so <code>@|STYLE1[,STYLE2]&#8230;&#8203; text|@</code>.
 For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">description</span> <span class="o">=</span> <span class="s">"Custom @|bold,underline styles|@ and @|fg(red) colors|@."</span><span class="o">)</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Custom @|bold,underline styles|@ and @|fg(red) colors|@."</span><span class="p">])</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -9611,7 +9835,8 @@ Similarly, <code>fg(&lt;color&gt;)</code> explicitly sets the foreground color.<
 <div class="paragraph">
 <p>The example below shows how this markup can be used to add colors and styles to the headings and descriptions of a usage help message:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"commit"</span><span class="o">,</span>
         <span class="n">sortOptions</span> <span class="o">=</span> <span class="kc">false</span><span class="o">,</span>
@@ -9623,7 +9848,23 @@ Similarly, <code>fg(&lt;color&gt;)</code> explicitly sets the foreground color.<
         <span class="n">header</span> <span class="o">=</span> <span class="s">"Record changes to the repository."</span><span class="o">,</span>
         <span class="n">description</span> <span class="o">=</span> <span class="s">"Stores the current contents of the index in a new commit "</span> <span class="o">+</span>
                 <span class="s">"along with a log message from the user describing the changes."</span><span class="o">)</span>
-<span class="kd">class</span> <span class="nc">GitCommit</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span></code></pre>
+<span class="kd">class</span> <span class="nc">GitCommit</span> <span class="o">{</span> <span class="cm">/* ... */</span> <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"commit"</span><span class="p">,</span>
+        <span class="n">sortOptions</span> <span class="p">=</span> <span class="k">false</span><span class="p">,</span>
+        <span class="n">headerHeading</span> <span class="p">=</span> <span class="s">"@|bold,underline Usage|@:%n%n"</span><span class="p">,</span>
+        <span class="n">synopsisHeading</span> <span class="p">=</span> <span class="s">"%n"</span><span class="p">,</span>
+        <span class="n">descriptionHeading</span> <span class="p">=</span> <span class="s">"%n@|bold,underline Description|@:%n%n"</span><span class="p">,</span>
+        <span class="n">parameterListHeading</span> <span class="p">=</span> <span class="s">"%n@|bold,underline Parameters|@:%n"</span><span class="p">,</span>
+        <span class="n">optionListHeading</span> <span class="p">=</span> <span class="s">"%n@|bold,underline Options|@:%n"</span><span class="p">,</span>
+        <span class="n">header</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Record changes to the repository."</span><span class="p">],</span>
+        <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Stores the current contents of the index in a new commit "</span> <span class="p">+</span>
+                <span class="s">"along with a log message from the user describing the changes."</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">GitCommit</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="admonitionblock caution">
@@ -9654,12 +9895,22 @@ and <a href="#_static_version_information">version information</a>.</p>
 <p>Applications can use the picocli <code>Ansi</code> class directly to create colored output.
 By using the <code>Ansi.AUTO</code> enum value, picocli will  <a href="#_heuristics_for_enabling_ansi">auto-detect</a> whether it can emit ANSI escape codes or only the plain text.</p>
 </div>
-<div class="listingblock">
-<div class="title">Using the picocli <code>Ansi</code> API to generate colored output.</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="c1">// import picocli.CommandLine.Help.Ansi;</span>
+<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">picocli.CommandLine.Help.Ansi</span><span class="o">;</span>
+<span class="c1">// ...</span>
 <span class="nc">String</span> <span class="n">str</span> <span class="o">=</span> <span class="nc">Ansi</span><span class="o">.</span><span class="na">AUTO</span><span class="o">.</span><span class="na">string</span><span class="o">(</span><span class="s">"@|bold,green,underline Hello, colored world!|@"</span><span class="o">);</span>
 <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">str</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">picocli.CommandLine.Help.Ansi;</span>
+<span class="c1">// ...</span>
+<span class="kd">val</span> <span class="py">str</span><span class="p">:</span> <span class="nc">String</span> <span class="p">=</span> <span class="nc">Ansi</span><span class="p">.</span><span class="nc">AUTO</span><span class="p">.</span><span class="nf">string</span><span class="p">(</span><span class="s">"@|bold,green,underline Hello, colored world!|@"</span><span class="p">)</span>
+<span class="nf">println</span><span class="p">(</span><span class="n">str</span><span class="p">)</span></code></pre>
 </div>
 </div>
 </div>
@@ -9699,7 +9950,8 @@ There are no annotations to modify this color scheme, but it can be changed prog
 <div class="paragraph">
 <p>The below code snippet shows how a custom color scheme can be specified to configure the usage help message style:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="c1">// see also CommandLine.Help.defaultColorScheme()</span>
 <span class="nc">ColorScheme</span> <span class="n">colorScheme</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ColorScheme</span><span class="o">.</span><span class="na">Builder</span><span class="o">()</span>
@@ -9712,13 +9964,30 @@ There are no annotations to modify this color scheme, but it can be changed prog
         <span class="o">.</span><span class="na">build</span><span class="o">();</span>
 
 <span class="nc">CommandLine</span><span class="o">.</span><span class="na">usage</span><span class="o">(</span><span class="n">annotatedObject</span><span class="o">,</span> <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">,</span> <span class="n">colorScheme</span><span class="o">);</span>
-<span class="o">...</span></code></pre>
+<span class="c1">// ...</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="c1">// see also CommandLine.Help.defaultColorScheme()</span>
+<span class="kd">val</span> <span class="py">colorScheme</span><span class="p">:</span> <span class="nc">Help</span><span class="p">.</span><span class="nc">ColorScheme</span> <span class="p">=</span> <span class="nc">ColorScheme</span><span class="p">.</span><span class="nc">Builder</span><span class="p">()</span>
+        <span class="p">.</span><span class="nf">commands</span>    <span class="p">(</span><span class="nc">Style</span><span class="p">.</span><span class="n">bold</span><span class="p">,</span> <span class="nc">Style</span><span class="p">.</span><span class="n">underline</span><span class="p">)</span>    <span class="c1">// combine multiple styles</span>
+        <span class="p">.</span><span class="nf">options</span>     <span class="p">(</span><span class="nc">Style</span><span class="p">.</span><span class="n">fg_yellow</span><span class="p">)</span>                <span class="c1">// yellow foreground color</span>
+        <span class="p">.</span><span class="nf">parameters</span>  <span class="p">(</span><span class="nc">Style</span><span class="p">.</span><span class="n">fg_yellow</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">optionParams</span><span class="p">(</span><span class="nc">Style</span><span class="p">.</span><span class="n">italic</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">errors</span>      <span class="p">(</span><span class="nc">Style</span><span class="p">.</span><span class="n">fg_red</span><span class="p">,</span> <span class="nc">Style</span><span class="p">.</span><span class="n">bold</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">stackTraces</span> <span class="p">(</span><span class="nc">Style</span><span class="p">.</span><span class="n">italic</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">build</span><span class="p">()</span>
+
+<span class="nc">CommandLine</span><span class="p">.</span><span class="nf">usage</span><span class="p">(</span><span class="n">annotatedObject</span><span class="p">,</span> <span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">,</span> <span class="n">colorScheme</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>When using the <a href="#execute"><code>execute</code></a> API, you can configure a <code>ColorScheme</code> like this:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
     <span class="nc">ColorScheme</span> <span class="n">colorScheme</span> <span class="o">=</span> <span class="n">createColorScheme</span><span class="o">();</span>
@@ -9727,6 +9996,18 @@ There are no annotations to modify this color scheme, but it can be changed prog
             <span class="o">.</span><span class="na">setColorScheme</span><span class="o">(</span><span class="n">colorScheme</span><span class="o">)</span> <span class="c1">// use this color scheme in the usage help message</span>
             <span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="kd">val</span> <span class="py">colorScheme</span><span class="p">:</span> <span class="nc">ColorScheme</span> <span class="p">=</span> <span class="nf">createColorScheme</span><span class="p">()</span>
+
+    <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyApp</span><span class="p">())</span>
+            <span class="p">.</span><span class="nf">setColorScheme</span><span class="p">(</span><span class="n">colorScheme</span><span class="p">)</span> <span class="c1">// use this color scheme in the usage help message</span>
+            <span class="p">.</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -9798,15 +10079,28 @@ None of the below is mandatory. If not supported, picocli will simply not emit A
 <div class="paragraph">
 <p>To use Jansi, you need to enable it in your application. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">org.fusesource.jansi.AnsiConsole</span><span class="o">;</span>
-<span class="o">...</span>
+<span class="c1">// ...</span>
 <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
     <span class="nc">AnsiConsole</span><span class="o">.</span><span class="na">systemInstall</span><span class="o">();</span> <span class="c1">// enable colors on Windows</span>
     <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">WindowsJansiDemo</span><span class="o">()).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
     <span class="nc">AnsiConsole</span><span class="o">.</span><span class="na">systemUninstall</span><span class="o">();</span> <span class="c1">// cleanup when done</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">org.fusesource.jansi.AnsiConsole;</span>
+<span class="c1">// ...</span>
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="nc">AnsiConsole</span><span class="p">.</span><span class="nf">systemInstall</span><span class="p">()</span> <span class="c1">// enable colors on Windows</span>
+    <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">WindowsJansiDemo</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+    <span class="nc">AnsiConsole</span><span class="p">.</span><span class="nf">systemUninstall</span><span class="p">()</span> <span class="c1">// cleanup when done</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -9819,10 +10113,11 @@ This is partly because GraalVM requires configuration and partly because Jansi i
 <div class="paragraph">
 <p>Users may be interested in combining Jansi with <a href="https://github.com/remkop/picocli-jansi-graalvm">picocli-jansi-graalvm</a> until this issue is fixed. Example usage:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">picocli.jansi.graalvm.AnsiConsole</span><span class="o">;</span> <span class="c1">// not org.fusesource.jansi.AnsiConsole</span>
-<span class="o">...</span>
+<span class="c1">// ...</span>
 <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
     <span class="kt">int</span> <span class="n">exitCode</span><span class="o">;</span>
     <span class="k">try</span> <span class="o">(</span><span class="nc">AnsiConsole</span> <span class="n">ansi</span> <span class="o">=</span> <span class="nc">AnsiConsole</span><span class="o">.</span><span class="na">windowsInstall</span><span class="o">())</span> <span class="o">{</span>
@@ -9830,6 +10125,19 @@ This is partly because GraalVM requires configuration and partly because Jansi i
     <span class="o">}</span>
     <span class="nc">System</span><span class="o">.</span><span class="na">exit</span><span class="o">(</span><span class="n">exitCode</span><span class="o">);</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">picocli.jansi.graalvm.AnsiConsole</span> <span class="c1">// not org.fusesource.jansi.AnsiConsole</span>
+<span class="c1">// ...</span>
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="kd">val</span> <span class="py">exitCode</span><span class="p">:</span> <span class="nc">Int</span>
+    <span class="nc">AnsiConsole</span><span class="p">.</span><span class="nf">windowsInstall</span><span class="p">().</span><span class="nf">use</span>
+        <span class="p">{</span> <span class="n">exitCode</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">MyApp</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span> <span class="p">}</span>
+    <span class="nc">System</span><span class="p">.</span><span class="nf">exit</span><span class="p">(</span><span class="n">exitCode</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -9908,12 +10216,22 @@ This overrides the value of system property <code>picocli.ansi</code>. For examp
 </li>
 </ul>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">picocli.CommandLine.Help.Ansi</span><span class="o">;</span>
 
 <span class="c1">// print usage help message to STDOUT without ANSI escape codes</span>
 <span class="nc">CommandLine</span><span class="o">.</span><span class="na">usage</span><span class="o">(</span><span class="k">new</span> <span class="nc">App</span><span class="o">(),</span> <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">,</span> <span class="nc">Ansi</span><span class="o">.</span><span class="na">OFF</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">picocli.CommandLine.Help.Ansi</span>
+
+<span class="c1">// print usage help message to STDOUT without ANSI escape codes</span>
+<span class="nc">CommandLine</span><span class="p">.</span><span class="nf">usage</span><span class="p">(</span><span class="nc">App</span><span class="p">(),</span> <span class="nc">System</span><span class="p">.</span><span class="k">out</span><span class="p">,</span> <span class="nc">Ansi</span><span class="p">.</span><span class="nc">OFF</span><span class="p">)</span></code></pre>
 </div>
 </div>
 </div>
@@ -12370,7 +12688,8 @@ A resource bundle can be set via annotations and programmatically.</p>
 <div class="paragraph">
 <p>Annotation example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java / Kotlin</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"i18n-demo"</span><span class="o">,</span> <span class="n">resourceBundle</span> <span class="o">=</span> <span class="s">"my.org.I18nDemo_Messages"</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">I18nDemo</span> <span class="o">{}</span></code></pre>
@@ -12379,12 +12698,22 @@ A resource bundle can be set via annotations and programmatically.</p>
 <div class="paragraph">
 <p>Programmatic example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span> <span class="kd">class</span> <span class="nc">I18nDemo2</span> <span class="o">{}</span>
 
 <span class="nc">CommandLine</span> <span class="n">cmd</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">I18nDemo2</span><span class="o">());</span>
 <span class="n">cmd</span><span class="o">.</span><span class="na">setResourceBundle</span><span class="o">(</span><span class="nc">ResourceBundle</span><span class="o">.</span><span class="na">getBundle</span><span class="o">(</span><span class="s">"my.org.I18nDemo2_Messages"</span><span class="o">));</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span> <span class="kd">class</span> <span class="nc">I18nDemo2</span> <span class="p">{}</span>
+
+<span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">I18nDemo2</span><span class="p">())</span>
+<span class="n">cmd</span><span class="p">.</span><span class="n">resourceBundle</span> <span class="p">=</span> <span class="nc">ResourceBundle</span><span class="p">.</span><span class="nf">getBundle</span><span class="p">(</span><span class="s">"my.org.I18nDemo2_Messages"</span><span class="p">)</span></code></pre>
 </div>
 </div>
 </div>
@@ -12454,9 +12783,16 @@ picocli.endofoptions = Separates options from positional parameters.</code></pre
 <div class="paragraph">
 <p>For options and positional parameters, the optional annotation attribute <code>descriptionKey</code> can be used to localize the description. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">,</span> <span class="n">descriptionKey</span> <span class="o">=</span> <span class="s">"xoption"</span><span class="o">)</span> <span class="kt">int</span> <span class="n">x</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">],</span> <span class="n">descriptionKey</span> <span class="p">=</span> <span class="s">"xoption"</span><span class="p">)</span> <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="mi">0</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -12470,9 +12806,16 @@ picocli.endofoptions = Separates options from positional parameters.</code></pre
 <div class="paragraph">
 <p>When the <code>descriptionKey</code> is omitted, the <a href="https://picocli.info/apidocs/picocli/CommandLine.Option.html#descriptionKey--">fallback for options</a> is any option name without the leading dashes, for example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-v"</span><span class="o">,</span> <span class="s">"--verbose"</span><span class="o">})</span> <span class="kt">boolean</span><span class="o">[]</span> <span class="n">verbose</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-v"</span><span class="p">,</span> <span class="s">"--verbose"</span><span class="p">])</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">verbose</span><span class="p">:</span> <span class="nc">BooleanArray</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -12487,9 +12830,16 @@ picocli.endofoptions = Separates options from positional parameters.</code></pre
 <div class="paragraph">
 <p>For <a href="https://picocli.info/apidocs/picocli/CommandLine.Parameters.html#descriptionKey--">positional parameters</a> the fallback key is the <code>paramLabel + [ index ]</code>, for example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"0..*"</span><span class="o">,</span> <span class="n">paramLabel</span><span class="o">=</span><span class="s">"FILES"</span><span class="o">)</span> <span class="nc">File</span><span class="o">[];</span></code></pre>
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"0..*"</span><span class="o">,</span> <span class="n">paramLabel</span><span class="o">=</span><span class="s">"FILES"</span><span class="o">)</span> <span class="nc">File</span><span class="o">[]</span> <span class="n">files</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"0..*"</span><span class="p">,</span> <span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"FILES"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">files</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -12503,9 +12853,16 @@ picocli.endofoptions = Separates options from positional parameters.</code></pre
 <div class="paragraph">
 <p>For argument groups, use the <code>headingKey</code> to specify a resource bundle key. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@ArgGroup</span><span class="o">(</span><span class="n">headingKey</span> <span class="o">=</span> <span class="s">"myBundleKey"</span><span class="o">)</span> <span class="nc">MyArgGroup</span> <span class="n">myGroup</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@ArgGroup</span><span class="p">(</span><span class="n">headingKey</span> <span class="p">=</span> <span class="s">"myBundleKey"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">myGroup</span><span class="p">:</span> <span class="nc">MyArgGroup</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -14854,7 +15211,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.2<br>
-Last updated 2020-10-26 06:10:11 +0900
+Last updated 2020-10-27 06:23:54 +0900
 </div>
 </div>
 <style>
