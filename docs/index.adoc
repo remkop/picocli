@@ -8550,7 +8550,8 @@ In order to get you started quickly, the https://github.com/remkop/picocli/blob/
 
 Annotation example:
 
-[source,java]
+.Java / Kotlin
+[source,java,role="primary"]
 ----
 @Command(name = "i18n-demo", resourceBundle = "my.org.I18nDemo_Messages")
 class I18nDemo {}
@@ -8558,12 +8559,22 @@ class I18nDemo {}
 
 Programmatic example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command class I18nDemo2 {}
 
 CommandLine cmd = new CommandLine(new I18nDemo2());
 cmd.setResourceBundle(ResourceBundle.getBundle("my.org.I18nDemo2_Messages"));
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command class I18nDemo2 {}
+
+val cmd = CommandLine(I18nDemo2())
+cmd.resourceBundle = ResourceBundle.getBundle("my.org.I18nDemo2_Messages")
 ----
 
 === Example Resource Bundle
@@ -8629,10 +8640,18 @@ picocli.endofoptions = Separates options from positional parameters.
 
 For options and positional parameters, the optional annotation attribute `descriptionKey` can be used to localize the description. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Option(names = "-x", descriptionKey = "xoption") int x;
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["-x"], descriptionKey = "xoption") var x = 0
+----
+
 The matching entry in the resource bundle could look like this:
 ----
 xoption = This is the description for the -x option.
@@ -8640,9 +8659,16 @@ xoption = This is the description for the -x option.
 
 When the `descriptionKey` is omitted, the https://picocli.info/apidocs/picocli/CommandLine.Option.html#descriptionKey--[fallback for options] is any option name without the leading dashes, for example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Option(names = {"-v", "--verbose"}) boolean[] verbose;
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["-v", "--verbose"]) lateinit var verbose: BooleanArray
 ----
 
 The matching entry in the resource bundle could look like this:
@@ -8653,20 +8679,37 @@ verbose = Show more detail during execution. \
 
 For https://picocli.info/apidocs/picocli/CommandLine.Parameters.html#descriptionKey--[positional parameters] the fallback key is the `paramLabel + [ index ]`, for example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
-@Parameters(index = "0..*", paramLabel="FILES") File[];
+@Parameters(index = "0..*", paramLabel="FILES") File[] files;
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Parameters(index = "0..*", paramLabel = "FILES") lateinit var files: Array<File>
+----
+
 The matching entry in the resource bundle could look like this:
 ----
 FILES[0..*] = The files to process.
 ----
 
 For argument groups, use the `headingKey` to specify a resource bundle key. For example:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 @ArgGroup(headingKey = "myBundleKey") MyArgGroup myGroup;
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@ArgGroup(headingKey = "myBundleKey") lateinit var myGroup: MyArgGroup
+----
+
 The matching entry in the resource bundle could look like this:
 ----
 myBundleKey = The localized heading for this argument group%n
@@ -8731,7 +8774,7 @@ As of version 4.0, picocli supports variable interpolation (variable expansion) 
 === Variable Interpolation Example
 
 .Java
-[source,java,,role="primary"]
+[source,java,role="primary"]
 ----
 @Command(name = "status", mixinStandardHelpOptions = true,
          description = "This command logs the ${COMMAND-NAME} for ${PARENT-COMMAND-NAME}.",
