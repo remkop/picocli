@@ -11554,6 +11554,7 @@ public class CommandLine {
             private final Set<OptionSpec> options = new LinkedHashSet<OptionSpec>();
             private final Set<PositionalParamSpec> positionals = new LinkedHashSet<PositionalParamSpec>();
             private final List<String> unmatched = new ArrayList<String>();
+            private int firstUnmatchedPosition = Integer.MAX_VALUE;
             private final List<String> originalArgList = new ArrayList<String>();
             private final List<String> expandedArgList = new ArrayList<String>();
             private final List<List<PositionalParamSpec>> positionalParams = new ArrayList<List<PositionalParamSpec>>();
@@ -11613,10 +11614,28 @@ public class CommandLine {
                 positionalParams.get(position).add(positionalParam);
                 return this;
             }
+            /** Adds the specified command line argument to the list of unmatched command line arguments,
+             * and remembers the position of this argument. This position is used in the UnmatchedArgumentException message.
+             * @position ignored if negative, remembered in firstUnmatchedPosition if it precedes a previously set value
+             * @since 4.6 */
+            private Builder addUnmatched(int position, String arg) {
+                if (position >= 0) {
+                    firstUnmatchedPosition = Math.min(position, firstUnmatchedPosition);
+                }
+                unmatched.add(arg); return this;
+            }
             /** Adds the specified command line argument to the list of unmatched command line arguments. */
-            public Builder addUnmatched(String arg) { unmatched.add(arg); return this; }
+            public Builder addUnmatched(String arg) { return addUnmatched(-1, arg); }
             /** Adds all elements of the specified command line arguments stack to the list of unmatched command line arguments. */
-            public Builder addUnmatched(Stack<String> args) { while (!args.isEmpty()) { addUnmatched(args.pop()); } return this; }
+            public Builder addUnmatched(Stack<String> args) {
+                while (!args.isEmpty()) { addUnmatched(totalArgCount() - args.size(), args.pop()); }
+                return this;
+            }
+            private int totalArgCount() {
+                CommandLine c = commandSpec.root().commandLine;
+                Builder b = (c == null || c.interpreter.parseResultBuilder == null) ? this : c.interpreter.parseResultBuilder;
+                return b.expandedArgList.size();
+            }
             /** Sets the specified {@code ParseResult} for a subcommand that was matched on the command line. */
             // implementation note: this method gets called with the most recently matched subcommand first, then the subcommand matched before that, etc
             public Builder subcommand(ParseResult subcommand) { subcommands.add(0, subcommand); return this; }
@@ -12383,7 +12402,7 @@ public class CommandLine {
                     maybeThrow(ParameterException.create(CommandLine.this, ex, arg, offendingArgIndex, originalArgs));
                 }
                 if (continueOnError && stackSize == argumentStack.size() && stackSize > 0) {
-                    parseResultBuilder.unmatched.add(argumentStack.pop());
+                    parseResultBuilder.addUnmatched(parseResultBuilder.totalArgCount() - argumentStack.size(), argumentStack.pop());
                 }
             } while (!argumentStack.isEmpty() && continueOnError);
 
@@ -12510,11 +12529,13 @@ public class CommandLine {
             // 4. a combination of stand-alone options, like "-vxr". Equivalent to "-v -x -r", "-v true -x true -r true"
             // 5. a combination of stand-alone options and one option with an argument, like "-vxrffile"
 
-            List<String> expandedArgs = new ArrayList<String>(args);
-            Collections.reverse(expandedArgs); // Need to reverse the stack to get args in specified order
-            parseResultBuilder.expandedArgs(expandedArgs);
-            parseResultBuilder.originalArgs(originalArgs);
-            parseResultBuilder.nowProcessing = nowProcessing;
+            if (parseResultBuilder.expandedArgList.isEmpty()) { // don't add args again if called from do-while in parse()
+                List<String> expandedArgs = new ArrayList<String>(args);
+                Collections.reverse(expandedArgs); // Need to reverse the stack to get args in specified order
+                parseResultBuilder.expandedArgs(expandedArgs);
+                parseResultBuilder.originalArgs(originalArgs);
+                parseResultBuilder.nowProcessing = nowProcessing;
+            }
 
             String separator = config().separator();
             while (!args.isEmpty()) {
@@ -12636,14 +12657,10 @@ public class CommandLine {
             return commandSpec.optionsMap().containsKey(arg) || commandSpec.negatedOptionsMap().containsKey(arg);
         }
         private void handleUnmatchedArgument(Stack<String> args) throws Exception {
-            if (!args.isEmpty()) { handleUnmatchedArgument(args.pop()); }
-            if (config().stopAtUnmatched()) {
-                // addAll would give args in reverse order
-                while (!args.isEmpty()) { handleUnmatchedArgument(args.pop()); }
+            if (!args.isEmpty()) {
+                parseResultBuilder.addUnmatched(parseResultBuilder.totalArgCount() - args.size(), args.pop());
             }
-        }
-        private void handleUnmatchedArgument(String arg) {
-            parseResultBuilder.unmatched.add(arg);
+            if (config().stopAtUnmatched()) { parseResultBuilder.addUnmatched(args); }
         }
 
         private void processRemainderAsPositionalParameters(Collection<ArgSpec> required, Set<ArgSpec> initialized, Stack<String> args) throws Exception {
@@ -17241,12 +17258,7 @@ public class CommandLine {
                 return "Unknown option" + plural;
             }
             String at = unmatch.size() == 1 ? " at" : " from";
-            int index = 0;
-            ParseResult.Builder prb = cmd.interpreter.parseResultBuilder;
-            if (prb != null) {
-                List<String> potentiallyUnmatched = prb.originalArgList.subList(prb.matchedArgsList.size(), prb.originalArgList.size());
-                index = potentiallyUnmatched.indexOf(unmatch.get(0)) + prb.matchedArgsList.size();
-            }
+            int index = cmd.interpreter.parseResultBuilder == null ? 0 : cmd.interpreter.parseResultBuilder.firstUnmatchedPosition;
             return "Unmatched argument" + plural + at + " index " + index;
         }
         static String quoteElements(List<String> list) {
