@@ -4121,18 +4121,36 @@ This is the case regardless of abbreviations, but be aware that with abbreviated
 
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class AbbreviationsAndPosix {
-    @Option(names = "-A") boolean a;
-    @Option(names = "-B") boolean b;
+    @Option(names = "-A")      boolean a;
+    @Option(names = "-B")      boolean b;
     @Option(names = "-AaaBbb") boolean aaaBbb;
 }
+
 AbbreviationsAndPosix app = new AbbreviationsAndPosix();
 new CommandLine(app).setAbbreviatedOptionsAllowed(true).parseArgs("-AB");
-assertTrue(app.aaaBbb); // the long option is matched from abbreviated input -AB
-assertFalse(app.a);
-assertFalse(app.b);
+assert app.aaaBbb == true; // the long option is matched from abbreviated input -AB
+assert app.a == false;
+assert app.b == false;
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class AbbreviationsAndPosix {
+    @Option(names = ["-A"])       var a = false
+    @Option(names = ["-B"])       var b = false
+    @Option(names = ["-AaaBbb"])  var aaaBbb = false
+}
+
+val app = AbbreviationsAndPosix()
+CommandLine(app).setAbbreviatedOptionsAllowed(true).parseArgs("-AB")
+assertTrue(app.aaaBbb) // the long option is matched from abbreviated input -AB
+assertFalse(app.a)
+assertFalse(app.b)
 ----
 
 When abbreviated options are enabled, user input `-AB` will match the long `-AaaBbb` option, but not the `-A` and `-B` options.
@@ -4142,10 +4160,19 @@ When abbreviated options are enabled, user input `-AB` will match the long `-Aaa
 
 When a single-value option is specified multiple times on the command line, the default parser behaviour is to throw an `OverwrittenOptionException`.
 For example:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
-@Option(name = "-p") int port;
+@Option(names = "-p") int port;
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["-p"]) var port = 0
+----
+
 The following input results in an `OverwrittenOptionException`:
 ----
 <command> -p 80 -p 8080
@@ -4172,12 +4199,22 @@ unmatched arguments list returned by `CommandLine::getUnmatchedArguments`.
 By default, an `UnmatchedArgumentException` is thrown when a command line argument cannot be assigned to an option or positional parameter.
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class OnlyThree {
     @Parameters(arity = "3") String[] values;
 }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class OnlyThree {
+    @Parameters(arity = "3") lateinit var values: Array<String>
+}
+----
+
 The command has only one annotated field, `values`, and it expects exactly three arguments,
 so the following input results in an `UnmatchedArgumentException`:
 ----
@@ -4191,7 +4228,7 @@ When unmatched arguments are allowed, the above input will be accepted and a WAR
 The unmatched argument values can be obtained with the `CommandLine::getUnmatchedArguments` method.
 
 === `@Unmatched` annotation [[unmatched-annotation]]
-From picocli 3.0, fields annotated with `@Unmatched` will be populated with the unmatched arguments.
+As of picocli 3.0, fields annotated with `@Unmatched` will be populated with the unmatched arguments.
 The field must be of type `String[]` or `List<String>`.
 
 If picocli finds a field annotated with `@Unmatched`, it automatically sets `unmatchedArgumentsAllowed` to `true`
@@ -4208,12 +4245,22 @@ NOTE: Negative numbers are not considered to be unknown options, so values like 
 
 For example, the value `-z` is considered an unknown option when we have a command that only defines options `-x` and `-y`:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Option(names = "-x") String x;
 @Option(names = "-y") String y;
 @Parameters String[] remainder;
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["-x"]) lateinit var x: String
+@Option(names = ["-y"]) lateinit var y: String
+@Parameters lateinit var remainder: Array<String>
+----
+
 The above defines options `-x` and `-y`, but no option `-z`. So what should the parser do when the user gives input like this?
 
 ----
@@ -4247,35 +4294,62 @@ Setting this to `false` will result in values resembling option names being reje
 
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class MyApp {
     @Option(names = "-x") String x;
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class MyApp {
+    @Option(names = ["-x"]) lateinit var x: String
+}
+----
+
 By default, a value like `-z`, which resembles an option, is accepted as the parameter for `-x`:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
-App app = new App();
+MyApp app = new MyApp();
 new CommandLine(app).parseArgs("-x", "-z");
-assertEquals("-z", app.x);
+assert "-z".equals(app.x);
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val app = MyApp()
+CommandLine(app).parseArgs("-x", "-z")
+assertEquals("-z", app.x)
 ----
 
 After setting the `unmatchedOptionsAllowedAsOptionParameters` parser option to `false`, values resembling an option are rejected as parameter for `-x`:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
-new CommandLine(new App())
+new CommandLine(new MyApp())
         .setUnmatchedOptionsAllowedAsOptionParameters(false)
         .parseArgs("-x", "-z");
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+CommandLine(MyApp())
+        .setUnmatchedOptionsAllowedAsOptionParameters(false)
+        .parseArgs("-x", "-z")
 ----
 
 This will throw an `UnmatchedArgumentException` with message:
 
 ----
-"Unknown option '-z'; Expected parameter for option '-x' but found '-z'"
+"Unknown option: '-z'; Expected parameter for option '-x' but found '-z'"
 ----
 
 
@@ -4283,7 +4357,8 @@ This will throw an `UnmatchedArgumentException` with message:
 Since picocli 4.4, the parser will no longer assign values that match an option name to options that take a parameter, unless the value is in quotes.
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class App {
     @Option(names = "-x") String x;
@@ -4297,8 +4372,23 @@ class App {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class App {
+    @Option(names = ["-x"]) var x: String? = null
+    @Option(names = ["-y"]) var y: String? = null
+}
+
+fun main(args: Array<String>) {
+    val app = App()
+    CommandLine(app).setTrimQuotes(true).parseArgs(*args)
+    println("x='${app.x}', y='${app.y}'")
+}
+----
+
 In previous versions of picocli, the above command would accept input `-x -y`, and the value `-y` would be assigned to the `x` String field.
-From picocli 4.4, the above input will be rejected with an error message indicating that the `-x` option requires a parameter.
+As of picocli 4.4, the above input will be rejected with an error message indicating that the `-x` option requires a parameter.
 
 If it is necessary to accept values that match option names, such values need to be quoted.
 For example:
@@ -4371,10 +4461,20 @@ For example:
 By default, if the option or positional parameter has a <<Split Regex,`split`>> regex defined, parameter values are split into parts while respecting quotes: the `split` regular expression is not matched inside a quoted region.
 
 Example:
-```
+
+.Java
+[source,java,role="primary"]
+----
 @Option(names = "-x", split = ",")
 String[] parts;
-```
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["-x"], split = ",")
+lateinit var parts: Array<String>
+----
 
 Given input like below:
 
@@ -4515,7 +4615,8 @@ options for the `find` command itself, but are interpreted as a separate command
 
 The example below demonstrates how to implement `find -exec` using this API:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "find")
 class Find {
@@ -4533,6 +4634,31 @@ class ExecParameterConsumer implements IParameterConsumer {
             // `find -exec` semantics: stop processing after a ';' or '+' argument
             if (";".equals(arg) || "+".equals(arg)) {
                 break;
+            }
+        }
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "find")
+class Find {
+    @Option(names = ["-exec"], parameterConsumer = ExecParameterConsumer::class)
+    var list: List<String> = ArrayList()
+}
+
+class ExecParameterConsumer : IParameterConsumer {
+    override fun consumeParameters(args: Stack<String>, argSpec: ArgSpec, commandSpec: CommandSpec) {
+        val list = argSpec.getValue<MutableList<String>>()
+        while (!args.isEmpty()) {
+            val arg = args.pop()
+            list.add(arg)
+
+            // `find -exec` semantics: stop processing after a ';' or '+' argument
+            if (";".equals(arg) || "+".equals(arg)) {
+                break
             }
         }
     }
