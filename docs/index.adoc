@@ -1892,11 +1892,20 @@ Multi-valued options and positional parameters are annotated fields that can cap
 ==== Repeated Options
 The simplest way to create a multi-valued option is to declare an annotated field whose type is an array, collection or a map.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Option(names = "-option")
 int[] values;
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["-option"])
+lateinit var values: IntArray
+----
+
 Users may specify the same option multiple times. For example:
 ----
 <command> -option 111 -option 222 -option 333
@@ -1905,11 +1914,21 @@ Each value is appended to the array or collection.
 
 ==== Multiple Positional Parameters
 Similarly for multi-valued positional parameters:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 @Parameters
 List<TimeUnit> units;
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Parameters
+lateinit var units: List<TimeUnit>
+----
+
 Users may specify multiple positional parameters. For example:
 ----
 <command> SECONDS HOURS DAYS
@@ -1918,13 +1937,24 @@ Again, each value is appended to the array or collection.
 
 
 ==== Repeated Boolean Options
-Boolean options with multiple values are supported from picocli 2.1.0.
-[source,java]
+Boolean options with multiple values are supported as of picocli 2.1.0.
+
+.Java
+[source,java,role="primary"]
 ----
 @Option(names = "-v", description = { "Specify multiple -v options to increase verbosity.",
                                       "For example, `-v -v -v` or `-vvv`"})
 boolean[] verbosity;
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["-v"], description = ["Specify multiple -v options to increase verbosity.",
+                                        "For example, `-v -v -v` or `-vvv`"])
+lateinit var verbosity: BooleanArray
+----
+
 Users may specify multiple boolean flag options without parameters. For example:
 ----
 <command> -v -v -v -vvv
@@ -1934,22 +1964,42 @@ The above example results in six `true` values being added to the `verbosity` ar
 === Split Regex
 Options and parameters may also specify a `split` regular expression used to split each option parameter into smaller substrings.
 Each of these substrings is converted to the type of the collection or array. See <<Arrays and Collections>>.
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 @Option(names = "-option", split = ",")
 int[] values;
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["-option"], split = ",")
+lateinit var values: IntArray
+----
+
 A single command line argument like the following will be split up and three `int` values are added to the array:
 ----
 -option 111,222,333
 ----
 
 Similarly for <<Maps>>:
-[source,java]
+
+.Java
+[source,java,role="primary"]
 ----
 @Option(names = "-fix", split = "\\|", splitSynopsisLabel = "|")
 Map<Integer, String> message;
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["-fix"], split = "\\|", splitSynopsisLabel = "|")
+lateinit var message: Map<Int, String>
+----
+
 With the above option, command line arguments like the following are interpreted as a set of key-value pairs instead of a single string:
 
 .Note: end users need to quote the option parameter to prevent the vertical bar `|` characters from being interpreted by the shell as "pipe" directives to connect processes.
@@ -1975,7 +2025,9 @@ The `arity` attribute lets you control exactly how many parameters to consume fo
 
 The `arity` attribute can specify an exact number of required parameters, or a _range_ with a minimum and a maximum number of parameters.
 The maximum can be an exact upper bound, or it can be `"*"` to denote _any number_ of parameters. For example:
-[source, java]
+
+.Java
+[source,java,role="primary"]
 ----
 class ArityDemo {
     @Parameters(arity = "1..3", description = "one to three Files")
@@ -1988,6 +2040,22 @@ class ArityDemo {
     String[] strings;
 }
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class ArityDemo {
+    @Parameters(arity = "1..3", description = ["one to three Files"])
+    lateinit var files: Array<File>
+
+    @Option(names = ["-f"], arity = "2", description = ["exactly two floating point numbers"])
+    lateinit var doubles: DoubleArray
+
+    @Option(names = ["-s"], arity = "1..*", description = ["at least one string"])
+    lateinit var strings: Array<String>
+}
+----
+
 A `MissingParameterException` is thrown when fewer than the minimum number of parameters is specified on the command line.
 
 Once the minimum number of parameters is consumed, picocli will check each subsequent command line argument to see whether it is an additional parameter, or a new option. For example:
@@ -2017,7 +2085,8 @@ The picocli parser is "greedy" when it handles option parameters for options wit
 
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class Ambiguous {
     @Parameters(description = "The file (required).")
@@ -2026,6 +2095,19 @@ class Ambiguous {
     @Option(names = "-y", arity = "0..*",
       description = "Option with optional parameters")
     List<String> values;
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class Ambiguous {
+    @Parameters(description = ["The file (required)."])
+    lateinit var file: File
+
+    @Option(names = ["-y"], arity = "0..*",
+      description = ["Option with optional parameters"])
+    lateinit var values: List<String>
 }
 ----
 
@@ -2090,14 +2172,26 @@ the presence or absence of the option can be used like a boolean flag to trigger
 
 An example use case is an option that switches on logging when present, with an optional value to set the log level. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Option(names = "--syslog", defaultValue = "OFF", fallbackValue = "INFO",
-  description = {
+    description = {
         "When specified without arguments, start sending syslog messages at INFO level.",
         "If absent, no messages are sent to syslog.",
         "Optionally specify a severity value. Valid values: ${COMPLETION-CANDIDATES}."})
 MyLogLevel syslogLevel;
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["--syslog"], defaultValue = "OFF", fallbackValue = "INFO",
+    description = [
+        "When specified without arguments, start sending syslog messages at INFO level.",
+        "If absent, no messages are sent to syslog.",
+        "Optionally specify a severity value. Valid values: \${COMPLETION-CANDIDATES}."])
+lateinit var syslogLevel: MyLogLevel
 ----
 
 Another example use case is <<Optionally Interactive,password options>>.
@@ -2112,7 +2206,8 @@ The picocli parser is "greedy" when it handles optional parameters: it looks at 
 
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 class Ambiguous {
     @Parameters(description = "The file (required).")
@@ -2121,6 +2216,19 @@ class Ambiguous {
     @Option(names = "-x", arity = "0..1",
       description = "Option with optional parameter")
     String value;
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class Ambiguous {
+    @Parameters(description = ["The file (required)."])
+    lateinit var file: File
+
+    @Option(names = ["-x"], arity = "0..1",
+        description = ["Option with optional parameter"])
+    lateinit var value: String
 }
 ----
 
