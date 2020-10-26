@@ -15107,13 +15107,13 @@ public class CommandLine {
                 int len = cjk ? values[0][3].getCJKAdjustedLength() : values[0][3].length;
                 if (len < longOptionsColWidth) { max = Math.max(max, len); }
             }
-            List<PositionalParamSpec> positionals = new ArrayList<PositionalParamSpec>(positionalParamSpecs); // iterate in declaration order
+            List<PositionalParamSpec> positionalParamSpecs = new ArrayList<PositionalParamSpec>(positionals); // iterate in declaration order
             if (hasAtFileParameter()) {
-                positionals.add(0, AT_FILE_POSITIONAL_PARAM);
+                positionalParamSpecs.add(0, AT_FILE_POSITIONAL_PARAM);
                 AT_FILE_POSITIONAL_PARAM.messages(commandSpec.usageMessage().messages());
             }
             //IParameterRenderer paramRenderer = new DefaultParameterRenderer(false, " ");
-            for (PositionalParamSpec positional : positionals) {
+            for (PositionalParamSpec positionalParamSpecs : positionals) {
                 if (positional.hidden()) { continue; }
                 //Text[][] values = paramRenderer.render(positional, parameterLabelRenderer(), colorScheme); // values[0][3]; //
                 Text label = parameterLabelRenderer().renderParameterLabel(positional, aColorScheme.ansi(), aColorScheme.parameterStyles);
