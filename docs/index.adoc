@@ -6115,7 +6115,7 @@ The minimum width that can be configured is 55 characters.
 
 === Auto (Terminal) Width
 
-From 4.0, commands defined with `@Command(usageHelpAutoWidth = true)` will try to adjust the usage message help layout to the terminal width.
+As of picocli 4.0, commands defined with `@Command(usageHelpAutoWidth = true)` will try to adjust the usage message help layout to the terminal width.
 There is also programmatic API to control this via the `CommandLine::setUsageHelpAutoWidth` and `UsageMessageSpec::autoWidth` methods.
 
 End users may enable this by setting system property `picocli.usage.width` to `AUTO`, and may disable this by setting this system property to a numeric value.
@@ -6140,7 +6140,7 @@ Usage: myapp [-hV] [-o=<outputFolder>]
   -V, --version   Print version information and exit.
 ----
 
-From picocli 4.2, there is programmatic API to change this via the `CommandLine::setLongOptionsMaxWidth` and `UsageMessageSpec::longOptionsMaxWidth` methods.
+As of picocli 4.2, there is programmatic API to change this via the `CommandLine::setLongOptionsMaxWidth` and `UsageMessageSpec::longOptionsMaxWidth` methods.
 
 In the above example, if we call `commandLine.setLongOptionsMaxWidth(23)` before printing the usage help, we get this result:
 
@@ -6172,10 +6172,18 @@ following a convention introduced by https://github.com/fusesource/jansi[Jansi],
 Immediately following the `@|` is a comma-separated list of colors and styles, so `@|STYLE1[,STYLE2]... text|@`.
 For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(description = "Custom @|bold,underline styles|@ and @|fg(red) colors|@.")
 ----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(description = ["Custom @|bold,underline styles|@ and @|fg(red) colors|@."])
+----
+
 image:DescriptionWithColors.png[Description with Ansi styles and colors]
 
 
@@ -6202,7 +6210,8 @@ Similarly, `fg(<color>)` explicitly sets the foreground color.
 
 The example below shows how this markup can be used to add colors and styles to the headings and descriptions of a usage help message:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(name = "commit",
         sortOptions = false,
@@ -6214,7 +6223,23 @@ The example below shows how this markup can be used to add colors and styles to 
         header = "Record changes to the repository.",
         description = "Stores the current contents of the index in a new commit " +
                 "along with a log message from the user describing the changes.")
-class GitCommit { ... }
+class GitCommit { /* ... */ }
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "commit",
+        sortOptions = false,
+        headerHeading = "@|bold,underline Usage|@:%n%n",
+        synopsisHeading = "%n",
+        descriptionHeading = "%n@|bold,underline Description|@:%n%n",
+        parameterListHeading = "%n@|bold,underline Parameters|@:%n",
+        optionListHeading = "%n@|bold,underline Options|@:%n",
+        header = ["Record changes to the repository."],
+        description = ["Stores the current contents of the index in a new commit " +
+                "along with a log message from the user describing the changes."])
+class GitCommit { /* ... */ }
 ----
 
 CAUTION: Markup styles cannot be nested, for example: `@|bold this @|underline that|@|@` will not work. You can achieve the same by combining styles, for example: `@|bold this|@ @|bold,underline that|@` will work fine.
@@ -6231,12 +6256,24 @@ and <<Static Version Information,version information>>.
 Applications can use the picocli `Ansi` class directly to create colored output.
 By using the `Ansi.AUTO` enum value, picocli will  <<Heuristics for Enabling ANSI,auto-detect>> whether it can emit ANSI escape codes or only the plain text.
 
-.Using the picocli `Ansi` API to generate colored output.
-[source,java]
+.Using the picocli `Ansi` API to generate colored output:
+
+.Java
+[source,java,role="primary"]
 ----
-// import picocli.CommandLine.Help.Ansi;
+import picocli.CommandLine.Help.Ansi;
+// ...
 String str = Ansi.AUTO.string("@|bold,green,underline Hello, colored world!|@");
 System.out.println(str);
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import picocli.CommandLine.Help.Ansi;
+// ...
+val str: String = Ansi.AUTO.string("@|bold,green,underline Hello, colored world!|@")
+println(str)
 ----
 
 === More Colors
@@ -6264,7 +6301,8 @@ There are no annotations to modify this color scheme, but it can be changed prog
 
 The below code snippet shows how a custom color scheme can be specified to configure the usage help message style:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 // see also CommandLine.Help.defaultColorScheme()
 ColorScheme colorScheme = new ColorScheme.Builder()
@@ -6277,12 +6315,29 @@ ColorScheme colorScheme = new ColorScheme.Builder()
         .build();
 
 CommandLine.usage(annotatedObject, System.out, colorScheme);
-...
+// ...
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+// see also CommandLine.Help.defaultColorScheme()
+val colorScheme: Help.ColorScheme = ColorScheme.Builder()
+        .commands    (Style.bold, Style.underline)    // combine multiple styles
+        .options     (Style.fg_yellow)                // yellow foreground color
+        .parameters  (Style.fg_yellow)
+        .optionParams(Style.italic)
+        .errors      (Style.fg_red, Style.bold)
+        .stackTraces (Style.italic)
+        .build()
+
+CommandLine.usage(annotatedObject, System.out, colorScheme)
 ----
 
 When using the <<Executing Commands,`execute`>> API, you can configure a `ColorScheme` like this:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 public static void main(String[] args) {
     ColorScheme colorScheme = createColorScheme();
@@ -6290,6 +6345,18 @@ public static void main(String[] args) {
     new CommandLine(new MyApp())
             .setColorScheme(colorScheme) // use this color scheme in the usage help message
             .execute(args);
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+fun main(args: Array<String>) {
+    val colorScheme: ColorScheme = createColorScheme()
+
+    CommandLine(MyApp())
+            .setColorScheme(colorScheme) // use this color scheme in the usage help message
+            .execute(*args)
 }
 ----
 
@@ -6336,14 +6403,27 @@ NOTE: None of the below is mandatory. If not supported, picocli will simply not 
 ===== Jansi
 To use Jansi, you need to enable it in your application. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 import org.fusesource.jansi.AnsiConsole;
-...
+// ...
 public static void main(String[] args) {
     AnsiConsole.systemInstall(); // enable colors on Windows
     new CommandLine(new WindowsJansiDemo()).execute(args);
     AnsiConsole.systemUninstall(); // cleanup when done
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import org.fusesource.jansi.AnsiConsole;
+// ...
+fun main(args: Array<String>) {
+    AnsiConsole.systemInstall() // enable colors on Windows
+    CommandLine(WindowsJansiDemo()).execute(*args)
+    AnsiConsole.systemUninstall() // cleanup when done
 }
 ----
 
@@ -6353,16 +6433,30 @@ This is partly because GraalVM requires configuration and partly because Jansi i
 
 Users may be interested in combining Jansi with https://github.com/remkop/picocli-jansi-graalvm[picocli-jansi-graalvm] until this issue is fixed. Example usage:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 import picocli.jansi.graalvm.AnsiConsole; // not org.fusesource.jansi.AnsiConsole
-...
+// ...
 public static void main(String[] args) {
     int exitCode;
     try (AnsiConsole ansi = AnsiConsole.windowsInstall()) {
         exitCode = new CommandLine(new MyApp()).execute(args);
     }
     System.exit(exitCode);
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import picocli.jansi.graalvm.AnsiConsole // not org.fusesource.jansi.AnsiConsole
+// ...
+fun main(args: Array<String>) {
+    val exitCode: Int
+    AnsiConsole.windowsInstall().use
+        { exitCode = CommandLine(MyApp()).execute(*args) }
+    System.exit(exitCode)
 }
 ----
 
@@ -6402,12 +6496,22 @@ You can force picocli to either always use ANSI codes or never use ANSI codes re
 * You can decide to force disable or force enable ANSI escape codes programmatically by specifying `Ansi.ON` or `Ansi.OFF` when invoking `CommandLine.usage`.
 This overrides the value of system property `picocli.ansi`. For example:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 import picocli.CommandLine.Help.Ansi;
 
 // print usage help message to STDOUT without ANSI escape codes
 CommandLine.usage(new App(), System.out, Ansi.OFF);
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import picocli.CommandLine.Help.Ansi
+
+// print usage help message to STDOUT without ANSI escape codes
+CommandLine.usage(App(), System.out, Ansi.OFF)
 ----
 
 === Heuristics for Enabling ANSI
