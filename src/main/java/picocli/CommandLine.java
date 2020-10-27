@@ -13115,12 +13115,13 @@ public class CommandLine {
             for (String value : values) {
                 String[] keyValue = splitKeyValue(argSpec, value);
                 Object mapKey =   tryConvert(argSpec, index, keyConverter,   keyValue[0], classes[0]);
-                Object mapValue = tryConvert(argSpec, index, valueConverter, keyValue[1], classes[1]);
+                String rawMapValue = keyValue.length == 1 ? "" : keyValue[1];
+                Object mapValue = tryConvert(argSpec, index, valueConverter, rawMapValue, classes[1]);
                 result.put(mapKey, mapValue);
                 if (tracer.isInfo()) { tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s on %s%n", String.valueOf(mapKey), String.valueOf(mapValue),
                         result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), argSpec.toString(), argDescription, argSpec.scopeString()); }
                 parseResultBuilder.addStringValue(argSpec, keyValue[0]);
-                parseResultBuilder.addStringValue(argSpec, keyValue[1]);
+                parseResultBuilder.addStringValue(argSpec, rawMapValue);
             }
             parseResultBuilder.addOriginalStringValue(argSpec, arg);
         }
@@ -13140,7 +13141,8 @@ public class CommandLine {
                 for (String value : values) {
                     String[] keyValue = splitKeyValue(argSpec, value);
                     tryConvert(argSpec, -1, keyConverter, keyValue[0], classes[0]);
-                    tryConvert(argSpec, -1, valueConverter, keyValue[1], classes[1]);
+                    String mapValue = keyValue.length == 1 ? "" : keyValue[1];
+                    tryConvert(argSpec, -1, valueConverter, mapValue, classes[1]);
                 }
                 return true;
             } catch (PicocliException ex) {
@@ -13152,16 +13154,17 @@ public class CommandLine {
         private String[] splitKeyValue(ArgSpec argSpec, String value) {
             String[] keyValue = ArgSpec.splitRespectingQuotedStrings(value, 2, config(), argSpec, "=");
 
-            if (keyValue.length < 2) {
-                String splitRegex = argSpec.splitRegex();
-                if (splitRegex.length() == 0) {
-                    throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("",
-                            argSpec, 0) + " should be in KEY=VALUE format but was " + value, argSpec, value);
-                } else {
-                    throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("",
-                            argSpec, 0) + " should be in KEY=VALUE[" + splitRegex + "KEY=VALUE]... format but was " + value, argSpec, value);
-                }
-            }
+            // validation disabled for #1214: support for -Dkey map options
+            //if (keyValue.length < 2) {
+            //    String splitRegex = argSpec.splitRegex();
+            //    if (splitRegex.length() == 0) {
+            //        throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("",
+            //                argSpec, 0) + " should be in KEY=VALUE format but was " + value, argSpec, value);
+            //    } else {
+            //        throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("",
+            //                argSpec, 0) + " should be in KEY=VALUE[" + splitRegex + "KEY=VALUE]... format but was " + value, argSpec, value);
+            //    }
+            //}
             return keyValue;
         }
 
@@ -13494,8 +13497,22 @@ public class CommandLine {
         @SuppressWarnings("unchecked") private Map<Object, Object> createMap(Class<?> mapClass) throws Exception {
             return (Map<Object, Object>) factory.create(mapClass);
         }
-        private ITypeConverter<?> getTypeConverter(final Class<?> type, ArgSpec argSpec, int index) {
+        private ITypeConverter<?> getTypeConverter(Class<?> type, final ArgSpec argSpec, int index) {
             if (argSpec.converters().length > index) { return argSpec.converters()[index]; }
+//            if (isOptional(type)) { // #1214 #1108
+//                final Class<?> actualType = String.class; // FIXME // TODO
+//                return new ITypeConverter<Object>() {
+//                    @SuppressWarnings("unchecked")
+//                    public Object convert(String value) throws Exception {
+//                        ITypeConverter<?> converter = getActualTypeConverter(actualType, argSpec);
+//                        return Optional.ofNullable(converter.convert(value));
+//                    }
+//                };
+//            }
+            return getActualTypeConverter(type, argSpec);
+        }
+
+        private ITypeConverter<?> getActualTypeConverter(final Class<?> type, ArgSpec argSpec) {
             // https://github.com/remkop/picocli/pull/648
             // consider adding ParserSpec.charArraysCanCaptureStrings() to allow non-interactive options to capture multi-char values in a char[] array
             // Note that this will require special logic for char[] types in CommandLine$Interpreter.applyValuesToArrayField;
@@ -13503,36 +13520,40 @@ public class CommandLine {
             if (char[].class.equals(argSpec.type()) && argSpec.interactive()) { return converterRegistry.get(char[].class); }
             if (converterRegistry.containsKey(type)) { return converterRegistry.get(type); }
             if (type.isEnum()) {
-                return new ITypeConverter<Object>() {
-                    @SuppressWarnings("unchecked")
-                    public Object convert(String value) throws Exception {
-                        try { return Enum.valueOf((Class<Enum>) type, value); }
-                        catch (IllegalArgumentException ex) {
-                            boolean insensitive = commandSpec.parser().caseInsensitiveEnumValuesAllowed();
-                            for (Enum<?> enumConstant : ((Class<Enum<?>>) type).getEnumConstants()) {
-                                String str = enumConstant.toString();
-                                String name = enumConstant.name();
-                                if (value.equals(str) || value.equals(name) || insensitive && (value.equalsIgnoreCase(str) || value.equalsIgnoreCase(name))) {
-                                    return enumConstant;
-                                }                            }
-                            String sensitivity = insensitive ? "case-insensitive" : "case-sensitive";
-                            Enum<?>[] constants = ((Class<Enum<?>>) type).getEnumConstants();
-                            List<String> names = new ArrayList<String>();
-                            for (Enum<?> constant : constants) {
-                                names.add(constant.name());
-                                if (!names.contains(constant.toString())) { // name() != toString()
-                                    if (!(insensitive && constant.name().equalsIgnoreCase(constant.toString()))) {
-                                        names.add(constant.toString());
-                                    }
-                                }
-                            }
-                            throw new TypeConversionException(
-                                    format("expected one of %s (%s) but was '%s'", names, sensitivity, value));
-                        }
-                    }
-                };
+                return getEnumTypeConverter(type);
             }
             throw new MissingTypeConverterException(CommandLine.this, "No TypeConverter registered for " + type.getName() + " of " + argSpec);
+        }
+
+        private ITypeConverter<Object> getEnumTypeConverter(final Class<?> type) {
+            return new ITypeConverter<Object>() {
+                @SuppressWarnings("unchecked")
+                public Object convert(String value) throws Exception {
+                    try { return Enum.valueOf((Class<Enum>) type, value); }
+                    catch (IllegalArgumentException ex) {
+                        boolean insensitive = commandSpec.parser().caseInsensitiveEnumValuesAllowed();
+                        for (Enum<?> enumConstant : ((Class<Enum<?>>) type).getEnumConstants()) {
+                            String str = enumConstant.toString();
+                            String name = enumConstant.name();
+                            if (value.equals(str) || value.equals(name) || insensitive && (value.equalsIgnoreCase(str) || value.equalsIgnoreCase(name))) {
+                                return enumConstant;
+                            }                            }
+                        String sensitivity = insensitive ? "case-insensitive" : "case-sensitive";
+                        Enum<?>[] constants = ((Class<Enum<?>>) type).getEnumConstants();
+                        List<String> names = new ArrayList<String>();
+                        for (Enum<?> constant : constants) {
+                            names.add(constant.name());
+                            if (!names.contains(constant.toString())) { // name() != toString()
+                                if (!(insensitive && constant.name().equalsIgnoreCase(constant.toString()))) {
+                                    names.add(constant.toString());
+                                }
+                            }
+                        }
+                        throw new TypeConversionException(
+                                format("expected one of %s (%s) but was '%s'", names, sensitivity, value));
+                    }
+                }
+            };
         }
 
         private boolean booleanValue(ArgSpec argSpec, String value) {
