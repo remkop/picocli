@@ -1465,6 +1465,32 @@ NOTE: On the command line, the key and the value must be separated by a `=` char
 Map options and positional parameters can be defined with a `split` regular expression to allow end users to specify multiple values in a single parameter.
 See the <<Split Regex>> section for details.
 
+==== System Properties
+A common requirement for command line applications is to support the `-Dkey=value` syntax to allow end users to set system properties.
+
+The example below uses the `Map` type to define an `@Option`-<<option-parameters-methods,annotated method>> that delegates all key-value pairs to `System::setProperty`.
+
+.Java
+[source,java,role="primary"]
+----
+class SystemPropertiesDemo {
+    @Option(names = "-D")
+    void setProperty(Map<String, String> props) {
+        props.forEach((k, v) -> System.setProperty(k, v == null ? "" : v));
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class SystemPropertiesDemo {
+    @Option(names = ["-D"])
+    fun setProperty(props: Map<String, String?>) {
+        props.forEach { (k: String, v: String?) -> System.setProperty(k, v ?: "") }
+    }
+}
+----
 
 === Abstract Field Types
 The field's type can be an interface or an abstract class.
