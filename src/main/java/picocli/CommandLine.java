@@ -10111,7 +10111,7 @@ public class CommandLine {
             public Method getDeclaringExecutable() { return method; }
             @Override public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
                 for (Annotation annotation : getDeclaredAnnotations()) {
-                    if (annotationClass.isAssignableFrom(annotation.getClass())) { return annotationClass.cast(annotation); }
+                    if (annotationClass.isAssignableFrom(annotation.annotationType())) { return annotationClass.cast(annotation); }
                 }
                 return null;
             }
@@ -17626,7 +17626,7 @@ public class CommandLine {
             for (int i = matchCount, lastMatchChunk = matchCount; i < abbreviatedKeyChunks.size(); i++, matchCount++) {
                 boolean found = false;
                 for (int j = lastMatchChunk; j < keyChunks.size(); j++) {
-                    if (found = startsWith(keyChunks.get(j), abbreviatedKeyChunks.get(i), caseInsensitive)) {
+                    if ((found = startsWith(keyChunks.get(j), abbreviatedKeyChunks.get(i), caseInsensitive))) {
                         lastMatchChunk = j + 1;
                         break;
                     }
