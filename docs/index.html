@@ -14115,8 +14115,8 @@ The business logic of your command looks like any other picocli command with opt
 <p>The micronaut example app below provides a command line interface to a HTTP client that can be used to retrieve the number of stars for a GitHub project via the GitHub REST API. Owner and name (called <code>slug</code>) of the project to be queried can be given as a command line parameter.</p>
 </div>
 <div class="paragraph">
-<p>To get started, you have to <a href="https://micronaut-projects.github.io/micronaut-starter/latest/guide/#installation">install</a> Micronaut framework first.
-Afterwards you can use the <code>mn</code>  command line interface to generate your first project <code>git-stars</code>. Don&#8217;t forget the <code>--features http-client</code> option which will add the <code>io.micronaut:micronaut-http-client</code> dependency to the project.</p>
+<p>To get started, <a href="https://micronaut-projects.github.io/micronaut-starter/latest/guide/#installation">install</a> the Micronaut framework first.
+Now you can use the <code>mn</code>  command line interface to generate your first project: <code>git-stars</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -14125,21 +14125,18 @@ Afterwards you can use the <code>mn</code>  command line interface to generate y
 </div>
 </div>
 <div class="paragraph">
-<p>This command will create a self contained micronaut project with picocli support, together with its dependencies, a gradle build script and test cases.
+<p>This command will create a self-contained micronaut project with picocli support, together with its dependencies, a gradle build script and test cases.
+Don&#8217;t forget the <code>--features http-client</code> option, which will add the <code>io.micronaut:micronaut-http-client</code> dependency to the project.
 Use <code>--lang=kotlin</code> or <code>--lang=groovy</code> to generate code for other languages.
 Open the auto-generated source file <code>GitStarsCommand.java</code> and alter and extend it so that it looks like this:</p>
 </div>
 <div class="listingblock primary">
 <div class="title">Java</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="kn">package</span> <span class="nn">git.stars</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">java.util.Map</span><span class="o">;</span>
+<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">java.util.Map</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">javax.inject.Inject</span><span class="o">;</span>
-
 <span class="kn">import</span> <span class="nn">picocli.CommandLine.Command</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">picocli.CommandLine.Parameters</span><span class="o">;</span>
-
 <span class="kn">import</span> <span class="nn">io.micronaut.configuration.picocli.PicocliRunner</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">io.micronaut.http.client.annotation.*</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">io.micronaut.http.client.*</span><span class="o">;</span>
@@ -14151,8 +14148,7 @@ Open the auto-generated source file <code>GitStarsCommand.java</code> and alter 
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">GitStarsCommand</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
 
     <span class="nd">@Client</span><span class="o">(</span><span class="s">"https://api.github.com"</span><span class="o">)</span>
-    <span class="nd">@Inject</span>
-    <span class="nc">RxHttpClient</span> <span class="n">client</span><span class="o">;</span> <span class="c1">// example injected service</span>
+    <span class="nd">@Inject</span> <span class="nc">RxHttpClient</span> <span class="n">client</span><span class="o">;</span> <span class="c1">// example injected service</span>
 
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">description</span> <span class="o">=</span> <span class="s">"GitHub slug"</span><span class="o">,</span> <span class="n">paramLabel</span> <span class="o">=</span> <span class="s">"&lt;owner/repo&gt;"</span><span class="o">,</span>
                 <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"remkop/picocli"</span><span class="o">)</span>
@@ -14173,19 +14169,15 @@ Open the auto-generated source file <code>GitStarsCommand.java</code> and alter 
 <div class="listingblock secondary">
 <div class="title">Kotlin</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">package</span> <span class="nn">git.stars</span>
-
-<span class="k">import</span> <span class="nn">javax.inject.Inject</span>
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">javax.inject.Inject</span>
 <span class="k">import</span> <span class="nn">picocli.CommandLine.Command</span>
 <span class="k">import</span> <span class="nn">picocli.CommandLine.Parameters</span>
 <span class="k">import</span> <span class="nn">io.micronaut.configuration.picocli.PicocliRunner</span>
 <span class="k">import</span> <span class="nn">io.micronaut.http.HttpRequest</span>
 <span class="k">import</span> <span class="nn">io.micronaut.http.client.RxHttpClient</span>
 
-<span class="nd">@Command</span><span class="p">(</span>
-    <span class="n">name</span> <span class="p">=</span> <span class="s">"git-stars-kotlin"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"..."</span><span class="p">],</span>
-    <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span>
-<span class="p">)</span>
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"git-stars-kotlin"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"..."</span><span class="p">],</span>
+         <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
 <span class="kd">class</span> <span class="nc">GitStarsKotlinCommand</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
 
     <span class="kd">val</span> <span class="py">URI_GitHub_API</span><span class="p">:</span> <span class="nc">String</span> <span class="p">=</span> <span class="s">"https://api.github.com"</span>
@@ -14211,7 +14203,7 @@ Open the auto-generated source file <code>GitStarsCommand.java</code> and alter 
 </div>
 </div>
 <div class="paragraph">
-<p>You now can run the app using the <code>gradle</code> build tool:</p>
+<p>You can now run the app using the <code>gradle</code> build tool:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -14223,17 +14215,17 @@ micronaut-projects/micronaut-core has 4245 stars</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Using the <code>mn</code> command line interface, you can add another command (including test case) to your project:</p>
+<p>Using the <code>mn</code> command line interface, you can add another command (including a test case) to your project:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="rouge highlight"><code data-lang="bash">mn create-command second
-Rendered <span class="nb">command </span>to src/main/java/my/cli/app/SecondCommand.java
-Rendered <span class="nb">command test </span>to src/test/java/my/cli/app/SecondCommandTest.java</code></pre>
+Rendered <span class="nb">command </span>to src/main/java/git/stars/SecondCommand.java
+Rendered <span class="nb">command test </span>to src/test/java/git/stars/SecondCommandTest.java</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>To run the auto generated test cases for the previously created class, simply issue:</p>
+<p>To run the auto-generated test cases for the previously created class, simply issue:</p>
 </div>
 <div class="listingblock">
 <div class="content">

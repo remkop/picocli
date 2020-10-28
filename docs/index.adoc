@@ -9757,8 +9757,8 @@ The Micronaut microservices framework provides https://docs.micronaut.io/latest/
 
 The micronaut example app below provides a command line interface to a HTTP client that can be used to retrieve the number of stars for a GitHub project via the GitHub REST API. Owner and name (called `slug`) of the project to be queried can be given as a command line parameter.
 
-To get started, you have to https://micronaut-projects.github.io/micronaut-starter/latest/guide/#installation[install] Micronaut framework first.
-Afterwards you can use the `mn`  command line interface to generate your first project `git-stars`. Don't forget the `--features http-client` option which will add the `io.micronaut:micronaut-http-client` dependency to the project.
+To get started, https://micronaut-projects.github.io/micronaut-starter/latest/guide/#installation[install] the Micronaut framework first.
+Now you can use the `mn`  command line interface to generate your first project: `git-stars`.
 
 [source,bash]
 ----
@@ -9766,21 +9766,18 @@ mn create-cli-app git-stars --features http-client --lang=java
 | Application created at /home/user/projects/micronaut/git-stars
 ----
 
-This command will create a self contained micronaut project with picocli support, together with its dependencies, a gradle build script and test cases.
+This command will create a self-contained micronaut project with picocli support, together with its dependencies, a gradle build script and test cases.
+Don't forget the `--features http-client` option, which will add the `io.micronaut:micronaut-http-client` dependency to the project.
 Use `--lang=kotlin` or `--lang=groovy` to generate code for other languages.
 Open the auto-generated source file `GitStarsCommand.java` and alter and extend it so that it looks like this:
 
 .Java
 [source,java,role="primary"]
 ----
-package git.stars;
-
 import java.util.Map;
 import javax.inject.Inject;
-
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
-
 import io.micronaut.configuration.picocli.PicocliRunner;
 import io.micronaut.http.client.annotation.*;
 import io.micronaut.http.client.*;
@@ -9792,8 +9789,7 @@ import static io.micronaut.http.HttpRequest.*;
 public class GitStarsCommand implements Runnable {
 
     @Client("https://api.github.com")
-    @Inject
-    RxHttpClient client; // example injected service
+    @Inject RxHttpClient client; // example injected service
 
     @Parameters(description = "GitHub slug", paramLabel = "<owner/repo>",
                 defaultValue = "remkop/picocli")
@@ -9814,8 +9810,6 @@ public class GitStarsCommand implements Runnable {
 .Kotlin
 [source,kotlin,role="secondary"]
 ----
-package git.stars
-
 import javax.inject.Inject
 import picocli.CommandLine.Command
 import picocli.CommandLine.Parameters
@@ -9823,10 +9817,8 @@ import io.micronaut.configuration.picocli.PicocliRunner
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.client.RxHttpClient
 
-@Command(
-    name = "git-stars-kotlin", description = ["..."],
-    mixinStandardHelpOptions = true
-)
+@Command(name = "git-stars-kotlin", description = ["..."],
+         mixinStandardHelpOptions = true)
 class GitStarsKotlinCommand : Runnable {
 
     val URI_GitHub_API: String = "https://api.github.com"
@@ -9851,7 +9843,7 @@ class GitStarsKotlinCommand : Runnable {
 }
 ----
 
-You now can run the app using the `gradle` build tool:
+You can now run the app using the `gradle` build tool:
 
 [source,bash]
 ----
@@ -9862,16 +9854,16 @@ gradle run --args="micronaut-projects/micronaut-core"
 micronaut-projects/micronaut-core has 4245 stars
 ----
 
-Using the `mn` command line interface, you can add another command (including test case) to your project:
+Using the `mn` command line interface, you can add another command (including a test case) to your project:
 
 [source,bash]
 ----
 mn create-command second
-Rendered command to src/main/java/my/cli/app/SecondCommand.java
-Rendered command test to src/test/java/my/cli/app/SecondCommandTest.java
+Rendered command to src/main/java/git/stars/SecondCommand.java
+Rendered command test to src/test/java/git/stars/SecondCommandTest.java
 ----
 
-To run the auto generated test cases for the previously created class, simply issue:
+To run the auto-generated test cases for the previously created class, simply issue:
 
 [source,bash]
 ----
