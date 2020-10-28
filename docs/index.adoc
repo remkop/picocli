@@ -9603,17 +9603,17 @@ class ExplicitAndAutomaticIndexes {
 ----
 class ExplicitAndAutomaticIndexes {
     @Parameters(index = "0") lateinit var explicit0: String   // explicit index "0"
-                                                               // at default anchor point
+                                                              // at default anchor point
     @Parameters lateinit var pAuto1: String                   // assigned index "1",
-                                                               // anchor point + 1
+                                                              // anchor point + 1
     @Parameters lateinit var pAuto2: String                   // assigned index "2"
     @Parameters(index = "1+") lateinit var pAnchored1: String // assigned index "1":
-                                                               // no explicit index 1
+                                                              // no explicit index 1
     @Parameters(index = "1+") lateinit var pAnchored2: String // assigned index "2"
     @Parameters(index = "2") lateinit var explicit2: String   // explicit index "2",
-                                                               // matching anchor for "2+"
+                                                              // matching anchor for "2+"
     @Parameters(index = "2+") lateinit var pAnchored3: String // assigned index "3",
-                                                               // anchor point + 1
+                                                              // anchor point + 1
     @Parameters(index = "2+") lateinit var pAnchored4: String // assigned index "4"
 }
 ----
@@ -9896,20 +9896,20 @@ Multi-line text blocks can be used in command and option descriptions, headers a
 [source,java,role="primary"]
 ----
 @Option(names = { "-v", "--verbose" },
-    description = """
-                  Verbose mode. Helpful for troubleshooting.
-                  Multiple -v options increase the verbosity.
-                  """) // write description in text block
+  description = """
+                Verbose mode. Helpful for troubleshooting.
+                Multiple -v options increase the verbosity.
+                """) // write description in text block
 ----
 
 .Kotlin
 [source,kotlin,role="secondary"]
 ----
 @Option(names = [ "-v", "--verbose" ],
-    description = ["""
-                   Verbose mode. Helpful for troubleshooting.
-                   Multiple -v options increase the verbosity.
-                   """]) // write description in text block
+  description = ["""
+                 Verbose mode. Helpful for troubleshooting.
+                 Multiple -v options increase the verbosity.
+                 """]) // write description in text block
 ----
 
 For more details, see https://www.infoq.com/articles/java-text-blocks/[this article] by Java Language Architect Brian Goetz.

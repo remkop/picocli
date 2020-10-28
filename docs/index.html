@@ -13186,7 +13186,7 @@ For example, Groovy&#8217;s <a href="http://groovy-lang.org/dsls.html#_clibuilde
 <div class="sect2">
 <h3 id="option-parameters-methods"><a class="anchor" href="#option-parameters-methods"></a>21.2. <code>@Option</code> and <code>@Parameters</code> Methods</h3>
 <div class="paragraph">
-<p>From version 3.2, <code>@Option</code> and <code>@Parameters</code> annotations can be added to methods as well as fields of a class.</p>
+<p>As of version 3.2, <code>@Option</code> and <code>@Parameters</code> annotations can be added to methods as well as fields of a class.</p>
 </div>
 <div class="paragraph">
 <p>For concrete classes, annotate "setter" methods (methods that accept a parameter) and when the option is specified on the command line, picocli will invoke the method with the value specified on the command line, converted to the type of the method parameter.</p>
@@ -13199,7 +13199,8 @@ For example, Groovy&#8217;s <a href="http://groovy-lang.org/dsls.html#_clibuilde
 <div class="paragraph">
 <p>The <code>@Option</code> and <code>@Parameters</code> annotations can be used on methods of an interface that return a value. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">interface</span> <span class="nc">Counter</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--count"</span><span class="o">)</span>
@@ -13207,10 +13208,20 @@ For example, Groovy&#8217;s <a href="http://groovy-lang.org/dsls.html#_clibuilde
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">interface</span> <span class="nc">Counter</span> <span class="p">{</span>
+    <span class="err">@</span><span class="k">get</span><span class="p">:</span><span class="nc">Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--count"</span><span class="p">])</span>
+    <span class="kd">val</span> <span class="py">count</span><span class="p">:</span> <span class="nc">Int</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>You use it by specifying the class of the interface:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">CommandLine</span> <span class="n">cmd</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="nc">Counter</span><span class="o">.</span><span class="na">class</span><span class="o">);</span> <span class="c1">// specify a class</span>
 <span class="nc">String</span><span class="o">[]</span> <span class="n">args</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">String</span><span class="o">[]</span> <span class="o">{</span><span class="s">"--count"</span><span class="o">,</span> <span class="s">"3"</span><span class="o">};</span>
@@ -13219,13 +13230,24 @@ For example, Groovy&#8217;s <a href="http://groovy-lang.org/dsls.html#_clibuilde
 <span class="k">assert</span> <span class="n">counter</span><span class="o">.</span><span class="na">getCount</span><span class="o">()</span> <span class="o">==</span> <span class="mi">3</span><span class="o">;</span> <span class="c1">// method returns command line value</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">Counter</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">)</span> <span class="c1">// specify a class</span>
+<span class="kd">val</span> <span class="py">args</span> <span class="p">=</span> <span class="nf">arrayOf</span><span class="p">(</span><span class="s">"--count"</span><span class="p">,</span> <span class="s">"3"</span><span class="p">)</span>
+<span class="n">cmd</span><span class="p">.</span><span class="nf">parseArgs</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+<span class="kd">val</span> <span class="py">counter</span><span class="p">:</span> <span class="nc">Counter</span> <span class="p">=</span> <span class="n">cmd</span><span class="p">.</span><span class="nf">getCommand</span><span class="p">()</span> <span class="c1">// picocli created an instance</span>
+<span class="nf">assertEquals</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">counter</span><span class="p">.</span><span class="n">count</span><span class="p">)</span> <span class="c1">// method returns command line value</span></code></pre>
+</div>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_annotating_methods_of_a_concrete_class"><a class="anchor" href="#_annotating_methods_of_a_concrete_class"></a>21.2.2. Annotating Methods of a Concrete Class</h4>
 <div class="paragraph">
 <p>The <code>@Option</code> and <code>@Parameters</code> annotations can be used on methods of a class that accept a parameter. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">Counter</span> <span class="o">{</span>
     <span class="kt">int</span> <span class="n">count</span><span class="o">;</span>
@@ -13237,10 +13259,25 @@ For example, Groovy&#8217;s <a href="http://groovy-lang.org/dsls.html#_clibuilde
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">Counter</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="py">count</span> <span class="p">=</span> <span class="mi">0</span>
+
+    <span class="nd">@JvmName</span><span class="p">(</span><span class="s">"setCount1"</span><span class="p">)</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--count"</span><span class="p">])</span>
+    <span class="k">fun</span> <span class="nf">setCount</span><span class="p">(</span><span class="n">count</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">count</span> <span class="p">=</span> <span class="n">count</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>You use it by passing an instance of the class:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">Counter</span> <span class="n">counter</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Counter</span><span class="o">();</span> <span class="c1">// the instance to populate</span>
 <span class="nc">CommandLine</span> <span class="n">cmd</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="n">counter</span><span class="o">);</span>
@@ -13249,10 +13286,21 @@ For example, Groovy&#8217;s <a href="http://groovy-lang.org/dsls.html#_clibuilde
 <span class="k">assert</span> <span class="n">counter</span><span class="o">.</span><span class="na">count</span> <span class="o">==</span> <span class="mi">3</span><span class="o">;</span> <span class="c1">// method was invoked with command line value</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">counter</span> <span class="p">=</span> <span class="nc">Counter</span><span class="p">()</span> <span class="c1">// the instance to populate</span>
+<span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="n">counter</span><span class="p">)</span>
+<span class="kd">val</span> <span class="py">args</span> <span class="p">=</span> <span class="nf">arrayOf</span><span class="p">(</span><span class="s">"--count"</span><span class="p">,</span> <span class="s">"3"</span><span class="p">)</span>
+<span class="n">cmd</span><span class="p">.</span><span class="nf">parseArgs</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+<span class="nf">assertEquals</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">counter</span><span class="p">.</span><span class="n">count</span><span class="p">)</span> <span class="c1">// method was invoked with command line value</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>Methods annotated with <code>@Option</code> and <code>@Parameters</code> can do simple input validation by throwing a <code>ParameterException</code> when invalid values are specified on the command line.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">ValidationExample</span> <span class="o">{</span>
     <span class="kd">private</span> <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">String</span><span class="o">&gt;</span> <span class="n">properties</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">LinkedHashMap</span><span class="o">&lt;&gt;();</span>
@@ -13280,15 +13328,44 @@ For example, Groovy&#8217;s <a href="http://groovy-lang.org/dsls.html#_clibuilde
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">ValidationExample</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="k">private</span> <span class="kd">val</span> <span class="py">properties</span><span class="p">:</span> <span class="nc">MutableMap</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">,</span> <span class="nc">String</span><span class="err">?</span><span class="p">&gt;</span> <span class="p">=</span> <span class="nc">LinkedHashMap</span><span class="p">()</span>
+
+    <span class="nd">@Spec</span> <span class="k">private</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">spec</span> <span class="p">:</span> <span class="nc">CommandSpec</span> <span class="c1">// injected by picocli</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-D"</span><span class="p">,</span> <span class="s">"--property"</span><span class="p">],</span> <span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"KEY=VALUE"</span><span class="p">)</span>
+    <span class="k">fun</span> <span class="nf">setProperty</span><span class="p">(</span><span class="n">map</span><span class="p">:</span> <span class="nc">Map</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">,</span> <span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">key</span> <span class="k">in</span> <span class="n">map</span><span class="p">.</span><span class="n">keys</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">val</span> <span class="py">newValue</span> <span class="p">=</span> <span class="n">map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="nf">validateUnique</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">newValue</span><span class="p">)</span>
+            <span class="n">properties</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="p">=</span> <span class="n">newValue</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="k">fun</span> <span class="nf">validateUnique</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span> <span class="n">newValue</span><span class="p">:</span> <span class="nc">String</span><span class="p">?)</span> <span class="p">{</span>
+        <span class="kd">val</span> <span class="py">existing</span> <span class="p">=</span> <span class="n">properties</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">existing</span> <span class="p">!=</span> <span class="k">null</span> <span class="p">&amp;&amp;</span> <span class="n">existing</span> <span class="p">!=</span> <span class="n">newValue</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">throw</span> <span class="nc">ParameterException</span><span class="p">(</span><span class="n">spec</span><span class="p">.</span><span class="nf">commandLine</span><span class="p">(),</span>
+                <span class="s">"Duplicate key '$key' for values '$existing' and '$newValue'."</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1">// ...</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 </div>
 </div>
 <div class="sect2">
 <h3 id="command-methods"><a class="anchor" href="#command-methods"></a>21.3. <a id="_command-methods"></a> <code>@Command</code> Methods</h3>
 <div class="paragraph">
-<p>From picocli 3.6, methods can be annotated with <code>@Command</code>.
+<p>As of picocli 3.6, methods can be annotated with <code>@Command</code>.
 The method parameters provide the command options and parameters. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">Cat</span> <span class="o">{</span>
     <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
@@ -13307,6 +13384,28 @@ The method parameters provide the command options and parameters. For example:</
         <span class="c1">// process files</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">Cat</span> <span class="p">{</span>
+    <span class="nd">@Command</span><span class="p">(</span><span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Concatenate FILE(s) to standard output."</span><span class="p">],</span>
+             <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">version</span> <span class="p">=</span> <span class="p">[</span><span class="s">"4.1.3"</span><span class="p">])</span>
+    <span class="k">fun</span> <span class="nf">cat</span><span class="p">(</span><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-E"</span><span class="p">,</span> <span class="s">"--show-ends"</span><span class="p">])</span> <span class="n">showEnds</span><span class="p">:</span> <span class="nc">Boolean</span><span class="p">,</span>
+            <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-n"</span><span class="p">,</span> <span class="s">"--number"</span><span class="p">])</span> <span class="n">number</span><span class="p">:</span> <span class="nc">Boolean</span><span class="p">,</span>
+            <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-T"</span><span class="p">,</span> <span class="s">"--show-tabs"</span><span class="p">])</span> <span class="n">showTabs</span><span class="p">:</span> <span class="nc">Boolean</span><span class="p">,</span>
+            <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-v"</span><span class="p">,</span> <span class="s">"--show-nonprinting"</span><span class="p">])</span> <span class="n">showNonPrinting</span><span class="p">:</span> <span class="nc">Boolean</span><span class="p">,</span>
+            <span class="nd">@Parameters</span><span class="p">(</span><span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"FILE"</span><span class="p">)</span> <span class="n">files</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">File</span><span class="p">&gt;?)</span> <span class="p">{</span>
+        <span class="c1">// process files</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="kd">val</span> <span class="py">doit</span><span class="p">:</span> <span class="nc">Method</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nf">getCommandMethods</span><span class="p">(</span><span class="nc">Cat</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">,</span> <span class="s">"cat"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="kd">val</span> <span class="py">cmd</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="n">doit</span><span class="p">)</span>
+    <span class="kd">val</span> <span class="py">exitCode</span> <span class="p">=</span> <span class="n">cmd</span><span class="p">.</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -13349,7 +13448,8 @@ If compiled with the <code>-parameters</code> flag on Java 8 or higher, the <cod
 <p>If the enclosing class is annotated with <code>@Command</code>, method commands are automatically added as subcommands to the class command, unless the class command has attribute <code>@Command(addMethodSubcommands = false)</code>.
 For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"git"</span><span class="o">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">version</span> <span class="o">=</span> <span class="s">"picocli-4.1.3"</span><span class="o">,</span>
          <span class="n">resourceBundle</span> <span class="o">=</span> <span class="s">"Git_Messages"</span><span class="o">,</span> <span class="n">subcommands</span> <span class="o">=</span> <span class="o">{</span> <span class="nc">HelpCommand</span><span class="o">.</span><span class="na">class</span> <span class="o">})</span>
@@ -13364,6 +13464,24 @@ For example:</p>
         <span class="c1">// ... implement business logic</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"git"</span><span class="p">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span> <span class="n">version</span> <span class="p">=</span> <span class="p">[</span><span class="s">"picocli-4.1.3"</span><span class="p">],</span>
+         <span class="n">resourceBundle</span> <span class="p">=</span> <span class="s">"Git_Messages"</span><span class="p">,</span> <span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span><span class="nc">HelpCommand</span><span class="o">::</span><span class="k">class</span><span class="p">])</span>
+<span class="kd">class</span> <span class="nc">Git</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--git-dir"</span><span class="p">],</span> <span class="n">descriptionKey</span> <span class="p">=</span> <span class="s">"GITDIR"</span><span class="p">)</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">path</span><span class="p">:</span> <span class="nc">Path</span>
+
+    <span class="nd">@Command</span>
+    <span class="k">fun</span> <span class="nf">commit</span><span class="p">(</span><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-m"</span><span class="p">,</span> <span class="s">"--message"</span><span class="p">])</span> <span class="n">commitMessage</span><span class="p">:</span> <span class="nc">String</span><span class="p">?,</span>
+               <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--squash"</span><span class="p">],</span> <span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"&lt;commit&gt;"</span><span class="p">)</span> <span class="n">squash</span><span class="p">:</span> <span class="nc">String</span><span class="p">?,</span>
+               <span class="nd">@Parameters</span><span class="p">(</span><span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"&lt;file&gt;"</span><span class="p">)</span> <span class="n">files</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">File</span><span class="err">?</span><span class="p">&gt;?)</span> <span class="p">{</span>
+        <span class="c1">// ... implement business logic</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -13419,27 +13537,44 @@ Record changes to the repository
 <div class="sect3">
 <h4 id="_mixin_support_in_command_methods"><a class="anchor" href="#_mixin_support_in_command_methods"></a>21.3.3. Mixin Support in <code>@Command</code> Methods</h4>
 <div class="paragraph">
-<p>From picocli 3.8, <code>@Command</code> methods accept <code>@Mixin</code> parameters.
+<p>As of picocli 3.8, <code>@Command</code> methods accept <code>@Mixin</code> parameters.
 All options and positional parameters defined in the mixin class are added to the command.</p>
 </div>
 <div class="paragraph">
 <p>Example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">CommonParams</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">)</span> <span class="kt">int</span> <span class="n">x</span><span class="o">;</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-y"</span><span class="o">)</span> <span class="kt">int</span> <span class="n">y</span><span class="o">;</span>
 <span class="o">}</span>
 
+<span class="nd">@Command</span>
 <span class="kd">class</span> <span class="nc">App</span> <span class="o">{</span>
     <span class="nd">@Command</span>
     <span class="kd">public</span> <span class="kt">void</span> <span class="nf">doit</span><span class="o">(</span><span class="nd">@Mixin</span> <span class="nc">CommonParams</span> <span class="n">params</span><span class="o">,</span> <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-z"</span><span class="o">)</span> <span class="kt">int</span> <span class="n">z</span><span class="o">)</span> <span class="o">{}</span>
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">CommonParams</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="mi">0</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-y"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">y</span> <span class="p">=</span> <span class="mi">0</span>
+<span class="p">}</span>
+
+<span class="nd">@Command</span>
+<span class="kd">class</span> <span class="nc">App</span> <span class="p">{</span>
+    <span class="nd">@Command</span>
+    <span class="k">fun</span> <span class="nf">doit</span><span class="p">(</span><span class="nd">@Mixin</span> <span class="n">params</span><span class="p">:</span> <span class="nc">CommonParams</span><span class="p">?,</span> <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-z"</span><span class="p">])</span> <span class="n">z</span><span class="p">:</span> <span class="nc">Int</span><span class="p">)</span> <span class="p">{}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
-<p>In the above example, the <code>-x</code> and <code>-y</code> options are added to the other options of the <code>doit</code> command.</p>
+<p>In the above example, the <code>-x</code> and <code>-y</code> options are added to the <code>-z</code>-option of the <code>doit</code> command.</p>
 </div>
 </div>
 </div>
@@ -13452,11 +13587,12 @@ All options and positional parameters defined in the mixin class are added to th
 <p>This is useful when a command needs to use the picocli API, for example to walk the command hierarchy and iterate over its sibling commands.
 This complements the <code>@ParentCommand</code> annotation;  the <code>@ParentCommand</code> annotation injects a user-defined command object, whereas this annotation injects a picocli class.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">InjectSpecExample</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span>
+<span class="kd">class</span> <span class="nc">InjectSpecExample</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
     <span class="nd">@Spec</span> <span class="nc">CommandSpec</span> <span class="n">commandSpec</span><span class="o">;</span>
-
     <span class="c1">//...</span>
 
     <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
@@ -13466,10 +13602,25 @@ This complements the <code>@ParentCommand</code> annotation;  the <code>@ParentC
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span>
+<span class="kd">class</span> <span class="nc">InjectSpecExample</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="nd">@Spec</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">commandSpec</span><span class="p">:</span> <span class="nc">CommandSpec</span>
+    <span class="c1">//...</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// do something with the injected spec</span>
+        <span class="nf">println</span><span class="p">(</span><span class="s">"My full name is ${commandSpec.qualifiedName()}"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="sect3">
 <h4 id="spec-mixee-annotation"><a class="anchor" href="#spec-mixee-annotation"></a>21.4.1. <code>@Spec(MIXEE)</code> Annotation</h4>
 <div class="paragraph">
-<p>Since picocli 4.3, the <code>@Spec</code> annotation has a <code>value</code> element.
+<p>As of picocli 4.3, the <code>@Spec</code> annotation has a <code>value</code> element.
 The value is <code>Spec.Target.SELF</code> by default, meaning that the <code>CommandSpec</code> of the enclosing class is injected into the <code>@Spec</code>-annotated field.</p>
 </div>
 <div class="paragraph">
@@ -13483,12 +13634,20 @@ See <a href="#_accessing_the_mixee_from_a_mixin">Accessing the Mixee from a Mixi
 <div class="sect2">
 <h3 id="_custom_factory"><a class="anchor" href="#_custom_factory"></a>21.5. Custom Factory</h3>
 <div class="paragraph">
-<p>Declaratively registered <a href="#_registering_subcommands_declaratively">subcommands</a>, <a href="#_option_specific_type_converters">type converters</a> and <a href="#_dynamic_version_information">version providers</a> must be instantiated somehow. From picocli 2.2, a custom factory can be specified when constructing a <code>CommandLine</code> instance. This allows full control over object creation and opens possibilities for Inversion of Control and Dependency Injection (see <a href="#_dependency_injection">next section</a>). For example:</p>
+<p>Declaratively registered <a href="#_registering_subcommands_declaratively">subcommands</a>, <a href="#_option_specific_type_converters">type converters</a> and <a href="#_dynamic_version_information">version providers</a> must be instantiated somehow. As of picocli 2.2, a custom factory can be specified when constructing a <code>CommandLine</code> instance. This allows full control over object creation and opens possibilities for Inversion of Control and Dependency Injection (see <a href="#_dependency_injection">next section</a>). For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">IFactory</span> <span class="n">myFactory</span> <span class="o">=</span> <span class="n">getCustomFactory</span><span class="o">();</span>
 <span class="nc">CommandLine</span> <span class="n">cmdLine</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="k">new</span> <span class="nc">Git</span><span class="o">(),</span> <span class="n">myFactory</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">myFactory</span><span class="p">:</span> <span class="nc">IFactory</span> <span class="p">=</span> <span class="nf">getCustomFactory</span><span class="p">()</span>
+<span class="kd">val</span> <span class="py">cmdLine</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">Git</span><span class="p">(),</span> <span class="n">myFactory</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -13518,7 +13677,8 @@ Previously, <code>Collection</code> objects were instantiated separately without
 <div class="paragraph">
 <p>It is recommended that custom factories should fall back to the default factory. Something like this:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Override</span>
 <span class="kd">public</span> <span class="o">&lt;</span><span class="no">K</span><span class="o">&gt;</span> <span class="no">K</span> <span class="nf">create</span><span class="o">(</span><span class="nc">Class</span><span class="o">&lt;</span><span class="no">K</span><span class="o">&gt;</span> <span class="n">clazz</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
@@ -13528,6 +13688,18 @@ Previously, <code>Collection</code> objects were instantiated separately without
         <span class="k">return</span> <span class="nc">CommandLine</span><span class="o">.</span><span class="na">defaultFactory</span><span class="o">().</span><span class="na">create</span><span class="o">(</span><span class="n">clazz</span><span class="o">);</span> <span class="c1">// fallback if missing</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">override</span> <span class="k">fun</span> <span class="p">&lt;</span><span class="nc">K</span> <span class="p">:</span> <span class="nc">Any</span><span class="p">&gt;</span> <span class="nf">create</span><span class="p">(</span><span class="n">clazz</span><span class="p">:</span> <span class="nc">Class</span><span class="p">&lt;</span><span class="nc">K</span><span class="p">&gt;):</span> <span class="nc">K</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="k">try</span> <span class="p">{</span>
+        <span class="nf">doCreate</span><span class="p">(</span><span class="n">clazz</span><span class="p">)</span> <span class="c1">// custom factory lookup or instantiation</span>
+    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">e</span><span class="p">:</span> <span class="nc">Exception</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nc">CommandLine</span><span class="p">.</span><span class="nf">defaultFactory</span><span class="p">().</span><span class="nf">create</span><span class="p">(</span><span class="n">clazz</span><span class="p">)</span> <span class="c1">// fallback if missing</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -13551,11 +13723,12 @@ prior to picocli 4.3, the default index for single-value positional parameters w
 From version 4.3, the default index is <code>index = "0+"</code>, which tells picocli to assign an index automatically, starting from zero, based on the other positional parameters defined in the same command.
 A simple example can look like this:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">AutomaticIndex</span> <span class="o">{</span>
-    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">hidden</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>  <span class="c1">// "hidden": don't show this parameter in usage help message</span>
-    <span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">allParameters</span><span class="o">;</span> <span class="c1">// no "index" attribute: captures _all_ arguments</span>
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">hidden</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>   <span class="c1">// "hidden": don't show this parameter in usage help message</span>
+    <span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">allParameters</span><span class="o">;</span>  <span class="c1">// no "index" attribute: captures _all_ arguments</span>
 
     <span class="nd">@Parameters</span> <span class="nc">String</span> <span class="n">group</span><span class="o">;</span>    <span class="c1">// assigned index = "0"</span>
     <span class="nd">@Parameters</span> <span class="nc">String</span> <span class="n">artifact</span><span class="o">;</span> <span class="c1">// assigned index = "1"</span>
@@ -13563,10 +13736,24 @@ A simple example can look like this:</p>
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">AutomaticIndex</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">hidden</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>  <span class="c1">// "hidden": don't show this parameter in usage help message</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">allParameters</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span>   <span class="c1">// no "index" attribute: captures _all_ arguments</span>
+
+    <span class="nd">@Parameters</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">group</span><span class="p">:</span>    <span class="nc">String</span>  <span class="c1">// assigned index = "0"</span>
+    <span class="nd">@Parameters</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">artifact</span><span class="p">:</span> <span class="nc">String</span>  <span class="c1">// assigned index = "1"</span>
+    <span class="nd">@Parameters</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">version</span><span class="p">:</span>  <span class="nc">String</span>  <span class="c1">// assigned index = "2"</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>Picocli initializes fields with the values at the specified index in the arguments array.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"info.picocli"</span><span class="o">,</span> <span class="s">"picocli"</span><span class="o">,</span> <span class="s">"4.3.0"</span> <span class="o">};</span>
 <span class="nc">AutomaticIndex</span> <span class="n">auto</span> <span class="o">=</span> <span class="nc">CommandLine</span><span class="o">.</span><span class="na">populateCommand</span><span class="o">(</span><span class="k">new</span> <span class="nc">AutomaticIndex</span><span class="o">(),</span> <span class="n">args</span><span class="o">);</span>
@@ -13575,6 +13762,18 @@ A simple example can look like this:</p>
 <span class="k">assert</span> <span class="n">auto</span><span class="o">.</span><span class="na">artifact</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">"picocli"</span><span class="o">);</span>
 <span class="k">assert</span> <span class="n">auto</span><span class="o">.</span><span class="na">version</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">"4.3.0"</span><span class="o">);</span>
 <span class="k">assert</span> <span class="n">auto</span><span class="o">.</span><span class="na">allParameters</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="nc">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="n">args</span><span class="o">));</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">args</span> <span class="p">=</span> <span class="nf">arrayOf</span><span class="p">(</span><span class="s">"info.picocli"</span><span class="p">,</span> <span class="s">"picocli"</span><span class="p">,</span> <span class="s">"4.3.0"</span><span class="p">)</span>
+<span class="kd">val</span> <span class="py">auto</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nf">populateCommand</span><span class="p">(</span><span class="nc">AutomaticIndex</span><span class="p">(),</span> <span class="p">*</span><span class="n">args</span><span class="p">)</span>
+
+<span class="nf">assertEquals</span><span class="p">(</span><span class="s">"info.picocli"</span><span class="p">,</span> <span class="n">auto</span><span class="p">.</span><span class="n">group</span> <span class="p">)</span>
+<span class="nf">assertEquals</span><span class="p">(</span><span class="s">"picocli"</span><span class="p">,</span> <span class="n">auto</span><span class="p">.</span><span class="n">artifact</span><span class="p">)</span>
+<span class="nf">assertEquals</span><span class="p">(</span><span class="s">"4.3.0"</span><span class="p">,</span> <span class="n">auto</span><span class="p">.</span><span class="n">version</span><span class="p">)</span>
+<span class="nf">assertEquals</span><span class="p">(</span><span class="nc">Arrays</span><span class="p">.</span><span class="nf">asList</span><span class="p">(*</span><span class="n">args</span><span class="p">),</span> <span class="n">auto</span><span class="p">.</span><span class="n">allParameters</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="admonitionblock caution">
@@ -13621,12 +13820,22 @@ This can be useful when defining <a href="#_mixins">Mixins</a> with positional p
 <div class="paragraph">
 <p>To accomplish this, specify an index with the anchor point and a <code>+</code> character to indicate that picocli should start to automatically assign indexes from that anchor point. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">Anchored</span> <span class="o">{</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"1+"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">p1</span><span class="o">;</span> <span class="c1">// assigned index = "1" or higher</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"1+"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">p2</span><span class="o">;</span> <span class="c1">// assigned index = "2" or higher</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">Anchored</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"1+"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">p1</span><span class="p">:</span> <span class="nc">String</span>  <span class="c1">// assigned index = "1" or higher</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"1+"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">p2</span><span class="p">:</span> <span class="nc">String</span>  <span class="c1">// assigned index = "2" or higher</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -13636,18 +13845,39 @@ This can be useful when defining <a href="#_mixins">Mixins</a> with positional p
 <p>If a command defines a positional parameter with an explicit index at the anchor point, then automatic indexes anchored at that point will start from the explicit index plus 1.
 For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">ExplicitAndAutomaticIndexes</span> <span class="o">{</span>
-    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"0"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">explicit0</span><span class="o">;</span>   <span class="c1">// explicit index "0" at default anchor point</span>
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"0"</span> <span class="o">)</span> <span class="nc">String</span> <span class="n">explicit0</span><span class="o">;</span>  <span class="c1">// explicit index "0" at default anchor point</span>
     <span class="nd">@Parameters</span> <span class="nc">String</span> <span class="n">pAuto1</span><span class="o">;</span>                   <span class="c1">// assigned index "1", anchor point + 1</span>
     <span class="nd">@Parameters</span> <span class="nc">String</span> <span class="n">pAuto2</span><span class="o">;</span>                   <span class="c1">// assigned index "2"</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"1+"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">pAnchored1</span><span class="o">;</span> <span class="c1">// assigned index "1": no explicit index 1</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"1+"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">pAnchored2</span><span class="o">;</span> <span class="c1">// assigned index "2"</span>
-    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"2"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">explicit2</span><span class="o">;</span>   <span class="c1">// explicit index "2", matching anchor for "2+"</span>
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"2"</span> <span class="o">)</span> <span class="nc">String</span> <span class="n">explicit2</span><span class="o">;</span>  <span class="c1">// explicit index "2", matching anchor for "2+"</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"2+"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">pAnchored3</span><span class="o">;</span> <span class="c1">// assigned index "3", anchor point + 1</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"2+"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">pAnchored4</span><span class="o">;</span> <span class="c1">// assigned index "4"</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">ExplicitAndAutomaticIndexes</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"0"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">explicit0</span><span class="p">:</span> <span class="nc">String</span>   <span class="c1">// explicit index "0"</span>
+                                                              <span class="c1">// at default anchor point</span>
+    <span class="nd">@Parameters</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">pAuto1</span><span class="p">:</span> <span class="nc">String</span>                   <span class="c1">// assigned index "1",</span>
+                                                              <span class="c1">// anchor point + 1</span>
+    <span class="nd">@Parameters</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">pAuto2</span><span class="p">:</span> <span class="nc">String</span>                   <span class="c1">// assigned index "2"</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"1+"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">pAnchored1</span><span class="p">:</span> <span class="nc">String</span> <span class="c1">// assigned index "1":</span>
+                                                              <span class="c1">// no explicit index 1</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"1+"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">pAnchored2</span><span class="p">:</span> <span class="nc">String</span> <span class="c1">// assigned index "2"</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"2"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">explicit2</span><span class="p">:</span> <span class="nc">String</span>   <span class="c1">// explicit index "2",</span>
+                                                              <span class="c1">// matching anchor for "2+"</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"2+"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">pAnchored3</span><span class="p">:</span> <span class="nc">String</span> <span class="c1">// assigned index "3",</span>
+                                                              <span class="c1">// anchor point + 1</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"2+"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">pAnchored4</span><span class="p">:</span> <span class="nc">String</span> <span class="c1">// assigned index "4"</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -13661,16 +13891,30 @@ This can be useful when defining <a href="#_mixins">Mixins</a> with positional p
 <p>To accomplish this, specify an index with a <code>+</code> character to indicate that picocli should automatically assign indexes that come at the end.
 For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">Unanchored</span> <span class="o">{</span>
-    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"0"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">p0</span><span class="o">;</span>
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"0"</span> <span class="o">)</span> <span class="nc">String</span> <span class="n">p0</span><span class="o">;</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"1+"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">p1</span><span class="o">;</span> <span class="c1">// assigned index = "1"</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"1+"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">p2</span><span class="o">;</span> <span class="c1">// assigned index = "2"</span>
-    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"3"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">p3</span><span class="o">;</span>
-    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"+"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">p4</span><span class="o">;</span> <span class="c1">// assigned index = "4" &lt;-- unanchored</span>
-    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"+"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">p5</span><span class="o">;</span> <span class="c1">// assigned index = "5" &lt;-- unanchored</span>
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"3"</span> <span class="o">)</span> <span class="nc">String</span> <span class="n">p3</span><span class="o">;</span>
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"+"</span> <span class="o">)</span> <span class="nc">String</span> <span class="n">p4</span><span class="o">;</span> <span class="c1">// assigned index = "4" &lt;-- unanchored</span>
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"+"</span> <span class="o">)</span> <span class="nc">String</span> <span class="n">p5</span><span class="o">;</span> <span class="c1">// assigned index = "5" &lt;-- unanchored</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">Unanchored</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"0"</span> <span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">p0</span><span class="p">:</span> <span class="nc">String</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"1+"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">p1</span><span class="p">:</span> <span class="nc">String</span>  <span class="c1">// assigned index = "1"</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"1+"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">p2</span><span class="p">:</span> <span class="nc">String</span>  <span class="c1">// assigned index = "2"</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"3"</span> <span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">p3</span><span class="p">:</span> <span class="nc">String</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"+"</span> <span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">p4</span><span class="p">:</span> <span class="nc">String</span>  <span class="c1">// assigned index = "4" &lt;-- unanchored</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"+"</span> <span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">p5</span><span class="p">:</span> <span class="nc">String</span>  <span class="c1">// assigned index = "5" &lt;-- unanchored</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -13683,12 +13927,22 @@ the parameter with the open-ended index will capture all arguments, and there is
 <div class="paragraph">
 <p>The below example will always give a <code>Missing required parameter: &lt;last&gt;</code> error:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">BadCombination</span> <span class="o">{</span>
     <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"0..*"</span><span class="o">)</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">all</span><span class="o">;</span>
-    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"+"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">last</span><span class="o">;</span>
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"+"</span>   <span class="o">)</span> <span class="nc">String</span> <span class="n">last</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">BadCombination</span> <span class="p">{</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"0..*"</span><span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">all</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span>
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"+"</span>   <span class="p">)</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">last</span><span class="p">:</span> <span class="nc">String</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -13715,7 +13969,8 @@ If those characters are treated to have the same width as other characters, the 
 <div class="paragraph">
 <p>It is possible to let end users explicitly specify "true" or "false" as a parameter for a boolean option by defining an explicit <a href="#_arity">Arity</a> attribute. A boolean option with <code>arity = "0..1"</code> accepts zero to one parameters, <code>arity = "1"</code> means the option <em>must</em> have one parameter. For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">BooleanOptionWithParameters</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">,</span> <span class="n">arity</span> <span class="o">=</span> <span class="s">"1"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"1 mandatory parameter"</span><span class="o">)</span>
@@ -13724,6 +13979,18 @@ If those characters are treated to have the same width as other characters, the 
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-y"</span><span class="o">,</span> <span class="n">arity</span> <span class="o">=</span> <span class="s">"0..1"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"min 0 and max 1 parameter"</span><span class="o">)</span>
     <span class="kt">boolean</span> <span class="n">y</span><span class="o">;</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">BooleanOptionWithParameters</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">],</span> <span class="n">arity</span> <span class="p">=</span> <span class="s">"1"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"1 mandatory parameter"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="k">false</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-y"</span><span class="p">],</span> <span class="n">arity</span> <span class="p">=</span> <span class="s">"0..1"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"min 0 and max 1 parameter"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">y</span> <span class="p">=</span> <span class="k">false</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -13761,26 +14028,36 @@ as octal numbers, and otherwise the number is interpreted as a decimal number.
 </tr>
 </table>
 </div>
-<div class="paragraph">
-<p>Java 8-style lambdas:</p>
-</div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java 8</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="n">obj</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Byte</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>    <span class="n">s</span> <span class="o">-&gt;</span> <span class="nl">Byte:</span><span class="o">:</span><span class="n">decode</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Byte</span><span class="o">.</span><span class="na">TYPE</span><span class="o">,</span>     <span class="n">s</span> <span class="o">-&gt;</span> <span class="nl">Byte:</span><span class="o">:</span><span class="n">decode</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Short</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>   <span class="n">s</span> <span class="o">-&gt;</span> <span class="nl">Short:</span><span class="o">:</span><span class="n">decode</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Short</span><span class="o">.</span><span class="na">TYPE</span><span class="o">,</span>    <span class="n">s</span> <span class="o">-&gt;</span> <span class="nl">Short:</span><span class="o">:</span><span class="n">decode</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Integer</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">s</span> <span class="o">-&gt;</span> <span class="nl">Integer:</span><span class="o">:</span><span class="n">decode</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Integer</span><span class="o">.</span><span class="na">TYPE</span><span class="o">,</span>  <span class="n">s</span> <span class="o">-&gt;</span> <span class="nl">Integer:</span><span class="o">:</span><span class="n">decode</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Long</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>    <span class="n">s</span> <span class="o">-&gt;</span> <span class="nl">Long:</span><span class="o">:</span><span class="n">decode</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Long</span><span class="o">.</span><span class="na">TYPE</span><span class="o">,</span>     <span class="n">s</span> <span class="o">-&gt;</span> <span class="nl">Long:</span><span class="o">:</span><span class="n">decode</span><span class="o">);</span></code></pre>
+        <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Byte</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>    <span class="nl">Byte:</span><span class="o">:</span><span class="n">decode</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Byte</span><span class="o">.</span><span class="na">TYPE</span><span class="o">,</span>     <span class="nl">Byte:</span><span class="o">:</span><span class="n">decode</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Short</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>   <span class="nl">Short:</span><span class="o">:</span><span class="n">decode</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Short</span><span class="o">.</span><span class="na">TYPE</span><span class="o">,</span>    <span class="nl">Short:</span><span class="o">:</span><span class="n">decode</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Integer</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="nl">Integer:</span><span class="o">:</span><span class="n">decode</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Integer</span><span class="o">.</span><span class="na">TYPE</span><span class="o">,</span>  <span class="nl">Integer:</span><span class="o">:</span><span class="n">decode</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Long</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>    <span class="nl">Long:</span><span class="o">:</span><span class="n">decode</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Long</span><span class="o">.</span><span class="na">TYPE</span><span class="o">,</span>     <span class="nl">Long:</span><span class="o">:</span><span class="n">decode</span><span class="o">);</span></code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p>In Java 5:</p>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nc">CommandLine</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">registerConverter</span><span class="p">(</span><span class="nc">Byte</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">,</span>     <span class="n">java</span><span class="p">.</span><span class="n">lang</span><span class="p">.</span><span class="nc">Byte</span><span class="o">::</span><span class="n">decode</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">registerConverter</span><span class="p">(</span><span class="n">java</span><span class="p">.</span><span class="n">lang</span><span class="p">.</span><span class="nc">Byte</span><span class="p">.</span><span class="nc">TYPE</span><span class="p">,</span>  <span class="n">java</span><span class="p">.</span><span class="n">lang</span><span class="p">.</span><span class="nc">Byte</span><span class="o">::</span><span class="n">decode</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">registerConverter</span><span class="p">(</span><span class="nc">Short</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">,</span>    <span class="n">java</span><span class="p">.</span><span class="n">lang</span><span class="p">.</span><span class="nc">Short</span><span class="o">::</span><span class="n">decode</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">registerConverter</span><span class="p">(</span><span class="n">java</span><span class="p">.</span><span class="n">lang</span><span class="p">.</span><span class="nc">Short</span><span class="p">.</span><span class="nc">TYPE</span><span class="p">,</span> <span class="n">java</span><span class="p">.</span><span class="n">lang</span><span class="p">.</span><span class="nc">Short</span><span class="o">::</span><span class="n">decode</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">registerConverter</span><span class="p">(</span><span class="nc">Int</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">,</span>      <span class="nc">Integer</span><span class="o">::</span><span class="n">decode</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">registerConverter</span><span class="p">(</span><span class="nc">Integer</span><span class="p">.</span><span class="nc">TYPE</span><span class="p">,</span>         <span class="nc">Integer</span><span class="o">::</span><span class="n">decode</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">registerConverter</span><span class="p">(</span><span class="nc">Long</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">,</span>     <span class="n">java</span><span class="p">.</span><span class="n">lang</span><span class="p">.</span><span class="nc">Long</span><span class="o">::</span><span class="n">decode</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">registerConverter</span><span class="p">(</span><span class="n">java</span><span class="p">.</span><span class="n">lang</span><span class="p">.</span><span class="nc">Long</span><span class="p">.</span><span class="nc">TYPE</span><span class="p">,</span>  <span class="n">java</span><span class="p">.</span><span class="n">lang</span><span class="p">.</span><span class="nc">Long</span><span class="o">::</span><span class="n">decode</span><span class="p">)</span></code></pre>
 </div>
-<div class="listingblock">
+</div>
+<div class="listingblock primary">
+<div class="title">Java 5</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">ITypeConverter</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">&gt;</span> <span class="n">intConverter</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ITypeConverter</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">&gt;()</span> <span class="o">{</span>
     <span class="kd">public</span> <span class="nc">Integer</span> <span class="nf">convert</span><span class="o">(</span><span class="nc">String</span> <span class="n">s</span><span class="o">)</span> <span class="o">{</span>
@@ -13789,7 +14066,20 @@ as octal numbers, and otherwise the number is interpreted as a decimal number.
 <span class="o">};</span>
 <span class="n">commandLine</span><span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Integer</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">intConverter</span><span class="o">);</span>
 <span class="n">commandLine</span><span class="o">.</span><span class="na">registerConverter</span><span class="o">(</span><span class="nc">Integer</span><span class="o">.</span><span class="na">TYPE</span><span class="o">,</span>  <span class="n">intConverter</span><span class="o">);</span>
-<span class="o">...</span></code></pre>
+<span class="c1">// ...</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">var</span> <span class="py">intConverter</span><span class="p">:</span> <span class="nc">ITypeConverter</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;</span> <span class="p">=</span> <span class="kd">object</span> <span class="err">: </span><span class="nc">ITypeConverter</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;</span> <span class="p">{</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">convert</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nc">String</span><span class="p">):</span> <span class="nc">Int</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nc">Integer</span><span class="p">.</span><span class="nf">decode</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="n">commandLine</span><span class="p">.</span><span class="nf">registerConverter</span><span class="p">(</span><span class="nc">Int</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">,</span> <span class="n">intConverter</span><span class="p">)</span>
+<span class="n">commandLine</span><span class="p">.</span><span class="nf">registerConverter</span><span class="p">(</span><span class="nc">Integer</span><span class="p">.</span><span class="nc">TYPE</span><span class="p">,</span>    <span class="n">intConverter</span><span class="p">)</span>
+<span class="c1">// ...</span></code></pre>
 </div>
 </div>
 </div>
@@ -13805,9 +14095,9 @@ That is, all of the below are equivalent:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">foutput</span><span class="o">.</span><span class="na">txt</span>
-<span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">f</span> <span class="n">output</span><span class="o">.</span><span class="na">txt</span>
-<span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">f</span><span class="o">=</span><span class="n">output</span><span class="o">.</span><span class="na">txt</span></code></pre>
+<pre class="rouge highlight"><code data-lang="bash">&lt;<span class="nb">command</span><span class="o">&gt;</span> <span class="nt">-foutput</span>.txt
+&lt;<span class="nb">command</span><span class="o">&gt;</span> <span class="nt">-f</span> output.txt
+&lt;<span class="nb">command</span><span class="o">&gt;</span> <span class="nt">-f</span><span class="o">=</span>output.txt</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -13816,12 +14106,12 @@ That is, all of the below are equivalent:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="c1">// valid (separator between --file and its parameter)</span>
-<span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">file</span> <span class="n">output</span><span class="o">.</span><span class="na">txt</span>
-<span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">file</span><span class="o">=</span><span class="n">output</span><span class="o">.</span><span class="na">txt</span>
+<pre class="rouge highlight"><code data-lang="bash">// valid <span class="o">(</span>separator between <span class="nt">--file</span> and its parameter<span class="o">)</span>
+&lt;<span class="nb">command</span><span class="o">&gt;</span> <span class="nt">--file</span> output.txt
+&lt;<span class="nb">command</span><span class="o">&gt;</span> <span class="nt">--file</span><span class="o">=</span>output.txt
 
-<span class="c1">// invalid (picocli will not recognize the --file option when attached to its parameter)</span>
-<span class="o">&lt;</span><span class="n">command</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">fileoutput</span><span class="o">.</span><span class="na">txt</span></code></pre>
+// invalid <span class="o">(</span>picocli will not recognize the <span class="nt">--file</span> option when attached to its parameter<span class="o">)</span>
+&lt;<span class="nb">command</span><span class="o">&gt;</span> <span class="nt">--fileoutput</span>.txt</code></pre>
 </div>
 </div>
 </div>
@@ -13833,7 +14123,8 @@ That is, all of the below are equivalent:</p>
 <div class="paragraph">
 <p>Use the <code>separator</code> attribute of the <code>@Command</code> annotation to declaratively set a separator string:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">separator</span> <span class="o">=</span> <span class="s">":"</span><span class="o">)</span>  <span class="c1">// declaratively set a separator</span>
 <span class="kd">class</span> <span class="nc">OptionArg</span> <span class="o">{</span>
@@ -13841,17 +14132,35 @@ That is, all of the below are equivalent:</p>
 <span class="o">}</span></code></pre>
 </div>
 </div>
-<div class="listingblock">
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">separator</span> <span class="p">=</span> <span class="s">":"</span><span class="p">)</span>  <span class="c1">// declaratively set a separator</span>
+<span class="kd">class</span> <span class="nc">OptionArg</span> <span class="p">{</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-f"</span><span class="p">,</span> <span class="s">"--file"</span><span class="p">])</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">file</span><span class="p">:</span> <span class="nc">String</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">OptionArg</span> <span class="n">optionArg</span> <span class="o">=</span> <span class="nc">CommandLine</span><span class="o">.</span><span class="na">populateCommand</span><span class="o">(</span><span class="k">new</span> <span class="nc">OptionArg</span><span class="o">(),</span> <span class="s">"-f:output.txt"</span><span class="o">);</span>
 <span class="k">assert</span> <span class="n">optionArg</span><span class="o">.</span><span class="na">file</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">"output.txt"</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">optionArg</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nf">populateCommand</span><span class="p">(</span><span class="nc">OptionArg</span><span class="p">(),</span> <span class="s">"-f:output.txt"</span><span class="p">)</span>
+<span class="nf">assertEquals</span><span class="p">(</span><span class="s">"output.txt"</span><span class="p">,</span> <span class="n">optionArg</span><span class="p">.</span><span class="n">file</span><span class="p">)</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>Alternatively, the separator string can be changed programmatically with the <code>CommandLine.setSeparator(String separator)</code> method.
 For example:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nc">OptionArg</span> <span class="n">optionArg</span>     <span class="o">=</span> <span class="k">new</span> <span class="nc">OptionArg</span><span class="o">();</span>
 <span class="nc">CommandLine</span> <span class="n">commandLine</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="n">optionArg</span><span class="o">);</span>
@@ -13859,6 +14168,17 @@ For example:</p>
 <span class="n">commandLine</span><span class="o">.</span><span class="na">setSeparator</span><span class="o">(</span><span class="s">":"</span><span class="o">);</span> <span class="c1">// programmatically set a separator</span>
 <span class="n">commandLine</span><span class="o">.</span><span class="na">parseArgs</span><span class="o">(</span><span class="s">"-f:output.txt"</span><span class="o">);</span>
 <span class="k">assert</span> <span class="n">optionArg</span><span class="o">.</span><span class="na">file</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">"output.txt"</span><span class="o">);</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">val</span> <span class="py">optionArg</span> <span class="p">=</span> <span class="nc">OptionArg</span><span class="p">()</span>
+<span class="kd">val</span> <span class="py">commandLine</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="n">optionArg</span><span class="p">)</span>
+
+<span class="n">commandLine</span><span class="p">.</span><span class="n">separator</span> <span class="p">=</span> <span class="s">":"</span> <span class="c1">// programmatically set a separator</span>
+<span class="n">commandLine</span><span class="p">.</span><span class="nf">parseArgs</span><span class="p">(</span><span class="s">"-f:output.txt"</span><span class="p">)</span>
+<span class="nf">assertEquals</span><span class="p">(</span><span class="s">"output.txt"</span><span class="p">,</span> <span class="n">optionArg</span><span class="p">.</span><span class="n">file</span><span class="p">)</span></code></pre>
 </div>
 </div>
 </div>
@@ -13880,13 +14200,24 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 <p>When writing your command line program, you can use Java 15&#8217;s new "Text Block" feature.
 Multi-line text blocks can be used in command and option descriptions, headers and footers.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java 15</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span> <span class="s">"-v"</span><span class="o">,</span> <span class="s">"--verbose"</span> <span class="o">},</span>
   <span class="n">description</span> <span class="o">=</span> <span class="s">"""
                 Verbose mode. Helpful for troubleshooting.
                 Multiple -v options increase the verbosity.
                 """</span><span class="o">)</span> <span class="c1">// write description in text block</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span> <span class="s">"-v"</span><span class="p">,</span> <span class="s">"--verbose"</span> <span class="p">],</span>
+  <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"""
+                 Verbose mode. Helpful for troubleshooting.
+                 Multiple -v options increase the verbosity.
+                 """</span><span class="p">])</span> <span class="c1">// write description in text block</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
