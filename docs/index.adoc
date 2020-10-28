@@ -9796,7 +9796,7 @@ public class GitStarsCommand implements Runnable {
     String slug;
 
     public static void main(String[] args) throws Exception {
-        PicocliRunner.run(GitStarsCommand.class, args);
+        PicocliRunner.execute(GitStarsCommand.class, args);
     }
 
     public void run() {
@@ -9837,7 +9837,7 @@ class GitStarsKotlinCommand : Runnable {
 
     companion object {
         @JvmStatic fun main(args: Array<String>) {
-            PicocliRunner.run(GitStarsKotlinCommand::class.java, *args)
+            PicocliRunner.execute(GitStarsKotlinCommand::class.java, *args)
         }
     }
 }
@@ -9847,7 +9847,8 @@ You can now run the app using the `gradle` build tool:
 
 [source,bash]
 ----
-gradle run --args="micronaut-projects/micronaut-core"
+cd git-stars
+./gradlew run --args="micronaut-projects/micronaut-core"
 # ...
 > Task :run
 21:12:17.660 [main] INFO  i.m.context.env.DefaultEnvironment - Established active environments: [cli]

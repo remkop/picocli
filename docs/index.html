@@ -14155,7 +14155,7 @@ Open the auto-generated source file <code>GitStarsCommand.java</code> and alter 
     <span class="nc">String</span> <span class="n">slug</span><span class="o">;</span>
 
     <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
-        <span class="nc">PicocliRunner</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="nc">GitStarsCommand</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
+        <span class="nc">PicocliRunner</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="nc">GitStarsCommand</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
     <span class="o">}</span>
 
     <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
@@ -14196,7 +14196,7 @@ Open the auto-generated source file <code>GitStarsCommand.java</code> and alter 
 
     <span class="k">companion</span> <span class="k">object</span> <span class="p">{</span>
         <span class="nd">@JvmStatic</span> <span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
-            <span class="nc">PicocliRunner</span><span class="p">.</span><span class="nf">run</span><span class="p">(</span><span class="nc">GitStarsKotlinCommand</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">,</span> <span class="p">*</span><span class="n">args</span><span class="p">)</span>
+            <span class="nc">PicocliRunner</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="nc">GitStarsKotlinCommand</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">,</span> <span class="p">*</span><span class="n">args</span><span class="p">)</span>
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span></code></pre>
@@ -14207,7 +14207,8 @@ Open the auto-generated source file <code>GitStarsCommand.java</code> and alter 
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">gradle run <span class="nt">--args</span><span class="o">=</span><span class="s2">"micronaut-projects/micronaut-core"</span>
+<pre class="rouge highlight"><code data-lang="bash"><span class="nb">cd </span>git-stars
+./gradlew run <span class="nt">--args</span><span class="o">=</span><span class="s2">"micronaut-projects/micronaut-core"</span>
 <span class="c"># ...</span>
 <span class="o">&gt;</span> Task :run
 21:12:17.660 <span class="o">[</span>main] INFO  i.m.context.env.DefaultEnvironment - Established active environments: <span class="o">[</span>cli]
