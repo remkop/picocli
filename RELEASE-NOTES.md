@@ -6,6 +6,10 @@ The picocli community is pleased to announce picocli 4.6.0.
 
 This release contains bug fixes and enhancements.
 
+This release adds public methods `Help.Layout::colorScheme`, `Help.Layout::textTable`, `Help.Layout::optionRenderer`, `Help.Layout::parameterRenderer`, and `Help::calcLongOptionColumnWidth`, making it easier to customize the table format used to lay out options and positional parameters in the usage help message.
+
+Also, from this release Map options accept key-only parameters, so end users can specify `-Dkey` as well as `-Dkey=value`.
+
 
 This is the seventy-fifth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -33,6 +37,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1226] DOC: User manual improvements: add tabs with Kotlin code for samples (chapter 9.6 - 9.8: Executing commands). Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1228] DOC: User manual improvements: add tabs with Kotlin code for samples (chapters 8, 16, 20). Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1230] DOC: User manual improvements: add tabs with Kotlin code for samples (Chapters 6, 11, 15, 19). Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1232] DOC: User manual improvements for Micronaut example: add Kotlin version, extended description of Micronaut usage. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 ## <a name="4.6.0-deprecated"></a> Deprecations
 No features were deprecated in this release.

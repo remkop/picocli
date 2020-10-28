@@ -9755,7 +9755,7 @@ image:https://micronaut.io/images/micronaut_mini_copy_tm.svg[Micronaut Logo,widt
 The Micronaut microservices framework provides https://docs.micronaut.io/latest/guide/index.html#picocli[built-in support] for picocli with its `PicocliRunner` class.
 
 
-Our micronaut example app provides a command line interface to a HTTP client that can be used to retrieve the number of stars for a GitHub project, leveraging the GitHub API. Owner and name (called `slug`) of the project to be queried must be given as command line parameter.
+The micronaut example app below provides a command line interface to a HTTP client that can be used to retrieve the number of stars for a GitHub project via the GitHub REST API. Owner and name (called `slug`) of the project to be queried can be given as a command line parameter.
 
 To get started, you have to https://micronaut-projects.github.io/micronaut-starter/latest/guide/#installation[install] Micronaut framework first.
 Afterwards you can use the `mn`  command line interface to generate your first project `git-stars`. Don't forget the `--features http-client` option which will add the `io.micronaut:micronaut-http-client` dependency to the project.
@@ -9766,7 +9766,8 @@ mn create-cli-app git-stars --features http-client --lang=java
 | Application created at /home/user/projects/micronaut/git-stars
 ----
 
-This command will create a self contained micronaut project with picocli-support, together with its dependencies, a gradle build script and test cases.
+This command will create a self contained micronaut project with picocli support, together with its dependencies, a gradle build script and test cases.
+Use `--lang=kotlin` or `--lang=groovy` to generate code for other languages.
 Open the auto-generated source file `GitStarsCommand.java` and alter and extend it so that it looks like this:
 
 .Java
@@ -9861,7 +9862,7 @@ gradle run --args="micronaut-projects/micronaut-core"
 micronaut-projects/micronaut-core has 4245 stars
 ----
 
-Using the `mn`  command line interface, you can add another command (including test case) to our project:
+Using the `mn` command line interface, you can add another command (including test case) to your project:
 
 [source,bash]
 ----

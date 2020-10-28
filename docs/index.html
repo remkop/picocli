@@ -14111,35 +14111,139 @@ The business logic of your command looks like any other picocli command with opt
 <div class="paragraph">
 <p>The Micronaut microservices framework provides <a href="https://docs.micronaut.io/latest/guide/index.html#picocli">built-in support</a> for picocli with its <code>PicocliRunner</code> class.</p>
 </div>
+<div class="paragraph">
+<p>The micronaut example app below provides a command line interface to a HTTP client that can be used to retrieve the number of stars for a GitHub project via the GitHub REST API. Owner and name (called <code>slug</code>) of the project to be queried can be given as a command line parameter.</p>
+</div>
+<div class="paragraph">
+<p>To get started, you have to <a href="https://micronaut-projects.github.io/micronaut-starter/latest/guide/#installation">install</a> Micronaut framework first.
+Afterwards you can use the <code>mn</code>  command line interface to generate your first project <code>git-stars</code>. Don&#8217;t forget the <code>--features http-client</code> option which will add the <code>io.micronaut:micronaut-http-client</code> dependency to the project.</p>
+</div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">io.micronaut.configuration.picocli.PicocliRunner</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">io.micronaut.http.annotation.*</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">io.micronaut.http.client.*</span><span class="o">;</span>
+<pre class="rouge highlight"><code data-lang="bash">mn create-cli-app git-stars <span class="nt">--features</span> http-client <span class="nt">--lang</span><span class="o">=</span>java
+| Application created at /home/user/projects/micronaut/git-stars</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This command will create a self contained micronaut project with picocli support, together with its dependencies, a gradle build script and test cases.
+Use <code>--lang=kotlin</code> or <code>--lang=groovy</code> to generate code for other languages.
+Open the auto-generated source file <code>GitStarsCommand.java</code> and alter and extend it so that it looks like this:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kn">package</span> <span class="nn">git.stars</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.util.Map</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">javax.inject.Inject</span><span class="o">;</span>
 
 <span class="kn">import</span> <span class="nn">picocli.CommandLine.Command</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">picocli.CommandLine.Option</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">picocli.CommandLine.Parameters</span><span class="o">;</span>
 
-<span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"myMicronautApp"</span><span class="o">)</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyMicronautApp</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
+<span class="kn">import</span> <span class="nn">io.micronaut.configuration.picocli.PicocliRunner</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">io.micronaut.http.client.annotation.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">io.micronaut.http.client.*</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">static</span> <span class="n">io</span><span class="o">.</span><span class="na">micronaut</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">HttpRequest</span><span class="o">.*;</span>
+
+<span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"git-stars"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"..."</span><span class="o">,</span>
+        <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">GitStarsCommand</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
 
     <span class="nd">@Client</span><span class="o">(</span><span class="s">"https://api.github.com"</span><span class="o">)</span>
-    <span class="nd">@Inject</span> <span class="nc">RxHttpClient</span> <span class="n">client</span><span class="o">;</span>
+    <span class="nd">@Inject</span>
+    <span class="nc">RxHttpClient</span> <span class="n">client</span><span class="o">;</span> <span class="c1">// example injected service</span>
 
-    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-x"</span><span class="o">,</span> <span class="s">"--option"</span><span class="o">},</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"example option"</span><span class="o">)</span>
-    <span class="kt">boolean</span> <span class="n">flag</span><span class="o">;</span>
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">description</span> <span class="o">=</span> <span class="s">"GitHub slug"</span><span class="o">,</span> <span class="n">paramLabel</span> <span class="o">=</span> <span class="s">"&lt;owner/repo&gt;"</span><span class="o">,</span>
+                <span class="n">defaultValue</span> <span class="o">=</span> <span class="s">"remkop/picocli"</span><span class="o">)</span>
+    <span class="nc">String</span> <span class="n">slug</span><span class="o">;</span>
 
     <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
-        <span class="c1">// let Micronaut instantiate and inject services</span>
-        <span class="nc">PicocliRunner</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="nc">MyMicronautApp</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
+        <span class="nc">PicocliRunner</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="nc">GitStarsCommand</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
     <span class="o">}</span>
 
     <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
-        <span class="c1">// business logic here</span>
+        <span class="nc">Map</span> <span class="n">m</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="na">retrieve</span><span class="o">(</span><span class="no">GET</span><span class="o">(</span><span class="s">"/repos/"</span> <span class="o">+</span> <span class="n">slug</span><span class="o">).</span><span class="na">header</span><span class="o">(</span>
+                <span class="s">"User-Agent"</span><span class="o">,</span> <span class="s">"remkop-picocli"</span><span class="o">),</span> <span class="nc">Map</span><span class="o">.</span><span class="na">class</span><span class="o">).</span><span class="na">blockingFirst</span><span class="o">();</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">"%s has %s stars%n"</span><span class="o">,</span> <span class="n">slug</span><span class="o">,</span> <span class="n">m</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">"stargazers_count"</span><span class="o">));</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
 </div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">package</span> <span class="nn">git.stars</span>
+
+<span class="k">import</span> <span class="nn">javax.inject.Inject</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine.Command</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine.Parameters</span>
+<span class="k">import</span> <span class="nn">io.micronaut.configuration.picocli.PicocliRunner</span>
+<span class="k">import</span> <span class="nn">io.micronaut.http.HttpRequest</span>
+<span class="k">import</span> <span class="nn">io.micronaut.http.client.RxHttpClient</span>
+
+<span class="nd">@Command</span><span class="p">(</span>
+    <span class="n">name</span> <span class="p">=</span> <span class="s">"git-stars-kotlin"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"..."</span><span class="p">],</span>
+    <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span>
+<span class="p">)</span>
+<span class="kd">class</span> <span class="nc">GitStarsKotlinCommand</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+
+    <span class="kd">val</span> <span class="py">URI_GitHub_API</span><span class="p">:</span> <span class="nc">String</span> <span class="p">=</span> <span class="s">"https://api.github.com"</span>
+    <span class="nd">@Inject</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">client</span><span class="p">:</span> <span class="nc">RxHttpClient</span> <span class="c1">// example injected service</span>
+
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"GitHub slug"</span><span class="p">],</span> <span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"&lt;owner/repo&gt;"</span><span class="p">,</span>
+        <span class="n">defaultValue</span> <span class="p">=</span> <span class="s">"remkop/picocli"</span><span class="p">)</span>
+    <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">slug</span><span class="p">:</span> <span class="nc">String</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">val</span> <span class="py">req</span> <span class="p">=</span> <span class="nc">HttpRequest</span><span class="p">.</span><span class="nc">GET</span><span class="p">&lt;</span><span class="nc">Any</span><span class="p">&gt;(</span><span class="s">"${URI_GitHub_API}/repos/$slug"</span><span class="p">)</span>
+        <span class="n">req</span><span class="p">.</span><span class="nf">header</span><span class="p">(</span><span class="s">"User-Agent"</span><span class="p">,</span> <span class="s">"remkop-picocli"</span><span class="p">)</span>
+        <span class="kd">val</span> <span class="py">flowable</span> <span class="p">=</span> <span class="n">client</span><span class="p">.</span><span class="nf">retrieve</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="nc">MutableMap</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">).</span><span class="nf">blockingFirst</span><span class="p">()</span>
+        <span class="nf">println</span><span class="p">(</span><span class="s">"$slug has ${flowable.get("</span><span class="n">stargazers_count</span><span class="s">")} stars"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">companion</span> <span class="k">object</span> <span class="p">{</span>
+        <span class="nd">@JvmStatic</span> <span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+            <span class="nc">PicocliRunner</span><span class="p">.</span><span class="nf">run</span><span class="p">(</span><span class="nc">GitStarsKotlinCommand</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">,</span> <span class="p">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You now can run the app using the <code>gradle</code> build tool:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash">gradle run <span class="nt">--args</span><span class="o">=</span><span class="s2">"micronaut-projects/micronaut-core"</span>
+<span class="c"># ...</span>
+<span class="o">&gt;</span> Task :run
+21:12:17.660 <span class="o">[</span>main] INFO  i.m.context.env.DefaultEnvironment - Established active environments: <span class="o">[</span>cli]
+micronaut-projects/micronaut-core has 4245 stars</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Using the <code>mn</code> command line interface, you can add another command (including test case) to your project:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash">mn create-command second
+Rendered <span class="nb">command </span>to src/main/java/my/cli/app/SecondCommand.java
+Rendered <span class="nb">command test </span>to src/test/java/my/cli/app/SecondCommandTest.java</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To run the auto generated test cases for the previously created class, simply issue:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="bash">mn <span class="nb">test</span> <span class="nt">--tests</span> git.stars.SecondCommandTest
+<span class="c"># ...</span>
+<span class="o">&gt;</span> :test <span class="o">&gt;</span> Executing <span class="nb">test </span>git.stars.SecondCommandTest</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <a href="https://micronaut-projects.github.io/micronaut-picocli/latest/guide/#quickstart">quick start guide</a> for Micronaut&#8217;s Picocli integration has more information, including an extended <a href="https://micronaut-projects.github.io/micronaut-picocli/latest/guide/#_an_example_http_client">code sample</a>.</p>
 </div>
 </div>
 <div class="sect2">
@@ -15211,7 +15315,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.2<br>
-Last updated 2020-10-27 06:23:54 +0900
+Last updated 2020-10-28 07:34:26 +0900
 </div>
 </div>
 <style>
