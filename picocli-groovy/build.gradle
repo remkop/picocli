@@ -36,10 +36,10 @@ jar {
     manifest {
         attributes  'Specification-Title'   : 'Picocli Groovy',
                     'Specification-Vendor'  : 'Remko Popma',
-                    'Specification-Version' : version,
+                    'Specification-Version' : archiveVersion,
                     'Implementation-Title'  : 'Picocli Groovy',
                     'Implementation-Vendor' : 'Remko Popma',
-                    'Implementation-Version': version,
+                    'Implementation-Version': archiveVersion,
                     'Automatic-Module-Name' : 'info.picocli.groovy'
     }
 }

@@ -48,8 +48,10 @@ pluginManager.withPlugin('biz.aQute.bnd.builder') { // if plugin applied, execut
         baseline
     }
     dependencies {
-        baseline('group': group, 'name': jar.baseName, 'version': "(,${jar.version}[") {
-            force = true
+        baseline('group': group, 'name': jar.archiveBaseName) {
+            version {
+                strictly "(,${jar.archiveVersion}["
+            }
             transitive = false
         }
     }
@@ -146,7 +148,7 @@ allprojects {
     }
     distributions {
         main {
-            baseName = "$archivesBaseName-all"
+            distributionBaseName = "$archivesBaseName-all"
             contents {
                 from jar
                 from sourcesJar
@@ -207,10 +209,10 @@ jar {
     manifest {
         attributes 'Specification-Title'   : 'picocli',
                    'Specification-Vendor'  : 'Remko Popma',
-                   'Specification-Version' : version,
+                   'Specification-Version' : archiveVersion,
                    'Implementation-Title'  : 'picocli',
                    'Implementation-Vendor' : 'Remko Popma',
-                   'Implementation-Version': version,
+                   'Implementation-Version': archiveVersion,
                    'Main-Class'            : 'picocli.AutoComplete'
     }
     // copy module-info.class to META-INF/versions/9
