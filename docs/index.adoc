@@ -10154,7 +10154,7 @@ import io.micronaut.http.client.*;
 
 import static io.micronaut.http.HttpRequest.*;
 
-@Command(name = "git-stars", description = "...",
+@Command(name = "git-stars", description = "Retrieve number of stars for a GitHub project",
         mixinStandardHelpOptions = true)
 public class GitStarsCommand implements Runnable {
 
@@ -10187,7 +10187,7 @@ import io.micronaut.configuration.picocli.PicocliRunner
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.client.RxHttpClient
 
-@Command(name = "git-stars-kotlin", description = ["..."],
+@Command(name = "git-stars-kotlin", description = ["Retrieve star count for GitHub project"],
          mixinStandardHelpOptions = true)
 class GitStarsKotlinCommand : Runnable {
 
@@ -10308,42 +10308,194 @@ class MyCDIApp implements Runnable {
 === Quarkus Example
 image:https://quarkus.io/assets/images/quarkus_logo_horizontal_rgb_600px_reverse.png[Quarkus Logo,width=350,bg=black]
 
-Quarkus 1.4 added support for https://quarkus.io/guides/command-mode-reference[Command Mode] applications, which allows for using picoli in Quarkus applications.
+Quarkus 1.5 added support for https://quarkus.io/guides/picocli#simple-command-line-application[Picocli Command Mode] applications, which allows to use Picoli in Quarkus applications easily.
 
-The example below shows how an application could use the `CDIFactory` introduced in the <<CDI 2.0 (JSR 365),previous section>> to get dependency injection in subcommands and other classes like version providers, default providers, type converters, etc.
+The Quarkus example app below provides a command line interface to a mail client that can be used to send emails using an SMTP server.
+`From` and `To` addresses have to be given as options, while a message body can be specified as parameter text.
+The `headers` subcommand can be used to specify one or more custom header lines.
 
-NOTE: As of this writing, there is work in progress in the Quarkus community on a picocli extension for Quarkus that will give applications more compact code, more features, and other benefits than the example below.
+To get started, visit the https://code.quarkus.io/?g=info.picocli&a=quarkus-example&v=1.0.0-SNAPSHOT&b=MAVEN&s=baLo.UX2&cn=code.quarkus.io[Quarkus Web Application Configurator] first.
+Our example app depends on the extensions `Picocli` and `Mailer`, please note that these extension are selected already.
+If you want to code your app in Kotlin, you need to add the `Kotlin` extension, too.
+Now move your mouse over the button `Generate your application` and select `Download as zip`.
+This will download a self-contained skeleton Quarkus project with picocli support, together with its dependencies, a maven build script and test cases.
+Extract the archive file to a directory of your choice and open a shell or command prompt for this directory.
+Now open the pre-authored source file `HelloCommando.java`, rename it to `MailCommando.java` and edit and extend it so that it looks like this:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
-import io.quarkus.runtime.QuarkusApplication;
-import io.quarkus.runtime.annotations.QuarkusMain;
-import picocli.CommandLine;
-import picocli.CommandLine.Command;
-
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.*;
+import io.quarkus.mailer.*;
+import io.quarkus.picocli.runtime.annotations.TopCommand;
+import picocli.CommandLine.*;
 
-@QuarkusMain
-@ApplicationScoped
-@Command(name = "quarkus-app", mixinStandardHelpOptions = true)
-public class MyQuarkusApp implements Runnable, QuarkusApplication {
-    @Inject
-    CDIFactory cdiFactory; // see previous section
+@TopCommand // <3>
+@Command (subcommands = MailCommand.HeaderCommand.class, requiredOptionMarker = '*')
+public class MailCommand implements Runnable { // <1>
+    private Mail mail = new Mail();
+    @Inject Mailer mailer;  // Quarkus mailer
+
+    @Option(names = "--from", description = "email address of sender", required = true)
+    String from;
+
+    @Option(names = "--to", description = "email(s) of recipient(s)", required = true)
+    List<String> to;
+
+    @Option(names = "--subject", description = "Subject")
+    String subject;
+
+    @Parameters(description = "Message to be sent")
+    String[] body = {};
 
     @Override
     public void run() {
-        // business logic
+        mail.setFrom(from)   // compose mail
+            .setTo(to)
+            .setSubject(subject)
+            .setText(String.join(" ", body));
+       mailer.send(mail);    // send mail
     }
 
-    @Override
-    public int run(String... args) {
-        return new CommandLine(this, cdiFactory).execute(args);
+    @Command(name = "headers", description = "adding custom header line(s)")
+    static class HeaderCommand implements Runnable { // <2>
+        private static Map<String, List<String>> headerMap = new HashMap<>();
+        @ParentCommand private MailCommand parent;
+
+        @Option(names = "--header", paramLabel = "KEY=VALUE")
+        public void setProperty(Map<String, String> headers) {
+            headers.forEach((k,v) -> headerMap.put(k, Arrays.asList(v.split(" "))));
+        }
+
+        @Override
+        public void run() {
+            parent.mail.setHeaders(headerMap);
+            parent.run();
+        }
     }
 }
 ----
+<1> The `MailCommand` parent class serves as entry point for the picocli command line.
+<2> The static inner `HeaderCommand` class represents the `headers` subcommand.
+<3> Since both the `MailCommand` class and the `HeaderCommand` class are annotated with the `picocli.CommandLine.Command` annotation, there is an ambiguity concerning the entry point of the app. This is resolved by annotating the `MailCommand` class with the `io.quarkus.picocli.runtime.annotations.TopCommand` annotation. As an alternative, this ambiguity can be resolved by specifying the `quarkus.picocli.top-command` property, too. This property takes precedence over the `TopCommand` annotation.
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import io.quarkus.mailer.*
+import io.quarkus.picocli.runtime.annotations.TopCommand
+import picocli.CommandLine.*
+import javax.inject.Inject
+import kotlin.collections.HashMap
 
+@TopCommand // <3>
+@Command(subcommands = [MailCommand.HeaderCommand::class], requiredOptionMarker = '*')
+class MailCommand : Runnable { // <1>
+    private val mail = Mail()
+    @Inject private lateinit var mailer : Mailer   // Quarkus mailer
+
+    @Option(names = ["--from"], description = ["email address of sender"], required = true)
+    private lateinit var from: String
+
+    @Option(names = ["--to"], description = ["email(s) of recipient(s)"], required = true)
+    private lateinit var to: List<String>
+
+    @Option(names = ["--subject"], description = ["Subject"])
+    private var subject: String? = null
+
+    @Parameters(description = ["Message to be sent"])
+    private var body = arrayOf<String>()
+
+    override fun run() {
+        mail.setFrom(from) // compose mail
+            .setTo(to)
+            .setSubject(subject)
+            .text = body.joinToString(separator = " ")
+        mailer.send(mail) // send mail
+    }
+
+    @Command(name = "headers", description = ["adding custom header line(s)"])
+    internal class HeaderCommand : Runnable { // <2>
+        private val headerMap: MutableMap<String, List<String>> = HashMap()
+        @ParentCommand private lateinit var parent: MailCommand
+        
+        @Option(names = ["--header"], paramLabel = "KEY=VALUE")
+        fun setProperty(headers: Map<String, String>) {
+            headers.forEach { (k: String, v: String) ->
+                headerMap[k] = listOf(*v.split(" ").toTypedArray()) }
+        }
+
+        override fun run() {
+            parent.mail.headers = headerMap
+            parent.run()
+        }
+    }
+}
+----
+<1> The `MailCommand` parent class serves as the entry point for the picocli command line.
+<2> The inner `HeaderCommand` class represents the `headers` subcommand.
+<3> Since both the `MailCommand` class and the `HeaderCommand` class are annotated with the `picocli.CommandLine.Command` annotation, there is an ambiguity concerning the entry point of the app. This is resolved by annotating the `MailCommand` class with the `io.quarkus.picocli.runtime.annotations.TopCommand` annotation. As an alternative, this ambiguity can be resolved by specifying the `quarkus.picocli.top-command` property, too. This property takes precedence over the `TopCommand` annotation.
+
+Once you are done with coding, you can use the maven wrapper `mvnw` to compile and run our example app:
+
+----
+mvnw compile quarkus:dev
+# ...
+Missing required options: '--from=<from>', '--to=<to>'
+Usage: <main class> --from=<from> [--subject=<subject>] --to=<to>
+                    [--to=<to>]... [<body>...] [COMMAND]
+      [<body>...]           Message to be sent
+*     --from=<from>         email address of sender
+*     --to=<to>             email(s) of recipient(s)
+      --subject=<subject>   Subject
+Commands:
+  header  adding custom header line(s)
+----
+
+Since we specified no command line arguments, Picoli complains about the missing required options `--from` and `--to` and outputs the usage help.
+We have to pass in command line arguments into our command line call, we can use `-Dquarkus.args=our_values` for that purpose:
+
+----
+mvnw compile quarkus:dev -Dquarkus.args="--from john@doe.info --to hans@mustermann.de \
+    --to zhang@san.cn Easy mailing with Quarkus and picocli"
+# ...
+2020-10-29 10:59:22,197 INFO  [quarkus-mailer] (Quarkus Main Thread) Sending email null from john@doe.info to [hans@mustermann.de, zhang@san.cn], text body:
+Easy mailing with Quarkus and picocli
+html body:
+<empty>
+----
+
+With all required options and parameters specified, a mail is sent successfully.
+
+[TIP]
+.Sending emails in a development and production systems
+====
+If you are running Quarkus in DEV or TEST mode, mails are not actually sent, but printed on `STDOUT` and collected in a `MockMailbox` bean instead.
+In a production system, to have to set the boolean configuration value `quarkus.mailer.mock` to `true`. Additionally to need to give further configuration values (STMP host name, … inside the file `src/main/resources/application.properties`.
+Please refer to the Quarkus guide https://quarkus.io/guides/mailer[Sending Emails] for details and additional information.
+====
+
+As an extra, our command line interface offers the opportunity to specify one ore more custom header lines via the `headers` subcommand, more specifically via the `--header` option (`KEY="MY VALUE STRINGS"`) of this subcommand:
+----
+./mvnw compile quarkus:dev -Dquarkus.args="--from= ... --to ... body message headers \
+    --header X-Mailer=Picocli/Quarkus --header X-Mailer-Version=1.0"
+# ...
+----
+
+This command will add two additional custom header lines to our mail:
+
+----
+From: john@doe.info
+To: hans@mustermann.de
+X-Mailer: Picocli/Quarkus  <1>
+X-Mailer-Version: 1.0      <2>
+# ...
+----
+<1> Custom Header line 1, starting with ´X-` as defined in https://tools.ietf.org/html/rfc822[RFC 822]
+<2> Custom Header line 2
+
+The Quarkus guide for the https://quarkus.io/guides/picocli[Command mode with Picocli] has extended information on the Quarkus Picocli integration.
 
 == Java 9 JPMS Modules
 
