@@ -19,10 +19,10 @@ jar {
     manifest {
         attributes  'Specification-Title'   : 'Picocli Shell JLine2',
                     'Specification-Vendor'  : 'Remko Popma',
-                    'Specification-Version' : version,
+                    'Specification-Version' : archiveVersion,
                     'Implementation-Title'  : 'Picocli Shell JLine2',
                     'Implementation-Vendor' : 'Remko Popma',
-                    'Implementation-Version': version,
+                    'Implementation-Version': archiveVersion,
                     'Automatic-Module-Name' : 'info.picocli.shell.jline2'
     }
 }

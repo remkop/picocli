@@ -36,10 +36,10 @@ jar {
     manifest {
         attributes 'Specification-Title'   : 'Picocli Code Generation',
                    'Specification-Vendor'  : 'Remko Popma',
-                   'Specification-Version' : version,
+                   'Specification-Version' : archiveVersion,
                    'Implementation-Title'  : 'Picocli Code Generation',
                    'Implementation-Vendor' : 'Remko Popma',
-                   'Implementation-Version': version,
+                   'Implementation-Version': archiveVersion,
                    'Automatic-Module-Name' : 'info.picocli.codegen'
     }
 }
