@@ -43,6 +43,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1232] DOC: User manual improvements for Micronaut example: add Kotlin version, extended description of Micronaut usage. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1233] DOC: User manual improvements: add tabs with Kotlin code for samples (Chapter 21: Tips & Tricks). Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1234] DOC: add system properties example to user manual.
+* [#1235][#1238] DOC: User manual: update DI section on Quarkus. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 ## <a name="4.6.0-deprecated"></a> Deprecations
 No features were deprecated in this release.

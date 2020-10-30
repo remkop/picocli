@@ -1879,8 +1879,8 @@ $(addBlockSwitches);
 <li><a href="#_guice_example">22.1. Guice Example</a></li>
 <li><a href="#_spring_boot_example">22.2. Spring Boot Example</a></li>
 <li><a href="#_micronaut_example">22.3. Micronaut Example</a></li>
-<li><a href="#_cdi_2_0_jsr_365">22.4. CDI 2.0 (JSR 365)</a></li>
-<li><a href="#_quarkus_example">22.5. Quarkus Example</a></li>
+<li><a href="#_quarkus_example">22.4. Quarkus Example</a></li>
+<li><a href="#_cdi_2_0_jsr_365">22.5. CDI 2.0 (JSR 365)</a></li>
 </ul>
 </li>
 <li><a href="#_java_9_jpms_modules">23. Java 9 JPMS Modules</a>
@@ -14505,7 +14505,7 @@ Open the auto-generated source file <code>GitStarsCommand.java</code> and alter 
 
 <span class="kn">import</span> <span class="nn">static</span> <span class="n">io</span><span class="o">.</span><span class="na">micronaut</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">HttpRequest</span><span class="o">.*;</span>
 
-<span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"git-stars"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"..."</span><span class="o">,</span>
+<span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"git-stars"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Retrieve number of stars for a GitHub project"</span><span class="o">,</span>
         <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
 <span class="kd">public</span> <span class="kd">class</span> <span class="nc">GitStarsCommand</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
 
@@ -14538,7 +14538,7 @@ Open the auto-generated source file <code>GitStarsCommand.java</code> and alter 
 <span class="k">import</span> <span class="nn">io.micronaut.http.HttpRequest</span>
 <span class="k">import</span> <span class="nn">io.micronaut.http.client.RxHttpClient</span>
 
-<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"git-stars-kotlin"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"..."</span><span class="p">],</span>
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"git-stars-kotlin"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Retrieve star count for GitHub project"</span><span class="p">],</span>
          <span class="n">mixinStandardHelpOptions</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
 <span class="kd">class</span> <span class="nc">GitStarsKotlinCommand</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
 
@@ -14602,7 +14602,261 @@ Rendered <span class="nb">command test </span>to src/test/java/git/stars/SecondC
 </div>
 </div>
 <div class="sect2">
-<h3 id="_cdi_2_0_jsr_365"><a class="anchor" href="#_cdi_2_0_jsr_365"></a>22.4. CDI 2.0 (JSR 365)</h3>
+<h3 id="_quarkus_example"><a class="anchor" href="#_quarkus_example"></a>22.4. Quarkus Example</h3>
+<div class="paragraph">
+<p><span class="image"><img src="https://quarkus.io/assets/images/quarkus_logo_horizontal_rgb_600px_reverse.png" alt="Quarkus Logo" width="350"></span></p>
+</div>
+<div class="paragraph">
+<p>Quarkus 1.5 added support for <a href="https://quarkus.io/guides/picocli#simple-command-line-application">Picocli Command Mode</a> applications, which allows to use Picoli in Quarkus applications easily.</p>
+</div>
+<div class="paragraph">
+<p>The Quarkus example app below provides a command line interface to a mail client that can be used to send emails using an SMTP server.
+<code>From</code> and <code>To</code> addresses have to be given as options, while a message body can be specified as parameter text.
+The <code>headers</code> subcommand can be used to specify one or more custom header lines.</p>
+</div>
+<div class="paragraph">
+<p>To get started, visit the <a href="https://code.quarkus.io/?g=info.picocli&amp;a=quarkus-example&amp;v=1.0.0-SNAPSHOT&amp;b=MAVEN&amp;s=baLo.UX2&amp;cn=code.quarkus.io">Quarkus Web Application Configurator</a> first.
+Our example app depends on the extensions <code>Picocli</code> and <code>Mailer</code>, please note that these extension are selected already.
+If you want to code your app in Kotlin, you need to add the <code>Kotlin</code> extension, too.
+Now move your mouse over the button <code>Generate your application</code> and select <code>Download as zip</code>.
+This will download a self-contained skeleton Quarkus project with picocli support, together with its dependencies, a maven build script and test cases.
+Extract the archive file to a directory of your choice and open a shell or command prompt for this directory.
+Now open the pre-authored source file <code>HelloCommando.java</code>, rename it to <code>MailCommando.java</code> and edit and extend it so that it looks like this:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">javax.inject.Inject</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">io.quarkus.mailer.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">io.quarkus.picocli.runtime.annotations.TopCommand</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">picocli.CommandLine.*</span><span class="o">;</span>
+
+<span class="nd">@TopCommand</span> <i class="conum" data-value="3"></i><b>(3)</b>
+<span class="nd">@Command</span> <span class="o">(</span><span class="n">subcommands</span> <span class="o">=</span> <span class="nc">MailCommand</span><span class="o">.</span><span class="na">HeaderCommand</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">requiredOptionMarker</span> <span class="o">=</span> <span class="sc">'*'</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MailCommand</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span> <i class="conum" data-value="1"></i><b>(1)</b>
+    <span class="kd">private</span> <span class="nc">Mail</span> <span class="n">mail</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Mail</span><span class="o">();</span>
+    <span class="nd">@Inject</span> <span class="nc">Mailer</span> <span class="n">mailer</span><span class="o">;</span>  <span class="c1">// Quarkus mailer</span>
+
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--from"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"email address of sender"</span><span class="o">,</span> <span class="n">required</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
+    <span class="nc">String</span> <span class="n">from</span><span class="o">;</span>
+
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--to"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"email(s) of recipient(s)"</span><span class="o">,</span> <span class="n">required</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
+    <span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">to</span><span class="o">;</span>
+
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--subject"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Subject"</span><span class="o">)</span>
+    <span class="nc">String</span> <span class="n">subject</span><span class="o">;</span>
+
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">description</span> <span class="o">=</span> <span class="s">"Message to be sent"</span><span class="o">)</span>
+    <span class="nc">String</span><span class="o">[]</span> <span class="n">body</span> <span class="o">=</span> <span class="o">{};</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">mail</span><span class="o">.</span><span class="na">setFrom</span><span class="o">(</span><span class="n">from</span><span class="o">)</span>   <span class="c1">// compose mail</span>
+            <span class="o">.</span><span class="na">setTo</span><span class="o">(</span><span class="n">to</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">setSubject</span><span class="o">(</span><span class="n">subject</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="nc">String</span><span class="o">.</span><span class="na">join</span><span class="o">(</span><span class="s">" "</span><span class="o">,</span> <span class="n">body</span><span class="o">));</span>
+       <span class="n">mailer</span><span class="o">.</span><span class="na">send</span><span class="o">(</span><span class="n">mail</span><span class="o">);</span>    <span class="c1">// send mail</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"headers"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"adding custom header line(s)"</span><span class="o">)</span>
+    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">HeaderCommand</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span> <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="kd">private</span> <span class="kd">static</span> <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;&gt;</span> <span class="n">headerMap</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;&gt;();</span>
+        <span class="nd">@ParentCommand</span> <span class="kd">private</span> <span class="nc">MailCommand</span> <span class="n">parent</span><span class="o">;</span>
+
+        <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--header"</span><span class="o">,</span> <span class="n">paramLabel</span> <span class="o">=</span> <span class="s">"KEY=VALUE"</span><span class="o">)</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setProperty</span><span class="o">(</span><span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">String</span><span class="o">&gt;</span> <span class="n">headers</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">headers</span><span class="o">.</span><span class="na">forEach</span><span class="o">((</span><span class="n">k</span><span class="o">,</span><span class="n">v</span><span class="o">)</span> <span class="o">-&gt;</span> <span class="n">headerMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">k</span><span class="o">,</span> <span class="nc">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="n">v</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">" "</span><span class="o">))));</span>
+        <span class="o">}</span>
+
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+            <span class="n">parent</span><span class="o">.</span><span class="na">mail</span><span class="o">.</span><span class="na">setHeaders</span><span class="o">(</span><span class="n">headerMap</span><span class="o">);</span>
+            <span class="n">parent</span><span class="o">.</span><span class="na">run</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>The <code>MailCommand</code> parent class serves as entry point for the picocli command line.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>The static inner <code>HeaderCommand</code> class represents the <code>headers</code> subcommand.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Since both the <code>MailCommand</code> class and the <code>HeaderCommand</code> class are annotated with the <code>picocli.CommandLine.Command</code> annotation, there is an ambiguity concerning the entry point of the app. This is resolved by annotating the <code>MailCommand</code> class with the <code>io.quarkus.picocli.runtime.annotations.TopCommand</code> annotation. As an alternative, this ambiguity can be resolved by specifying the <code>quarkus.picocli.top-command</code> property, too. This property takes precedence over the <code>TopCommand</code> annotation.</td>
+</tr>
+</table>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">io.quarkus.mailer.*</span>
+<span class="k">import</span> <span class="nn">io.quarkus.picocli.runtime.annotations.TopCommand</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine.*</span>
+<span class="k">import</span> <span class="nn">javax.inject.Inject</span>
+<span class="k">import</span> <span class="nn">kotlin.collections.HashMap</span>
+
+<span class="nd">@TopCommand</span> <i class="conum" data-value="3"></i><b>(3)</b>
+<span class="nd">@Command</span><span class="p">(</span><span class="n">subcommands</span> <span class="p">=</span> <span class="p">[</span><span class="nc">MailCommand</span><span class="p">.</span><span class="nc">HeaderCommand</span><span class="o">::</span><span class="k">class</span><span class="p">],</span> <span class="n">requiredOptionMarker</span> <span class="p">=</span> <span class="sc">'*'</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">MailCommand</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span> <i class="conum" data-value="1"></i><b>(1)</b>
+    <span class="k">private</span> <span class="kd">val</span> <span class="py">mail</span> <span class="p">=</span> <span class="nc">Mail</span><span class="p">()</span>
+    <span class="nd">@Inject</span> <span class="k">private</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">mailer</span> <span class="p">:</span> <span class="nc">Mailer</span>   <span class="c1">// Quarkus mailer</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--from"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"email address of sender"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
+    <span class="k">private</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">from</span><span class="p">:</span> <span class="nc">String</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--to"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"email(s) of recipient(s)"</span><span class="p">],</span> <span class="n">required</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
+    <span class="k">private</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">to</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--subject"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Subject"</span><span class="p">])</span>
+    <span class="k">private</span> <span class="kd">var</span> <span class="py">subject</span><span class="p">:</span> <span class="nc">String</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span>
+
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Message to be sent"</span><span class="p">])</span>
+    <span class="k">private</span> <span class="kd">var</span> <span class="py">body</span> <span class="p">=</span> <span class="n">arrayOf</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;()</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">mail</span><span class="p">.</span><span class="nf">setFrom</span><span class="p">(</span><span class="n">from</span><span class="p">)</span> <span class="c1">// compose mail</span>
+            <span class="p">.</span><span class="nf">setTo</span><span class="p">(</span><span class="n">to</span><span class="p">)</span>
+            <span class="p">.</span><span class="nf">setSubject</span><span class="p">(</span><span class="n">subject</span><span class="p">)</span>
+            <span class="p">.</span><span class="n">text</span> <span class="p">=</span> <span class="n">body</span><span class="p">.</span><span class="nf">joinToString</span><span class="p">(</span><span class="n">separator</span> <span class="p">=</span> <span class="s">" "</span><span class="p">)</span>
+        <span class="n">mailer</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="n">mail</span><span class="p">)</span> <span class="c1">// send mail</span>
+    <span class="p">}</span>
+
+    <span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"headers"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"adding custom header line(s)"</span><span class="p">])</span>
+    <span class="k">internal</span> <span class="kd">class</span> <span class="nc">HeaderCommand</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span> <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="k">private</span> <span class="kd">val</span> <span class="py">headerMap</span><span class="p">:</span> <span class="nc">MutableMap</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">,</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;&gt;</span> <span class="p">=</span> <span class="nc">HashMap</span><span class="p">()</span>
+        <span class="nd">@ParentCommand</span> <span class="k">private</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">parent</span><span class="p">:</span> <span class="nc">MailCommand</span>
+
+        <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--header"</span><span class="p">],</span> <span class="n">paramLabel</span> <span class="p">=</span> <span class="s">"KEY=VALUE"</span><span class="p">)</span>
+        <span class="k">fun</span> <span class="nf">setProperty</span><span class="p">(</span><span class="n">headers</span><span class="p">:</span> <span class="nc">Map</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">,</span> <span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+            <span class="n">headers</span><span class="p">.</span><span class="nf">forEach</span> <span class="p">{</span> <span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nc">String</span><span class="p">)</span> <span class="p">-&gt;</span>
+                <span class="n">headerMap</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="p">=</span> <span class="nf">listOf</span><span class="p">(*</span><span class="n">v</span><span class="p">.</span><span class="nf">split</span><span class="p">(</span><span class="s">" "</span><span class="p">).</span><span class="nf">toTypedArray</span><span class="p">())</span> <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+            <span class="n">parent</span><span class="p">.</span><span class="n">mail</span><span class="p">.</span><span class="n">headers</span> <span class="p">=</span> <span class="n">headerMap</span>
+            <span class="n">parent</span><span class="p">.</span><span class="nf">run</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>The <code>MailCommand</code> parent class serves as the entry point for the picocli command line.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>The inner <code>HeaderCommand</code> class represents the <code>headers</code> subcommand.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Since both the <code>MailCommand</code> class and the <code>HeaderCommand</code> class are annotated with the <code>picocli.CommandLine.Command</code> annotation, there is an ambiguity concerning the entry point of the app. This is resolved by annotating the <code>MailCommand</code> class with the <code>io.quarkus.picocli.runtime.annotations.TopCommand</code> annotation. As an alternative, this ambiguity can be resolved by specifying the <code>quarkus.picocli.top-command</code> property, too. This property takes precedence over the <code>TopCommand</code> annotation.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Once you are done with coding, you can use the maven wrapper <code>mvnw</code> to compile and run our example app:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>mvnw compile quarkus:dev
+# ...
+Missing required options: '--from=&lt;from&gt;', '--to=&lt;to&gt;'
+Usage: &lt;main class&gt; --from=&lt;from&gt; [--subject=&lt;subject&gt;] --to=&lt;to&gt;
+                    [--to=&lt;to&gt;]... [&lt;body&gt;...] [COMMAND]
+      [&lt;body&gt;...]           Message to be sent
+*     --from=&lt;from&gt;         email address of sender
+*     --to=&lt;to&gt;             email(s) of recipient(s)
+      --subject=&lt;subject&gt;   Subject
+Commands:
+  header  adding custom header line(s)</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Since we specified no command line arguments, Picoli complains about the missing required options <code>--from</code> and <code>--to</code> and outputs the usage help.
+We have to pass in command line arguments into our command line call, we can use <code>-Dquarkus.args=our_values</code> for that purpose:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>mvnw compile quarkus:dev -Dquarkus.args="--from john@doe.info --to hans@mustermann.de \
+    --to zhang@san.cn Easy mailing with Quarkus and picocli"
+# ...
+2020-10-29 10:59:22,197 INFO  [quarkus-mailer] (Quarkus Main Thread) Sending email null from john@doe.info to [hans@mustermann.de, zhang@san.cn], text body:
+Easy mailing with Quarkus and picocli
+html body:
+&lt;empty&gt;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With all required options and parameters specified, a mail is sent successfully.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="title">Sending emails in a development and production systems</div>
+<div class="paragraph">
+<p>If you are running Quarkus in DEV or TEST mode, mails are not actually sent, but printed on <code>STDOUT</code> and collected in a <code>MockMailbox</code> bean instead.
+In a production system, to have to set the boolean configuration value <code>quarkus.mailer.mock</code> to <code>true</code>. Additionally to need to give further configuration values (STMP host name, … inside the file <code>src/main/resources/application.properties</code>.
+Please refer to the Quarkus guide <a href="https://quarkus.io/guides/mailer">Sending Emails</a> for details and additional information.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>As an extra, our command line interface offers the opportunity to specify one ore more custom header lines via the <code>headers</code> subcommand, more specifically via the <code>--header</code> option (<code>KEY="MY VALUE STRINGS"</code>) of this subcommand:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>./mvnw compile quarkus:dev -Dquarkus.args="--from= ... --to ... body message headers \
+    --header X-Mailer=Picocli/Quarkus --header X-Mailer-Version=1.0"
+# ...</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This command will add two additional custom header lines to our mail:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>From: john@doe.info
+To: hans@mustermann.de
+X-Mailer: Picocli/Quarkus  <i class="conum" data-value="1"></i><b>(1)</b>
+X-Mailer-Version: 1.0      <i class="conum" data-value="2"></i><b>(2)</b>
+# ...</pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Custom Header line 1, starting with ´X-` as defined in <a href="https://tools.ietf.org/html/rfc822">RFC 822</a></td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Custom Header line 2</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The Quarkus guide for the <a href="https://quarkus.io/guides/picocli">Command mode with Picocli</a> has extended information on the Quarkus Picocli integration.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cdi_2_0_jsr_365"><a class="anchor" href="#_cdi_2_0_jsr_365"></a>22.5. CDI 2.0 (JSR 365)</h3>
 <div class="paragraph">
 <p>If your application runs in a dependency injection container that does not offer explicit support for picocli, it may still be possible to get dependency injection in your picocli commands, subcommands and other classes like version providers, default providers, type converters, etc.</p>
 </div>
@@ -14661,59 +14915,6 @@ Rendered <span class="nb">command test </span>to src/test/java/git/stars/SecondC
     <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
         <span class="nc">CDIFactory</span> <span class="n">cdiFactory</span> <span class="o">=</span> <span class="no">CDI</span><span class="o">.</span><span class="na">current</span><span class="o">().</span><span class="na">select</span><span class="o">(</span><span class="nc">CDIFactory</span><span class="o">.</span><span class="na">class</span><span class="o">).</span><span class="na">get</span><span class="o">();</span>
         <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="nc">MyCDIApp</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">cdiFactory</span><span class="o">).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
-    <span class="o">}</span>
-<span class="o">}</span></code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_quarkus_example"><a class="anchor" href="#_quarkus_example"></a>22.5. Quarkus Example</h3>
-<div class="paragraph">
-<p><span class="image"><img src="https://quarkus.io/assets/images/quarkus_logo_horizontal_rgb_600px_reverse.png" alt="Quarkus Logo" width="350"></span></p>
-</div>
-<div class="paragraph">
-<p>Quarkus 1.4 added support for <a href="https://quarkus.io/guides/command-mode-reference">Command Mode</a> applications, which allows for using picoli in Quarkus applications.</p>
-</div>
-<div class="paragraph">
-<p>The example below shows how an application could use the <code>CDIFactory</code> introduced in the <a href="#_cdi_2_0_jsr_365">previous section</a> to get dependency injection in subcommands and other classes like version providers, default providers, type converters, etc.</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-As of this writing, there is work in progress in the Quarkus community on a picocli extension for Quarkus that will give applications more compact code, more features, and other benefits than the example below.
-</td>
-</tr>
-</table>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">io.quarkus.runtime.QuarkusApplication</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">io.quarkus.runtime.annotations.QuarkusMain</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">picocli.CommandLine</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">picocli.CommandLine.Command</span><span class="o">;</span>
-
-<span class="kn">import</span> <span class="nn">javax.enterprise.context.ApplicationScoped</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">javax.inject.Inject</span><span class="o">;</span>
-
-<span class="nd">@QuarkusMain</span>
-<span class="nd">@ApplicationScoped</span>
-<span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"quarkus-app"</span><span class="o">,</span> <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
-<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyQuarkusApp</span> <span class="kd">implements</span> <span class="nc">Runnable</span><span class="o">,</span> <span class="nc">QuarkusApplication</span> <span class="o">{</span>
-    <span class="nd">@Inject</span>
-    <span class="nc">CDIFactory</span> <span class="n">cdiFactory</span><span class="o">;</span> <span class="c1">// see previous section</span>
-
-    <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
-        <span class="c1">// business logic</span>
-    <span class="o">}</span>
-
-    <span class="nd">@Override</span>
-    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">run</span><span class="o">(</span><span class="nc">String</span><span class="o">...</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
-        <span class="k">return</span> <span class="k">new</span> <span class="nf">CommandLine</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">cdiFactory</span><span class="o">).</span><span class="na">execute</span><span class="o">(</span><span class="n">args</span><span class="o">);</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
 </div>
@@ -15670,7 +15871,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.2<br>
-Last updated 2020-10-28 07:34:26 +0900
+Last updated 2020-10-31 08:40:35 +0900
 </div>
 </div>
 <style>

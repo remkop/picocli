@@ -10245,66 +10245,6 @@ mn test --tests git.stars.SecondCommandTest
 
 The https://micronaut-projects.github.io/micronaut-picocli/latest/guide/#quickstart[quick start guide] for Micronaut's Picocli integration has more information, including an extended https://micronaut-projects.github.io/micronaut-picocli/latest/guide/#_an_example_http_client[code sample].
 
-
-=== CDI 2.0 (JSR 365)
-If your application runs in a dependency injection container that does not offer explicit support for picocli, it may still be possible to get dependency injection in your picocli commands, subcommands and other classes like version providers, default providers, type converters, etc.
-
-In essence, all that is needed is an implementation of the `picocli.CommandLine.IFactory` interface that gets objects from the dependency injection container instead of instantiating them directly.
-
-Below is an example CDI factory that works for any container that implements the https://docs.jboss.org/cdi/spec/2.0/cdi-spec.html[Contexts and Dependency Injection for Java 2.0] specification (JSR 365).
-
-[source,java]
-----
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.CDI;
-
-import picocli.CommandLine;
-import picocli.CommandLine.IFactory;
-
-/**
- * Factory used by picocli to look up subcommands and other classes
- * in the CDI container before instantiating them directly,
- * to support dependency injection in subcommands and other classes.
- */
-@ApplicationScoped
-public class CDIFactory implements IFactory {
-
-    private final IFactory fallbackFactory = CommandLine.defaultFactory();
-
-    @Override
-    public <K> K create(Class<K> cls) throws Exception {
-        Instance<K> instance = CDI.current().select(cls);
-        if (instance.isResolvable()) {
-            return instance.get();
-        }
-        return defaultFactory.create(cls);
-    }
-}
-----
-
-How to use the above factory depends on the specific container, but in general it would look something like the below:
-
-[source,java]
-----
-@Command(name = "cdi-app", mixinStandardHelpOptions = true)
-class MyCDIApp implements Runnable {
-
-    @Option(names = {"-x", "--option"}, description = "example option")
-    boolean flag;
-
-    @Override
-    public void run() {
-        // business logic
-    }
-
-    public static void main(String[] args) {
-        CDIFactory cdiFactory = CDI.current().select(CDIFactory.class).get();
-        new CommandLine(MyCDIApp.class, cdiFactory).execute(args);
-    }
-}
-----
-
 === Quarkus Example
 image:https://quarkus.io/assets/images/quarkus_logo_horizontal_rgb_600px_reverse.png[Quarkus Logo,width=350,bg=black]
 
@@ -10419,7 +10359,7 @@ class MailCommand : Runnable { // <1>
     internal class HeaderCommand : Runnable { // <2>
         private val headerMap: MutableMap<String, List<String>> = HashMap()
         @ParentCommand private lateinit var parent: MailCommand
-        
+
         @Option(names = ["--header"], paramLabel = "KEY=VALUE")
         fun setProperty(headers: Map<String, String>) {
             headers.forEach { (k: String, v: String) ->
@@ -10496,6 +10436,66 @@ X-Mailer-Version: 1.0      <2>
 <2> Custom Header line 2
 
 The Quarkus guide for the https://quarkus.io/guides/picocli[Command mode with Picocli] has extended information on the Quarkus Picocli integration.
+
+
+=== CDI 2.0 (JSR 365)
+If your application runs in a dependency injection container that does not offer explicit support for picocli, it may still be possible to get dependency injection in your picocli commands, subcommands and other classes like version providers, default providers, type converters, etc.
+
+In essence, all that is needed is an implementation of the `picocli.CommandLine.IFactory` interface that gets objects from the dependency injection container instead of instantiating them directly.
+
+Below is an example CDI factory that works for any container that implements the https://docs.jboss.org/cdi/spec/2.0/cdi-spec.html[Contexts and Dependency Injection for Java 2.0] specification (JSR 365).
+
+[source,java]
+----
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.spi.CDI;
+
+import picocli.CommandLine;
+import picocli.CommandLine.IFactory;
+
+/**
+ * Factory used by picocli to look up subcommands and other classes
+ * in the CDI container before instantiating them directly,
+ * to support dependency injection in subcommands and other classes.
+ */
+@ApplicationScoped
+public class CDIFactory implements IFactory {
+
+    private final IFactory fallbackFactory = CommandLine.defaultFactory();
+
+    @Override
+    public <K> K create(Class<K> cls) throws Exception {
+        Instance<K> instance = CDI.current().select(cls);
+        if (instance.isResolvable()) {
+            return instance.get();
+        }
+        return defaultFactory.create(cls);
+    }
+}
+----
+
+How to use the above factory depends on the specific container, but in general it would look something like the below:
+
+[source,java]
+----
+@Command(name = "cdi-app", mixinStandardHelpOptions = true)
+class MyCDIApp implements Runnable {
+
+    @Option(names = {"-x", "--option"}, description = "example option")
+    boolean flag;
+
+    @Override
+    public void run() {
+        // business logic
+    }
+
+    public static void main(String[] args) {
+        CDIFactory cdiFactory = CDI.current().select(CDIFactory.class).get();
+        new CommandLine(MyCDIApp.class, cdiFactory).execute(args);
+    }
+}
+----
 
 == Java 9 JPMS Modules
 
