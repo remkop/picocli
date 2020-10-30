@@ -3492,9 +3492,17 @@ public class CommandLine {
     private static boolean empty(String str) { return str == null || str.trim().length() == 0; }
     private static boolean empty(Object[] array) { return array == null || array.length == 0; }
     private static String str(String[] arr, int i) { return (arr == null || arr.length <= i) ? "" : arr[i]; }
+    private static boolean isBoolean(Class<?>[] types) { return isBoolean(types[0]) || (isOptional(types[0]) && isBoolean(types[1])); }
     private static boolean isBoolean(Class<?> type) { return type == Boolean.class || type == Boolean.TYPE; }
     private static CommandLine toCommandLine(Object obj, IFactory factory) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj, factory);}
     private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
+    private static boolean isOptional(Class<?> cls) { return "java.util.Optional".equals(cls.getName()); } // #1108
+    private static Object getOptionalEmpty() throws Exception {
+        return Class.forName("java.util.Optional").getMethod("empty").invoke(null);
+    }
+    private static Object getOptionalOfNullable(Object newValue) throws Exception {
+        return Class.forName("java.util.Optional").getMethod("ofNullable", Object.class).invoke(null, newValue);
+    }
     private static String format(String formatString, Object... params) {
         try {
             return formatString == null ? "" : String.format(formatString, params);
@@ -6218,7 +6226,7 @@ public class CommandLine {
 
             private void addOptionNegative(OptionSpec option, Tracer tracer) {
                 if (option.negatable()) {
-                    if (!option.typeInfo().isBoolean()) {
+                    if (!option.typeInfo().isBoolean() && !isOptional(option.type())) { // #1108
                         throw new InitializationException("Only boolean options can be negatable, but " + option + " is of type " + option.typeInfo().getClassName());
                     }
                     for (String name : interpolator.interpolate(option.names())) { // cannot be null or empty
@@ -9147,7 +9155,10 @@ public class CommandLine {
              * @see Option#fallbackValue()
              * @see #defaultValue()
              * @since 4.0 */
-            public String fallbackValue() { return interpolate(fallbackValue); }
+            public String fallbackValue() {
+                String result = interpolate(fallbackValue);
+                return "_NULL_".equals(result) ? null : result;
+            }
 
             public boolean equals(Object obj) {
                 if (obj == this) { return true; }
@@ -10158,6 +10169,7 @@ public class CommandLine {
             Class<?>[] getAuxiliaryTypes();
         }
         static class RuntimeTypeInfo implements ITypeInfo {
+            final static String ERRORMSG = "Unsupported generic type %s. Only List<T>, Map<K,V>, Optional<T>, and Map<K, Optional<V>> are supported. Type parameters may be char[], a non-array type, or a wildcard type with an upper or lower bound.";
             private final Class<?> type;
             private final Class<?>[] auxiliaryTypes;
             private final List<String> actualGenericTypeArguments;
@@ -10221,8 +10233,18 @@ public class CommandLine {
             }
             static Class<?>[] inferTypes(Class<?> propertyType, Class<?>[] annotationTypes, Type genericType) {
                 if (annotationTypes != null && annotationTypes.length > 0) { return annotationTypes; }
-                if (propertyType.isArray()) { return new Class<?>[] { propertyType.getComponentType() }; }
-                if (CommandLine.isMultiValue(propertyType)) {
+                if (propertyType.isArray()) {
+                    if (CommandLine.isOptional(propertyType.getComponentType())) { // #1108
+                        throw new InitializationException(String.format(ERRORMSG, genericType));
+                        //List<Class<?>> result = new ArrayList<Class<?>>();
+                        //result.add(propertyType.getComponentType());
+                        //GenericArrayType genericComponentType = (GenericArrayType) genericType;
+                        //result.addAll(Arrays.asList(extractTypeParameters((ParameterizedType) genericComponentType.getGenericComponentType())));
+                        //return result.toArray(new Class[0]);
+                    }
+                    return new Class<?>[] { propertyType.getComponentType() };
+                }
+                if (CommandLine.isMultiValue(propertyType) || CommandLine.isOptional(propertyType)) { // #1108
                     if (genericType instanceof ParameterizedType) {// e.g. Map<Long, ? extends Number>
                         return extractTypeParameters((ParameterizedType) genericType);
                     }
@@ -10233,24 +10255,48 @@ public class CommandLine {
 
             static Class<?>[] extractTypeParameters(ParameterizedType genericType) {
                 Type[] paramTypes = genericType.getActualTypeArguments(); // e.g. ? extends Number
-                Class<?>[] result = new Class<?>[paramTypes.length];
+                List<Class<?>> result = new ArrayList<Class<?>>();
                 for (int i = 0; i < paramTypes.length; i++) {
-                    if (paramTypes[i] instanceof Class) { result[i] = (Class<?>) paramTypes[i]; continue; } // e.g. Long
-                    else if (paramTypes[i] instanceof WildcardType) { // e.g. ? extends Number
+                    if (paramTypes[i] instanceof Class) {// e.g. Long
+                        result.add((Class<?>) paramTypes[i]);
+                        continue;
+                    } else if (paramTypes[i] instanceof ParameterizedType) { // e.g. Optional<Integer>
+                        ParameterizedType parameterizedParamType = (ParameterizedType) paramTypes[i];
+                        Type raw = parameterizedParamType.getRawType();
+                        if (i == 1 && raw instanceof Class && CommandLine.isOptional((Class) raw)) { // #1108 and #1214
+                            result.add((Class) raw);
+                            Class<?>[] aux = extractTypeParameters(parameterizedParamType);
+                            if (aux.length == 1) {
+                                result.add(aux[0]);
+                                continue;
+                            }
+                        }
+                    } else if (paramTypes[i] instanceof WildcardType) { // e.g. ? extends Number
                         WildcardType wildcardType = (WildcardType) paramTypes[i];
                         Type[] lower = wildcardType.getLowerBounds(); // e.g. []
-                        if (lower.length > 0 && lower[0] instanceof Class) { result[i] = (Class<?>) lower[0]; continue; }
+                        if (lower.length > 0 && lower[0] instanceof Class) {
+                            result.add((Class<?>) lower[0]);
+                            continue;
+                        }
                         Type[] upper = wildcardType.getUpperBounds(); // e.g. Number
-                        if (upper.length > 0 && upper[0] instanceof Class) { result[i] = (Class<?>) upper[0]; continue; }
+                        if (upper.length > 0 && upper[0] instanceof Class) {
+                            result.add((Class<?>) upper[0]);
+                            continue;
+                        }
                     } else if (paramTypes[i] instanceof GenericArrayType) {
                         GenericArrayType gat = (GenericArrayType) paramTypes[i];
                         if (char.class.equals(gat.getGenericComponentType())) {
-                            result[i] = char[].class; continue;
+                            result.add(char[].class);
+                            continue;
                         }
                     }
-                    Arrays.fill(result, String.class); return result; // too convoluted generic type, giving up
+                    throw new InitializationException(String.format(ERRORMSG, genericType));
+//                    // too convoluted generic type, giving up
+//                    result.clear();
+//                    result.addAll(Arrays.asList(String.class, String.class));
+//                    break;
                 }
-                return result; // we inferred all types from ParameterizedType
+                return result.toArray(new Class<?>[0]); // we inferred all types from ParameterizedType
             }
 
             public boolean isBoolean()            { return auxiliaryTypes[0] == boolean.class || auxiliaryTypes[0] == Boolean.class; }
@@ -10258,6 +10304,7 @@ public class CommandLine {
             public boolean isArray()              { return type.isArray(); }
             public boolean isCollection()         { return Collection.class.isAssignableFrom(type); }
             public boolean isMap()                { return Map.class.isAssignableFrom(type); }
+            public boolean isOptional()           { return CommandLine.isOptional(type); }
             public boolean isEnum()               { return auxiliaryTypes[0].isEnum(); }
             public String getClassName()          { return type.getName(); }
             public String getClassSimpleName()    { return type.getSimpleName(); }
@@ -12507,7 +12554,12 @@ public class CommandLine {
                 Range arity = arg.arity().min(Math.max(1, arg.arity().min));
                 applyOption(arg, false, LookBehind.SEPARATE, false, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
             } else {
-                tracer.debug("defaultValue not defined for %s%n", arg);
+                if (isOptional(arg.type())) {
+                    if (tracer.isDebug()) {tracer.debug("Applying Optional.empty() to %s on %s%n", arg, arg.scopeString());}
+                    arg.setValue(getOptionalEmpty());
+                } else {
+                    tracer.debug("defaultValue not defined for %s%n", arg);
+                }
             }
             return defaultValue != null;
         }
@@ -12925,6 +12977,7 @@ public class CommandLine {
             String actualValue = value;
             char[] interactiveValue = null;
             Class<?> cls = argSpec.auxiliaryTypes()[0]; // field may be interface/abstract type, use annotation to get concrete type
+            if (isOptional(cls)) { cls = argSpec.auxiliaryTypes()[1]; }
             if (arity.min <= 0) { // value may be optional
                 boolean optionalValueExists = true; // assume we will use the command line value
                 consumed = 1;
@@ -12935,7 +12988,7 @@ public class CommandLine {
                     // boolean option with arity = 0..1 or 0..*: value MAY be a param
                     boolean optionalWithBooleanValue = arity.max > 0 && ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value));
                     if (!optionalWithBooleanValue && lookBehind != LookBehind.ATTACHED_WITH_SEPARATOR) { // if attached, try converting the value to boolean (and fail if invalid value)
-                        Boolean defaultValue = booleanValue(argSpec, String.valueOf(argSpec.calcDefaultValue(true))); // #712 flip the default value
+                        Boolean defaultValue = booleanValue(argSpec, argSpec.calcDefaultValue(true)); // #712 flip the default value
                         if (argSpec.isOption() && !empty(((OptionSpec) argSpec).fallbackValue())) {
                             defaultValue = !booleanValue(argSpec, ((OptionSpec) argSpec).fallbackValue()); // #754 Allow boolean options to get value from fallback instead of defaultProvider
                         }
@@ -12981,6 +13034,10 @@ public class CommandLine {
                 if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, value); } // update position for Completers
             }
             if (noMoreValues && actualValue == null && interactiveValue == null) {
+                if (isOptional(argSpec.type())) {
+                    if (tracer.isDebug()) {tracer.debug("Applying Optional.empty() to %s on %s%n", argSpec, argSpec.scopeString());}
+                    argSpec.setValue(getOptionalEmpty());
+                }
                 return 0;
             }
             Object newValue = interactiveValue;
@@ -12990,8 +13047,8 @@ public class CommandLine {
                 if (interactiveValue != null) {
                     actualValue = new String(interactiveValue);
                 }
-                ITypeConverter<?> converter = getTypeConverter(cls, argSpec, 0);
-                newValue = tryConvert(argSpec, -1, converter, actualValue, cls);
+                ITypeConverter<?> converter = getTypeConverter(argSpec.auxiliaryTypes(), argSpec, 0);
+                newValue = tryConvert(argSpec, -1, converter, actualValue, 0);
                 initValueMessage = "Setting %s to '%3$s' (was '%2$s') for %4$s on %5$s%n";
                 overwriteValueMessage = "Overwriting %s value '%s' with '%s' for %s on %s%n";
             } else {
@@ -12999,6 +13056,9 @@ public class CommandLine {
                     newValue = actualValue.toCharArray();
                 } else {
                     actualValue = "***"; // mask interactive value
+                }
+                if (isOptional(argSpec.type())) {
+                    newValue = getOptionalOfNullable(newValue);
                 }
             }
             Object oldValue = argSpec.getValue();
@@ -13027,10 +13087,7 @@ public class CommandLine {
                                           Stack<String> args,
                                           Set<ArgSpec> initialized,
                                           String argDescription) throws Exception {
-            Class<?>[] classes = argSpec.auxiliaryTypes();
-            if (classes.length < 2) { throw new ParameterException(CommandLine.this, argSpec.toString() + " needs two types (one for the map key, one for the value) but only has " + classes.length + " types configured.",argSpec, null); }
-            ITypeConverter<?> keyConverter   = getTypeConverter(classes[0], argSpec, 0);
-            ITypeConverter<?> valueConverter = getTypeConverter(classes[1], argSpec, 1);
+            if (argSpec.auxiliaryTypes().length < 2) { throw new ParameterException(CommandLine.this, argSpec.toString() + " needs two types (one for the map key, one for the value) but only has " + argSpec.auxiliaryTypes().length + " types configured.",argSpec, null); }
             Map<Object, Object> map = argSpec.getValue();
             if (map == null || !initialized.contains(argSpec)) {
                 tracer.debug("Initializing binding for %s on %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.scopeString(), argSpec.type().getSimpleName());
@@ -13040,7 +13097,7 @@ public class CommandLine {
             initialized.add(argSpec);
             int originalSize = map.size();
             int pos = getPosition(argSpec);
-            consumeMapArguments(argSpec, lookBehind, alreadyUnquoted, arity, args, classes, keyConverter, valueConverter, map, argDescription);
+            consumeMapArguments(argSpec, lookBehind, alreadyUnquoted, arity, args, map, argDescription);
             parseResultBuilder.add(argSpec, pos);
             argSpec.setValue(map);
             return map.size() - originalSize;
@@ -13051,14 +13108,15 @@ public class CommandLine {
                                          boolean alreadyUnquoted,
                                          Range arity,
                                          Stack<String> args,
-                                         Class<?>[] classes,
-                                         ITypeConverter<?> keyConverter,
-                                         ITypeConverter<?> valueConverter,
                                          Map<Object, Object> result,
                                          String argDescription) throws Exception {
 
             // don't modify Interpreter.position: same position may be consumed by multiple ArgSpec objects
             int currentPosition = getPosition(argSpec);
+
+            Class<?>[] classes = argSpec.auxiliaryTypes();
+            ITypeConverter<?> keyConverter   = getTypeConverter(classes, argSpec, 0);
+            ITypeConverter<?> valueConverter = getTypeConverter(classes, argSpec, 1);
 
             // first do the arity.min mandatory parameters
             int initialSize = argSpec.stringValues().size();
@@ -13114,9 +13172,9 @@ public class CommandLine {
             String[] values = unquoteAndSplit(argSpec, lookBehind, alreadyUnquoted, arity, consumed, arg);
             for (String value : values) {
                 String[] keyValue = splitKeyValue(argSpec, value);
-                Object mapKey =   tryConvert(argSpec, index, keyConverter,   keyValue[0], classes[0]);
-                String rawMapValue = keyValue.length == 1 ? "" : keyValue[1];
-                Object mapValue = tryConvert(argSpec, index, valueConverter, rawMapValue, classes[1]);
+                Object mapKey =   tryConvert(argSpec, index, keyConverter,   keyValue[0], 0);
+                String rawMapValue = keyValue.length == 1 ? ((OptionSpec) argSpec).fallbackValue() : keyValue[1];
+                Object mapValue = tryConvert(argSpec, index, valueConverter, rawMapValue, 1);
                 result.put(mapKey, mapValue);
                 if (tracer.isInfo()) { tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s on %s%n", String.valueOf(mapKey), String.valueOf(mapValue),
                         result.getClass().getSimpleName(), classes[0].getSimpleName(), classes[1].getSimpleName(), argSpec.toString(), argDescription, argSpec.scopeString()); }
@@ -13140,9 +13198,9 @@ public class CommandLine {
             try {
                 for (String value : values) {
                     String[] keyValue = splitKeyValue(argSpec, value);
-                    tryConvert(argSpec, -1, keyConverter, keyValue[0], classes[0]);
+                    tryConvert(argSpec, -1, keyConverter, keyValue[0], 0);
                     String mapValue = keyValue.length == 1 ? "" : keyValue[1];
-                    tryConvert(argSpec, -1, valueConverter, mapValue, classes[1]);
+                    tryConvert(argSpec, -1, valueConverter, mapValue, 1);
                 }
                 return true;
             } catch (PicocliException ex) {
@@ -13209,9 +13267,8 @@ public class CommandLine {
                                             String argDescription) throws Exception {
             Object existing = argSpec.getValue();
             int length = existing == null ? 0 : Array.getLength(existing);
-            Class<?> type = argSpec.auxiliaryTypes()[0];
             int pos = getPosition(argSpec);
-            List<Object> converted = consumeArguments(argSpec, negated, lookBehind, alreadyUnquoted, alreadyUnquoted, arity, args, type, argDescription);
+            List<Object> converted = consumeArguments(argSpec, negated, lookBehind, alreadyUnquoted, alreadyUnquoted, arity, args, argDescription);
             List<Object> newValues = new ArrayList<Object>();
             if (initialized.contains(argSpec)) { // existing values are default values if initialized does NOT contain argsSpec
                 for (int i = 0; i < length; i++) {
@@ -13226,7 +13283,7 @@ public class CommandLine {
                     newValues.add(obj);
                 }
             }
-            Object array = Array.newInstance(type, newValues.size());
+            Object array = Array.newInstance(argSpec.auxiliaryTypes()[0], newValues.size());
             for (int i = 0; i < newValues.size(); i++) {
                 Array.set(array, i, newValues.get(i));
             }
@@ -13244,12 +13301,11 @@ public class CommandLine {
                                                  Set<ArgSpec> initialized,
                                                  String argDescription) throws Exception {
             Collection<Object> collection = argSpec.getValue();
-            Class<?> type = argSpec.auxiliaryTypes()[0];
             int pos = getPosition(argSpec);
-            List<Object> converted = consumeArguments(argSpec, negated, lookBehind, alreadyUnquoted, alreadyUnquoted, arity, args, type, argDescription);
+            List<Object> converted = consumeArguments(argSpec, negated, lookBehind, alreadyUnquoted, alreadyUnquoted, arity, args, argDescription);
             if (collection == null ||  !initialized.contains(argSpec))  {
                 tracer.debug("Initializing binding for %s on %s with empty %s%n", optionDescription("", argSpec, 0), argSpec.scopeString(), argSpec.type().getSimpleName());
-                collection = createCollection(argSpec.type(), type); // collection type, element type
+                collection = createCollection(argSpec.type(), argSpec.auxiliaryTypes()); // collection type, element type
                 argSpec.setValue(collection);
             }
             initialized.add(argSpec);
@@ -13271,7 +13327,6 @@ public class CommandLine {
                                               boolean alreadyUnquoted,
                                               boolean unquoted, Range arity,
                                               Stack<String> args,
-                                              Class<?> type,
                                               String argDescription) throws Exception {
             List<Object> result = new ArrayList<Object>();
 
@@ -13287,14 +13342,14 @@ public class CommandLine {
                 if (assertNoMissingMandatoryParameter(argSpec, args, i, arity) || isArgResemblesOptionThereforeDiscontinue(argSpec, args, i, arity)) {
                     break;
                 }
-                consumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
+                consumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.pop(), typedValuesAtPosition, i, argDescription);
                 result.addAll(typedValuesAtPosition);
                 consumed = consumedCount(i + 1, initialSize, argSpec);
                 lookBehind = LookBehind.SEPARATE;
                 alreadyUnquoted = false;
             }
             if (argSpec.interactive() && argSpec.arity().max == 0) {
-                consumed = addPasswordToList(argSpec, type, result, consumed, argDescription);
+                consumed = addPasswordToList(argSpec, result, consumed, argDescription);
             }
             // now process the varargs if any
             String fallback = consumed == 0 && argSpec.isOption() && !OptionSpec.DEFAULT_FALLBACK_VALUE.equals(((OptionSpec) argSpec).fallbackValue())
@@ -13306,25 +13361,25 @@ public class CommandLine {
             for (int i = consumed; consumed < arity.max && !args.isEmpty(); i++) {
                 if (argSpec.interactive() && argSpec.arity().max == 1 && !varargCanConsumeNextValue(argSpec, args.peek())) {
                     // if interactive and arity = 0..1, we consume from command line if possible (if next arg not an option or subcommand)
-                    consumed = addPasswordToList(argSpec, type, result, consumed, argDescription);
+                    consumed = addPasswordToList(argSpec, result, consumed, argDescription);
                 } else {
                     if (!varargCanConsumeNextValue(argSpec, args.peek())) { break; }
                     List<Object> typedValuesAtPosition = new ArrayList<Object>();
                     parseResultBuilder.addTypedValues(argSpec, currentPosition++, typedValuesAtPosition);
-                    if (!canConsumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.peek(), type, argDescription)) {
+                    if (!canConsumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.peek(), argDescription)) {
                         break; // leave empty list at argSpec.typedValueAtPosition[currentPosition] so we won't try to consume that position again
                     }
                     if (isArgResemblesOptionThereforeDiscontinue(argSpec, args, i, arity)) {
                         break;
                     }
-                    consumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.pop(), type, typedValuesAtPosition, i, argDescription);
+                    consumeOneArgument(argSpec, lookBehind, alreadyUnquoted, arity, consumed, args.pop(), typedValuesAtPosition, i, argDescription);
                     result.addAll(typedValuesAtPosition);
                     consumed = consumedCount(i + 1, initialSize, argSpec);
                     lookBehind = LookBehind.SEPARATE;
                     alreadyUnquoted = false;
                 }
             }
-            if (result.isEmpty() && arity.min == 0 && arity.max <= 1 && isBoolean(type)) {
+            if (result.isEmpty() && arity.min == 0 && arity.max <= 1 && isBoolean(argSpec.auxiliaryTypes())) {
                 if (argSpec.isOption() && ((OptionSpec) argSpec).negatable()) {
                     Object defaultValue = argSpec.calcDefaultValue(true);
                     boolean booleanDefault = false;
@@ -13351,7 +13406,7 @@ public class CommandLine {
             return commandSpec.parser().splitFirst() ? (arg.stringValues().size() - initialSize) / 2 : i;
         }
 
-        private int addPasswordToList(ArgSpec argSpec, Class<?> type, List<Object> result, int consumed, String argDescription) {
+        private int addPasswordToList(ArgSpec argSpec, List<Object> result, int consumed, String argDescription) {
             char[] password = readPassword(argSpec);
             if (tracer.isInfo()) {
                 tracer.info("Adding *** (masked interactive value) to %s for %s on %s%n", argSpec.toString(), argDescription, argSpec.scopeString());
@@ -13359,7 +13414,7 @@ public class CommandLine {
             parseResultBuilder.addStringValue(argSpec, "***");
             parseResultBuilder.addOriginalStringValue(argSpec, "***");
             if (!char[].class.equals(argSpec.auxiliaryTypes()[0]) && !char[].class.equals(argSpec.type())) {
-                Object value = tryConvert(argSpec, consumed, getTypeConverter(type, argSpec, consumed), new String(password), type);
+                Object value = tryConvert(argSpec, consumed, getTypeConverter(argSpec.auxiliaryTypes(), argSpec, 0), new String(password), 0);
                 result.add(value);
             } else {
                 result.add(password);
@@ -13372,15 +13427,14 @@ public class CommandLine {
                                        boolean alreadyUnquoted, Range arity,
                                        int consumed,
                                        String arg,
-                                       Class<?> type,
                                        List<Object> result,
                                        int index,
                                        String argDescription) {
             if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, arg); }
             String[] values = unquoteAndSplit(argSpec, lookBehind, alreadyUnquoted, arity, consumed, arg);
-            ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
+            ITypeConverter<?> converter = getTypeConverter(argSpec.auxiliaryTypes(), argSpec, 0);
             for (String value : values) {
-                Object stronglyTypedValue = tryConvert(argSpec, index, converter, value, type);
+                Object stronglyTypedValue = tryConvert(argSpec, index, converter, value, 0);
                 result.add(stronglyTypedValue);
                 if (tracer.isInfo()) {
                     tracer.info("Adding [%s] to %s for %s on %s%n", String.valueOf(result.get(result.size() - 1)), argSpec.toString(), argDescription, argSpec.scopeString());
@@ -13390,9 +13444,9 @@ public class CommandLine {
             parseResultBuilder.addOriginalStringValue(argSpec, arg);
             return ++index;
         }
-        private boolean canConsumeOneArgument(ArgSpec argSpec, LookBehind lookBehind, boolean alreadyUnquoted, Range arity, int consumed, String arg, Class<?> type, String argDescription) {
+        private boolean canConsumeOneArgument(ArgSpec argSpec, LookBehind lookBehind, boolean alreadyUnquoted, Range arity, int consumed, String arg, String argDescription) {
             if (char[].class.equals(argSpec.auxiliaryTypes()[0]) || char[].class.equals(argSpec.type())) { return true; }
-            ITypeConverter<?> converter = getTypeConverter(type, argSpec, 0);
+            ITypeConverter<?> converter = getTypeConverter(argSpec.auxiliaryTypes(), argSpec, 0);
             try {
                 String[] values = unquoteAndSplit(argSpec, lookBehind, alreadyUnquoted, arity, consumed, arg);
 //                if (!argSpec.acceptsValues(values.length, commandSpec.parser())) {
@@ -13400,7 +13454,7 @@ public class CommandLine {
 //                    return false;
 //                }
                 for (String value : values) {
-                    tryConvert(argSpec, -1, converter, value, type);
+                    tryConvert(argSpec, -1, converter, value, 0);
                 }
                 return true;
             } catch (PicocliException ex) {
@@ -13454,7 +13508,7 @@ public class CommandLine {
             }
             return (arg.length() > 2 && arg.startsWith("-") && commandSpec.posixOptionsMap().containsKey(arg.charAt(1)));
         }
-        private Object tryConvert(ArgSpec argSpec, int index, ITypeConverter<?> converter, String value, Class<?> type)
+        private Object tryConvert(ArgSpec argSpec, int index, ITypeConverter<?> converter, String value, int typeIndex)
                 throws ParameterException {
             try {
                 return converter.convert(value);
@@ -13463,7 +13517,11 @@ public class CommandLine {
                 throw new ParameterException(CommandLine.this, msg, ex, argSpec, value);
             } catch (Exception other) {
                 String desc = optionDescription("", argSpec, index);
-                String msg = String.format("Invalid value for %s: cannot convert '%s' to %s (%s)", desc, value, type.getSimpleName(), other);
+                String typeDescr = argSpec.auxiliaryTypes()[typeIndex].getSimpleName();
+                if (isOptional(argSpec.auxiliaryTypes()[typeIndex])) {
+                    typeDescr += "<" + argSpec.auxiliaryTypes()[typeIndex + 1].getSimpleName() + ">";
+                }
+                String msg = String.format("Invalid value for %s: cannot convert '%s' to %s (%s)", desc, value, typeDescr, other);
                 throw new ParameterException(CommandLine.this, msg, other, argSpec, value);
             }
         }
@@ -13486,9 +13544,9 @@ public class CommandLine {
             return value;
         }
         @SuppressWarnings("unchecked")
-        private Collection<Object> createCollection(Class<?> collectionClass, Class<?> elementType) throws Exception {
-            if (EnumSet.class.isAssignableFrom(collectionClass) && Enum.class.isAssignableFrom(elementType)) {
-                Object enumSet = EnumSet.noneOf((Class<Enum>) elementType);
+        private Collection<Object> createCollection(Class<?> collectionClass, Class<?>[] elementType) throws Exception {
+            if (EnumSet.class.isAssignableFrom(collectionClass) && Enum.class.isAssignableFrom(elementType[0])) {
+                Object enumSet = EnumSet.noneOf((Class<Enum>) elementType[0]);
                 return (Collection<Object>) enumSet;
             }
             // custom Collection implementation class must have default constructor
@@ -13497,18 +13555,18 @@ public class CommandLine {
         @SuppressWarnings("unchecked") private Map<Object, Object> createMap(Class<?> mapClass) throws Exception {
             return (Map<Object, Object>) factory.create(mapClass);
         }
-        private ITypeConverter<?> getTypeConverter(Class<?> type, final ArgSpec argSpec, int index) {
-            if (argSpec.converters().length > index) { return argSpec.converters()[index]; }
-//            if (isOptional(type)) { // #1214 #1108
-//                final Class<?> actualType = String.class; // FIXME // TODO
-//                return new ITypeConverter<Object>() {
-//                    @SuppressWarnings("unchecked")
-//                    public Object convert(String value) throws Exception {
-//                        ITypeConverter<?> converter = getActualTypeConverter(actualType, argSpec);
-//                        return Optional.ofNullable(converter.convert(value));
-//                    }
-//                };
-//            }
+        private ITypeConverter<?> getTypeConverter(Class<?>[] types, final ArgSpec argSpec, int index) {
+            if (argSpec.converters().length > index) { return argSpec.converters()[index]; } // use custom converters if defined
+            Class<?> type = types[index];
+            if (isOptional(type)) { // #1214 #1108
+                if (types.length <= index + 1) { throw new PicocliException("Cannot create converter for types " + Arrays.asList(types) + " for " + argSpec); }
+                final ITypeConverter<?> converter = getActualTypeConverter(types[index + 1], argSpec);
+                return new ITypeConverter<Object>() {
+                    public Object convert(String value) throws Exception {
+                        return value == null ? getOptionalEmpty() : getOptionalOfNullable(converter.convert(value));
+                    }
+                };
+            }
             return getActualTypeConverter(type, argSpec);
         }
 
@@ -13556,11 +13614,20 @@ public class CommandLine {
             };
         }
 
-        private boolean booleanValue(ArgSpec argSpec, String value) {
-            if (empty(value) || "null".equals(value)) { return false; }
-            ITypeConverter<?> converter = getTypeConverter(Boolean.class, argSpec, 0);
+        private boolean booleanValue(ArgSpec argSpec, Object value) {
+            if (value == null) { return false; }
+            if (isOptional(value.getClass())) {
+                try {
+                    value = value.getClass().getMethod("orElse", Object.class).invoke(value, "null");
+                } catch (Exception e) {
+                    throw new TypeConversionException("Could not convert '" + value + "' to an Optional<Boolean>: " + e.getMessage());
+                }
+            }
+            String stringValue = String.valueOf(value);
+            if (empty(stringValue) || "null".equals(stringValue) || "Optional.empty".equals(value)) { return false; }
+            ITypeConverter<?> converter = getTypeConverter(new Class<?>[]{Boolean.class}, argSpec, 0);
             try {
-                return (Boolean) converter.convert(value);
+                return (Boolean) converter.convert(stringValue);
             } catch (TypeConversionException e) {
                 throw e;
             } catch (Exception e) {

@@ -683,6 +683,7 @@ public class TypeConversionTest {
         CommandLine commandLine = new CommandLine(new App());
         try {
             commandLine.parseArgs("anything");
+            fail("Expected exception");
         } catch (CommandLine.ParameterException ex) {
             assertEquals("Invalid value for positional parameter at index 0 (<sqlTypeParam>): cannot convert 'anything' to int (java.lang.IllegalStateException: bad converter)", ex.getMessage());
         }
@@ -696,6 +697,7 @@ public class TypeConversionTest {
         CommandLine commandLine = new CommandLine(new App());
         try {
             commandLine.parseArgs("anything");
+            fail("Expected exception");
         } catch (CommandLine.ParameterException ex) {
             assertEquals("Invalid value for positional parameter at index 0 (<sqlTypeParam>): cannot convert 'anything' to int (java.lang.IllegalStateException: bad converter)", ex.getMessage());
             assertEquals(IllegalStateException.class, ex.getCause().getClass());
@@ -731,6 +733,7 @@ public class TypeConversionTest {
         CommandLine commandLine = new CommandLine(new App());
         try {
             commandLine.parseArgs("anything");
+            fail("Expected exception");
         } catch (CommandLine.ParameterException ex) {
             assertEquals("Invalid value for positional parameter at index 0 (<sqlTypeParam>): I am always thrown", ex.getMessage());
             assertEquals(TypeConversionException.class, ex.getCause().getClass());
@@ -1215,6 +1218,7 @@ public class TypeConversionTest {
         }
         try {
             CommandLine.populateCommand(new App(), "a:c", "1:3");
+            fail("Expected exception");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched arguments from index 0: 'a:c', '1:3'", ex.getMessage());
         }
@@ -1227,6 +1231,7 @@ public class TypeConversionTest {
         }
         try {
             CommandLine.populateCommand(new App(), "a:c", "1:3");
+            fail("Expected exception");
         } catch (UnmatchedArgumentException ex) {
             assertEquals("Unmatched arguments from index 0: 'a:c', '1:3'", ex.getMessage());
         }
