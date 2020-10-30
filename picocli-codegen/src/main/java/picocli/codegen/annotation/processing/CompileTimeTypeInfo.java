@@ -154,6 +154,12 @@ class CompileTimeTypeInfo implements CommandLine.Model.ITypeInfo {
     }
 
     @Override
+    public boolean isOptional() {
+        TypeMirror type = auxTypeMirrors.get(0);
+        return "java.util.Optional".equals(type.toString());
+    }
+
+    @Override
     public boolean isMultiValue() {
         return isArray() || isCollection() || isMap();
     }

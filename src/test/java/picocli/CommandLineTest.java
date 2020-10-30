@@ -3064,17 +3064,12 @@ public class CommandLineTest {
         assertEquals("-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io", c.parameters.get("AppOptions"));
 
         args = new String[] {"-p", "\"AppOptions=-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io\""};
-//        try {
-//            c = CommandLine.populateCommand(new MyCommand(), args);
-//            fail("Expected exception"); // superceded by #1214
-//        } catch (ParameterException ex) {
-//            assertEquals("Value for option option '--parameter' (<String=String>) should be in KEY=VALUE format but was \"AppOptions=-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io\"", ex.getMessage());
-//        }
-        c = CommandLine.populateCommand(new MyCommand(), args);
-        assertEquals(1, c.parameters.size());
-        String key = "\"AppOptions=-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io\"";
-        assertEquals(new HashSet<String>(Collections.singletonList(key)), c.parameters.keySet());
-        assertEquals("", c.parameters.get(key));
+        try {
+            c = CommandLine.populateCommand(new MyCommand(), args);
+            fail("Expected exception"); // superceded by #1214
+        } catch (ParameterException ex) {
+            assertEquals("Value for option option '--parameter' (<String=String>) should be in KEY=VALUE format but was \"AppOptions=-Dspring.profiles.active=test -Dspring.mail.host=smtp.mailtrap.io\"", ex.getMessage());
+        }
 
         c = new MyCommand();
         new CommandLine(c).setTrimQuotes(true).parseArgs(args);

@@ -1,6 +1,8 @@
 package picocli;
 import org.junit.Test;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
@@ -28,6 +30,22 @@ public class OptionalTest {
 
         @Parameters(arity = "0..*")
         Optional<String> positional = Optional.empty();
+    }
+
+    @Test
+    public void testTypeInfo() {
+        CommandSpec spec = CommandSpec.forAnnotatedObject(new SingleOptions());
+        OptionSpec x = spec.findOption("-x");
+        assertTrue(x.typeInfo().isOptional());
+        assertEquals(Optional.class, x.typeInfo().getType());
+        assertEquals(1, x.typeInfo().getAuxiliaryTypes().length);
+        assertEquals(Integer.class, x.typeInfo().getAuxiliaryTypes()[0]);
+
+        OptionSpec z = spec.findOption("-z");
+        assertTrue(z.typeInfo().isOptional());
+        assertEquals(Optional.class, z.typeInfo().getType());
+        assertEquals(1, z.typeInfo().getAuxiliaryTypes().length);
+        assertEquals(Boolean.class, z.typeInfo().getAuxiliaryTypes()[0]);
     }
 
     @Test

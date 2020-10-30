@@ -32,7 +32,7 @@ public class MapOptionsOptionalTest {
     @Test
     public void testOptionalIfNoValue() {
         class App {
-            @Option(names = "-D") Map<String, Optional<String>> map;
+            @Option(names = "-D", mapFallbackValue = "") Map<String, Optional<String>> map;
         }
         App app = CommandLine.populateCommand(new App(), "-Dkey");
         assertEquals(1, app.map.size());
@@ -42,7 +42,7 @@ public class MapOptionsOptionalTest {
     @Test
     public void testOptionalEmptyIfNoValueWithFallbackNull() {
         class App {
-            @Option(names = "-D", fallbackValue = "_NULL_") Map<String, Optional<String>> map;
+            @Option(names = "-D", mapFallbackValue = "_NULL_") Map<String, Optional<String>> map;
         }
         App app = CommandLine.populateCommand(new App(), "-Dkey");
         assertEquals(1, app.map.size());
@@ -62,7 +62,7 @@ public class MapOptionsOptionalTest {
     @Test
     public void testOptionalIfNoValueMultiple() {
         class App {
-            @Option(names = "-D") Map<String, Optional<String>> map;
+            @Option(names = "-D", mapFallbackValue = "") Map<String, Optional<String>> map;
         }
         App app = CommandLine.populateCommand(new App(), "-Dkey1", "-Dkey2");
         assertEquals(2, app.map.size());
@@ -73,7 +73,7 @@ public class MapOptionsOptionalTest {
     @Test
     public void testOptionalIfNoValueMultipleWithFallbackNull() {
         class App {
-            @Option(names = "-D", fallbackValue = "_NULL_") Map<String, Optional<String>> map;
+            @Option(names = "-D", mapFallbackValue = "_NULL_") Map<String, Optional<String>> map;
         }
         App app = CommandLine.populateCommand(new App(), "-Dkey1", "-Dkey2");
         assertEquals(2, app.map.size());
@@ -94,7 +94,7 @@ public class MapOptionsOptionalTest {
     @Test
     public void testBooleanIfNoValueMultiple() {
         class App {
-            @Option(names = "-E", fallbackValue = "true") Map<String, Boolean> map;
+            @Option(names = "-E", mapFallbackValue = "true") Map<String, Boolean> map;
         }
         App app = CommandLine.populateCommand(new App(), "-Ekey1", "-Ekey2");
         assertEquals(2, app.map.size());
@@ -105,7 +105,7 @@ public class MapOptionsOptionalTest {
     @Test
     public void testOptionalIntegerIfNoValueMultiple() {
         class App {
-            @Option(names = "-D", fallbackValue = "_NULL_") Map<String, Optional<Integer>> map;
+            @Option(names = "-D", mapFallbackValue = "_NULL_") Map<String, Optional<Integer>> map;
         }
         App app = CommandLine.populateCommand(new App(), "-Dkey1", "-Dkey2");
         assertEquals(2, app.map.size());

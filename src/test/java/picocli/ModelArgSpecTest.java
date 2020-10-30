@@ -257,6 +257,7 @@ public class ModelArgSpecTest {
         public boolean isMultiValue() { return false; }
         public boolean isArray() { return false; }
         public boolean isCollection() { return false; }
+        public boolean isOptional() { return false; }
         public boolean isEnum() { return false; }
         public List<String> getEnumConstantNames() { return null; }
         public String getClassName() { return null; }

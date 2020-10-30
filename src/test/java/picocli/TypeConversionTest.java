@@ -751,9 +751,9 @@ public class TypeConversionTest {
         commandLine.execute("anything");
         //System.out.println(sw);
         assertTrue(sw.toString().startsWith("picocli.CommandLine$ParameterException: Invalid value for positional parameter at index 0 (<sqlTypeParam>): I am always thrown"));
-        assertTrue(sw.toString().contains(String.format("Caused by: picocli.CommandLine$TypeConversionException: I am always thrown%n" +
-                "\tat picocli.TypeConversionTest$TypeConversionExceptionConverter.convert(TypeConversionTest.java:722)%n" +
-                "\tat picocli.TypeConversionTest$TypeConversionExceptionConverter.convert(TypeConversionTest.java:720)%n")));
+        assertTrue(sw.toString(), sw.toString().contains(String.format("Caused by: picocli.CommandLine$TypeConversionException: I am always thrown%n" +
+                "\tat picocli.TypeConversionTest$TypeConversionExceptionConverter.convert(TypeConversionTest.java:724)%n" +
+                "\tat picocli.TypeConversionTest$TypeConversionExceptionConverter.convert(TypeConversionTest.java:722)%n")));
     }
     static class CustomConverter implements ITypeConverter<Integer> {
         public Integer convert(String value) { return Integer.parseInt(value); }

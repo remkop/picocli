@@ -3496,7 +3496,7 @@ public class CommandLine {
     private static boolean isBoolean(Class<?> type) { return type == Boolean.class || type == Boolean.TYPE; }
     private static CommandLine toCommandLine(Object obj, IFactory factory) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj, factory);}
     private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
-    private static boolean isOptional(Class<?> cls) { return "java.util.Optional".equals(cls.getName()); } // #1108
+    private static boolean isOptional(Class<?> cls) { return cls != null && "java.util.Optional".equals(cls.getName()); } // #1108
     private static Object getOptionalEmpty() throws Exception {
         return Class.forName("java.util.Optional").getMethod("empty").invoke(null);
     }
@@ -3922,6 +3922,16 @@ public class CommandLine {
          * @since 4.0 */
         String fallbackValue() default "";
 
+        /** For options of type Map, setting the {@code mapFallbackValue} to any value allows end user
+         * to specify key-only parameters for this option. For example, {@code -Dkey} instead of {@code -Dkey=value}.
+         * <p>The value specified in this annotation is the value that is put into the Map for the user-specified key.
+         * Use the special value {@link ArgSpec#NULL_VALUE} to specify {@code null}.</p>
+         * <p>If no {@code mapFallbackValue} is set, key-only Map parameters like {@code -Dkey}
+         * are considered invalid user input and cause a {@link ParameterException} to be thrown.</p>
+         * @see ArgSpec#mapFallbackValue()
+         * @since 4.6 */
+        String mapFallbackValue() default ArgSpec.UNSPECIFIED;
+
         /**
          * Optionally specify a custom {@code IParameterConsumer} to temporarily suspend picocli's parsing logic
          * and process one or more command line arguments in a custom manner.
@@ -4130,6 +4140,16 @@ public class CommandLine {
          * and process one or more command line arguments in a custom manner.
          * @since 4.0 */
         Class<? extends IParameterConsumer> parameterConsumer() default NullParameterConsumer.class;
+
+        /** For positional parameters of type Map, setting the {@code mapFallbackValue} to any value allows end user
+         * to specify key-only parameters for this parameter. For example, {@code key} instead of {@code key=value}.
+         * <p>The value specified in this annotation is the value that is put into the Map for the user-specified key.
+         * Use the special value {@link ArgSpec#NULL_VALUE} to specify {@code null}.</p>
+         * <p>If no {@code mapFallbackValue} is set, key-only Map parameters like {@code -Dkey}
+         * are considered invalid user input and cause a {@link ParameterException} to be thrown.</p>
+         * @see ArgSpec#mapFallbackValue()
+         * @since 4.6 */
+        String mapFallbackValue() default ArgSpec.UNSPECIFIED;
     }
 
     /**
@@ -6226,7 +6246,7 @@ public class CommandLine {
 
             private void addOptionNegative(OptionSpec option, Tracer tracer) {
                 if (option.negatable()) {
-                    if (!option.typeInfo().isBoolean() && !isOptional(option.type())) { // #1108
+                    if (!option.typeInfo().isBoolean() && !option.typeInfo().isOptional()) { // #1108
                         throw new InitializationException("Only boolean options can be negatable, but " + option + " is of type " + option.typeInfo().getClassName());
                     }
                     for (String name : interpolator.interpolate(option.names())) { // cannot be null or empty
@@ -8025,10 +8045,12 @@ public class CommandLine {
         /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
          * @since 3.0 */
         public abstract static class ArgSpec {
+            public static final String NULL_VALUE = "_NULL_";
             static final String DESCRIPTION_VARIABLE_DEFAULT_VALUE = "${DEFAULT-VALUE}";
             static final String DESCRIPTION_VARIABLE_FALLBACK_VALUE = "${FALLBACK-VALUE}";
             static final String DESCRIPTION_VARIABLE_COMPLETION_CANDIDATES = "${COMPLETION-CANDIDATES}";
             private static final String NO_DEFAULT_VALUE = "__no_default_value__";
+            private static final String UNSPECIFIED = "__unspecified__";
 
             private final boolean inherited;
 
@@ -8053,6 +8075,7 @@ public class CommandLine {
             private final ITypeConverter<?>[] converters;
             private final Iterable<String> completionCandidates;
             private final IParameterConsumer parameterConsumer;
+            private final String mapFallbackValue;
             private final String defaultValue;
             private       Object initialValue;
             private final boolean hasInitialValue;
@@ -8095,6 +8118,7 @@ public class CommandLine {
                 setter = builder.setter;
                 scope  = builder.scope;
                 scopeType = builder.scopeType;
+                mapFallbackValue = builder.mapFallbackValue;
 
                 Range tempArity = builder.arity;
                 if (tempArity == null) {
@@ -8278,6 +8302,19 @@ public class CommandLine {
              * @return may return the annotated program element, or some other useful object
              * @since 4.0 */
             public Object userObject()     { return userObject; }
+
+            /** Returns the fallback value for this Map option or positional parameter: the value that is put into the Map when only the
+             * key is specified for the option or positional parameter, like {@code -Dkey} instead of {@code -Dkey=value}.
+             * <p>If the special value {@link #NULL_VALUE} is set on the builder, the {@code ArgSpec.mapFallbackValue()} getter returns {@code null}.</p>
+             * <p>If no {@code mapFallbackValue} is set, key-only Map parameters like {@code -Dkey}
+             * are considered invalid user input and cause a {@link ParameterException} to be thrown.</p>
+             * @see Option#mapFallbackValue()
+             * @see Parameters#mapFallbackValue()
+             * @since 4.6 */
+            public String mapFallbackValue() {
+                String result = interpolate(mapFallbackValue);
+                return NULL_VALUE.equals(result) ? null : result;
+            }
 
             /** Returns the default value to assign if this option or positional parameter was not specified on the command line, before splitting and type conversion.
              * This method returns the programmatically set value; this may differ from the default value that is actually used:
@@ -8559,6 +8596,7 @@ public class CommandLine {
 
             protected boolean equalsImpl(ArgSpec other) {
                 return Assert.equals(this.defaultValue, other.defaultValue)
+                        && Assert.equals(this.mapFallbackValue, other.mapFallbackValue)
                         && Assert.equals(this.arity, other.arity)
                         && Assert.equals(this.hidden, other.hidden)
                         && Assert.equals(this.inherited, other.inherited)
@@ -8576,6 +8614,7 @@ public class CommandLine {
             protected int hashCodeImpl() {
                 return 17
                         + 37 * Assert.hashCode(defaultValue)
+                        + 37 * Assert.hashCode(mapFallbackValue)
                         + 37 * Assert.hashCode(arity)
                         + 37 * Assert.hashCode(hidden)
                         + 37 * Assert.hashCode(inherited)
@@ -8662,6 +8701,7 @@ public class CommandLine {
                 private IScope scope = new ObjectScope(null);
                 private ScopeType scopeType = ScopeType.LOCAL;
                 private IAnnotatedElement annotatedElement;
+                private String mapFallbackValue = UNSPECIFIED;
 
                 Builder() {}
                 Builder(ArgSpec original) {
@@ -8692,6 +8732,7 @@ public class CommandLine {
                     setter = original.setter;
                     scope = original.scope;
                     scopeType = original.scopeType;
+                    mapFallbackValue = original.mapFallbackValue;
                 }
                 Builder(IAnnotatedElement annotatedElement) {
                     this.annotatedElement = annotatedElement;
@@ -8721,6 +8762,7 @@ public class CommandLine {
                     splitRegexSynopsisLabel = option.splitSynopsisLabel();
                     hidden = option.hidden();
                     defaultValue = option.defaultValue();
+                    mapFallbackValue = option.mapFallbackValue();
                     showDefaultValue = option.showDefaultValue();
                     scopeType = option.scope();
                     inherited = false;
@@ -8753,6 +8795,7 @@ public class CommandLine {
                         splitRegexSynopsisLabel = parameters.splitSynopsisLabel();
                         hidden = parameters.hidden();
                         defaultValue = parameters.defaultValue();
+                        mapFallbackValue = parameters.mapFallbackValue();
                         showDefaultValue = parameters.showDefaultValue();
                         scopeType = parameters.scope();
                         inherited = false;
@@ -8853,6 +8896,16 @@ public class CommandLine {
                  * @return may return the annotated program element, or some other useful object
                  * @since 4.0 */
                 public Object userObject()     { return userObject; }
+
+                /** Returns the fallback value for this Map option or positional parameter: the value that is put into the Map when only the
+                 * key is specified for the option or positional parameter, like {@code -Dkey} instead of {@code -Dkey=value}.
+                 * <p>If the special value {@link #NULL_VALUE} is set on the builder, the {@code ArgSpec.mapFallbackValue()} getter returns {@code null}.</p>
+                 * <p>If no {@code mapFallbackValue} is set, key-only Map parameters like {@code -Dkey}
+                 * are considered invalid user input and cause a {@link ParameterException} to be thrown.</p>
+                 * @see Option#mapFallbackValue()
+                 * @see Parameters#mapFallbackValue()
+                 * @since 4.6 */
+                public String mapFallbackValue() { return mapFallbackValue; }
 
                 /** Returns the default value of this option or positional parameter, before splitting and type conversion.
                  * A value of {@code null} means this option or positional parameter does not have a default. */
@@ -8974,6 +9027,16 @@ public class CommandLine {
                  * @param userObject may be the annotated program element, or some other useful object
                  * @since 4.0 */
                 public T userObject(Object userObject)     { this.userObject = Assert.notNull(userObject, "userObject"); return self(); }
+
+                /** Sets the fallback value for this Map option or positional parameter: the value that is put into the Map when only the
+                 * key is specified for the option or positional parameter, like {@code -Dkey} instead of {@code -Dkey=value}.
+                 * <p>Setting the special value {@link #NULL_VALUE}, will cause the getter method to return {@code null}.</p>
+                 * <p>If no {@code mapFallbackValue} is set, key-only Map parameters like {@code -Dkey}
+                 * are considered invalid user input and cause a {@link ParameterException} to be thrown.</p>
+                 * @see Option#mapFallbackValue()
+                 * @see Parameters#mapFallbackValue()
+                 * @since 4.6 */
+                public Builder mapFallbackValue(String fallbackValue) { this.mapFallbackValue = fallbackValue; return self(); }
 
                 /** Sets the default value of this option or positional parameter to the specified value, and returns this builder.
                  * Before parsing the command line, the result of {@linkplain #splitRegex() splitting} and {@linkplain #converters() type converting}
@@ -9152,12 +9215,13 @@ public class CommandLine {
 
             /** Returns the fallback value for this option: the value that is assigned for options with an optional parameter
              * (for example, {@code arity = "0..1"}) if the option was specified on the command line without parameter.
+             * <p>If the special value {@link #NULL_VALUE} is set, this method returns {@code null}.</p>
              * @see Option#fallbackValue()
              * @see #defaultValue()
              * @since 4.0 */
             public String fallbackValue() {
                 String result = interpolate(fallbackValue);
-                return "_NULL_".equals(result) ? null : result;
+                return NULL_VALUE.equals(result) ? null : result;
             }
 
             public boolean equals(Object obj) {
@@ -9249,6 +9313,7 @@ public class CommandLine {
 
                 /** Returns the fallback value for this option: the value that is assigned for options with an optional
                  * parameter if the option was specified on the command line without parameter.
+                 * <p>If the special value {@link #NULL_VALUE} is set on the builder, the {@code OptionSpec.fallbackValue()} getter returns {@code null}.</p>
                  * @see Option#fallbackValue()
                  * @since 4.0 */
                 public String fallbackValue() { return fallbackValue; }
@@ -9278,6 +9343,7 @@ public class CommandLine {
 
                 /** Sets the fallback value for this option: the value that is assigned for options with an optional
                  * parameter if the option was specified on the command line without parameter, and returns this builder.
+                 * <p>Setting the special value {@link #NULL_VALUE}, will cause the getter method to return {@code null}.</p>
                  * @see Option#fallbackValue()
                  * @since 4.0 */
                 public Builder fallbackValue(String fallbackValue) { this.fallbackValue = fallbackValue; return self(); }
@@ -10143,6 +10209,10 @@ public class CommandLine {
             boolean isBoolean();
             /** Returns {@code true} if {@link #getType()} is an array, map or collection. */
             boolean isMultiValue();
+
+            /** Returns {@code true} if {@link #getType()} is {@code java.util.Optional}
+             * @since 4.6 */
+            boolean isOptional();
             boolean isArray();
             boolean isCollection();
             boolean isMap();
@@ -12554,7 +12624,7 @@ public class CommandLine {
                 Range arity = arg.arity().min(Math.max(1, arg.arity().min));
                 applyOption(arg, false, LookBehind.SEPARATE, false, arity, stack(defaultValue), new HashSet<ArgSpec>(), arg.toString);
             } else {
-                if (isOptional(arg.type())) {
+                if (arg.typeInfo().isOptional()) {
                     if (tracer.isDebug()) {tracer.debug("Applying Optional.empty() to %s on %s%n", arg, arg.scopeString());}
                     arg.setValue(getOptionalEmpty());
                 } else {
@@ -13034,7 +13104,7 @@ public class CommandLine {
                 if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, value); } // update position for Completers
             }
             if (noMoreValues && actualValue == null && interactiveValue == null) {
-                if (isOptional(argSpec.type())) {
+                if (argSpec.typeInfo().isOptional()) {
                     if (tracer.isDebug()) {tracer.debug("Applying Optional.empty() to %s on %s%n", argSpec, argSpec.scopeString());}
                     argSpec.setValue(getOptionalEmpty());
                 }
@@ -13057,9 +13127,6 @@ public class CommandLine {
                 } else {
                     actualValue = "***"; // mask interactive value
                 }
-                if (isOptional(argSpec.type())) {
-                    newValue = getOptionalOfNullable(newValue);
-                }
             }
             Object oldValue = argSpec.getValue();
             String traceMessage = initValueMessage;
@@ -13071,6 +13138,9 @@ public class CommandLine {
             }
             initialized.add(argSpec);
 
+            if (argSpec.typeInfo().isOptional()) {
+                newValue = getOptionalOfNullable(newValue);
+            }
             if (tracer.isInfo()) { tracer.info(traceMessage, argSpec.toString(), String.valueOf(oldValue), String.valueOf(newValue), argDescription, argSpec.scopeString()); }
             int pos = getPosition(argSpec);
             argSpec.setValue(newValue);
@@ -13173,7 +13243,7 @@ public class CommandLine {
             for (String value : values) {
                 String[] keyValue = splitKeyValue(argSpec, value);
                 Object mapKey =   tryConvert(argSpec, index, keyConverter,   keyValue[0], 0);
-                String rawMapValue = keyValue.length == 1 ? ((OptionSpec) argSpec).fallbackValue() : keyValue[1];
+                String rawMapValue = keyValue.length == 1 ? argSpec.mapFallbackValue() : keyValue[1];
                 Object mapValue = tryConvert(argSpec, index, valueConverter, rawMapValue, 1);
                 result.put(mapKey, mapValue);
                 if (tracer.isInfo()) { tracer.info("Putting [%s : %s] in %s<%s, %s> %s for %s on %s%n", String.valueOf(mapKey), String.valueOf(mapValue),
@@ -13199,7 +13269,7 @@ public class CommandLine {
                 for (String value : values) {
                     String[] keyValue = splitKeyValue(argSpec, value);
                     tryConvert(argSpec, -1, keyConverter, keyValue[0], 0);
-                    String mapValue = keyValue.length == 1 ? "" : keyValue[1];
+                    String mapValue = keyValue.length == 1 ? argSpec.mapFallbackValue() : keyValue[1];
                     tryConvert(argSpec, -1, valueConverter, mapValue, 1);
                 }
                 return true;
@@ -13212,17 +13282,18 @@ public class CommandLine {
         private String[] splitKeyValue(ArgSpec argSpec, String value) {
             String[] keyValue = ArgSpec.splitRespectingQuotedStrings(value, 2, config(), argSpec, "=");
 
-            // validation disabled for #1214: support for -Dkey map options
-            //if (keyValue.length < 2) {
-            //    String splitRegex = argSpec.splitRegex();
-            //    if (splitRegex.length() == 0) {
-            //        throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("",
-            //                argSpec, 0) + " should be in KEY=VALUE format but was " + value, argSpec, value);
-            //    } else {
-            //        throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("",
-            //                argSpec, 0) + " should be in KEY=VALUE[" + splitRegex + "KEY=VALUE]... format but was " + value, argSpec, value);
-            //    }
-            //}
+            // #1214: support for -Dkey map options
+            // validation is disabled if `mapFallbackValue` is specified
+            if (keyValue.length < 2 && ArgSpec.UNSPECIFIED.equals(argSpec.mapFallbackValue())) {
+                String splitRegex = argSpec.splitRegex();
+                if (splitRegex.length() == 0) {
+                    throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("",
+                            argSpec, 0) + " should be in KEY=VALUE format but was " + value, argSpec, value);
+                } else {
+                    throw new ParameterException(CommandLine.this, "Value for option " + optionDescription("",
+                            argSpec, 0) + " should be in KEY=VALUE[" + splitRegex + "KEY=VALUE]... format but was " + value, argSpec, value);
+                }
+            }
             return keyValue;
         }
 

@@ -38,6 +38,7 @@ public class ModelArgGroupSpecTest {
             public boolean isCollection() { return false; }
             public boolean isMap() { return false; }
             public boolean isEnum() { return false; }
+            public boolean isOptional() { return false; }
             public List<String> getEnumConstantNames() { return null; }
             public String getClassName() { return null; }
             public String getClassSimpleName() { return null; }

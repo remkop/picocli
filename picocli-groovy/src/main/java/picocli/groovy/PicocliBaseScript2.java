@@ -4,6 +4,8 @@ import groovy.lang.GroovyRuntimeException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import picocli.CommandLine;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 import picocli.CommandLine.IExecutionExceptionHandler;
 import picocli.CommandLine.IParameterExceptionHandler;
 import picocli.CommandLine.ParameterException;

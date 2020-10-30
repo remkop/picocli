@@ -27,7 +27,13 @@ public class ModelTypedMemberTest {
             @CommandLine.Parameters
             List<Class<? extends Class<? extends String>[]>> list;
         }
-        assertEquals("<list>", CommandLine.Model.CommandSpec.forAnnotatedObject(new App()).positionalParameters().get(0).paramLabel());
+        try {
+            new CommandLine(new App());
+            fail("Expected exception");
+        } catch (CommandLine.InitializationException ex) {
+            String msg = "Unsupported generic type java.util.List<java.lang.Class<? extends java.lang.Class<? extends java.lang.String>[]>>. Only List<T>, Map<K,V>, Optional<T>, and Map<K, Optional<V>> are supported. Type parameters may be char[], a non-array type, or a wildcard type with an upper or lower bound.";
+            assertEquals(msg, ex.getMessage());
+        }
     }
 
     @Test
