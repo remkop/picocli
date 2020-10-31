@@ -1476,7 +1476,7 @@ The example below uses the `Map` type to define an `@Option`-<<option-parameters
 class SystemPropertiesDemo {
     @Option(names = "-D")
     void setProperty(Map<String, String> props) {
-        props.forEach((k, v) -> System.setProperty(k, v == null ? "" : v));
+        props.forEach((k, v) -> System.setProperty(k, v));
     }
 }
 ----
@@ -1487,7 +1487,7 @@ class SystemPropertiesDemo {
 class SystemPropertiesDemo {
     @Option(names = ["-D"])
     fun setProperty(props: Map<String, String?>) {
-        props.forEach { (k: String, v: String?) -> System.setProperty(k, v ?: "") }
+        props.forEach { (k: String, v: String?) -> System.setProperty(k, v) }
     }
 }
 ----
