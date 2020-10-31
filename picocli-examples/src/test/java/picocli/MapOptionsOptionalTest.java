@@ -41,7 +41,7 @@ public class MapOptionsOptionalTest {
     @Test
     public void testOptionalEmptyIfNoValueWithFallbackNull() {
         class App {
-            @Option(names = "-D", mapFallbackValue = "_NULL_") Map<String, Optional<String>> map;
+            @Option(names = "-D", mapFallbackValue = Option.NULL_VALUE) Map<String, Optional<String>> map;
         }
         App app = CommandLine.populateCommand(new App(), "-Dkey");
         assertEquals(1, app.map.size());
@@ -72,7 +72,7 @@ public class MapOptionsOptionalTest {
     @Test
     public void testOptionalIfNoValueMultipleWithFallbackNull() {
         class App {
-            @Option(names = "-D", mapFallbackValue = "_NULL_") Map<String, Optional<String>> map;
+            @Option(names = "-D", mapFallbackValue = Option.NULL_VALUE) Map<String, Optional<String>> map;
         }
         App app = CommandLine.populateCommand(new App(), "-Dkey1", "-Dkey2");
         assertEquals(2, app.map.size());
@@ -104,7 +104,7 @@ public class MapOptionsOptionalTest {
     @Test
     public void testOptionalIntegerIfNoValueMultiple() {
         class App {
-            @Option(names = "-D", mapFallbackValue = "_NULL_") Map<String, Optional<Integer>> map;
+            @Option(names = "-D", mapFallbackValue = Option.NULL_VALUE) Map<String, Optional<Integer>> map;
         }
         App app = CommandLine.populateCommand(new App(), "-Dkey1", "-Dkey2");
         assertEquals(2, app.map.size());

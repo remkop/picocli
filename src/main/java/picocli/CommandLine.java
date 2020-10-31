@@ -3558,6 +3558,12 @@ public class CommandLine {
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
     public @interface Option {
+        /** Special value that can be used in some annotation attributes to designate {@code null}.
+         * @see Option#defaultValue()
+         * @see Option#fallbackValue()
+         * @see Option#mapFallbackValue()
+         * @since 4.6 */
+        public static final String NULL_VALUE = ArgSpec.NULL_VALUE;
         /**
          * One or more option names. At least one option name is required.
          * <p>
@@ -3821,7 +3827,9 @@ public class CommandLine {
         boolean hidden() default false;
 
         /** Returns the default value of this option, before splitting and type conversion.
-         * <p>Use the special value {@link ArgSpec#NULL_VALUE} to specify {@code null}.</p>
+         * <p>Use the special value {@link Option#NULL_VALUE} to specify {@code null} -
+         * for options of type {@code Optional<T>} that will result in the {@code Optional.empty()}
+         * value being assigned when the option is not specified on the command line.</p>
          * @return a String that (after type conversion) will be used as the value for this option if the option was not specified on the command line
          * @see #fallbackValue()
          * @since 3.2 */
@@ -3919,7 +3927,9 @@ public class CommandLine {
          * <p>This is useful to define options that can function as a boolean "switch"
          * and optionally allow users to provide a (strongly typed) extra parameter value.
          * </p>
-         * <p>Use the special value {@link ArgSpec#NULL_VALUE} to specify {@code null}.</p>
+         * <p>Use the special value {@link Option#NULL_VALUE} to specify {@code null} -
+         * for options of type {@code Optional<T>} that will result in the {@code Optional.empty()}
+         * value being assigned when the option name is specified without a parameter on the command line.</p>
          * @see OptionSpec#fallbackValue()
          * @since 4.0 */
         String fallbackValue() default "";
@@ -3927,7 +3937,9 @@ public class CommandLine {
         /** For options of type Map, setting the {@code mapFallbackValue} to any value allows end user
          * to specify key-only parameters for this option. For example, {@code -Dkey} instead of {@code -Dkey=value}.
          * <p>The value specified in this annotation is the value that is put into the Map for the user-specified key.
-         * Use the special value {@link ArgSpec#NULL_VALUE} to specify {@code null}.</p>
+         * Use the special value {@link Option#NULL_VALUE} to specify {@code null} -
+         * for maps of type {@code Map<K, Optional<V>>} that will result in {@code Optional.empty()}
+         * values in the map when only the key is specified.</p>
          * <p>If no {@code mapFallbackValue} is set, key-only Map parameters like {@code -Dkey}
          * are considered invalid user input and cause a {@link ParameterException} to be thrown.</p>
          * @see ArgSpec#mapFallbackValue()
@@ -3969,6 +3981,11 @@ public class CommandLine {
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
     public @interface Parameters {
+        /** Special value that can be used in some annotation attributes to designate {@code null}.
+         * @see Parameters#defaultValue()
+         * @see Parameters#mapFallbackValue()
+         * @since 4.6 */
+        public static final String NULL_VALUE = ArgSpec.NULL_VALUE;
         /** Specify an index ("0", or "1", etc.) to pick which of the command line arguments should be assigned to this
          * field. For array or Collection fields, you can also specify an index range ("0..3", or "2..*", etc.) to assign
          * a subset of the command line arguments to this field. The default is "*", meaning all command line arguments.
@@ -4089,7 +4106,9 @@ public class CommandLine {
         boolean hidden() default false;
 
         /** Returns the default value of this positional parameter, before splitting and type conversion.
-         * <p>Use the special value {@link ArgSpec#NULL_VALUE} to specify {@code null}.</p>
+         * <p>Use the special value {@link Parameters#NULL_VALUE} to specify {@code null} -
+         * for positional parameters of type {@code Optional<T>} that will result in the {@code Optional.empty()}
+         * value being assigned when the positional parameters is not specified on the command line.</p>
          * @return a String that (after type conversion) will be used as the value for this positional parameter if no value was specified on the command line
          * @since 3.2 */
         String defaultValue() default "__no_default_value__";
@@ -4147,7 +4166,9 @@ public class CommandLine {
         /** For positional parameters of type Map, setting the {@code mapFallbackValue} to any value allows end user
          * to specify key-only parameters for this parameter. For example, {@code key} instead of {@code key=value}.
          * <p>The value specified in this annotation is the value that is put into the Map for the user-specified key.
-         * Use the special value {@link ArgSpec#NULL_VALUE} to specify {@code null}.</p>
+         * Use the special value {@link Parameters#NULL_VALUE} to specify {@code null} -
+         * for maps of type {@code Map<K, Optional<V>>} that will result in {@code Optional.empty()}
+         * values in the map when only the key is specified.</p>
          * <p>If no {@code mapFallbackValue} is set, key-only Map parameters like {@code -Dkey}
          * are considered invalid user input and cause a {@link ParameterException} to be thrown.</p>
          * @see ArgSpec#mapFallbackValue()
@@ -8048,10 +8069,14 @@ public class CommandLine {
         /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
          * @since 3.0 */
         public abstract static class ArgSpec {
-            /** Special value that can be used in {@link Option#defaultValue()},
-             * {@link Option#fallbackValue()}, and {@link Parameters#defaultValue()} to designate {@code null}.
+            /** Special value that can be used to designate {@code null}.
+             * @see Option#defaultValue()
+             * @see Option#fallbackValue()
+             * @see Option#mapFallbackValue()
+             * @see Parameters#defaultValue()
+             * @see Parameters#mapFallbackValue()
              * @since 4.6 */
-            public static final String NULL_VALUE = "_NULL_";
+            static final String NULL_VALUE = "_NULL_";
             static final String DESCRIPTION_VARIABLE_DEFAULT_VALUE = "${DEFAULT-VALUE}";
             static final String DESCRIPTION_VARIABLE_FALLBACK_VALUE = "${FALLBACK-VALUE}";
             static final String DESCRIPTION_VARIABLE_COMPLETION_CANDIDATES = "${COMPLETION-CANDIDATES}";

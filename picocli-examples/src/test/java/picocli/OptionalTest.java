@@ -1,6 +1,5 @@
 package picocli;
 import org.junit.Test;
-import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Option;
@@ -9,7 +8,6 @@ import picocli.CommandLine.Parameters;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
-import static picocli.CommandLine.Model.ArgSpec.NULL_VALUE;
 
 /**
  * This test is located in the `picocli-examples` module because it uses the Java 8
@@ -72,7 +70,7 @@ public class OptionalTest {
     @Test
     public void testFallbackNull() {
         class App {
-            @Option(names = "-x", arity = "0..1", fallbackValue = "_NULL_")
+            @Option(names = "-x", arity = "0..1", fallbackValue = Option.NULL_VALUE)
             Optional<Integer> x;
         }
         App appMissing = CommandLine.populateCommand(new App(), "-x");
@@ -85,7 +83,7 @@ public class OptionalTest {
     @Test
     public void testDefaultValueNull() {
         class App {
-            @Option(names = "-x", defaultValue = NULL_VALUE)
+            @Option(names = "-x", defaultValue = Option.NULL_VALUE)
             Optional<Integer> x;
         }
         App appMissing = CommandLine.populateCommand(new App());
