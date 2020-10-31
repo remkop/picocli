@@ -9948,7 +9948,8 @@ image:https://picocli.info/images/225px-Guice.jpg[Guice logo]
 
 The below example shows how to create a <<Custom Factory,custom `IFactory`>> implementation with a Guice `Injector`:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 import com.google.inject.*;
 import picocli.CommandLine;
@@ -9975,12 +9976,41 @@ public class GuiceFactory implements IFactory {
 }
 ----
 
+.Kotlin
+[source,kotlin,role=secondary]
+----
+import com.google.inject.*
+import picocli.CommandLine
+import picocli.CommandLine.IFactory
+
+class GuiceFactory : IFactory {
+    private val injector = Guice.createInjector(DemoModule())
+
+    @Throws(Exception::class)
+    override fun <K> create(aClass: Class<K>): K {
+        return try {
+            injector.getInstance(aClass)
+        } catch (ex: ConfigurationException) { // no implementation found in Guice configuration
+            CommandLine.defaultFactory().create(aClass) // fallback if missing
+        }
+    }
+
+    class DemoModule : AbstractModule() {
+        override fun configure() {
+            bind(object : TypeLiteral<kotlin.collections.List<*>>() {})
+                .toInstance(kotlin.collections.ArrayList<Any>())
+        }
+    }
+}
+----
+
 Use the custom factory when creating a `CommandLine` instance, or when invoking the `run` or `call` convenience methods:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 import javax.inject.*;
-import picocli.*;
+import picocli.CommandLine;
 import picocli.CommandLine.*;
 
 @Command(name = "di-demo")
@@ -9997,6 +10027,29 @@ public class InjectionDemo implements Runnable {
     public void run() {
         assert list instanceof java.util.LinkedList;
     }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import picocli.CommandLine
+import picocli.CommandLine.Command
+import javax.inject.Inject
+
+@Command(name = "di-demo")
+class InjectionDemo : Runnable {
+    @Inject lateinit var list: kotlin.collections.List<Any>
+
+    @CommandLine.Option(names = ["-x"]) var x = 0
+
+    override fun run() {
+        assert(list is kotlin.collections.ArrayList<*>)
+    }
+}
+
+fun main(args: Array<String>) {
+    CommandLine(InjectionDemo::class.java, GuiceFactory()).execute(*args)
 }
 ----
 
