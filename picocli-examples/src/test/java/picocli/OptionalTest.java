@@ -9,6 +9,7 @@ import picocli.CommandLine.Parameters;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
+import static picocli.CommandLine.Model.ArgSpec.NULL_VALUE;
 
 /**
  * This test is located in the `picocli-examples` module because it uses the Java 8
@@ -66,5 +67,31 @@ public class OptionalTest {
         assertEquals(Optional.empty(), bean.y);
         assertEquals(Optional.of(true), bean.z);
         assertEquals(Optional.empty(), bean.positional);
+    }
+
+    @Test
+    public void testFallbackNull() {
+        class App {
+            @Option(names = "-x", arity = "0..1", fallbackValue = "_NULL_")
+            Optional<Integer> x;
+        }
+        App appMissing = CommandLine.populateCommand(new App(), "-x");
+        assertEquals(Optional.empty(), appMissing.x);
+
+        App appSpecified = CommandLine.populateCommand(new App(), "-x123");
+        assertEquals(Optional.of(123), appSpecified.x);
+    }
+
+    @Test
+    public void testDefaultValueNull() {
+        class App {
+            @Option(names = "-x", defaultValue = NULL_VALUE)
+            Optional<Integer> x;
+        }
+        App appMissing = CommandLine.populateCommand(new App());
+        assertEquals(Optional.empty(), appMissing.x);
+
+        App appSpecified = CommandLine.populateCommand(new App(), "-x123");
+        assertEquals(Optional.of(123), appSpecified.x);
     }
 }

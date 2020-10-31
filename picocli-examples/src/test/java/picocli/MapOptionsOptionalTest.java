@@ -1,6 +1,5 @@
 package picocli;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -20,7 +19,7 @@ import static org.junit.Assert.*;
  */
 public class MapOptionsOptionalTest {
 
-    final static String ERRORMSG = CommandLine.Model.RuntimeTypeInfo.ERRORMSG;
+    final static String UNSUPPORTED_TYPE_ERRORMSG = CommandLine.Model.RuntimeTypeInfo.ERRORMSG;
 
     // allows tests to set any kind of properties they like, without having to individually roll them back
     @Rule
@@ -133,7 +132,7 @@ public class MapOptionsOptionalTest {
             App app = CommandLine.populateCommand(new App(), "-Dkey1=123", "-Dkey2=456");
             fail("Expected exception");
         } catch (Exception ex) {
-            String msg = String.format(ERRORMSG, "java.util.Map<java.util.Optional<java.lang.String>, java.util.Optional<java.lang.Integer>>");
+            String msg = String.format(UNSUPPORTED_TYPE_ERRORMSG, "java.util.Map<java.util.Optional<java.lang.String>, java.util.Optional<java.lang.Integer>>");
             assertEquals(msg, ex.getMessage());
         }
     }
@@ -147,7 +146,7 @@ public class MapOptionsOptionalTest {
             App app = CommandLine.populateCommand(new App(), "-X123", "-X456");
             fail("Expected exception");
         } catch (Exception ex) {
-            String msg = String.format(ERRORMSG, "java.util.List<java.util.Optional<java.lang.Integer>>");
+            String msg = String.format(UNSUPPORTED_TYPE_ERRORMSG, "java.util.List<java.util.Optional<java.lang.Integer>>");
             assertEquals(msg, ex.getMessage());
         }
     }
@@ -161,7 +160,7 @@ public class MapOptionsOptionalTest {
             App app = CommandLine.populateCommand(new App(), "-X123", "-X456");
             fail("Expected exception");
         } catch (Exception ex) {
-            String msg = String.format(ERRORMSG, "java.util.Optional<java.lang.Integer>[]");
+            String msg = String.format(UNSUPPORTED_TYPE_ERRORMSG, "java.util.Optional<java.lang.Integer>[]");
             assertEquals(msg, ex.getMessage());
         }
     }

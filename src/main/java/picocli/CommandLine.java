@@ -3821,6 +3821,7 @@ public class CommandLine {
         boolean hidden() default false;
 
         /** Returns the default value of this option, before splitting and type conversion.
+         * <p>Use the special value {@link ArgSpec#NULL_VALUE} to specify {@code null}.</p>
          * @return a String that (after type conversion) will be used as the value for this option if the option was not specified on the command line
          * @see #fallbackValue()
          * @since 3.2 */
@@ -3918,6 +3919,7 @@ public class CommandLine {
          * <p>This is useful to define options that can function as a boolean "switch"
          * and optionally allow users to provide a (strongly typed) extra parameter value.
          * </p>
+         * <p>Use the special value {@link ArgSpec#NULL_VALUE} to specify {@code null}.</p>
          * @see OptionSpec#fallbackValue()
          * @since 4.0 */
         String fallbackValue() default "";
@@ -4087,6 +4089,7 @@ public class CommandLine {
         boolean hidden() default false;
 
         /** Returns the default value of this positional parameter, before splitting and type conversion.
+         * <p>Use the special value {@link ArgSpec#NULL_VALUE} to specify {@code null}.</p>
          * @return a String that (after type conversion) will be used as the value for this positional parameter if no value was specified on the command line
          * @since 3.2 */
         String defaultValue() default "__no_default_value__";
@@ -8045,6 +8048,9 @@ public class CommandLine {
         /** Models the shared attributes of {@link OptionSpec} and {@link PositionalParamSpec}.
          * @since 3.0 */
         public abstract static class ArgSpec {
+            /** Special value that can be used in {@link Option#defaultValue()},
+             * {@link Option#fallbackValue()}, and {@link Parameters#defaultValue()} to designate {@code null}.
+             * @since 4.6 */
             public static final String NULL_VALUE = "_NULL_";
             static final String DESCRIPTION_VARIABLE_DEFAULT_VALUE = "${DEFAULT-VALUE}";
             static final String DESCRIPTION_VARIABLE_FALLBACK_VALUE = "${FALLBACK-VALUE}";
@@ -8305,9 +8311,9 @@ public class CommandLine {
 
             /** Returns the fallback value for this Map option or positional parameter: the value that is put into the Map when only the
              * key is specified for the option or positional parameter, like {@code -Dkey} instead of {@code -Dkey=value}.
-             * <p>If the special value {@link #NULL_VALUE} is set on the builder, the {@code ArgSpec.mapFallbackValue()} getter returns {@code null}.</p>
              * <p>If no {@code mapFallbackValue} is set, key-only Map parameters like {@code -Dkey}
              * are considered invalid user input and cause a {@link ParameterException} to be thrown.</p>
+             * <p>By default, this method returns a special "__unspecified__" value indicating that no {@code mapFallbackValue} was set.</p>
              * @see Option#mapFallbackValue()
              * @see Parameters#mapFallbackValue()
              * @since 4.6 */
@@ -8761,8 +8767,8 @@ public class CommandLine {
                     splitRegex = option.split();
                     splitRegexSynopsisLabel = option.splitSynopsisLabel();
                     hidden = option.hidden();
-                    defaultValue = option.defaultValue();
-                    mapFallbackValue = option.mapFallbackValue();
+                    defaultValue = NULL_VALUE.equals(option.defaultValue()) ? null : option.defaultValue();
+                    mapFallbackValue = NULL_VALUE.equals(option.mapFallbackValue()) ? null : option.mapFallbackValue();
                     showDefaultValue = option.showDefaultValue();
                     scopeType = option.scope();
                     inherited = false;
@@ -8794,8 +8800,8 @@ public class CommandLine {
                         splitRegex = parameters.split();
                         splitRegexSynopsisLabel = parameters.splitSynopsisLabel();
                         hidden = parameters.hidden();
-                        defaultValue = parameters.defaultValue();
-                        mapFallbackValue = parameters.mapFallbackValue();
+                        defaultValue = NULL_VALUE.equals(parameters.defaultValue()) ? null : parameters.defaultValue();
+                        mapFallbackValue = NULL_VALUE.equals(parameters.mapFallbackValue()) ? null : parameters.mapFallbackValue();
                         showDefaultValue = parameters.showDefaultValue();
                         scopeType = parameters.scope();
                         inherited = false;
@@ -8899,9 +8905,9 @@ public class CommandLine {
 
                 /** Returns the fallback value for this Map option or positional parameter: the value that is put into the Map when only the
                  * key is specified for the option or positional parameter, like {@code -Dkey} instead of {@code -Dkey=value}.
-                 * <p>If the special value {@link #NULL_VALUE} is set on the builder, the {@code ArgSpec.mapFallbackValue()} getter returns {@code null}.</p>
                  * <p>If no {@code mapFallbackValue} is set, key-only Map parameters like {@code -Dkey}
                  * are considered invalid user input and cause a {@link ParameterException} to be thrown.</p>
+                 * <p>By default, this method returns a special "__unspecified__" value indicating that no {@code mapFallbackValue} was set.</p>
                  * @see Option#mapFallbackValue()
                  * @see Parameters#mapFallbackValue()
                  * @since 4.6 */
@@ -9030,7 +9036,6 @@ public class CommandLine {
 
                 /** Sets the fallback value for this Map option or positional parameter: the value that is put into the Map when only the
                  * key is specified for the option or positional parameter, like {@code -Dkey} instead of {@code -Dkey=value}.
-                 * <p>Setting the special value {@link #NULL_VALUE}, will cause the getter method to return {@code null}.</p>
                  * <p>If no {@code mapFallbackValue} is set, key-only Map parameters like {@code -Dkey}
                  * are considered invalid user input and cause a {@link ParameterException} to be thrown.</p>
                  * @see Option#mapFallbackValue()
@@ -9220,8 +9225,7 @@ public class CommandLine {
              * @see #defaultValue()
              * @since 4.0 */
             public String fallbackValue() {
-                String result = interpolate(fallbackValue);
-                return NULL_VALUE.equals(result) ? null : result;
+                return interpolate(fallbackValue);
             }
 
             public boolean equals(Object obj) {
@@ -9279,7 +9283,7 @@ public class CommandLine {
                     usageHelp = option.usageHelp();
                     versionHelp = option.versionHelp();
                     negatable = option.negatable();
-                    fallbackValue = option.fallbackValue();
+                    fallbackValue = NULL_VALUE.equals(option.fallbackValue()) ? null : option.fallbackValue();
                     order = option.order();
                 }
 
@@ -9313,7 +9317,6 @@ public class CommandLine {
 
                 /** Returns the fallback value for this option: the value that is assigned for options with an optional
                  * parameter if the option was specified on the command line without parameter.
-                 * <p>If the special value {@link #NULL_VALUE} is set on the builder, the {@code OptionSpec.fallbackValue()} getter returns {@code null}.</p>
                  * @see Option#fallbackValue()
                  * @since 4.0 */
                 public String fallbackValue() { return fallbackValue; }
@@ -9343,7 +9346,6 @@ public class CommandLine {
 
                 /** Sets the fallback value for this option: the value that is assigned for options with an optional
                  * parameter if the option was specified on the command line without parameter, and returns this builder.
-                 * <p>Setting the special value {@link #NULL_VALUE}, will cause the getter method to return {@code null}.</p>
                  * @see Option#fallbackValue()
                  * @since 4.0 */
                 public Builder fallbackValue(String fallbackValue) { this.fallbackValue = fallbackValue; return self(); }
