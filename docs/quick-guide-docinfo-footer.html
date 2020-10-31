@@ -1,6 +1,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/3.0.7/tocbot.min.js"></script>
 <script>
-    /* Tocbot dynamic TOC, works with tocbot 3.0.2 */
+    /* Tocbot dynamic TOC, works with tocbot 3.0.7 */
     var oldtoc = document.getElementById('toctitle').nextElementSibling;
     var newtoc = document.createElement('div');
     newtoc.setAttribute('id', 'tocbot');
@@ -8,7 +8,8 @@
     oldtoc.parentNode.replaceChild(newtoc, oldtoc);
     tocbot.init({ contentSelector: '#content',
         headingSelector: 'h1, h2, h3, h4',
-        smoothScroll: false });
+        smoothScroll: false,
+        collapseDepth: 2 });
     var handleTocOnResize = function() {
         var width = window.innerWidth
                     || document.documentElement.clientWidth
@@ -24,7 +25,8 @@
         else {
             tocbot.refresh({ contentSelector: '#content',
                 headingSelector: 'h1, h2, h3, h4',
-                smoothScroll: false });
+                smoothScroll: false,
+                collapseDepth: 2 });
         }
     };
     window.addEventListener('resize', handleTocOnResize);

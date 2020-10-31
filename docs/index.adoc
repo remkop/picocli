@@ -15,7 +15,7 @@
 :imagesdir: images
 :sectanchors:
 :linkattrs:
-:docinfo: shared-head,private-head
+:docinfo: shared-head,private
 ifdef::env-github[]
 :caution-caption: :fire:
 :important-caption: :heavy_exclamation_mark:
