@@ -3827,7 +3827,7 @@ public class CommandLine {
         boolean hidden() default false;
 
         /** Returns the default value of this option, before splitting and type conversion.
-         * <p>Use the special value {@link Option#NULL_VALUE} to specify {@code null} -
+         * <p>To get a {@code null} default value, omit specifying a default value or use the special value {@link Option#NULL_VALUE} -
          * for options of type {@code Optional<T>} that will result in the {@code Optional.empty()}
          * value being assigned when the option is not specified on the command line.</p>
          * @return a String that (after type conversion) will be used as the value for this option if the option was not specified on the command line
@@ -4106,7 +4106,7 @@ public class CommandLine {
         boolean hidden() default false;
 
         /** Returns the default value of this positional parameter, before splitting and type conversion.
-         * <p>Use the special value {@link Parameters#NULL_VALUE} to specify {@code null} -
+         * <p>To get a {@code null} default value, omit specifying a default value or use the special value {@link Parameters#NULL_VALUE} -
          * for positional parameters of type {@code Optional<T>} that will result in the {@code Optional.empty()}
          * value being assigned when the positional parameters is not specified on the command line.</p>
          * @return a String that (after type conversion) will be used as the value for this positional parameter if no value was specified on the command line
@@ -8292,7 +8292,9 @@ public class CommandLine {
              * @since 3.6.0 */
             public boolean hideParamSyntax()     { return hideParamSyntax; }
 
-            /** Returns auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class.
+            /** Returns auxiliary type information used when the {@link #type()} is a generic type like
+             * {@code Collection}, {@code Map} or {@code Optional}; returns the concrete type when {@link #type()}
+             * is an abstract class, otherwise, returns the same as {@link #type()}.
              * @see Option#type() */
             public Class<?>[] auxiliaryTypes() { return typeInfo.getAuxiliaryTypes(); }
 
@@ -8322,7 +8324,9 @@ public class CommandLine {
              * @since 4.3.0 */
             public boolean inherited() { return inherited; }
 
-            /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value. */
+            /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value.
+             * This may be a container type like {@code List}, {@code Map}, or {@code Optional},
+             * in which case the type or types of the elements are returned by {@link #auxiliaryTypes()}. */
             public Class<?> type()         { return typeInfo.getType(); }
 
             /** Returns the {@code ITypeInfo} that can be used both at compile time (by annotation processors) and at runtime.
@@ -8886,7 +8890,8 @@ public class CommandLine {
                  * @since 3.6.0 */
                 public boolean hideParamSyntax()     { return hideParamSyntax; }
 
-                /** Returns auxiliary type information used when the {@link #type()} is a generic {@code Collection}, {@code Map} or an abstract class.
+                /** Returns auxiliary type information used when the {@link #type()} is a generic container like
+                 * {@code Collection}, {@code Map}, {@code Optional} or an abstract class.
                  * @see Option#type() */
                 public Class<?>[] auxiliaryTypes() { return auxiliaryTypes; }
 
@@ -8914,7 +8919,9 @@ public class CommandLine {
                  * @since 4.3.0 */
                 public boolean inherited() { return inherited; }
 
-                /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value. */
+                /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value.
+                 * This may be a container type like {@code List}, {@code Map}, or {@code Optional},
+                 * in which case the type or types of the elements are returned by {@link #auxiliaryTypes()}. */
                 public Class<?> type()         { return type; }
 
                 /** Returns the type info for this option or positional parameter.
@@ -9005,7 +9012,7 @@ public class CommandLine {
                 public T hideParamSyntax(boolean hideParamSyntax) { this.hideParamSyntax = hideParamSyntax; return self(); }
 
                 /** Sets auxiliary type information, and returns this builder.
-                 * @param types  the element type(s) when the {@link #type()} is a generic {@code Collection} or a {@code Map};
+                 * @param types  the element type(s) when the {@link #type()} is a generic type like {@code Collection}, {@code Map} or {@code Optional};
                  * or the concrete type when the {@link #type()} is an abstract class. */
                 public T auxiliaryTypes(Class<?>... types)   { this.auxiliaryTypes = Assert.notNull(types, "types").clone(); return self(); }
 
