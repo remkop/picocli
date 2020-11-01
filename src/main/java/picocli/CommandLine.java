@@ -12652,7 +12652,7 @@ public class CommandLine {
             String fromProvider = defaultValueProvider == null ? null : defaultValueProvider.defaultValue(arg);
             String defaultValue = fromProvider == null ? arg.defaultValue() : fromProvider;
 
-            if (defaultValue != null) {
+            if (defaultValue != null && !ArgSpec.NULL_VALUE.equals(defaultValue)) {
                 String provider = defaultValueProvider == null ? "" : (" from " + defaultValueProvider.toString());
                 if (tracer.isDebug()) {tracer.debug("Applying defaultValue (%s)%s to %s on %s%n", defaultValue, provider, arg, arg.scopeString());}
                 Range arity = arg.arity().min(Math.max(1, arg.arity().min));
@@ -13081,7 +13081,6 @@ public class CommandLine {
             String actualValue = value;
             char[] interactiveValue = null;
             Class<?> cls = argSpec.auxiliaryTypes()[0]; // field may be interface/abstract type, use annotation to get concrete type
-            if (isOptional(cls)) { cls = argSpec.auxiliaryTypes()[1]; }
             if (arity.min <= 0) { // value may be optional
                 boolean optionalValueExists = true; // assume we will use the command line value
                 consumed = 1;
@@ -13137,29 +13136,30 @@ public class CommandLine {
                 // process the command line value
                 if (!lookBehind.isAttached()) { parseResultBuilder.nowProcessing(argSpec, value); } // update position for Completers
             }
+            String initValueMessage = "Setting %s to '%3$s' (was '%2$s') for %4$s on %5$s%n";
+            String overwriteValueMessage = "Overwriting %s value '%s' with '%s' for %s on %s%n";
+            Object newValue = interactiveValue != null ? interactiveValue : actualValue;
             if (noMoreValues && actualValue == null && interactiveValue == null) {
-                if (argSpec.typeInfo().isOptional()) {
-                    if (tracer.isDebug()) {tracer.debug("Applying Optional.empty() to %s on %s%n", argSpec, argSpec.scopeString());}
-                    argSpec.setValue(getOptionalEmpty());
-                }
-                return 0;
-            }
-            Object newValue = interactiveValue;
-            String initValueMessage = "Setting %s to *** (masked interactive value) for %4$s on %5$s%n";
-            String overwriteValueMessage = "Overwriting %s value with *** (masked interactive value) for %s on %5$s%n";
-            if (!char[].class.equals(cls) && !char[].class.equals(argSpec.type())) {
-                if (interactiveValue != null) {
-                    actualValue = new String(interactiveValue);
-                }
-                ITypeConverter<?> converter = getTypeConverter(argSpec.auxiliaryTypes(), argSpec, 0);
-                newValue = tryConvert(argSpec, -1, converter, actualValue, 0);
-                initValueMessage = "Setting %s to '%3$s' (was '%2$s') for %4$s on %5$s%n";
-                overwriteValueMessage = "Overwriting %s value '%s' with '%s' for %s on %s%n";
+                consumed = 0;
             } else {
-                if (interactiveValue == null) { // setting command line arg to char[] field
-                    newValue = actualValue.toCharArray();
-                } else {
-                    actualValue = "***"; // mask interactive value
+                consumed = 1;
+                if (interactiveValue != null) {
+                    initValueMessage = "Setting %s to *** (masked interactive value) for %4$s on %5$s%n";
+                    overwriteValueMessage = "Overwriting %s value with *** (masked interactive value) for %s on %5$s%n";
+                }
+                if (!char[].class.equals(cls) && !char[].class.equals(argSpec.type())) {
+                    if (interactiveValue != null) {
+                        actualValue = new String(interactiveValue);
+                    }
+                    ITypeConverter<?> converter = getTypeConverter(argSpec.auxiliaryTypes(), argSpec, 0);
+                    newValue = tryConvert(argSpec, -1, converter, actualValue, 0);
+                } else { // type is char[], no type conversion needed
+                    if (interactiveValue == null) { // setting command line arg to char[] field
+                        newValue = actualValue.toCharArray();
+                    } else {
+                        actualValue = "***"; // mask interactive value
+                        newValue = interactiveValue;
+                    }
                 }
             }
             Object oldValue = argSpec.getValue();
@@ -13182,7 +13182,7 @@ public class CommandLine {
             parseResultBuilder.addStringValue(argSpec, actualValue);
             parseResultBuilder.addTypedValues(argSpec, pos, newValue);
             parseResultBuilder.add(argSpec, pos);
-            return 1;
+            return consumed;
         }
         private int applyValuesToMapField(ArgSpec argSpec,
                                           LookBehind lookBehind,

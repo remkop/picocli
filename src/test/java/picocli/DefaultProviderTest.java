@@ -1,6 +1,8 @@
 package picocli;
 
+import static java.lang.String.format;
 import static org.junit.Assert.*;
+import static picocli.CommandLine.Option.NULL_VALUE;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,6 +16,10 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.PropertiesDefaultProvider;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -341,4 +347,20 @@ public class DefaultProviderTest {
         assertEquals(Arrays.asList("123"), app1.specified);
     }
 
+    static class NullDefaultProvider implements IDefaultValueProvider {
+        public String defaultValue(ArgSpec argSpec) throws Exception {
+            return ArgSpec.NULL_VALUE;
+        }
+    }
+
+    @Test
+    public void testNullDefault() {
+        @Command(defaultValueProvider = NullDefaultProvider.class)
+        class App {
+            @Option(names = "-a")
+            Integer a;
+        }
+        App app1 = CommandLine.populateCommand(new App());
+        assertEquals(null, app1.a);
+    }
 }

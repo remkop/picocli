@@ -5,9 +5,9 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
-import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.Parameters;
 
 import java.util.Map;
 
@@ -66,11 +66,21 @@ public class MapOptionsTest {
     }
 
     @Test
-    public void testMapFallbackValueNull() {
+    public void testOptionMapFallbackValueNull() {
         class App {
-            @Option(names = "-D", mapFallbackValue = ArgSpec.NULL_VALUE) Map<String, String> map;
+            @Option(names = "-D", mapFallbackValue = Option.NULL_VALUE) Map<String, String> map;
         }
         App app = CommandLine.populateCommand(new App(), "-Dkey");
+        assertEquals(1, app.map.size());
+        assertEquals(null, app.map.get("key"));
+    }
+
+    @Test
+    public void testPositionalMapFallbackValueNull() {
+        class App {
+            @Parameters(mapFallbackValue = Option.NULL_VALUE) Map<String, String> map;
+        }
+        App app = CommandLine.populateCommand(new App(), "key");
         assertEquals(1, app.map.size());
         assertEquals(null, app.map.get("key"));
     }
@@ -88,11 +98,23 @@ public class MapOptionsTest {
     }
 
     @Test
-    public void testMapFallbackValueNullMultiple() {
+    public void testOptionMapFallbackValueNullMultiple() {
         class App {
-            @Option(names = "-D", mapFallbackValue = ArgSpec.NULL_VALUE) Map<String, String> map;
+            @Option(names = "-D", mapFallbackValue = Option.NULL_VALUE) Map<String, String> map;
         }
         App app = CommandLine.populateCommand(new App(), "-Dkey1", "-Dkey2", "-Dkey3");
+        assertEquals(3, app.map.size());
+        assertEquals(null, app.map.get("key1"));
+        assertEquals(null, app.map.get("key2"));
+        assertEquals(null, app.map.get("key3"));
+    }
+
+    @Test
+    public void testParametersMapFallbackValueNullMultiple() {
+        class App {
+            @Parameters(mapFallbackValue = Option.NULL_VALUE) Map<String, String> map;
+        }
+        App app = CommandLine.populateCommand(new App(), "key1", "key2", "key3");
         assertEquals(3, app.map.size());
         assertEquals(null, app.map.get("key1"));
         assertEquals(null, app.map.get("key2"));

@@ -95,4 +95,17 @@ public class FallbackTest {
         assertNotNull(handler.ex);
         assertEquals("Expected parameter for option '-x' but found 'run'", handler.ex.getMessage());
     }
+
+    @Test
+    public void testNullFallbackValue() {
+        class App {
+            @Option(names = "-x", arity = "0..1", fallbackValue = Option.NULL_VALUE)
+            Integer x = 3;
+        }
+        App missing = CommandLine.populateCommand(new App()); // no args specified
+        assertEquals(Integer.valueOf(3), missing.x);
+
+        App app = CommandLine.populateCommand(new App(), "-x");
+        assertNull(app.x);
+    }
 }
