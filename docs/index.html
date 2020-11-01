@@ -3824,7 +3824,7 @@ See the <a href="#_split_regex">Split Regex</a> section for details.</p>
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">SystemPropertiesDemo</span> <span class="o">{</span>
     <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-D"</span><span class="o">)</span>
     <span class="kt">void</span> <span class="nf">setProperty</span><span class="o">(</span><span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">String</span><span class="o">&gt;</span> <span class="n">props</span><span class="o">)</span> <span class="o">{</span>
-        <span class="n">props</span><span class="o">.</span><span class="na">forEach</span><span class="o">((</span><span class="n">k</span><span class="o">,</span> <span class="n">v</span><span class="o">)</span> <span class="o">-&gt;</span> <span class="nc">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="n">k</span><span class="o">,</span> <span class="n">v</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">?</span> <span class="s">""</span> <span class="o">:</span> <span class="n">v</span><span class="o">));</span>
+        <span class="n">props</span><span class="o">.</span><span class="na">forEach</span><span class="o">((</span><span class="n">k</span><span class="o">,</span> <span class="n">v</span><span class="o">)</span> <span class="o">-&gt;</span> <span class="nc">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="n">k</span><span class="o">,</span> <span class="n">v</span><span class="o">));</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
 </div>
@@ -3835,7 +3835,7 @@ See the <a href="#_split_regex">Split Regex</a> section for details.</p>
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">SystemPropertiesDemo</span> <span class="p">{</span>
     <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-D"</span><span class="p">])</span>
     <span class="k">fun</span> <span class="nf">setProperty</span><span class="p">(</span><span class="n">props</span><span class="p">:</span> <span class="nc">Map</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">,</span> <span class="nc">String</span><span class="err">?</span><span class="p">&gt;)</span> <span class="p">{</span>
-        <span class="n">props</span><span class="p">.</span><span class="nf">forEach</span> <span class="p">{</span> <span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nc">String</span><span class="p">?)</span> <span class="p">-&gt;</span> <span class="nc">System</span><span class="p">.</span><span class="nf">setProperty</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">?:</span> <span class="s">""</span><span class="p">)</span> <span class="p">}</span>
+        <span class="n">props</span><span class="p">.</span><span class="nf">forEach</span> <span class="p">{</span> <span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nc">String</span><span class="p">?)</span> <span class="p">-&gt;</span> <span class="nc">System</span><span class="p">.</span><span class="nf">setProperty</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span></code></pre>
 </div>
@@ -14268,7 +14268,8 @@ Multi-line text blocks can be used in command and option descriptions, headers a
 <div class="paragraph">
 <p>The below example shows how to create a <a href="#_custom_factory">custom <code>IFactory</code></a> implementation with a Guice <code>Injector</code>:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">com.google.inject.*</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">picocli.CommandLine</span><span class="o">;</span>
@@ -14295,13 +14296,42 @@ Multi-line text blocks can be used in command and option descriptions, headers a
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">com.google.inject.*</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine.IFactory</span>
+
+<span class="kd">class</span> <span class="nc">GuiceFactory</span> <span class="p">:</span> <span class="nc">IFactory</span> <span class="p">{</span>
+    <span class="k">private</span> <span class="kd">val</span> <span class="py">injector</span> <span class="p">=</span> <span class="nc">Guice</span><span class="p">.</span><span class="nf">createInjector</span><span class="p">(</span><span class="nc">DemoModule</span><span class="p">())</span>
+
+    <span class="nd">@Throws</span><span class="p">(</span><span class="nc">Exception</span><span class="o">::</span><span class="k">class</span><span class="p">)</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="p">&lt;</span><span class="nc">K</span><span class="p">&gt;</span> <span class="nf">create</span><span class="p">(</span><span class="n">aClass</span><span class="p">:</span> <span class="nc">Class</span><span class="p">&lt;</span><span class="nc">K</span><span class="p">&gt;):</span> <span class="nc">K</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">try</span> <span class="p">{</span>
+            <span class="n">injector</span><span class="p">.</span><span class="nf">getInstance</span><span class="p">(</span><span class="n">aClass</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">ex</span><span class="p">:</span> <span class="nc">ConfigurationException</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// no implementation found in Guice configuration</span>
+            <span class="nc">CommandLine</span><span class="p">.</span><span class="nf">defaultFactory</span><span class="p">().</span><span class="nf">create</span><span class="p">(</span><span class="n">aClass</span><span class="p">)</span> <span class="c1">// fallback if missing</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="kd">class</span> <span class="nc">DemoModule</span> <span class="p">:</span> <span class="nc">AbstractModule</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">override</span> <span class="k">fun</span> <span class="nf">configure</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nf">bind</span><span class="p">(</span><span class="kd">object</span> <span class="err">: </span><span class="nc">TypeLiteral</span><span class="p">&lt;</span><span class="n">kotlin</span><span class="p">.</span><span class="n">collections</span><span class="p">.</span><span class="nc">List</span><span class="p">&lt;</span><span class="err">*</span><span class="p">&gt;&gt;()</span> <span class="p">{})</span>
+                <span class="p">.</span><span class="nf">toInstance</span><span class="p">(</span><span class="n">kotlin</span><span class="p">.</span><span class="n">collections</span><span class="p">.</span><span class="nc">ArrayList</span><span class="p">&lt;</span><span class="nc">Any</span><span class="p">&gt;())</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>Use the custom factory when creating a <code>CommandLine</code> instance, or when invoking the <code>run</code> or <code>call</code> convenience methods:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">javax.inject.*</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">picocli.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">picocli.CommandLine</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">picocli.CommandLine.*</span><span class="o">;</span>
 
 <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"di-demo"</span><span class="o">)</span>
@@ -14321,6 +14351,29 @@ Multi-line text blocks can be used in command and option descriptions, headers a
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">picocli.CommandLine</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine.Command</span>
+<span class="k">import</span> <span class="nn">javax.inject.Inject</span>
+
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"di-demo"</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">InjectionDemo</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+    <span class="nd">@Inject</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">list</span><span class="p">:</span> <span class="n">kotlin</span><span class="p">.</span><span class="n">collections</span><span class="p">.</span><span class="nc">List</span><span class="p">&lt;</span><span class="nc">Any</span><span class="p">&gt;</span>
+
+    <span class="nd">@CommandLine</span><span class="p">.</span><span class="nc">Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">])</span> <span class="kd">var</span> <span class="py">x</span> <span class="p">=</span> <span class="mi">0</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nf">assert</span><span class="p">(</span><span class="n">list</span> <span class="k">is</span> <span class="n">kotlin</span><span class="p">.</span><span class="n">collections</span><span class="p">.</span><span class="nc">ArrayList</span><span class="p">&lt;</span><span class="err">*</span><span class="p">&gt;)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="nc">CommandLine</span><span class="p">(</span><span class="nc">InjectionDemo</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">,</span> <span class="nc">GuiceFactory</span><span class="p">()).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_spring_boot_example"><a class="anchor" href="#_spring_boot_example"></a>22.2. Spring Boot Example</h3>
@@ -14328,7 +14381,7 @@ Multi-line text blocks can be used in command and option descriptions, headers a
 <p><span class="image"><img src="https://picocli.info/images/spring-boot.png" alt="Spring Boot Logo" width="350" height="167"></span></p>
 </div>
 <div class="paragraph">
-<p>From 4.0, picocli provides a custom factory in the <code>picocli-spring-boot-starter</code> module.
+<p>As of version 4.0, picocli provides a custom factory in the <code>picocli-spring-boot-starter</code> module.
 To use this custom factory, add the following dependency:</p>
 </div>
 <div class="paragraph">
@@ -14359,14 +14412,13 @@ To use this custom factory, add the following dependency:</p>
 <div class="paragraph">
 <p>The below example shows how to use picocli with Spring Boot:</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">org.springframework.beans.factory.annotation.Autowired</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.springframework.boot.CommandLineRunner</span><span class="o">;</span>
+<pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">org.springframework.boot.CommandLineRunner</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">org.springframework.boot.ExitCodeGenerator</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">org.springframework.boot.autoconfigure.SpringBootApplication</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">org.springframework.boot.SpringApplication</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Bean</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">picocli.CommandLine</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">picocli.CommandLine.IFactory</span><span class="o">;</span>
 
@@ -14401,6 +14453,45 @@ To use this custom factory, add the following dependency:</p>
 <span class="o">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">org.springframework.boot.CommandLineRunner</span>
+<span class="k">import</span> <span class="nn">org.springframework.boot.ExitCodeGenerator</span>
+<span class="k">import</span> <span class="nn">org.springframework.boot.autoconfigure.SpringBootApplication</span>
+<span class="k">import</span> <span class="nn">org.springframework.boot.runApplication</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine.IFactory</span>
+
+<span class="nd">@SpringBootApplication</span>
+<span class="kd">class</span> <span class="nc">DemoApplication</span> <span class="p">:</span> <span class="nc">CommandLineRunner</span><span class="p">,</span> <span class="nc">ExitCodeGenerator</span> <span class="p">{</span>
+
+    <span class="k">private</span> <span class="kd">var</span> <span class="py">factory</span><span class="p">:</span> <span class="nc">IFactory</span>      <span class="c1">// auto-configured to inject PicocliSpringFactory</span>
+    <span class="k">private</span> <span class="kd">var</span> <span class="py">myCommand</span><span class="p">:</span> <span class="nc">MyCommand</span><span class="p">?</span>  <span class="c1">// your @picocli.CommandLine.Command-annotated class</span>
+    <span class="k">private</span> <span class="kd">var</span> <span class="py">exitCode</span> <span class="p">=</span> <span class="mi">0</span>
+
+    <span class="c1">// constructor injection</span>
+    <span class="k">constructor</span><span class="p">(</span><span class="n">factory</span><span class="p">:</span> <span class="nc">IFactory</span><span class="p">,</span> <span class="n">myCommand</span><span class="p">:</span> <span class="nc">MyCommand</span><span class="p">?)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">factory</span>   <span class="p">=</span> <span class="n">factory</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">myCommand</span> <span class="p">=</span> <span class="n">myCommand</span>
+    <span class="p">}</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">run</span><span class="p">(</span><span class="k">vararg</span> <span class="n">args</span><span class="p">:</span> <span class="nc">String</span><span class="p">?)</span> <span class="p">{</span>
+        <span class="c1">// let picocli parse command line args and run the business logic</span>
+        <span class="n">exitCode</span> <span class="p">=</span> <span class="nc">CommandLine</span><span class="p">(</span><span class="n">myCommand</span><span class="p">,</span> <span class="n">factory</span><span class="p">).</span><span class="nf">execute</span><span class="p">(*</span><span class="n">args</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">getExitCode</span><span class="p">():</span> <span class="nc">Int</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">exitCode</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">fun</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Array</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+    <span class="c1">// let Spring instantiate and inject dependencies</span>
+    <span class="n">runApplication</span><span class="p">&lt;</span><span class="nc">DemoApplication</span><span class="p">&gt;(*</span><span class="n">args</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
 <div class="paragraph">
 <p>See the <a href="https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter">picocli-spring-boot-starter README</a> for another example.</p>
 </div>
@@ -14420,9 +14511,16 @@ You can make it a <code>hidden</code> option so it is not shown in the usage hel
 <div class="paragraph">
 <p>Alternatively, you can define an <a href="#unmatched-annotation">unmatched</a> field to capture <em>all</em> unknown options (and positional parameters):</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Unmatched</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">unmatched</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Unmatched</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">unmatched</span><span class="p">:</span> <span class="nc">List</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;</span></code></pre>
 </div>
 </div>
 </td>
@@ -14433,7 +14531,8 @@ You can make it a <code>hidden</code> option so it is not shown in the usage hel
 <p>When your command is annotated with <code>@org.springframework.stereotype.Component</code> Spring can autodetect it for dependency injection.
 The business logic of your command looks like any other picocli command with options and parameters.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kn">import</span> <span class="nn">org.springframework.stereotype.Component</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">org.springframework.beans.factory.annotation.Autowired</span><span class="o">;</span>
@@ -14462,6 +14561,39 @@ The business logic of your command looks like any other picocli command with opt
         <span class="k">return</span> <span class="mi">0</span><span class="o">;</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="k">import</span> <span class="nn">org.springframework.beans.factory.annotation.Autowired</span>
+<span class="k">import</span> <span class="nn">org.springframework.stereotype.Component</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine.Command</span>
+<span class="k">import</span> <span class="nn">picocli.CommandLine.Option</span>
+<span class="k">import</span> <span class="nn">java.util.concurrent.Callable</span>
+
+<span class="nd">@Component</span>
+<span class="nd">@Command</span><span class="p">(</span><span class="n">name</span> <span class="p">=</span> <span class="s">"myCommand"</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">MyCommand</span> <span class="p">:</span> <span class="nc">Callable</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;</span> <span class="p">{</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="k">private</span> <span class="kd">var</span> <span class="py">someService</span><span class="p">:</span> <span class="nc">SomeService</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span>
+
+    <span class="c1">// Prevent "Unknown option" error when users use</span>
+    <span class="c1">// the Spring Boot parameter 'spring.config.location' to specify</span>
+    <span class="c1">// an alternative location for the application.properties file.</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--spring.config.location"</span><span class="p">],</span> <span class="n">hidden</span> <span class="p">=</span> <span class="k">true</span><span class="p">)</span>
+    <span class="k">private</span> <span class="k">lateinit</span> <span class="kd">var</span> <span class="py">springConfigLocation</span><span class="p">:</span> <span class="nc">String</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">,</span> <span class="s">"--option"</span><span class="p">],</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"example option"</span><span class="p">])</span>
+    <span class="k">private</span> <span class="kd">var</span> <span class="py">flag</span> <span class="p">=</span> <span class="k">false</span>
+
+    <span class="nd">@Throws</span><span class="p">(</span><span class="nc">Exception</span><span class="o">::</span><span class="k">class</span><span class="p">)</span>
+    <span class="k">override</span> <span class="k">fun</span> <span class="nf">call</span><span class="p">():</span> <span class="nc">Int</span> <span class="p">{</span>
+        <span class="c1">// business logic here</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 </div>
@@ -15871,7 +16003,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.2<br>
-Last updated 2020-10-31 08:40:35 +0900
+Last updated 2020-11-01 20:08:30 +0900
 </div>
 </div>
 <style>
