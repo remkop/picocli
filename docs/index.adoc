@@ -10056,7 +10056,7 @@ fun main(args: Array<String>) {
 === Spring Boot Example
 image:https://picocli.info/images/spring-boot.png[Spring Boot Logo,width=350,height=167]
 
-From 4.0, picocli provides a custom factory in the `picocli-spring-boot-starter` module.
+As of version 4.0, picocli provides a custom factory in the `picocli-spring-boot-starter` module.
 To use this custom factory, add the following dependency:
 
 Maven:
@@ -10079,14 +10079,13 @@ This will bring in the `info.picocli:picocli` and `org.springframework.boot:spri
 
 The below example shows how to use picocli with Spring Boot:
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.SpringApplication;
-import org.springframework.context.annotation.Bean;
 import picocli.CommandLine;
 import picocli.CommandLine.IFactory;
 
@@ -10121,6 +10120,45 @@ public class MySpringApp implements CommandLineRunner, ExitCodeGenerator {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import org.springframework.boot.CommandLineRunner
+import org.springframework.boot.ExitCodeGenerator
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.runApplication
+import picocli.CommandLine
+import picocli.CommandLine.IFactory
+
+@SpringBootApplication
+class DemoApplication : CommandLineRunner, ExitCodeGenerator {
+
+    private var factory: IFactory      // auto-configured to inject PicocliSpringFactory
+    private var myCommand: MyCommand?  // your @picocli.CommandLine.Command-annotated class
+    private var exitCode = 0
+
+    // constructor injection
+    constructor(factory: IFactory, myCommand: MyCommand?) {
+        this.factory   = factory
+        this.myCommand = myCommand
+    }
+
+    override fun run(vararg args: String?) {
+        // let picocli parse command line args and run the business logic
+        exitCode = CommandLine(myCommand, factory).execute(*args)
+    }
+
+    override fun getExitCode(): Int {
+    return exitCode
+    }
+}
+
+fun main(args: Array<String>) {
+    // let Spring instantiate and inject dependencies
+    runApplication<DemoApplication>(*args)
+}
+----
+
 See the https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter[picocli-spring-boot-starter README] for another example.
 
 [TIP]
@@ -10132,16 +10170,24 @@ You can make it a `hidden` option so it is not shown in the usage help message, 
 
 Alternatively, you can define an <<unmatched-annotation,unmatched>> field to capture _all_ unknown options (and positional parameters):
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Unmatched List<String> unmatched;
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Unmatched lateinit var unmatched: List<String>
 ----
 ====
 
 When your command is annotated with `@org.springframework.stereotype.Component` Spring can autodetect it for dependency injection.
 The business logic of your command looks like any other picocli command with options and parameters.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10168,6 +10214,39 @@ public class MyCommand implements Callable<Integer> {
     public Integer call() throws Exception {
         // business logic here
         return 0;
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+import picocli.CommandLine.Command
+import picocli.CommandLine.Option
+import java.util.concurrent.Callable
+
+@Component
+@Command(name = "myCommand")
+class MyCommand : Callable<Int> {
+
+    @Autowired
+    private var someService: SomeService? = null
+
+    // Prevent "Unknown option" error when users use
+    // the Spring Boot parameter 'spring.config.location' to specify
+    // an alternative location for the application.properties file.
+    @Option(names = ["--spring.config.location"], hidden = true)
+    private lateinit var springConfigLocation: String
+
+    @Option(names = ["-x", "--option"], description = ["example option"])
+    private var flag = false
+
+    @Throws(Exception::class)
+    override fun call(): Int {
+        // business logic here
+        return 0
     }
 }
 ----
