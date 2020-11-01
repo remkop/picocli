@@ -1412,6 +1412,26 @@ function getAttributeValue(suffix, element) {
 /******/ ])["default"];
 });
 </script>
+<!-- Foldable TOC -->
+
+<style>
+    #tocbot a.toc-link.node-name--H1{ font-style: italic }
+    @media screen{
+      #tocbot > ul.toc-list{ margin-bottom: 0.5em; margin-left: 0.125em }
+      #tocbot ul.sectlevel0, #tocbot a.toc-link.node-name--H1 + ul{
+        padding-left: 0 }
+      #tocbot a.toc-link{ height:100% }
+      .is-collapsible{ max-height:3000px; overflow:hidden; }
+      .is-collapsed{ max-height:0 }
+      .is-active-link{ font-weight:700 }
+    }
+    @media print{
+      #tocbot a.toc-link.node-name--H4{ display:none }
+    }
+</style>
+
+<!-- Copy to clipboard button in sourc code listings -->
+
 <style>
  .listingblock:hover .clipboard {
      display: block;
@@ -1475,80 +1495,155 @@ new ClipboardJS('.clipboard', {
 });
 </script>
 <style>
+
 .hidden {
+
     display: none;
+
 }
+
+
 
 .switch {
+
     border-width: 1px 1px 0 1px;
+
     border-style: solid;
+
     border-color: #7a2518;
+
     display: inline-block;
+
 }
+
+
 
 .switch--item {
+
     padding: 10px;
+
     background-color: #ffffff;
+
     color: #7a2518;
+
     display: inline-block;
+
     cursor: pointer;
+
 }
+
+
 
 .switch--item.selected {
+
     background-color: #7a2519;
+
     color: #ffffff;
+
 }
+
+
 
 </style>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+
 <script type="text/javascript">
+
 function addBlockSwitches() {
+
     $('.primary').each(function() {
+
         primary = $(this);
+
         createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+
         primary.children('.title').remove();
+
     });
+
     $('.secondary').each(function(idx, node) {
+
         secondary = $(node);
+
         primary = findPrimary(secondary);
+
         switchItem = createSwitchItem(secondary, primary.children('.switch'));
+
         switchItem.content.addClass('hidden');
+
         findPrimary(secondary).append(switchItem.content);
+
         secondary.remove();
+
     });
+
 }
+
+
 
 function createBlockSwitch(primary) {
+
     blockSwitch = $('<div class="switch"></div>');
+
     primary.prepend(blockSwitch);
+
     return blockSwitch;
+
 }
+
+
 
 function findPrimary(secondary) {
+
     candidate = secondary.prev();
+
     while (!candidate.is('.primary')) {
+
         candidate = candidate.prev();
+
     }
+
     return candidate;
+
 }
 
+
+
 function createSwitchItem(block, blockSwitch) {
+
     blockName = block.children('.title').text();
+
     content = block.children('.content').first().append(block.next('.colist'));
+
     item = $('<div class="switch--item">' + blockName + '</div>');
+
     item.on('click', '', content, function(e) {
+
         $(this).addClass('selected');
+
         $(this).siblings().removeClass('selected');
+
         e.data.siblings('.content').addClass('hidden');
+
         e.data.removeClass('hidden');
+
     });
+
     blockSwitch.append(item);
+
     return {'item': item, 'content': content};
+
 }
+
+
 
 $(addBlockSwitches);
 
+
+
 </script>
+
 
 </head>
 <body class="article toc2 toc-left">
@@ -3482,7 +3577,7 @@ Your stars keep me going! :-)</p>
 <div id="footer">
 <div id="footer-text">
 Version 4.5.2<br>
-Last updated 2020-10-14 20:34:46 +0900
+Last updated 2020-11-01 20:55:20 +0900
 </div>
 </div>
 <style>
