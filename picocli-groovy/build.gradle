@@ -14,10 +14,10 @@ configurations {
     ivy
 }
 dependencies {
-    compile rootProject
-    compileOnly "org.codehaus.groovy:groovy-all:$groovyVersion"
-    ivy         "org.apache.ivy:ivy:$ivyVersion" // for Gradle
-    testCompile "junit:junit:$junitVersion"
+    implementation rootProject
+    compileOnly        "org.codehaus.groovy:groovy-all:$groovyVersion"
+    ivy                "org.apache.ivy:ivy:$ivyVersion" // for Gradle
+    testImplementation "junit:junit:$junitVersion"
 }
 tasks.withType(GroovyCompile) {
     // this, and the `configurations {ivy}` section, are a workaround for the dreaded
