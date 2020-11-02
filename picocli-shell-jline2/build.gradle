@@ -10,9 +10,9 @@ description 'Picocli Shell JLine2 - easily build interactive shell applications 
 version "$projectVersion"
 
 dependencies {
-    compile rootProject
-    compile "jline:jline:$jlineVersion"
-    testCompile "junit:junit:$junitVersion"
+    implementation     rootProject
+    implementation     "jline:jline:$jlineVersion"
+    testImplementation "junit:junit:$junitVersion"
 }
 
 jar {

@@ -12,10 +12,10 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-    compile rootProject
-    compile "org.jline:jline:$jline3Version"
-    compile "org.jline:jline-console:$jline3Version"
-    testCompile "junit:junit:$junitVersion"
+    implementation     rootProject
+    implementation     "org.jline:jline:$jline3Version"
+    implementation     "org.jline:jline-console:$jline3Version"
+    testImplementation "junit:junit:$junitVersion"
 }
 
 jar {

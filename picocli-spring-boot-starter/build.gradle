@@ -16,8 +16,8 @@ repositories {
 }
 
 dependencies {
-    compile     rootProject
-    compile     "org.springframework.boot:spring-boot-starter:$springBootVersion"
+    implementation     rootProject
+    implementation     "org.springframework.boot:spring-boot-starter:$springBootVersion"
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
 }
 

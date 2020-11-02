@@ -96,12 +96,12 @@ allprojects {
         }
     }
     dependencies {
-        testCompile "junit:junit:$junitVersion",
-                    "org.hamcrest:hamcrest-core:$hamcrestCoreVersion",
-                    "org.fusesource.jansi:jansi:$jansiVersion",
-                    "org.codehaus.groovy:groovy-all:$groovyVersion",
-                    "com.github.stefanbirkner:system-rules:$systemRulesVersion",
-                    "pl.pragmatists:JUnitParams:1.1.1"
+        testImplementation "junit:junit:$junitVersion",
+                           "org.hamcrest:hamcrest-core:$hamcrestCoreVersion",
+                           "org.fusesource.jansi:jansi:$jansiVersion",
+                           "org.codehaus.groovy:groovy-all:$groovyVersion",
+                           "com.github.stefanbirkner:system-rules:$systemRulesVersion",
+                           "pl.pragmatists:JUnitParams:1.1.1"
     }
     tasks.withType(JavaCompile) {
         options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'

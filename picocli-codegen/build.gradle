@@ -15,8 +15,8 @@ if (org.gradle.api.JavaVersion.current().isJava8Compatible() && !org.gradle.api.
     targetCompatibility = 1.6
 }
 dependencies {
-    compile rootProject
-    testCompile "junit:junit:$junitVersion"
+    implementation rootProject
+    testImplementation "junit:junit:$junitVersion"
 }
 
 //task generateGraalReflectionConfig(type: JavaExec) {
