@@ -269,7 +269,7 @@ Below are examples of configuring Gradle or Maven to use picocli as an external 
 
 ==== Gradle
 ----
-compile 'info.picocli:picocli:4.5.3-SNAPSHOT'
+implementation 'info.picocli:picocli:4.5.3-SNAPSHOT'
 ----
 
 ==== Maven
@@ -10056,56 +10056,73 @@ fun main(args: Array<String>) {
 === Spring Boot Example
 image:https://picocli.info/images/spring-boot.png[Spring Boot Logo,width=350,height=167]
 
-As of version 4.0, picocli provides a custom factory in the `picocli-spring-boot-starter` module.
-To use this custom factory, add the following dependency:
+As of version 4.0, picocli comes with Spring Boot support by providing a custom factory in the `picocli-spring-boot-starter` module.
 
-Maven:
-```xml
+The Spring Boot example app below provides a command line interface to a mail client that can be used to send emails using an SMTP server.
+The `To` address(es) and the subject line can be given as options, while a message body can be specified as parameter text.
+
+To get started, visit the https://start.spring.io/#!type=maven-project&language=java&platformVersion=2.3.5.RELEASE&packaging=jar&jvmVersion=11&groupId=info.picocli&artifactId=examples&name=spring-boot-demo&description=Demo%20project%20for%20Spring%20Boot%20with%20Picocli%20support&packageName=info.picocli.examples&dependencies=mail[Spring Initializr] first.
+Our example app has `Java Mail Sender` as dependency, please note that this dependency is selected already.
+Review all settings, and change if needed, especially if you want to code your app in Kotlin.
+By clicking on the button `Generate` you can download a self-contained skeleton Spring Boot project, together with its dependencies, a build script and test cases.
+Extract the archive file to a directory of your choice and open a shell or command prompt for this directory.
+
+Since picocli dependencies are not available in the Spring Initializr, we have to add them manually:
+
+.Maven
+[source,xml,role="primary"]
+----
+<dependency>
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli-spring-boot-starter</artifactId>
   <version>4.5.3-SNAPSHOT</version>
 </dependency>
-```
-
-Gradle:
-```
+----
+.Gradle (Groovy)
+[source,groovy,role="secondary"]
+----
 dependencies {
-    compile "info.picocli:picocli-spring-boot-starter:4.5.3-SNAPSHOT"
+    implementation 'info.picocli:picocli-spring-boot-starter:4.5.3-SNAPSHOT'
 }
-```
+----
+.Gradle (Kotlin)
+[source,kotlin,role="secondary"]
+----
+dependencies {
+    implementation("info.picocli:picocli-spring-boot-starter:4.5.3-SNAPSHOT")
+}
+----
 
-This will bring in the `info.picocli:picocli` and `org.springframework.boot:spring-boot-starter` dependencies.
+This will bring in the `info.picocli:picocli` and the `info.picocli:picocli-spring-boot-starter` dependencies.
 
-The below example shows how to use picocli with Spring Boot:
+Now open the pre-authored source file `SpringBootDemoApplication.java`, rename it to MySpringMailer.java and edit and extend it so that it looks like this:
 
 .Java
 [source,java,role="primary"]
 ----
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.ExitCodeGenerator;
+import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.SpringApplication;
 import picocli.CommandLine;
 import picocli.CommandLine.IFactory;
 
 @SpringBootApplication
-public class MySpringApp implements CommandLineRunner, ExitCodeGenerator {
+public class MySpringMailer implements CommandLineRunner, ExitCodeGenerator {
 
-    private IFactory factory;    // auto-configured to inject PicocliSpringFactory
-    private MyCommand myCommand; // your @picocli.CommandLine.Command-annotated class
+    private IFactory factory;        // <1>
+    private MailCommand mailCommand; // <2>
     private int exitCode;
 
     // constructor injection
-    MySpringApp(IFactory factory, MyCommand myCommand) {
+    MySpringMailer(IFactory factory, MailCommand mailCommand) {
         this.factory = factory;
-        this.myCommand = myCommand;
+        this.mailCommand = mailCommand;
     }
 
     @Override
     public void run(String... args) {
         // let picocli parse command line args and run the business logic
-        exitCode = new CommandLine(myCommand, factory).execute(args);
+        exitCode = new CommandLine(mailCommand, factory).execute(args);
     }
 
     @Override
@@ -10115,51 +10132,257 @@ public class MySpringApp implements CommandLineRunner, ExitCodeGenerator {
 
     public static void main(String[] args) {
         // let Spring instantiate and inject dependencies
-        System.exit(SpringApplication.exit(SpringApplication.run(MySpringApp.class, args)));
+        System.exit(SpringApplication.exit(SpringApplication.run(MySpringMailer.class, args)));
     }
 }
 ----
+<1> The injected factory is auto-configured to inject `PicocliSpringFactory`
+<2> The injected `MailCommand` is our `@picocli.CommandLine.Command`-annotated class, which is listed next:
 
 .Kotlin
 [source,kotlin,role="secondary"]
 ----
-import org.springframework.boot.CommandLineRunner
-import org.springframework.boot.ExitCodeGenerator
+import org.springframework.boot.*
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.runApplication
 import picocli.CommandLine
 import picocli.CommandLine.IFactory
 
 @SpringBootApplication
-class DemoApplication : CommandLineRunner, ExitCodeGenerator {
+class MySpringMailer : CommandLineRunner, ExitCodeGenerator {
 
-    private var factory: IFactory      // auto-configured to inject PicocliSpringFactory
-    private var myCommand: MyCommand?  // your @picocli.CommandLine.Command-annotated class
+    private var factory: IFactory        // <1>
+    private var mailCommand: MailCommand // <2>
     private var exitCode = 0
 
     // constructor injection
-    constructor(factory: IFactory, myCommand: MyCommand?) {
-        this.factory   = factory
-        this.myCommand = myCommand
+    constructor(factory: IFactory, mailCommand: MailCommand) {
+        this.factory = factory          // auto-configured to inject PicocliSpringFactory
+        this.mailCommand = mailCommand  // your @picocli.CommandLine.Command-annotated class
     }
 
-    override fun run(vararg args: String?) {
+    override fun run(vararg args: String) {
         // let picocli parse command line args and run the business logic
-        exitCode = CommandLine(myCommand, factory).execute(*args)
+        exitCode = CommandLine(mailCommand, factory).execute(*args)
     }
 
     override fun getExitCode(): Int {
-    return exitCode
+        return exitCode
     }
 }
 
 fun main(args: Array<String>) {
-    // let Spring instantiate and inject dependencies
-    runApplication<DemoApplication>(*args)
+    runApplication<MySpringMailer>(*args)
+}
+----
+<1> The injected factory is auto-configured to inject `PicocliSpringFactory`
+<2> The injected `MailCommand` is our `@picocli.CommandLine.Command`-annotated class, which is listed next:
+
+.Java
+[source,java,role="primary"]
+----
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import picocli.CommandLine.*;
+import java.util.List;
+import java.util.concurrent.Callable;
+
+@Component // <1>
+@Command(name = "mailCommand")
+public class MailCommand implements Callable<Integer> {
+
+    @Autowired private IMailService mailService; // <3>
+
+    @Option(names = "--to", description = "email(s) of recipient(s)", required = true)
+    List<String> to;
+
+    @Option(names = "--subject", description = "Subject")
+    String subject;
+
+    @Parameters(description = "Message to be sent")
+    String[] body = {};
+
+    public Integer call() throws Exception {
+        mailService.sendMessage(to, subject, String.join(" ", body)); // <2>
+        return 0;
+    }
+}
+----
+<1> We annotate our command with the `@org.springframework.stereotype.Component` annontation so that Spring can autodetect it for dependency injection.
+<2> The business logic of your command looks like any other picocli command with options and parameters.
+<3> The interface for our autowired `MailService` is very simple:
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+import picocli.CommandLine.*
+import java.util.concurrent.Callable
+
+@Component // <1>
+@Command(name = "mailCommand")
+class MailCommand : Callable<Int> {
+
+    @Autowired private lateinit var mailService: IMailService // <3>
+
+    @Option(names = ["--to"], description = ["email(s) of recipient(s)"], required = true)
+    private lateinit var to: List<String>
+
+    @Option(names = ["--subject"], description = ["Subject"])
+    private var subject: String = ""
+
+    @Parameters(description = ["Message to be sent"])
+    var body = arrayOf<String>()
+
+    @Throws(Exception::class)
+    override fun call(): Int {
+        mailService.sendMessage(to, subject, java.lang.String.join(" ", *body)) // <2>
+        return 0
+    }
+}
+----
+<1> We annotate our command with the `@org.springframework.stereotype.Component` annontation so that Spring can autodetect it for dependency injection.
+<2> The business logic of your command looks like any other picocli command with options and parameters.
+<3> The interface for our autowired `MailService` is very simple:
+
+.Java
+[source,java,role="primary"]
+----
+public interface IMailService {
+    void sendMessage(List<String> to, String subject, String text);
+}
+----
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+interface IMailService {
+    fun sendMessage(to: List<String>, subject: String, text: String)
 }
 ----
 
-See the https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter[picocli-spring-boot-starter README] for another example.
+And this is the implementation of our mail service:
+
+.Java
+[source,java,role="primary"]
+----
+import org.slf4j.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.*;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Service;
+import java.util.List;
+
+@Service("MailService")
+public class MailServiceImpl implements IMailService {
+
+    private static final Logger LOGGER= LoggerFactory.getLogger(MailServiceImpl.class);
+    private static final String NOREPLY_ADDRESS = "noreply@picocli.info";
+
+    @Autowired private JavaMailSender emailSender; // <1>
+
+    @Override
+    public void sendMessage(List<String> to, String subject, String text) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage(); // create message
+            message.setFrom(NOREPLY_ADDRESS);                    // compose message
+            for (String recipient : to) { message.setTo(recipient); }
+            message.setSubject(subject);
+            message.setText(text);
+            emailSender.send(message);                           // send message
+
+            LOGGER.info("Mail to {} sent! Subject: {}, Body: {}", to, subject, text); // <2>
+        }
+        catch (MailException e) { e.printStackTrace(); }
+    }
+}
+----
+<1> The `JavaMailSender` is provided by the Spring framework.
+<2> Once a mail was successful sent, a log message will be emitted.
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.mail.*
+import org.springframework.mail.javamail.JavaMailSender
+import org.springframework.stereotype.Service
+
+@Service("MailService")
+class MailServiceImpl : IMailService {
+
+    private val LOGGER = LoggerFactory.getLogger(MailServiceImpl::class.java)
+    private val NOREPLY_ADDRESS = "noreply@picocli.info"
+
+    @Autowired private lateinit var emailSender: JavaMailSender // <1>
+
+    override fun sendMessage(to: List<String>, subject: String, text: String) {
+        try {
+            val message = SimpleMailMessage() // create message
+            message.setFrom(NOREPLY_ADDRESS)  // compose message
+            for (recipient in to) {
+                message.setTo(recipient)
+            }
+            message.setSubject(subject)
+            message.setText(text)
+            emailSender.send(message)        // send message
+            LOGGER.info("Mail to {} sent! Subject: {}, Body: {}", to, subject, text) // <2>
+        } catch (e: MailException) {
+            e.printStackTrace()
+        }
+    }
+}
+----
+<1> The `JavaMailSender` is provided by the Spring framework.
+<2> Once a mail was successful sent, a log message will be emitted.
+
+Finally we have to configure our mail service. This can be done inside a file `application properties`, which we put in a `config` subdirectory of your project:
+
+.application.properties
+----
+# configuration mail service
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=email
+spring.mail.password=password
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.starttls.required=true
+----
+
+With all our classes and configuration in place, we now can use the maven wrapper `mvnw` to compile and run our example app:
+
+----
+mvnw spring-boot:run
+# ...
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::        (v2.3.5.RELEASE)
+# ...
+#2020-11-01 19:35:31.084  INFO 15724 --- [           main] info.picocli.demo.MySpringMailer         : Started MySpringMailer in 0.821 seconds (JVM running for 1.131)
+Missing required option: '--to=<to>'
+Usage: mailCommand [--subject=<subject>] --to=<to> [--to=<to>]... [<body>...]
+      [<body>...]           Message to be sent
+      --subject=<subject>   Subject
+      --to=<to>             email(s) of recipient(s)
+----
+
+Since we specified no command line arguments, Picocli complains about the missing required option `--to` and outputs the usage help.
+We have to pass in command line arguments into our command line call, we can use `-Dspring-boot.run.arguments` for that purpose:
+
+----
+mvnw compile spring-boot:dev -Dspring-boot.run.arguments="--to hans@mustermann.de \
+    --to zhang@san.cn --subject Testmail Easy mailing with Spring Boot and picocli"
+# ...
+2020-11-01 21:14:43.458  INFO 9656 --- [           main] info.picocli.demo.MailServiceImpl        : Mail to [hans@mustermann.de, zhang@san.cn] successfully sent! Subject:  Testmail, Body: Easy mailing with Spring Boot and picocli
+# ...
+----
+
+With all options and parameters specified, a mail is sent successfully.
 
 [TIP]
 ====
@@ -10183,73 +10406,7 @@ Alternatively, you can define an <<unmatched-annotation,unmatched>> field to cap
 ----
 ====
 
-When your command is annotated with `@org.springframework.stereotype.Component` Spring can autodetect it for dependency injection.
-The business logic of your command looks like any other picocli command with options and parameters.
-
-.Java
-[source,java,role="primary"]
-----
-import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Autowired;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-import java.util.concurrent.Callable;
-
-@Component
-@Command(name = "myCommand")
-public class MyCommand implements Callable<Integer> {
-
-    @Autowired
-    private SomeService someService;
-
-    // Prevent "Unknown option" error when users use
-    // the Spring Boot parameter 'spring.config.location' to specify
-    // an alternative location for the application.properties file.
-    @Option(names = "--spring.config.location", hidden = true)
-    private String springConfigLocation;
-
-    @Option(names = { "-x", "--option" }, description = "example option")
-    private boolean flag;
-
-    public Integer call() throws Exception {
-        // business logic here
-        return 0;
-    }
-}
-----
-
-.Kotlin
-[source,kotlin,role="secondary"]
-----
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import picocli.CommandLine.Command
-import picocli.CommandLine.Option
-import java.util.concurrent.Callable
-
-@Component
-@Command(name = "myCommand")
-class MyCommand : Callable<Int> {
-
-    @Autowired
-    private var someService: SomeService? = null
-
-    // Prevent "Unknown option" error when users use
-    // the Spring Boot parameter 'spring.config.location' to specify
-    // an alternative location for the application.properties file.
-    @Option(names = ["--spring.config.location"], hidden = true)
-    private lateinit var springConfigLocation: String
-
-    @Option(names = ["-x", "--option"], description = ["example option"])
-    private var flag = false
-
-    @Throws(Exception::class)
-    override fun call(): Int {
-        // business logic here
-        return 0
-    }
-}
-----
+The https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter[picocli-spring-boot-starter README] has another example of a picocli app integrated into Spring Boot.
 
 === Micronaut Example
 image:https://micronaut.io/images/micronaut_mini_copy_tm.svg[Micronaut Logo,width=350]
@@ -10380,7 +10537,7 @@ The https://micronaut-projects.github.io/micronaut-picocli/latest/guide/#quickst
 === Quarkus Example
 image:https://quarkus.io/assets/images/quarkus_logo_horizontal_rgb_600px_reverse.png[Quarkus Logo,width=350,bg=black]
 
-Quarkus 1.5 added support for https://quarkus.io/guides/picocli#simple-command-line-application[Picocli Command Mode] applications, which allows to use Picoli in Quarkus applications easily.
+Quarkus 1.5 added support for https://quarkus.io/guides/picocli#simple-command-line-application[Picocli Command Mode] applications, which allows to use Picocli in Quarkus applications easily.
 
 The Quarkus example app below provides a command line interface to a mail client that can be used to send emails using an SMTP server.
 `From` and `To` addresses have to be given as options, while a message body can be specified as parameter text.
@@ -10525,7 +10682,7 @@ Commands:
   header  adding custom header line(s)
 ----
 
-Since we specified no command line arguments, Picoli complains about the missing required options `--from` and `--to` and outputs the usage help.
+Since we specified no command line arguments, Picocli complains about the missing required options `--from` and `--to` and outputs the usage help.
 We have to pass in command line arguments into our command line call, we can use `-Dquarkus.args=our_values` for that purpose:
 
 ----
