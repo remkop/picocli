@@ -164,4 +164,28 @@ public class MapOptionsOptionalTest {
             assertEquals(msg, ex.getMessage());
         }
     }
+
+    @Test
+    public void testMapFallbackValueDescriptionVariable() {
+        class App {
+            @CommandLine.Parameters(mapFallbackValue = Option.NULL_VALUE, description = "Positional ${MAP-FALLBACK-VALUE} blah.")
+            Map<String, Optional<String>> map;
+
+            @Option(names = "-D", mapFallbackValue = "", description = "Option '${MAP-FALLBACK-VALUE}' blah.")
+            Map<String, Optional<String>> properties;
+
+            @Option(names = "-X", mapFallbackValue = "xx", description = "XX '${MAP-FALLBACK-VALUE}' blah.")
+            Map<String, Optional<Integer>> x;
+        }
+        String usage = new CommandLine(new App()).getUsageMessage();
+        String expected = String.format("" +
+                "Usage: <main class> [-D=<String=Optional>]... [-X=<String=Optional>]...%n" +
+                "                    [<String=Optional>...]%n" +
+                "      [<String=Optional>...]%n" +
+                "                          Positional null blah.%n" +
+                "  -D=<String=Optional>    Option '' blah.%n" +
+                "  -X=<String=Optional>    XX 'xx' blah.%n" +
+                "");
+        assertEquals(expected, usage);
+    }
 }

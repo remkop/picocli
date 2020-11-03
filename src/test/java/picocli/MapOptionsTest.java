@@ -133,4 +133,27 @@ public class MapOptionsTest {
             assertEquals("Invalid value for option '-D' (<String=Integer>): '' is not an int", ex.getMessage());
         }
     }
+
+    @Test
+    public void testMapFallbackValueDescriptionVariable() {
+        class App {
+            @Parameters(mapFallbackValue = Option.NULL_VALUE, description = "Positional ${MAP-FALLBACK-VALUE} blah.")
+            Map<String, String> map;
+
+            @Option(names = "-D", mapFallbackValue = "", description = "Option '${MAP-FALLBACK-VALUE}' blah.")
+            Map<String, Integer> properties;
+
+            @Option(names = "-X", mapFallbackValue = "xx", description = "XX '${MAP-FALLBACK-VALUE}' blah.")
+            Map<String, Integer> x;
+        }
+        String usage = new CommandLine(new App()).getUsageMessage();
+        String expected = String.format("" +
+                "Usage: <main class> [-D=<String=Integer>]... [-X=<String=Integer>]...%n" +
+                "                    [<String=String>...]%n" +
+                "      [<String=String>...]   Positional null blah.%n" +
+                "  -D=<String=Integer>        Option '' blah.%n" +
+                "  -X=<String=Integer>        XX 'xx' blah.%n" +
+                "");
+        assertEquals(expected, usage);
+    }
 }

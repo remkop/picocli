@@ -8079,6 +8079,7 @@ public class CommandLine {
             static final String NULL_VALUE = "_NULL_";
             static final String DESCRIPTION_VARIABLE_DEFAULT_VALUE = "${DEFAULT-VALUE}";
             static final String DESCRIPTION_VARIABLE_FALLBACK_VALUE = "${FALLBACK-VALUE}";
+            static final String DESCRIPTION_VARIABLE_MAP_FALLBACK_VALUE = "${MAP-FALLBACK-VALUE}";
             static final String DESCRIPTION_VARIABLE_COMPLETION_CANDIDATES = "${COMPLETION-CANDIDATES}";
             private static final String NO_DEFAULT_VALUE = "__no_default_value__";
             private static final String UNSPECIFIED = "__unspecified__";
@@ -8266,10 +8267,12 @@ public class CommandLine {
                 }
                 String defaultValueString = defaultValueString(false); // interpolate later
                 String fallbackValueString = isOption() ? ((OptionSpec) this).fallbackValue : ""; // interpolate later
+                String mapFallbackValueString = String.valueOf(mapFallbackValue); // interpolate later
                 String[] result = new String[desc.length];
                 for (int i = 0; i < desc.length; i++) {
                     result[i] = format(desc[i].replace(DESCRIPTION_VARIABLE_DEFAULT_VALUE, defaultValueString.replace("%", "%%"))
                             .replace(DESCRIPTION_VARIABLE_FALLBACK_VALUE, fallbackValueString.replace("%", "%%"))
+                            .replace(DESCRIPTION_VARIABLE_MAP_FALLBACK_VALUE, mapFallbackValueString.replace("%", "%%"))
                             .replace(DESCRIPTION_VARIABLE_COMPLETION_CANDIDATES, candidates.toString()));
                 }
                 return interpolate(result);
