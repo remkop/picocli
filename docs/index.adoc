@@ -11087,6 +11087,29 @@ test {
 
 For more details, see the https://github.com/remkop/picocli/files/4359943/bulk-scripts-public.zip[sample project] provided by David M. Carr.
 
+=== Mocking
+
+If need to use mocking in your tests, you can use the https://site.mockito.org[Mockito] framework.
+
+==== Mocking with subcommands
+
+By default, Mockito subclasses mocked class and copies all the annotations to the mock.
+If you have command with subcommands this might result in `picocli.CommandLine$DuplicateNameException`.
+To mitigate this, configure the mock to not copy annotation with https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/MockSettings.html[MockSettings].
+
+Example:
+[source, java]
+----
+    @Test
+    void testMockWithoutAnnotations() {
+        CheckSum checkSum = mock(CheckSum.class, withSettings().withoutAnnotations());
+        CommandLine cmdLine = new CommandLine(checkSum);
+        assertEquals(0, cmdLine.execute("test"));
+    }
+----
+
+WARNING: You can't use MockSettings with `spy()`. If you need to mock command with subcommands you need to rewrite you tests to use `mock()` instead.
+
 
 == Packaging Your Application
 
