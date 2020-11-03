@@ -1918,6 +1918,7 @@ $(addBlockSwitches);
 <li><a href="#_testing_the_output">28.2. Testing the Output</a></li>
 <li><a href="#_testing_the_exit_code">28.3. Testing the Exit Code</a></li>
 <li><a href="#_testing_environment_variables">28.4. Testing Environment Variables</a></li>
+<li><a href="#_mocking">28.5. Mocking</a></li>
 </ul>
 </li>
 <li><a href="#_packaging_your_application">29. Packaging Your Application</a>
@@ -15710,6 +15711,49 @@ test {
 <p>For more details, see the <a href="https://github.com/remkop/picocli/files/4359943/bulk-scripts-public.zip">sample project</a> provided by David M. Carr.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_mocking"><a class="anchor" href="#_mocking"></a>28.5. Mocking</h3>
+<div class="paragraph">
+<p>If you prefer to use mocking in your tests, there are several frameworks available.
+This document will only cover some relevant aspects of some mocking frameworks based on feedback from the picocli community.</p>
+</div>
+<div class="sect3">
+<h4 id="_mocking_subcommands_with_mockito"><a class="anchor" href="#_mocking_subcommands_with_mockito"></a>28.5.1. Mocking subcommands with Mockito</h4>
+<div class="paragraph">
+<p>The <a href="https://site.mockito.org">Mockito</a> framework creates a synthetic class for a mocked class.
+The generated class is a subclass of the mocked class and also copies all the annotations to the mock.
+If you are mocking a command with subcommands this might result in a <code>picocli.CommandLine$DuplicateNameException</code>.
+To mitigate this, configure the mock to not copy the annotations.
+The example below shows how to use the <a href="https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/MockSettings.html">MockSettings</a> API to accomplish this.</p>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java">    <span class="nd">@Test</span>
+    <span class="kt">void</span> <span class="nf">testMockWithoutAnnotations</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nc">CheckSum</span> <span class="n">checkSum</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="nc">CheckSum</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">withSettings</span><span class="o">().</span><span class="na">withoutAnnotations</span><span class="o">());</span>
+        <span class="nc">CommandLine</span> <span class="n">cmdLine</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CommandLine</span><span class="o">(</span><span class="n">checkSum</span><span class="o">);</span>
+        <span class="n">assertEquals</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">cmdLine</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="s">"test"</span><span class="o">));</span>
+    <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+You can&#8217;t use MockSettings with <code>spy()</code>.
+To mock commands with subcommands you will need to use <code>mock()</code> instead of <code>spy()</code>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -16253,7 +16297,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.2<br>
-Last updated 2020-11-03 11:49:41 +0900
+Last updated 2020-11-04 08:18:36 +0900
 </div>
 </div>
 <style>
