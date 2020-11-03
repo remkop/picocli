@@ -11089,13 +11089,16 @@ For more details, see the https://github.com/remkop/picocli/files/4359943/bulk-s
 
 === Mocking
 
-If need to use mocking in your tests, you can use the https://site.mockito.org[Mockito] framework.
+If you prefer to use mocking in your tests, there are several frameworks available.
+This document will only cover some relevant aspects of some mocking frameworks based on feedback from the picocli community.
 
-==== Mocking with subcommands
+==== Mocking subcommands with Mockito
 
-By default, Mockito subclasses mocked class and copies all the annotations to the mock.
-If you have command with subcommands this might result in `picocli.CommandLine$DuplicateNameException`.
-To mitigate this, configure the mock to not copy annotation with https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/MockSettings.html[MockSettings].
+The https://site.mockito.org[Mockito] framework creates a synthetic class for a mocked class.
+The generated class is a subclass of the mocked class and also copies all the annotations to the mock.
+If you are mocking a command with subcommands this might result in a `picocli.CommandLine$DuplicateNameException`.
+To mitigate this, configure the mock to not copy the annotations.
+The example below shows how to use the https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/MockSettings.html[MockSettings] API to accomplish this.
 
 Example:
 [source, java]
@@ -11108,7 +11111,8 @@ Example:
     }
 ----
 
-WARNING: You can't use MockSettings with `spy()`. If you need to mock command with subcommands you need to rewrite you tests to use `mock()` instead.
+WARNING: You can't use MockSettings with `spy()`.
+To mock commands with subcommands you will need to use `mock()` instead of `spy()`.
 
 
 == Packaging Your Application
