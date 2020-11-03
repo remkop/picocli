@@ -21,6 +21,7 @@ import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.UsageMessageSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.RunAll;
 import picocli.CommandLine.Spec;
@@ -2473,5 +2474,34 @@ public class SubcommandTests {
         assertNotNull(sub);
         assertNotNull(sub.getCommandSpec().findOption("-a"));
         assertTrue(sub.getCommandSpec().findOption("-a").inherited());
+    }
+
+    @Command(name="root", subcommands = {Sub.class})
+    static class InhRoot {
+        @CommandLine.Parameters(defaultValue = "", scope = INHERIT)
+        public String parameter = "param";
+    }
+
+    @Command(name="sub")
+    static class Sub {
+        @ParentCommand
+        InhRoot parent;
+
+        @Option(names="--opt")
+        public String opt = "opt";
+    }
+
+    @Test
+    public void testInheritedParameter() {
+        CommandLine cli = new CommandLine(new InhRoot());
+        // we first parse with the parameter at the beginning
+        ParseResult parseResult = cli.parseArgs("parameter_val", "sub", "--opt", "something");
+        Sub parsedSub = (Sub) parseResult.commandSpec().subcommands().get("sub").getCommandSpec().userObject();
+        assertEquals("parameter_val", parsedSub.parent.parameter);
+
+        // we finally parse with the parameter at the end
+        parseResult = cli.parseArgs("sub", "--opt", "something", "parameter_val");
+        parsedSub = (Sub) parseResult.commandSpec().subcommands().get("sub").getCommandSpec().userObject();
+        assertEquals("parameter_val", parsedSub.parent.parameter);
     }
 }
