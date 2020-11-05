@@ -2492,7 +2492,6 @@ public class SubcommandTests {
         public String opt = "opt";
     }
 
-    @Ignore("Requires fix for https://github.com/remkop/picocli/issues/1250")
     @Test
     public void testInheritedParameter() {
         CommandLine cli = new CommandLine(new InhRoot());
