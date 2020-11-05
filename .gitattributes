@@ -10,7 +10,6 @@
 *.css           text
 *.gradle        text
 *.groovy        text
-*.html          text
 *.java          text
 *.js            text
 *.md            text
@@ -22,6 +21,7 @@
 gradlew         text eol=lf
 *.sh            text eol=lf
 *.bash          text eol=lf
+*.html          text eol=lf
 run             text eol=lf
 runCompletion   text eol=lf
 bashrc          text eol=lf
