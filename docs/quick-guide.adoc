@@ -7,7 +7,8 @@
 :numbered:
 :toclevels: 1 // show little detail in the TOC, to make this document less intimidating
 :toc-title: Features
-:source-highlighter: coderay
+:source-highlighter: rouge
+:rouge-languages: kotlin, groovy, scala
 :icons: font
 :imagesdir: images
 :linkattrs:
@@ -196,8 +197,8 @@ ISOCodeResolver country cn fr th ro no
 
 === ISOCodeResolver source code explained
 
-.ISOCodeResolver source code
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -225,8 +226,8 @@ public class ISOCodeResolver { // <1>
     }
 
     public static void main(String[] args) {
-        int exitCode = new CommandLine(new ISOCodeResolver()).execute(args);  // <5>
-        System.exit(exitCode);  // <6>
+        int exitCode = new CommandLine(new ISOCodeResolver()).execute(args); // <5>
+        System.exit(exitCode); // <6>
     }
 }
 
@@ -244,6 +245,91 @@ class SubcommandAsClass implements Runnable {
                     code.toLowerCase(), new Locale(code).getDisplayLanguage());
         }
     }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+import picocli.CommandLine
+import picocli.CommandLine.Model.CommandSpec
+import picocli.CommandLine.*
+import java.util.Locale
+import kotlin.system.exitProcess
+
+@Command(
+    name = "ISOCodeResolver",
+    subcommands = [SubcommandAsClass::class, HelpCommand::class], // <2>
+    description = ["Resolves ISO country codes (ISO-3166-1) or language codes (ISO 639-1/-2)"])
+class ISOCodeResolver { // <1>
+    @Spec lateinit var spec: CommandSpec
+
+    @Command(name = "country", description = ["Resolves ISO country codes (ISO-3166-1)"]) // <3>
+    fun subCommandViaMethod(@Parameters(arity = "1..*", paramLabel = "<countryCode>",
+            description = ["country code(s) to be resolved"]) countryCodes: Array<String>) {
+        for (code in countryCodes) {
+            println("${code.toUpperCase()}: ${Locale("", code).displayCountry}")
+        }
+    }
+}
+
+fun main(args: Array<String>) {
+    val exitCode = CommandLine(ISOCodeResolver()).execute(*args) // <5>
+    exitProcess(exitCode) // <6>
+}
+
+@Command(name = "language", description = ["Resolves ISO language codes (ISO-639-1/-2)"]) // <4>
+class SubcommandAsClass : Runnable {
+    @Parameters(arity = "1..*", paramLabel = "<languageCode>", description = ["language code(s)"])
+    private lateinit var languageCodes: Array<String>
+
+    override fun run() {
+        for (code in languageCodes) {
+            System.out.println("${code.toLowerCase()}: ${Locale(code).displayLanguage}")
+        }
+    }
+}
+----
+
+.Scala
+[source,scala,role="secondary"]
+----
+import picocli.CommandLine
+import picocli.CommandLine.{Command, HelpCommand, Parameters}
+import picocli.CommandLine.Model.CommandSpec
+import java.util.Locale
+
+@Command(name = "ISOCodeResolver", subcommands = Array(classOf[SubcommandAsClass], classOf[HelpCommand]), // <2>
+  description = Array("Resolves ISO country codes (ISO-3166-1) or language codes (ISO 639-1/-2)"))
+class ISOCodeResolver { // <1>
+  val spec: CommandSpec = null
+
+  @Command(name = "country", description = Array("Resolves ISO country codes (ISO-3166-1)")) // <3>
+  def subCommandViaMethod(@Parameters(arity = "1..*", paramLabel = "<countryCode>",
+    description = Array("country code(s) to be resolved")) countryCodes: Array[String]): Unit = {
+    for (code <- countryCodes) {
+      println(s"${code.toUpperCase()}: ".concat(new Locale("", code).getDisplayCountry))
+    }
+  }
+}
+
+@Command(name = "language", description = Array("Resolves language codes (ISO-639-1/-2)")) // <4>
+class SubcommandAsClass extends Runnable {
+  @Parameters(arity = "1..*", paramLabel = "<languageCode>", description = Array("language code(s)"))
+  private val languageCodes = new Array[String](0)
+
+  override def run(): Unit = {
+    for (code <- languageCodes) {
+      println(s"${code.toUpperCase()}: ".concat(new Locale(code).getDisplayLanguage))
+    }
+  }
+}
+
+object ISOCodeResolver {
+  def main(args: Array[String]): Unit = {
+    val exitCode = new CommandLine(new ISOCodeResolver).execute(args: _*) // <5>
+    System.exit(exitCode) // <6>
+  }
 }
 ----
 
