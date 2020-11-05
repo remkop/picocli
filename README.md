@@ -329,7 +329,7 @@ See the [source code](https://github.com/remkop/picocli/blob/master/src/main/jav
 
 ### Gradle
 ```
-compile 'info.picocli:picocli:4.5.2'
+implementation 'info.picocli:picocli:4.5.2'
 ```
 ### Maven
 ```

@@ -108,7 +108,7 @@ See <<Picocli Processor Options,processor options>> below.
 Use the `annotationProcessor` path in Gradle https://docs.gradle.org/4.6/release-notes.html#convenient-declaration-of-annotation-processor-dependencies[4.6 and higher]:
 ```groovy
 dependencies {
-    compile 'info.picocli:picocli:4.5.2'
+    implementation 'info.picocli:picocli:4.5.2'
     annotationProcessor 'info.picocli:picocli-codegen:4.5.2'
 }
 ```
@@ -116,7 +116,7 @@ dependencies {
 For Gradle versions prior to 4.6, use `compileOnly`, to prevent the `picocli-codegen` jar from being a transitive dependency included in the artifact the module produces.
 ```groovy
 dependencies {
-    compile 'info.picocli:picocli:4.5.2'
+    implementation 'info.picocli:picocli:4.5.2'
     compileOnly 'info.picocli:picocli-codegen:4.5.2'
 }
 ```
@@ -328,7 +328,7 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
     <plugin>
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>exec-maven-plugin</artifactId>
-      <version>1.6.0</version>
+      <version>3.0.0</version>
       <executions>
         <execution>
           <id>generateGraalReflectionConfig</id>
@@ -373,7 +373,7 @@ configurations {
     generateConfig
 }
 dependencies {
-    compile 'info.picocli:picocli:4.5.2'
+    implementation 'info.picocli:picocli:4.5.2'
     generateConfig 'info.picocli:picocli-codegen:4.5.2'
 }
 ----
@@ -439,7 +439,7 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
     <plugin>
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>exec-maven-plugin</artifactId>
-      <version>1.6.0</version>
+      <version>3.0.0</version>
       <executions>
         <execution>
           <id>generateGraalResourceConfig</id>
@@ -483,7 +483,7 @@ configurations {
     generateConfig
 }
 dependencies {
-    compile 'info.picocli:picocli:4.5.2'
+    implementation 'info.picocli:picocli:4.5.2'
     generateConfig 'info.picocli:picocli-codegen:4.5.2'
 }
 ----
@@ -546,7 +546,7 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
     <plugin>
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>exec-maven-plugin</artifactId>
-      <version>1.6.0</version>
+      <version>3.0.0</version>
       <executions>
         <execution>
           <id>generateGraalDynamicProxyConfig</id>
@@ -590,7 +590,7 @@ configurations {
     generateConfig
 }
 dependencies {
-    compile 'info.picocli:picocli:4.5.2'
+    implementation 'info.picocli:picocli:4.5.2'
     generateConfig 'info.picocli:picocli-codegen:4.5.2'
 }
 ----
@@ -625,7 +625,7 @@ You will also need the https://asciidoctor.org/docs/asciidoctor-gradle-plugin/[A
 [source,groovy]
 ----
 dependencies {
-    compile "info.picocli:picocli:4.5.2"
+    implementation "info.picocli:picocli:4.5.2"
     annotationProcessor "info.picocli:picocli-codegen:4.5.2"
 }
 
@@ -640,13 +640,15 @@ task generateManpageAsciiDoc(type: JavaExec) {
     args mainClassName, "--outdir=${project.buildDir}/generated-picocli-docs", "-v" //, "--template-dir=src/docs/mantemplates"
 }
 
-apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'org.asciidoctor.jvm.convert'
 asciidoctor {
     dependsOn(generateManpageAsciiDoc)
     sourceDir = file("${project.buildDir}/generated-picocli-docs")
     outputDir = file("${project.buildDir}/docs")
     logDocuments = true
-    backends 'manpage', 'html5'
+    outputOptions {
+        backends = ['manpage', 'html5']
+    }
 }
 ----
 
@@ -674,7 +676,7 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
     <plugin>
       <groupId>org.codehaus.mojo</groupId>
       <artifactId>exec-maven-plugin</artifactId>
-      <version>1.6.0</version>
+      <version>3.0.0</version>
       <executions>
         <execution>
           <id>generateManPages</id>
@@ -707,7 +709,7 @@ Note that the `picocli-codegen` module is only added as a dependency for the `ex
     <plugin>
       <groupId>org.asciidoctor</groupId>
       <artifactId>asciidoctor-maven-plugin</artifactId>
-      <version>1.6.0</version>
+      <version>2.1.0</version>
       <executions>
         <execution>
           <id>output-html</id>

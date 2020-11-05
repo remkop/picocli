@@ -336,7 +336,7 @@ See the https://github.com/remkop/picocli/tree/master/picocli-codegen[`picocli-c
 ===== Gradle
 ```
 dependencies {
-    compile 'info.picocli:picocli:4.5.3-SNAPSHOT'
+    implementation 'info.picocli:picocli:4.5.3-SNAPSHOT'
     annotationProcessor 'info.picocli:picocli-codegen:4.5.3-SNAPSHOT'
 }
 ```
@@ -11570,7 +11570,7 @@ See the <<Source,source code>> below. Copy and paste it into a file called `Comm
 
 === Gradle
 ----
-compile 'info.picocli:picocli:4.5.3-SNAPSHOT'
+implementation 'info.picocli:picocli:4.5.3-SNAPSHOT'
 ----
 
 === Maven
