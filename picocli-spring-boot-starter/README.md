@@ -27,7 +27,7 @@ Maven:
 Gradle:
 ```
 dependencies {
-    compile "info.picocli:picocli-spring-boot-starter:4.5.2"
+    implementation "info.picocli:picocli-spring-boot-starter:4.5.2"
 }
 ```
 
