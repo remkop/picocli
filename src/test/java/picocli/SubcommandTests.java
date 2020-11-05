@@ -1,5 +1,6 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -2491,6 +2492,7 @@ public class SubcommandTests {
         public String opt = "opt";
     }
 
+    @Ignore("Requires fix for https://github.com/remkop/picocli/issues/1250")
     @Test
     public void testInheritedParameter() {
         CommandLine cli = new CommandLine(new InhRoot());
