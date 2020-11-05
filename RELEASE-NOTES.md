@@ -115,7 +115,8 @@ only single-value types, and the values in a `Map` (but not the keys!) can be wr
 * [#1249] DOC: Added section on Mocking to user manual. Thanks to [Petr Hála](https://github.com/pehala) for the pull request.
 * [#1244] DEP: Bump `Spring-Boot-Starter` version to 2.3.5.RELEASE. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1248] BUILD: Fix gradle warnings. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-            
+* [#1253] DOC: Fix line endings to LF in documentation files. Thanks to [Daniel Gray](https://github.com/danielthegray) for the pull request.
+
 ## <a name="4.6.0-deprecated"></a> Deprecations
 No features were deprecated in this release.
 
