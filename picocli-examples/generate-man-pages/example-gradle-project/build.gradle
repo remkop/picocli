@@ -8,14 +8,14 @@ buildscript {
     }
 
     dependencies {
-        classpath "org.asciidoctor:asciidoctor-gradle-plugin:1.6.1"
+        classpath "org.asciidoctor:asciidoctor-gradle-jvm:3.2.0"
     }
 }
 
 plugins {
     id 'java'
 }
-apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'org.asciidoctor.jvm.convert'
 
 
 group 'org.mycompany.myproject'
@@ -30,11 +30,11 @@ repositories {
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation group: 'junit', name: 'junit', version: '4.13.1'
 }
 dependencies {
-    compile "info.picocli:picocli:4.2.0"
-    annotationProcessor "info.picocli:picocli-codegen:4.2.0"
+    implementation "info.picocli:picocli:4.5.2"
+    annotationProcessor "info.picocli:picocli-codegen:4.5.2"
 }
 
 project.ext {
@@ -45,18 +45,20 @@ task generateManpageAsciiDoc(type: JavaExec) {
     dependsOn(classes)
     group = "Documentation"
     description = "Generate AsciiDoc manpage"
-    classpath(configurations.compile, configurations.annotationProcessor, sourceSets.main.runtimeClasspath)
+    classpath(configurations.compileClasspath, configurations.annotationProcessor, sourceSets.main.runtimeClasspath)
     main 'picocli.codegen.docgen.manpage.ManPageGenerator'
     args project.ext.mainClassName, "--outdir=${project.buildDir}/generated-picocli-docs", "-v", "--template-dir=src/docs/mantemplates"
 }
 
-apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'org.asciidoctor.jvm.convert'
 asciidoctor {
     dependsOn(generateManpageAsciiDoc)
     sourceDir = file("${project.buildDir}/generated-picocli-docs")
     outputDir = file("${project.buildDir}/docs")
     logDocuments = true
-    backends 'manpage', 'html5'
+    outputOptions {
+        backends = ['manpage', 'html5']
+    }
 }
 assemble.dependsOn(asciidoctor)
 
