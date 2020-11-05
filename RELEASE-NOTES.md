@@ -6,9 +6,13 @@ The picocli community is pleased to announce picocli 4.6.0.
 
 This release contains bug fixes and enhancements.
 
-This release adds public methods `Help.Layout::colorScheme`, `Help.Layout::textTable`, `Help.Layout::optionRenderer`, `Help.Layout::parameterRenderer`, and `Help::calcLongOptionColumnWidth`, making it easier to customize the table format used to lay out options and positional parameters in the usage help message.
+From this release, Map options accept key-only parameters, so end users can specify `-Dkey` as well as `-Dkey=value`.
+There is a new `mapFallbackValue` attribute that enables this, which can be used to control the value that is put into the map when only a key was specified on the command line.
 
-Also, from this release Map options accept key-only parameters, so end users can specify `-Dkey` as well as `-Dkey=value`.
+Also, this release adds support for `java.util.Optional<T>`: single-value types can be wrapped in an `Optional` container object when running on Java 8 or higher.
+If the option or positional parameter was not specified on the command line, picocli assigns the value `Optional.empty()` instead of `null`.
+
+Help API: this release adds public methods `Help.Layout::colorScheme`, `Help.Layout::textTable`, `Help.Layout::optionRenderer`, `Help.Layout::parameterRenderer`, and `Help::calcLongOptionColumnWidth`, making it easier to customize the table format used to lay out options and positional parameters in the usage help message.
 
 
 This is the seventy-fifth public release.
@@ -21,6 +25,67 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#4.6.0-breaking-changes)
 
 ## <a name="4.6.0-new"></a> New and Noteworthy
+
+### Key-only map parameters
+By default, picocli expects Map options and positional parameters to look like `key=value`, that is, the option parameter or positional parameter is expected to have a key part and a value part, separated by a `=` character.
+
+From picocli 4.6, applications can specify a `mapFallbackValue` to allow end users to specify only the key part. The specified `mapFallbackValue` is put into the map when end users to specify only a key. The value type can be wrapped in a `java.util.Optional`. For example:
+
+```java
+@Option(names = {"-P", "--properties"}, mapFallbackValue = Option.NULL_VALUE)
+Map<String, Optional<Integer>> properties;
+
+@Parameters(mapFallbackValue = "1", description = "... ${MAP-FALLBACK-VALUE} ...")
+Map<TimeUnit, Long> studyTime;
+```
+
+This allows input like the following:
+
+```
+<cmd> --properties=key1 -Pkey2 HOURS
+```
+
+The above input would give the following results:
+
+```
+properties = [key1 : Optional.empty, key2 : Optional.empty]
+studyTime  = [HOURS : 1L]
+```
+
+Note that the option description may contain the [`${MAP-FALLBACK-VALUE}` variable](https://picocli.info/#_predefined_variables) which will be replaced with the actual map fallback value when the usage help is shown.
+
+### System Properties
+A common requirement for command line applications is to support the `-Dkey=value` syntax to allow end users to set system properties.
+
+The example below uses the `Map` type to define an `@Option`-annotated method that delegates all key-value pairs to `System::setProperty`.
+Note the use of `mapFallbackValue = ""` to allow key-only option parameters.
+
+```java
+class SystemPropertiesDemo {
+    @Option(names = "-D", mapFallbackValue = "") // allow -Dkey
+    void setProperty(Map<String, String> props) {
+        props.forEach((k, v) -> System.setProperty(k, v));
+    }
+}
+```
+
+### `Optional<T>`
+From version 4.6, picocli automatically handles single-value types wrapped in a `java.util.Optional` container when running on Java 8 or higher.
+If the option or positional parameter was not specified on the command line, picocli assigns the value `Optional.empty()` instead of `null`.
+For example:
+
+```java
+@Option(names = "-x")
+Optional<Integer> x;
+
+@Option(names = "-D", mapFallbackValue = Option.NULL_VALUE)
+Map<String, Optional<Integer>> map;
+```
+
+WARNING: Picocli has only limited support for `java.util.Optional` types:
+only single-value types, and the values in a `Map` (but not the keys!) can be wrapped in an `Optional` container.
+`java.util.Optional` cannot be combined with arrays or other `Collection` classes.
+
 
 ## <a name="4.6.0-fixes"></a> Fixed issues
 * [#1241] API: Add `mapFallbackValue` attribute to `@Options` and `@Parameters` annotations, and corresponding `ArgSpec.mapFallbackValue()`.
