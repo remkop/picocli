@@ -1,8 +1,8 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.3.72'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.10'
     id 'application'
-    id "com.palantir.graal" version "0.7.1-12-g028cd78"
+    id "com.palantir.graal" version "0.7.1-20-g113a84d"
 }
 
 def mainCommandClass = "picocli.examples.kotlin.Checksum"
@@ -13,7 +13,7 @@ version '1.0-SNAPSHOT'
 sourceCompatibility = 8
 
 application{
-    mainClassName = mainCommandClass
+    mainClass.set(mainCommandClass)
 }
 
 
@@ -49,10 +49,10 @@ task uberJar(type: Jar) {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    testCompile 'org.jetbrains.kotlin:kotlin-test-junit5:1.3.72'
+    testImplementation  'org.jetbrains.kotlin:kotlin-test-junit5:1.4.10'
 
-    testImplementation "org.junit.jupiter:junit-jupiter:5.4.2"
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.4.2")
+    testImplementation "org.junit.jupiter:junit-jupiter:5.7.0"
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.0")
 }
 
 
@@ -76,7 +76,7 @@ configurations {
     generateConfig
 }
 dependencies {
-    compile 'info.picocli:picocli:4.5.2'
+    implementation 'info.picocli:picocli:4.5.2'
     generateConfig 'info.picocli:picocli-codegen:4.5.2'
 }
 

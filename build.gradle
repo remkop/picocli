@@ -288,6 +288,10 @@ task bumpReadmeVersion {
                 include(name: '**/pom.xml')
                 include(name: '**/build.gradle')
             }
+            fileset(dir: './picocli-examples/generate-man-pages/') {
+                include(name: '**/pom.xml')
+                include(name: '**/build.gradle')
+            }
             //fileset(dir: './picocli-examples/src/main/groovy/', includes: '**/*.groovy')
         }
     }
