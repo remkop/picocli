@@ -12528,6 +12528,10 @@ public class CommandLine {
         }
 
         private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs, List<Object> nowProcessing, Collection<ArgSpec> inheritedRequired) {
+            parse(parsedCommands, argumentStack, originalArgs, nowProcessing, inheritedRequired, new LinkedHashSet<ArgSpec>());
+        }
+
+        private void parse(List<CommandLine> parsedCommands, Stack<String> argumentStack, String[] originalArgs, List<Object> nowProcessing, Collection<ArgSpec> inheritedRequired, Set<ArgSpec> initialized) {
             if (tracer.isDebug()) {
                 tracer.debug("Initializing %s: %d options, %d positional parameters, %d required, %d groups, %d subcommands.%n",
                         commandSpec.toString(), new HashSet<ArgSpec>(commandSpec.optionsMap().values()).size(),
@@ -12538,7 +12542,6 @@ public class CommandLine {
             parsedCommands.add(CommandLine.this);
             List<ArgSpec> required = new ArrayList<ArgSpec>(commandSpec.requiredArgs());
             addPostponedRequiredArgs(inheritedRequired, required);
-            Set<ArgSpec> initialized = new LinkedHashSet<ArgSpec>();
             Collections.sort(required, new PositionalParametersSorter());
             boolean continueOnError = commandSpec.parser().collectErrors();
             do {
@@ -12726,7 +12729,7 @@ public class CommandLine {
                 }
                 if (commandSpec.subcommands().containsKey(arg)) {
                     CommandLine subcommand = commandSpec.subcommands().get(arg);
-                    processSubcommand(subcommand, parseResultBuilder, parsedCommands, args, required, originalArgs, nowProcessing, separator, arg);
+                    processSubcommand(subcommand, parseResultBuilder, parsedCommands, args, required, initialized, originalArgs, nowProcessing, separator, arg);
                     return; // remainder done by the command
                 }
                 if (commandSpec.parent() != null && commandSpec.parent().subcommandsRepeatable() && commandSpec.parent().subcommands().containsKey(arg)) {
@@ -12737,7 +12740,7 @@ public class CommandLine {
                         subcommand = subcommand.copy();
                         subcommand.getCommandSpec().parent(commandSpec.parent()); // hook it up with its parent
                     }
-                    processSubcommand(subcommand, getParent().interpreter.parseResultBuilder, parsedCommands, args, required, originalArgs, nowProcessing, separator, arg);
+                    processSubcommand(subcommand, getParent().interpreter.parseResultBuilder, parsedCommands, args, required, initialized, originalArgs, nowProcessing, separator, arg);
                     continue;
                 }
 
@@ -12790,7 +12793,7 @@ public class CommandLine {
             }
         }
 
-        private void processSubcommand(CommandLine subcommand, ParseResult.Builder builder, List<CommandLine> parsedCommands, Stack<String> args, Collection<ArgSpec> required, String[] originalArgs, List<Object> nowProcessing, String separator, String arg) {
+        private void processSubcommand(CommandLine subcommand, ParseResult.Builder builder, List<CommandLine> parsedCommands, Stack<String> args, Collection<ArgSpec> required, Set<ArgSpec> initialized, String[] originalArgs, List<Object> nowProcessing, String separator, String arg) {
             if (tracer.isDebug()) {tracer.debug("Found subcommand '%s' (%s)%n", arg, subcommand.commandSpec.toString());}
             nowProcessing.add(subcommand.commandSpec);
             updateHelpRequested(subcommand.commandSpec);
@@ -12808,7 +12811,7 @@ public class CommandLine {
             if (!isAnyHelpRequested() && !required.isEmpty()) { // ensure current command portion is valid
                 throw MissingParameterException.create(CommandLine.this, required, separator);
             }
-            subcommand.interpreter.parse(parsedCommands, args, originalArgs, nowProcessing, inheritedRequired);
+            subcommand.interpreter.parse(parsedCommands, args, originalArgs, nowProcessing, inheritedRequired, initialized);
             builder.subcommand(subcommand.interpreter.parseResultBuilder.build());
         }
 
