@@ -6851,7 +6851,26 @@ This is the recommended way when you want to use the picocli <<Annotation Proces
     GitRebase.class,
     GitTag.class
 })
-public class Git { ... }
+public class Git { /* ... */ }
+----
+
+.Groovy
+[source,groovy,role="secondary"]
+----
+@Command(subcommands = [
+    GitStatus.class,
+    GitCommit.class,
+    GitAdd.class,
+    GitBranch.class,
+    GitCheckout.class,
+    GitClone.class,
+    GitDiff.class,
+    GitMerge.class,
+    GitPush.class,
+    GitRebase.class,
+    GitTag.class
+])
+public class Git { /* ... */ }
 ----
 
 .Kotlin
@@ -6870,7 +6889,7 @@ public class Git { ... }
     GitRebase::class,
     GitTag::class]
 )
-public class Git { ... }
+public class Git { /* ... */ }
 ----
 
 Subcommands referenced in a `subcommands` attribute _must_ have a `@Command` annotation with a `name` attribute, or an exception is thrown from the `CommandLine` constructor.
@@ -6901,6 +6920,23 @@ The specified name is used by the parser to recognize subcommands in the command
 [source,java,role="primary"]
 ----
 CommandLine commandLine = new CommandLine(new Git())
+        .addSubcommand("status",   new GitStatus())
+        .addSubcommand("commit",   new GitCommit())
+        .addSubcommand("add",      new GitAdd())
+        .addSubcommand("branch",   new GitBranch())
+        .addSubcommand("checkout", new GitCheckout())
+        .addSubcommand("clone",    new GitClone())
+        .addSubcommand("diff",     new GitDiff())
+        .addSubcommand("merge",    new GitMerge())
+        .addSubcommand("push",     new GitPush())
+        .addSubcommand("rebase",   new GitRebase())
+        .addSubcommand("tag",      new GitTag());
+----
+
+.Groovy
+[source,groovy,role="secondary"]
+----
+def commandLine = new CommandLine(new Git())
         .addSubcommand("status",   new GitStatus())
         .addSubcommand("commit",   new GitCommit())
         .addSubcommand("add",      new GitAdd())
@@ -6982,6 +7018,42 @@ class Bar implements Callable<Integer> {
     int baz(@Option(names = "-z") int z) {
         System.out.printf("hi from baz, z=%d%n", z);
         return 45;
+    }
+}
+----
+
+.Groovy
+[source,groovy,role="secondary"]
+----
+@Command(name = "foo", subcommands = Bar.class)
+class Foo implements Callable<Integer> {
+    @Option(names = "-x") def x
+
+    @Override public Integer call() {
+        println "hi from foo, x=$x"
+        def ok = true;
+        return ok ? 0 : 1 // exit code
+    }
+
+    public static void main(String... args) {
+        def exitCode = new CommandLine(new Foo()).execute(args)
+        System.exit(exitCode)
+    }
+}
+
+@Command(name = "bar", description = "I'm a subcommand of `foo`")
+class Bar implements Callable<Integer> {
+    @Option(names = "-y") int y
+
+    @Override public Integer call() {
+        println "hi from bar, y=$y"
+        return 23
+    }
+
+    @Command(name = "baz", description = "I'm a subcommand of `bar`")
+    int baz(@Option(names = "-z") int z) {
+        println "hi from baz, z=$z"
+        return 45
     }
 }
 ----
@@ -7101,6 +7173,35 @@ class MyApp implements Runnable {
 }
 ----
 
+.Groovy
+[source,groovy,role="secondary"]
+----
+@Command(subcommands = [Sub1.class, Sub2.class, Sub3.class])
+class MyApp implements Runnable {
+
+    // A reference to this method can be used as a custom execution strategy
+    // that first calls the init() method,
+    // and then delegates to the default execution strategy.
+    def int executionStrategy(ParseResult parseResult) {
+        init(); // custom initialization to be done before executing any command or subcommand
+        return new CommandLine.RunLast().execute(parseResult); // default execution strategy
+    }
+
+    def void init() {
+        // ...
+    }
+
+    public static void main(String[] args) {
+        def app = new MyApp();
+        new CommandLine(app)
+                .setExecutionStrategy(app.&executionStrategy)
+                .execute(args);
+    }
+
+    // ...
+}
+----
+
 .Kotlin
 [source,kotlin,role="secondary"]
 ----
@@ -7156,6 +7257,18 @@ class FileUtils {
     @Option(names = {"-d", "--directory"},
             description = "this option applies to all subcommands")
     File baseDirectory;
+}
+----
+
+.Groovy
+[source,groovy,role="secondary"]
+----
+@Command(name = "fileutils", subcommands = [ListFiles.class])
+class FileUtils {
+
+    @Option(names = ["-d", "--directory"],
+            description = "this option applies to all subcommands")
+    def baseDirectory;
 }
 ----
 
