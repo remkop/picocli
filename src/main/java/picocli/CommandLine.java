@@ -6932,7 +6932,39 @@ public class CommandLine {
                 if (tracer != null && tracer.isDebug()) {tracer.debug("'%s' %s an option: %d matching prefix chars out of %d option names%n", arg, (result ? "resembles" : "doesn't resemble"), count, optionsMap().size());}
                 return result;
             }
+
+            public ArgSpec findOriginal(ArgSpec argSpec) {
+                if (argSpec.isOption()) {
+                    OptionSpec optionSpec = (OptionSpec) argSpec;
+                    String longestOptionName = optionSpec.longestName();
+                    for (OptionSpec potentialOriginal: options()) {
+                        if (longestOptionName.equals(potentialOriginal.longestName())) {
+                            return potentialOriginal;
+                        }
+                    }
+                } else {
+                    PositionalParamSpec paramSpec = (PositionalParamSpec) argSpec;
+                    String stringRepresentation = paramSpec.toString();
+                    String label = paramSpec.paramLabel();
+                    String descriptionKey = paramSpec.descriptionKey();
+                    String[] description = paramSpec.description();
+                    Range index = paramSpec.index();
+                    Range arity = paramSpec.arity();
+                    for (PositionalParamSpec potentialOriginal: positionalParameters()) {
+                        if (Assert.equals(stringRepresentation, potentialOriginal.toString())//
+                                && Assert.equals(label, potentialOriginal.paramLabel())//
+                                && Assert.equals(descriptionKey, potentialOriginal.descriptionKey())//
+                                && Arrays.equals(description, potentialOriginal.description()) //
+                                && Assert.equals(index, potentialOriginal.index())//
+                                && Assert.equals(arity, potentialOriginal.arity())) {
+                            return potentialOriginal;
+                        }
+                    }
+                }
+                return null;
+            }
         }
+
         private static boolean initializable(Object current, Object candidate, Object defaultValue) {
             return current == null && isNonDefault(candidate, defaultValue);
         }
@@ -13058,6 +13090,15 @@ public class CommandLine {
             return result;
         }
 
+        private void addToInitialized(ArgSpec argSpec, Set<ArgSpec> initialized) {
+            initialized.add(argSpec);
+            CommandSpec parent = argSpec.command().parent();
+            while (argSpec.inherited() && parent != null) {
+                initialized.add(parent.findOriginal(argSpec));
+                parent = parent.parent();
+            }
+        }
+
         private int applyValueToSingleValuedField(ArgSpec argSpec,
                                                   boolean negated,
                                                   LookBehind lookBehind,
@@ -13176,7 +13217,7 @@ public class CommandLine {
                 }
                 traceMessage = overwriteValueMessage;
             }
-            initialized.add(argSpec);
+            addToInitialized(argSpec, initialized);
 
             if (argSpec.typeInfo().isOptional()) {
                 newValue = getOptionalOfNullable(newValue);
@@ -13204,7 +13245,7 @@ public class CommandLine {
                 map = createMap(argSpec.type()); // map class
                 argSpec.setValue(map);
             }
-            initialized.add(argSpec);
+            addToInitialized(argSpec, initialized);
             int originalSize = map.size();
             int pos = getPosition(argSpec);
             consumeMapArguments(argSpec, lookBehind, alreadyUnquoted, arity, args, map, argDescription);
@@ -13386,7 +13427,7 @@ public class CommandLine {
                     newValues.add(Array.get(existing, i)); // keep non-default values
                 }
             }
-            initialized.add(argSpec);
+            addToInitialized(argSpec, initialized);
             for (Object obj : converted) {
                 if (obj instanceof Collection<?>) {
                     newValues.addAll((Collection<?>) obj);
@@ -13419,7 +13460,7 @@ public class CommandLine {
                 collection = createCollection(argSpec.type(), argSpec.auxiliaryTypes()); // collection type, element type
                 argSpec.setValue(collection);
             }
-            initialized.add(argSpec);
+            addToInitialized(argSpec, initialized);
             for (Object element : converted) {
                 if (element instanceof Collection<?>) {
                     collection.addAll((Collection<?>) element);
