@@ -139,7 +139,7 @@ only single-value types, and the values in a `Map` (but not the keys!) can be wr
 
 
 ## <a name="4.6.0-deprecated"></a> Deprecations
-No features were deprecated in this release.
+From this release, the `@picocli.groovy.PicocliScript` annotation in the `picocli-groovy` module is deprecated in favor of `@picocli.groovy.PicocliScript2`, and the `picocli.groovy.PicocliBaseScript` class is deprecated in favor of `picocli.groovy.PicocliBaseScript2`.
 
 ## <a name="4.6.0-breaking-changes"></a> Potential breaking changes
 Added method `isOptional()` to the `picocli.CommandLine.Model.ITypeInfo` interface.
