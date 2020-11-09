@@ -1457,24 +1457,69 @@ Map options may be specified multiple times with different key-value pairs. (See
 <command> -p HTTP=123.123.123.123 --proxyHost SOCKS=212.212.212.212
 <command> -uDAYS=3 -u HOURS=23 -u=MINUTES=59 --timeUnit=SECONDS=13
 ----
-If the field is `null`, picocli will instantiate it when the option or positional parameter is matched.
-If the type is not a concrete class, picocli will instantiate a `LinkedHashMap` to preserve the input ordering.
+If the annotated field is `null`, picocli will instantiate it when the option or positional parameter is matched.
+If the `Map` type is not a concrete class, picocli will instantiate a `LinkedHashMap` to preserve the input ordering.
 
 NOTE: On the command line, the key and the value must be separated by a `=` character.
 
 Map options and positional parameters can be defined with a `split` regular expression to allow end users to specify multiple values in a single parameter.
 See the <<Split Regex>> section for details.
 
+==== Key-only map parameters
+By default, picocli expects Map options and positional parameters to look like `key=value`,
+that is, the option parameter or positional parameter is expected to have a key part and a value part, separated by a `=` character.
+If this is not the case, picocli shows a user-facing error message: `Value for ... should be in KEY=VALUE format but was ...`.
+
+From picocli 4.6, applications can specify a `mapFallbackValue` to allow end users to specify only the key part.
+The specified `mapFallbackValue` is put into the map when end users to specify only a key.
+The value type can be <<Optional<T>, wrapped in a `java.util.Optional`>>.
+For example:
+
+.Java
+[source,java,role="primary"]
+----
+@Option(names = {"-P", "--properties"}, mapFallbackValue = Option.NULL_VALUE)
+Map<String, Optional<Integer>> properties;
+
+@Parameters(mapFallbackValue = "INFO", description = "... ${MAP-FALLBACK-VALUE} ...")
+Map<Class<?>, LogLevel> logLevels;
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["-P", "--properties"], mapFallbackValue = Option.NULL_VALUE)
+lateinit var properties: Map<String, Optional<Int>>
+
+@Parameters(mapFallbackValue = "INFO", description = "... ${MAP-FALLBACK-VALUE} ...")
+lateinit var logLevels: Map<Class<?>, LogLevel>
+----
+
+This allows input like the following:
+
+----
+<cmd> --properties=key1 -Pkey2 -Pkey3=3 org.myorg.MyClass org.myorg.OtherClass=DEBUG
+----
+
+The above input would give the following results:
+----
+properties = [key1: Optional.empty, key2: Optional.empty, key3: Optional[3]]
+logLevels  = [org.myorg.MyClass: INFO, org.myorg.OtherClass: DEBUG]
+----
+
+Note that the option description may contain the <<_predefined_variables,`${MAP-FALLBACK-VALUE}`>> variable which will be replaced with the actual map fallback value when the usage help is shown.
+
 ==== System Properties
 A common requirement for command line applications is to support the `-Dkey=value` syntax to allow end users to set system properties.
 
 The example below uses the `Map` type to define an `@Option`-<<option-parameters-methods,annotated method>> that delegates all key-value pairs to `System::setProperty`.
+Note the use of `mapFallbackValue = ""` to allow <<Key-only map parameters,key-only option parameters>>.
 
 .Java
 [source,java,role="primary"]
 ----
 class SystemPropertiesDemo {
-    @Option(names = "-D")
+    @Option(names = "-D", mapFallbackValue = "") // allow -Dkey
     void setProperty(Map<String, String> props) {
         props.forEach((k, v) -> System.setProperty(k, v));
     }
@@ -1485,12 +1530,41 @@ class SystemPropertiesDemo {
 [source,kotlin,role="secondary"]
 ----
 class SystemPropertiesDemo {
-    @Option(names = ["-D"])
-    fun setProperty(props: Map<String, String?>) {
-        props.forEach { (k: String, v: String?) -> System.setProperty(k, v) }
+    @Option(names = ["-D"], mapFallbackValue = "") // allow -Dkey
+    fun setProperty(props: Map<String, String>) {
+        props.forEach { (k: String, v: String) -> System.setProperty(k, v) }
     }
 }
 ----
+
+=== Optional<T>
+From version 4.6, picocli supports single-value types wrapped in a `java.util.Optional` container object when running on Java 8 or higher.
+If the option or positional parameter was not specified on the command line, picocli assigns the value `Optional.empty()` instead of `null`.
+For example:
+
+.Java
+[source,java,role="primary"]
+----
+@Option(names = "-x")
+Optional<Integer> x;
+
+@Option(names = "-D", mapFallbackValue = Option.NULL_VALUE)
+Map<String, Optional<Integer>> map;
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Option(names = ["-x"])
+lateinit var x: Optional<Int>
+
+@Option(names = ["-D"], mapFallbackValue = Option.NULL_VALUE)
+lateinit var map: Map<String, Optional<Int>>
+----
+
+WARNING: Picocli has only limited support for `java.util.Optional` types:
+only single-value types, and the values in a `Map` (but not the keys!) can be wrapped in an `Optional` container.
+`java.util.Optional` cannot be combined with arrays or other `Collection` classes.
 
 === Abstract Field Types
 The field's type can be an interface or an abstract class.
@@ -9070,6 +9144,7 @@ The following variables are predefined:
 |Variable | Since | Use in | Meaning
 |`${DEFAULT-VALUE}`| 3.2 | the description for an option or positional parameter|replaced with the <<defaultValue-annotation,default value>> for that option or positional parameter
 |`${FALLBACK-VALUE}`| 4.0 | the description for an option with optional parameter|replaced with the <<fallbackValue-annotation,fallback value>> for that option or positional parameter
+|`${MAP-FALLBACK-VALUE}`| 4.6 | the description for map option or positional parameter that allows key-only parameters|replaced with the <<_key_only_map_parameters,map fallback value>> for that option or positional parameter
 |`${COMPLETION-CANDIDATES}`| 3.2 | the description for an option or positional parameter| replaced with the completion candidates for that option or positional parameter
 |`${COMMAND-NAME}`| 4.0 | any section of the usage help message for a command|replaced with the name of the command
 |`${COMMAND-FULL-NAME}`| 4.0 | any section of the usage help message for a command| replaced with the fully qualified name of the command (that is, preceded by its parent fully qualified name)

@@ -45,7 +45,7 @@ The table below lists the differences between the `PicocliBaseScript2` and `Pico
 
 
 ### Key-only map parameters
-By default, picocli expects Map options and positional parameters to look like `key=value`, that is, the option parameter or positional parameter is expected to have a key part and a value part, separated by a `=` character.
+By default, picocli expects Map options and positional parameters to look like `key=value`, that is, the option parameter or positional parameter is expected to have a key part and a value part, separated by a `=` character. If this is not the case, picocli shows a user-facing error message: `Value for ... should be in KEY=VALUE format but was ...`.
 
 From picocli 4.6, applications can specify a `mapFallbackValue` to allow end users to specify only the key part. The specified `mapFallbackValue` is put into the map when end users to specify only a key. The value type can be wrapped in a `java.util.Optional`. For example:
 
@@ -53,21 +53,21 @@ From picocli 4.6, applications can specify a `mapFallbackValue` to allow end use
 @Option(names = {"-P", "--properties"}, mapFallbackValue = Option.NULL_VALUE)
 Map<String, Optional<Integer>> properties;
 
-@Parameters(mapFallbackValue = "1", description = "... ${MAP-FALLBACK-VALUE} ...")
-Map<TimeUnit, Long> studyTime;
+@Parameters(mapFallbackValue = "INFO", description = "... ${MAP-FALLBACK-VALUE} ...")
+Map<Class<?>, LogLevel> logLevels;
 ```
 
 This allows input like the following:
 
 ```
-<cmd> --properties=key1 -Pkey2 HOURS
+<cmd> --properties=key1 -Pkey2 -Pkey3=3 org.myorg.MyClass org.myorg.OtherClass=DEBUG
 ```
 
 The above input would give the following results:
 
 ```
-properties = [key1 : Optional.empty, key2 : Optional.empty]
-studyTime  = [HOURS : 1L]
+properties = [key1: Optional.empty, key2: Optional.empty, key3: Optional[3]]
+logLevels  = [org.myorg.MyClass: INFO, org.myorg.OtherClass: DEBUG]
 ```
 
 Note that the option description may contain the [`${MAP-FALLBACK-VALUE}` variable](https://picocli.info/#_predefined_variables) which will be replaced with the actual map fallback value when the usage help is shown.
@@ -88,7 +88,7 @@ class SystemPropertiesDemo {
 ```
 
 ### `Optional<T>`
-From version 4.6, picocli automatically handles single-value types wrapped in a `java.util.Optional` container when running on Java 8 or higher.
+From version 4.6, picocli supports single-value types wrapped in a `java.util.Optional` container when running on Java 8 or higher.
 If the option or positional parameter was not specified on the command line, picocli assigns the value `Optional.empty()` instead of `null`.
 For example:
 
