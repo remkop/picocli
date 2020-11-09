@@ -11386,13 +11386,15 @@ class MyApp implements Runnable {
 ----
 
 ==== Groovy Scripts
-Picocli 2.0 introduced special support for Groovy scripts. (From picocli 4.0 this was moved into a separate module, `picocli-groovy`.)
+Picocli 2.0 introduced special support for Groovy scripts.
+From picocli 4.0 this was moved into a separate module, `picocli-groovy`.
+In picocli 4.6, `@PicocliScript` was deprecated in favor of `@PicocliScript2`.
 
-Scripts annotated with `@picocli.groovy.PicocliScript` are automatically transformed to use
-`picocli.groovy.PicocliBaseScript` as their base class and can also use the `@Command` annotation to
+Scripts annotated with `@picocli.groovy.PicocliScript2` are automatically transformed to use
+`picocli.groovy.PicocliBaseScript2` as their base class and can also use the `@Command` annotation to
 customize parts of the usage message like command name, description, headers, footers etc.
 
-Before the script body is executed, the `PicocliBaseScript` base class parses the command line and initializes
+Before the script body is executed, the `PicocliBaseScript2` base class parses the command line and initializes
 `@Field` variables annotated with `@Option` or `@Parameters`.
 The script body is executed if the user input was valid and did not request usage help or version information.
 
@@ -11403,14 +11405,14 @@ The script body is executed if the user input was valid and did not request usag
 @Command(name = "myScript",
         mixinStandardHelpOptions = true, // add --help and --version options
         description = "@|bold Groovy script|@ @|underline picocli|@ example")
-@picocli.groovy.PicocliScript
+@picocli.groovy.PicocliScript2
 import groovy.transform.Field
 import static picocli.CommandLine.*
 
 @Option(names = ["-c", "--count"], description = "number of repetitions")
 @Field int count = 1;
 
-// PicocliBaseScript prints usage help or version if requested by the user
+// PicocliBaseScript2 prints usage help or version if requested by the user
 
 count.times {
    println "hi"
@@ -11419,7 +11421,26 @@ count.times {
 assert this.commandLine.commandName == "myScript"
 ----
 
-WARNING: When upgrading scripts to picocli 4.0, just changing the version number is not enough!
+The older `@picocli.groovy.PicocliScript` annotation is deprecated from picocli 4.6.
+New scripts should use the `@picocli.groovy.PicocliScript2` annotation (and associated `picocli.groovy.PicocliBaseScript2` base class) instead.
+The table below lists the differences between these base classes.
+
+.Differences between the `PicocliBaseScript2` and `PicocliBaseScript` script base classes.
+[grid=cols,cols=2*,options="header"]
+|===
+| `PicocliBaseScript2` | `PicocliBaseScript`
+| Subcommands can be defined as `@Command`-annotated methods in the script. | No support for `@Command`-annotated methods.
+| Support for `help` subcommands (both the built-in one and custom ones). | No support for `help` subcommands.
+| Exit code support: scripts can override `afterExecution(CommandLine, int, Exception)` to call `System.exit`.| No support for exit code.
+| Invokes https://picocli.info/#execute[`CommandLine::execute`]. Scripts can override `beforeParseArgs(CommandLine)` to install a custom  `IExecutionStrategy`.| Execution after parsing is defined in `PicocliBaseScript::run` and is not easy to customize. Any subcommand _and_ the main script are _both_ executed.
+| Scripts can override `beforeParseArgs(CommandLine)` to install a custom `IParameterExceptionHandler`. | Invalid input handling can be customized by overriding `PicocliBaseScript::handleParameterException`.
+| Scripts can override `beforeParseArgs(CommandLine)` to install a custom `IExecutionExceptionHandler`. | Runtime exception handling can be customized by overriding `PicocliBaseScript::handleExecutionException`.
+| Implements `Callable<Object>`, script body is transformed to the `call` method. | Script body is transformed to the `runScriptBody` method.
+|===
+
+
+
+WARNING: When upgrading scripts from picocli versions older than 4.0, just changing the version number is not enough!
 Scripts should use `@Grab('info.picocli:picocli-groovy:4.5.3-SNAPSHOT')`. The old artifact id `@Grab('info.picocli:picocli:4.5.3-SNAPSHOT')` will not work,
 because the `@picocli.groovy.PicocliScript` annotation class and supporting classes have been moved into a separate module, `picocli-groovy`.
 

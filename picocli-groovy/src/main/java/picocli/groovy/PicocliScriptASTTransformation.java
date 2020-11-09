@@ -45,9 +45,11 @@ import picocli.CommandLine;
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
 public class PicocliScriptASTTransformation extends AbstractASTTransformation {
 
+    @SuppressWarnings("deprecation")
     private static final Class<PicocliScript> MY_CLASS1 = PicocliScript.class;
     private static final Class<PicocliScript2> MY_CLASS2 = PicocliScript2.class;
     private static final Class<CommandLine.Command> COMMAND_CLASS = CommandLine.Command.class;
+    @SuppressWarnings("deprecation")
     private static final Class<PicocliBaseScript> BASE_SCRIPT1_CLASS = PicocliBaseScript.class;
     private static final Class<PicocliBaseScript2> BASE_SCRIPT2_CLASS = PicocliBaseScript2.class;
     private static final ClassNode MY_TYPE1 = ClassHelper.make(MY_CLASS1);

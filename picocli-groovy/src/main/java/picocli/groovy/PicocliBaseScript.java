@@ -30,7 +30,8 @@ import java.util.concurrent.Callable;
 
 /**
  * <p>
- * Base script class that provides picocli declarative (annotation-based) command line argument processing for Groovy scripts.
+ * Base script class that provides picocli declarative (annotation-based) command line
+ * argument processing for Groovy scripts, superseded by {@link PicocliBaseScript2}.
  * </p><p>
  * Scripts may install this base script via the {@link PicocliScript} annotation or via the standard Groovy
  * {@code @groovy.transform.BaseScript(picocli.groovy.PicocliBaseScript)} annotation, but
@@ -57,6 +58,8 @@ import java.util.concurrent.Callable;
  * @author Jim White
  * @author Remko Popma
  * @since 2.0
+ * @see PicocliBaseScript2
+ * @deprecated Use {@link PicocliBaseScript2} instead.
  */
 abstract public class PicocliBaseScript extends Script {
     /**

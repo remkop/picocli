@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- * Annotation to give Groovy scripts convenient access to picocli functionality.
+ * Annotation to give Groovy scripts convenient access to picocli functionality, updated for picocli version 4 and greater.
  * Scripts may annotate the package statement, an import statement or a local variable with
  * {@code @PicocliScript2} and the script base class will be {@link PicocliScriptASTTransformation transformed} to
  * {@link PicocliBaseScript2}.
@@ -81,16 +81,8 @@ import java.lang.annotation.Target;
  * </pre>
  * <h1>PicocliBaseScript2 vs PicocliBaseScript</h1>
  * <p>
- * This class has the following improvements over {@link PicocliScript}:
+ *     See the {@link PicocliBaseScript2} documentation for details.
  * </p>
- * <ul>
- *   <li>Adds support for {@code @Command}-annotated methods to define subcommands in scripts.</li>
- *   <li>Adds support for {@code help} subcommands (both the built-in {@code CommandLine.HelpCommand} and custom implementations).</li>
- *   <li>Adds support for exit codes. The return value of the script becomes the exit code.</li>
- *   <li>Consistency with Java picocli.
- *     The new {@link PicocliBaseScript2} implementation delegates to the {@code CommandLine} class,
- *     while {@link PicocliBaseScript} re-implemented features, and this re-implementation got out of sync over time.</li>
- * </ul>
  *
  * @see PicocliScriptASTTransformation
  * @author Remko Popma
@@ -101,5 +93,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.LOCAL_VARIABLE, ElementType.PACKAGE, ElementType.TYPE, ElementType.FIELD /*, ElementType.IMPORT*/})
 @GroovyASTTransformationClass("picocli.groovy.PicocliScriptASTTransformation")
 public @interface PicocliScript2 {
-    Class<?> value() default PicocliBaseScript.class;
+    Class<?> value() default PicocliBaseScript2.class;
 }

@@ -52,9 +52,6 @@ import picocli.CommandLine
 @CommandLine.Option(names = ["-cp", "--codepath"])
 @Field List<String> codepath = []
 
-//println parameters
-//println codepath
-
 assert parameters == ['placeholder', 'another']
 assert codepath == ['/usr/x.jar', '/bin/y.jar', 'z']
 
@@ -196,9 +193,6 @@ import picocli.CommandLine
 
     @Test
     void testScriptExecutionExceptionWrapsException() {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream()
-        System.setErr(new PrintStream(baos))
-
         String script = '''
 @picocli.CommandLine.Command
 @picocli.groovy.PicocliScript2
@@ -375,7 +369,7 @@ class Message {
     String target
 }
 '''
-        GroovyShell shell = new GroovyShell(new Binding())
+        GroovyShell shell = new GroovyShell()
         shell.context.setVariable('args', ["-g", "Hi"] as String[])
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream()
@@ -409,7 +403,7 @@ println "done"
     @Test
     void testSubcommandMethods1191() {
 
-        GroovyShell shell = new GroovyShell(new Binding())
+        GroovyShell shell = new GroovyShell()
         shell.context.setVariable('args', ["commit", "picocli.groovy"] as String[])
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream()
@@ -421,7 +415,7 @@ println "done"
 
     @Test
     void testSubcommandMethodHelp() {
-        GroovyShell shell = new GroovyShell(new Binding())
+        GroovyShell shell = new GroovyShell()
         shell.context.setVariable('args', ["help", "commit"] as String[])
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream()
@@ -439,7 +433,7 @@ println "done"
 
     @Test
     void testMultipleSubcommandMethodsHelp() {
-        GroovyShell shell = new GroovyShell(new Binding())
+        GroovyShell shell = new GroovyShell()
         shell.context.setVariable('args', ["--help"] as String[])
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream()
@@ -455,5 +449,93 @@ println "done"
                 "  commit  Record changes to the repository"
         assertEquals(String.format(expected), baos.toString().trim())
         assertEquals(null, result)
+    }
+
+    @Test
+    public void testBeforeParseArgs() {
+        String script = '''
+import picocli.CommandLine.Model.CommandSpec
+import picocli.CommandLine
+import static picocli.CommandLine.*
+
+@Command(name="testBeforeParseArgs")
+@picocli.groovy.PicocliScript2
+import groovy.transform.Field
+
+@picocli.CommandLine.Spec
+@Field CommandSpec spec;
+
+@Option(names = ['-g', '--greeting'], description = 'Type of greeting')
+@Field String greeting = 'Hello'
+
+println "${greeting} ${spec.name()} world!"
+
+@Override
+protected CommandLine beforeParseArgs(CommandLine customizable) {
+    customizable.setCommandName("modifiedName")
+    customizable.setOptionsCaseInsensitive(true)
+    return super.beforeParseArgs(customizable)
+}
+'''
+        GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args', ["--GREETING", "Hi"] as String[])
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setOut(new PrintStream(baos))
+        shell.evaluate script
+        assertEquals("Hi modifiedName world!", baos.toString().trim())
+    }
+
+    @Test
+    public void testAfterExecutionHandlesExceptionAndReturnsResult() {
+        String script = '''
+@Command(name="testAfterExecution")
+@picocli.groovy.PicocliScript2
+import picocli.CommandLine
+import static picocli.CommandLine.*
+
+throw new IllegalStateException("I am illegal!!")
+
+@Override
+protected Object afterExecution(CommandLine commandLine, int exitCode, Exception exception) {
+    println("exitCode=${exitCode}, exceptionMessage=${exception.getMessage()}")
+    12345
+}
+'''
+        GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args', [] as String[])
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setOut(new PrintStream(baos))
+        def scriptResult = shell.evaluate script
+        assertEquals("exitCode=1, exceptionMessage=I am illegal!!", baos.toString().trim())
+        assertEquals(12345, scriptResult)
+    }
+
+    @Test
+    public void testAfterExecutionMayCallSystemExit() {
+        String script = '''
+@Command(name="testAfterExecution", exitCodeOnExecutionException = 54321)
+@picocli.groovy.PicocliScript2
+import picocli.CommandLine
+import static picocli.CommandLine.*
+
+throw new IllegalStateException("I am illegal!!")
+
+@Override
+protected Object afterExecution(CommandLine commandLine, int exitCode, Exception exception) {
+    println("System.exit(${exitCode})")
+    //System.exit(exitCode)
+    exitCode
+}
+'''
+        GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args', [] as String[])
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setOut(new PrintStream(baos))
+        def scriptResult = shell.evaluate script
+        assertEquals("System.exit(54321)", baos.toString().trim())
+        assertEquals(54321, scriptResult)
     }
 }

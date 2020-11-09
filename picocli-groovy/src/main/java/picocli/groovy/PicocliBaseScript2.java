@@ -4,10 +4,9 @@ import groovy.lang.GroovyRuntimeException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import picocli.CommandLine;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
 import picocli.CommandLine.IExecutionExceptionHandler;
 import picocli.CommandLine.IParameterExceptionHandler;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.ParseResult;
 
@@ -18,7 +17,8 @@ import java.util.concurrent.Callable;
 
 /**
  * <p>
- * Base script class that provides picocli declarative (annotation-based) command line argument processing for Groovy scripts.
+ * Base script class that provides picocli declarative (annotation-based) command line argument
+ * processing for Groovy scripts, updated for picocli version 4 and greater.
  * </p><p>
  * Scripts may install this base script via the {@link PicocliScript2} annotation or via the standard Groovy
  * {@code @groovy.transform.BaseScript(picocli.groovy.PicocliBaseScript2)} annotation, but
@@ -27,11 +27,17 @@ import java.util.concurrent.Callable;
  * </p>
  * <h1>Example usage</h1>
  * <pre>
- * &#64;Command(name = "myCommand", description = "does something special")
+ * &#64;Command(name = "greet", description = "Says hello.", mixinStandardHelpOptions = true, version = "greet 0.1")
  * &#64;PicocliScript2
  * import picocli.groovy.PicocliScript2
  * import picocli.CommandLine.Command
- * ...
+ * import picocli.CommandLine.Option
+ * import groovy.transform.Field
+ *
+ * &#64;Option(names = ['-g', '--greeting'], description = 'Type of greeting')
+ * &#64;Field String greeting = 'Hello'
+ *
+ * println "${greeting} world!"
  * </pre>
  * <p>
  * Before the script body is executed,
@@ -40,7 +46,16 @@ import java.util.concurrent.Callable;
  * It also takes care of error handling and common use cases like requests for usage help.
  * </p><p>
  * See the {@link #run()} method for a detailed break-down of the steps the base class takes
- * before the statements in the script body are executed.
+ * before and after the statements in the script body are executed.
+ * </p>
+ * <h1>Customization</h1>
+ * <p>
+ *   Scripts can override {@link #beforeParseArgs(CommandLine)} to
+ *   change the parser configuration, or set custom exception handlers etc.
+ * </p>
+ * <p>
+ *   Scripts can override {@link #afterExecution(CommandLine, int, Exception)} to
+ *   call {@code System.exit} or return a custom result.
  * </p>
  * <h1>PicocliBaseScript2 vs PicocliBaseScript</h1>
  * <p>
@@ -49,9 +64,13 @@ import java.util.concurrent.Callable;
  * <ul>
  *   <li>Adds support for {@code @Command}-annotated methods to define subcommands in scripts.</li>
  *   <li>Adds support for {@code help} subcommands (both the built-in {@code CommandLine.HelpCommand} and custom implementations).</li>
- *   <li>Adds support for exit codes. The return value of the script becomes the exit code.</li>
- *   <li>Consistency with Java picocli. This implementation delegates to the {@code CommandLine} class,
- *     while {@code PicocliBaseScript} re-implemented features, and this re-implementation got out of sync over time.</li>
+ *   <li>Adds support for exit codes.</li>
+ *   <li>Consistency with Java picocli. The new {@code PicocliBaseScript2} base class delegates to the
+ *     {@code CommandLine::execute} method introduced in picocli 4.0. This allows scripts to
+ *     leverage new features of the picocli library, as well as future enhancements, more easily.
+ *     By contrast, the old {@code PicocliBaseScript} base class implemented its own execution strategy,
+ *     which over time fell behind the core picocli library.
+ *   </li>
  * </ul>
  *
  * @author Remko Popma
@@ -86,59 +105,102 @@ public abstract class PicocliBaseScript2 extends Script implements Callable<Obje
      * Here is a break-down of the steps the base class takes before the statements in the script body are executed:
      * </p>
      * <ol>
-     *   <li>A new {@link CommandLine} is created with this script instance as the annotated command object.
+     *   <li>Call {@link #getOrCreateCommandLine()} to create a new {@link CommandLine} with this
+     *     script instance as the annotated command object.
      *     The {@code CommandLine} instance is cached in the {@code commandLine} property
      *     (so it can be referred to in script code with
-     *     {@code this.commandLine}). {@code CommandLine} creation and initialization may be
-     *     customized by overriding {@link #createCommandLine()} or {@link #customize(CommandLine)}.</li>
-     *   <li>The {@link CommandLine#execute(String...)} method is called with the script arguments.
-     *     This initialises all {@code @Field} variables annotated with {@link CommandLine.Option} or
-     *     {@link CommandLine.Parameters}, unless the user input was invalid.</li>
-     *   <li>If the user input was invalid, the command line arguments are printed to standard err, followed by
-     *     an error message and the usage message.
-     *     Then, the script exits.
-     *     This may be customized by overriding {@link #customize(CommandLine)} and setting a custom
-     *     {@link IParameterExceptionHandler} on the {@code CommandLine} instance.</li>
-     *   <li>Otherwise, if the user input requested version help or usage help, the version string or usage help message is
-     *     printed to standard err and the script exits.</li>
-     *   <li>The script may support subcommands. In that case only the last specified subcommand is invoked.
-     *     This may be customized by overriding
-     *     {@link #customize(CommandLine)} and setting a custom
-     *     {@link picocli.CommandLine.IExecutionStrategy} on the {@code CommandLine} instance.</li>
-     *   <li>If no subcommand was specified, the script body is executed.</li>
-     *   <li>If an exception occurs during execution, this exception is rethrown.</li>
+     *     {@code this.commandLine}). Scripts may override.</li>
+     *   <li>Call {@link #beforeParseArgs(CommandLine)} to install custom handlers for
+     *     invalid user input or exceptions are installed.
+     *     Scripts may override.
+     *   </li>
+     *   <li>Call {@link CommandLine#execute(String...)} method with the script arguments.
+     *     This results in the following:
+     *     <ul>
+     *       <li>Assuming the user input was valid, this initialises all {@code @Field}
+     *         variables annotated with {@link CommandLine.Option} or {@link CommandLine.Parameters}.
+     *       </li>
+     *       <li>Otherwise, if the user input was invalid, the command line arguments are printed
+     *         to standard err, followed by an error message and the usage message.
+     *         Then, the script exits (see step 4 below).
+     *         This may be customized by overriding {@link #beforeParseArgs(CommandLine)} and setting a custom
+     *         {@link IParameterExceptionHandler} on the {@code CommandLine} instance.</li>
+     *       <li>Otherwise, if the user input requested version help or usage help, the version string or usage help message is
+     *         printed to standard err and the script exits (see step 4 below).</li>
+     *       <li>The script may define subcommands. In that case only the last specified subcommand is invoked.
+     *         This may be customized by overriding
+     *         {@link #beforeParseArgs(CommandLine)} and setting a custom
+     *         {@link picocli.CommandLine.IExecutionStrategy} on the {@code CommandLine} instance.</li>
+     *       <li>If no subcommand was specified, the script body is executed.</li>
+     *     </ul>
+     *   </li>
+     *   <li>Store the exit code returned by {@code CommandLine.execute} in the {@code exitCode} property of this script.</li>
+     *   <li>Call {@link #afterExecution(CommandLine, int, Exception)} to handle script exceptions and return the script result:
+     *     If an exception occurred during execution, this exception is rethrown, wrapped in a {@code GroovyRuntimeException}.
+     *     Otherwise, the result of the script is returned, either as a list (in case of multiple results), or as a single object.
+     *   </li>
      * </ol>
      * <h1>Exit Code</h1>
-     * <p>After execution, the {@code PicocliBaseScript2} class sets the exit code in the {@code exitCode} property of the script.</p>
      * <p>
-     *     Scripts that want to control the exit code of the process executing the script
-     *     need to override the {@link #run()} method and call {@code System.exit}.
+     *     Scripts that want to control the exit code of the process that executed the script
+     *     can override the {@link #afterExecution(CommandLine, int, Exception)} method and call {@code System.exit}.
      *     For example:
-     * </p><pre>{@code
-     * @Override
-     * public Object run() {
-     *     try {
-     *         super.run();
-     *     } finally {
-     *         System.exit(exitCode);
-     *     }
-     * }
+     * </p><pre>
+     * &#64;Override
+     * protected Object afterExecution(CommandLine commandLine, int exitCode, Exception exception) {
+     *     exception?.printStackTrace();
+     *     System.exit(exitCode);
      * }</pre>
      * @return The result of the script evaluation.
      */
     @Override
     public Object run() {
         String[] args = getScriptArguments();
-        CommandLine commandLine = getOrCreateCommandLine();
+        CommandLine commandLine = beforeParseArgs(getOrCreateCommandLine());
         exitCode = commandLine.execute(args);
+        return afterExecution(commandLine, exitCode, exception);
+    }
+
+    /**
+     * This method is called after the script has been executed, and may do one of three things:
+     * <ul>
+     *   <li>Call {@code System.exit} with the specified exit code.</li>
+     *   <li>Throw a {@code GroovyRuntimeException} with the specified exception.</li>
+     *   <li>Return the result of the script execution.</li>
+     * </ul>
+     * <p>By default, this method will throw a {@code GroovyRuntimeException} if the specified
+     *   exception is not {@code null}, and otherwise returns the result of the script execution.
+     * </p><p>
+     *   Scripts may override this method to call {@code System.exit} or do something else.
+     * </p>
+     * @param commandLine encapsulates the picocli model of the command and subcommands
+     * @param exitCode the exit code that resulted from executing the script's command and/or subcommand(s)
+     * @param exception {@code null} if the script executed successfully without throwing any exceptions,
+     *                              otherwise this is the exception thrown by the script
+     * @return the script result; this may be a list of results, a single object, or {@code null}.
+     *         If multiple commands/subcommands were executed, this method may return a {@code List},
+     *         which may contain some {@code null} values.
+     *         For a single command, this method will return the return value of the script,
+     *         which is often the value of the last expression in the script.
+     */
+    protected Object afterExecution(CommandLine commandLine, int exitCode, Exception exception) {
         if (exception != null) {
             throw new GroovyRuntimeException(exception);
         }
+        return scriptResult(commandLine);
+    }
 
+    /**
+     * Returns the script result; this may be a list of results, a single object, or {@code null}.
+     * If multiple commands/subcommands were executed, this method may return a {@code List}, which may contain some {@code null} values.
+     * For a single command, this method will return the return value of the script,
+     * which is often the value of the last expression in the script.
+     */
+    private Object scriptResult(CommandLine commandLine) {
         List<Object> result = new ArrayList<Object>();
         List<CommandLine> commandLines = commandLine.getParseResult().asCommandLineList();
         for (CommandLine cl : commandLines) {
-            if (cl.getExecutionResult() != null || !result.isEmpty()) {
+            if (cl.getExecutionResult() != null || !result.isEmpty()) { // if multiple results, some may be null
                 result.add(cl.getExecutionResult());
             }
         }
@@ -146,7 +208,7 @@ public abstract class PicocliBaseScript2 extends Script implements Callable<Obje
     }
 
     /**
-     * Return the script arguments as an array of strings.
+     * Returns the script arguments as an array of strings.
      * The default implementation is to get the "args" property.
      *
      * @return the script arguments as an array of strings.
@@ -156,8 +218,8 @@ public abstract class PicocliBaseScript2 extends Script implements Callable<Obje
     }
 
     /**
-     * Return the CommandLine for this script.
-     * If there isn't one already, then create it using {@link #createCommandLine()}.
+     * Returns the CommandLine for this script.
+     * If there isn't one already, then this method returns the result of the {@link #createCommandLine()} method.
      *
      * @return the CommandLine for this script.
      */
@@ -174,16 +236,35 @@ public abstract class PicocliBaseScript2 extends Script implements Callable<Obje
                 // the property has a setter before creating a new script binding.
                 this.getMetaClass().setProperty(this, COMMAND_LINE, commandLine);
             }
-            return customize(commandLine);
+            return commandLine;
         } catch (MissingPropertyException mpe) {
             CommandLine commandLine = createCommandLine();
             // Since no property or binding already exists, we can use plain old setProperty here.
             setProperty(COMMAND_LINE, commandLine);
-            return customize(commandLine);
+            return commandLine;
         }
     }
 
-    protected CommandLine customize(final CommandLine customizable) {
+    /**
+     * Customizes the specified {@code CommandLine} instance to set a custom
+     * {@code IParameterExceptionHandler} and a custom {@code IExecutionExceptionHandler},
+     * subclasses can override to customize further.
+     * <p>
+     *   This method replaces the default {@code IParameterExceptionHandler} with a custom
+     *   one that prints the command line arguments before calling the default parameter exception handler.
+     * </p>
+     * <p>
+     *   This method replaces the default {@code IExecutionExceptionHandler} with a custom
+     *   one that stores any exception that occurred during execution into the {@code exception}
+     *   property of this script, and returns the
+     *   {@link CommandSpec#exitCodeOnExecutionException() configured exit code}.
+     *   This exception is later passed to the {@link #afterExecution(CommandLine, int, Exception)} method.
+     * </p>
+     * @param customizable the {@code CommandLine} instance that models this command and its subcommands
+     * @return the customized {@code CommandLine} instance (usually, but not necessarily,
+     *          the same instance as the method parameter)
+     */
+    protected CommandLine beforeParseArgs(final CommandLine customizable) {
         final IParameterExceptionHandler original = customizable.getParameterExceptionHandler();
         customizable.setParameterExceptionHandler(new IParameterExceptionHandler() {
             public int handleParseException(ParameterException ex, String[] args) throws Exception {
@@ -193,8 +274,8 @@ public abstract class PicocliBaseScript2 extends Script implements Callable<Obje
         });
         customizable.setExecutionExceptionHandler(new IExecutionExceptionHandler() {
             public int handleExecutionException(Exception ex, CommandLine commandLine, ParseResult parseResult) throws Exception {
-                exception = ex; // any exception will be rethrown from run()
-                return CommandLine.ExitCode.SOFTWARE;
+                exception = ex; // any exception will be rethrown from afterExecution()
+                return customizable.getCommandSpec().exitCodeOnExecutionException();
             }
         });
         return customizable;
@@ -212,7 +293,7 @@ public abstract class PicocliBaseScript2 extends Script implements Callable<Obje
      */
     public CommandLine createCommandLine() {
         CommandLine commandLine = new CommandLine(this);
-        if (commandLine.getCommandName().equals("<main class>")) { // only if user did not specify @Command(name) attribute
+        if (CommandSpec.DEFAULT_COMMAND_NAME.equals(commandLine.getCommandName())) { // only if user did not specify @Command(name) attribute
             commandLine.setCommandName(this.getClass().getSimpleName());
         }
         return commandLine;

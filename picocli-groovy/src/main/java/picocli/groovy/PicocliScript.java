@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- * Annotation to give Groovy scripts convenient access to picocli functionality.
+ * Annotation to give Groovy scripts convenient access to picocli functionality, superseded by {@link PicocliScript2}.
  * Scripts may annotate the package statement, an import statement or a local variable with
  * {@code @PicocliScript} and the script base class will be {@link PicocliScriptASTTransformation transformed} to
  * {@link picocli.groovy.PicocliBaseScript}.
@@ -80,13 +80,16 @@ import java.lang.annotation.Target;
  * </pre>
  *
  * @see PicocliScriptASTTransformation
+ * @see PicocliScript2
  * @author Remko Popma
  * @since 2.0
+ * @deprecated Use {@link PicocliScript2} instead.
  */
 @java.lang.annotation.Documented
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.LOCAL_VARIABLE, ElementType.PACKAGE, ElementType.TYPE, ElementType.FIELD /*, ElementType.IMPORT*/})
 @GroovyASTTransformationClass("picocli.groovy.PicocliScriptASTTransformation")
 public @interface PicocliScript {
+    @SuppressWarnings("deprecation")
     Class<?> value() default PicocliBaseScript.class;
 }

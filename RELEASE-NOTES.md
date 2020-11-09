@@ -6,6 +6,8 @@ The picocli community is pleased to announce picocli 4.6.0.
 
 This release contains bug fixes and enhancements.
 
+The `picocli-groovy` module gets a facelift. This release introduces a new `@PicocliScript2` annotation that adds support for exit codes and `@Command`-annotated methods to define subcommands.
+
 From this release, Map options accept key-only parameters, so end users can specify `-Dkey` as well as `-Dkey=value`.
 There is a new `mapFallbackValue` attribute that enables this, which can be used to control the value that is put into the map when only a key was specified on the command line.
 
@@ -25,6 +27,22 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [Potential breaking changes](#4.6.0-breaking-changes)
 
 ## <a name="4.6.0-new"></a> New and Noteworthy
+
+### New `@PicocliScript2` annotation
+The older `@picocli.groovy.PicocliScript` annotation is deprecated from picocli 4.6.
+New scripts should use the `@picocli.groovy.PicocliScript2` annotation (and associated `picocli.groovy.PicocliBaseScript2` base class) instead.
+The table below lists the differences between the `PicocliBaseScript2` and `PicocliBaseScript` script base classes.
+
+| `PicocliBaseScript2` | `PicocliBaseScript`
+|---- | ----
+| Subcommands can be defined as `@Command`-annotated methods in the script. | No support for `@Command`-annotated methods.
+| Support for `help` subcommands (both the built-in one and custom ones). | No support for `help` subcommands.
+| Exit code support: scripts can override `afterExecution(CommandLine, int, Exception)` to call `System.exit`.| No support for exit code.
+| Invokes `CommandLine::execute`. Scripts can override `beforeParseArgs(CommandLine)` to install a custom  `IExecutionStrategy`.| Execution after parsing is defined in `PicocliBaseScript::run` and is not easy to customize. Any subcommand _and_ the main script are _both_ executed.
+| Scripts can override `beforeParseArgs(CommandLine)` to install a custom `IParameterExceptionHandler`. | Invalid input handling can be customized by overriding `PicocliBaseScript::handleParameterException`.
+| Scripts can override `beforeParseArgs(CommandLine)` to install a custom `IExecutionExceptionHandler`. | Runtime exception handling can be customized by overriding `PicocliBaseScript::handleExecutionException`.
+| Implements `Callable<Object>`, script body is transformed to the `call` method. | Script body is transformed to the `runScriptBody` method.
+
 
 ### Key-only map parameters
 By default, picocli expects Map options and positional parameters to look like `key=value`, that is, the option parameter or positional parameter is expected to have a key part and a value part, separated by a `=` character.
@@ -88,6 +106,7 @@ only single-value types, and the values in a `Map` (but not the keys!) can be wr
 
 
 ## <a name="4.6.0-fixes"></a> Fixed issues
+* [#1191] API: Add `@PicocliScript2` annotation to support subcommand methods in Groovy scripts. Thanks to [Mattias Andersson](https://github.com/attiand) for raising this.
 * [#1241] API: Add `mapFallbackValue` attribute to `@Options` and `@Parameters` annotations, and corresponding `ArgSpec.mapFallbackValue()`.
 * [#1184] API: Added public methods `Help.Layout::colorScheme`, `Help.Layout::textTable`, `Help.Layout::optionRenderer`, `Help.Layout::parameterRenderer`, and `Help::calcLongOptionColumnWidth`.
 * [#1108] Enhancement: Support `Optional<T>` type for options and positional parameters. Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for raising this.
