@@ -11386,9 +11386,13 @@ class MyApp implements Runnable {
 ----
 
 ==== Groovy Scripts
+
+[NOTE]
+====
 Picocli 2.0 introduced special support for Groovy scripts.
 From picocli 4.0 this was moved into a separate module, `picocli-groovy`.
 In picocli 4.6, `@PicocliScript` was deprecated in favor of `@PicocliScript2`.
+====
 
 Scripts annotated with `@picocli.groovy.PicocliScript2` are automatically transformed to use
 `picocli.groovy.PicocliBaseScript2` as their base class and can also use the `@Command` annotation to
