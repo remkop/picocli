@@ -12843,7 +12843,9 @@ public class CommandLine {
             if (!isAnyHelpRequested() && !required.isEmpty()) { // ensure current command portion is valid
                 throw MissingParameterException.create(CommandLine.this, required, separator);
             }
-            subcommand.interpreter.parse(parsedCommands, args, originalArgs, nowProcessing, inheritedRequired, initialized);
+            Set<ArgSpec> inheritedInitialized = new LinkedHashSet<ArgSpec>();
+            subcommand.interpreter.parse(parsedCommands, args, originalArgs, nowProcessing, inheritedRequired, inheritedInitialized);
+            initialized.addAll(inheritedInitialized);
             builder.subcommand(subcommand.interpreter.parseResultBuilder.build());
         }
 
@@ -13092,6 +13094,9 @@ public class CommandLine {
 
         private void addToInitialized(ArgSpec argSpec, Set<ArgSpec> initialized) {
             initialized.add(argSpec);
+            if (argSpec.command() == null) {
+                return;
+            }
             CommandSpec parent = argSpec.command().parent();
             while (argSpec.inherited() && parent != null) {
                 initialized.add(parent.findOriginal(argSpec));
