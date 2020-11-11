@@ -2481,8 +2481,11 @@ public class SubcommandTests {
 
     @Command(name="root", subcommands = {Sub.class})
     static class InhRoot {
-        @CommandLine.Parameters(defaultValue = "", scope = INHERIT)
+        @Parameters(defaultValue = "", scope = INHERIT)
         public String parameter = "param";
+
+        @Option(names="--inh", defaultValue = "def", scope = INHERIT)
+        String inh;
     }
 
     @Command(name="sub")
@@ -2495,7 +2498,7 @@ public class SubcommandTests {
     }
 
     @Test
-    public void testInheritedParameter() {
+    public void testInheritedParameterDefaultValueOverride() {
         CommandLine cli = new CommandLine(new InhRoot());
         // we first parse with the parameter at the beginning
         ParseResult parseResult = cli.parseArgs("parameter_val", "sub", "--opt", "something");
@@ -2506,6 +2509,20 @@ public class SubcommandTests {
         parseResult = cli.parseArgs("sub", "--opt", "something", "parameter_val");
         parsedSub = (Sub) parseResult.commandSpec().subcommands().get("sub").getCommandSpec().userObject();
         assertEquals("parameter_val", parsedSub.parent.parameter);
+    }
+
+    @Test
+    public void testInheritedOptionDefaultValueOverride() {
+        CommandLine cli = new CommandLine(new InhRoot());
+        // we first parse with the parameter at the beginning
+        ParseResult parseResult = cli.parseArgs("--inh", "first_opt", "sub", "--opt", "something");
+        Sub parsedSub = (Sub) parseResult.commandSpec().subcommands().get("sub").getCommandSpec().userObject();
+        assertEquals("first_opt", parsedSub.parent.inh);
+
+        // we finally parse with the parameter at the end
+        parseResult = cli.parseArgs("sub", "--opt", "something", "--inh", "first_opt");
+        parsedSub = (Sub) parseResult.commandSpec().subcommands().get("sub").getCommandSpec().userObject();
+        assertEquals("first_opt", parsedSub.parent.inh);
     }
 
     @Test
