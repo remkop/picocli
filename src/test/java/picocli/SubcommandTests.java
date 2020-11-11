@@ -1,6 +1,5 @@
 package picocli;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -19,8 +18,11 @@ import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.InitializationException;
 import picocli.CommandLine.MissingTypeConverterException;
 import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Model.OptionSpec;
+import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.Model.UsageMessageSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.ParentCommand;
 import picocli.CommandLine.ParseResult;
@@ -2504,5 +2506,92 @@ public class SubcommandTests {
         parseResult = cli.parseArgs("sub", "--opt", "something", "parameter_val");
         parsedSub = (Sub) parseResult.commandSpec().subcommands().get("sub").getCommandSpec().userObject();
         assertEquals("parameter_val", parsedSub.parent.parameter);
+    }
+
+    @Test
+    public void testInheritedOptionRoot() {
+        @Command(subcommands = App.InhSub.class)
+        class App {
+            @Option(names = "-a", scope = INHERIT) boolean a;
+            @Option(names = "-n") boolean n;
+            @Command(name = "sub")
+            class InhSub {
+                @Option(names="-b", scope=INHERIT) boolean b;
+                @Command void subsub() {}
+            }
+        }
+        CommandLine root = new CommandLine(new App());
+        OptionSpec rootAOption = root.getCommandSpec().findOption("-a");
+        assertFalse("An inheritable option was marked as inherited at the root! (should only be marked as inherited for children)",
+                rootAOption.inherited());
+        assertEquals("An inheritable option's root was not itself!", rootAOption, rootAOption.root());
+        OptionSpec rootNOption = root.getCommandSpec().findOption("-n");
+        assertFalse("A non-inheritable option was marked as inherited!", rootNOption.inherited());
+        assertNull("A non-inheritable option had a non-null root!", rootNOption.root());
+
+        CommandLine sub = root.getSubcommands().get("sub");
+        OptionSpec subAOption = sub.getCommandSpec().findOption("-a");
+        assertTrue("An inherited option was not marked as such!", subAOption.inherited());
+        assertEquals("The root of the inherited option was not the real root option", rootAOption, subAOption.root());
+        OptionSpec subBOption = sub.getCommandSpec().findOption("-b");
+        assertFalse("An inheritable option rooted in a subcommand was marked wrongly as inherited!", subBOption.inherited());
+        assertEquals("An inheritable option rooted in a subcommand's root was not itself!", subBOption, subBOption.root());
+        OptionSpec subNOption = sub.getCommandSpec().findOption("-n");
+        assertNull("A non-inheritable option was inherited by a subcommand!", subNOption);
+
+        CommandLine subsub = sub.getSubcommands().get("subsub");
+        OptionSpec subsubAOption = subsub.getCommandSpec().findOption("-a");
+        assertTrue("An inherited option was not marked as such!", subsubAOption.inherited());
+        assertEquals("The root of the inherited option was not the real root option", rootAOption, subsubAOption.root());
+        OptionSpec subsubBOption = subsub.getCommandSpec().findOption("-b");
+        assertTrue("An inherited option was not marked as such!", subsubBOption.inherited());
+        assertEquals("An inheritable option rooted in a subcommand's root was not itself!", subBOption, subsubBOption.root());
+    }
+
+    @Test
+    public void testInheritedParameterRoot() {
+        @Command(subcommands = App.InhSub.class)
+        class App {
+            @Parameters(scope = INHERIT) boolean param;
+            @Command(name = "sub")
+            class InhSub {
+                @Parameters(scope=INHERIT) String subParam;
+                @Parameters String nonInherited;
+                @Command void subsub() {}
+            }
+        }
+        CommandLine root = new CommandLine(new App());
+        List<PositionalParamSpec> rootParams = root.getCommandSpec().positionalParameters();
+        assertEquals(1, rootParams.size());
+        PositionalParamSpec rootParam = rootParams.get(0);
+        assertFalse("An inheritable parameter was marked as inherited at the root! (should only be marked as inherited for children)",
+                rootParam.inherited());
+        assertEquals("An inheritable option's root was not itself!", rootParam, rootParam.root());
+
+        CommandLine sub = root.getSubcommands().get("sub");
+        List<PositionalParamSpec> subParams = sub.getCommandSpec().positionalParameters();
+        assertEquals(3, subParams.size());
+        // inherited parameters are appended to the list of parameters
+        PositionalParamSpec subParam = subParams.get(2);
+        assertTrue("An inherited parameter was not marked as such!", subParam.inherited());
+        assertEquals("The root of the inherited parameter was not the real root parameter", rootParam, subParam.root());
+        PositionalParamSpec subParamRooted = subParams.get(0);
+        assertFalse("An inheritable parameter rooted in a subcommand was marked wrongly as inherited!", subParamRooted.inherited());
+        assertEquals("An inheritable parameter rooted in a subcommand's root was not itself!", subParamRooted, subParamRooted.root());
+        PositionalParamSpec subNonInherited = subParams.get(1);
+        assertFalse("A non-inheritable parameter was marked as inherited!", subNonInherited.inherited());
+        assertNull("A non-inheritable parameter had a non-null root!", subNonInherited.root());
+
+        CommandLine subsub = sub.getSubcommands().get("subsub");
+        List<PositionalParamSpec> subsubParams = subsub.getCommandSpec().positionalParameters();
+        assertEquals(2, subsubParams.size());
+        // positional parameters are appended going up the inheritance chain
+        // obviously, real use cases should not do this, but this helps test the robustness of the .root() method inheritance
+        PositionalParamSpec subsubParamRoot = subsubParams.get(1);
+        assertTrue("An inherited parameter was not marked as such!", subsubParamRoot.inherited());
+        assertEquals("The root of the inherited parameter was not the real root parameter", rootParam, subsubParamRoot.root());
+        PositionalParamSpec subsubParamFromSub = subsubParams.get(0);
+        assertTrue("An inherited parameter was not marked as such!", subsubParamFromSub.inherited());
+        assertEquals("An inheritable parameter rooted in a subcommand's root was not itself!", subParamRooted, subsubParamFromSub.root());
     }
 }
