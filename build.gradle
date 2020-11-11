@@ -70,6 +70,7 @@ pluginManager.withPlugin('org.asciidoctor.jvm.convert') { // if plugin applied, 
     }
     dependencies {
         tabbedCodeExt "com.bmuschko:asciidoctorj-tabbed-code-extension:0.3"
+        tabbedCodeExt files('docs/tabbed-code')
     }
 }
 
@@ -259,6 +260,8 @@ asciidoctor {
     outputDir = file('build/docs')
     logDocuments = true
     configurations 'tabbedCodeExt'
+    attributes 'tabbed-code-js-path'  : '/customTabbedCode.js',
+               'tabbed-code-css-path' : '/customTabbedCode.css'
     baseDirFollowsSourceDir()
 //    backends 'pdf', 'html'
 //    attributes 'sourcedir': file('docs') //project.sourceSets.main.java.srcDirs[0]
