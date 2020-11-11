@@ -6132,8 +6132,8 @@ public class CommandLine {
                 for (ArgSpec arg : args()) {
                     if (arg.scopeType() == ScopeType.INHERIT) {
                         subSpec.add(arg.isOption()
-                                ? OptionSpec.builder((OptionSpec) arg).inherited(true).build()
-                                : PositionalParamSpec.builder((PositionalParamSpec) arg).inherited(true).build());
+                                ? OptionSpec.builder((OptionSpec) arg).inherited(true).root(arg.root()).build()
+                                : PositionalParamSpec.builder((PositionalParamSpec) arg).inherited(true).root(arg.root()).build());
                     }
                 }
                 return this;
@@ -6260,7 +6260,7 @@ public class CommandLine {
                     Set<CommandLine> done = new HashSet<CommandLine>();
                     for (CommandLine sub : subcommands().values()) {
                         if (!done.contains(sub)) {
-                            sub.getCommandSpec().addOption(OptionSpec.builder(option).inherited(true).build());
+                            sub.getCommandSpec().addOption(OptionSpec.builder(option).inherited(true).root(option.root()).build());
                             done.add(sub);
                         }
                     }
@@ -6320,7 +6320,7 @@ public class CommandLine {
                 if (positional.scopeType() == ScopeType.INHERIT) {
                     Set<CommandLine> subCmds = new HashSet<CommandLine>(subcommands().values());// subcommands may be registered multiple times with different aliases
                     for (CommandLine sub : subCmds) {
-                        sub.getCommandSpec().addPositional(PositionalParamSpec.builder(positional).inherited(true).build());
+                        sub.getCommandSpec().addPositional(PositionalParamSpec.builder(positional).inherited(true).root(positional.root()).build());
                     }
                 }
                 return this;
@@ -6931,37 +6931,6 @@ public class CommandLine {
                 boolean result = count > 0 && count * 10 >= optionsMap().size() * 9; // at least one prefix char in common with 9 out of 10 options
                 if (tracer != null && tracer.isDebug()) {tracer.debug("'%s' %s an option: %d matching prefix chars out of %d option names%n", arg, (result ? "resembles" : "doesn't resemble"), count, optionsMap().size());}
                 return result;
-            }
-
-            public ArgSpec findOriginal(ArgSpec argSpec) {
-                if (argSpec.isOption()) {
-                    OptionSpec optionSpec = (OptionSpec) argSpec;
-                    String longestOptionName = optionSpec.longestName();
-                    for (OptionSpec potentialOriginal: options()) {
-                        if (longestOptionName.equals(potentialOriginal.longestName())) {
-                            return potentialOriginal;
-                        }
-                    }
-                } else {
-                    PositionalParamSpec paramSpec = (PositionalParamSpec) argSpec;
-                    String stringRepresentation = paramSpec.toString();
-                    String label = paramSpec.paramLabel();
-                    String descriptionKey = paramSpec.descriptionKey();
-                    String[] description = paramSpec.description();
-                    Range index = paramSpec.index();
-                    Range arity = paramSpec.arity();
-                    for (PositionalParamSpec potentialOriginal: positionalParameters()) {
-                        if (Assert.equals(stringRepresentation, potentialOriginal.toString())//
-                                && Assert.equals(label, potentialOriginal.paramLabel())//
-                                && Assert.equals(descriptionKey, potentialOriginal.descriptionKey())//
-                                && Arrays.equals(description, potentialOriginal.description()) //
-                                && Assert.equals(index, potentialOriginal.index())//
-                                && Assert.equals(arity, potentialOriginal.arity())) {
-                            return potentialOriginal;
-                        }
-                    }
-                }
-                return null;
             }
         }
 
@@ -8117,6 +8086,7 @@ public class CommandLine {
             private static final String UNSPECIFIED = "__unspecified__";
 
             private final boolean inherited;
+            private final ArgSpec root;
 
             // help-related fields
             private final boolean hidden;
@@ -8170,6 +8140,7 @@ public class CommandLine {
                 showDefaultValue = builder.showDefaultValue == null ? Help.Visibility.ON_DEMAND : builder.showDefaultValue;
                 hidden = builder.hidden;
                 inherited = builder.inherited;
+                root = builder.root == null && ScopeType.INHERIT.equals(builder.scopeType) ? this : builder.root;
                 interactive = builder.interactive;
                 initialValue = builder.initialValue;
                 hasInitialValue = builder.hasInitialValue;
@@ -8219,6 +8190,7 @@ public class CommandLine {
                     throw new InitializationException("Only multi-value options and positional parameters should have a split regex (this check can be disabled by setting system property 'picocli.ignore.invalid.split')");
                 }
             }
+
             void applyInitialValue(Tracer tracer) {
                 if (hasInitialValue()) {
                     try {
@@ -8358,6 +8330,12 @@ public class CommandLine {
              * @see Option#scope()
              * @since 4.3.0 */
             public boolean inherited() { return inherited; }
+
+            /** Returns the root option or positional parameter (on the parent command), if this option or positional parameter was inherited;
+             * or {@code null} if it was not.
+             * @see Option#scope()
+             * @since 4.6.0 */
+            public ArgSpec root() { return root; }
 
             /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value.
              * This may be a container type like {@code List}, {@code Map}, or {@code Optional},
@@ -8753,6 +8731,7 @@ public class CommandLine {
                 private String splitRegex;
                 private String splitRegexSynopsisLabel;
                 private boolean hidden;
+                private ArgSpec root;
                 private boolean inherited;
                 private Class<?> type;
                 private Class<?>[] auxiliaryTypes;
@@ -8787,6 +8766,7 @@ public class CommandLine {
                     splitRegexSynopsisLabel = original.splitRegexSynopsisLabel;
                     hidden = original.hidden;
                     inherited = original.inherited;
+                    root = original.root;
                     setTypeInfo(original.typeInfo);
                     converters = original.converters;
                     defaultValue = original.defaultValue;
@@ -8954,6 +8934,12 @@ public class CommandLine {
                  * @since 4.3.0 */
                 public boolean inherited() { return inherited; }
 
+                /** Returns the root option or positional parameter (on the parent command), if this option or positional parameter was inherited;
+                 * or {@code null} if it was not.
+                 * @see Option#scope()
+                 * @since 4.6.0 */
+                public ArgSpec root() { return root; }
+
                 /** Returns the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value.
                  * This may be a container type like {@code List}, {@code Map}, or {@code Optional},
                  * in which case the type or types of the elements are returned by {@link #auxiliaryTypes()}. */
@@ -9074,8 +9060,14 @@ public class CommandLine {
                 public T hidden(boolean hidden)              { this.hidden = hidden; return self(); }
 
                 /** Sets whether this option is inherited from a parent command, and returns this builder.
+                 * <b>Do not forget to also set {@link #root()} when setting this, to ensure that it always can track back to the root element.</b>
                  * @since 4.3.0 */
                 public T inherited(boolean inherited)        { this.inherited = inherited; return self(); }
+
+                /**
+                 * Sets the root object for this inherited option, and returns this builder.
+                 * @since 4.6.0 */
+                public T root(ArgSpec root)                  { this.root = root ; return self(); }
 
                 /** Sets the type to convert the option or positional parameter to before {@linkplain #setValue(Object) setting} the value, and returns this builder.
                  * @param propertyType the type of this option or parameter. For multi-value options and positional parameters this can be an array, or a (sub-type of) Collection or Map. */
@@ -13094,13 +13086,9 @@ public class CommandLine {
 
         private void addToInitialized(ArgSpec argSpec, Set<ArgSpec> initialized) {
             initialized.add(argSpec);
-            if (argSpec.command() == null) {
-                return;
-            }
-            CommandSpec parent = argSpec.command().parent();
-            while (argSpec.inherited() && parent != null) {
-                initialized.add(parent.findOriginal(argSpec));
-                parent = parent.parent();
+            ArgSpec rootArgSpec = argSpec.root();
+            if (rootArgSpec != null) {
+                initialized.add(rootArgSpec);
             }
         }
 
