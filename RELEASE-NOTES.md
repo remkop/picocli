@@ -109,11 +109,13 @@ only single-value types, and the values in a `Map` (but not the keys!) can be wr
 * [#1191] API: Add `@PicocliScript2` annotation to support subcommand methods in Groovy scripts. Thanks to [Mattias Andersson](https://github.com/attiand) for raising this.
 * [#1241] API: Add `mapFallbackValue` attribute to `@Options` and `@Parameters` annotations, and corresponding `ArgSpec.mapFallbackValue()`.
 * [#1184] API: Added public methods `Help.Layout::colorScheme`, `Help.Layout::textTable`, `Help.Layout::optionRenderer`, `Help.Layout::parameterRenderer`, and `Help::calcLongOptionColumnWidth`.
+* [#1254] API: Added `ArgSpec::root`: this method returns the original `ArgSpec` for inherited `ArgSpec` objects, and `null` for other `ArgSpec` objects. Thanks to [Daniel Gray](https://github.com/danielthegray) for the pull request.
 * [#1108] Enhancement: Support `Optional<T>` type for options and positional parameters. Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for raising this.
 * [#1214] Enhancement: Support Map options with key-only (support `-Dkey` as well as `-Dkey=value`). Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) and [David Walluck](https://github.com/dwalluck) for raising this and subsequent discussion.
 * [#1236] Enhancement/bugfix: Fix compiler warnings about `Annotation::getClass` and assignment in `if` condition. Thanks to [nveeser-google](https://github.com/nveeser-google) for the pull request.
 * [#1229] Bugfix: Fix compilation error introduced with fc5ef6de6 (#1184). Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1225] Bugfix: Error message for unmatched positional argument reports incorrect index when value equals a previously matched argument. Thanks to [Vitaly Shukela](https://github.com/vi) for raising this.
+* [#1250] Bugfix: Inherited positional parameter should not be overridden by default value if placed after subcommand. Thanks to [Daniel Gray](https://github.com/danielthegray) for the pull request.
 * [#1215] DOC: User manual improvements, including more tabs with Kotlin source code. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1219] DOC: User manual improvements: added more tabs with Kotlin code. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1220] DOC: User manual improvements: corrections, more Kotlin tabs. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
