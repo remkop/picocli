@@ -580,18 +580,12 @@ import picocli.CommandLine.Model.CommandSpec
 import picocli.CommandLine
 import static picocli.CommandLine.*
 
-@Command(name="testCompletionCandidates")
+@Command(name="testCompletionCandidatesWithClosure")
 @picocli.groovy.PicocliScript2
 import groovy.transform.Field
 
 @picocli.CommandLine.Spec
 @Field CommandSpec spec;
-
-class MyAbcCandidates extends ArrayList<String> {
-    MyAbcCandidates() { super(Arrays.asList("A", "B", "C")); }
-}
-
-Class<MyAbcCandidates> cls = MyAbcCandidates
 
 @Option(names = '-s', completionCandidates = {["A", "B", "C"]})
 @Field String s
