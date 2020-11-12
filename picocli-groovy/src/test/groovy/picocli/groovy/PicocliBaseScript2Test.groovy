@@ -17,6 +17,7 @@
 package picocli.groovy
 
 import groovy.transform.SourceURI
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.contrib.java.lang.system.ProvideSystemProperty
@@ -538,4 +539,73 @@ protected Object afterExecution(CommandLine commandLine, int exitCode, Exception
         assertEquals("System.exit(54321)", baos.toString().trim())
         assertEquals(54321, scriptResult)
     }
+
+
+    @Test
+    public void testCompletionCandidatesEnum() {
+        String script = '''
+import picocli.CommandLine.Model.CommandSpec
+import picocli.CommandLine
+import static picocli.CommandLine.*
+
+@Command(name="testCompletionCandidates")
+@picocli.groovy.PicocliScript2
+import groovy.transform.Field
+
+@picocli.CommandLine.Spec
+@Field CommandSpec spec;
+
+enum MyType { A, B, C}
+
+@Option(names = '-x')
+@Field MyType x
+
+Iterable<String> iter = spec.findOption("-x").completionCandidates()
+println iter
+'''
+        GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args', [] as String[])
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setOut(new PrintStream(baos))
+        shell.evaluate script
+        assertEquals("[A, B, C]", baos.toString().trim())
+    }
+
+    @Ignore("requires #1258")
+    @Test
+    public void testCompletionCandidatesWithClosure() {
+        String script = '''
+import picocli.CommandLine.Model.CommandSpec
+import picocli.CommandLine
+import static picocli.CommandLine.*
+
+@Command(name="testCompletionCandidates")
+@picocli.groovy.PicocliScript2
+import groovy.transform.Field
+
+@picocli.CommandLine.Spec
+@Field CommandSpec spec;
+
+class MyAbcCandidates extends ArrayList<String> {
+    MyAbcCandidates() { super(Arrays.asList("A", "B", "C")); }
+}
+
+Class<MyAbcCandidates> cls = MyAbcCandidates
+
+@Option(names = '-s', completionCandidates = {["A", "B", "C"]})
+@Field String s
+
+Iterable<String> iter = spec.findOption("-s").completionCandidates()
+println iter
+'''
+        GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args', [] as String[])
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        System.setOut(new PrintStream(baos))
+        shell.evaluate script
+        assertEquals("[A, B, C]", baos.toString().trim())
+    }
+
 }
