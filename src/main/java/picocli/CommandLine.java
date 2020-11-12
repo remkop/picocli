@@ -9092,7 +9092,6 @@ public class CommandLine {
                 public T hidden(boolean hidden)              { this.hidden = hidden; return self(); }
 
                 /** Sets whether this option is inherited from a parent command, and returns this builder.
-                 * <b>Do not forget to also set {@link #root()} when setting this, to ensure that it always can track back to the root element.</b>
                  * @since 4.3.0 */
                 public T inherited(boolean inherited)        { this.inherited = inherited; return self(); }
 
