@@ -6132,8 +6132,8 @@ public class CommandLine {
                 for (ArgSpec arg : args()) {
                     if (arg.scopeType() == ScopeType.INHERIT) {
                         subSpec.add(arg.isOption()
-                                ? OptionSpec.builder((OptionSpec) arg).inherited(true).root(arg.root()).build()
-                                : PositionalParamSpec.builder((PositionalParamSpec) arg).inherited(true).root(arg.root()).build());
+                                ? OptionSpec.builder((OptionSpec) arg).inherited(true).build()
+                                : PositionalParamSpec.builder((PositionalParamSpec) arg).inherited(true).build());
                     }
                 }
                 return this;
@@ -6260,7 +6260,7 @@ public class CommandLine {
                     Set<CommandLine> done = new HashSet<CommandLine>();
                     for (CommandLine sub : subcommands().values()) {
                         if (!done.contains(sub)) {
-                            sub.getCommandSpec().addOption(OptionSpec.builder(option).inherited(true).root(option.root()).build());
+                            sub.getCommandSpec().addOption(OptionSpec.builder(option).inherited(true).build());
                             done.add(sub);
                         }
                     }
@@ -6320,7 +6320,7 @@ public class CommandLine {
                 if (positional.scopeType() == ScopeType.INHERIT) {
                     Set<CommandLine> subCmds = new HashSet<CommandLine>(subcommands().values());// subcommands may be registered multiple times with different aliases
                     for (CommandLine sub : subCmds) {
-                        sub.getCommandSpec().addPositional(PositionalParamSpec.builder(positional).inherited(true).root(positional.root()).build());
+                        sub.getCommandSpec().addPositional(PositionalParamSpec.builder(positional).inherited(true).build());
                     }
                 }
                 return this;
