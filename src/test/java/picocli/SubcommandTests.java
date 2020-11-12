@@ -2736,7 +2736,6 @@ public class SubcommandTests {
         assertEquals("An inheritable parameter rooted in a subcommand's root was not itself!", subParamRooted, subsubParamFromSub.root());
     }
 
-    @Ignore("requires #1183")
     @Test
     public void testIssue1183_HelpWithSubcommandWithRequiredOptions() {
         @Command(name = "app", mixinStandardHelpOptions = true)

@@ -12619,7 +12619,13 @@ public class CommandLine {
                 }
             } while (!argumentStack.isEmpty() && continueOnError);
 
-            if (!isAnyHelpRequested()) {
+            boolean anyHelpRequested = isAnyHelpRequested();
+            CommandLine parsed = CommandLine.this;
+            while (parsed.getParent() != null) {
+                parsed = parsed.getParent();
+                anyHelpRequested |= parsed.interpreter.isAnyHelpRequested();
+            }
+            if (!anyHelpRequested) {
                 validateConstraints(argumentStack, required, initialized);
             }
         }
