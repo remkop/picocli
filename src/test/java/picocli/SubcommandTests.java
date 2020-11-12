@@ -1,5 +1,6 @@
 package picocli;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
@@ -2733,5 +2734,29 @@ public class SubcommandTests {
         PositionalParamSpec subsubParamFromSub = subsubParams.get(0);
         assertTrue("An inherited parameter was not marked as such!", subsubParamFromSub.inherited());
         assertEquals("An inheritable parameter rooted in a subcommand's root was not itself!", subParamRooted, subsubParamFromSub.root());
+    }
+
+    @Ignore("requires #1183")
+    @Test
+    public void testIssue1183_HelpWithSubcommandWithRequiredOptions() {
+        @Command(name = "app", mixinStandardHelpOptions = true)
+        class App implements Runnable {
+            public void run() { throw new IllegalStateException("app"); }
+
+            @Command int sub(@Option(names = "-x", required = true) int x) {
+                throw new IllegalStateException("sub");
+            }
+        }
+        int exitCode = new CommandLine(new App()).execute("-h", "sub");
+        assertEquals(0, exitCode);
+        assertEquals("", systemErrRule.getLog());
+
+        String expected = String.format("" +
+                "Usage: app [-hV] [COMMAND]%n" +
+                "  -h, --help      Show this help message and exit.%n" +
+                "  -V, --version   Print version information and exit.%n" +
+                "Commands:%n" +
+                "  sub%n");
+        assertEquals(expected, systemOutRule.getLog());
     }
 }
