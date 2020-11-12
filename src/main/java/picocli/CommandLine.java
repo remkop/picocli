@@ -6139,6 +6139,38 @@ public class CommandLine {
                 return this;
             }
 
+            /**
+             * Removes the subcommand with the specified name or alias from this CommandSpec and
+             * returns the {@code CommandLine} instance that was associated with the specified name,
+             * or {@code null} of the specified name was not associated with a subcommand.
+             * @param name name or alias of the subcommand to remove; may be
+             *      {@link #isAbbreviatedSubcommandsAllowed() abbreviated} or {@link #isSubcommandsCaseInsensitive() case-insensitive}
+             * @return the removed {@code CommandLine} instance or {@code null}
+             * @since 4.6
+             */
+            public CommandLine removeSubcommand(String name) {
+                String actualName = name;
+                if (parser().abbreviatedSubcommandsAllowed()) {
+                    actualName = AbbreviationMatcher.match(commands.keySet(), name, subcommandsCaseInsensitive(), commandLine);
+                }
+
+                Set<String> removedNames = new TreeSet<String>();
+                CommandLine result = commands.remove(actualName);
+                if (result != null) {
+                    removedNames.add(actualName);
+                    commands.remove(result.getCommandName());
+                    removedNames.add(result.getCommandName());
+                    for (String alias : result.getCommandSpec().aliases()) {
+                        commands.remove(alias);
+                        removedNames.add(alias);
+                    }
+                }
+                Tracer t = new Tracer();
+                if (t.isDebug()) {t.debug("Removed %d subcommand entries %s for key '%s' from '%s'%n",
+                        removedNames.size(), removedNames, name, this.qualifiedName());}
+                return result;
+            }
+
             private String validateSubcommandName(String name, CommandSpec subSpec) {
                 String result = name == null ? subSpec.name : name; // NOTE: check subSpec.name field, not subSpec.name()!
                 if (result == null && !subSpec.aliases.isEmpty()) {

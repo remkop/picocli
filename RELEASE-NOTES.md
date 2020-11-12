@@ -16,6 +16,7 @@ If the option or positional parameter was not specified on the command line, pic
 
 Help API: this release adds public methods `Help.Layout::colorScheme`, `Help.Layout::textTable`, `Help.Layout::optionRenderer`, `Help.Layout::parameterRenderer`, and `Help::calcLongOptionColumnWidth`, making it easier to customize the table format used to lay out options and positional parameters in the usage help message.
 
+CommandSpec API: added method `CommandSpec::removeSubcommand`.
 
 This is the seventy-fifth public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -110,6 +111,7 @@ only single-value types, and the values in a `Map` (but not the keys!) can be wr
 * [#1241] API: Add `mapFallbackValue` attribute to `@Options` and `@Parameters` annotations, and corresponding `ArgSpec.mapFallbackValue()`.
 * [#1184] API: Added public methods `Help.Layout::colorScheme`, `Help.Layout::textTable`, `Help.Layout::optionRenderer`, `Help.Layout::parameterRenderer`, and `Help::calcLongOptionColumnWidth`.
 * [#1254] API: Added `ArgSpec::root`: this method returns the original `ArgSpec` for inherited `ArgSpec` objects, and `null` for other `ArgSpec` objects. Thanks to [Daniel Gray](https://github.com/danielthegray) for the pull request.
+* [#1256] API: Added `CommandSpec::removeSubcommand` method. Thanks to [Marko Mackic](https://github.com/MarkoMackic) for raising this.
 * [#1108] Enhancement: Support `Optional<T>` type for options and positional parameters. Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for raising this.
 * [#1214] Enhancement: Support Map options with key-only (support `-Dkey` as well as `-Dkey=value`). Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) and [David Walluck](https://github.com/dwalluck) for raising this and subsequent discussion.
 * [#1236] Enhancement/bugfix: Fix compiler warnings about `Annotation::getClass` and assignment in `if` condition. Thanks to [nveeser-google](https://github.com/nveeser-google) for the pull request.

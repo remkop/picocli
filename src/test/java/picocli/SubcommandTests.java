@@ -159,7 +159,7 @@ public class SubcommandTests {
         assertTrue(userObject instanceof SubcommandWithAnnotationName);
     }
 
-    @Command(aliases = {"alias1", "alias2"})
+    @Command(aliases = {"alias1", "alias2", "bobobo"})
     static class SubcommandWithAliases {}
 
     @Test
@@ -169,7 +169,7 @@ public class SubcommandTests {
         cmd.addSubcommand(userObject);
         assertTrue(cmd.getSubcommands().containsKey("alias1"));
         assertSame(userObject, cmd.getSubcommands().get("alias1").getCommand());
-        assertArrayEquals(new String[]{"alias2"}, cmd.getSubcommands().get("alias1").getCommandSpec().aliases());
+        assertArrayEquals(new String[]{"alias2", "bobobo"}, cmd.getSubcommands().get("alias1").getCommandSpec().aliases());
     }
 
     @Test
@@ -179,7 +179,130 @@ public class SubcommandTests {
         assertTrue(cmd.getSubcommands().containsKey("alias1"));
         Object userObject = cmd.getSubcommands().get("alias1").getCommand();
         assertTrue(userObject instanceof SubcommandWithAliases);
-        assertArrayEquals(new String[]{"alias2"}, cmd.getSubcommands().get("alias1").getCommandSpec().aliases());
+        assertArrayEquals(new String[]{"alias2", "bobobo"}, cmd.getSubcommands().get("alias1").getCommandSpec().aliases());
+    }
+
+    @Test
+    public void testRemoveSubcommandByMainName() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        cmd.addSubcommand("main", new SubcommandWithAliases());
+        assertEquals(4, cmd.getSubcommands().size());
+        CommandLine sub = cmd.getSubcommands().get("main");
+
+        CommandLine removed = cmd.getCommandSpec().removeSubcommand("main");
+        assertEquals(0, cmd.getSubcommands().size());
+        assertEquals(0, cmd.getCommandSpec().subcommands().size());
+        assertSame(sub, removed);
+    }
+
+    @Test
+    public void testRemoveSubcommandByAlias() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        cmd.addSubcommand("main", new SubcommandWithAliases());
+        assertEquals(4, cmd.getSubcommands().size());
+        CommandLine sub = cmd.getSubcommands().get("alias1");
+
+        CommandLine removed = cmd.getCommandSpec().removeSubcommand("alias1");
+        assertEquals(0, cmd.getSubcommands().size());
+        assertEquals(0, cmd.getCommandSpec().subcommands().size());
+        assertSame(sub, removed);
+    }
+
+    @Test
+    public void testRemoveSubcommandByMainNameCaseInsensitive() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        cmd.addSubcommand("main", new SubcommandWithAliases());
+        assertEquals(4, cmd.getSubcommands().size());
+        CommandLine sub = cmd.getSubcommands().get("main");
+
+        cmd.setSubcommandsCaseInsensitive(true);
+
+        CommandLine removed = cmd.getCommandSpec().removeSubcommand("MAIN");
+        assertEquals(0, cmd.getSubcommands().size());
+        assertEquals(0, cmd.getCommandSpec().subcommands().size());
+        assertSame(sub, removed);
+    }
+
+    @Test
+    public void testRemoveSubcommandByAliasCaseInsensitive() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        cmd.addSubcommand("main", new SubcommandWithAliases());
+        assertEquals(4, cmd.getSubcommands().size());
+        CommandLine sub = cmd.getSubcommands().get("main");
+
+        cmd.setSubcommandsCaseInsensitive(true);
+
+        CommandLine removed = cmd.getCommandSpec().removeSubcommand("ALIAS2");
+        assertEquals(0, cmd.getSubcommands().size());
+        assertEquals(0, cmd.getCommandSpec().subcommands().size());
+        assertSame(sub, removed);
+    }
+
+    @Test
+    public void testRemoveSubcommandByMainNameAbbreviated() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        cmd.addSubcommand("main", new SubcommandWithAliases());
+        assertEquals(4, cmd.getSubcommands().size());
+        CommandLine sub = cmd.getSubcommands().get("main");
+
+        cmd.setAbbreviatedSubcommandsAllowed(true);
+
+        CommandLine removed = cmd.getCommandSpec().removeSubcommand("ma");
+        assertEquals(0, cmd.getSubcommands().size());
+        assertEquals(0, cmd.getCommandSpec().subcommands().size());
+        assertSame(sub, removed);
+    }
+
+    @Test
+    public void testRemoveSubcommandByAliasAbbreviated() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        cmd.addSubcommand("main", new SubcommandWithAliases());
+        assertEquals(4, cmd.getSubcommands().size());
+        CommandLine sub = cmd.getSubcommands().get("main");
+
+        cmd.setAbbreviatedSubcommandsAllowed(true);
+
+        CommandLine removed = cmd.getCommandSpec().removeSubcommand("bo");
+        assertEquals(0, cmd.getSubcommands().size());
+        assertEquals(0, cmd.getCommandSpec().subcommands().size());
+        assertSame(sub, removed);
+    }
+
+    @Test
+    public void testRemoveSubcommandByMainNameAbbreviatedCaseInsensitive() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        cmd.addSubcommand("main", new SubcommandWithAliases());
+        assertEquals(4, cmd.getSubcommands().size());
+        CommandLine sub = cmd.getSubcommands().get("main");
+
+        cmd.setSubcommandsCaseInsensitive(true);
+        cmd.setAbbreviatedSubcommandsAllowed(true);
+
+        CommandLine removed = cmd.getCommandSpec().removeSubcommand("MA");
+        assertEquals(0, cmd.getSubcommands().size());
+        assertEquals(0, cmd.getCommandSpec().subcommands().size());
+        assertSame(sub, removed);
+    }
+
+    @Test
+    public void testRemoveSubcommandByAliasAbbreviatedCaseInsensitive() {
+        CommandLine cmd = new CommandLine(new MainCommand());
+        cmd.addSubcommand("main", new SubcommandWithAliases());
+        assertEquals(4, cmd.getSubcommands().size());
+        CommandLine sub = cmd.getSubcommands().get("main");
+
+        cmd.setSubcommandsCaseInsensitive(true);
+        cmd.setAbbreviatedSubcommandsAllowed(true);
+
+        TestUtil.setTraceLevel("DEBUG");
+
+        CommandLine removed = cmd.getCommandSpec().removeSubcommand("BO");
+        assertEquals(0, cmd.getSubcommands().size());
+        assertEquals(0, cmd.getCommandSpec().subcommands().size());
+        assertSame(sub, removed);
+
+        String line = String.format("[picocli DEBUG] Removed 4 subcommand entries [alias1, alias2, bobobo, main] for key 'BO' from '<main class>'%n");
+        assertEquals(line, systemErrRule.getLog());
     }
 
     private static CommandLine createNestedCommand() {
