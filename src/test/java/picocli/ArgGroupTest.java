@@ -3900,4 +3900,38 @@ public class ArgGroupTest {
         new CommandLine(bean).parseArgs("a", "b");
         assertEquals(Arrays.asList(new File("a"), new File("b")), bean.sourceOptions.reportFiles);
     }
+
+    public static class CriteriaWithEnvironment {
+
+        private static final List<String> DYNAMIC_LIST = Arrays.asList("FOO", "BAR");
+
+        private String environment;
+
+        @CommandLine.Spec CommandSpec spec;
+
+        @CommandLine.Option(names = {"-e", "--environment"})
+        public void setEnvironment(String environment) {
+            if (!DYNAMIC_LIST.contains(environment)) {
+                // Should throw a ParameterException
+                //throw new IllegalArgumentException("Should be one of...");
+                throw new ParameterException(spec.commandLine(), "should be one of " + DYNAMIC_LIST);
+            }
+            this.environment = environment;
+        }
+
+        public String getEnvironment() {
+            return environment;
+        }
+    }
+
+    @Ignore("#1260")
+    @Test
+    public void testIssue1260ArgGroupWithSpec() {
+        @Command
+        class App {
+            @ArgGroup CriteriaWithEnvironment criteria;
+        }
+        new CommandLine(new App()).parseArgs("-e", "X");
+    }
+
 }
