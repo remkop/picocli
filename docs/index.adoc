@@ -6966,6 +6966,25 @@ public class Git { /* ... */ }
 public class Git { /* ... */ }
 ----
 
+.Scala
+[source,scala,role="secondary"]
+----
+@Command(subcommands = Array(
+    classOf[GitStatus],
+    classOf[GitCommit],
+    classOf[GitAdd],
+    classOf[GitBranch],
+    classOf[GitCheckout],
+    classOf[GitClone],
+    classOf[GitDiff],
+    classOf[GitMerge],
+    classOf[GitPush],
+    classOf[GitRebase],
+    classOf[GitTag]
+))
+class Git { /* ... */ }
+----
+
 Subcommands referenced in a `subcommands` attribute _must_ have a `@Command` annotation with a `name` attribute, or an exception is thrown from the `CommandLine` constructor.
 This name will be used both for generating usage help and for recognizing subcommands when parsing the command line.
 Command names are case-sensitive by default, but this is <<Case Sensitivity,customizable>>.
@@ -7039,6 +7058,23 @@ val commandLine = CommandLine(Git())
         .addSubcommand("push",     GitPush())
         .addSubcommand("rebase",   GitRebase())
         .addSubcommand("tag",      GitTag())
+----
+
+.Scala
+[source,scala,role="secondary"]
+----
+val commandLine: CommandLine  = new CommandLine(new Git())
+        .addSubcommand("status",   new GitStatus())
+        .addSubcommand("commit",   new GitCommit())
+        .addSubcommand("add",      new GitAdd())
+        .addSubcommand("branch",   new GitBranch())
+        .addSubcommand("checkout", new GitCheckout())
+        .addSubcommand("clone",    new GitClone())
+        .addSubcommand("diff",     new GitDiff())
+        .addSubcommand("merge",    new GitMerge())
+        .addSubcommand("push",     new GitPush())
+        .addSubcommand("rebase",   new GitRebase())
+        .addSubcommand("tag",      new GitTag())
 ----
 
 It is strongly recommended that subcommands have a `@Command` annotation with `name` and `description` attributes.
@@ -7161,6 +7197,46 @@ class Bar : Callable<Int> {
     fun baz( @Option(names = ["-z"]) z: Int) : Int {
         println("hi from baz, z=$z")
         return 45
+    }
+}
+----
+
+
+.Scala
+[source,scala,role="secondary"]
+----
+@Command(name = "foo", subcommands = Array(classOf[Bar]))
+class Foo extends Callable[Integer] {
+    @Option(names = Array("-x"))
+    var x = 0
+
+    override def call: Integer = {
+        println(s"hi from foo, $x")
+        val ok = true
+        if (ok) 0 else 1 // exit code
+    }
+}
+
+object Foo{
+    def main(args: Array[String]): Unit = {
+        val exitCode : Int = new CommandLine(new Foo()).execute(args: _*)
+        System.exit(exitCode)
+    }
+}
+
+@Command(name = "bar", description = Array("I'm a subcommand of `foo`")) class Bar extends Callable[Integer] {
+    @Option(names = Array("-y"))
+    var y = 0
+
+    override def call: Integer = {
+        println(s"hi from bar, y=$y")
+        23
+    }
+
+    @Command(name = "baz", description = Array("I'm a subcommand of `bar`"))
+    def baz(@Option(names = Array("-z")) z: Int): Int = {
+        println(s"hi from baz, z=$z")
+        45
     }
 }
 ----
@@ -7309,6 +7385,36 @@ class MyApp : Runnable {
 }
 ----
 
+
+.Scala
+[source,scala,role="secondary"]
+----
+@Command(subcommands = Array(classOf[Sub1], classOf[Sub2], classOf[Sub3]))
+class MyApp extends Runnable {
+
+    // A reference to this method can be used as a custom execution strategy
+    // that first calls the init() method,
+    // and then delegates to the default execution strategy.
+    private def executionStrategy(parseResult: ParseResult ) = {
+        init() // custom initialization to be done before executing any command or subcommand
+        new CommandLine.RunLast().execute(parseResult) // default execution strategy
+    }
+
+    private def init(): Unit = {
+        // ...
+    }
+}
+
+object MyApp {
+    def main(args: Array[String]): Unit = {
+        val app = new MyApp
+        new CommandLine(app)
+            .setExecutionStrategy(app.executionStrategy)
+            .execute(args: _*)
+    }
+}
+----
+
 This ensures the `init` method is called _after_ the command line is parsed (so all options and positional parameters are assigned) but _before_ the user-specified subcommand is executed.
 
 The https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/java/picocli/examples/logging_mixin_advanced[logging example] in `picocli-examples` shows how this can be used to configure the Log4j log level based on a `--verbose` option, prior to execution.
@@ -7355,6 +7461,18 @@ class FileUtils {
     @Option(names = ["-d", "--directory"],
             description = ["this option applies to all subcommands"])
     var baseDirectory: File? = null
+}
+----
+
+.Scala
+[source,scala,role="secondary"]
+----
+@Command(name = "fileutils", subcommands = Array(classOf[ListFiles]))
+class FileUtils {
+
+    @Option(names = Array("-d", "--directory"),
+            description = Array("this option applies to all subcommands"))
+    var baseDirectory: File = null
 }
 ----
 
