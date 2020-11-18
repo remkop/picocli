@@ -141,7 +141,7 @@ only single-value types, and the values in a `Map` (but not the keys!) can be wr
 * [#1248] BUILD: Fix gradle warnings. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1253] DOC: Fix line endings to LF in documentation files. Thanks to [Daniel Gray](https://github.com/danielthegray) for the pull request.
 * [#1255] DOC: User manual and Quick Guide: add Groovy, Kotlin and Scala examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-
+* [#1261] DOC: User manual improvements: add Scala code samples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 ## <a name="4.6.0-deprecated"></a> Deprecations
 From this release, the `@picocli.groovy.PicocliScript` annotation in the `picocli-groovy` module is deprecated in favor of `@picocli.groovy.PicocliScript2`, and the `picocli.groovy.PicocliBaseScript` class is deprecated in favor of `picocli.groovy.PicocliBaseScript2`.
