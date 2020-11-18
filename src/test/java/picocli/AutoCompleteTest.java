@@ -1001,19 +1001,6 @@ public class AutoCompleteTest {
     }
 
     @Test
-    public void testCommandDescriptor() {
-        AutoComplete.CommandDescriptor descriptor = new AutoComplete.CommandDescriptor("aaa", "bbb");
-        assertEquals(descriptor, descriptor);
-
-        AutoComplete.CommandDescriptor other = new AutoComplete.CommandDescriptor("111", "222");
-        assertNotEquals(descriptor, other);
-
-        assertEquals(descriptor.hashCode(), descriptor.hashCode());
-        assertEquals(other.hashCode(), other.hashCode());
-        assertNotEquals(other.hashCode(), descriptor.hashCode());
-    }
-
-    @Test
     public void testBashRejectsNullScript() {
         try {
             AutoComplete.bash(null, new CommandLine(new TopLevel()));
@@ -1271,22 +1258,6 @@ public class AutoCompleteTest {
         }
         String actual = AutoComplete.bash("booltest", new CommandLine(new App()));
         assertThat(actual, CoreMatchers.containsString("local flag_opts=\"-b -B\""));
-    }
-
-    @Test
-    public void testCommandDescriptorEqualsUnrelatedObject() {
-        assertFalse(new AutoComplete.CommandDescriptor("a", "b").equals("X"));
-    }
-
-    @Test
-    public void testCommandDescriptorEquals() {
-        AutoComplete.CommandDescriptor descriptor = new AutoComplete.CommandDescriptor("a", "b");
-        assertTrue(descriptor.equals(descriptor));
-        assertTrue(descriptor.equals(new AutoComplete.CommandDescriptor("a", "b")));
-
-        assertFalse(descriptor.equals(new AutoComplete.CommandDescriptor("a", "x")));
-        assertFalse(descriptor.equals(new AutoComplete.CommandDescriptor("x", "b")));
-        assertFalse(descriptor.equals(new AutoComplete.CommandDescriptor("x", "x")));
     }
 
     @Test

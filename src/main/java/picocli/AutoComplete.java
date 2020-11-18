@@ -24,7 +24,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -284,20 +283,17 @@ public class AutoComplete {
         for (T t : list) { if (filter.test(t)) { result.add(t); } }
         return result;
     }
-    /** Package-private for tests; consider this class private. */
-    static class CommandDescriptor {
+    private static class CommandDescriptor {
         final String functionName;
         final String commandName;
-        CommandDescriptor(String functionName, String commandName) {
+        final CommandLine commandLine;
+        final CommandLine parent;
+        
+        CommandDescriptor(String functionName, String commandName, CommandLine commandLine, CommandLine parent) {
             this.functionName = functionName;
             this.commandName = commandName;
-        }
-        public int hashCode() { return functionName.hashCode() * 37 + commandName.hashCode(); }
-        public boolean equals(Object obj) {
-            if (!(obj instanceof CommandDescriptor)) { return false; }
-            if (obj == this) { return true; }
-            CommandDescriptor other = (CommandDescriptor) obj;
-            return other.functionName.equals(functionName) && other.commandName.equals(commandName);
+            this.commandLine = commandLine;
+            this.parent = parent;
         }
     }
 
@@ -471,21 +467,49 @@ public class AutoComplete {
         StringBuilder result = new StringBuilder();
         result.append(format(SCRIPT_HEADER, scriptName, CommandLine.VERSION));
 
-        Map<CommandDescriptor, CommandLine> function2command = new LinkedHashMap<CommandDescriptor, CommandLine>();
-        result.append(generateEntryPointFunction(scriptName, commandLine, function2command));
+        List<CommandDescriptor> hierarchy = createHierarchy(scriptName, commandLine);
+        result.append(generateEntryPointFunction(scriptName, commandLine, hierarchy));
 
-        for (Map.Entry<CommandDescriptor, CommandLine> functionSpec : function2command.entrySet()) {
-            if (functionSpec.getValue().getCommandSpec().usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
-            CommandDescriptor descriptor = functionSpec.getKey();
-            result.append(generateFunctionForCommand(descriptor.functionName, descriptor.commandName, functionSpec.getValue()));
+        for (CommandDescriptor descriptor : hierarchy) {
+            if (descriptor.commandLine.getCommandSpec().usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
+            result.append(generateFunctionForCommand(descriptor.functionName, descriptor.commandName, descriptor.commandLine));
         }
         result.append(format(SCRIPT_FOOTER, scriptName));
         return result.toString();
     }
 
+    private static List<CommandDescriptor> createHierarchy(String scriptName, CommandLine commandLine) {
+        List<CommandDescriptor> result = new ArrayList<CommandDescriptor>();
+        result.add(new CommandDescriptor("_picocli_" + scriptName, scriptName, commandLine, null));
+        createSubHierarchy(scriptName, commandLine, result);
+        return result;
+    }
+
+    private static void createSubHierarchy(String scriptName, CommandLine commandLine, List<CommandDescriptor> out) {
+        // breadth-first: generate command lists and function calls for predecessors + each subcommand
+        for (Map.Entry<String, CommandLine> entry : commandLine.getSubcommands().entrySet()) {
+            CommandSpec spec = entry.getValue().getCommandSpec();
+            if (spec.usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
+            String commandName = entry.getKey(); // may be an alias
+            String full = spec.qualifiedName("_");
+            String withoutTopLevelCommand = full.substring(full.indexOf('_') + 1);
+            String withoutCommand = withoutTopLevelCommand.substring(0, withoutTopLevelCommand.lastIndexOf('_') + 1);
+            String functionName = "_picocli_" + scriptName + "_" + bashify(withoutCommand + commandName);
+
+            // remember the function name and associated subcommand so we can easily generate a function later
+            out.add(new CommandDescriptor(functionName, commandName, entry.getValue(), commandLine));
+        }
+
+        // then recursively do the same for all nested subcommands
+        for (Map.Entry<String, CommandLine> entry : commandLine.getSubcommands().entrySet()) {
+            if (entry.getValue().getCommandSpec().usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
+            createSubHierarchy(scriptName, entry.getValue(), out);
+        }
+    }
+
     private static String generateEntryPointFunction(String scriptName,
                                                      CommandLine commandLine,
-                                                     Map<CommandDescriptor, CommandLine> function2command) {
+                                                     List<CommandDescriptor> hierarchy) {
         String FUNCTION_HEADER = "" +
                 "# Bash completion entry point function.\n" +
                 "# _complete_%1$s finds which commands and subcommands have been specified\n" +
@@ -515,11 +539,9 @@ public class AutoComplete {
         StringBuilder buff = new StringBuilder(1024);
         buff.append(format(FUNCTION_HEADER, scriptName));
 
-        List<String> predecessors = new ArrayList<String>();
         List<String> functionCallsToArrContains = new ArrayList<String>();
 
-        function2command.put(new CommandDescriptor("_picocli_" + scriptName, scriptName), commandLine);
-        generateFunctionCallsToArrContains(scriptName, predecessors, commandLine, buff, functionCallsToArrContains, function2command);
+        generateFunctionCallsToArrContains(buff, functionCallsToArrContains, hierarchy);
 
         buff.append("\n");
         Collections.reverse(functionCallsToArrContains);
@@ -530,31 +552,18 @@ public class AutoComplete {
         return buff.toString();
     }
 
-    private static void generateFunctionCallsToArrContains(String scriptName,
-                                                           List<String> predecessors,
-                                                           CommandLine commandLine,
-                                                           StringBuilder buff,
+    private static void generateFunctionCallsToArrContains(StringBuilder buff,
                                                            List<String> functionCalls,
-                                                           Map<CommandDescriptor, CommandLine> function2command) {
+                                                           List<CommandDescriptor> hierarchy) {
 
-        // breadth-first: generate command lists and function calls for predecessors + each subcommand
-        for (Map.Entry<String, CommandLine> entry : commandLine.getSubcommands().entrySet()) {
-            if (entry.getValue().getCommandSpec().usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
+        for (CommandDescriptor descriptor : hierarchy.subList(1, hierarchy.size())) { // skip top-level command
             int count = functionCalls.size();
-            String functionName = "_picocli_" + scriptName + "_" + concat("_", predecessors, entry.getKey(), new Bashify());
-            functionCalls.add(format("  if CompWordsContainsArray \"${cmds%2$d[@]}\"; then %1$s; return $?; fi\n", functionName, count));
-            buff.append(      format("  local cmds%2$d=(%1$s)\n", concat(" ", predecessors, entry.getKey(), new NullFunction()), count));
+            CommandSpec spec = descriptor.commandLine.getCommandSpec();
+            String full = spec.qualifiedName(" ");
+            String withoutTopLevelCommand = full.substring(spec.root().name().length() + 1);
 
-            // remember the function name and associated subcommand so we can easily generate a function later
-            function2command.put(new CommandDescriptor(functionName, entry.getKey()), entry.getValue());
-        }
-
-        // then recursively do the same for all nested subcommands
-        for (Map.Entry<String, CommandLine> entry : commandLine.getSubcommands().entrySet()) {
-            if (entry.getValue().getCommandSpec().usageMessage().hidden()) { continue; } // #887 skip hidden subcommands
-            predecessors.add(entry.getKey());
-            generateFunctionCallsToArrContains(scriptName, predecessors, entry.getValue(), buff, functionCalls, function2command);
-            predecessors.remove(predecessors.size() - 1);
+            functionCalls.add(format("  if CompWordsContainsArray \"${cmds%2$d[@]}\"; then %1$s; return $?; fi\n", descriptor.functionName, count));
+            buff.append(      format("  local cmds%2$d=(%1$s)\n", withoutTopLevelCommand, count));
         }
     }
     private static String concat(String infix, String... values) {
