@@ -114,6 +114,7 @@ only single-value types, and the values in a `Map` (but not the keys!) can be wr
 * [#1256] API: Added `CommandSpec::removeSubcommand` method. Thanks to [Marko Mackic](https://github.com/MarkoMackic) for raising this.
 * [#1108] Enhancement: Support `Optional<T>` type for options and positional parameters. Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for raising this.
 * [#1214] Enhancement: Support Map options with key-only (support `-Dkey` as well as `-Dkey=value`). Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) and [David Walluck](https://github.com/dwalluck) for raising this and subsequent discussion.
+* [#1260] Enhancement: Support `@Spec`-annotated members in `ArgGroup` classes. Thanks to [Jannick Hemelhof](https://github.com/clone1612) for raising this.
 * [#1236] Enhancement/bugfix: Fix compiler warnings about `Annotation::getClass` and assignment in `if` condition. Thanks to [nveeser-google](https://github.com/nveeser-google) for the pull request.
 * [#1229] Bugfix: Fix compilation error introduced with fc5ef6de6 (#1184). Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1225] Bugfix: Error message for unmatched positional argument reports incorrect index when value equals a previously matched argument. Thanks to [Vitaly Shukela](https://github.com/vi) for raising this.

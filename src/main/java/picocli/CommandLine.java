@@ -9618,6 +9618,7 @@ public class CommandLine {
             private Messages messages;
             private ArgGroupSpec parentGroup;
             private String id = "1";
+            private final List<IAnnotatedElement> specElements;
 
             ArgGroupSpec(ArgGroupSpec.Builder builder) {
                 heading          = NO_HEADING    .equals(builder.heading)    ? null : builder.heading;
@@ -9631,8 +9632,9 @@ public class CommandLine {
                 setter           = builder.setter;
                 scope            = builder.scope;
 
-                args      = Collections.unmodifiableSet(new LinkedHashSet<ArgSpec>(builder.args()));
-                subgroups = Collections.unmodifiableList(new ArrayList<ArgGroupSpec>(builder.subgroups()));
+                specElements = Collections.unmodifiableList(new ArrayList<IAnnotatedElement>(builder.specElements()));
+                args         = Collections.unmodifiableSet(new LinkedHashSet<ArgSpec>(builder.args()));
+                subgroups    = Collections.unmodifiableList(new ArrayList<ArgGroupSpec>(builder.subgroups()));
                 if (args.isEmpty() && subgroups.isEmpty()) { throw new InitializationException("ArgGroup has no options or positional parameters, and no subgroups: " + (getter == null ? setter : getter) + " in " + scope); }
 
                 int i = 1;
@@ -9712,6 +9714,9 @@ public class CommandLine {
             /** Return the subgroups that this group is composed of; may be empty but not {@code null}.
              * @return immutable list of subgroups that this group is composed of. */
             public List<ArgGroupSpec> subgroups() { return subgroups; }
+            /** Returns the list of program elements annotated with {@code {@literal @}Spec} configured for this group.
+             * @since 4.6 */
+            public List<IAnnotatedElement> specElements() { return specElements; }
 
             /**
              * Returns {@code true} if this group is a subgroup (or a nested sub-subgroup, to any level of depth)
@@ -9958,6 +9963,11 @@ public class CommandLine {
                         tracer.debug("Setting scope for subgroup %s with setter=%s in group %s to user object %s%n", subgroup.synopsis(), subgroup.setter(), synopsis(), userObject);
                         subgroup.scope().set(userObject); // flip the actual user object for the arg (and all other args in this group; they share the same IScope instance)
                     }
+                    for (IAnnotatedElement specElement : specElements()) {
+                        tracer.debug("Setting @Spec with setter=%s in user object %s to %s%n", specElement.setter(), userObject, commandLine.getCommandSpec());
+                        specElement.scope().set(userObject);
+                        specElement.setter().set(commandLine.getCommandSpec());
+                    }
                 } else {
                     tracer.debug("No type information available for group %s: cannot create new user object. Scope for arg setters is not changed.%n", synopsis());
                 }
@@ -10050,6 +10060,7 @@ public class CommandLine {
                 private int order          = DEFAULT_ORDER;
                 private final List<ArgSpec> args = new ArrayList<ArgSpec>();
                 private final List<ArgGroupSpec> subgroups = new ArrayList<ArgGroupSpec>();
+                private final List<IAnnotatedElement> specElements = new ArrayList<IAnnotatedElement>();
 
                 // for topological sorting; private only
                 private Boolean topologicalSortDone;
@@ -10181,6 +10192,14 @@ public class CommandLine {
 
                 /** Returns the list of subgroups that this group is composed of.*/
                 public List<ArgGroupSpec> subgroups() { return subgroups; }
+
+                /** Adds the specified {@code {@literal @}Spec} annotated program element to the list of spec elements for this group.
+                 * @since 4.6 */
+                public Builder addSpecElement(IAnnotatedElement element) { specElements.add(element); return this; }
+
+                /** Returns the list of program elements annotated with {@code {@literal @}Spec} configured for this group.
+                 * @since 4.6 */
+                public List<IAnnotatedElement> specElements() { return specElements; }
             }
         }
 
@@ -11084,9 +11103,14 @@ public class CommandLine {
                 }
                 if (member.isSpec()) {
                     validateInjectSpec(member);
-                    commandSpec.addSpecElement(member);
-                    if (member.getAnnotation(Spec.class).value() == Spec.Target.SELF) {
-                        try { member.setter().set(commandSpec); } catch (Exception ex) { throw new InitializationException("Could not inject spec", ex); }
+                    if (groupBuilder != null) {
+                        groupBuilder.addSpecElement(member);
+                        // for ArgGroups, injecting the command spec is postponed until the user object is created
+                    } else {
+                        commandSpec.addSpecElement(member);
+                        if (member.getAnnotation(Spec.class).value() == Spec.Target.SELF) {
+                            try { member.setter().set(commandSpec); } catch (Exception ex) { throw new InitializationException("Could not inject spec", ex); }
+                        }
                     }
                 }
                 if (member.isParentCommand()) {

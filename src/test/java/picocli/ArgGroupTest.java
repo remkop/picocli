@@ -3924,14 +3924,21 @@ public class ArgGroupTest {
         }
     }
 
-    @Ignore("#1260")
     @Test
     public void testIssue1260ArgGroupWithSpec() {
-        @Command
+        @Command(name = "issue1260")
         class App {
             @ArgGroup CriteriaWithEnvironment criteria;
         }
-        new CommandLine(new App()).parseArgs("-e", "X");
+        //TestUtil.setTraceLevel("DEBUG");
+        CommandLine cmd = new CommandLine(new App());
+        try {
+            cmd.parseArgs("-e", "X");
+            fail("Expected exception");
+        } catch (ParameterException pex) {
+            assertEquals("should be one of [FOO, BAR]", pex.getMessage());
+            assertSame(cmd, pex.getCommandLine());
+        }
     }
 
 }
