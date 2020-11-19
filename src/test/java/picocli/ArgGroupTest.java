@@ -27,6 +27,7 @@ import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.ParseResult.GroupMatchContainer;
 import picocli.CommandLine.ParseResult.GroupMatch;
 import picocli.CommandLine.ParseResult.GroupValidationResult;
+import picocli.CommandLine.Spec;
 import picocli.CommandLine.UnmatchedArgumentException;
 import picocli.test.Execution;
 import picocli.test.Supplier;
@@ -3907,9 +3908,9 @@ public class ArgGroupTest {
 
         private String environment;
 
-        @CommandLine.Spec CommandSpec spec;
+        @Spec CommandSpec spec;
 
-        @CommandLine.Option(names = {"-e", "--environment"})
+        @Option(names = {"-e", "--environment"})
         public void setEnvironment(String environment) {
             if (!DYNAMIC_LIST.contains(environment)) {
                 // Should throw a ParameterException
@@ -3941,4 +3942,68 @@ public class ArgGroupTest {
         }
     }
 
+    static class Issue1260GetterMethod {
+        CommandSpec spec;
+        @Spec CommandSpec spec() {
+            return spec;
+        }
+        @Option(names = "-x") int x;
+    }
+
+    @Ignore("Getter method in ArgGroup does not work; on interface or class")
+    @Test
+    public void testIssue1260ArgGroupWithSpecGetterMethod() {
+        @Command(name = "issue1260a")
+        class App {
+            @ArgGroup
+            Issue1260GetterMethod group;
+        }
+        //TestUtil.setTraceLevel("DEBUG");
+        App app = new App();
+        CommandLine cmd = new CommandLine(app);
+        cmd.parseArgs("-x", "123");
+        assertNotNull(app.group);
+        assertEquals(123, app.group.x);
+        assertSame(cmd.getCommandSpec(), app.group.spec());
+    }
+
+    static class Issue1260SetterMethod {
+        CommandSpec spec;
+        int x;
+
+        @Spec
+        void spec(CommandSpec spec) {
+            this.spec = spec;
+        }
+
+        @Option(names = "-x")
+        void setX(int x) {
+            if (x < 0) throw new ParameterException(spec.commandLine(), "X must be positive");
+            this.x = x;
+        }
+    }
+
+    @Test
+    public void testIssue1260ArgGroupWithSpecSetterMethod() {
+        @Command(name = "issue1260b")
+        class App {
+            @ArgGroup
+            Issue1260SetterMethod group;
+        }
+        //TestUtil.setTraceLevel("DEBUG");
+        App app = new App();
+        CommandLine cmd = new CommandLine(app);
+        cmd.parseArgs("-x", "3");
+        assertNotNull(app.group);
+        assertEquals(3, app.group.x);
+        assertSame(cmd.getCommandSpec(), app.group.spec);
+
+        try {
+            cmd.parseArgs("-x", "-1");
+            fail("Expected exception");
+        } catch (ParameterException pex) {
+            assertEquals("X must be positive", pex.getMessage());
+            assertSame(cmd, pex.getCommandLine());
+        }
+    }
 }
