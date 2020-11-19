@@ -11643,6 +11643,24 @@ WARNING: When upgrading scripts from picocli versions older than 4.0, just chang
 Scripts should use `@Grab('info.picocli:picocli-groovy:4.5.3-SNAPSHOT')`. The old artifact id `@Grab('info.picocli:picocli:4.5.3-SNAPSHOT')` will not work,
 because the `@picocli.groovy.PicocliScript` annotation class and supporting classes have been moved into a separate module, `picocli-groovy`.
 
+==== Closures in Annotations
+From picocli 4.6, Groovy programs can use closures in the picocli annotations instead of specifying a class.
+This can be especially useful in Groovy scripts, where one cannot define a static inner class.
+
+Example:
+
+[source,groovy]
+----
+TODO
+----
+
+
+Closures can be used for
+* Command.versionProvider
+* Command.defaultProvider
+* TODO
+
+
 ==== Older Versions of Groovy
 NOTE: When using a Groovy version older than 2.4.7, use this workaround for the https://issues.apache.org/jira/browse/GROOVY-7613[Grape bug] that causes this error:
 `java.lang.ClassNotFoundException: # Licensed to the Apache Software Foundation (ASF) under one or more`.
