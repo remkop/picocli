@@ -9696,6 +9696,8 @@ In the above example, the `-x` and `-y` options are added to the `-z`-option of 
 === [[_spec-annotation]] `@Spec` Annotation
 Picocli 3.2 introduces a `@Spec` annotation for injecting the `CommandSpec` model of the command into a command field.
 
+TIP: From picocli 4.6, `@Spec`-annotated elements can be used in <<Argument Groups,ArgGroup classes>>.
+
 This is useful when a command needs to use the picocli API, for example to walk the command hierarchy and iterate over its sibling commands.
 This complements the `@ParentCommand` annotation;  the `@ParentCommand` annotation injects a user-defined command object, whereas this annotation injects a picocli class.
 

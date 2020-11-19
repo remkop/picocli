@@ -14,6 +14,8 @@ There is a new `mapFallbackValue` attribute that enables this, which can be used
 Also, this release adds support for `java.util.Optional<T>`: single-value types can be wrapped in an `Optional` container object when running on Java 8 or higher.
 If the option or positional parameter was not specified on the command line, picocli assigns the value `Optional.empty()` instead of `null`.
 
+From this release, `@Spec`-annotated elements can be used in `ArgGroup` classes, which can be convenient for validation.
+
 Help API: this release adds public methods `Help.Layout::colorScheme`, `Help.Layout::textTable`, `Help.Layout::optionRenderer`, `Help.Layout::parameterRenderer`, and `Help::calcLongOptionColumnWidth`, making it easier to customize the table format used to lay out options and positional parameters in the usage help message.
 
 CommandSpec API: added method `CommandSpec::removeSubcommand`.
