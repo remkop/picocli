@@ -285,7 +285,7 @@ class SubcommandAsClass : Runnable {
 
     override fun run() {
         for (code in languageCodes) {
-            System.out.println("${code.toLowerCase()}: ${Locale(code).displayLanguage}")
+            println("${code.toLowerCase()}: ${Locale(code).displayLanguage}")
         }
     }
 }

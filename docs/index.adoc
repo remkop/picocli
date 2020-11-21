@@ -265,14 +265,17 @@ The picocli Quick Guide shows other https://picocli.info/quick-guide.html#_examp
 You can add picocli as an external dependency to your project, or you can include it as source.
 
 === Add as External Dependency
-Below are examples of configuring Gradle or Maven to use picocli as an external dependency in your project.
+Below are examples of configuring Gradle or Maven to use picocli as an external dependency in your project:
 
-==== Gradle
+.Gradle
+[source,groovy,role="primary"]
 ----
-implementation 'info.picocli:picocli:4.5.3-SNAPSHOT'
+dependencies {
+    implementation 'info.picocli:picocli:4.5.3-SNAPSHOT'
+}
 ----
-
-==== Maven
+.Maven
+[source,xml,role="secondary"]
 ----
 <dependency>
   <groupId>info.picocli</groupId>
@@ -308,8 +311,25 @@ To configure this option, pass the `-Aproject=<some value>` to the javac compile
 ===== IDE
 https://immutables.github.io/apt.html[This page] shows the steps to configure Eclipse and IntelliJ IDEA to enable annotation processing.
 
-===== Maven
-```
+===== Using Build Tools
+
+.Gradle
+[source,groovy,role="primary"]
+----
+dependencies {
+    implementation 'info.picocli:picocli:4.5.3-SNAPSHOT'
+    annotationProcessor 'info.picocli:picocli-codegen:4.5.3-SNAPSHOT'
+}
+
+
+compileJava {
+    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+}
+----
+
+.Maven
+[source,xml,role="secondary"]
+----
 <plugin>
   <groupId>org.apache.maven.plugins</groupId>
   <artifactId>maven-compiler-plugin</artifactId>
@@ -328,27 +348,12 @@ https://immutables.github.io/apt.html[This page] shows the steps to configure Ec
     </compilerArgs>
   </configuration>
 </plugin>
-```
+----
 
 See the https://github.com/remkop/picocli/tree/master/picocli-codegen[`picocli-codegen` README] for more details.
 
-
-===== Gradle
-```
-dependencies {
-    implementation 'info.picocli:picocli:4.5.3-SNAPSHOT'
-    annotationProcessor 'info.picocli:picocli-codegen:4.5.3-SNAPSHOT'
-}
-```
-
-```
-compileJava {
-    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
-}
-```
-
 ===== Kotlin Projects Using Gradle
-Kotlin projects should add the `kotlin-kapt` plugin to enable the Kotlin Annotation processing tool (kapt),
+Kotlin projects should add the `kotlin-kapt` plugin to enable the Kotlin Annotation processing tool (https://kotlinlang.org/docs/reference/kapt.html[kapt]),
 then replace `annotationProcessor` with `kapt`:
 
 ```
@@ -635,7 +640,7 @@ The https://github.com/remkop/picocli/blob/master/picocli-examples[`picocli-exam
 [CAUTION]
 .Interactive options and shell applications with JLine 2
 ====
-Interactive options do not work in conjunction with JLine 2's `ConsoleReader`. Either implement a <<Custom Parameter Processing,`IParameterConsumer`>> which uses JLine2's `ConsoleReader` directly or use `picocli-shell-jline3`.
+Interactive options do not work in conjunction with JLine 2's `ConsoleReader`. Either implement a <<Custom Parameter Processing,`IParameterConsumer`>> which uses JLine2's `ConsoleReader` directly or use https://github.com/remkop/picocli/tree/master/picocli-shell-jline3[`picocli-shell-jline3`].
 ====
 
 === Short (POSIX) Options
@@ -10381,7 +10386,6 @@ Since picocli dependencies are not available in the Spring Initializr, we have t
 [source,xml,role="primary"]
 ----
 <dependency>
-<dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli-spring-boot-starter</artifactId>
   <version>4.5.3-SNAPSHOT</version>
@@ -11029,8 +11033,8 @@ X-Mailer: Picocli/Quarkus  <1>
 X-Mailer-Version: 1.0      <2>
 # ...
 ----
-<1> Custom Header line 1, starting with ´X-` as defined in https://tools.ietf.org/html/rfc822[RFC 822]
-<2> Custom Header line 2
+<1> Custom header line 1, starting with `X-` as defined in https://tools.ietf.org/html/rfc822[RFC 822]
+<2> Custom header line 2
 
 The Quarkus guide for the https://quarkus.io/guides/picocli[Command mode with Picocli] has extended information on the Quarkus Picocli integration.
 
@@ -11834,14 +11838,25 @@ Previous versions are available from the GitHub project https://github.com/remko
 
 == Download
 You can add picocli as an external dependency to your project, or you can include it as source.
-See the <<Source,source code>> below. Copy and paste it into a file called `CommandLine.java`, add it to your project, and enjoy!
 
-=== Gradle
+=== Build tools
+
+.Gradle
+[source,groovy,role="primary"]
 ----
 implementation 'info.picocli:picocli:4.5.3-SNAPSHOT'
 ----
 
-=== Maven
+.Gradle (Kotlin)
+[source,kotlin,role="secondary"]
+----
+dependencies {
+    implementation("info.picocli:picocli-spring-boot-starter:4.5.3-SNAPSHOT")
+}
+----
+
+.Maven
+[source,xml,role="secondary"]
 ----
 <dependency>
   <groupId>info.picocli</groupId>
@@ -11850,19 +11865,52 @@ implementation 'info.picocli:picocli:4.5.3-SNAPSHOT'
 </dependency>
 ----
 
-=== Scala SBT
+.Scala SBT
+[source,role="secondary"]
 ----
 libraryDependencies += "info.picocli" % "picocli" % "4.5.3-SNAPSHOT"
 ----
 
-=== Ivy
-
+.Ivy
+[source,role="secondary"]
 ----
 <dependency org="info.picocli" name="picocli" rev="4.5.3-SNAPSHOT" />
 ----
 
+.Grape
+[source,role="secondary"]
+----
+@Grapes(
+    @Grab(group='info.picocli', module='picocli', version='4.5.2')
+)
+----
+
+.Leiningen
+[source,role="secondary"]
+----
+[info.picocli/picocli "4.5.2"]
+----
+
+.Buildr
+[source,role="secondary"]
+----
+'info.picocli:picocli:jar:4.5.2'
+----
+
+.Leiningen
+[source,role="secondary"]
+----
+[info.picocli/picocli "4.5.2"]
+----
+
+.JBang
+[source,role="secondary"]
+----
+//DEPS info.picocli:picocli:4.5.2
+----
+
 === Source
 
+By using picocli in source form, you can avoid having an external dependency on picocli.
 Picocli has only one source file: link:https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java[CommandLine.java].
-This facilitates including it in your project in source form to avoid having an external dependency on picocli.
-
+This facilitates including picocli in your project: simply copy and paste the code of this file into a file called `CommandLine.java`, add it to your project, and enjoy!
