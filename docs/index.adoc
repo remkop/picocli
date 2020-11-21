@@ -11651,14 +11651,44 @@ Example:
 
 [source,groovy]
 ----
-TODO
+@Command(name = "ClosureDemo",
+        versionProvider = {
+            { -> ["line1" , "line2"] as String[] } as IVersionProvider // <1>
+        },
+        defaultValueProvider = {
+            { argSpec -> "some default" } as IDefaultValueProvider // <2>
+        })
+class ClosureDemo {
+    @Option(names = '-x', completionCandidates = {["A", "B", "C"]}) // <3>
+    String x
+
+    @Option(names = '-y',
+            parameterConsumer = {
+                { args, argSpec, commandSpec ->  // <4>
+                    argSpec.setValue(args.toString() + commandSpec.name())
+                    args.clear()
+                } as IParameterConsumer
+            })
+    String y
+
+    @Option(names = '-z', converter = [ // requires Groovy 3.0.7
+            { { str -> MessageDigest.getInstance(str) } as ITypeConverter } // <5>
+    ])
+    MessageDigest z
+}
 ----
 
+When a class is specified, picocli creates an instance of the class.
+By contrast, when a closure is specified, picocli _calls the closure_ to get an instance.
+(To be precise, both of these are delegated to the configured <<Custom Factory, factory>>, and the default factory implementation supports closures from picocli 4.6.)
 
-Closures can be used for
-* Command.versionProvider
-* Command.defaultProvider
-* TODO
+As you can see in the above example, each closure in the annotation should contain another closure that has the required type (`IVersionProvider`, `IDefaultValueProvider`, etc.)
+
+<1> Command `versionProvider`: note the empty parameter list before the `->` arrow. This is needed to help the Groovy compiler. The closure must be cast to `IVersionProvider`.
+<2> Command `defaultProvider`: return a default value for the specified `ArgSpec` parameter. The closure must be cast to `IDefaultValueProvider`.
+<3> Option or Parameters `completionCandidates`: return a list of Strings. No parameter list or casting is required.
+<4> Option or Parameters `parameterConsumer`: given a `Stack`, `ArgSpec` and `CommandSpec`, process the remaining arguments. The closure must be cast to `IParameterConsumer`.
+<5> Option or Parameters type `converter` takes an array of closures. Groovy 3.0.7 or greater is required: older versions of Groovy ignore closures in class array annotations. Each closure must have a parameter and be cast to `ITypeConverter`.
 
 
 ==== Older Versions of Groovy

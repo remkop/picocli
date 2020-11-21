@@ -572,7 +572,6 @@ println iter
         assertEquals("[A, B, C]", baos.toString().trim())
     }
 
-    @Ignore("requires #1258")
     @Test
     public void testCompletionCandidatesWithClosure() {
         String script = '''

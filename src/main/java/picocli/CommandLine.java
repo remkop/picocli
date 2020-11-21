@@ -5199,7 +5199,19 @@ public class CommandLine {
      * @since 4.0 */
     public static IFactory defaultFactory() { return new DefaultFactory(); }
     private static class DefaultFactory implements IFactory {
+        static Class<?> GROOVY_CLOSURE_CLASS = loadClosureClass();
+        private static Class<?> loadClosureClass() {
+            try { return Class.forName("groovy.lang.Closure"); }
+            catch (Exception ignored) { return null;}
+        }
+        @SuppressWarnings("unchecked")
         public <T> T create(Class<T> cls) throws Exception {
+            if (GROOVY_CLOSURE_CLASS != null && GROOVY_CLOSURE_CLASS.isAssignableFrom(cls)) {
+                Callable<?> callable = Callable.class.cast(cls.getConstructor(Object.class, Object.class).newInstance(null, null));
+                try { return (T) callable.call(); }
+                catch (Exception ex) { throw new InitializationException("Error in Groovy closure: " + ex); }
+
+            }
             if (cls.isInterface() && Collection.class.isAssignableFrom(cls)) {
                 if (List.class.isAssignableFrom(cls)) {
                     return cls.cast(new ArrayList<Object>());

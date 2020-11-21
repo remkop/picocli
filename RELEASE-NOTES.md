@@ -4,9 +4,9 @@
 # <a name="4.6.0"></a> Picocli 4.6.0 (UNRELEASED)
 The picocli community is pleased to announce picocli 4.6.0.
 
-This release contains bug fixes and enhancements.
+This release contains new features, bug fixes and other enhancements.
 
-The `picocli-groovy` module gets a facelift. This release introduces a new `@PicocliScript2` annotation that adds support for exit codes and `@Command`-annotated methods to define subcommands.
+Improved Groovy support: this release introduces a new `@PicocliScript2` annotation that adds support for exit codes and `@Command`-annotated methods to define subcommands. Also, from this release, Groovy programs can use closures in the picocli annotations instead of specifying a class.
 
 From this release, Map options accept key-only parameters, so end users can specify `-Dkey` as well as `-Dkey=value`.
 There is a new `mapFallbackValue` attribute that enables this, which can be used to control the value that is put into the map when only a key was specified on the command line.
@@ -45,6 +45,51 @@ The table below lists the differences between the `PicocliBaseScript2` and `Pico
 | Scripts can override `beforeParseArgs(CommandLine)` to install a custom `IParameterExceptionHandler`. | Invalid input handling can be customized by overriding `PicocliBaseScript::handleParameterException`.
 | Scripts can override `beforeParseArgs(CommandLine)` to install a custom `IExecutionExceptionHandler`. | Runtime exception handling can be customized by overriding `PicocliBaseScript::handleExecutionException`.
 | Implements `Callable<Object>`, script body is transformed to the `call` method. | Script body is transformed to the `runScriptBody` method.
+
+### Closures in Annotations
+From picocli 4.6, Groovy programs can use closures in the picocli annotations instead of specifying a class.
+This can be especially useful in Groovy scripts, where one cannot define a static inner class.
+
+Example:
+
+```groovy
+@Command(name = "ClosureDemo",
+        versionProvider = {
+            { -> ["line1" , "line2"] as String[] } as IVersionProvider // <1>
+        },
+        defaultValueProvider = {
+            { argSpec -> "some default" } as IDefaultValueProvider // <2>
+        })
+class ClosureDemo {
+    @Option(names = '-x', completionCandidates = {["A", "B", "C"]}) // <3>
+    String x
+
+    @Option(names = '-y',
+            parameterConsumer = {
+                { args, argSpec, commandSpec ->  // <4>
+                    argSpec.setValue(args.toString() + commandSpec.name())
+                    args.clear()
+                } as IParameterConsumer
+            })
+    String y
+
+    @Option(names = '-z', converter = [ // requires Groovy 3.0.7
+            { { str -> MessageDigest.getInstance(str) } as ITypeConverter } // <5>
+    ])
+    MessageDigest z
+}
+```
+
+When a class is specified, picocli creates an instance of the class. By contrast, when a closure is specified, picocli _calls the closure_ to get an instance.
+(To be precise, both of these are delegated to the configured [factory](https://picocli.info/#_custom_factory), and the default factory implementation supports closures from picocli 4.6.)
+
+As you can see in the above example, each closure in the annotation should contain another closure that has the required type (`IVersionProvider`, `IDefaultValueProvider`, etc.)
+
+* <1> Command `versionProvider`: note the empty parameter list before the `->` arrow. This is needed to help the Groovy compiler. The closure must be cast to `IVersionProvider`.
+* <2> Command `defaultProvider`: return a default value for the specified `ArgSpec` parameter. The closure must be cast to `IDefaultValueProvider`.
+* <3> Option or Parameters `completionCandidates`: return a list of Strings. No parameter list or casting is required.
+* <4> Option or Parameters `parameterConsumer`: given a `Stack`, `ArgSpec` and `CommandSpec`, process the remaining arguments. The closure must be cast to `IParameterConsumer`.
+* <5> Option or Parameters type `converter` takes an array of closures. Groovy 3.0.7 or greater is required: older versions of Groovy ignore closures in class array annotations. Each closure must have a parameter and be cast to `ITypeConverter`.
 
 
 ### Key-only map parameters
@@ -114,6 +159,7 @@ only single-value types, and the values in a `Map` (but not the keys!) can be wr
 * [#1184] API: Added public methods `Help.Layout::colorScheme`, `Help.Layout::textTable`, `Help.Layout::optionRenderer`, `Help.Layout::parameterRenderer`, and `Help::calcLongOptionColumnWidth`.
 * [#1254] API: Added `ArgSpec::root`: this method returns the original `ArgSpec` for inherited `ArgSpec` objects, and `null` for other `ArgSpec` objects. Thanks to [Daniel Gray](https://github.com/danielthegray) for the pull request.
 * [#1256] API: Added `CommandSpec::removeSubcommand` method. Thanks to [Marko Mackic](https://github.com/MarkoMackic) for raising this.
+* [#1258] API: Groovy programs can now use closures in the picocli annotations instead of specifying a class. Thanks to [Adrian A.](https://github.com/aadrian) for raising this.
 * [#1108] Enhancement: Support `Optional<T>` type for options and positional parameters. Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for raising this.
 * [#1214] Enhancement: Support Map options with key-only (support `-Dkey` as well as `-Dkey=value`). Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) and [David Walluck](https://github.com/dwalluck) for raising this and subsequent discussion.
 * [#1260] Enhancement: Support `@Spec`-annotated members in `ArgGroup` classes. Thanks to [Jannick Hemelhof](https://github.com/clone1612) for raising this.
