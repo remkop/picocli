@@ -364,3 +364,9 @@ libraryDependencies += "info.picocli" % "picocli" % "4.5.2"
 ```
 'info.picocli:picocli:jar:4.5.2'
 ```
+
+### JBang
+```
+//DEPS info.picocli:picocli:4.5.2
+```
+
