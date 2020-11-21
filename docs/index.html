@@ -2161,11 +2161,8 @@ $(addBlockSwitches);
 <li><a href="#_releases">36. Releases</a></li>
 <li><a href="#_download">37. Download</a>
 <ul class="sectlevel2">
-<li><a href="#_gradle_3">37.1. Gradle</a></li>
-<li><a href="#_maven_3">37.2. Maven</a></li>
-<li><a href="#_scala_sbt">37.3. Scala SBT</a></li>
-<li><a href="#_ivy">37.4. Ivy</a></li>
-<li><a href="#_source">37.5. Source</a></li>
+<li><a href="#_build_tools">37.1. Build tools</a></li>
+<li><a href="#_source">37.2. Source</a></li>
 </ul>
 </li>
 </ul>
@@ -2459,26 +2456,24 @@ The example <code>main</code> method calls <code>CommandLine.execute</code> to p
 <div class="sect2">
 <h3 id="_add_as_external_dependency"><a class="anchor" href="#_add_as_external_dependency"></a>2.1. Add as External Dependency</h3>
 <div class="paragraph">
-<p>Below are examples of configuring Gradle or Maven to use picocli as an external dependency in your project.</p>
+<p>Below are examples of configuring Gradle or Maven to use picocli as an external dependency in your project:</p>
 </div>
-<div class="sect3">
-<h4 id="_gradle"><a class="anchor" href="#_gradle"></a>2.1.1. Gradle</h4>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Gradle</div>
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.5.2'</pre>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="n">dependencies</span> <span class="o">{</span>
+    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.5.2'</span>
+<span class="o">}</span></code></pre>
 </div>
 </div>
-</div>
-<div class="sect3">
-<h4 id="_maven"><a class="anchor" href="#_maven"></a>2.1.2. Maven</h4>
-<div class="listingblock">
+<div class="listingblock secondary">
+<div class="title">Maven</div>
 <div class="content">
-<pre>&lt;dependency&gt;
-  &lt;groupId&gt;info.picocli&lt;/groupId&gt;
-  &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.5.2&lt;/version&gt;
-&lt;/dependency&gt;</pre>
-</div>
+<pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
+  <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
+  <span class="nt">&lt;artifactId&gt;</span>picocli<span class="nt">&lt;/artifactId&gt;</span>
+  <span class="nt">&lt;version&gt;</span>4.5.2<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
 </div>
@@ -2528,27 +2523,42 @@ In most cases no further configuration is needed when generating a native image.
 </div>
 </div>
 <div class="sect4">
-<h5 id="_maven_2"><a class="anchor" href="#_maven_2"></a>Maven</h5>
-<div class="listingblock">
+<h5 id="_using_build_tools"><a class="anchor" href="#_using_build_tools"></a>Using Build Tools</h5>
+<div class="listingblock primary">
+<div class="title">Gradle</div>
 <div class="content">
-<pre class="rouge highlight"><code>&lt;plugin&gt;
-  &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
-  &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
-  &lt;!-- annotationProcessorPaths requires maven-compiler-plugin version 3.5 or higher --&gt;
-  &lt;version&gt;${maven-compiler-plugin-version}&lt;/version&gt;
-  &lt;configuration&gt;
-    &lt;annotationProcessorPaths&gt;
-      &lt;path&gt;
-        &lt;groupId&gt;info.picocli&lt;/groupId&gt;
-        &lt;artifactId&gt;picocli-codegen&lt;/artifactId&gt;
-        &lt;version&gt;4.5.2&lt;/version&gt;
-      &lt;/path&gt;
-    &lt;/annotationProcessorPaths&gt;
-    &lt;compilerArgs&gt;
-      &lt;arg&gt;-Aproject=${project.groupId}/${project.artifactId}&lt;/arg&gt;
-    &lt;/compilerArgs&gt;
-  &lt;/configuration&gt;
-&lt;/plugin&gt;</code></pre>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="n">dependencies</span> <span class="o">{</span>
+    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.5.2'</span>
+    <span class="n">annotationProcessor</span> <span class="s1">'info.picocli:picocli-codegen:4.5.2'</span>
+<span class="o">}</span>
+
+
+<span class="n">compileJava</span> <span class="o">{</span>
+    <span class="n">options</span><span class="o">.</span><span class="na">compilerArgs</span> <span class="o">+=</span> <span class="o">[</span><span class="s2">"-Aproject=${project.group}/${project.name}"</span><span class="o">]</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Maven</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;plugin&gt;</span>
+  <span class="nt">&lt;groupId&gt;</span>org.apache.maven.plugins<span class="nt">&lt;/groupId&gt;</span>
+  <span class="nt">&lt;artifactId&gt;</span>maven-compiler-plugin<span class="nt">&lt;/artifactId&gt;</span>
+  <span class="c">&lt;!-- annotationProcessorPaths requires maven-compiler-plugin version 3.5 or higher --&gt;</span>
+  <span class="nt">&lt;version&gt;</span>${maven-compiler-plugin-version}<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;configuration&gt;</span>
+    <span class="nt">&lt;annotationProcessorPaths&gt;</span>
+      <span class="nt">&lt;path&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>picocli-codegen<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>4.5.2<span class="nt">&lt;/version&gt;</span>
+      <span class="nt">&lt;/path&gt;</span>
+    <span class="nt">&lt;/annotationProcessorPaths&gt;</span>
+    <span class="nt">&lt;compilerArgs&gt;</span>
+      <span class="nt">&lt;arg&gt;</span>-Aproject=${project.groupId}/${project.artifactId}<span class="nt">&lt;/arg&gt;</span>
+    <span class="nt">&lt;/compilerArgs&gt;</span>
+  <span class="nt">&lt;/configuration&gt;</span>
+<span class="nt">&lt;/plugin&gt;</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2556,27 +2566,9 @@ In most cases no further configuration is needed when generating a native image.
 </div>
 </div>
 <div class="sect4">
-<h5 id="_gradle_2"><a class="anchor" href="#_gradle_2"></a>Gradle</h5>
-<div class="listingblock">
-<div class="content">
-<pre class="rouge highlight"><code>dependencies {
-    compile 'info.picocli:picocli:4.5.2'
-    annotationProcessor 'info.picocli:picocli-codegen:4.5.2'
-}</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="rouge highlight"><code>compileJava {
-    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect4">
 <h5 id="_kotlin_projects_using_gradle"><a class="anchor" href="#_kotlin_projects_using_gradle"></a>Kotlin Projects Using Gradle</h5>
 <div class="paragraph">
-<p>Kotlin projects should add the <code>kotlin-kapt</code> plugin to enable the Kotlin Annotation processing tool (kapt),
+<p>Kotlin projects should add the <code>kotlin-kapt</code> plugin to enable the Kotlin Annotation processing tool (<a href="https://kotlinlang.org/docs/reference/kapt.html">kapt</a>),
 then replace <code>annotationProcessor</code> with <code>kapt</code>:</p>
 </div>
 <div class="listingblock">
@@ -2947,7 +2939,7 @@ Another idea is to add a separate different option (that could be named <code>--
 <td class="content">
 <div class="title">Interactive options and shell applications with JLine 2</div>
 <div class="paragraph">
-<p>Interactive options do not work in conjunction with JLine 2&#8217;s <code>ConsoleReader</code>. Either implement a <a href="#_custom_parameter_processing"><code>IParameterConsumer</code></a> which uses JLine2&#8217;s <code>ConsoleReader</code> directly or use <code>picocli-shell-jline3</code>.</p>
+<p>Interactive options do not work in conjunction with JLine 2&#8217;s <code>ConsoleReader</code>. Either implement a <a href="#_custom_parameter_processing"><code>IParameterConsumer</code></a> which uses JLine2&#8217;s <code>ConsoleReader</code> directly or use <a href="https://github.com/remkop/picocli/tree/master/picocli-shell-jline3"><code>picocli-shell-jline3</code></a>.</p>
 </div>
 </td>
 </tr>
@@ -4024,8 +4016,8 @@ For example:</p>
 </div>
 </div>
 <div class="paragraph">
-<p>If the field is <code>null</code>, picocli will instantiate it when the option or positional parameter is matched.
-If the type is not a concrete class, picocli will instantiate a <code>LinkedHashMap</code> to preserve the input ordering.</p>
+<p>If the annotated field is <code>null</code>, picocli will instantiate it when the option or positional parameter is matched.
+If the <code>Map</code> type is not a concrete class, picocli will instantiate a <code>LinkedHashMap</code> to preserve the input ordering.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -14864,7 +14856,6 @@ Extract the archive file to a directory of your choice and open a shell or comma
 <div class="title">Maven</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
-<span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>picocli-spring-boot-starter<span class="nt">&lt;/artifactId&gt;</span>
   <span class="nt">&lt;version&gt;</span>4.5.2<span class="nt">&lt;/version&gt;</span>
@@ -15668,11 +15659,11 @@ X-Mailer-Version: 1.0      <i class="conum" data-value="2"></i><b>(2)</b>
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Custom Header line 1, starting with ´X-` as defined in <a href="https://tools.ietf.org/html/rfc822">RFC 822</a></td>
+<td>Custom header line 1, starting with <code>X-</code> as defined in <a href="https://tools.ietf.org/html/rfc822">RFC 822</a></td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
-<td>Custom Header line 2</td>
+<td>Custom header line 2</td>
 </tr>
 </table>
 </div>
@@ -16687,50 +16678,79 @@ so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for t
 <h2 id="_download"><a class="anchor" href="#_download"></a>37. Download</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>You can add picocli as an external dependency to your project, or you can include it as source.
-See the <a href="#_source">source code</a> below. Copy and paste it into a file called <code>CommandLine.java</code>, add it to your project, and enjoy!</p>
+<p>You can add picocli as an external dependency to your project, or you can include it as source.</p>
 </div>
 <div class="sect2">
-<h3 id="_gradle_3"><a class="anchor" href="#_gradle_3"></a>37.1. Gradle</h3>
-<div class="listingblock">
+<h3 id="_build_tools"><a class="anchor" href="#_build_tools"></a>37.1. Build tools</h3>
+<div class="listingblock primary">
+<div class="title">Gradle</div>
 <div class="content">
-<pre>compile 'info.picocli:picocli:4.5.2'</pre>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.5.2'</span></code></pre>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_maven_3"><a class="anchor" href="#_maven_3"></a>37.2. Maven</h3>
-<div class="listingblock">
+<div class="listingblock secondary">
+<div class="title">Gradle (Kotlin)</div>
 <div class="content">
-<pre>&lt;dependency&gt;
-  &lt;groupId&gt;info.picocli&lt;/groupId&gt;
-  &lt;artifactId&gt;picocli&lt;/artifactId&gt;
-  &lt;version&gt;4.5.2&lt;/version&gt;
-&lt;/dependency&gt;</pre>
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nf">dependencies</span> <span class="p">{</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli-spring-boot-starter:4.5.2"</span><span class="p">)</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_scala_sbt"><a class="anchor" href="#_scala_sbt"></a>37.3. Scala SBT</h3>
-<div class="listingblock">
+<div class="listingblock secondary">
+<div class="title">Maven</div>
 <div class="content">
-<pre>libraryDependencies += "info.picocli" % "picocli" % "4.5.2"</pre>
+<pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
+  <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
+  <span class="nt">&lt;artifactId&gt;</span>picocli<span class="nt">&lt;/artifactId&gt;</span>
+  <span class="nt">&lt;version&gt;</span>4.5.2<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_ivy"><a class="anchor" href="#_ivy"></a>37.4. Ivy</h3>
-<div class="listingblock">
+<div class="listingblock secondary">
+<div class="title">Scala SBT</div>
 <div class="content">
-<pre>&lt;dependency org="info.picocli" name="picocli" rev="4.5.2" /&gt;</pre>
+<pre class="rouge highlight"><code>libraryDependencies += "info.picocli" % "picocli" % "4.5.2"</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Ivy</div>
+<div class="content">
+<pre class="rouge highlight"><code>&lt;dependency org="info.picocli" name="picocli" rev="4.5.2" /&gt;</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Grape</div>
+<div class="content">
+<pre class="rouge highlight"><code>@Grapes(
+    @Grab(group='info.picocli', module='picocli', version='4.5.2')
+)</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Leiningen</div>
+<div class="content">
+<pre class="rouge highlight"><code>[info.picocli/picocli "4.5.2"]</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Buildr</div>
+<div class="content">
+<pre class="rouge highlight"><code>'info.picocli:picocli:jar:4.5.2'</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">JBang</div>
+<div class="content">
+<pre class="rouge highlight"><code>//DEPS info.picocli:picocli:4.5.2</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_source"><a class="anchor" href="#_source"></a>37.5. Source</h3>
+<h3 id="_source"><a class="anchor" href="#_source"></a>37.2. Source</h3>
 <div class="paragraph">
-<p>Picocli has only one source file: <a href="https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java">CommandLine.java</a>.
-This facilitates including it in your project in source form to avoid having an external dependency on picocli.</p>
+<p>By using picocli in source form, you can avoid having an external dependency on picocli.
+Picocli has only one source file: <a href="https://github.com/remkop/picocli/blob/master/src/main/java/picocli/CommandLine.java">CommandLine.java</a>.
+This facilitates including picocli in your project: simply copy and paste the code of this file into a file called <code>CommandLine.java</code>, add it to your project, and enjoy!</p>
 </div>
 </div>
 </div>
@@ -16739,7 +16759,7 @@ This facilitates including it in your project in source form to avoid having an 
 <div id="footer">
 <div id="footer-text">
 Version 4.5.2<br>
-Last updated 2020-11-18 19:56:44 +0900
+Last updated 2020-11-22 08:38:58 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/3.0.7/tocbot.min.js"></script>
@@ -16751,7 +16771,7 @@ Last updated 2020-11-18 19:56:44 +0900
     newtoc.setAttribute('class', 'js-toc');
     oldtoc.parentNode.replaceChild(newtoc, oldtoc);
     tocbot.init({ contentSelector: '#content',
-        headingSelector: 'h1, h2, h3, h4',
+        headingSelector: 'h1, h2, h3, h4, h5',
         smoothScroll: false,
         collapseDepth: 3 });
     var handleTocOnResize = function() {
@@ -16768,7 +16788,7 @@ Last updated 2020-11-18 19:56:44 +0900
         }
         else {
             tocbot.refresh({ contentSelector: '#content',
-                headingSelector: 'h1, h2, h3, h4',
+                headingSelector: 'h1, h2, h3, h4, h5',
                 smoothScroll: false,
                 collapseDepth: 3 });
         }

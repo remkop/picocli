@@ -11881,32 +11881,26 @@ libraryDependencies += "info.picocli" % "picocli" % "4.5.3-SNAPSHOT"
 [source,role="secondary"]
 ----
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='4.5.2')
+    @Grab(group='info.picocli', module='picocli', version='4.5.3-SNAPSHOT')
 )
 ----
 
 .Leiningen
 [source,role="secondary"]
 ----
-[info.picocli/picocli "4.5.2"]
+[info.picocli/picocli "4.5.3-SNAPSHOT"]
 ----
 
 .Buildr
 [source,role="secondary"]
 ----
-'info.picocli:picocli:jar:4.5.2'
-----
-
-.Leiningen
-[source,role="secondary"]
-----
-[info.picocli/picocli "4.5.2"]
+'info.picocli:picocli:jar:4.5.3-SNAPSHOT'
 ----
 
 .JBang
 [source,role="secondary"]
 ----
-//DEPS info.picocli:picocli:4.5.2
+//DEPS info.picocli:picocli:4.5.3-SNAPSHOT
 ----
 
 === Source
