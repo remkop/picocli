@@ -98,6 +98,8 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 
 ### Articles & Presentations
 #### English
+* [Paginate results in a command line application using picoCLI](https://lengrand.fr/paginate-results-in-a-jvm-cli-application-using-picocli/) (2020-11-17) by [Julien Lengrand-Lambert](https://twitter.com/jlengrand).
+* [CLI applications with GraalVM Native Image](https://medium.com/graalvm/cli-applications-with-graalvm-native-image-d629a40aa0be) (2020-11-13) by [Oleg Šelajev](https://twitter.com/shelajev).
 * [Picocli subcommands - One program, many purposes](https://aragost.com/blog/java/picocli-subcommands.html) (2020-09-22) by [Jonas Andersen](https://twitter.com/PrimusAlgo).
 * [How to build a CLI app in Java using jbang and picocli](https://www.twilio.com/blog/cli-app-java-jbang-picocli) (2020-08-13) by [Matthew Gilliard](https://twitter.com/MaximumGilliard).
 * [VIDEO] [Tuesday Java Lunch & Learn. This week: picocli](https://m.twitch.tv/videos/706906131) (2020-08-11) by MaximumGilliard - twitch.tv.
@@ -150,6 +152,7 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 * [VIDEO] [Quarkus #40: Command Mode com Picocli](https://www.youtube.com/watch?v=LweGDh-Jxlc) (2020-06-23): 13-minute presentation by [Vinícius Ferraz](https://www.youtube.com/channel/UCJNOHl-pTTTj4S9yq60Ps9A) (@viniciusfcf).
 
 #### 日本語
+* [CLI applications with GraalVM Native Image](https://logico-jp.io/2020/11/21/cli-applications-with-graalvm-native-image/) (2020-11-21) translation by [Logico_jp](https://logico-jp.io/who-is-logico/) of Oleg Šelajev's [post](https://medium.com/graalvm/cli-applications-with-graalvm-native-image-d629a40aa0be).
 * [Picocli + Kotlin + graalvm-native-image plugin でネイティブツールを作る](https://mike-neck.hatenadiary.com/entry/2020/04/24/090000) (2020-04-24) blog post by [mike-neck](https://mike-neck.hatenadiary.com/about) ([引きこもり持田](https://twitter.com/mike_neck) on Twitter).
 * [Javaのコマンドラインアプリケーション向けのフレームワーク、picocliで遊ぶ](https://kazuhira-r.hatenablog.com/entry/2020/03/07/013626) (2020-03-07) blog post by [かずひら](https://twitter.com/kazuhira_r).
 * [KuromojiのCLIコマンドとpicocliとGraalVM](https://blog.johtani.info/blog/2020/02/28/kuromoji-cli/) (2020-02-28) blog post by [@johtani](https://twitter.com/johtani).
