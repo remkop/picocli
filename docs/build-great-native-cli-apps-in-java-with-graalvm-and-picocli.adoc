@@ -198,7 +198,7 @@ Next, let’s take a look at turning it into a native executable.
 
 === Reflection Configuration
 
-We mentioned earlier that the native image compiler has some limitations: reflection is supported but https://github.com/oracle/graal/blob/master/substratevm/Configuration.md[requires configuration].
+We mentioned earlier that the native image compiler has some limitations: reflection is supported but https://github.com/oracle/graal/blob/master/substratevm/BuildConfiguration.md[requires configuration].
 
 This impacts picocli-based applications: at runtime, picocli uses reflection to discover any `@Command`-annotated subcommands, and the `@Option` and `@Parameters`-annotated command options and positional parameters.
 

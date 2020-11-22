@@ -26,7 +26,7 @@ import java.util.concurrent.Callable;
  * option of the {@code native-image} <a href="https://www.graalvm.org/docs/reference-manual/aot-compilation/">GraalVM utility</a>.
  * This allows picocli-based native image applications to access these resources.
  * </p><p>
- * Alternatively, the generated <a href="https://github.com/oracle/graal/blob/master/substratevm/Configuration.md">configuration</a>
+ * Alternatively, the generated <a href="https://github.com/oracle/graal/blob/master/substratevm/BuildConfiguration.md">configuration</a>
  * files can be supplied to the {@code native-image} tool by placing them in a
  * {@code META-INF/native-image/} directory on the class path, for example, in a JAR file used in the image build.
  * This directory (or any of its subdirectories) is searched for files with the names {@code jni-config.json},
