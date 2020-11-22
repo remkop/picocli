@@ -27,7 +27,7 @@ If a tool does not have an annotation processor wrapper (yet), it can be invoked
 As of picocli version 4.2, this module has three major use cases:
 
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **GraalVm native images**. To create a GraalVM native image for a picocli application, https://github.com/oracle/graal/blob/master/substratevm/Configuration.md[configuration] is needed. The `ReflectionConfigGenerator`, `ResourceConfigGenerator` and `DynamicProxyGenerator` tools can generate configuration files for https://github.com/oracle/graal/blob/master/substratevm/Reflection.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/Resources.md[resources] and https://github.com/oracle/graal/blob/master/substratevm/DynamicProxy.md[dynamic proxies], respectively.
+* **GraalVm native images**. To create a GraalVM native image for a picocli application, https://github.com/oracle/graal/blob/master/substratevm/BuildConfiguration.md[configuration] is needed. The `ReflectionConfigGenerator`, `ResourceConfigGenerator` and `DynamicProxyGenerator` tools can generate configuration files for https://github.com/oracle/graal/blob/master/substratevm/Reflection.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/Resources.md[resources] and https://github.com/oracle/graal/blob/master/substratevm/DynamicProxy.md[dynamic proxies], respectively.
 +
 The annotation processor embeds these three tools and generates the configuration files under `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
 By embedding these configuration files, your jar is instantly GraalVM-enabled.
@@ -43,7 +43,7 @@ To build a GraalVM native image for a picocli-based application, configuration f
 The `picocli-codegen` module has tools that generate these configuration files for a picocli-based application.
 The annotation processor in the `picocli-codegen` jar wraps these tools so they are executed automatically during compilation.
 
-The annotation processor generates and updates https://github.com/oracle/graal/blob/master/substratevm/Configuration.md[GraalVM configuration]
+The annotation processor generates and updates https://github.com/oracle/graal/blob/master/substratevm/BuildConfiguration.md[GraalVM configuration]
 files under `META-INF/native-image/picocli-generated/$project` during compilation,
 to be included in the application jar.
 This includes configuration files for https://github.com/oracle/graal/blob/master/substratevm/Reflection.md[reflection], https://github.com/oracle/graal/blob/master/substratevm/Resources.md[resources] and https://github.com/oracle/graal/blob/master/substratevm/DynamicProxy.md[dynamic proxies].
@@ -285,7 +285,7 @@ This directory (or any of its subdirectories) is searched for files with the nam
 which are then automatically included in the build. Not all of those files must be present.
 When multiple files with the same name are found, all of them are included.
 
-See also the SubstrateVM https://github.com/oracle/graal/blob/master/substratevm/Configuration.md[configuration documentation].
+See also the SubstrateVM https://github.com/oracle/graal/blob/master/substratevm/BuildConfiguration.md[configuration documentation].
 
 === ReflectionConfigGenerator
 

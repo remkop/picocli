@@ -30,7 +30,7 @@ import java.util.concurrent.Callable;
  * This allows picocli-based native image applications that use {@code @Command}-annotated interfaces with
  * {@code @Option} and {@code @Parameters}-annotated methods to define options and positional parameters.
  * </p><p>
- * Alternatively, the generated <a href="https://github.com/oracle/graal/blob/master/substratevm/Configuration.md">configuration</a>
+ * Alternatively, the generated <a href="https://github.com/oracle/graal/blob/master/substratevm/BuildConfiguration.md">configuration</a>
  * files can be supplied to the {@code native-image} tool by placing them in a
  * {@code META-INF/native-image/} directory on the class path, for example, in a JAR file used in the image build.
  * This directory (or any of its subdirectories) is searched for files with the names {@code jni-config.json},

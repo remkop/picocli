@@ -238,7 +238,7 @@ Contributions welcome!
 * [#1162] Bugfix: Abbreviated options are not matched if value attached with '=' separator (like `-x=3`). Thanks to [Chris Laprun](https://github.com/metacosm) for raising this.
 * [#1156][#1172] Bugfix: the built-in `HelpCommand` now respects subcommands case-sensitivity and abbreviations. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#1197] Bugfix: required parameters should not consume negated options. Thanks to [Kevin Turner](https://github.com/keturn) for raising this.
-* [#1213] Bugfix: `@Parameters` in `@ArgGroup` should not result in `ArithmeticException: / by zero`. Thanks to [Loren Keagle](https://github.com/LorenKeagle) for raising this. 
+* [#1213] Bugfix: `@Parameters` in `@ArgGroup` should not result in `ArithmeticException: / by zero`. Thanks to [Loren Keagle](https://github.com/LorenKeagle) for raising this.
 * [#1158] DOC: Fix broken links to GraalVM repo. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1155] DOC: Fix sample code in chapter "Validation". Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1157] DOC: Fix typo "a argument group" in user manual. Thanks to sabrina for raising this.
@@ -313,7 +313,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1142] DOC: Update Kotlin GraalVM native image example - Update native image gradle plugin. Now supports jdk 11. Thanks to [OndrejMalek](https://github.com/OndrejMalek) for the pull request.
 * [#1153] DOC: Fix documentation leading code quote. Thanks to sabrina for raising this.
 * [#1147] DOC: Add documentation on how to do custom parameter validation. Thanks to [Loren Keagle](https://github.com/LorenKeagle) for raising this.
-  
+
 
 ## <a name="4.5.1-deprecated"></a> Deprecations
 No features were deprecated in this release.
@@ -700,7 +700,7 @@ This is a fairly big release with 70 [tickets closed](https://github.com/remkop/
 
 A major theme of this release is sharing options between commands:
 * New feature: "inherited" options. Options defined with `scope = ScopeType.INHERIT` are shared with all subcommands (and sub-subcommands, to any level of depth). Applications can define an inherited option on the top-level command, in one place, to allow end users to specify this option anywhere: not only on the top-level command, but also on any of the subcommands and nested sub-subcommands.
-* More powerful mixins. Mixin classes can declare a `@Spec(MIXEE)`-annotated field, and picocli will inject the `CommandSpec` of the command _receiving_ this mixin (the "mixee") into this field. This is useful for mixins containing shared logic, in addition to shared options and parameters. 
+* More powerful mixins. Mixin classes can declare a `@Spec(MIXEE)`-annotated field, and picocli will inject the `CommandSpec` of the command _receiving_ this mixin (the "mixee") into this field. This is useful for mixins containing shared logic, in addition to shared options and parameters.
 
 Another major theme is improved support for positional parameters:
 * Automatic indexes for positional parameters. Single-value positional parameters without an explicit `index = "..."` attribute are now automatically assigned an index based on the other positional parameters in the command. One use case is mixins with positional parameters.
@@ -712,7 +712,7 @@ Other improvements:
 * The usage help message can now show an entry for `--` in the options list with the `@Command(showEndOfOptionsDelimiterInUsageHelp = true)` annotation.
 * Easily make subcommands mandatory by making the top-level command a class that does not implement `Runnable` or `Callable`.
 
- 
+
 This is the sixty-eighth public release.
 Picocli follows [semantic versioning](http://semver.org/).
 
@@ -775,7 +775,7 @@ Users can specify the `-v` option on either the top-level command or on the subc
 java App -x=3 -v sub -y=4
 ```
 
-Specifying the `-v` option on the subcommand will have the same effect. For example: 
+Specifying the `-v` option on the subcommand will have the same effect. For example:
 ```
 # specifying the -v option on the subcommand also changes the log level
 java App -x=3 sub -y=4 -v
@@ -990,7 +990,7 @@ Example command.
 * [#1026] Bugfix: Hidden options should not impact usage help.
 * [#1034] Bugfix: Writer should `flush()` in `UnmatchedArgumentException.printSuggestions`. Thanks to [darkmoonka](https://github.com/darkmoonka) for raising this.
 * [#963] DOC: Fixed broken link in README. Thanks to [vladimirf7](https://github.com/vladimirf7) for the pull request.
-* [#895] DOC: Added [Initialization Before Execution](https://picocli.info/#_initialization_before_execution) section on initialization with subcommands to the user manual. Thanks to [Walter Scott Johnson](https://github.com/li-wjohnson) for raising this. 
+* [#895] DOC: Added [Initialization Before Execution](https://picocli.info/#_initialization_before_execution) section on initialization with subcommands to the user manual. Thanks to [Walter Scott Johnson](https://github.com/li-wjohnson) for raising this.
 * [#951] DOC: Fixed typo in `picocli-codegen` annotation processor documentation: `disable.resource.config` is correct (the option name was incorrectly spelled as `disable.resources.config`). Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for raising this.
 * [#966] DOC: Add section about Testing to the user manual.
 * [#973] DOC: Update documentation for using the `picocli-codegen` annotation processor during the build with Kotlin.
@@ -1972,12 +1972,12 @@ The `picocli-codegen` module now includes an annotation processor that instantly
 
 Use this if you’re interested in:
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **Graal native images**. The annotation processor generates and updates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/Configuration.md) files under
+* **Graal native images**. The annotation processor generates and updates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/BuildConfiguration.md) files under
 `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
 This includes configuration files for [reflection](https://github.com/oracle/graal/blob/master/substratevm/Reflection.md), [resources](https://github.com/oracle/graal/blob/master/substratevm/Resources.md) and [dynamic proxies](https://github.com/oracle/graal/blob/master/substratevm/DynamicProxy.md).
 By embedding these configuration files, your jar is instantly Graal-enabled.
 The `$project` location is configurable, see [processor options](#picocli-processor-options) below.
-In most cases no further configuration is needed when generating a native image. 
+In most cases no further configuration is needed when generating a native image.
 
 
 #### Processor option: `project`
@@ -1988,7 +1988,7 @@ To configure this option, pass the `-Aproject=<some value>` to the javac compile
 
 #### Enabling the Annotation Processor
 
-Since Java 6, annotation processing is part of the standard `javac` compiler, but many IDEs and build tools require something extra to enable annotation processing. 
+Since Java 6, annotation processing is part of the standard `javac` compiler, but many IDEs and build tools require something extra to enable annotation processing.
 
 ##### IDE
 [This page](https://immutables.github.io/apt.html) shows the steps to configure Eclipse and IntelliJ IDEA to enable annotation processing.
@@ -2029,7 +2029,7 @@ dependencies {
 }
 ```
 
-To set an annotation processor option in Gradle, add these options to the `options.compilerArgs` list in the `compileJava` block. 
+To set an annotation processor option in Gradle, add these options to the `options.compilerArgs` list in the `compileJava` block.
 
 ```
 compileJava {
@@ -2968,7 +2968,7 @@ This release includes the first cut of an annotation processor that can build a 
 
 Use this if you’re interested in:
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **Graal native images**. The annotation processor generates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/Configuration.md)
+* **Graal native images**. The annotation processor generates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/BuildConfiguration.md)
 files under `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
 By embedding these configuration files, your jar is instantly Graal-enabled.
 In most cases no further configuration is needed when generating a native image. 
@@ -3005,7 +3005,7 @@ This release includes the first cut of an annotation processor that can build a 
 
 Use this if you’re interested in:
 * **Compile time error checking**. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.
-* **Graal native images**. The annotation processor generates and updates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/Configuration.md) files under
+* **Graal native images**. The annotation processor generates and updates [Graal configuration](https://github.com/oracle/graal/blob/master/substratevm/BuildConfiguration.md) files under
 `META-INF/native-image/picocli-generated/$project` during compilation, to be included in the application jar.
 This includes configuration files for [reflection](https://github.com/oracle/graal/blob/master/substratevm/Reflection.md), [resources](https://github.com/oracle/graal/blob/master/substratevm/Resources.md) and [dynamic proxies](https://github.com/oracle/graal/blob/master/substratevm/DynamicProxy.md).
 By embedding these configuration files, your jar is instantly Graal-enabled.
