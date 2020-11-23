@@ -456,6 +456,22 @@ class Tar : Runnable {
 }
 ----
 
+.Invocation
+[source,push-right,role="secondary"]
+----
+$ tar -c --file=new.zip file1.txt file2.txt
+----
+
+.Usage help
+[source,push-right,role="secondary"]
+----
+Usage: tar [-ch] [-f=ARCHIVE] [FILE...]
+      [FILE...]        one ore more files to archive
+  -c                   create a new archive
+  -f, --file=ARCHIVE   the archive file
+  -h, --help           display a help message
+----
+
 Picocli matches the option names to set the field values.
 
 .Java
