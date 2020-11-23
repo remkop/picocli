@@ -1,7 +1,15 @@
 package picocli.shell.jline3;
 
+import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -13,18 +21,15 @@ import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
+import org.jline.reader.impl.LineReaderImpl;
 import org.jline.reader.impl.completer.SystemCompleter;
 import org.jline.utils.AttributedString;
+
 import picocli.CommandLine;
+import picocli.CommandLine.Command;
 import picocli.CommandLine.Help;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Compiles SystemCompleter for command completion and implements a method commandDescription() that provides command descriptions
@@ -35,6 +40,26 @@ import java.util.Map;
  * @since 4.1.2
  */
 public class PicocliCommands implements CommandRegistry {
+
+    /**
+     * Command that clears the screen.
+     */
+    @Command(name = "cls", aliases = "clear", mixinStandardHelpOptions = true,
+            description = "Clears the screen", version = "1.0")
+    static class ClearScreen implements Callable<Void> {
+
+    	private final LineReaderImpl reader;
+
+        ClearScreen(LineReaderImpl reader) {
+			this.reader = reader;
+		}
+
+		public Void call() throws IOException {
+            reader.clearScreen();
+            return null;
+        }
+    }
+
     private final Supplier<Path> workDir;
     private final CommandLine cmd;
     private final Set<String> commands;
@@ -47,12 +72,23 @@ public class PicocliCommands implements CommandRegistry {
     public PicocliCommands(Supplier<Path> workDir, CommandLine cmd) {
         this.workDir = workDir;
         this.cmd = cmd;
-        commands = cmd.getCommandSpec().subcommands().keySet();
+        commands = new HashSet<>(cmd.getCommandSpec().subcommands().keySet());
         for (String c: commands) {
             for (String a: cmd.getSubcommands().get(c).getCommandSpec().aliases()) {
                 aliasCommand.put(a, c);
             }
         }
+    }
+
+    public void includeClearScreenCommand(LineReader reader) {
+    	if (reader == null) return;
+    	ClearScreen clearScreen = new ClearScreen((LineReaderImpl) reader);
+    	cmd.addSubcommand(clearScreen);
+
+    	commands.add("clear");
+
+    	aliasCommand.put("clear", "clear");
+    	aliasCommand.put("cls", "clear");
     }
 
     /**

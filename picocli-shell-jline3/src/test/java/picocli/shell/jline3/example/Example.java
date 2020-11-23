@@ -42,17 +42,11 @@ public class Example {
                     ""},
             footer = {"", "Press Ctl-D to exit."},
             subcommands = {
-                    MyCommand.class, ClearScreen.class, CommandLine.HelpCommand.class})
+                    MyCommand.class, CommandLine.HelpCommand.class})
     static class CliCommands implements Runnable {
-        LineReaderImpl reader;
         PrintWriter out;
 
         CliCommands() {}
-
-        public void setReader(LineReader reader){
-            this.reader = (LineReaderImpl)reader;
-            out = reader.getTerminal().writer();
-        }
 
         public void run() {
             out.println(new CommandLine(this).getUsageMessage());
@@ -128,21 +122,6 @@ public class Example {
         }
     }
 
-    /**
-     * Command that clears the screen.
-     */
-    @Command(name = "cls", aliases = "clear", mixinStandardHelpOptions = true,
-            description = "Clears the screen", version = "1.0")
-    static class ClearScreen implements Callable<Void> {
-
-        @ParentCommand CliCommands parent;
-
-        public Void call() throws IOException {
-            parent.reader.clearScreen();
-            return null;
-        }
-    }
-
     private static Path workDir() {
         return Paths.get(System.getProperty("user.dir"));
     }
@@ -172,7 +151,7 @@ public class Example {
                         .variable(LineReader.LIST_MAX, 50)   // max tab completion candidates
                         .build();
                 builtins.setLineReader(reader);
-                commands.setReader(reader);
+                picocliCommands.includeClearScreenCommand(reader);
                 TailTipWidgets widgets = new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TailTipWidgets.TipType.COMPLETER);
                 widgets.enable();
                 KeyMap<Binding> keyMap = reader.getKeyMaps().get("main");
