@@ -194,6 +194,7 @@ only single-value types, and the values in a `Map` (but not the keys!) can be wr
 * [#1261] DOC: User manual improvements: add Scala code samples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1262] DOC: User manual: include jbang in the Build Tools section. Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for the pull request.
 * [#1263] DOC: User manual: show build scripts in tabs. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1264] DOC: Fix broken links to GraalVm native image build configuration. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 ## <a name="4.6.0-deprecated"></a> Deprecations
 From this release, the `@picocli.groovy.PicocliScript` annotation in the `picocli-groovy` module is deprecated in favor of `@picocli.groovy.PicocliScript2`, and the `picocli.groovy.PicocliBaseScript` class is deprecated in favor of `picocli.groovy.PicocliBaseScript2`.
