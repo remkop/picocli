@@ -143,6 +143,7 @@ public class Example {
             try (Terminal terminal = TerminalBuilder.builder().build()) {
                 SystemRegistry systemRegistry = new SystemRegistryImpl(parser, terminal, Example::workDir, null);
                 systemRegistry.setCommandRegistries(builtins, picocliCommands);
+                systemRegistry.register("help", picocliCommands);
 
                 LineReader reader = LineReaderBuilder.builder()
                         .terminal(terminal)
