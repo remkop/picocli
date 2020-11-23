@@ -6172,7 +6172,9 @@ public class CommandLine {
                 updatedSubcommandsToInheritFrom(root);
             }
             private void updatedSubcommandsToInheritFrom(CommandSpec root) {
-                mixinStandardHelpOptions(root.mixinStandardHelpOptions());
+                if (root != this) {
+                    mixinStandardHelpOptions(root.mixinStandardHelpOptions());
+                }
                 Set<CommandLine> subcommands = new HashSet<CommandLine>(subcommands().values());
                 for (CommandLine sub : subcommands) {
                     sub.getCommandSpec().inheritAttributesFrom(root);
@@ -11023,12 +11025,12 @@ public class CommandLine {
                     result.updateCommandAttributes(cmd, factory);
                     injectSpecIntoVersionProvider(result, cmd, factory);
                     result.setAddMethodSubcommands(false); // method commands don't have method subcommands
-                    initSubcommands(cmd, null, result, factory, new Stack<Class<?>>());
                     hasCommandAnnotation = true;
-                    result.mixinStandardHelpOptions(method.getAnnotation(Command.class).mixinStandardHelpOptions());
                     initFromMethodParameters(userObject, method, result, null, factory);
+                    initSubcommands(cmd, null, result, factory, new Stack<Class<?>>()); // after adding options
                     // set command name to method name, unless @Command#name is set
                     result.initName(((Method)command).getName());
+                    result.mixinStandardHelpOptions(cmd.mixinStandardHelpOptions()); // do this last
                 } else {
                     Stack<Class<?>> hierarchy = new Stack<Class<?>>();
                     Class<?> cls = userObject.getType();
@@ -11045,14 +11047,12 @@ public class CommandLine {
                         if (cmd != null) {
                             result.updateCommandAttributes(cmd, factory);
                             injectSpecIntoVersionProvider(result, cmd, factory);
-                            initSubcommands(cmd, cls, result, factory, originalHierarchy);
                             hasCommandAnnotation = true;
+                            mixinStandardHelpOptions |= cmd.mixinStandardHelpOptions();
                         }
-                        initMethodSubcommands(cls, result, factory); // regardless of @Command annotation
                         hasCommandAnnotation |= initFromAnnotatedFields(userObject, cls, result, null, factory, null);
-                        if (cls.isAnnotationPresent(Command.class)) {
-                            mixinStandardHelpOptions |= cls.getAnnotation(Command.class).mixinStandardHelpOptions();
-                        }
+                        initSubcommands(cmd, cls, result, factory, originalHierarchy); // after adding options
+                        initMethodSubcommands(cls, result, factory); // regardless of @Command annotation. NOTE: after adding options
                     }
                     result.mixinStandardHelpOptions(mixinStandardHelpOptions); //#377 Standard help options should be added last
                 }
@@ -11074,6 +11074,7 @@ public class CommandLine {
             }
 
             private static void initSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory, Stack<Class<?>> hierarchy) {
+                if (cmd == null) { return; }
                 for (Class<?> sub : cmd.subcommands()) {
                     if (sub.equals(cls)) {
                         throw new InitializationException(cmd.name() + " (" + cls.getName() + ") cannot be a subcommand of itself");

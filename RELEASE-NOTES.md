@@ -14,6 +14,8 @@ There is a new `mapFallbackValue` attribute that enables this, which can be used
 Also, this release adds support for `java.util.Optional<T>`: single-value types can be wrapped in an `Optional` container object when running on Java 8 or higher.
 If the option or positional parameter was not specified on the command line, picocli assigns the value `Optional.empty()` instead of `null`.
 
+This release also adds support for commands with `scope = ScopeType.INHERIT`. Commands with this scope have their attributes copied to all subcommands (and sub-subcommands).
+
 From this release, `@Spec`-annotated elements can be used in `ArgGroup` classes, which can be convenient for validation.
 
 Help API: this release adds public methods `Help.Layout::colorScheme`, `Help.Layout::textTable`, `Help.Layout::optionRenderer`, `Help.Layout::parameterRenderer`, and `Help::calcLongOptionColumnWidth`, making it easier to customize the table format used to lay out options and positional parameters in the usage help message.
@@ -25,13 +27,19 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.6.0-toc"></a> Table of Contents
 * [New and noteworthy](#4.6.0-new)
+  * [New `@PicocliScript2` annotation](#4.6.0-PicocliScript2-annotation)
+  * [Groovy Closures in Annotations](#4.6.0-closures-in-annotation)
+  * [Key-only map parameters](#4.6.0-key-only-map-params)
+  * [System Properties](#4.6.0-system-properties)
+  * [`java.util.Optional<T>`](#4.6.0-java-util-optional)
+  * [Inherited Command Attributes](#4.6.0-inherited-command-attributes)
 * [Fixed issues](#4.6.0-fixes)
 * [Deprecations](#4.6.0-deprecated)
 * [Potential breaking changes](#4.6.0-breaking-changes)
 
 ## <a name="4.6.0-new"></a> New and Noteworthy
 
-### New `@PicocliScript2` annotation
+### <a name="4.6.0-PicocliScript2-annotation"></a> New `@PicocliScript2` annotation
 The older `@picocli.groovy.PicocliScript` annotation is deprecated from picocli 4.6.
 New scripts should use the `@picocli.groovy.PicocliScript2` annotation (and associated `picocli.groovy.PicocliBaseScript2` base class) instead.
 The table below lists the differences between the `PicocliBaseScript2` and `PicocliBaseScript` script base classes.
@@ -46,13 +54,13 @@ The table below lists the differences between the `PicocliBaseScript2` and `Pico
 | Scripts can override `beforeParseArgs(CommandLine)` to install a custom `IExecutionExceptionHandler`. | Runtime exception handling can be customized by overriding `PicocliBaseScript::handleExecutionException`.
 | Implements `Callable<Object>`, script body is transformed to the `call` method. | Script body is transformed to the `runScriptBody` method.
 
-### Closures in Annotations
+### <a name="4.6.0-closures-in-annotation"></a> Groovy Closures in Annotations
 From picocli 4.6, Groovy programs can use closures in the picocli annotations instead of specifying a class.
 This can be especially useful in Groovy scripts, where one cannot define a static inner class.
 
 Example:
 
-```groovy
+```java
 @Command(name = "ClosureDemo",
         versionProvider = {
             { -> ["line1" , "line2"] as String[] } as IVersionProvider // <1>
@@ -92,7 +100,7 @@ As you can see in the above example, each closure in the annotation should conta
 * <5> Option or Parameters type `converter` takes an array of closures. Groovy 3.0.7 or greater is required: older versions of Groovy ignore closures in class array annotations. Each closure must have a parameter and be cast to `ITypeConverter`.
 
 
-### Key-only map parameters
+### <a name="4.6.0-key-only-map-params"></a> Key-only map parameters
 By default, picocli expects Map options and positional parameters to look like `key=value`, that is, the option parameter or positional parameter is expected to have a key part and a value part, separated by a `=` character. If this is not the case, picocli shows a user-facing error message: `Value for ... should be in KEY=VALUE format but was ...`.
 
 From picocli 4.6, applications can specify a `mapFallbackValue` to allow end users to specify only the key part. The specified `mapFallbackValue` is put into the map when end users to specify only a key. The value type can be wrapped in a `java.util.Optional`. For example:
@@ -120,7 +128,7 @@ logLevels  = [org.myorg.MyClass: INFO, org.myorg.OtherClass: DEBUG]
 
 Note that the option description may contain the [`${MAP-FALLBACK-VALUE}` variable](https://picocli.info/#_predefined_variables) which will be replaced with the actual map fallback value when the usage help is shown.
 
-### System Properties
+### <a name="4.6.0-system-properties"></a> System Properties
 A common requirement for command line applications is to support the `-Dkey=value` syntax to allow end users to set system properties.
 
 The example below uses the `Map` type to define an `@Option`-annotated method that delegates all key-value pairs to `System::setProperty`.
@@ -135,7 +143,7 @@ class SystemPropertiesDemo {
 }
 ```
 
-### `Optional<T>`
+### <a name="4.6.0-java-util-optional"></a> `java.util.Optional<T>`
 From version 4.6, picocli supports single-value types wrapped in a `java.util.Optional` container when running on Java 8 or higher.
 If the option or positional parameter was not specified on the command line, picocli assigns the value `Optional.empty()` instead of `null`.
 For example:
@@ -151,6 +159,73 @@ Map<String, Optional<Integer>> map;
 WARNING: Picocli has only limited support for `java.util.Optional` types:
 only single-value types, and the values in a `Map` (but not the keys!) can be wrapped in an `Optional` container.
 `java.util.Optional` cannot be combined with arrays or other `Collection` classes.
+
+### <a name="4.6.0-inherited-command-attributes"></a> Inherited Command Attributes
+Picocli 4.6 adds support for inheriting `@Command` attributes with the `scope = ScopeType.INHERIT` annotation.
+Commands with this scope have their `@Command` attributes copied to all subcommands (and sub-subcommands, to any level of depth).
+
+When a subcommand specifies an explicit value in its `@Command` annotation, this value is used instead of the inherited value.
+For example:
+
+```java
+@Command(name = "app", scope = ScopeType.INHERIT,
+        mixinStandardHelpOptions = true, version = "app version 1.0",
+        header = "App header",
+        description = "App description",
+        footerHeading = "Copyright%n", footer = "(c) Copyright by the authors",
+        showAtFileInUsageHelp = true)
+class App implements Runnable {
+    @Option(names = "-x") int x;
+
+    public void run() { System.out.printf("Hello from app %d%n!", x); }
+
+    @Command(header = "Subcommand header", description = "Subcommand description")
+    void sub(@Option(names = "-y") int y) {
+        System.out.printf("Hello app sub %d%n!", y);
+    }
+}
+```
+
+The `app` command in the above example has `scope = ScopeType.INHERIT`, so its `@Command` properties are inherited by the `sub` subcommand.
+
+The `sub` subcommand defines its own `header` and `description`, so these are not inherited from the parent command.
+The help message for the subcommand looks like this:
+
+```
+Subcommand header
+Usage: app sub [-hV] [-y=<arg0>] [@<filename>...]
+Subcommand description
+      [@<filename>...]   One or more argument files containing options.
+  -h, --help             Show this help message and exit.
+  -V, --version          Print version information and exit.
+  -y=<arg0>
+Copyright
+(c) Copyright by the authors
+```
+
+Note that the subcommand has inherited the mixed-in standard help options (`--help` and `--version`), the `@file` usage help, and the footer and footer heading.
+It also inherited the version string, shown when the user invokes `app sub --version`.
+
+When a command has `scope = INHERIT`, the following attributes are copied to its subcommands:
+
+* all usage help attributes: description, descriptionHeading, header, headerHeading, footer, footerHeading, customSynopsis, synopsisHeading, synopsisSubcommandLabel, abbreviateSynopsis, optionListHeading, parameterListHeading, commandListHeading, exitCodeList, exitCodeListHeading, requiredOptionMarker, showDefaultValues, sortOptions, autoWidth, width, showAtFileInUsageHelp, showEndOfOptionsDelimiterInUsageHelp, and hidden
+* exit codes: exitCodeOnSuccess, exitCodeOnUsageHelp, exitCodeOnVersionHelp, exitCodeOnInvalidInput, exitCodeOnExecutionException
+* the help and version options mixed in by `mixinStandardHelpOptions`
+* separator between option and option parameter
+* version
+* versionProvider
+* defaultValueProvider
+* subcommandsRepeatable
+* whether this command is a `helpCommand`
+
+Attributes that are _not_ copied include:
+
+* command name
+* command aliases
+* options and parameters (other than the help and version options mixed in by `mixinStandardHelpOptions`)
+* other mixins than `mixinStandardHelpOptions`
+* subcommands
+* argument groups
 
 
 ## <a name="4.6.0-fixes"></a> Fixed issues

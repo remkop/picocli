@@ -2893,4 +2893,48 @@ public class SubcommandTests {
         assertEquals("sub", subsub.name());
         assertEquals("appversion", subsub.version()[0]);
     }
+
+    @Test
+    public void testInheritedHelp() {
+        @Command(name = "app", scope = INHERIT,
+                mixinStandardHelpOptions = true, version = "app version 1.0",
+                header = "App header",
+                description = "App description",
+                footerHeading = "Copyright%n", footer = "(c) Copyright by the authors",
+                showAtFileInUsageHelp = true)
+        class App implements Runnable {
+            @Option(names = "-x")
+            int x;
+
+            public void run() {
+                System.out.printf("Hello from app %d%n!", x);
+            }
+
+            @Command(header = "Subcommand header", description = "Subcommand description")
+            void sub(@Option(names = "-y") int y) {
+                System.out.printf("Hello app sub %d%n!", y);
+            }
+        }
+        String expected = String.format("" +
+                "Subcommand header%n" +
+                "Usage: app sub [-hV] [-y=<arg0>] [@<filename>...]%n" +
+                "Subcommand description%n" +
+                "      [@<filename>...]   One or more argument files containing options.%n" +
+                "  -h, --help             Show this help message and exit.%n" +
+                "  -V, --version          Print version information and exit.%n" +
+                "  -y=<arg0>%n" +
+                "Copyright%n" +
+                "(c) Copyright by the authors%n");
+
+        String usageMessage = new CommandLine(new App()).getSubcommands().get("sub").getUsageMessage(CommandLine.Help.Ansi.OFF);
+        assertEquals(expected, usageMessage);
+
+        new CommandLine(new App()).execute("sub", "--help");
+        assertEquals(expected, systemOutRule.getLog());
+
+        StringWriter sw2 = new StringWriter();
+        new CommandLine(new App()).getSubcommands().get("sub").printVersionHelp(new PrintWriter(sw2));
+        String expected2 = String.format("app version 1.0%n");
+        assertEquals(expected2, sw2.toString());
+    }
 }

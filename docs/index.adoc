@@ -7572,6 +7572,76 @@ Would result in this help fragment:
 status, st    Show the working tree status.
 ----
 
+=== Inherited Command Attributes
+Picocli 4.6 adds support for inheriting `@Command` attributes with the `scope = ScopeType.INHERIT` annotation.
+Commands with this scope have their `@Command` attributes copied to all subcommands (and sub-subcommands, to any level of depth).
+
+When a subcommand specifies an explicit value in its `@Command` annotation, this value is used instead of the inherited value.
+For example:
+
+.Java
+[source,java,role="primary"]
+----
+@Command(name = "app", scope = ScopeType.INHERIT,
+        mixinStandardHelpOptions = true, version = "app version 1.0",
+        header = "App header",
+        description = "App description",
+        footerHeading = "Copyright%n", footer = "(c) Copyright by the authors",
+        showAtFileInUsageHelp = true)
+class App implements Runnable {
+    @Option(names = "-x") int x;
+
+    public void run() { System.out.printf("Hello from app %d%n!", x); }
+
+    @Command(header = "Subcommand header", description = "Subcommand description")
+    void sub(@Option(names = "-y") int y) {
+        System.out.printf("Hello app sub %d%n!", y);
+    }
+}
+----
+
+The `app` command in the above example has `scope = ScopeType.INHERIT`, so its `@Command` properties are inherited by the `sub` subcommand.
+
+The `sub` subcommand defines its own `header` and `description`, so these are not inherited from the parent command.
+The help message for the subcommand looks like this:
+
+----
+Subcommand header
+Usage: app sub [-hV] [-y=<arg0>] [@<filename>...]
+Subcommand description
+      [@<filename>...]   One or more argument files containing options.
+  -h, --help             Show this help message and exit.
+  -V, --version          Print version information and exit.
+  -y=<arg0>
+Copyright
+(c) Copyright by the authors
+----
+
+Note that the subcommand has inherited the mixed-in standard help options (`--help` and `--version`), the `@file` usage help, and the footer and footer heading.
+It also inherited the version string, shown when the user invokes `app sub --version`.
+
+When a command has `scope = INHERIT`, the following attributes are copied to its subcommands:
+
+* all usage help attributes: description, descriptionHeading, header, headerHeading, footer, footerHeading, customSynopsis, synopsisHeading, synopsisSubcommandLabel, abbreviateSynopsis, optionListHeading, parameterListHeading, commandListHeading, exitCodeList, exitCodeListHeading, requiredOptionMarker, showDefaultValues, sortOptions, autoWidth, width, showAtFileInUsageHelp, showEndOfOptionsDelimiterInUsageHelp, and hidden
+* exit codes: exitCodeOnSuccess, exitCodeOnUsageHelp, exitCodeOnVersionHelp, exitCodeOnInvalidInput, exitCodeOnExecutionException
+* the help and version options mixed in by `mixinStandardHelpOptions`
+* separator between option and option parameter
+* version
+* versionProvider
+* defaultValueProvider
+* subcommandsRepeatable
+* whether this command is a `helpCommand`
+
+Attributes that are _not_ copied include:
+
+* command name
+* command aliases
+* options and parameters (other than the help and version options mixed in by `mixinStandardHelpOptions`)
+* other mixins than `mixinStandardHelpOptions`
+* subcommands
+* argument groups
+
+
 === Inherited Options
 Picocli 4.3 adds support for "inherited" options.
 Options defined with `scope = ScopeType.INHERIT` are shared with all subcommands (and sub-subcommands, to any level of depth).
@@ -8742,7 +8812,19 @@ assert(mixin === commandLine.mixins["myMixin"])
 assert(mixin.verbosity.size == 3)
 ----
 
+=== Inherited Scope
+
+A third reuse mechanism is setting `scope = ScopeType.INHERIT`.
+
+When `scope = INHERIT` is used in the `@Command` annotation, all `@Command` attributes, except the command name and its subcommands, are copied to the subcommands.
+See <<Inherited Command Attributes>> for details.
+
+When `scope = INHERIT` is used in the `@Option` annotation, that option is copied to the subcommands.
+See <<Inherited Options>> for details.
+
 === Use Case: Configure Log Level with a Global Option
+
+This section shows a detailed example demonstrating Mixins.
 
 For mixins that need to be reusable across more than two levels in the command hierarchy,
 declaring a <<spec-annotation,`@Spec(MIXEE)`-annotated>> field gives the mixin access to the full command hierarchy.
