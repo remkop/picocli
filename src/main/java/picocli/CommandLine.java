@@ -4656,6 +4656,10 @@ public class CommandLine {
          * </pre>
          * @since 4.0 */
         String[] exitCodeList() default {};
+
+        /** Returns whether subcommands inherit their attributes from this parent command.
+         * @since 4.6 */
+        ScopeType scope() default ScopeType.LOCAL;
     }
     /** A {@code Command} may define one or more {@code ArgGroups}: a group of options, positional parameters or a mixture of the two.
      * Groups can be used to:
@@ -5851,6 +5855,8 @@ public class CommandLine {
             private Boolean subcommandsRepeatable;
             private String[] version;
             private String toString;
+            private boolean inherited = false;
+            private ScopeType scopeType = null;
 
             private Integer exitCodeOnSuccess;
             private Integer exitCodeOnUsageHelp;
@@ -5889,6 +5895,8 @@ public class CommandLine {
 
                 result.usageMessage.initFrom(usageMessage, this);
                 result.parser(parser);
+                result.inherited = inherited;
+                result.scopeType = scopeType;
 
                 // TODO if this CommandSpec was created/modified via the programmatic API,
                 //   we need to copy all attributes that are modifiable via the programmatic API
@@ -6140,6 +6148,14 @@ public class CommandLine {
                     if (previous != null && previous != subCommandLine) { throw new DuplicateNameException("Alias '" + alias + "' for subcommand '" + actualName + "' is already used by another subcommand of '" + this.name() + "'"); }
                 }
                 subSpec.initCommandHierarchyWithResourceBundle(resourceBundleBaseName(), resourceBundle());
+                if (scopeType() == ScopeType.INHERIT) {
+                    subSpec.inheritAttributesFrom(this);
+                } else if (this.inherited()) {
+                    CommandSpec root = this.parent();
+                    while (root != null && root.scopeType() != ScopeType.INHERIT) { root = root.parent(); }
+                    if (root == null) { throw new InitializationException("Cannot find scope=INHERIT root for " + this); }
+                    subSpec.inheritAttributesFrom(root);
+                }
 
                 for (ArgSpec arg : args()) {
                     if (arg.scopeType() == ScopeType.INHERIT) {
@@ -6149,6 +6165,18 @@ public class CommandLine {
                     }
                 }
                 return this;
+            }
+            private void inheritAttributesFrom(CommandSpec root) {
+                inherited = true;
+                initFrom(root);
+                updatedSubcommandsToInheritFrom(root);
+            }
+            private void updatedSubcommandsToInheritFrom(CommandSpec root) {
+                mixinStandardHelpOptions(root.mixinStandardHelpOptions());
+                Set<CommandLine> subcommands = new HashSet<CommandLine>(subcommands().values());
+                for (CommandLine sub : subcommands) {
+                    sub.getCommandSpec().inheritAttributesFrom(root);
+                }
             }
 
             /**
@@ -6517,20 +6545,10 @@ public class CommandLine {
             public CommandSpec addMixin(String name, CommandSpec mixin) {
                 mixins.put(interpolator.interpolate(name), mixin);
 
-                initExitCodeOnSuccess(mixin.exitCodeOnSuccess());
-                initExitCodeOnUsageHelp(mixin.exitCodeOnUsageHelp());
-                initExitCodeOnVersionHelp(mixin.exitCodeOnVersionHelp());
-                initExitCodeOnInvalidInput(mixin.exitCodeOnInvalidInput());
-                initExitCodeOnExecutionException(mixin.exitCodeOnExecutionException());
-
-                parser.initSeparator(mixin.parser.separator());
                 initName(interpolator.interpolateCommandName(mixin.name()));
-                initVersion(mixin.version());
-                initHelpCommand(mixin.helpCommand());
-                initVersionProvider(mixin.versionProvider());
-                initDefaultValueProvider(mixin.defaultValueProvider());
-                usageMessage.initFromMixin(mixin.usageMessage, this);
-                initSubcommandsRepeatable(mixin.subcommandsRepeatable());
+                // TODO initAliases(mixin.aliases()); // should we?
+                // TODO initCommandHierarchyWithResourceBundle(mixin.usageMessage().messages().resourceBundleBaseName(), );
+                initFrom(mixin);
 
                 for (Map.Entry<String, CommandLine> entry : mixin.subcommands().entrySet()) {
                     addSubcommand(entry.getKey(), entry.getValue());
@@ -6547,6 +6565,21 @@ public class CommandLine {
                 for (OptionSpec optionSpec         : options)     { addOption(optionSpec); }
                 for (PositionalParamSpec paramSpec : positionals) { addPositional(paramSpec); }
                 return this;
+            }
+            private void initFrom(CommandSpec spec) {
+                initExitCodeOnSuccess(spec.exitCodeOnSuccess());
+                initExitCodeOnUsageHelp(spec.exitCodeOnUsageHelp());
+                initExitCodeOnVersionHelp(spec.exitCodeOnVersionHelp());
+                initExitCodeOnInvalidInput(spec.exitCodeOnInvalidInput());
+                initExitCodeOnExecutionException(spec.exitCodeOnExecutionException());
+
+                parser.initSeparator(spec.parser.separator());
+                initVersion(spec.version());
+                initHelpCommand(spec.helpCommand());
+                initVersionProvider(spec.versionProvider());
+                initDefaultValueProvider(spec.defaultValueProvider());
+                usageMessage.initFromMixin(spec.usageMessage, this);
+                initSubcommandsRepeatable(spec.subcommandsRepeatable());
             }
 
             /** Adds the specified {@code UnmatchedArgsBinding} to the list of model objects to capture unmatched arguments for this command.
@@ -6808,6 +6841,28 @@ public class CommandLine {
              * @see #execute(String...)
              * @since 4.0 */
             public CommandSpec exitCodeOnExecutionException(int newValue) { exitCodeOnExecutionException = newValue; return this; }
+
+            /** Returns whether this command is inherited from a parent command.
+             * @see Command#scope()
+             * @since 4.6 */
+            public boolean inherited() { return inherited; }
+            /** Returns the scope of this argument; it it local, or inherited (it applies to this command as well as all sub- and sub-subcommands).
+             * @return whether this argument applies to all descendent subcommands of the command where it is defined
+             * @since 4.6 */
+            public ScopeType scopeType() { return scopeType == null ? ScopeType.LOCAL : scopeType; }
+            /** Sets the scope of where this argument applies: only this command, or also all sub (and sub-sub) commands, and returns this builder.
+             * @since 4.6 */
+            public CommandSpec scopeType(ScopeType scopeType) {
+                if (this.scopeType == ScopeType.INHERIT && scopeType != ScopeType.INHERIT && !subcommands().isEmpty()) {
+                    throw new IllegalStateException("Cannot un-inherit: subcommands have already been initialized with values from this command");
+                }
+                this.scopeType = scopeType;
+                if (scopeType == ScopeType.INHERIT) {
+                    updatedSubcommandsToInheritFrom(this);
+                }
+                return this;
+            }
+
             /** Sets the {@code INegatableOptionTransformer} used to create the negative form of {@linkplain Option#negatable() negatable} options.
              * Note that {@link CommandSpec#optionsCaseInsensitive()} will also change the case sensitivity of {@linkplain Option#negatable() negatable} options:
              * any custom {@link INegatableOptionTransformer} that was previously installed will be replaced by the case-insensitive
@@ -6839,6 +6894,11 @@ public class CommandLine {
                                 if (name.length() == 2 && name.startsWith("-")) { posixOptionsByKeyMap.remove(name.charAt(1)); }
                             }
                         }
+                    }
+                }
+                if (scopeType() == ScopeType.INHERIT || inherited()) {
+                    for (CommandLine sub : new HashSet<CommandLine>(subcommands().values())) {
+                        sub.getCommandSpec().mixinStandardHelpOptions(newValue);
                     }
                 }
                 return this;
@@ -6879,6 +6939,8 @@ public class CommandLine {
                 updateAddMethodSubcommands(cmd.addMethodSubcommands());
                 usageMessage().updateFromCommand(cmd, this, factory != null);
 
+                updateScopeType(cmd.scope());
+
                 if (factory != null) {
                     updateVersionProvider(cmd.versionProvider(), factory);
                     initDefaultValueProvider(cmd.defaultValueProvider(), factory);
@@ -6912,6 +6974,7 @@ public class CommandLine {
             void updateExitCodeOnVersionHelp(int exitCode)        { if (isNonDefault(exitCode, ExitCode.OK))       { exitCodeOnVersionHelp = exitCode; } }
             void updateExitCodeOnInvalidInput(int exitCode)       { if (isNonDefault(exitCode, ExitCode.USAGE))    { exitCodeOnInvalidInput = exitCode; } }
             void updateExitCodeOnExecutionException(int exitCode) { if (isNonDefault(exitCode, ExitCode.SOFTWARE)) { exitCodeOnExecutionException = exitCode; } }
+            void updateScopeType(ScopeType scopeType)             { if (this.scopeType == null)                    { scopeType(scopeType); } }
 
             /** Returns the option with the specified short name, or {@code null} if no option with that name is defined for this command. */
             public OptionSpec findOption(char shortName) { return findOption(shortName, options()); }
@@ -7875,7 +7938,7 @@ public class CommandLine {
                 if (initializable(showEndOfOptionsDelimiterInUsageHelp, mixin.showEndOfOptionsDelimiterInUsageHelp(), DEFAULT_SHOW_END_OF_OPTIONS)) {showEndOfOptionsDelimiterInUsageHelp = mixin.showEndOfOptionsDelimiterInUsageHelp();}
                 if (initializable(sortOptions, mixin.sortOptions(), DEFAULT_SORT_OPTIONS))                             {sortOptions = mixin.sortOptions();}
                 if (initializable(synopsisHeading, mixin.synopsisHeading(), DEFAULT_SYNOPSIS_HEADING))                 {synopsisHeading = mixin.synopsisHeading();}
-                if (initializable(synopsisSubcommandLabel, mixin.synopsisSubcommandLabel(), DEFAULT_SYNOPSIS_SUBCOMMANDS)) {synopsisHeading = mixin.synopsisHeading();}
+                if (initializable(synopsisSubcommandLabel, mixin.synopsisSubcommandLabel(), DEFAULT_SYNOPSIS_SUBCOMMANDS)) {synopsisSubcommandLabel = mixin.synopsisSubcommandLabel();}
                 if (initializable(width, mixin.width(), DEFAULT_USAGE_WIDTH))                                          {width = mixin.width();}
             }
             void initFrom(UsageMessageSpec settings, CommandSpec commandSpec) {

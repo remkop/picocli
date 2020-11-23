@@ -2758,4 +2758,139 @@ public class SubcommandTests {
                 "  sub%n");
         assertEquals(expected, systemOutRule.getLog());
     }
+    static class MyDefaultValueProvider implements CommandLine.IDefaultValueProvider {
+        public String defaultValue(CommandLine.Model.ArgSpec argSpec) throws Exception {
+            return null;
+        }
+    }
+    static class MyVersionProvider implements CommandLine.IVersionProvider {
+        public String[] getVersion() throws Exception {
+            return new String[0];
+        }
+    }
+    @Test
+    public void testCommandScopeInherit() {
+        @Command(name = "app", scope = INHERIT,
+                mixinStandardHelpOptions = true,
+                subcommands = InhRoot.class,
+                description = "appdescription",
+                descriptionHeading = "appDescriptionHeading",
+                version = "appversion",
+                aliases = {"a", "b", "c"},
+                separator = ":", subcommandsRepeatable = true, helpCommand = true,
+                headerHeading = "appHeaderHeading", header = "appheader",
+                synopsisHeading = "appSynopsisHeading", customSynopsis = "appCustomSynopsis",
+                abbreviateSynopsis = true, synopsisSubcommandLabel = "appSynopsisSubcommandLabel",
+                optionListHeading = "appOptionListHeading", parameterListHeading = "appParameterListHeading",
+                commandListHeading = "appCommandListHeading",
+                footerHeading = "appFooterHeading", footer = "appFooter",
+                hidden = true,
+                exitCodeList = "123:appExitCodeList", exitCodeListHeading = "appExitCodeListHeading",
+                exitCodeOnExecutionException = 333,
+                exitCodeOnInvalidInput = 444,
+                exitCodeOnSuccess = 555,
+                exitCodeOnUsageHelp = 666,
+                exitCodeOnVersionHelp = 777,
+                requiredOptionMarker = '%',
+                showAtFileInUsageHelp = true,
+                showDefaultValues = true,
+                showEndOfOptionsDelimiterInUsageHelp = true,
+                sortOptions = false,
+                usageHelpAutoWidth = true,
+                usageHelpWidth = 88,
+                defaultValueProvider = MyDefaultValueProvider.class,
+                versionProvider = MyVersionProvider.class
+        )
+        class App implements Runnable {
+            @Option(names = "-x") int x;
+            public void run() { }
+            @Command int sub(@Option(names = "-y") int y) {
+                throw new IllegalStateException("sub");
+            }
+        }
+        CommandLine app = new CommandLine(new App());
+        CommandSpec spec = app.getCommandSpec();
+        verifyInheritedAttributes(spec, true);
+
+        verifyInheritedAttributes(spec.subcommands().get("sub").getCommandSpec(), false);
+        assertEquals("sub", spec.subcommands().get("sub").getCommandSpec().name());
+
+        CommandSpec inhRoot = spec.subcommands().get("root").getCommandSpec();
+        assertEquals("root", inhRoot.name());
+        verifyInheritedAttributes(inhRoot, false);
+        verifyInheritedAttributes(inhRoot.subcommands().get("sub").getCommandSpec(), false);
+        assertEquals("sub", inhRoot.subcommands().get("sub").getCommandSpec().name());
+    }
+
+    protected void verifyInheritedAttributes(CommandSpec spec, boolean aliasesMustBeEqual) {
+        assertTrue(spec.mixinStandardHelpOptions());
+        assertNotNull(spec.findOption("--help"));
+        assertNotNull(spec.findOption("--version"));
+        assertTrue(spec.versionProvider() instanceof MyVersionProvider);
+        assertTrue(spec.defaultValueProvider() instanceof MyDefaultValueProvider);
+        if (aliasesMustBeEqual) {
+            assertArrayEquals(new String[]{"a", "b", "c"}, spec.aliases());
+        } else {
+            assertArrayEquals(new String[]{}, spec.aliases());
+        }
+        assertEquals(":", spec.parser().separator());
+        assertEquals(true, spec.subcommandsRepeatable());
+        assertEquals(true, spec.helpCommand());
+        assertEquals(333, spec.exitCodeOnExecutionException());
+        assertEquals(444, spec.exitCodeOnInvalidInput());
+        assertEquals(555, spec.exitCodeOnSuccess());
+        assertEquals(666, spec.exitCodeOnUsageHelp());
+        assertEquals(777, spec.exitCodeOnVersionHelp());
+
+        assertEquals("appdescription", spec.usageMessage().description()[0]);
+        assertEquals("appDescriptionHeading", spec.usageMessage().descriptionHeading());
+        assertEquals("appheader", spec.usageMessage().header()[0]);
+        assertEquals("appHeaderHeading", spec.usageMessage().headerHeading());
+        assertEquals("appFooter", spec.usageMessage().footer()[0]);
+        assertEquals("appFooterHeading", spec.usageMessage().footerHeading());
+        assertEquals("appOptionListHeading", spec.usageMessage().optionListHeading());
+        assertEquals("appParameterListHeading", spec.usageMessage().parameterListHeading());
+        assertEquals("appCommandListHeading", spec.usageMessage().commandListHeading());
+        assertEquals("appSynopsisHeading", spec.usageMessage().synopsisHeading());
+        assertEquals("appCustomSynopsis", spec.usageMessage().customSynopsis()[0]);
+        assertEquals("appSynopsisSubcommandLabel", spec.usageMessage().synopsisSubcommandLabel());
+        assertEquals(true, spec.usageMessage().abbreviateSynopsis());
+        Map<String, String> exitCodeList = TestUtil.mapOf("123", "appExitCodeList");
+        assertEquals(exitCodeList, spec.usageMessage().exitCodeList());
+        assertEquals("appExitCodeListHeading", spec.usageMessage().exitCodeListHeading());
+
+        assertEquals('%', spec.usageMessage().requiredOptionMarker());
+        assertEquals(true, spec.usageMessage().showDefaultValues());
+        assertEquals(false, spec.usageMessage().sortOptions());
+        assertEquals(true, spec.usageMessage().autoWidth());
+        assertEquals(88, spec.usageMessage().width());
+        assertEquals(true, spec.usageMessage().showAtFileInUsageHelp());
+        assertEquals(true, spec.usageMessage().showEndOfOptionsDelimiterInUsageHelp());
+        assertEquals(true, spec.usageMessage().hidden());
+    }
+
+    @Test
+    public void testCommandScopeInheritVersion() {
+        @Command(name = "app", scope = INHERIT,
+                subcommands = InhRoot.class,
+                version = "appversion")
+        class App {
+            @Command void sub() { }
+        }
+        CommandLine app = new CommandLine(new App());
+        CommandSpec spec = app.getCommandSpec();
+        assertEquals("appversion", spec.version()[0]);
+
+        CommandSpec sub = spec.subcommands().get("sub").getCommandSpec();
+        assertEquals("sub", sub.name());
+        assertEquals("appversion", sub.version()[0]);
+
+        CommandSpec root = spec.subcommands().get("root").getCommandSpec();
+        assertEquals("root", root.name());
+        assertEquals("appversion", root.version()[0]);
+
+        CommandSpec subsub = root.subcommands().get("sub").getCommandSpec();
+        assertEquals("sub", subsub.name());
+        assertEquals("appversion", subsub.version()[0]);
+    }
 }

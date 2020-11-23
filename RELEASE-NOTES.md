@@ -154,6 +154,7 @@ only single-value types, and the values in a `Map` (but not the keys!) can be wr
 
 
 ## <a name="4.6.0-fixes"></a> Fixed issues
+* [#1164] API: Add support for `@Command(scope=INHERIT)`. Thanks to [Nick Cross](https://github.com/rnc) for raising this.
 * [#1191] API: Add `@PicocliScript2` annotation to support subcommand methods in Groovy scripts. Thanks to [Mattias Andersson](https://github.com/attiand) for raising this.
 * [#1241] API: Add `mapFallbackValue` attribute to `@Options` and `@Parameters` annotations, and corresponding `ArgSpec.mapFallbackValue()`.
 * [#1184] API: Added public methods `Help.Layout::colorScheme`, `Help.Layout::textTable`, `Help.Layout::optionRenderer`, `Help.Layout::parameterRenderer`, and `Help::calcLongOptionColumnWidth`.
