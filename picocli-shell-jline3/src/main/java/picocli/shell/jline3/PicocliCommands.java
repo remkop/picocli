@@ -22,6 +22,8 @@ import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 import org.jline.reader.impl.LineReaderImpl;
+import org.jline.reader.impl.completer.ArgumentCompleter;
+import org.jline.reader.impl.completer.NullCompleter;
 import org.jline.reader.impl.completer.SystemCompleter;
 import org.jline.utils.AttributedString;
 
@@ -110,9 +112,9 @@ public class PicocliCommands implements CommandRegistry {
         return out;
     }
 
-    private class PicocliCompleter implements Completer {
+    private class PicocliCompleter extends ArgumentCompleter implements Completer {
 
-        public PicocliCompleter() {}
+        public PicocliCompleter() { super(NullCompleter.INSTANCE); }
 
         @Override
         public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
