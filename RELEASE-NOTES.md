@@ -270,6 +270,7 @@ Attributes that are _not_ copied include:
 * [#1262] DOC: User manual: include jbang in the Build Tools section. Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for the pull request.
 * [#1263] DOC: User manual: show build scripts in tabs. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1264] DOC: Fix broken links to GraalVm native image build configuration. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1005] DOC: add link to the CookieTemple [cli-java template](https://cookietemple.readthedocs.io/en/latest/available_templates/available_templates.html#cli-java) README. Thanks to [Lukas Heumos](https://github.com/Zethson) for getting this added to CookieTemple.
 
 ## <a name="4.6.0-deprecated"></a> Deprecations
 From this release, the `@picocli.groovy.PicocliScript` annotation in the `picocli-groovy` module is deprecated in favor of `@picocli.groovy.PicocliScript2`, and the `picocli.groovy.PicocliBaseScript` class is deprecated in favor of `picocli.groovy.PicocliBaseScript2`.
