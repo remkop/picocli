@@ -6,6 +6,25 @@ The picocli community is pleased to announce picocli 4.6.0.
 
 This release contains new features, bug fixes and other enhancements.
 
+## Community Contributions
+
+* [Andreas Deininger](https://github.com/deining) has been contributing to the documentation and other areas for a while, but recently went into overdrive :-) and contributed many, many new pull requests to improve the documentation. The user manual and Quick Guide now have a "foldable" table of contents, and examples in tabs, with many additional examples in Kotlin, Scala and Groovy. A lot of work went into this! Many thanks, Andreas!
+* [Daniel Gray](https://github.com/danielthegray) contributed a bug fix to prevent incorrectly defaulting inherited positional params after a subcommand.
+* [nveeser-google](https://github.com/nveeser-google) contributed a fix for compiler warnings about `Annotation::getClass` and assignment in `if` condition.
+* [Petr Hála](https://github.com/pehala) contributed a pull request to add a section on Mocking to user manual.
+* [Max Rydahl Andersen](https://github.com/maxandersen) contributed a pull request to include jbang in the Build Tools section of the user manual.
+* [Mattias Andersson](https://github.com/attiand) raised the idea of supporting subcommand methods in Groovy scripts.
+* [Adrian A.](https://github.com/aadrian) raised the idea of using closures in the picocli annotations in Groovy programs instead of specifying a class.
+* [Nick Cross](https://github.com/rnc) raised the idea of inheriting `@Command` attributes with `scope=INHERIT`.
+* [Marko Mackic](https://github.com/MarkoMackic) raised the idea of adding a `CommandSpec::removeSubcommand` method.
+* [Max Rydahl Andersen](https://github.com/maxandersen) raised the idea of supporting `Optional<T>` type for options and positional parameters.
+* [Max Rydahl Andersen](https://github.com/maxandersen) and [David Walluck](https://github.com/dwalluck) raised the idea of supporting key-only Map options (to support `-Dkey` as well as `-Dkey=value`). 
+* [Jannick Hemelhof](https://github.com/clone1612) raised the idea of supporting `@Spec`-annotated members in `ArgGroup` classes.
+* [Vitaly Shukela](https://github.com/vi) raised a bug report: the error message for unmatched positional argument reports an incorrect index when value equals a previously matched argument.
+* [drkilikil](https://github.com/drkilikil) raised a bug report: `MissingParameterException` should not be thrown when subcommand has required options and help option is specified on parent command.
+* [Lukas Heumos](https://github.com/Zethson) added the picocli-based [cli-java template](https://cookietemple.readthedocs.io/en/latest/available_templates/available_templates.html#cli-java) to CookieTemple.
+
+## What is in this release
 Improved Groovy support: this release introduces a new `@PicocliScript2` annotation that adds support for exit codes and `@Command`-annotated methods to define subcommands. Also, from this release, Groovy programs can use closures in the picocli annotations instead of specifying a class.
 
 From this release, Map options accept key-only parameters, so end users can specify `-Dkey` as well as `-Dkey=value`.
