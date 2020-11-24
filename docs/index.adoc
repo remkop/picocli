@@ -16,6 +16,8 @@
 :sectanchors:
 :linkattrs:
 :docinfo: shared-head,private
+:tabbed-code-js-path: /customTabbedCode.js
+:tabbed-code-css-path: /customTabbedCode.css
 ifdef::env-github[]
 :caution-caption: :fire:
 :important-caption: :heavy_exclamation_mark:
@@ -441,6 +443,7 @@ class Tar {
 .Kotlin
 [source,kotlin,role="secondary"]
 ----
+@Command(name = "tar")
 class Tar : Runnable {
     @Option(names = ["-c"], description = ["create a new archive"])
     var create: Boolean = false;
@@ -457,13 +460,13 @@ class Tar : Runnable {
 ----
 
 .Invocation
-[source,push-right,role="secondary"]
+[source,role="secondary push-right"]
 ----
 $ tar -c --file=new.zip file1.txt file2.txt
 ----
 
 .Usage help
-[source,push-right,role="secondary"]
+[source,role="secondary"]
 ----
 Usage: tar [-ch] [-f=ARCHIVE] [FILE...]
       [FILE...]        one ore more files to archive

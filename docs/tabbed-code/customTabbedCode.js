@@ -1,11 +1,11 @@
 function addBlockSwitches() {
 
-    var counter = 11
+    var counter = 200
 
     $('.primary').each(function() {
         primary = $(this);
-        createSwitchItem(primary, createBlockSwitch(primary), counter).item.addClass("selected");
-        primary.children('.tab-content').append(primary.children('.content').first().addClass('tab-pane').addClass('active').removeClass('content').attr('id', 'tab' + counter).attr('role', 'tabpanel'))
+        createSwitchItem(primary, createBlockSwitch(primary), counter, true);
+        primary.children('.tab-content').append(primary.children('.content').first().addClass('tab-pane').addClass('active').removeClass('content').attr('id', 'tab' + counter++).attr('role', 'tabpanel'))
 
         primary.children('.title').remove();
     });
@@ -15,7 +15,7 @@ function addBlockSwitches() {
     $('.secondary').each(function(idx, node) {
         secondary = $(node);
         primary = findPrimary(secondary);
-        switchItem = createSwitchItem(secondary, primary.children('.nav'), counter, secondary.hasClass('push-right'));
+        switchItem = createSwitchItem(secondary, primary.children('.nav'), counter, false);
         switchItem.content.addClass('tab-pane').attr('id', 'tab' + counter).attr('role', 'tabpanel').removeClass('content');
         primary.children('.tab-content').append(switchItem.content)
         secondary.remove();
@@ -24,7 +24,7 @@ function addBlockSwitches() {
 }
 
 function createBlockSwitch(primary) {
-    blockSwitch = $('<ul class="nav nav-tabs" role="tablist"></ul>');
+    blockSwitch = $('<ul class="nav nav-pills" role="tablist"></ul>');
     primary.append(blockSwitch);
     contentSwitch = $('<div class="tab-content py-4"></div>');
     primary.append(contentSwitch);
@@ -39,11 +39,16 @@ function findPrimary(secondary) {
     return candidate;
 }
 
-function createSwitchItem(block, blockSwitch, counter) {
+function createSwitchItem(block, blockSwitch, counter, active) {
 
     blockName = block.children('.title').text();
     content = block.children('.content').first();
-    item = $('<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab' + counter + '" role="tab">' + blockName + '</a></li>');
+    if (active) {
+        item = $('<li class="nav-item"><a class="nav-link active show" data-toggle="tab" href="#tab' + counter + '" role="tab">' + blockName + '</a></li>');
+    }
+    else {
+        item = $('<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab' + counter + '" role="tab">' + blockName + '</a></li>');
+    }
     if(block.hasClass('push-right')) {
         item.addClass('ml-auto')
     }
