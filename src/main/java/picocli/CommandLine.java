@@ -11026,11 +11026,11 @@ public class CommandLine {
                     injectSpecIntoVersionProvider(result, cmd, factory);
                     result.setAddMethodSubcommands(false); // method commands don't have method subcommands
                     hasCommandAnnotation = true;
-                    initFromMethodParameters(userObject, method, result, null, factory);
                     initSubcommands(cmd, null, result, factory, new Stack<Class<?>>()); // after adding options
+                    result.mixinStandardHelpOptions(cmd.mixinStandardHelpOptions()); // do this last
+                    initFromMethodParameters(userObject, method, result, null, factory);
                     // set command name to method name, unless @Command#name is set
                     result.initName(((Method)command).getName());
-                    result.mixinStandardHelpOptions(cmd.mixinStandardHelpOptions()); // do this last
                 } else {
                     Stack<Class<?>> hierarchy = new Stack<Class<?>>();
                     Class<?> cls = userObject.getType();
@@ -11050,9 +11050,9 @@ public class CommandLine {
                             hasCommandAnnotation = true;
                             mixinStandardHelpOptions |= cmd.mixinStandardHelpOptions();
                         }
-                        hasCommandAnnotation |= initFromAnnotatedFields(userObject, cls, result, null, factory, null);
                         initSubcommands(cmd, cls, result, factory, originalHierarchy); // after adding options
                         initMethodSubcommands(cls, result, factory); // regardless of @Command annotation. NOTE: after adding options
+                        hasCommandAnnotation |= initFromAnnotatedFields(userObject, cls, result, null, factory, null);
                     }
                     result.mixinStandardHelpOptions(mixinStandardHelpOptions); //#377 Standard help options should be added last
                 }
