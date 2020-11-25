@@ -229,7 +229,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 * The [MinecraftPicocli](https://github.com/Rubydesic/MinecraftPicocli) library allows the use of picocli in [Minecraft Forge](https://files.minecraftforge.net/).
 * [Simple Java Mail](http://www.simplejavamail.org/) now offers a picocli-based [CLI](http://www.simplejavamail.org/cli.html#navigation).
 * [jbang](https://github.com/maxandersen/jbang) not only uses picocli internally, but also has a CLI template to generate an initial script: use `jbang --init=cli helloworld.java` to generate a sample picocli-enabled jbang script. See [asciinema](https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&speed=2). 
-* Picocli is the main library used in the CookieTemple [cli-java template](https://cookietemple.readthedocs.io/en/latest/available_templates/available_templates.html#cli-java) for building GraalVM native CLI executables in Java.
+* Picocli is the main library used in the CookieTemple [cli-java template](https://cookietemple.readthedocs.io/en/latest/available_templates/available_templates.html#cli-java) for building GraalVM native CLI executables in Java. See [this preview](https://user-images.githubusercontent.com/21954664/86740903-474a3000-c037-11ea-9ae3-1a8f7bf1743f.gif).
 
 <img src="https://picocli.info/images/downloads-202006.png">
 
