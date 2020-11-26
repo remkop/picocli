@@ -50,13 +50,13 @@ public class PicocliCommands implements CommandRegistry {
             description = "Clears the screen", version = "1.0")
     static class ClearScreen implements Callable<Void> {
 
-    	private final LineReaderImpl reader;
+        private final LineReaderImpl reader;
 
         ClearScreen(LineReaderImpl reader) {
-			this.reader = reader;
-		}
+            this.reader = reader;
+        }
 
-		public Void call() throws IOException {
+        public Void call() throws IOException {
             reader.clearScreen();
             return null;
         }
@@ -83,14 +83,14 @@ public class PicocliCommands implements CommandRegistry {
     }
 
     public void includeClearScreenCommand(LineReader reader) {
-    	if (reader == null) return;
-    	ClearScreen clearScreen = new ClearScreen((LineReaderImpl) reader);
-    	cmd.addSubcommand(clearScreen);
+        if (reader == null) return;
+        ClearScreen clearScreen = new ClearScreen((LineReaderImpl) reader);
+        cmd.addSubcommand(clearScreen);
 
-    	commands.add("clear");
+        commands.add("clear");
 
-    	aliasCommand.put("clear", "clear");
-    	aliasCommand.put("cls", "clear");
+        aliasCommand.put("clear", "clear");
+        aliasCommand.put("cls", "clear");
     }
 
     /**
