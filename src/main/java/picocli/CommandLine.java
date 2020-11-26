@@ -4665,6 +4665,11 @@ public class CommandLine {
         /** Returns whether subcommands inherit their attributes from this parent command.
          * @since 4.6 */
         ScopeType scope() default ScopeType.LOCAL;
+
+
+        /** Returns preprocessor for subcommands ( definition should be expanded when definition of class expands )
+         * @since 4.6 */
+        Class<? extends Preprocessor> preprocessor() default Preprocessor.class;
     }
     /** A {@code Command} may define one or more {@code ArgGroups}: a group of options, positional parameters or a mixture of the two.
      * Groups can be used to:
@@ -4803,6 +4808,23 @@ public class CommandLine {
     private static class NoVersionProvider implements IVersionProvider {
         public String[] getVersion() throws Exception { throw new UnsupportedOperationException(); }
     }
+
+    /**
+     * Provides a way to modify how command model is built. Commands may configure a preprocessor using
+     * {@link Command#preprocessor()} annotation attribute.
+     * @since X.X */
+    public static class Preprocessor {
+
+        public Preprocessor(){}
+
+        /**
+         * Provides callbacks for subcommand filtering.
+         * @return true/false if subcommand should be excluded/included
+         */
+        protected boolean filterSubcommand(String subcommandName) { return false; }
+        protected boolean filterSubcommand(Class<?> subcommandClass) { return false; }
+    }
+
 
     /**
      * Provides default value for a command. Commands may configure a provider with the
@@ -11056,7 +11078,7 @@ public class CommandLine {
                             mixinStandardHelpOptions |= cmd.mixinStandardHelpOptions();
                         }
                         initSubcommands(cmd, cls, result, factory, originalHierarchy); // after adding options
-                        initMethodSubcommands(cls, result, factory); // regardless of @Command annotation. NOTE: after adding options
+                        initMethodSubcommands(cmd, cls, result, factory); // regardless of @Command annotation. NOTE: after adding options
                         hasCommandAnnotation |= initFromAnnotatedFields(userObject, cls, result, null, factory, null);
                     }
                     result.mixinStandardHelpOptions(mixinStandardHelpOptions); //#377 Standard help options should be added last
@@ -11080,6 +11102,9 @@ public class CommandLine {
 
             private static void initSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory, Stack<Class<?>> hierarchy) {
                 if (cmd == null) { return; }
+
+                Preprocessor subPreproc = DefaultFactory.create(defaultFactory(), cmd.preprocessor());
+
                 for (Class<?> sub : cmd.subcommands()) {
                     if (sub.equals(cls)) {
                         throw new InitializationException(cmd.name() + " (" + cls.getName() + ") cannot be a subcommand of itself");
@@ -11087,6 +11112,7 @@ public class CommandLine {
                     if (hierarchy.contains(sub)) {
                         throw new InitializationException(cmd.name() + " (" + cls.getName() + ") has a subcommand (" + sub.getName() + ") that is a subclass of itself");
                     }
+                    if (subPreproc.filterSubcommand(sub)) continue;
                     try {
                         if (Help.class == sub) { throw new InitializationException(Help.class.getName() + " is not a valid subcommand. Did you mean " + HelpCommand.class.getName() + "?"); }
                         CommandLine subcommandLine = toCommandLine(sub, factory);
@@ -11103,9 +11129,13 @@ public class CommandLine {
                     }
                 }
             }
-            private static void initMethodSubcommands(Class<?> cls, CommandSpec parent, IFactory factory) {
+            private static void initMethodSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory) {
+
+                Preprocessor subPreproc = DefaultFactory.create(defaultFactory(), cmd == null ? Preprocessor.class : cmd.preprocessor());
+
                 if (parent.isAddMethodSubcommands() && cls != null) {
                     for (CommandLine sub : CommandSpec.createMethodSubcommands(cls, factory, false)) {
+                        if (subPreproc.filterSubcommand(sub.getCommandName())) continue;
                         parent.addSubcommand(sub.getCommandName(), sub);
                         for (CommandSpec mixin : sub.getCommandSpec().mixins().values()) {
                             mixin.injectParentCommand(parent.userObject);
