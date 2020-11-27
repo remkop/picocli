@@ -23,6 +23,7 @@ This release contains new features, bug fixes and other enhancements.
 * [Vitaly Shukela](https://github.com/vi) raised a bug report: the error message for unmatched positional argument reports an incorrect index when value equals a previously matched argument.
 * [drkilikil](https://github.com/drkilikil) raised a bug report: `MissingParameterException` should not be thrown when subcommand has required options and help option is specified on parent command.
 * [Lukas Heumos](https://github.com/Zethson) added the picocli-based [cli-java template](https://cookietemple.readthedocs.io/en/latest/available_templates/available_templates.html#cli-java) to CookieTemple.
+* [Sualeh Fatehi](https://github.com/sualeh) raised the idea of adding add `CommandLine::getFactory` accessor method.
 
 ## What is in this release
 Improved Groovy support: this release introduces a new `@PicocliScript2` annotation that adds support for exit codes and `@Command`-annotated methods to define subcommands. Also, from this release, Groovy programs can use closures in the picocli annotations instead of specifying a class.
@@ -255,6 +256,7 @@ Attributes that are _not_ copied include:
 * [#1254] API: Added `ArgSpec::root`: this method returns the original `ArgSpec` for inherited `ArgSpec` objects, and `null` for other `ArgSpec` objects. Thanks to [Daniel Gray](https://github.com/danielthegray) for the pull request.
 * [#1256] API: Added `CommandSpec::removeSubcommand` method. Thanks to [Marko Mackic](https://github.com/MarkoMackic) for raising this.
 * [#1258] API: Groovy programs can now use closures in the picocli annotations instead of specifying a class. Thanks to [Adrian A.](https://github.com/aadrian) for raising this.
+* [#1267] API: Add `CommandLine::getFactory` accessor for the factory. Thanks to [Sualeh Fatehi](https://github.com/sualeh) for the suggestion. 
 * [#1108] Enhancement: Support `Optional<T>` type for options and positional parameters. Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for raising this.
 * [#1214] Enhancement: Support Map options with key-only (support `-Dkey` as well as `-Dkey=value`). Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) and [David Walluck](https://github.com/dwalluck) for raising this and subsequent discussion.
 * [#1260] Enhancement: Support `@Spec`-annotated members in `ArgGroup` classes. Thanks to [Jannick Hemelhof](https://github.com/clone1612) for raising this.
