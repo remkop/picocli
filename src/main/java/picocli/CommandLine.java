@@ -4667,7 +4667,7 @@ public class CommandLine {
         ScopeType scope() default ScopeType.LOCAL;
 
 
-        /** Returns preprocessor for subcommands ( definition should be expanded when definition of class expands )
+        /** Returns preprocessor for command spec
          * @since 4.6 */
         Class<? extends IPreprocessor> preprocessor() default NoOpPreprocessor.class;
     }
@@ -4815,8 +4815,8 @@ public class CommandLine {
      * @since X.X */
     public interface IPreprocessor {
         /**
-         * Returns command line after doing preprocessing.
-         * @return preprocessed CommandLine
+         * Returns CommandSpec after doing preprocessing.
+         * @return preprocessed CommandSpec
          */
         CommandSpec preprocess(CommandSpec commandSpec);
     }
