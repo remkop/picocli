@@ -11070,6 +11070,7 @@ public class CommandLine {
                             result.updateCommandAttributes(cmd, factory);
                             injectSpecIntoVersionProvider(result, cmd, factory);
                             mixinStandardHelpOptions |= cmd.mixinStandardHelpOptions();
+                            hasCommandAnnotation = true;
                         }
                         initSubcommands(cmd, cls, result, factory, originalHierarchy); // after adding options
                         initMethodSubcommands(cls, result, factory); // regardless of @Command annotation. NOTE: after adding options
