@@ -59,20 +59,16 @@ public class CommandSubcommandFilterTest {
     private static class A implements Callable<Integer>
     {
 
-        private static class AFilter extends CommandLine.Preprocessor
+        private static class AFilter implements CommandLine.IPreprocessor
         {
-            @Override
-            protected boolean filterSubcommand(Class<?> subcommandClass)
+            public CommandLine.Model.CommandSpec preprocess(CommandLine.Model.CommandSpec commandSpec)
             {
-                if(Boolean.valueOf(System.getProperty("disable_aa")) && subcommandClass == AA.class) return true;
-                return super.filterSubcommand(subcommandClass);
-            }
+                // verify it's context aware
+                assertEquals(2, commandSpec.subcommands().size());
 
-            @Override
-            protected boolean filterSubcommand(String subcommandName)
-            {
-                if(Boolean.valueOf(System.getProperty("disable_ab")) && subcommandName.equals("ab")) return true;
-                return super.filterSubcommand(subcommandName);
+                if(Boolean.valueOf(System.getProperty("disable_aa"))) commandSpec.removeSubcommand("aa");
+                if(Boolean.valueOf(System.getProperty("disable_ab"))) commandSpec.removeSubcommand("ab");
+                return commandSpec;
             }
         }
 
@@ -94,21 +90,17 @@ public class CommandSubcommandFilterTest {
     private static class Main implements Callable<Integer>
     {
 
-        private static class MainFilter extends CommandLine.Preprocessor
+        private static class MainFilter implements CommandLine.IPreprocessor
         {
-            @Override
-            protected boolean filterSubcommand(Class<?> subcommandClass)
+            public CommandLine.Model.CommandSpec preprocess(CommandLine.Model.CommandSpec commandSpec)
             {
+                // verify it's context aware
+                assertEquals(3, commandSpec.subcommands().size());
 
-                if(Boolean.valueOf(System.getProperty("disable_a")) && subcommandClass == A.class) return true;
-                if(Boolean.valueOf(System.getProperty("disable_c")) && subcommandClass == C.class) return true;
+                if(Boolean.valueOf(System.getProperty("disable_a"))) commandSpec.removeSubcommand("a");
+                if(Boolean.valueOf(System.getProperty("disable_c"))) commandSpec.removeSubcommand("c");
 
-                // tests context aware filtering
-
-                if(subcommandClass == AA.class)
-                    fail("AA is not subcommand of main, so shouldn't be called in callback");
-
-                return super.filterSubcommand(subcommandClass);
+                return commandSpec;
             }
         }
 

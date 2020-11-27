@@ -4669,7 +4669,7 @@ public class CommandLine {
 
         /** Returns preprocessor for subcommands ( definition should be expanded when definition of class expands )
          * @since 4.6 */
-        Class<? extends Preprocessor> preprocessor() default Preprocessor.class;
+        Class<? extends IPreprocessor> preprocessor() default NoOpPreprocessor.class;
     }
     /** A {@code Command} may define one or more {@code ArgGroups}: a group of options, positional parameters or a mixture of the two.
      * Groups can be used to:
@@ -4813,18 +4813,17 @@ public class CommandLine {
      * Provides a way to modify how command model is built. Commands may configure a preprocessor using
      * {@link Command#preprocessor()} annotation attribute.
      * @since X.X */
-    public static class Preprocessor {
-
-        public Preprocessor(){}
-
+    public interface IPreprocessor {
         /**
-         * Provides callbacks for subcommand filtering.
-         * @return true/false if subcommand should be excluded/included
+         * Returns command line after doing preprocessing.
+         * @return preprocessed CommandLine
          */
-        protected boolean filterSubcommand(String subcommandName) { return false; }
-        protected boolean filterSubcommand(Class<?> subcommandClass) { return false; }
+        CommandSpec preprocess(CommandSpec commandSpec);
     }
 
+    private static class NoOpPreprocessor implements IPreprocessor {
+        public CommandSpec preprocess(CommandSpec commandSpec) { return commandSpec; }
+    }
 
     /**
      * Provides default value for a command. Commands may configure a provider with the
@@ -11043,16 +11042,17 @@ public class CommandLine {
                 t.debug("Creating CommandSpec for %s with factory %s%n", userObject, factory.getClass().getName());
                 CommandSpec result = CommandSpec.wrapWithoutInspection(userObject);
 
+                Command cmd = null;
                 boolean hasCommandAnnotation = false;
+
                 if (userObject.isMethod()) {
                     Method method = (Method) command;
                     t.debug("Using method %s as command %n", method);
                     method.setAccessible(true);
-                    Command cmd = method.getAnnotation(Command.class);
+                    cmd = method.getAnnotation(Command.class);
                     result.updateCommandAttributes(cmd, factory);
                     injectSpecIntoVersionProvider(result, cmd, factory);
                     result.setAddMethodSubcommands(false); // method commands don't have method subcommands
-                    hasCommandAnnotation = true;
                     initSubcommands(cmd, null, result, factory, new Stack<Class<?>>()); // after adding options
                     result.mixinStandardHelpOptions(cmd.mixinStandardHelpOptions()); // do this last
                     initFromMethodParameters(userObject, method, result, null, factory);
@@ -11070,15 +11070,14 @@ public class CommandLine {
                     boolean mixinStandardHelpOptions = false;
                     while (!hierarchy.isEmpty()) {
                         cls = hierarchy.pop();
-                        Command cmd = cls.getAnnotation(Command.class);
+                        cmd = cls.getAnnotation(Command.class);
                         if (cmd != null) {
                             result.updateCommandAttributes(cmd, factory);
                             injectSpecIntoVersionProvider(result, cmd, factory);
-                            hasCommandAnnotation = true;
                             mixinStandardHelpOptions |= cmd.mixinStandardHelpOptions();
                         }
                         initSubcommands(cmd, cls, result, factory, originalHierarchy); // after adding options
-                        initMethodSubcommands(cmd, cls, result, factory); // regardless of @Command annotation. NOTE: after adding options
+                        initMethodSubcommands(cls, result, factory); // regardless of @Command annotation. NOTE: after adding options
                         hasCommandAnnotation |= initFromAnnotatedFields(userObject, cls, result, null, factory, null);
                     }
                     result.mixinStandardHelpOptions(mixinStandardHelpOptions); //#377 Standard help options should be added last
@@ -11086,7 +11085,8 @@ public class CommandLine {
 
                 result.updateArgSpecMessages();
 
-                if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, userObject.toString()); }
+                if (annotationsAreMandatory) {validateCommandSpec(result, cmd != null || hasCommandAnnotation, userObject.toString()); }
+                result = DefaultFactory.create(defaultFactory(), cmd == null  ? NoOpPreprocessor.class :  cmd.preprocessor()).preprocess(result);
                 result.validate();
                 return result;
             }
@@ -11102,9 +11102,6 @@ public class CommandLine {
 
             private static void initSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory, Stack<Class<?>> hierarchy) {
                 if (cmd == null) { return; }
-
-                Preprocessor subPreproc = DefaultFactory.create(defaultFactory(), cmd.preprocessor());
-
                 for (Class<?> sub : cmd.subcommands()) {
                     if (sub.equals(cls)) {
                         throw new InitializationException(cmd.name() + " (" + cls.getName() + ") cannot be a subcommand of itself");
@@ -11112,7 +11109,6 @@ public class CommandLine {
                     if (hierarchy.contains(sub)) {
                         throw new InitializationException(cmd.name() + " (" + cls.getName() + ") has a subcommand (" + sub.getName() + ") that is a subclass of itself");
                     }
-                    if (subPreproc.filterSubcommand(sub)) continue;
                     try {
                         if (Help.class == sub) { throw new InitializationException(Help.class.getName() + " is not a valid subcommand. Did you mean " + HelpCommand.class.getName() + "?"); }
                         CommandLine subcommandLine = toCommandLine(sub, factory);
@@ -11129,13 +11125,9 @@ public class CommandLine {
                     }
                 }
             }
-            private static void initMethodSubcommands(Command cmd, Class<?> cls, CommandSpec parent, IFactory factory) {
-
-                Preprocessor subPreproc = DefaultFactory.create(defaultFactory(), cmd == null ? Preprocessor.class : cmd.preprocessor());
-
+            private static void initMethodSubcommands(Class<?> cls, CommandSpec parent, IFactory factory) {
                 if (parent.isAddMethodSubcommands() && cls != null) {
                     for (CommandLine sub : CommandSpec.createMethodSubcommands(cls, factory, false)) {
-                        if (subPreproc.filterSubcommand(sub.getCommandName())) continue;
                         parent.addSubcommand(sub.getCommandName(), sub);
                         for (CommandSpec mixin : sub.getCommandSpec().mixins().values()) {
                             mixin.injectParentCommand(parent.userObject);
