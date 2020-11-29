@@ -4664,7 +4664,7 @@ public class CommandLine {
 
         /** Returns preprocessor for command spec
          * @since 4.6 */
-        Class<? extends IPreprocessor> preprocessor() default NoOpPreprocessor.class;
+        Class<? extends IModelTransformer> modelTransformer() default NoOpPreprocessor.class;
     }
     /** A {@code Command} may define one or more {@code ArgGroups}: a group of options, positional parameters or a mixture of the two.
      * Groups can be used to:
@@ -4806,18 +4806,18 @@ public class CommandLine {
 
     /**
      * Provides a way to modify how command model is built. Commands may configure a preprocessor using
-     * {@link Command#preprocessor()} annotation attribute.
+     * {@link Command#modelTransformer()} annotation attribute.
      * @since X.X */
-    public interface IPreprocessor {
+    public interface IModelTransformer {
         /**
          * Returns CommandSpec after doing preprocessing.
          * @return preprocessed CommandSpec
          */
-        CommandSpec preprocess(CommandSpec commandSpec);
+        CommandSpec transform(CommandSpec commandSpec);
     }
 
-    private static class NoOpPreprocessor implements IPreprocessor {
-        public CommandSpec preprocess(CommandSpec commandSpec) { return commandSpec; }
+    private static class NoOpPreprocessor implements IModelTransformer {
+        public CommandSpec transform(CommandSpec commandSpec) { return commandSpec; }
     }
 
     /**
@@ -11082,7 +11082,7 @@ public class CommandLine {
                 result.updateArgSpecMessages();
 
                 if (annotationsAreMandatory) {validateCommandSpec(result, cmd != null || hasCommandAnnotation, userObject.toString()); }
-                result = DefaultFactory.create(defaultFactory(), cmd == null  ? NoOpPreprocessor.class :  cmd.preprocessor()).preprocess(result);
+                result = DefaultFactory.create(defaultFactory(), cmd == null  ? NoOpPreprocessor.class :  cmd.modelTransformer()).transform(result);
                 result.validate();
                 return result;
             }
