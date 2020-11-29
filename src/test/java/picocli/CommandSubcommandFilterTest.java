@@ -49,11 +49,11 @@ public class CommandSubcommandFilterTest {
     }
 
 
-    @CommandLine.Command(name = "a", subcommands = {AA.class}, preprocessor = A.AFilter.class)
+    @CommandLine.Command(name = "a", subcommands = {AA.class}, modelTransformer = A.AFilter.class)
     private static class A implements Callable<Integer> {
 
-        private static class AFilter implements CommandLine.IPreprocessor {
-            public CommandLine.Model.CommandSpec preprocess(CommandLine.Model.CommandSpec commandSpec) {
+        private static class AFilter implements CommandLine.IModelTransformer {
+            public CommandLine.Model.CommandSpec transform(CommandLine.Model.CommandSpec commandSpec) {
                 // verify it's context aware
                 assertEquals(2, commandSpec.subcommands().size());
 
@@ -79,11 +79,11 @@ public class CommandSubcommandFilterTest {
     }
 
 
-    @CommandLine.Command(name="inital", subcommands = {A.class, B.class, C.class}, preprocessor = Main.MainFilter.class)
+    @CommandLine.Command(name="inital", subcommands = {A.class, B.class, C.class}, modelTransformer = Main.MainFilter.class)
     private static class Main implements Callable<Integer> {
 
-        private static class MainFilter implements CommandLine.IPreprocessor {
-            public CommandLine.Model.CommandSpec preprocess(CommandLine.Model.CommandSpec commandSpec) {
+        private static class MainFilter implements CommandLine.IModelTransformer {
+            public CommandLine.Model.CommandSpec transform(CommandLine.Model.CommandSpec commandSpec) {
                 // verify it's context aware
                 assertEquals(3, commandSpec.subcommands().size());
 
