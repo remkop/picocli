@@ -11068,17 +11068,16 @@ public class CommandLine {
                 t.debug("Creating CommandSpec for %s with factory %s%n", userObject, factory.getClass().getName());
                 CommandSpec result = CommandSpec.wrapWithoutInspection(userObject);
 
-                Command cmd = null;
                 boolean hasCommandAnnotation = false;
-
                 if (userObject.isMethod()) {
                     Method method = (Method) command;
                     t.debug("Using method %s as command %n", method);
                     method.setAccessible(true);
-                    cmd = method.getAnnotation(Command.class);
+                    Command cmd = method.getAnnotation(Command.class);
                     result.updateCommandAttributes(cmd, factory);
                     injectSpecIntoVersionProvider(result, cmd, factory);
                     result.setAddMethodSubcommands(false); // method commands don't have method subcommands
+                    hasCommandAnnotation = true;
                     initSubcommands(cmd, null, result, factory, new Stack<Class<?>>()); // after adding options
                     result.mixinStandardHelpOptions(cmd.mixinStandardHelpOptions()); // do this last
                     initFromMethodParameters(userObject, method, result, null, factory);
@@ -11096,12 +11095,12 @@ public class CommandLine {
                     boolean mixinStandardHelpOptions = false;
                     while (!hierarchy.isEmpty()) {
                         cls = hierarchy.pop();
-                        cmd = cls.getAnnotation(Command.class);
+                        Command cmd = cls.getAnnotation(Command.class);
                         if (cmd != null) {
                             result.updateCommandAttributes(cmd, factory);
                             injectSpecIntoVersionProvider(result, cmd, factory);
-                            mixinStandardHelpOptions |= cmd.mixinStandardHelpOptions();
                             hasCommandAnnotation = true;
+                            mixinStandardHelpOptions |= cmd.mixinStandardHelpOptions();
                         }
                         initSubcommands(cmd, cls, result, factory, originalHierarchy); // after adding options
                         initMethodSubcommands(cls, result, factory); // regardless of @Command annotation. NOTE: after adding options
@@ -11112,7 +11111,7 @@ public class CommandLine {
 
                 result.updateArgSpecMessages();
 
-                if (annotationsAreMandatory) {validateCommandSpec(result, cmd != null || hasCommandAnnotation, userObject.toString()); }
+                if (annotationsAreMandatory) {validateCommandSpec(result, hasCommandAnnotation, userObject.toString()); }
                 result.validate();
                 return result;
             }
