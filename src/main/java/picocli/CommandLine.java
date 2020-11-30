@@ -247,12 +247,14 @@ public class CommandLine {
     }
 
 
-    protected void applyModelTransformations() {
+    /**
+     * Apply transformers to command spec recursively
+     */
+    private void applyModelTransformations() {
         if (this.commandSpec.modelTransformer != null) {
             this.commandSpec = this.commandSpec.modelTransformer.transform(this.commandSpec);
         }
         for (CommandLine cmd : this.getSubcommands().values()) {
-
             cmd.applyModelTransformations();
         }
     }
