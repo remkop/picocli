@@ -4662,9 +4662,9 @@ public class CommandLine {
         ScopeType scope() default ScopeType.LOCAL;
 
 
-        /** Returns preprocessor for command spec
-         * @since 4.6 */
-        Class<? extends IModelTransformer> modelTransformer() default NoOpPreprocessor.class;
+        /** Returns transformer for command
+         * @since X.X */
+        Class<? extends IModelTransformer> modelTransformer() default NoOpModelTransforemer.class;
     }
     /** A {@code Command} may define one or more {@code ArgGroups}: a group of options, positional parameters or a mixture of the two.
      * Groups can be used to:
@@ -4805,18 +4805,18 @@ public class CommandLine {
     }
 
     /**
-     * Provides a way to modify how command model is built. Commands may configure a preprocessor using
+     * Provides a way to modify how command model is built. Commands may configure a model transformer using
      * {@link Command#modelTransformer()} annotation attribute.
      * @since X.X */
     public interface IModelTransformer {
         /**
-         * Returns CommandSpec after doing preprocessing.
-         * @return preprocessed CommandSpec
+         * Returns CommandSpec after doing transformation.
+         * @return transformed CommandSpec
          */
         CommandSpec transform(CommandSpec commandSpec);
     }
 
-    private static class NoOpPreprocessor implements IModelTransformer {
+    private static class NoOpModelTransforemer implements IModelTransformer {
         public CommandSpec transform(CommandSpec commandSpec) { return commandSpec; }
     }
 
@@ -11082,7 +11082,7 @@ public class CommandLine {
                 result.updateArgSpecMessages();
 
                 if (annotationsAreMandatory) {validateCommandSpec(result, cmd != null || hasCommandAnnotation, userObject.toString()); }
-                result = DefaultFactory.create(defaultFactory(), cmd == null  ? NoOpPreprocessor.class :  cmd.modelTransformer()).transform(result);
+                result = DefaultFactory.create(defaultFactory(), cmd == null  ? NoOpModelTransforemer.class :  cmd.modelTransformer()).transform(result);
                 result.validate();
                 return result;
             }
