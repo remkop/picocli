@@ -6985,9 +6985,8 @@ public class CommandLine {
 
                 updateScopeType(cmd.scope());
 
-                updateModelTransformer(cmd.modelTransformer());
-
                 if (factory != null) {
+                    updateModelTransformer(cmd.modelTransformer());
                     updateVersionProvider(cmd.versionProvider(), factory);
                     initDefaultValueProvider(cmd.defaultValueProvider(), factory);
                 }
