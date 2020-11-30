@@ -148,7 +148,7 @@ public class CommandLine {
     public static final String VERSION = "4.5.3-SNAPSHOT";
 
     private final Tracer tracer = new Tracer();
-    private final CommandSpec commandSpec;
+    private CommandSpec commandSpec;
     private final Interpreter interpreter;
     private final IFactory factory;
 
@@ -217,13 +217,18 @@ public class CommandLine {
      * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands}, {@linkplain Option#converter() converters}, etc., that are registered declaratively with annotation attributes
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @since 2.2 */
-    public CommandLine(Object command, IFactory factory) {
+    private CommandLine(Object command, IFactory factory, boolean userCalled) {
         this.factory = Assert.notNull(factory, "factory");
         interpreter = new Interpreter();
         commandSpec = CommandSpec.forAnnotatedObject(command, factory);
         commandSpec.commandLine(this);
+        if(userCalled) { this.applyModelTransformations(); }
         commandSpec.validate();
         if (commandSpec.unmatchedArgsBindings().size() > 0) { setUnmatchedArgumentsAllowed(true); }
+    }
+
+    public CommandLine(Object command, IFactory factory) {
+        this(command, factory, true);
     }
 
     private CommandLine copy() {
@@ -239,6 +244,17 @@ public class CommandLine {
         result.interpreter.converterRegistry.clear();
         result.interpreter.converterRegistry.putAll(interpreter.converterRegistry);
         return result;
+    }
+
+
+    protected void applyModelTransformations() {
+        if (this.commandSpec.modelTransformer != null) {
+            this.commandSpec = this.commandSpec.modelTransformer.transform(this.commandSpec);
+        }
+        for (CommandLine cmd : this.getSubcommands().values()) {
+
+            cmd.applyModelTransformations();
+        }
     }
 
     /**
@@ -3499,7 +3515,7 @@ public class CommandLine {
     private static String str(String[] arr, int i) { return (arr == null || arr.length <= i) ? "" : arr[i]; }
     private static boolean isBoolean(Class<?>[] types) { return isBoolean(types[0]) || (isOptional(types[0]) && isBoolean(types[1])); }
     private static boolean isBoolean(Class<?> type) { return type == Boolean.class || type == Boolean.TYPE; }
-    private static CommandLine toCommandLine(Object obj, IFactory factory) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj, factory);}
+    private static CommandLine toCommandLine(Object obj, IFactory factory) { return obj instanceof CommandLine ? (CommandLine) obj : new CommandLine(obj, factory, false);}
     private static boolean isMultiValue(Class<?> cls) { return cls.isArray() || Collection.class.isAssignableFrom(cls) || Map.class.isAssignableFrom(cls); }
     private static boolean isOptional(Class<?> cls) { return cls != null && "java.util.Optional".equals(cls.getName()); } // #1108
     private static Object getOptionalEmpty() throws Exception {
@@ -5890,6 +5906,8 @@ public class CommandLine {
             private Integer exitCodeOnInvalidInput;
             private Integer exitCodeOnExecutionException;
 
+            private IModelTransformer modelTransformer = null;
+
             private CommandSpec(CommandUserObject userObject) {
                 this.userObject = userObject;
                 this.userObject.commandSpec = this;
@@ -5907,6 +5925,7 @@ public class CommandLine {
                 result.aliases = aliases;
                 result.isHelpCommand = isHelpCommand;
                 result.versionProvider = versionProvider;
+                result.modelTransformer = modelTransformer;
                 result.defaultValueProvider = defaultValueProvider;
                 result.negatableOptionTransformer = negatableOptionTransformer;
                 result.subcommandsRepeatable = subcommandsRepeatable;
@@ -6969,6 +6988,8 @@ public class CommandLine {
 
                 updateScopeType(cmd.scope());
 
+                updateModelTransformer(cmd.modelTransformer());
+
                 if (factory != null) {
                     updateVersionProvider(cmd.versionProvider(), factory);
                     initDefaultValueProvider(cmd.defaultValueProvider(), factory);
@@ -6990,6 +7011,9 @@ public class CommandLine {
             void initExitCodeOnInvalidInput(int exitCode)       { if (initializable(exitCodeOnInvalidInput, exitCode, ExitCode.USAGE)) { exitCodeOnInvalidInput = exitCode; } }
             void initExitCodeOnExecutionException(int exitCode) { if (initializable(exitCodeOnExecutionException, exitCode, ExitCode.SOFTWARE)) { exitCodeOnExecutionException = exitCode; } }
             void updateName(String value)                   { if (isNonDefault(value, DEFAULT_COMMAND_NAME))                {name = value;} }
+            void updateModelTransformer(Class<? extends IModelTransformer> value) {
+                if (isNonDefault(value, NoOpModelTransforemer.class)) { this.modelTransformer = DefaultFactory.create(defaultFactory(), value); }
+            }
             void updateHelpCommand(boolean value)           { if (isNonDefault(value, DEFAULT_IS_HELP_COMMAND))             {isHelpCommand = value;} }
             void updateSubcommandsRepeatable(boolean value) { if (isNonDefault(value, DEFAULT_SUBCOMMANDS_REPEATABLE))      {subcommandsRepeatable = value;} }
             void updateAddMethodSubcommands(boolean value)  { if (isNonDefault(value, DEFAULT_IS_ADD_METHOD_SUBCOMMANDS))   {isAddMethodSubcommands = value;} }
@@ -11087,7 +11111,6 @@ public class CommandLine {
                 result.updateArgSpecMessages();
 
                 if (annotationsAreMandatory) {validateCommandSpec(result, cmd != null || hasCommandAnnotation, userObject.toString()); }
-                result = DefaultFactory.create(defaultFactory(), cmd == null  ? NoOpModelTransforemer.class :  cmd.modelTransformer()).transform(result);
                 result.validate();
                 return result;
             }
