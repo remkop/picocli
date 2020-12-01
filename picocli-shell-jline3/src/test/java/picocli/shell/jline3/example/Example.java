@@ -19,12 +19,11 @@ import picocli.CommandLine.ParentCommand;
 import picocli.shell.jline3.PicocliCommands;
 import picocli.shell.jline3.PicocliCommands.PicocliCommandsFactory;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * Example that demonstrates how to build an interactive shell with JLine3 and picocli.
@@ -123,15 +122,12 @@ public class Example {
         }
     }
 
-    private static Path workDir() {
-        return Paths.get(System.getProperty("user.dir"));
-    }
-
     public static void main(String[] args) {
         AnsiConsole.systemInstall();
         try {
+            Supplier<Path> workDir = () -> Paths.get(System.getProperty("user.dir"));
             // set up JLine built-in commands
-            Builtins builtins = new Builtins(Example::workDir, null, null);
+            Builtins builtins = new Builtins(workDir, null, null);
             builtins.rename(Builtins.Command.TTOP, "top");
             builtins.alias("zle", "widget");
             builtins.alias("bindkey", "keymap");
@@ -144,11 +140,11 @@ public class Example {
             // PicocliCommandsFactory factory = new PicocliCommandsFactory(customFactory); // chain the factories
 
             CommandLine cmd = new CommandLine(commands, factory);
-            PicocliCommands picocliCommands = new PicocliCommands(Example::workDir, cmd);
+            PicocliCommands picocliCommands = new PicocliCommands(cmd);
 
             Parser parser = new DefaultParser();
             try (Terminal terminal = TerminalBuilder.builder().build()) {
-                SystemRegistry systemRegistry = new SystemRegistryImpl(parser, terminal, Example::workDir, null);
+                SystemRegistry systemRegistry = new SystemRegistryImpl(parser, terminal, workDir, null);
                 systemRegistry.setCommandRegistries(builtins, picocliCommands);
                 systemRegistry.register("help", picocliCommands);
 

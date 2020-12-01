@@ -1,7 +1,6 @@
 package picocli.shell.jline3;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -9,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.jline.builtins.Options.HelpException;
@@ -123,17 +121,11 @@ public class PicocliCommands implements CommandRegistry {
         }
     }
 
-    private final Supplier<Path> workDir;
     private final CommandLine cmd;
     private final Set<String> commands;
     private final Map<String,String> aliasCommand = new HashMap<>();
 
-    public PicocliCommands(Path workDir, CommandLine cmd) {
-        this(() -> workDir, cmd);
-    }
-
-    public PicocliCommands(Supplier<Path> workDir, CommandLine cmd) {
-        this.workDir = workDir;
+    public PicocliCommands(CommandLine cmd) {
         this.cmd = cmd;
         commands = cmd.getCommandSpec().subcommands().keySet();
         for (String c: commands) {
