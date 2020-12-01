@@ -137,12 +137,12 @@ public class Example {
             builtins.alias("bindkey", "keymap");
             // set up picocli commands
             CliCommands commands = new CliCommands();
-            
+
             PicocliCommandsFactory factory = new PicocliCommandsFactory();
             // Or, if you have your own factory, you can chain them like this:
             // MyCustomFactory customFactory = createCustomFactory(); // your application custom factory
-            // PicocliCommands.Factory factory = new PicocliCommands.Factory(customFactory); // chain the factories
-            
+            // PicocliCommandsFactory factory = new PicocliCommandsFactory(customFactory); // chain the factories
+
             CommandLine cmd = new CommandLine(commands, factory);
             PicocliCommands picocliCommands = new PicocliCommands(Example::workDir, cmd);
 
@@ -159,7 +159,7 @@ public class Example {
                         .variable(LineReader.LIST_MAX, 50)   // max tab completion candidates
                         .build();
                 builtins.setLineReader(reader);
-                factory.setLineReader(reader);
+                factory.setLineReader((LineReaderImpl) reader);
                 TailTipWidgets widgets = new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TailTipWidgets.TipType.COMPLETER);
                 widgets.enable();
                 KeyMap<Binding> keyMap = reader.getKeyMaps().get("main");
