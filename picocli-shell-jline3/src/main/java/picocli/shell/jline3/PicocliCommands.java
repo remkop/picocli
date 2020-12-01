@@ -29,6 +29,7 @@ import org.jline.utils.AttributedString;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Help;
+import picocli.CommandLine.IFactory;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Model.OptionSpec;
 
@@ -44,6 +45,18 @@ public class PicocliCommands implements CommandRegistry {
 
     /**
      * Command that clears the screen.
+     * <p>
+     * <b>WARNING:</b> This subcommand needs a JLine {@code LineReaderImpl} to clear the screen.
+     * To accomplish this, construct the {@code CommandLine} with a {@code PicocliCommandsFactory},
+     * and set the {@code LineReaderImpl} on that factory. For example:
+     * <pre>
+     * PicocliCommandsFactory factory = new PicocliCommandsFactory();
+     * CommandLine cmd = new CommandLine(new MyApp(), factory);
+     * LineReaderImpl readerImpl = ... // create reader
+     * factory.setLineReader(readerImpl);
+     * </pre>
+     *
+     * @since 4.6
      */
     @Command(name = "cls", aliases = "clear", mixinStandardHelpOptions = true,
             description = "Clears the screen", version = "1.0")
@@ -51,25 +64,62 @@ public class PicocliCommands implements CommandRegistry {
 
         private final LineReaderImpl reader;
 
-        ClearScreen(LineReader reader) { this.reader = (LineReaderImpl) reader; }
+        ClearScreen(LineReaderImpl reader) { this.reader = reader; }
 
         public Void call() throws IOException {
             if (reader != null) { reader.clearScreen(); }
             return null;
         }
     }
-    
+
+    /**
+     * Command factory that is necessary for applications that want the use the {@code ClearScreen} subcommand.
+     * It allows chaining (or delegrating) to a custom factory.
+     * <p>
+     * <b>WARNING:</b> If the application uses the {@code ClearScreen} subcommand,  construct the {@code CommandLine}
+     * with a {@code PicocliCommandsFactory}, and set the {@code LineReaderImpl} on that factory. Applications need
+     * to call the setLineReader method with a {@code LineReaderImpl}; this will be passed to the {@code ClearScreen}
+     * subcommand.
+     *
+     * For example:
+     * <pre>
+     * PicocliCommandsFactory factory = new PicocliCommandsFactory();
+     * CommandLine cmd = new CommandLine(new MyApp(), factory);
+     * LineReaderImpl readerImpl = ... // create reader
+     * factory.setLineReader(readerImpl);
+     * </pre>
+     *
+     * Custom factories can be chained by passing them in to the constructor like this:
+     * <pre>
+     * MyCustomFactory customFactory = createCustomFactory(); // your application custom factory
+     * PicocliCommandsFactory factory = new PicocliCommandsFactory(customFactory); // chain the factories
+     * </pre>
+     *
+     * @since 4.6
+     */
     public static class PicocliCommandsFactory implements CommandLine.IFactory {
-        private LineReader reader;
-        
+        private CommandLine.IFactory nextFactory;
+        private LineReaderImpl reader;
+
+        public PicocliCommandsFactory() {
+            // nextFactory and line reader are null
+        }
+
+        public PicocliCommandsFactory(IFactory nextFactory) {
+            this.nextFactory = nextFactory;
+            // nextFactory is set (but may be null) and line reader is null
+        }
+
         @SuppressWarnings("unchecked")
         public <K> K create(Class<K> clazz) throws Exception {
             if (ClearScreen.class == clazz) { return (K) new ClearScreen(reader); }
+            if (nextFactory != null) { return nextFactory.create(clazz); }
             return CommandLine.defaultFactory().create(clazz);
         }
 
-        public void setLineReader(LineReader reader) {
+        public void setLineReader(LineReaderImpl reader) {
             this.reader = reader;
+            // reader may be null, so check before using it in ClearScreen command
         }
     }
 
