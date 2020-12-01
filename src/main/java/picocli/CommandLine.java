@@ -389,6 +389,11 @@ public class CommandLine {
         return (T) getCommandSpec().userObject();
     }
 
+    /** Returns the factory that this {@code CommandLine} was constructed with.
+     * @return the factory that this {@code CommandLine} was constructed with, never {@code null}
+     * @since 4.6 */
+    public IFactory getFactory() { return factory; }
+
     /** Returns {@code true} if an option annotated with {@link Option#usageHelp()} was specified on the command line.
      * @return whether the parser encountered an option annotated with {@link Option#usageHelp()}.
      * @since 0.9.8 */

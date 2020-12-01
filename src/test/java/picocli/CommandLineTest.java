@@ -3483,4 +3483,35 @@ public class CommandLineTest {
         String expected = "[picocli WARN] Could not close picocli.CommandLineTest$2@: java.lang.IllegalStateException: booh!";
         assertEquals(expected, systemErrRule.getLog().replaceAll("@.*: java", "@: java"));
     }
+
+    @Test
+    public void testGetFactoryDefault1() {
+        CommandLine cmd = new CommandLine(CompactFields.class);
+        CommandLine.IFactory dflt = CommandLine.defaultFactory();
+        assertNotSame(dflt, cmd.getFactory());
+        assertEquals(dflt.getClass(), cmd.getFactory().getClass());
+    }
+
+    @Test
+    public void testGetFactoryDefault2() {
+        CommandLine cmd = new CommandLine(new CompactFields());
+        CommandLine.IFactory dflt = CommandLine.defaultFactory();
+        assertNotSame(dflt, cmd.getFactory());
+        assertEquals(dflt.getClass(), cmd.getFactory().getClass());
+    }
+
+    @Test
+    public void testGetFactoryCustom() {
+        CommandLine.IFactory myFactory = new CommandLine.IFactory() {
+            public <K> K create(Class<K> cls) {
+                return null;
+            }
+        };
+        CommandLine cmd = new CommandLine(CompactFields.class, myFactory);
+        assertSame(myFactory, cmd.getFactory());
+
+        CommandLine.IFactory dflt = CommandLine.defaultFactory();
+        assertNotSame(dflt, cmd.getFactory());
+        assertNotEquals(dflt.getClass(), cmd.getFactory().getClass());
+    }
 }
