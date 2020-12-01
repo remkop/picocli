@@ -4681,7 +4681,7 @@ public class CommandLine {
 
 
         /** Returns transformer for command
-         * @since X.X */
+         * @since 4.6 */
         Class<? extends IModelTransformer> modelTransformer() default NoOpModelTransforemer.class;
     }
     /** A {@code Command} may define one or more {@code ArgGroups}: a group of options, positional parameters or a mixture of the two.
@@ -4825,7 +4825,7 @@ public class CommandLine {
     /**
      * Provides a way to modify how command model is built. Commands may configure a model transformer using
      * {@link Command#modelTransformer()} annotation attribute.
-     * @since X.X */
+     * @since 4.6 */
     public interface IModelTransformer {
         /**
          * Returns CommandSpec after doing transformation.
