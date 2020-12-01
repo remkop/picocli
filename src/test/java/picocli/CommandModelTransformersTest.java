@@ -12,7 +12,7 @@ import java.util.concurrent.Callable;
 
 import static org.junit.Assert.*;
 
-public class CommandSubcommandFilterTest {
+public class CommandModelTransformersTest {
     // allows tests to set any kind of properties they like, without having to individually roll them back
     @Rule
     public final TestRule restoreSystemProperties = new RestoreSystemProperties();
@@ -131,6 +131,11 @@ public class CommandSubcommandFilterTest {
 
         // there is only class annotated subcommand now
         assertArrayEquals(new String[]{"aa"}, cmd.getSubcommands().get("a").getSubcommands().keySet().toArray(new String[0]));
+    }
+
+    @Test
+    public void programmaticAPICommandFiltering() {
+        // TODO
     }
 }
 
