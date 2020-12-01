@@ -5,7 +5,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,17 +47,29 @@ public class PicocliCommands implements CommandRegistry {
      */
     @Command(name = "cls", aliases = "clear", mixinStandardHelpOptions = true,
             description = "Clears the screen", version = "1.0")
-    static class ClearScreen implements Callable<Void> {
+    public static class ClearScreen implements Callable<Void> {
 
         private final LineReaderImpl reader;
 
-        ClearScreen(LineReaderImpl reader) {
-            this.reader = reader;
-        }
+        ClearScreen(LineReader reader) { this.reader = (LineReaderImpl) reader; }
 
         public Void call() throws IOException {
-            reader.clearScreen();
+            if (reader != null) { reader.clearScreen(); }
             return null;
+        }
+    }
+    
+    public static class PicocliCommandsFactory implements CommandLine.IFactory {
+        private LineReader reader;
+        
+        @SuppressWarnings("unchecked")
+        public <K> K create(Class<K> clazz) throws Exception {
+            if (ClearScreen.class == clazz) { return (K) new ClearScreen(reader); }
+            return CommandLine.defaultFactory().create(clazz);
+        }
+
+        public void setLineReader(LineReader reader) {
+            this.reader = reader;
         }
     }
 
@@ -74,23 +85,12 @@ public class PicocliCommands implements CommandRegistry {
     public PicocliCommands(Supplier<Path> workDir, CommandLine cmd) {
         this.workDir = workDir;
         this.cmd = cmd;
-        commands = new HashSet<>(cmd.getCommandSpec().subcommands().keySet());
+        commands = cmd.getCommandSpec().subcommands().keySet();
         for (String c: commands) {
             for (String a: cmd.getSubcommands().get(c).getCommandSpec().aliases()) {
                 aliasCommand.put(a, c);
             }
         }
-    }
-
-    public void includeClearScreenCommand(LineReader reader) {
-        if (reader == null) return;
-        ClearScreen clearScreen = new ClearScreen((LineReaderImpl) reader);
-        cmd.addSubcommand(clearScreen);
-
-        commands.add("clear");
-
-        aliasCommand.put("clear", "clear");
-        aliasCommand.put("cls", "clear");
     }
 
     /**

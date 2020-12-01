@@ -17,6 +17,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
 import picocli.shell.jline3.PicocliCommands;
+import picocli.shell.jline3.PicocliCommands.PicocliCommandsFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -42,7 +43,7 @@ public class Example {
                     ""},
             footer = {"", "Press Ctl-D to exit."},
             subcommands = {
-                    MyCommand.class, CommandLine.HelpCommand.class})
+                    MyCommand.class, PicocliCommands.ClearScreen.class, CommandLine.HelpCommand.class})
     static class CliCommands implements Runnable {
         PrintWriter out;
 
@@ -136,7 +137,13 @@ public class Example {
             builtins.alias("bindkey", "keymap");
             // set up picocli commands
             CliCommands commands = new CliCommands();
-            CommandLine cmd = new CommandLine(commands);
+            
+            PicocliCommandsFactory factory = new PicocliCommandsFactory();
+            // Or, if you have your own factory, you can chain them like this:
+            // MyCustomFactory customFactory = createCustomFactory(); // your application custom factory
+            // PicocliCommands.Factory factory = new PicocliCommands.Factory(customFactory); // chain the factories
+            
+            CommandLine cmd = new CommandLine(commands, factory);
             PicocliCommands picocliCommands = new PicocliCommands(Example::workDir, cmd);
 
             Parser parser = new DefaultParser();
@@ -152,7 +159,7 @@ public class Example {
                         .variable(LineReader.LIST_MAX, 50)   // max tab completion candidates
                         .build();
                 builtins.setLineReader(reader);
-                picocliCommands.includeClearScreenCommand(reader);
+                factory.setLineReader(reader);
                 TailTipWidgets widgets = new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TailTipWidgets.TipType.COMPLETER);
                 widgets.enable();
                 KeyMap<Binding> keyMap = reader.getKeyMaps().get("main");
