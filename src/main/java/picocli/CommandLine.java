@@ -4823,9 +4823,15 @@ public class CommandLine {
     }
 
     /**
-     * Provides a way to modify how command model is built. Commands may configure a model transformer using
-     * {@link Command#modelTransformer()} annotation attribute.
-     * @since 4.6 */
+     * Provides a way to modify how the command model is built.
+     * This is useful for applications that need to modify the model dynamically depending on the runtime environment.
+     * <p>
+     * Commands may configure a model transformer using the
+     * {@link Command#modelTransformer()} annotation attribute, or via the
+     * {@link CommandSpec#modelTransformer(IModelTransformer)} programmatic API.
+     * <p>
+     * The transformers are invoked only once, after the full command hierarchy is constructed.
+     */
     public interface IModelTransformer {
         /**
          * Returns CommandSpec after doing transformation.
