@@ -6912,6 +6912,14 @@ public class CommandLine {
                 return this;
             }
 
+            /** Returns the model transformer for this CommandSpec instance
+             * @since 4.6 */
+            public IModelTransformer modelTransformer() { return modelTransformer; }
+
+            /** Sets the model transformer for the CommandSpec instance
+             * @since 4.6 */
+            public CommandSpec modelTransformer(IModelTransformer modelTransformer) { this.modelTransformer = modelTransformer; return this; }
+
             /** Sets the {@code INegatableOptionTransformer} used to create the negative form of {@linkplain Option#negatable() negatable} options.
              * Note that {@link CommandSpec#optionsCaseInsensitive()} will also change the case sensitivity of {@linkplain Option#negatable() negatable} options:
              * any custom {@link INegatableOptionTransformer} that was previously installed will be replaced by the case-insensitive
