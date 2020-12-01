@@ -1,6 +1,8 @@
 package picocli;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
@@ -11,6 +13,9 @@ import java.util.concurrent.Callable;
 import static org.junit.Assert.*;
 
 public class Issue1225UnmatchedArgBadIndex {
+    @Rule
+    public final ProvideSystemProperty ansiOFF = new ProvideSystemProperty("picocli.ansi", "false");
+
 
     @Command(name = "app", mixinStandardHelpOptions = true, version = "app 1.0",
             description = "....")
