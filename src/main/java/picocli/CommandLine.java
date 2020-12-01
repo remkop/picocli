@@ -217,18 +217,18 @@ public class CommandLine {
      * @param factory the factory used to create instances of {@linkplain Command#subcommands() subcommands}, {@linkplain Option#converter() converters}, etc., that are registered declaratively with annotation attributes
      * @throws InitializationException if the specified command object does not have a {@link Command}, {@link Option} or {@link Parameters} annotation
      * @since 2.2 */
+    public CommandLine(Object command, IFactory factory) {
+        this(command, factory, true);
+    }
+
     private CommandLine(Object command, IFactory factory, boolean userCalled) {
         this.factory = Assert.notNull(factory, "factory");
         interpreter = new Interpreter();
         commandSpec = CommandSpec.forAnnotatedObject(command, factory);
         commandSpec.commandLine(this);
-        if(userCalled) { this.applyModelTransformations(); }
+        if (userCalled) { this.applyModelTransformations(); }
         commandSpec.validate();
         if (commandSpec.unmatchedArgsBindings().size() > 0) { setUnmatchedArgumentsAllowed(true); }
-    }
-
-    public CommandLine(Object command, IFactory factory) {
-        this(command, factory, true);
     }
 
     private CommandLine copy() {
