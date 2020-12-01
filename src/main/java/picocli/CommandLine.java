@@ -6986,7 +6986,7 @@ public class CommandLine {
                 updateScopeType(cmd.scope());
 
                 if (factory != null) {
-                    updateModelTransformer(cmd.modelTransformer());
+                    updateModelTransformer(cmd.modelTransformer(), factory);
                     updateVersionProvider(cmd.versionProvider(), factory);
                     initDefaultValueProvider(cmd.defaultValueProvider(), factory);
                 }
@@ -7007,8 +7007,8 @@ public class CommandLine {
             void initExitCodeOnInvalidInput(int exitCode)       { if (initializable(exitCodeOnInvalidInput, exitCode, ExitCode.USAGE)) { exitCodeOnInvalidInput = exitCode; } }
             void initExitCodeOnExecutionException(int exitCode) { if (initializable(exitCodeOnExecutionException, exitCode, ExitCode.SOFTWARE)) { exitCodeOnExecutionException = exitCode; } }
             void updateName(String value)                   { if (isNonDefault(value, DEFAULT_COMMAND_NAME))                {name = value;} }
-            void updateModelTransformer(Class<? extends IModelTransformer> value) {
-                if (isNonDefault(value, NoOpModelTransformer.class)) { this.modelTransformer = DefaultFactory.create(defaultFactory(), value); }
+            void updateModelTransformer(Class<? extends IModelTransformer> value, IFactory factory) {
+                if (isNonDefault(value, NoOpModelTransformer.class)) { this.modelTransformer = DefaultFactory.create(factory, value); }
             }
             void updateHelpCommand(boolean value)           { if (isNonDefault(value, DEFAULT_IS_HELP_COMMAND))             {isHelpCommand = value;} }
             void updateSubcommandsRepeatable(boolean value) { if (isNonDefault(value, DEFAULT_SUBCOMMANDS_REPEATABLE))      {subcommandsRepeatable = value;} }
