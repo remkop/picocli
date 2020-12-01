@@ -4682,7 +4682,7 @@ public class CommandLine {
 
         /** Returns transformer for command
          * @since 4.6 */
-        Class<? extends IModelTransformer> modelTransformer() default NoOpModelTransforemer.class;
+        Class<? extends IModelTransformer> modelTransformer() default NoOpModelTransformer.class;
     }
     /** A {@code Command} may define one or more {@code ArgGroups}: a group of options, positional parameters or a mixture of the two.
      * Groups can be used to:
@@ -4834,7 +4834,7 @@ public class CommandLine {
         CommandSpec transform(CommandSpec commandSpec);
     }
 
-    private static class NoOpModelTransforemer implements IModelTransformer {
+    private static class NoOpModelTransformer implements IModelTransformer {
         public CommandSpec transform(CommandSpec commandSpec) { return commandSpec; }
     }
 
@@ -7008,7 +7008,7 @@ public class CommandLine {
             void initExitCodeOnExecutionException(int exitCode) { if (initializable(exitCodeOnExecutionException, exitCode, ExitCode.SOFTWARE)) { exitCodeOnExecutionException = exitCode; } }
             void updateName(String value)                   { if (isNonDefault(value, DEFAULT_COMMAND_NAME))                {name = value;} }
             void updateModelTransformer(Class<? extends IModelTransformer> value) {
-                if (isNonDefault(value, NoOpModelTransforemer.class)) { this.modelTransformer = DefaultFactory.create(defaultFactory(), value); }
+                if (isNonDefault(value, NoOpModelTransformer.class)) { this.modelTransformer = DefaultFactory.create(defaultFactory(), value); }
             }
             void updateHelpCommand(boolean value)           { if (isNonDefault(value, DEFAULT_IS_HELP_COMMAND))             {isHelpCommand = value;} }
             void updateSubcommandsRepeatable(boolean value) { if (isNonDefault(value, DEFAULT_SUBCOMMANDS_REPEATABLE))      {subcommandsRepeatable = value;} }
