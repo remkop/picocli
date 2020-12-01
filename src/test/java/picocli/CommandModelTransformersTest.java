@@ -133,9 +133,70 @@ public class CommandModelTransformersTest {
         assertArrayEquals(new String[]{"aa"}, cmd.getSubcommands().get("a").getSubcommands().keySet().toArray(new String[0]));
     }
 
-    @Test
+    @Test(expected = CommandLine.UnmatchedArgumentException.class)
     public void programmaticAPICommandFiltering() {
-        // TODO
+
+        @CommandLine.Command(name="a")
+        class A implements Callable<Integer> {
+            public Integer call() throws Exception {
+                return 0;
+            }
+        }
+        @CommandLine.Command(name="b")
+        class B implements Callable<Integer> {
+            public Integer call() throws Exception {
+                return 0;
+            }
+        }
+        @CommandLine.Command(name="c")
+        class C implements Callable<Integer> {
+            public Integer call() throws Exception {
+                return 0;
+            }
+        }
+        @CommandLine.Command(name="d")
+        class D implements Callable<Integer> {
+            public Integer call() throws Exception {
+                return 2;
+            }
+        }
+
+
+        class MT implements CommandLine.IModelTransformer {
+            public CommandLine.Model.CommandSpec transform(CommandLine.Model.CommandSpec commandSpec) {
+                commandSpec.removeSubcommand("a");
+                commandSpec.removeSubcommand("c");
+
+                commandSpec.addSubcommand("d", CommandLine.Model.CommandSpec.forAnnotatedObject(new D()));
+
+                return commandSpec;
+            }
+        }
+
+        CommandLine.IModelTransformer mt = new MT();
+
+        CommandLine.Model.CommandSpec commandSpec = CommandLine.Model.CommandSpec
+                .create()
+                .modelTransformer(mt)
+                .addSubcommand("a", new CommandLine(new A()))
+                .addSubcommand( "b", new CommandLine(new B()))
+                .addSubcommand("c", new CommandLine(new C()));
+
+        assertEquals(mt, commandSpec.modelTransformer());
+
+        final CommandLine cl = new CommandLine(commandSpec);
+
+        assertArrayEquals(new String[]{"b", "d"}, cl.getSubcommands().keySet().toArray(new String[0]));
+
+        assertEquals(2, cl.execute("d"));
+
+        assertEquals(0, cl.execute("b"));
+
+        // should throw unmatched argument exception
+        cl.parseArgs("b");
+
+        // should throw unmatched argument exception
+        cl.parseArgs("c");
     }
 }
 
