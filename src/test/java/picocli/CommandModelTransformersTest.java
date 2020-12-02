@@ -9,6 +9,10 @@ import org.junit.rules.TestRule;
 import org.junit.Test;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.UnmatchedArgumentException;
+import picocli.CommandLine.IModelTransformer;
+import picocli.CommandLine.Model.CommandSpec;
 
 import static org.junit.Assert.*;
 
@@ -26,7 +30,7 @@ public class CommandModelTransformersTest {
     @Rule
     public final SystemOutRule systemOutRule = new SystemOutRule().enableLog().muteForSuccessfulTests();
 
-    @CommandLine.Command(name = "aa")
+    @Command(name = "aa")
     private static class AA implements Callable<Integer> {
         public Integer call() {
             return 0;
@@ -34,14 +38,14 @@ public class CommandModelTransformersTest {
     }
 
 
-    @CommandLine.Command(name = "c")
+    @Command(name = "c")
     private static class C implements Callable<Integer> {
         public Integer call() {
             return 0;
         }
     }
 
-    @CommandLine.Command(name = "b")
+    @Command(name = "b")
     private static class B implements Callable<Integer> {
         public Integer call() {
             return 0;
@@ -49,11 +53,11 @@ public class CommandModelTransformersTest {
     }
 
 
-    @CommandLine.Command(name = "a", subcommands = {AA.class}, modelTransformer = A.AFilter.class)
+    @Command(name = "a", subcommands = {AA.class}, modelTransformer = A.AFilter.class)
     private static class A implements Callable<Integer> {
 
-        private static class AFilter implements CommandLine.IModelTransformer {
-            public CommandLine.Model.CommandSpec transform(CommandLine.Model.CommandSpec commandSpec) {
+        private static class AFilter implements IModelTransformer {
+            public CommandSpec transform(CommandSpec commandSpec) {
                 // verify it's context aware
                 assertEquals(2, commandSpec.subcommands().size());
 
@@ -71,7 +75,7 @@ public class CommandModelTransformersTest {
             return 0;
         }
 
-        @CommandLine.Command(name = "ab")
+        @Command(name = "ab")
         private int ab()
         {
             return 0;
@@ -79,11 +83,11 @@ public class CommandModelTransformersTest {
     }
 
 
-    @CommandLine.Command(name="inital", subcommands = {A.class, B.class, C.class}, modelTransformer = Main.MainFilter.class)
+    @Command(name="inital", subcommands = {A.class, B.class, C.class}, modelTransformer = Main.MainFilter.class)
     private static class Main implements Callable<Integer> {
 
-        private static class MainFilter implements CommandLine.IModelTransformer {
-            public CommandLine.Model.CommandSpec transform(CommandLine.Model.CommandSpec commandSpec) {
+        private static class MainFilter implements IModelTransformer {
+            public CommandSpec transform(CommandSpec commandSpec) {
                 // verify it's context aware
                 assertEquals(3, commandSpec.subcommands().size());
 
@@ -133,28 +137,28 @@ public class CommandModelTransformersTest {
         assertArrayEquals(new String[]{"aa"}, cmd.getSubcommands().get("a").getSubcommands().keySet().toArray(new String[0]));
     }
 
-    @Test(expected = CommandLine.UnmatchedArgumentException.class)
+    @Test
     public void programmaticAPICommandFiltering() {
 
-        @CommandLine.Command(name="a")
+        @Command(name="a")
         class A implements Callable<Integer> {
             public Integer call() throws Exception {
                 return 0;
             }
         }
-        @CommandLine.Command(name="b")
+        @Command(name="b")
         class B implements Callable<Integer> {
             public Integer call() throws Exception {
                 return 0;
             }
         }
-        @CommandLine.Command(name="c")
+        @Command(name="c")
         class C implements Callable<Integer> {
             public Integer call() throws Exception {
                 return 0;
             }
         }
-        @CommandLine.Command(name="d")
+        @Command(name="d")
         class D implements Callable<Integer> {
             public Integer call() throws Exception {
                 return 2;
@@ -162,20 +166,20 @@ public class CommandModelTransformersTest {
         }
 
 
-        class MT implements CommandLine.IModelTransformer {
-            public CommandLine.Model.CommandSpec transform(CommandLine.Model.CommandSpec commandSpec) {
+        class MT implements IModelTransformer {
+            public CommandSpec transform(CommandSpec commandSpec) {
                 commandSpec.removeSubcommand("a");
                 commandSpec.removeSubcommand("c");
 
-                commandSpec.addSubcommand("d", CommandLine.Model.CommandSpec.forAnnotatedObject(new D()));
+                commandSpec.addSubcommand("d", CommandSpec.forAnnotatedObject(new D()));
 
                 return commandSpec;
             }
         }
 
-        CommandLine.IModelTransformer mt = new MT();
+        IModelTransformer mt = new MT();
 
-        CommandLine.Model.CommandSpec commandSpec = CommandLine.Model.CommandSpec
+        CommandSpec commandSpec = CommandSpec
                 .create()
                 .modelTransformer(mt)
                 .addSubcommand("a", new CommandLine(new A()))
@@ -193,10 +197,22 @@ public class CommandModelTransformersTest {
         assertEquals(0, cl.execute("b"));
 
         // should throw unmatched argument exception
-        cl.parseArgs("b");
+        parseArgsThrowsUnmatchedArgumentException(cl, "a");
 
         // should throw unmatched argument exception
-        cl.parseArgs("c");
+        parseArgsThrowsUnmatchedArgumentException(cl, "c");
+    }
+
+    private static void parseArgsThrowsUnmatchedArgumentException(CommandLine cl, String ...args) {
+        try {
+            cl.parseArgs(args);
+            fail("Exception not thrown");
+        }
+        catch (Exception e) {
+            if (!(e instanceof UnmatchedArgumentException)) {
+                fail("Exception is not UnmatchedArgumentException");
+            }
+        }
     }
 }
 
