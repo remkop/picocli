@@ -196,10 +196,8 @@ public class CommandModelTransformersTest {
 
         assertEquals(0, cl.execute("b"));
 
-        // should throw unmatched argument exception
         parseArgsThrowsUnmatchedArgumentException(cl, "a");
 
-        // should throw unmatched argument exception
         parseArgsThrowsUnmatchedArgumentException(cl, "c");
     }
 
