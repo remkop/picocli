@@ -4836,6 +4836,7 @@ public class CommandLine {
      * {@link CommandSpec#modelTransformer(IModelTransformer)} programmatic API.
      * <p>
      * The transformers are invoked only once, after the full command hierarchy is constructed.
+     * @since 4.6
      */
     public interface IModelTransformer {
         /**
