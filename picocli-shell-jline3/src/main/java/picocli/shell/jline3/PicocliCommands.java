@@ -18,11 +18,12 @@ import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
-import org.jline.reader.impl.LineReaderImpl;
 import org.jline.reader.impl.completer.ArgumentCompleter;
 import org.jline.reader.impl.completer.NullCompleter;
 import org.jline.reader.impl.completer.SystemCompleter;
+import org.jline.terminal.Terminal;
 import org.jline.utils.AttributedString;
+import org.jline.utils.InfoCmp.Capability;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -44,14 +45,14 @@ public class PicocliCommands implements CommandRegistry {
     /**
      * Command that clears the screen.
      * <p>
-     * <b>WARNING:</b> This subcommand needs a JLine {@code LineReaderImpl} to clear the screen.
+     * <b>WARNING:</b> This subcommand needs a JLine {@code Terminal} to clear the screen.
      * To accomplish this, construct the {@code CommandLine} with a {@code PicocliCommandsFactory},
-     * and set the {@code LineReaderImpl} on that factory. For example:
+     * and set the {@code Terminal} on that factory. For example:
      * <pre>
      * PicocliCommandsFactory factory = new PicocliCommandsFactory();
      * CommandLine cmd = new CommandLine(new MyApp(), factory);
-     * LineReaderImpl readerImpl = ... // create reader
-     * factory.setLineReader(readerImpl);
+     * // create terminal
+     * factory.setTerminal(terminal);
      * </pre>
      *
      * @since 4.6
@@ -60,31 +61,31 @@ public class PicocliCommands implements CommandRegistry {
             description = "Clears the screen", version = "1.0")
     public static class ClearScreen implements Callable<Void> {
 
-        private final LineReaderImpl reader;
+        private final Terminal terminal;
 
-        ClearScreen(LineReaderImpl reader) { this.reader = reader; }
+        ClearScreen(Terminal terminal) { this.terminal = terminal; }
 
         public Void call() throws IOException {
-            if (reader != null) { reader.clearScreen(); }
+            if (terminal != null) { terminal.puts(Capability.clear_screen); }
             return null;
         }
     }
 
     /**
      * Command factory that is necessary for applications that want the use the {@code ClearScreen} subcommand.
-     * It allows chaining (or delegrating) to a custom factory.
+     * It allows chaining (or delegating) to a custom factory.
      * <p>
      * <b>WARNING:</b> If the application uses the {@code ClearScreen} subcommand,  construct the {@code CommandLine}
-     * with a {@code PicocliCommandsFactory}, and set the {@code LineReaderImpl} on that factory. Applications need
-     * to call the setLineReader method with a {@code LineReaderImpl}; this will be passed to the {@code ClearScreen}
+     * with a {@code PicocliCommandsFactory}, and set the {@code Terminal} on that factory. Applications need
+     * to call the {@code setTerminal} method with a {@code Terminal}; this will be passed to the {@code ClearScreen}
      * subcommand.
      *
      * For example:
      * <pre>
      * PicocliCommandsFactory factory = new PicocliCommandsFactory();
      * CommandLine cmd = new CommandLine(new MyApp(), factory);
-     * LineReaderImpl readerImpl = ... // create reader
-     * factory.setLineReader(readerImpl);
+     * // create terminal
+     * factory.setTerminal(terminal);
      * </pre>
      *
      * Custom factories can be chained by passing them in to the constructor like this:
@@ -97,27 +98,27 @@ public class PicocliCommands implements CommandRegistry {
      */
     public static class PicocliCommandsFactory implements CommandLine.IFactory {
         private CommandLine.IFactory nextFactory;
-        private LineReaderImpl reader;
+        private Terminal terminal;
 
         public PicocliCommandsFactory() {
-            // nextFactory and line reader are null
+            // nextFactory and terminal are null
         }
 
         public PicocliCommandsFactory(IFactory nextFactory) {
             this.nextFactory = nextFactory;
-            // nextFactory is set (but may be null) and line reader is null
+            // nextFactory is set (but may be null) and terminal is null
         }
 
         @SuppressWarnings("unchecked")
         public <K> K create(Class<K> clazz) throws Exception {
-            if (ClearScreen.class == clazz) { return (K) new ClearScreen(reader); }
+            if (ClearScreen.class == clazz) { return (K) new ClearScreen(terminal); }
             if (nextFactory != null) { return nextFactory.create(clazz); }
             return CommandLine.defaultFactory().create(clazz);
         }
 
-        public void setLineReader(LineReaderImpl reader) {
-            this.reader = reader;
-            // reader may be null, so check before using it in ClearScreen command
+        public void setTerminal(Terminal terminal) {
+            this.terminal = terminal;
+            // terminal may be null, so check before using it in ClearScreen command
         }
     }
 
