@@ -5005,4 +5005,56 @@ public class HelpTest {
         String actual = new CommandLine(new MyTool()).getUsageMessage();
         assertEquals(expected, actual);
     }
+    @Test
+    public void testIssue1273() {
+        class Issue1273 {
+            @Option(names = {"-u", "--user"}, description = "The connecting user name.")
+            private String user;
+
+            @Option(names = {"-p", "--password"}, interactive = true, description = "Password for the user.")
+            private String password;
+
+            @Option(names = {"-o", "--port"}, description = "Listening port.")
+            private int port;
+        }
+
+        CommandLine cmd = new CommandLine(new Issue1273());
+        cmd.setHelpFactory(new IHelpFactory() {
+            public Help create(final CommandSpec commandSpec, ColorScheme colorScheme) {
+                return new Help(commandSpec, colorScheme) {
+                    @Override
+                    public IOptionRenderer createDefaultOptionRenderer() {
+                        return new IOptionRenderer() {
+                            public Text[][] render(OptionSpec option, IParamLabelRenderer ignored, ColorScheme scheme) {
+                                // assume one line of description text (may contain embedded %n line separators)
+                                String[] description = option.description();
+                                Text[] descriptionFirstLines = scheme.text(description[0]).splitLines();
+
+                                Text EMPTY = Ansi.EMPTY_TEXT;
+                                List<Text[]> result = new ArrayList<Text[]>();
+                                result.add(new Text[] {
+                                        scheme.optionText(String.valueOf(
+                                                option.command().usageMessage().requiredOptionMarker())),
+                                        scheme.optionText(option.shortestName()),
+                                        scheme.text(","), // we assume every option has a short and a long name
+                                        scheme.optionText(option.longestName()), // just the option name without parameter
+                                        descriptionFirstLines[0] });
+                                for (int i = 1; i < descriptionFirstLines.length; i++) {
+                                    result.add(new Text[] { EMPTY, EMPTY, EMPTY, EMPTY, descriptionFirstLines[i] });
+                                }
+                                return result.toArray(new Text[result.size()][]);
+                            }
+                        };
+                    }
+                };
+            }
+        });
+        String expected = String.format("" +
+                "Usage: <main class> [-p] [-o=<port>] [-u=<user>]%n" +
+                "  -o, --port       Listening port.%n" +
+                "  -p, --password   Password for the user.%n" +
+                "  -u, --user       The connecting user name.%n");
+        String actual = cmd.getUsageMessage();
+        assertEquals(expected, actual);
+    }
 }

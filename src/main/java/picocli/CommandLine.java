@@ -15473,7 +15473,7 @@ public class CommandLine {
          * @since 4.6 */
         public int calcLongOptionColumnWidth(List<OptionSpec> options, List<PositionalParamSpec> positionals, ColorScheme aColorScheme) {
             int max = 0;
-            IOptionRenderer optionRenderer = new DefaultOptionRenderer(false, " ");
+            IOptionRenderer optionRenderer = createDefaultOptionRenderer();
             boolean cjk = commandSpec.usageMessage().adjustLineBreaksForWideCJKCharacters();
             int longOptionsColWidth = commandSpec.usageMessage().longOptionsMaxWidth() + 1; // add 1 space for indentation
             for (OptionSpec option : options) {

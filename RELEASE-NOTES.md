@@ -266,6 +266,7 @@ Attributes that are _not_ copied include:
 * [#1225] Bugfix: Error message for unmatched positional argument reports incorrect index when value equals a previously matched argument. Thanks to [Vitaly Shukela](https://github.com/vi) for raising this.
 * [#1250] Bugfix: Inherited positional parameter should not be overridden by default value if placed after subcommand. Thanks to [Daniel Gray](https://github.com/danielthegray) for the pull request.
 * [#1183] Bugfix: Prevent `MissingParameterException` thrown when subcommand has required options and help option is specified on parent command. Thanks to [drkilikil](https://github.com/drkilikil) for raising this.
+* [#1273] Bugfix: The `Help.calcLongOptionColumnWidth` now calls `Help.createDefaultOptionRenderer`, so overriding `createDefaultOptionRenderer` uses the correct column width in the options and parameters list.
 * [#1215] DOC: User manual improvements, including more tabs with Kotlin source code. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1219] DOC: User manual improvements: added more tabs with Kotlin code. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1220] DOC: User manual improvements: corrections, more Kotlin tabs. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
