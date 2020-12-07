@@ -11604,6 +11604,17 @@ This https://picocli.info/picocli-on-graalvm.html[older article], "Picocli on Gr
 
 See also this https://github.com/remkop/picocli-native-image-demo[demo Gradle project] and this https://github.com/remkop/picocli-native-image-maven-demo[demo Maven project] that provide a simple complete CLI app, with build instructions, that developers can clone, and build to get the stand-alone executable.
 
+=== Really Executable JAR
+
+A https://skife.org/java/unix/2011/06/20/really_executable_jars.html[really executable JAR]
+is a JAR file that is also a shell script which executes the JAR by running it with `java`.
+It thus functions as an exectuable, is portable across operating systems and architectures,
+and is still a valid JAR file that can be executed explicitly or otherwise used as a JAR.
+
+The https://github.com/brianm/really-executable-jars-maven-plugin[Really Executable JAR Maven Plugin]
+can be used to create such a JAR, typically in combination with the shade plugin,
+as the JAR needs to be standalone, containing all of its dependencies.
+
 === launch4j
 http://launch4j.sourceforge.net/docs.html[launch4j] can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.
 
