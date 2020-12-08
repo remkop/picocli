@@ -289,6 +289,7 @@ Attributes that are _not_ copied include:
 * [#1249] DOC: Added section on Mocking to user manual. Thanks to [Petr Hála](https://github.com/pehala) for the pull request.
 * [#1244] DEP: Bump `Spring-Boot-Starter` version to 2.3.5.RELEASE. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1248] BUILD: Fix gradle warnings. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1280] BUILD: Remove trailing comment from gradle.properties to prevent build error. Thanks to [David Walluck](https://github.com/dwalluck) for raising this.
 * [#1253] DOC: Fix line endings to LF in documentation files. Thanks to [Daniel Gray](https://github.com/danielthegray) for the pull request.
 * [#1255] DOC: User manual and Quick Guide: add Groovy, Kotlin and Scala examples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1261] DOC: User manual improvements: add Scala code samples. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
