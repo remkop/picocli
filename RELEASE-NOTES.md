@@ -13,6 +13,7 @@ This release contains new features, bug fixes and other enhancements.
 * [nveeser-google](https://github.com/nveeser-google) contributed a fix for compiler warnings about `Annotation::getClass` and assignment in `if` condition.
 * [Petr Hála](https://github.com/pehala) contributed a pull request to add a section on Mocking to user manual.
 * [Max Rydahl Andersen](https://github.com/maxandersen) contributed a pull request to include jbang in the Build Tools section of the user manual.
+* [David Phillips](https://github.com/electrum) contributed a section to the user manual on [Really Executable JARs](https://skife.org/java/unix/2011/06/20/really_executable_jars.html).
 * [Mattias Andersson](https://github.com/attiand) raised the idea of supporting subcommand methods in Groovy scripts.
 * [Adrian A.](https://github.com/aadrian) raised the idea of using closures in the picocli annotations in Groovy programs instead of specifying a class.
 * [Nick Cross](https://github.com/rnc) raised the idea of inheriting `@Command` attributes with `scope=INHERIT`.
@@ -25,6 +26,7 @@ This release contains new features, bug fixes and other enhancements.
 * [Lukas Heumos](https://github.com/Zethson) added the picocli-based [cli-java template](https://cookietemple.readthedocs.io/en/latest/available_templates/available_templates.html#cli-java) to CookieTemple.
 * [Sualeh Fatehi](https://github.com/sualeh) raised the idea of adding add `CommandLine::getFactory` accessor method.
 * [David Walluck](https://github.com/dwalluck) contributed a test improvement that allows the tests to run reliably in more environments.
+
 
 ## What is in this release
 Improved Groovy support: this release introduces a new `@PicocliScript2` annotation that adds support for exit codes and `@Command`-annotated methods to define subcommands. Also, from this release, Groovy programs can use closures in the picocli annotations instead of specifying a class.
@@ -294,6 +296,7 @@ Attributes that are _not_ copied include:
 * [#1263] DOC: User manual: show build scripts in tabs. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1264] DOC: Fix broken links to GraalVm native image build configuration. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1005] DOC: add link to the CookieTemple [cli-java template](https://cookietemple.readthedocs.io/en/latest/available_templates/available_templates.html#cli-java) README. Thanks to [Lukas Heumos](https://github.com/Zethson) for getting this added to CookieTemple.
+* [#1276] DOC: User manual: add section for "really executable JARs". Thanks to [David Phillips](https://github.com/electrum) for the pull request.
 * [#1270] TEST: Fix issue #1103 in `Issue1225UnmatchedArgBadIndex`. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 
 ## <a name="4.6.0-deprecated"></a> Deprecations
