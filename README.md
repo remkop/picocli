@@ -98,6 +98,7 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 
 ### Articles & Presentations
 #### English
+* [VIDEO] [J-Fall Virtual 2020: Julien Lengrand - An introduction to creating CLI applications using picoCLI](https://www.youtube.com/watch?v=Rc_D4OTKidU&list=PLpQuPreMkT6D36w9d13uGpIPi5nf9I_0c&index=13) (2020-12-07) by [Julien Lengrand-Lambert](https://twitter.com/jlengrand). This was the top rated talk for [@nljug](https://twitter.com/nljug) #jfall virtual 2020! Congrats, Julien!
 * [Paginate results in a command line application using picoCLI](https://lengrand.fr/paginate-results-in-a-jvm-cli-application-using-picocli/) (2020-11-17) by [Julien Lengrand-Lambert](https://twitter.com/jlengrand).
 * [CLI applications with GraalVM Native Image](https://medium.com/graalvm/cli-applications-with-graalvm-native-image-d629a40aa0be) (2020-11-13) by [Oleg Šelajev](https://twitter.com/shelajev).
 * [Picocli subcommands - One program, many purposes](https://aragost.com/blog/java/picocli-subcommands.html) (2020-09-22) by [Jonas Andersen](https://twitter.com/PrimusAlgo).
