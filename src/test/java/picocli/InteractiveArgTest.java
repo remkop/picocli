@@ -5,8 +5,10 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.ProvideSystemProperty;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestRule;
+import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.UnmatchedArgumentException;
 
 import java.io.*;
@@ -16,6 +18,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import static java.lang.String.format;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 
 public class InteractiveArgTest {
@@ -35,6 +39,89 @@ public class InteractiveArgTest {
         }
 
         PrintStream out = System.out;
+        PrintStream err = System.err;
+        InputStream in = System.in;
+        System.setProperty("picocli.trace", "DEBUG");
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
+            System.setErr(new PrintStream(errBaos));
+            System.setIn(new ByteArrayInputStream("1234567890".getBytes()));
+
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            ParseResult result = cmd.parseArgs("-x");
+            ArgSpec specX = result.matchedArgs().get(0);
+            assertThat(specX.toString(), containsString("App.x"));
+
+            assertEquals("Enter value for -x (Pwd): ", baos.toString());
+            assertEquals(1234567890, app.x);
+            assertEquals(0, app.z);
+
+            String trace = errBaos.toString();
+            assertThat(trace, containsString("User entered 10 characters"));
+            assertThat(trace, containsString(
+                "Setting " + specX.toString() + " to *** (masked interactive value)"));
+            assertThat(trace, not(containsString("1234567890")));
+
+            cmd.parseArgs("-z", "678");
+
+            assertEquals(0, app.x);
+            assertEquals(678, app.z);
+        } finally {
+            System.setOut(out);
+            System.setOut(err);
+            System.setIn(in);
+        }
+    }
+
+    @Test
+    public void testInteractiveOptionReadsFromStdInWithEchoing() {
+        class App {
+            @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true, echo = true) int x;
+        }
+
+        PrintStream out = System.out;
+        PrintStream err = System.err;
+        InputStream in = System.in;
+        System.setProperty("picocli.trace", "DEBUG");
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
+            System.setErr(new PrintStream(errBaos));
+            System.setIn(new ByteArrayInputStream("1234567890".getBytes()));
+
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            ParseResult result = cmd.parseArgs("-x");
+            ArgSpec specX = result.matchedArgs().get(0);
+            assertThat(specX.toString(), containsString("App.x"));
+
+            assertEquals("Enter value for -x (Pwd): ", baos.toString());
+            assertEquals(1234567890, app.x);
+
+            String trace = errBaos.toString();
+            assertThat(trace, containsString("User entered 1234567890"));
+            assertThat(trace, containsString(
+                "Setting " + specX.toString() + " to 1234567890"));
+            assertThat(trace, not(containsString("10 characters")));
+            assertThat(trace, not(containsString("***")));
+        } finally {
+            System.setOut(out);
+            System.setErr(err);
+            System.setIn(in);
+        }
+    }
+
+    @Test
+    public void testInteractiveOptionReadsFromStdInWithCustomPrompt() {
+        class App {
+            @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true, prompt = "[Customized]Enter your X: ") int x;
+        }
+
+        PrintStream out = System.out;
         InputStream in = System.in;
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -45,14 +132,8 @@ public class InteractiveArgTest {
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("-x");
 
-            assertEquals("Enter value for -x (Pwd): ", baos.toString());
+            assertEquals("[Customized]Enter your X: ", baos.toString());
             assertEquals(123, app.x);
-            assertEquals(0, app.z);
-
-            cmd.parseArgs("-z", "678");
-
-            assertEquals(0, app.x);
-            assertEquals(678, app.z);
         } finally {
             System.setOut(out);
             System.setIn(in);
@@ -70,6 +151,98 @@ public class InteractiveArgTest {
         }
 
         PrintStream out = System.out;
+        PrintStream err = System.err;
+        InputStream in = System.in;
+        System.setProperty("picocli.trace", "DEBUG");
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
+            System.setErr(new PrintStream(errBaos));
+            System.setIn(inputStream("1234567890"));
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            ParseResult result = cmd.parseArgs("-x", "-x");
+            ArgSpec specX = result.matchedArgs().get(0);
+            assertThat(specX.toString(), containsString("App.x"));
+
+            assertEquals("Enter value for -x (Pwd): Enter value for -x (Pwd): ", baos.toString());
+            assertEquals(Arrays.asList(1234567890, 1234567890), app.x);
+            assertEquals(0, app.z);
+
+            String trace = errBaos.toString();
+            assertThat(trace, containsString("User entered 10 characters"));
+            assertThat(trace, containsString(
+                "Adding *** (masked interactive value) to " + specX.toString()
+                    + " for option -x on " + app.getClass().getSimpleName()));
+            assertThat(trace, not(containsString("1234567890")));
+
+            cmd.parseArgs("-z", "678");
+
+            assertNull(app.x);
+            assertEquals(678, app.z);
+        } finally {
+            System.setOut(out);
+            System.setOut(err);
+            System.setIn(in);
+        }
+    }
+
+    @Test
+    public void testInteractiveOptionAsListOfIntegersWithEchoing() {
+        class App {
+            @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true, echo = true)
+            List<Integer> x;
+
+            @Option(names = "-z")
+            int z;
+        }
+
+        PrintStream out = System.out;
+        PrintStream err = System.err;
+        InputStream in = System.in;
+        System.setProperty("picocli.trace", "DEBUG");
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
+            System.setErr(new PrintStream(errBaos));
+            System.setIn(inputStream("1234567890"));
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            ParseResult result = cmd.parseArgs("-x", "-x");
+            ArgSpec specX = result.matchedArgs().get(0);
+            assertThat(specX.toString(), containsString("App.x"));
+
+            assertEquals("Enter value for -x (Pwd): Enter value for -x (Pwd): ", baos.toString());
+            assertEquals(Arrays.asList(1234567890, 1234567890), app.x);
+            assertEquals(0, app.z);
+
+            String trace = errBaos.toString();
+            assertThat(trace, containsString("User entered 1234567890"));
+            assertThat(trace, containsString(
+                "Adding 1234567890 (interactive value) to "
+                    + specX.toString() + " for option -x on " + app.getClass().getSimpleName()));
+            assertThat(trace, not(containsString("10 characters")));
+            assertThat(trace, not(containsString("***")));
+        } finally {
+            System.setOut(out);
+            System.setOut(err);
+            System.setIn(in);
+        }
+    }
+
+    @Test
+    public void testInteractiveOptionAsListOfIntegersWithCustomPrompt() {
+        class App {
+            @Option(names = "-x", description = {"Pwd", "line2"}, interactive = true, prompt = "[Customized]Enter your x: ")
+            List<Integer> x;
+
+            @Option(names = "-z")
+            int z;
+        }
+
+        PrintStream out = System.out;
         InputStream in = System.in;
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -79,14 +252,9 @@ public class InteractiveArgTest {
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("-x", "-x");
 
-            assertEquals("Enter value for -x (Pwd): Enter value for -x (Pwd): ", baos.toString());
+            assertEquals("[Customized]Enter your x: [Customized]Enter your x: ", baos.toString());
             assertEquals(Arrays.asList(123, 123), app.x);
             assertEquals(0, app.z);
-
-            cmd.parseArgs("-z", "678");
-
-            assertNull(app.x);
-            assertEquals(678, app.z);
         } finally {
             System.setOut(out);
             System.setIn(in);
@@ -389,6 +557,89 @@ public class InteractiveArgTest {
         }
 
         PrintStream out = System.out;
+        PrintStream err = System.err;
+        InputStream in = System.in;
+        System.setProperty("picocli.trace", "DEBUG");
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
+            System.setErr(new PrintStream(errBaos));
+            System.setIn(new ByteArrayInputStream("1234567890".getBytes()));
+
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            ParseResult result = cmd.parseArgs("987");
+            ArgSpec specX = result.matchedArgs().get(0);
+            assertThat(specX.toString(), containsString("App.x"));
+
+            String expectedPrompt = format("Enter value for position 0 (Pwd%nline2): ");
+            assertEquals(expectedPrompt, baos.toString());
+            assertEquals(1234567890, app.x);
+            assertEquals(987, app.z);
+
+            String trace = errBaos.toString();
+            assertThat(trace, containsString("User entered 10 characters"));
+            assertThat(trace, containsString(
+                "Setting " + specX.toString() + " to *** (masked interactive value)"));
+            assertThat(trace, not(containsString("1234567890")));
+        } finally {
+            System.setOut(out);
+            System.setOut(err);
+            System.setIn(in);
+        }
+    }
+
+    @Test
+    public void testInteractivePositionalReadsFromStdInWithEchoing() {
+        class App {
+            @Parameters(index = "0", description = {"Pwd%nline2", "ignored"}, interactive = true, echo = true) int x;
+            @Parameters(index = "1") int z;
+        }
+
+        PrintStream out = System.out;
+        PrintStream err = System.err;
+        InputStream in = System.in;
+        System.setProperty("picocli.trace", "DEBUG");
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(baos));
+            ByteArrayOutputStream errBaos = new ByteArrayOutputStream();
+            System.setErr(new PrintStream(errBaos));
+            System.setIn(new ByteArrayInputStream("1234567890".getBytes()));
+
+            App app = new App();
+            CommandLine cmd = new CommandLine(app);
+            ParseResult result = cmd.parseArgs("987");
+            ArgSpec specX = result.matchedArgs().get(0);
+            assertThat(specX.toString(), containsString("App.x"));
+
+            String expectedPrompt = format("Enter value for position 0 (Pwd%nline2): ");
+            assertEquals(expectedPrompt, baos.toString());
+            assertEquals(1234567890, app.x);
+            assertEquals(987, app.z);
+
+            String trace = errBaos.toString();
+            assertThat(trace, containsString("User entered 1234567890"));
+            assertThat(trace, containsString(
+                "Setting " + specX.toString() + " to 123"));
+            assertThat(trace, not(containsString("10 characters")));
+            assertThat(trace, not(containsString("***")));
+        } finally {
+            System.setOut(out);
+            System.setOut(err);
+            System.setIn(in);
+        }
+    }
+
+    @Test
+    public void testInteractivePositionalReadsFromStdInWithCustomPrompt() {
+        class App {
+            @Parameters(index = "0", description = {"Pwd%nline2", "ignored"}, interactive = true, prompt = "[Customized]Enter your value: ") int x;
+            @Parameters(index = "1") int z;
+        }
+
+        PrintStream out = System.out;
         InputStream in = System.in;
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -399,7 +650,7 @@ public class InteractiveArgTest {
             CommandLine cmd = new CommandLine(app);
             cmd.parseArgs("987");
 
-            String expectedPrompt = format("Enter value for position 0 (Pwd%nline2): ");
+            String expectedPrompt = format("[Customized]Enter your value: ");
             assertEquals(expectedPrompt, baos.toString());
             assertEquals(123, app.x);
             assertEquals(987, app.z);
