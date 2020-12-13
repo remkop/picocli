@@ -3885,7 +3885,7 @@ public class CommandLine {
         /**
          * Set {@code interactive=true} if this option will prompt the end user for a value (like a password).
          * Only supported for single-value options and {@code char[]} arrays (no collections, maps or other array types).
-         * When running on Java 6 or greater, this will use the {@link Console#readPassword()} API to get a value without echoing input to the console.
+         * When running on Java 6 or greater and echo attribute is false, this will use the {@link Console#readPassword()} API to get a value without echoing input to the console.
          * <p>
          * Best security practice is to use type {@code char[]} instead of {@code String}, and to to null out the array after use.
          * </p><p>
@@ -3897,6 +3897,22 @@ public class CommandLine {
          * @since 3.5
          */
         boolean interactive() default false;
+
+        /**
+         * Use this attribute to control a user input is echo-ed to the console or not. If {@code echo=true}, a input is echo-ed to the console.
+         * This attribute is ignored when interactive attribute is false.
+         * @return whether the user input is echo-ed to the console or not
+         * @since 4.X
+         */
+        boolean echo() default false;
+
+        /**
+         * Use this attribute to customize the text displayed to the end user for an interactive option.
+         * This attribute is ignored when interactive attribute is false.
+         * @return text will be displayed to the end user
+         * @since 4.X
+         */
+        String prompt() default "";
 
         /** ResourceBundle key for this option. If not specified, (and a ResourceBundle {@linkplain Command#resourceBundle() exists for this command}) an attempt
          * is made to find the option description using any of the option names (without leading hyphens) as key.
@@ -4158,11 +4174,27 @@ public class CommandLine {
         /**
          * Set {@code interactive=true} if this positional parameter will prompt the end user for a value (like a password).
          * Only supported for single-value positional parameters (not arrays, collections or maps).
-         * When running on Java 6 or greater, this will use the {@link Console#readPassword()} API to get a value without echoing input to the console.
+         * When running on Java 6 or greater and echo attribute is false, this will use the {@link Console#readPassword()} API to get a value without echoing input to the console.
          * @return whether this positional parameter prompts the end user for a value to be entered on the command line
          * @since 3.5
          */
         boolean interactive() default false;
+
+        /**
+         * Use this attribute to control a user input is echo-ed to the console or not. If {@code echo=true}, a input is echo-ed to the console.
+         * This attribute is ignored when interactive attribute is false.
+         * @return whether the user input is echo-ed to the console or not
+         * @since 4.X
+         */
+        boolean echo() default false;
+
+        /**
+         * Use this attribute to customize the text displayed to the end user for an interactive option.
+         * This attribute is ignored when interactive attribute is false.
+         * @return text will be displayed to the end user
+         * @since 4.X
+         */
+        String prompt() default "";
 
         /** ResourceBundle key for this option. If not specified, (and a ResourceBundle {@linkplain Command#resourceBundle() exists for this command}) an attempt
          * is made to find the positional parameter description using {@code paramLabel() + "[" + index() + "]"} as key.
@@ -8285,6 +8317,8 @@ public class CommandLine {
             // parser fields
             private boolean required;
             private final boolean interactive;
+            private final boolean echo;
+            private final String prompt;
             private final String splitRegex;
             private final String splitRegexSynopsisLabel;
             protected final ITypeInfo typeInfo;
@@ -8324,6 +8358,8 @@ public class CommandLine {
                 inherited = builder.inherited;
                 root = builder.root == null && ScopeType.INHERIT.equals(builder.scopeType) ? this : builder.root;
                 interactive = builder.interactive;
+                echo = builder.echo;
+                prompt = builder.prompt;
                 initialValue = builder.initialValue;
                 hasInitialValue = builder.hasInitialValue;
                 initialValueState = builder.initialValueState;
@@ -8396,6 +8432,12 @@ public class CommandLine {
             /** Returns whether this option will prompt the user to enter a value on the command line.
              * @see Option#interactive() */
             public boolean interactive()   { return interactive; }
+            /** Returns whether the user input is echo-ed to the console or not.
+             * @see Option#echo() */
+            public boolean echo() { return echo; }
+            /** Returns the text displayed to the end user for an interactive option.
+             * @see Option#prompt() */
+            public String prompt() { return prompt; }
 
             /** Returns the description of this option or positional parameter, after all variables have been rendered,
              * including the {@code ${DEFAULT-VALUE}} and {@code ${COMPLETION-CANDIDATES}} variables.
@@ -8908,6 +8950,8 @@ public class CommandLine {
                 private String descriptionKey;
                 private boolean required;
                 private boolean interactive;
+                private boolean echo;
+                private String prompt;
                 private String paramLabel;
                 private boolean hideParamSyntax;
                 private String splitRegex;
@@ -8942,6 +8986,8 @@ public class CommandLine {
                     descriptionKey = original.descriptionKey;
                     required = original.required;
                     interactive = original.interactive;
+                    echo = original.echo;
+                    prompt = original.prompt;
                     paramLabel = original.paramLabel;
                     hideParamSyntax = original.hideParamSyntax;
                     splitRegex = original.splitRegex;
@@ -8988,6 +9034,8 @@ public class CommandLine {
 
                     hideParamSyntax = option.hideParamSyntax();
                     interactive = option.interactive();
+                    echo = option.echo();
+                    prompt = option.prompt();
                     description = option.description();
                     descriptionKey = option.descriptionKey();
                     splitRegex = option.split();
@@ -9021,6 +9069,8 @@ public class CommandLine {
 
                         hideParamSyntax = parameters.hideParamSyntax();
                         interactive = parameters.interactive();
+                        echo = parameters.echo();
+                        prompt = parameters.prompt();
                         description = parameters.description();
                         descriptionKey = parameters.descriptionKey();
                         splitRegex = parameters.split();
@@ -9062,6 +9112,12 @@ public class CommandLine {
                 /** Returns whether this option prompts the user to enter a value on the command line.
                  * @see Option#interactive() */
                 public boolean interactive()   { return interactive; }
+                /** Returns whether the user input is echo-ed to the console or not.
+                 * @see Option#echo() */
+                public boolean echo() { return echo; }
+                /** Returns the text displayed to the end user for an interactive option.
+                 * @see Option#prompt() */
+                public String prompt() { return prompt; }
 
                 /** Returns the description of this option, used when generating the usage documentation.
                  * @see Option#description() */
@@ -9188,6 +9244,12 @@ public class CommandLine {
 
                 /** Sets whether this option prompts the user to enter a value on the command line, and returns this builder. */
                 public T interactive(boolean interactive)    { this.interactive = interactive; return self(); }
+
+                /** Sets whether the user input is echo-ed to the console or not. */
+                public T echo(boolean echo) { this.echo = echo; return self(); }
+
+                /** Sets the text displayed to the end user for an interactive option. */
+                public T prompt(String prompt) { this.prompt = prompt; return self(); }
 
                 /** Sets the description of this option, used when generating the usage documentation, and returns this builder.
                  * @see Option#description() */
@@ -13370,11 +13432,11 @@ public class CommandLine {
                         consumed = 0;
                     }
                 }
-                // if argSpec is interactive, we may need to read the password from the console:
+                // if argSpec is interactive and echo is false, we may need to read the password from the console:
                 // - if arity = 0   : ALWAYS read from console
                 // - if arity = 0..1: ONLY read from console if user specified a non-option value
                 if (argSpec.interactive() && (arity.max == 0 || !optionalValueExists)) {
-                    interactiveValue = readPassword(argSpec);
+                    interactiveValue = readUserInput(argSpec);
                     consumed = 0;
                 }
             }
@@ -13394,8 +13456,13 @@ public class CommandLine {
             } else {
                 consumed = 1;
                 if (interactiveValue != null) {
-                    initValueMessage = "Setting %s to *** (masked interactive value) for %4$s on %5$s%n";
-                    overwriteValueMessage = "Overwriting %s value with *** (masked interactive value) for %s on %5$s%n";
+                    if (argSpec.echo()) {
+                        initValueMessage = "Setting %s to %3$s (interactive value) for %4$s on %5$s%n";
+                        overwriteValueMessage = "Overwriting %s value with %3$s (interactive value) for %s on %5$s%n";
+                    } else {
+                        initValueMessage = "Setting %s to *** (masked interactive value) for %4$s on %5$s%n";
+                        overwriteValueMessage = "Overwriting %s value with *** (masked interactive value) for %s on %5$s%n";
+                    }
                 }
                 if (!char[].class.equals(cls) && !char[].class.equals(argSpec.type())) {
                     if (interactiveValue != null) {
@@ -13407,7 +13474,7 @@ public class CommandLine {
                     if (interactiveValue == null) { // setting command line arg to char[] field
                         newValue = actualValue.toCharArray();
                     } else {
-                        actualValue = "***"; // mask interactive value
+                        actualValue = getMaskedValue(argSpec, new String(interactiveValue)); // mask interactive value if echo is false
                         newValue = interactiveValue;
                     }
                 }
@@ -13704,7 +13771,7 @@ public class CommandLine {
                 alreadyUnquoted = false;
             }
             if (argSpec.interactive() && argSpec.arity().max == 0) {
-                consumed = addPasswordToList(argSpec, result, consumed, argDescription);
+                consumed = addUserInputToList(argSpec, result, consumed, argDescription);
             }
             // now process the varargs if any
             String fallback = consumed == 0 && argSpec.isOption() && !OptionSpec.DEFAULT_FALLBACK_VALUE.equals(((OptionSpec) argSpec).fallbackValue())
@@ -13716,7 +13783,7 @@ public class CommandLine {
             for (int i = consumed; consumed < arity.max && !args.isEmpty(); i++) {
                 if (argSpec.interactive() && argSpec.arity().max == 1 && !varargCanConsumeNextValue(argSpec, args.peek())) {
                     // if interactive and arity = 0..1, we consume from command line if possible (if next arg not an option or subcommand)
-                    consumed = addPasswordToList(argSpec, result, consumed, argDescription);
+                    consumed = addUserInputToList(argSpec, result, consumed, argDescription);
                 } else {
                     if (!varargCanConsumeNextValue(argSpec, args.peek())) { break; }
                     List<Object> typedValuesAtPosition = new ArrayList<Object>();
@@ -13761,21 +13828,34 @@ public class CommandLine {
             return commandSpec.parser().splitFirst() ? (arg.stringValues().size() - initialSize) / 2 : i;
         }
 
-        private int addPasswordToList(ArgSpec argSpec, List<Object> result, int consumed, String argDescription) {
-            char[] password = readPassword(argSpec);
+        private int addUserInputToList(ArgSpec argSpec, List<Object> result, int consumed, String argDescription) {
+            char[] input = readUserInput(argSpec);
+            String inputString = new String(input);
             if (tracer.isInfo()) {
-                tracer.info("Adding *** (masked interactive value) to %s for %s on %s%n", argSpec.toString(), argDescription, argSpec.scopeString());
+                tracer.info("Adding %s to %s for %s on %s%n",
+                    getLoggableMaskedInteractiveValue(argSpec, inputString), argSpec.toString(), argDescription, argSpec.scopeString());
             }
-            parseResultBuilder.addStringValue(argSpec, "***");
-            parseResultBuilder.addOriginalStringValue(argSpec, "***");
+            String maskedValue = getMaskedValue(argSpec, inputString);
+            parseResultBuilder.addStringValue(argSpec, maskedValue);
+            parseResultBuilder.addOriginalStringValue(argSpec, maskedValue);
             if (!char[].class.equals(argSpec.auxiliaryTypes()[0]) && !char[].class.equals(argSpec.type())) {
-                Object value = tryConvert(argSpec, consumed, getTypeConverter(argSpec.auxiliaryTypes(), argSpec, 0), new String(password), 0);
+                Object value = tryConvert(argSpec, consumed, getTypeConverter(argSpec.auxiliaryTypes(), argSpec, 0), new String(input), 0);
                 result.add(value);
             } else {
-                result.add(password);
+                result.add(input);
             }
             consumed++;
             return consumed;
+        }
+        private String getLoggableMaskedInteractiveValue(ArgSpec argSpec, String input) {
+          if (argSpec.echo()) {
+            return input + " (interactive value)";
+          } else {
+            return "*** (masked interactive value)";
+          }
+        }
+        private String getMaskedValue(ArgSpec argSpec, String input) {
+            return argSpec.echo() ? input : "***";
         }
         private int consumeOneArgument(ArgSpec argSpec,
                                        LookBehind lookBehind,
@@ -14009,13 +14089,24 @@ public class CommandLine {
             return true;
         }
 
-        char[] readPassword(ArgSpec argSpec) {
+        char[] readUserInput(ArgSpec argSpec) {
             String name = argSpec.isOption() ? ((OptionSpec) argSpec).longestName() : "position " + position;
-            String prompt = String.format("Enter value for %s (%s): ", name, str(argSpec.description(), 0));
-            if (tracer.isDebug()) {tracer.debug("Reading value for %s from console...%n", name);}
-            char[] result = readPassword(prompt);
-            if (tracer.isDebug()) {tracer.debug("User entered %d characters for %s.%n", result.length, name);}
-            return result;
+            String prompt = argSpec.prompt() != null && argSpec.prompt().length() != 0 ?
+                argSpec.prompt() :
+                String.format("Enter value for %s (%s): ", name, str(argSpec.description(), 0));
+            try {
+                if (tracer.isDebug()) {tracer.debug("Reading value for %s from console...%n", name);}
+                char[] result = argSpec.echo() ? readUserInputWithEchoing(prompt) : readPassword(prompt);
+                if (tracer.isDebug()) {tracer.debug(createUserInputDebugString(argSpec, result, name));}
+                return result;
+            } finally {
+                interactiveCount++;
+            }
+        }
+        private String createUserInputDebugString(ArgSpec argSpec, char[] result, String name) {
+            return argSpec.echo() ?
+                String.format("User entered %s for %s.%n", new String(result), name) :
+                String.format("User entered %d characters for %s.%n", result.length, name);
         }
         char[] readPassword(String prompt) {
             try {
@@ -14023,17 +14114,18 @@ public class CommandLine {
                 Method method = Class.forName("java.io.Console").getDeclaredMethod("readPassword", String.class, Object[].class);
                 return (char[]) method.invoke(console, prompt, new Object[0]);
             } catch (Exception e) {
-                System.out.print(prompt);
-                InputStreamReader isr = new InputStreamReader(System.in);
-                BufferedReader in = new BufferedReader(isr);
-                try {
-                    String password = in.readLine();
-                    return password == null ? new char[0] : password.toCharArray();
-                } catch (IOException ex2) {
-                    throw new IllegalStateException(ex2);
-                }
-            } finally {
-                interactiveCount++;
+                return readUserInputWithEchoing(prompt);
+            }
+        }
+        char[] readUserInputWithEchoing(String prompt) {
+            System.out.print(prompt);
+            InputStreamReader isr = new InputStreamReader(System.in);
+            BufferedReader in = new BufferedReader(isr);
+            try {
+                String input = in.readLine();
+                return input == null ? new char[0] : input.toCharArray();
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
             }
         }
         int getPosition(ArgSpec arg) {
