@@ -3883,11 +3883,13 @@ public class CommandLine {
         Class<? extends Iterable<String>> completionCandidates() default NoCompletionCandidates.class;
 
         /**
-         * Set {@code interactive=true} if this option will prompt the end user for a value (like a password).
+         * Set {@code interactive=true} to make this option prompt the end user for a value (like a password).
          * Only supported for single-value options and {@code char[]} arrays (no collections, maps or other array types).
-         * When running on Java 6 or greater and echo attribute is false, this will use the {@link Console#readPassword()} API to get a value without echoing input to the console.
+         * When running on Java 6 or greater and {@link Option#echo() echo = false} (the default),
+         * this will use the {@link Console#readPassword()} API to get a value without echoing input to the console,
+         * otherwise it will simply read a value from {@code System.in}.
          * <p>
-         * Best security practice is to use type {@code char[]} instead of {@code String}, and to to null out the array after use.
+         * For passwords, best security practice is to use type {@code char[]} instead of {@code String}, and to to null out the array after use.
          * </p><p>
          * When defined with {@code arity = "0..1"}, the option can also take a value from the command line.
          * (The user will still be prompted if no option parameter was specified on the command line.)
@@ -3898,20 +3900,20 @@ public class CommandLine {
          */
         boolean interactive() default false;
 
-        /**
-         * Use this attribute to control a user input is echo-ed to the console or not. If {@code echo=true}, a input is echo-ed to the console.
-         * This attribute is ignored when interactive attribute is false.
-         * @return whether the user input is echo-ed to the console or not
-         * @since 4.X
-         */
+        /** Use this attribute to control whether user input for an interactive option is echoed to the console or not.
+         * If {@code echo = true}, the user input is echoed to the console.
+         * This attribute is ignored when {@code interactive = false} (the default).
+         * @return whether the user input for an interactive option should be echoed to the console or not
+         * @see OptionSpec#echo()
+         * @since 4.6 */
         boolean echo() default false;
 
-        /**
-         * Use this attribute to customize the text displayed to the end user for an interactive option.
-         * This attribute is ignored when interactive attribute is false.
-         * @return text will be displayed to the end user
-         * @since 4.X
-         */
+        /** Use this attribute to customize the text displayed to the end user for an interactive option when asking for user input.
+         * When omitted, the displayed text is derived from the option name and the first description line.
+         * This attribute is ignored when {@code interactive = false} (the default).
+         * @return the text to display to the end user for an interactive option when asking for user input
+         * @see OptionSpec#prompt()
+         * @since 4.6 */
         String prompt() default "";
 
         /** ResourceBundle key for this option. If not specified, (and a ResourceBundle {@linkplain Command#resourceBundle() exists for this command}) an attempt
@@ -4174,26 +4176,29 @@ public class CommandLine {
         /**
          * Set {@code interactive=true} if this positional parameter will prompt the end user for a value (like a password).
          * Only supported for single-value positional parameters (not arrays, collections or maps).
-         * When running on Java 6 or greater and echo attribute is false, this will use the {@link Console#readPassword()} API to get a value without echoing input to the console.
+         * When running on Java 6 or greater and {@link Option#echo() echo = false} (the default),
+         * this will use the {@link Console#readPassword()} API to get a value without echoing input to the console,
+         * otherwise it will simply read a value from {@code System.in}.
          * @return whether this positional parameter prompts the end user for a value to be entered on the command line
          * @since 3.5
          */
         boolean interactive() default false;
 
-        /**
-         * Use this attribute to control a user input is echo-ed to the console or not. If {@code echo=true}, a input is echo-ed to the console.
-         * This attribute is ignored when interactive attribute is false.
-         * @return whether the user input is echo-ed to the console or not
-         * @since 4.X
-         */
+        /** Use this attribute to control whether user input for an interactive positional parameter is echoed to the console or not.
+         * If {@code echo = true}, the user input is echoed to the console.
+         * This attribute is ignored when {@code interactive = false} (the default).
+         * @return whether the user input for an interactive positional parameter should be echoed to the console or not
+         * @see PositionalParamSpec#echo()
+         * @since 4.6 */
         boolean echo() default false;
 
-        /**
-         * Use this attribute to customize the text displayed to the end user for an interactive option.
-         * This attribute is ignored when interactive attribute is false.
-         * @return text will be displayed to the end user
-         * @since 4.X
-         */
+        /** Use this attribute to customize the text displayed to the end user for an interactive positional parameter when asking for user input.
+         * When omitted, the displayed text is derived from the positional parameter's
+         * position (index) and the first description line.
+         * This attribute is ignored when {@code interactive = false} (the default).
+         * @return the text to display to the end user for an interactive positional parameter when asking for user input
+         * @see PositionalParamSpec#prompt()
+         * @since 4.6 */
         String prompt() default "";
 
         /** ResourceBundle key for this option. If not specified, (and a ResourceBundle {@linkplain Command#resourceBundle() exists for this command}) an attempt
@@ -8430,13 +8435,18 @@ public class CommandLine {
                 return required && defaultValue() == null && defaultValueFromProvider() == null;
             }
             /** Returns whether this option will prompt the user to enter a value on the command line.
+             * @see Parameters#interactive()
              * @see Option#interactive() */
             public boolean interactive()   { return interactive; }
-            /** Returns whether the user input is echo-ed to the console or not.
-             * @see Option#echo() */
+            /** Returns whether the user input is echoed to the console or not for an interactive option or positional parameter when asking for user input.
+             * @see Option#echo()
+             * @see Parameters#echo()
+             * @since 4.6 */
             public boolean echo() { return echo; }
-            /** Returns the text displayed to the end user for an interactive option.
-             * @see Option#prompt() */
+            /** Returns the text displayed to the end user for an interactive option or positional parameter when asking for user input.
+             * @see Option#prompt()
+             * @see Parameters#prompt()
+             * @since 4.6 */
             public String prompt() { return prompt; }
 
             /** Returns the description of this option or positional parameter, after all variables have been rendered,
@@ -9112,11 +9122,15 @@ public class CommandLine {
                 /** Returns whether this option prompts the user to enter a value on the command line.
                  * @see Option#interactive() */
                 public boolean interactive()   { return interactive; }
-                /** Returns whether the user input is echo-ed to the console or not.
-                 * @see Option#echo() */
+                /** Returns whether the user input is echoed to the console or not for an interactive option or positional parameter when asking for user input.
+                 * @see Option#echo()
+                 * @see Parameters#echo()
+                 * @since 4.6 */
                 public boolean echo() { return echo; }
-                /** Returns the text displayed to the end user for an interactive option.
-                 * @see Option#prompt() */
+                /** Returns the text displayed to the end user for an interactive option or positional parameter when asking for user input.
+                 * @see Option#prompt()
+                 * @see Parameters#prompt()
+                 * @since 4.6 */
                 public String prompt() { return prompt; }
 
                 /** Returns the description of this option, used when generating the usage documentation.
@@ -9245,10 +9259,10 @@ public class CommandLine {
                 /** Sets whether this option prompts the user to enter a value on the command line, and returns this builder. */
                 public T interactive(boolean interactive)    { this.interactive = interactive; return self(); }
 
-                /** Sets whether the user input is echo-ed to the console or not. */
+                /** Sets whether the user input is echoed to the console or not for an interactive option or positional parameter. */
                 public T echo(boolean echo) { this.echo = echo; return self(); }
 
-                /** Sets the text displayed to the end user for an interactive option. */
+                /** Sets the text displayed to the end user for an interactive option or positional parameter when asking for user input. */
                 public T prompt(String prompt) { this.prompt = prompt; return self(); }
 
                 /** Sets the description of this option, used when generating the usage documentation, and returns this builder.
@@ -13432,7 +13446,7 @@ public class CommandLine {
                         consumed = 0;
                     }
                 }
-                // if argSpec is interactive and echo is false, we may need to read the password from the console:
+                // if argSpec is interactive, we may need to read the password from the console:
                 // - if arity = 0   : ALWAYS read from console
                 // - if arity = 0..1: ONLY read from console if user specified a non-option value
                 if (argSpec.interactive() && (arity.max == 0 || !optionalValueExists)) {
@@ -13832,8 +13846,8 @@ public class CommandLine {
             char[] input = readUserInput(argSpec);
             String inputString = new String(input);
             if (tracer.isInfo()) {
-                tracer.info("Adding %s to %s for %s on %s%n",
-                    getLoggableMaskedInteractiveValue(argSpec, inputString), argSpec.toString(), argDescription, argSpec.scopeString());
+                String value = argSpec.echo() ? input + " (interactive value)" : "*** (masked interactive value)";
+                tracer.info("Adding %s to %s for %s on %s%n", value, argSpec.toString(), argDescription, argSpec.scopeString());
             }
             String maskedValue = getMaskedValue(argSpec, inputString);
             parseResultBuilder.addStringValue(argSpec, maskedValue);
@@ -13846,13 +13860,6 @@ public class CommandLine {
             }
             consumed++;
             return consumed;
-        }
-        private String getLoggableMaskedInteractiveValue(ArgSpec argSpec, String input) {
-          if (argSpec.echo()) {
-            return input + " (interactive value)";
-          } else {
-            return "*** (masked interactive value)";
-          }
         }
         private String getMaskedValue(ArgSpec argSpec, String input) {
             return argSpec.echo() ? input : "***";
@@ -14091,9 +14098,7 @@ public class CommandLine {
 
         char[] readUserInput(ArgSpec argSpec) {
             String name = argSpec.isOption() ? ((OptionSpec) argSpec).longestName() : "position " + position;
-            String prompt = argSpec.prompt() != null && argSpec.prompt().length() != 0 ?
-                argSpec.prompt() :
-                String.format("Enter value for %s (%s): ", name, str(argSpec.description(), 0));
+            String prompt = !empty(argSpec.prompt()) ? argSpec.prompt() : String.format("Enter value for %s (%s): ", name, str(argSpec.description(), 0));
             try {
                 if (tracer.isDebug()) {tracer.debug("Reading value for %s from console...%n", name);}
                 char[] result = argSpec.echo() ? readUserInputWithEchoing(prompt) : readPassword(prompt);
