@@ -9,6 +9,7 @@ This release contains new features, bug fixes and other enhancements.
 ## Community Contributions
 
 * [Andreas Deininger](https://github.com/deining) has been contributing to the documentation and other areas for a while, but recently went into overdrive :-) and contributed many, many new pull requests to improve the documentation. The user manual and Quick Guide now have a "foldable" table of contents, and examples in tabs, with many additional examples in Kotlin, Scala and Groovy. A lot of work went into this! Many thanks, Andreas!
+* [Sualeh Fatehi](https://github.com/sualeh) contributed a pull request to `picocli-shell-jline3` that adds a built-in `clear` command and improves the `help` command.
 * [Daniel Gray](https://github.com/danielthegray) contributed a bug fix to prevent incorrectly defaulting inherited positional params after a subcommand.
 * [nveeser-google](https://github.com/nveeser-google) contributed a fix for compiler warnings about `Annotation::getClass` and assignment in `if` condition.
 * [Petr Hála](https://github.com/pehala) contributed a pull request to add a section on Mocking to user manual.
@@ -263,6 +264,7 @@ Attributes that are _not_ copied include:
 * [#1108] Enhancement: Support `Optional<T>` type for options and positional parameters. Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for raising this.
 * [#1214] Enhancement: Support Map options with key-only (support `-Dkey` as well as `-Dkey=value`). Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) and [David Walluck](https://github.com/dwalluck) for raising this and subsequent discussion.
 * [#1260] Enhancement: Support `@Spec`-annotated members in `ArgGroup` classes. Thanks to [Jannick Hemelhof](https://github.com/clone1612) for raising this.
+* [#1265] Enhancement in `picocli-shell-jline3`: add built-in `clear` command and improve `help` command. Thanks to [Sualeh Fatehi](https://github.com/sualeh) for the pull request.
 * [#1236] Enhancement/bugfix: Fix compiler warnings about `Annotation::getClass` and assignment in `if` condition. Thanks to [nveeser-google](https://github.com/nveeser-google) for the pull request.
 * [#1229] Bugfix: Fix compilation error introduced with fc5ef6de6 (#1184). Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1225] Bugfix: Error message for unmatched positional argument reports incorrect index when value equals a previously matched argument. Thanks to [Vitaly Shukela](https://github.com/vi) for raising this.

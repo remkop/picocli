@@ -107,17 +107,20 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
 import picocli.shell.jline3.PicocliCommands;
+import picocli.shell.jline3.PicocliCommands.PicocliCommandsFactory;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * Example that demonstrates how to build an interactive shell with JLine3 and picocli.
  * This example requires JLine 3.16+ and picocli 4.4+.
+ * <p>
+ * The {@code PicocliCommands.ClearScreen} was introduced in picocli 4.6.
+ * </p>
  */
 public class Example {
 
@@ -128,21 +131,15 @@ public class Example {
             description = {
                     "Example interactive shell with completion and autosuggestions. " +
                             "Hit @|magenta <TAB>|@ to see available commands.",
-                            "Hit @|magenta ALT-S|@ to toggle tailtips.",
+                    "Hit @|magenta ALT-S|@ to toggle tailtips.",
                     ""},
             footer = {"", "Press Ctl-D to exit."},
             subcommands = {
-                    MyCommand.class, ClearScreen.class, CommandLine.HelpCommand.class})
+                    MyCommand.class, PicocliCommands.ClearScreen.class, CommandLine.HelpCommand.class})
     static class CliCommands implements Runnable {
-        LineReaderImpl reader;
         PrintWriter out;
 
         CliCommands() {}
-
-        public void setReader(LineReader reader){
-            this.reader = (LineReaderImpl)reader;
-            out = reader.getTerminal().writer();
-        }
 
         public void run() {
             out.println(new CommandLine(this).getUsageMessage());
@@ -218,42 +215,31 @@ public class Example {
         }
     }
 
-    /**
-     * Command that clears the screen.
-     */
-    @Command(name = "cls", aliases = "clear", mixinStandardHelpOptions = true,
-            description = "Clears the screen", version = "1.0")
-    static class ClearScreen implements Callable<Void> {
-
-        @ParentCommand CliCommands parent;
-
-        public Void call() throws IOException {
-            parent.reader.clearScreen();
-            return null;
-        }
-    }
-
-    private static Path workDir() {
-        return Paths.get(System.getProperty("user.dir"));
-    }
-
     public static void main(String[] args) {
         AnsiConsole.systemInstall();
         try {
+            Supplier<Path> workDir = () -> Paths.get(System.getProperty("user.dir"));
             // set up JLine built-in commands
-            Builtins builtins = new Builtins(Example::workDir, null, null);
+            Builtins builtins = new Builtins(workDir, null, null);
             builtins.rename(Builtins.Command.TTOP, "top");
             builtins.alias("zle", "widget");
             builtins.alias("bindkey", "keymap");
             // set up picocli commands
             CliCommands commands = new CliCommands();
-            CommandLine cmd = new CommandLine(commands);
-            PicocliCommands picocliCommands = new PicocliCommands(Example::workDir, cmd);
+
+            PicocliCommandsFactory factory = new PicocliCommandsFactory();
+            // Or, if you have your own factory, you can chain them like this:
+            // MyCustomFactory customFactory = createCustomFactory(); // your application custom factory
+            // PicocliCommandsFactory factory = new PicocliCommandsFactory(customFactory); // chain the factories
+
+            CommandLine cmd = new CommandLine(commands, factory);
+            PicocliCommands picocliCommands = new PicocliCommands(cmd);
 
             Parser parser = new DefaultParser();
             try (Terminal terminal = TerminalBuilder.builder().build()) {
-                SystemRegistry systemRegistry = new SystemRegistryImpl(parser, terminal, Example::workDir, null);
+                SystemRegistry systemRegistry = new SystemRegistryImpl(parser, terminal, workDir, null);
                 systemRegistry.setCommandRegistries(builtins, picocliCommands);
+                systemRegistry.register("help", picocliCommands);
 
                 LineReader reader = LineReaderBuilder.builder()
                         .terminal(terminal)
@@ -262,7 +248,7 @@ public class Example {
                         .variable(LineReader.LIST_MAX, 50)   // max tab completion candidates
                         .build();
                 builtins.setLineReader(reader);
-                commands.setReader(reader);
+                factory.setTerminal(terminal);
                 TailTipWidgets widgets = new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TailTipWidgets.TipType.COMPLETER);
                 widgets.enable();
                 KeyMap<Binding> keyMap = reader.getKeyMaps().get("main");

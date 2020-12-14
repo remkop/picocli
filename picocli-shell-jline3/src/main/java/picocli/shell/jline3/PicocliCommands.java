@@ -49,6 +49,9 @@ public class PicocliCommands implements CommandRegistry {
      * To accomplish this, construct the {@code CommandLine} with a {@code PicocliCommandsFactory},
      * and set the {@code Terminal} on that factory. For example:
      * <pre>
+     * &#064;Command(subcommands = PicocliCommands.ClearScreen.class)
+     * class MyApp //...
+     *
      * PicocliCommandsFactory factory = new PicocliCommandsFactory();
      * CommandLine cmd = new CommandLine(new MyApp(), factory);
      * // create terminal
@@ -73,7 +76,7 @@ public class PicocliCommands implements CommandRegistry {
 
     /**
      * Command factory that is necessary for applications that want the use the {@code ClearScreen} subcommand.
-     * It allows chaining (or delegating) to a custom factory.
+     * It can be chained with other factories.
      * <p>
      * <b>WARNING:</b> If the application uses the {@code ClearScreen} subcommand,  construct the {@code CommandLine}
      * with a {@code PicocliCommandsFactory}, and set the {@code Terminal} on that factory. Applications need
@@ -88,7 +91,7 @@ public class PicocliCommands implements CommandRegistry {
      * factory.setTerminal(terminal);
      * </pre>
      *
-     * Custom factories can be chained by passing them in to the constructor like this:
+     * Other factories can be chained by passing them in to the constructor like this:
      * <pre>
      * MyCustomFactory customFactory = createCustomFactory(); // your application custom factory
      * PicocliCommandsFactory factory = new PicocliCommandsFactory(customFactory); // chain the factories
