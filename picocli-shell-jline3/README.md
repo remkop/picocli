@@ -133,7 +133,7 @@ public class Example {
                             "Hit @|magenta <TAB>|@ to see available commands.",
                     "Hit @|magenta ALT-S|@ to toggle tailtips.",
                     ""},
-            footer = {"", "Press Ctl-D to exit."},
+            footer = {"", "Press Ctrl-D to exit."},
             subcommands = {
                     MyCommand.class, PicocliCommands.ClearScreen.class, CommandLine.HelpCommand.class})
     static class CliCommands implements Runnable {
