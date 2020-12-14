@@ -9942,6 +9942,9 @@ class Dynamic {
 }
 ----
 
+All transformers are called once, after the full command hierarchy is constructed, and before any command line arguments are parsed.
+
+
 === Automatic Parameter Indexes
 ==== Automatic Indexes
 
