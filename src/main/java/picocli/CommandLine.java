@@ -231,6 +231,16 @@ public class CommandLine {
         if (commandSpec.unmatchedArgsBindings().size() > 0) { setUnmatchedArgumentsAllowed(true); }
     }
 
+    /** Apply transformers to command spec recursively. */
+    private void applyModelTransformations() {
+        if (commandSpec.modelTransformer != null) {
+            commandSpec = commandSpec.modelTransformer.transform(commandSpec);
+        }
+        for (CommandLine cmd : getSubcommands().values()) {
+            cmd.applyModelTransformations();
+        }
+    }
+
     private CommandLine copy() {
         CommandLine result = new CommandLine(commandSpec.copy(), factory); // create a new sub-hierarchy
         result.err = err;
@@ -244,19 +254,6 @@ public class CommandLine {
         result.interpreter.converterRegistry.clear();
         result.interpreter.converterRegistry.putAll(interpreter.converterRegistry);
         return result;
-    }
-
-
-    /**
-     * Apply transformers to command spec recursively
-     */
-    private void applyModelTransformations() {
-        if (this.commandSpec.modelTransformer != null) {
-            this.commandSpec = this.commandSpec.modelTransformer.transform(this.commandSpec);
-        }
-        for (CommandLine cmd : this.getSubcommands().values()) {
-            cmd.applyModelTransformations();
-        }
     }
 
     /**
@@ -4685,7 +4682,7 @@ public class CommandLine {
         ScopeType scope() default ScopeType.LOCAL;
 
 
-        /** Returns transformer for command
+        /** Returns the model transformer for this command.
          * @since 4.6 */
         Class<? extends IModelTransformer> modelTransformer() default NoOpModelTransformer.class;
     }
@@ -4835,16 +4832,26 @@ public class CommandLine {
      * {@link Command#modelTransformer()} annotation attribute, or via the
      * {@link CommandSpec#modelTransformer(IModelTransformer)} programmatic API.
      * <p>
-     * The transformers are invoked only once, after the full command hierarchy is constructed.
+     * Model transformers are invoked only once, after the full command hierarchy is constructed.
      * @since 4.6
      */
-    public interface IModelTransformer {
-        /**
-         * Returns CommandSpec after doing transformation.
-         * @return transformed CommandSpec
-         */
-        CommandSpec transform(CommandSpec commandSpec);
-    }
+public interface IModelTransformer {
+    /**
+     * Given an original CommandSpec, return the object that should be used
+     * instead. Implementors may modify the specified CommandSpec and return it,
+     * or create a full or partial copy of the specified CommandSpec, and return
+     * that, or even return a completely new CommandSpec.
+     * <p>
+     * Implementors are free to add or remove options, positional parameters,
+     * subcommands or modify the command in any other way.
+     * </p><p>
+     * This method is called once, after the full command hierarchy is
+     * constructed, and before any command line arguments are parsed.
+     * </p>
+     * @return the CommandSpec to use instead of the specified one
+     */
+    CommandSpec transform(CommandSpec commandSpec);
+}
 
     private static class NoOpModelTransformer implements IModelTransformer {
         public CommandSpec transform(CommandSpec commandSpec) { return commandSpec; }
@@ -6919,11 +6926,11 @@ public class CommandLine {
                 return this;
             }
 
-            /** Returns the model transformer for this CommandSpec instance
+            /** Returns the model transformer for this CommandSpec instance.
              * @since 4.6 */
             public IModelTransformer modelTransformer() { return modelTransformer; }
 
-            /** Sets the model transformer for the CommandSpec instance
+            /** Sets the model transformer for the CommandSpec instance.
              * @since 4.6 */
             public CommandSpec modelTransformer(IModelTransformer modelTransformer) { this.modelTransformer = modelTransformer; return this; }
 

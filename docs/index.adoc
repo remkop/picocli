@@ -9894,6 +9894,53 @@ override fun <K : Any> create(clazz: Class<K>): K {
 }
 ----
 
+=== Model Transformations
+From picocli 4.6, it is possible to use the annotations API to modify the model (commands, options, subcommands, etc.) dynamically at runtime.
+The `@Command` annotation now has a `modelTransformer` attribute where applications can specify a class that implements the `IModelTransformer` interface:
+
+[source,java]
+----
+interface IModelTransformer {
+    /**
+     * Given an original CommandSpec, return the object that should be used
+     * instead. Implementors may modify the specified CommandSpec and return it,
+     * or create a full or partial copy of the specified CommandSpec, and return
+     * that, or even return a completely new CommandSpec.
+     * <p>
+     * Implementors are free to add or remove options, positional parameters,
+     * subcommands or modify the command in any other way.
+     * </p><p>
+     * This method is called once, after the full command hierarchy is
+     * constructed, and before any command line arguments are parsed.
+     * </p>
+     * @return the CommandSpec to use instead of the specified one
+     */
+    CommandSpec transform(CommandSpec commandSpec);
+}
+----
+
+This allows applications to dynamically add or remove options, positional parameters or subcommands, or modify the command in any other way, based on some runtime condition.
+
+[source,java]
+----
+@Command(modelTransformer = Dynamic.SubCmdFilter.class)
+class Dynamic {
+
+    private static class SubCmdFilter implements IModelTransformer {
+        public CommandSpec transform(CommandSpec commandSpec) {
+            if (Boolean.getBoolean("disable_sub")) {
+                commandSpec.removeSubcommand("sub");
+            }
+            return commandSpec;
+        }
+    }
+
+    @Command
+    private void sub() {
+        // subcommand business logic
+    }
+}
+----
 
 === Automatic Parameter Indexes
 ==== Automatic Indexes

@@ -8,8 +8,9 @@ This release contains new features, bug fixes and other enhancements.
 
 ## Community Contributions
 
-* [Andreas Deininger](https://github.com/deining) has been contributing to the documentation and other areas for a while, but recently went into overdrive :-) and contributed many, many new pull requests to improve the documentation. The user manual and Quick Guide now have a "foldable" table of contents, and examples in tabs, with many additional examples in Kotlin, Scala and Groovy. A lot of work went into this! Many thanks, Andreas!
-* [Sualeh Fatehi](https://github.com/sualeh) contributed a pull request to `picocli-shell-jline3` that adds a built-in `clear` command and improves the `help` command.
+* [Andreas Deininger](https://github.com/deining) has been contributing to the documentation and other areas for a long time, but recently went into overdrive :-) and contributed many, many new pull requests to improve the documentation. The user manual and Quick Guide now have a "foldable" table of contents, and examples in tabs, with many additional examples in Kotlin, Scala and Groovy. A lot of work went into this! Many thanks, Andreas!
+* [Marko Mackic](https://github.com/MarkoMackic) contributed a pull request to add `IModelTransformer` API for user-defined model transformations after initialization and before parsing.
+* [Sualeh Fatehi](https://github.com/sualeh) contributed a pull request to the `picocli-shell-jline3` module that adds a built-in `clear` command and improves the `help` command.
 * [Daniel Gray](https://github.com/danielthegray) contributed a bug fix to prevent incorrectly defaulting inherited positional params after a subcommand.
 * [nveeser-google](https://github.com/nveeser-google) contributed a fix for compiler warnings about `Annotation::getClass` and assignment in `if` condition.
 * [Petr Hála](https://github.com/pehala) contributed a pull request to add a section on Mocking to user manual.
@@ -57,6 +58,7 @@ Picocli follows [semantic versioning](http://semver.org/).
   * [System Properties](#4.6.0-system-properties)
   * [`java.util.Optional<T>`](#4.6.0-java-util-optional)
   * [Inherited Command Attributes](#4.6.0-inherited-command-attributes)
+  * [Model Transformations](#4.6.0-model-transformations)
 * [Fixed issues](#4.6.0-fixes)
 * [Deprecations](#4.6.0-deprecated)
 * [Potential breaking changes](#4.6.0-breaking-changes)
@@ -251,11 +253,37 @@ Attributes that are _not_ copied include:
 * subcommands
 * argument groups
 
+### <a name="4.6.0-model-transformations"></a> Model Transformations
+From picocli 4.6, it is possible to use the annotations API to modify the model (commands, options, subcommands, etc.) dynamically at runtime.
+The `@Command` annotation now has a `modelTransformer` attribute where applications can specify a class that implements the `IModelTransformer` interface:
+
+This allows applications to dynamically add or remove options, positional parameters or subcommands, or modify the command in any other way, based on some runtime condition.
+
+```java
+@Command(modelTransformer = Dynamic.SubCmdFilter.class)
+class Dynamic {
+
+    private static class SubCmdFilter implements IModelTransformer {
+        public CommandSpec transform(CommandSpec commandSpec) {
+            if (Boolean.getBoolean("disable_sub")) {
+                commandSpec.removeSubcommand("sub");
+            }
+            return commandSpec;
+        }
+    }
+
+    @Command
+    private void sub() {
+        // subcommand business logic
+    }
+}
+```
 
 ## <a name="4.6.0-fixes"></a> Fixed issues
 * [#1164] API: Add support for `@Command(scope=INHERIT)`. Thanks to [Nick Cross](https://github.com/rnc) for raising this.
 * [#1191] API: Add `@PicocliScript2` annotation to support subcommand methods in Groovy scripts. Thanks to [Mattias Andersson](https://github.com/attiand) for raising this.
 * [#1241] API: Add `mapFallbackValue` attribute to `@Options` and `@Parameters` annotations, and corresponding `ArgSpec.mapFallbackValue()`.
+* [#1259][#1266] API: Add `IModelTransformer` to support user-defined model transformations after initialization and before parsing. Thanks to [Marko Mackic](https://github.com/MarkoMackic) for the pull request.
 * [#1184] API: Added public methods `Help.Layout::colorScheme`, `Help.Layout::textTable`, `Help.Layout::optionRenderer`, `Help.Layout::parameterRenderer`, and `Help::calcLongOptionColumnWidth`.
 * [#1254] API: Added `ArgSpec::root`: this method returns the original `ArgSpec` for inherited `ArgSpec` objects, and `null` for other `ArgSpec` objects. Thanks to [Daniel Gray](https://github.com/danielthegray) for the pull request.
 * [#1256] API: Added `CommandSpec::removeSubcommand` method. Thanks to [Marko Mackic](https://github.com/MarkoMackic) for raising this.
