@@ -119,7 +119,7 @@ import java.util.function.Supplier;
  * Example that demonstrates how to build an interactive shell with JLine3 and picocli.
  * This example requires JLine 3.16+ and picocli 4.4+.
  * <p>
- * The {@code PicocliCommands.ClearScreen} was introduced in picocli 4.6.
+ * The built-in {@code PicocliCommands.ClearScreen} command was introduced in picocli 4.6.
  * </p>
  */
 public class Example {
