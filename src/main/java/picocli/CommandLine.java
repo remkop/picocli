@@ -4835,23 +4835,23 @@ public class CommandLine {
      * Model transformers are invoked only once, after the full command hierarchy is constructed.
      * @since 4.6
      */
-public interface IModelTransformer {
-    /**
-     * Given an original CommandSpec, return the object that should be used
-     * instead. Implementors may modify the specified CommandSpec and return it,
-     * or create a full or partial copy of the specified CommandSpec, and return
-     * that, or even return a completely new CommandSpec.
-     * <p>
-     * Implementors are free to add or remove options, positional parameters,
-     * subcommands or modify the command in any other way.
-     * </p><p>
-     * This method is called once, after the full command hierarchy is
-     * constructed, and before any command line arguments are parsed.
-     * </p>
-     * @return the CommandSpec to use instead of the specified one
-     */
-    CommandSpec transform(CommandSpec commandSpec);
-}
+    public interface IModelTransformer {
+        /**
+         * Given an original CommandSpec, return the object that should be used
+         * instead. Implementors may modify the specified CommandSpec and return it,
+         * or create a full or partial copy of the specified CommandSpec, and return
+         * that, or even return a completely new CommandSpec.
+         * <p>
+         * Implementors are free to add or remove options, positional parameters,
+         * subcommands or modify the command in any other way.
+         * </p><p>
+         * This method is called once, after the full command hierarchy is
+         * constructed, and before any command line arguments are parsed.
+         * </p>
+         * @return the CommandSpec to use instead of the specified one
+         */
+        CommandSpec transform(CommandSpec commandSpec);
+    }
 
     private static class NoOpModelTransformer implements IModelTransformer {
         public CommandSpec transform(CommandSpec commandSpec) { return commandSpec; }
