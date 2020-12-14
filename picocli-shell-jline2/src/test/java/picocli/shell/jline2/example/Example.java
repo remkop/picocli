@@ -27,7 +27,7 @@ public class Example {
      * Top-level command that just prints help.
      */
     @Command(name = "", description = "Example interactive shell with completion",
-            footer = {"", "Press Ctl-D to exit."},
+            footer = {"", "Press Ctrl-D to exit."},
             subcommands = {MyCommand.class, ClearScreen.class, ReadInteractive.class})
     static class CliCommands implements Runnable {
         final ConsoleReader reader;
@@ -120,7 +120,7 @@ public class Example {
             CommandLine cmd = new CommandLine(commands, factory);
             reader.addCompleter(new PicocliJLineCompleter(cmd.getCommandSpec()));
 
-            // start the shell and process input until the user quits with Ctl-D
+            // start the shell and process input until the user quits with Ctrl-D
             String line;
             while ((line = reader.readLine("prompt> ")) != null) {
                 ArgumentList list = new WhitespaceArgumentDelimiter()
