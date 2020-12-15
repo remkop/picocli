@@ -13846,7 +13846,7 @@ public class CommandLine {
             char[] input = readUserInput(argSpec);
             String inputString = new String(input);
             if (tracer.isInfo()) {
-                String value = argSpec.echo() ? input + " (interactive value)" : "*** (masked interactive value)";
+                String value = argSpec.echo() ? inputString + " (interactive value)" : "*** (masked interactive value)";
                 tracer.info("Adding %s to %s for %s on %s%n", value, argSpec.toString(), argDescription, argSpec.scopeString());
             }
             String maskedValue = getMaskedValue(argSpec, inputString);
