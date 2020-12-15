@@ -103,6 +103,22 @@ public class ReflectionConfigGeneratorTest {
         assertEquals(expected, actual);
     }
 
+    @Test
+    public void testIssue1274() throws IOException {
+        File file = File.createTempFile("picocli-codegen", ".json");
+
+        ReflectionConfigGenerator.main("--output", file.getAbsolutePath(), Issue1274Command.class.getName());
+
+        String expected = read("/issue1274-reflect.json");
+        expected = expected.replace("\r\n", "\n");
+        expected = expected.replace("\n", System.getProperty("line.separator"));
+
+        String actual = readAndClose(new FileInputStream(file));
+        file.delete();
+
+        assertEquals(expected, actual);
+    }
+
     private String read(String resource) throws IOException {
         return readAndClose(getClass().getResourceAsStream(resource));
     }

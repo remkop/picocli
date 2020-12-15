@@ -26,6 +26,7 @@ This release contains new features, bug fixes and other enhancements.
 * [Jannick Hemelhof](https://github.com/clone1612) raised the idea of supporting `@Spec`-annotated members in `ArgGroup` classes.
 * [Vitaly Shukela](https://github.com/vi) raised a bug report: the error message for unmatched positional argument reports an incorrect index when value equals a previously matched argument.
 * [drkilikil](https://github.com/drkilikil) raised a bug report: `MissingParameterException` should not be thrown when subcommand has required options and help option is specified on parent command.
+* [Sebastian Thomschke](https://github.com/sebthom) raised a bug report: `ReflectionConfigGenerator` should not generate method section in subclass config for private superclass methods in `reflect-config.json`.
 * [Lukas Heumos](https://github.com/Zethson) added the picocli-based [cli-java template](https://cookietemple.readthedocs.io/en/latest/available_templates/available_templates.html#cli-java) to CookieTemple.
 * [Sualeh Fatehi](https://github.com/sualeh) raised the idea of adding add `CommandLine::getFactory` accessor method.
 * [David Walluck](https://github.com/dwalluck) contributed a test improvement that allows the tests to run reliably in more environments.
@@ -303,6 +304,7 @@ class Dynamic {
 * [#1250] Bugfix: Inherited positional parameter should not be overridden by default value if placed after subcommand. Thanks to [Daniel Gray](https://github.com/danielthegray) for the pull request.
 * [#1183] Bugfix: Prevent `MissingParameterException` thrown when subcommand has required options and help option is specified on parent command. Thanks to [drkilikil](https://github.com/drkilikil) for raising this.
 * [#1273] Bugfix: The `Help.calcLongOptionColumnWidth` now calls `Help.createDefaultOptionRenderer`, so overriding `createDefaultOptionRenderer` uses the correct column width in the options and parameters list.
+* [#1274] Bugfix: `ReflectionConfigGenerator` should not generate method section in subclass config for private superclass methods in `reflect-config.json`. Thanks to [Sebastian Thomschke](https://github.com/sebthom) for raising this.
 * [#1215] DOC: User manual improvements, including more tabs with Kotlin source code. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1219] DOC: User manual improvements: added more tabs with Kotlin code. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1220] DOC: User manual improvements: corrections, more Kotlin tabs. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.

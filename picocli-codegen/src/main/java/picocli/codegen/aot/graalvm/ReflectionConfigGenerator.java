@@ -474,15 +474,6 @@ public class ReflectionConfigGenerator {
             Method method = (Method) accessibleField(methodBinding.getClass(), REFLECTED_METHOD_BINDING_METHOD).get(methodBinding);
             ReflectedClass cls = getOrCreateClass(method.getDeclaringClass());
             cls.addMethod(method);
-
-            IScope scope = (IScope) accessibleField(methodBinding.getClass(), REFLECTED_BINDING_FIELD_SCOPE).get(methodBinding);
-            Object scopeValue = scope.get();
-            if (scopeValue != null) {
-                ReflectedClass scopeClass = getOrCreateClass(scopeValue.getClass());
-                if (!scope.getClass().equals(method.getDeclaringClass())) {
-                    scopeClass.addMethod(method);
-                }
-            }
         }
 
         private void visitProxyMethodBinding(Object methodBinding) throws Exception {

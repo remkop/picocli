@@ -1,0 +1,22 @@
+[
+  {
+    "name" : "picocli.codegen.aot.graalvm.Issue1274AbstractCommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "commandSpec" }
+    ],
+    "methods" : [
+      { "name" : "setVerbosity", "parameterTypes" : ["[Z"] }
+    ]
+  },
+  {
+    "name" : "picocli.codegen.aot.graalvm.Issue1274Command",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  }
+]
