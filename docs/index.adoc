@@ -488,6 +488,8 @@ assert(Arrays.equals(tar.files, arrayOf<File>(File("file1.txt"), File("file2.txt
 Picocli 3.5 introduced password support: for options and positional parameters marked as `interactive`, the user is prompted to enter a value on the console.
 When running on Java 6 or higher, picocli will use the https://docs.oracle.com/javase/8/docs/api/java/io/Console.html#readPassword-java.lang.String-java.lang.Object...-[`Console.readPassword`] API so that user input is not echoed to the console.
 
+From picocli 4.6, applications can choose to echo user input to the console by setting `echo = true`, and set the `prompt` text to control what is shown on the console when asking the user for input.
+
 CAUTION: Interactive _positional parameters_ have a limitation: they must be followed by a non-interactive positional parameter.
 Commands where the _last_ positional parameter is `interactive` are currently not supported.
 

@@ -11,6 +11,7 @@ This release contains new features, bug fixes and other enhancements.
 * [Andreas Deininger](https://github.com/deining) has been contributing to the documentation and other areas for a long time, but recently went into overdrive :-) and contributed many, many new pull requests to improve the documentation. The user manual and Quick Guide now have a "foldable" table of contents, and examples in tabs, with many additional examples in Kotlin, Scala and Groovy. A lot of work went into this! Many thanks, Andreas!
 * [Marko Mackic](https://github.com/MarkoMackic) contributed a pull request to add `IModelTransformer` API for user-defined model transformations after initialization and before parsing.
 * [Sualeh Fatehi](https://github.com/sualeh) contributed a pull request to the `picocli-shell-jline3` module that adds a built-in `clear` command and improves the `help` command.
+* [H.Sakata](https://github.com/sakata1222) contributed a pull request that adds support for `echo` and `prompt` for interactive options and positional parameters.
 * [Daniel Gray](https://github.com/danielthegray) contributed a bug fix to prevent incorrectly defaulting inherited positional params after a subcommand.
 * [nveeser-google](https://github.com/nveeser-google) contributed a fix for compiler warnings about `Annotation::getClass` and assignment in `if` condition.
 * [Petr Hála](https://github.com/pehala) contributed a pull request to add a section on Mocking to user manual.
@@ -42,6 +43,8 @@ If the option or positional parameter was not specified on the command line, pic
 This release also adds support for commands with `scope = ScopeType.INHERIT`. Commands with this scope have their attributes copied to all subcommands (and sub-subcommands).
 
 From this release, `@Spec`-annotated elements can be used in `ArgGroup` classes, which can be convenient for validation.
+
+Interactive options and positional parameters can now set `echo = true` (for non-security sensitive data) so that user input is echoed to the console, and control the `prompt` text that is shown before asking the user for input.
 
 Help API: this release adds public methods `Help.Layout::colorScheme`, `Help.Layout::textTable`, `Help.Layout::optionRenderer`, `Help.Layout::parameterRenderer`, and `Help::calcLongOptionColumnWidth`, making it easier to customize the table format used to lay out options and positional parameters in the usage help message.
 
@@ -284,6 +287,7 @@ class Dynamic {
 * [#1191] API: Add `@PicocliScript2` annotation to support subcommand methods in Groovy scripts. Thanks to [Mattias Andersson](https://github.com/attiand) for raising this.
 * [#1241] API: Add `mapFallbackValue` attribute to `@Options` and `@Parameters` annotations, and corresponding `ArgSpec.mapFallbackValue()`.
 * [#1259][#1266] API: Add `IModelTransformer` to support user-defined model transformations after initialization and before parsing. Thanks to [Marko Mackic](https://github.com/MarkoMackic) for the pull request.
+* [#802][#1284] API: Add support for `echo` and `prompt` in for interactive options and positional parameters. Thanks to [H.Sakata](https://github.com/sakata1222) for the pull request.
 * [#1184] API: Added public methods `Help.Layout::colorScheme`, `Help.Layout::textTable`, `Help.Layout::optionRenderer`, `Help.Layout::parameterRenderer`, and `Help::calcLongOptionColumnWidth`.
 * [#1254] API: Added `ArgSpec::root`: this method returns the original `ArgSpec` for inherited `ArgSpec` objects, and `null` for other `ArgSpec` objects. Thanks to [Daniel Gray](https://github.com/danielthegray) for the pull request.
 * [#1256] API: Added `CommandSpec::removeSubcommand` method. Thanks to [Marko Mackic](https://github.com/MarkoMackic) for raising this.
