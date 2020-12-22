@@ -10979,7 +10979,7 @@ Command names are case-sensitive by default, but this is <a href="#_case_sensiti
 <p>Prior to picocli 4.2, the declared subcommands were instantiated immediately when the top-level <code>CommandLine</code> (the <code>new CommandLine(new Git())</code> object in the above example) was constructed.</p>
 </div>
 <div class="paragraph">
-<p>From picocli 4.2, the declared subcommands are not instantiated until they are matched on the command line, unless they have a <code>@Spec</code> or <code>@ParentObject</code>-annotated field; these are injected during initialization, and in order to inject them the subcommand is instantiated during initialization.</p>
+<p>From picocli 4.2, the declared subcommands are not instantiated until they are matched on the command line, unless they have a <code>@Spec</code> or <code>@ParentCommand</code>-annotated field; these are injected during initialization, and in order to inject them the subcommand is instantiated during initialization.</p>
 </div>
 </div>
 <div class="sect2">
