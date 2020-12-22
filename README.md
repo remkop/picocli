@@ -235,7 +235,7 @@ Join the [picocli Google group](https://groups.google.com/d/forum/picocli) if yo
 * Picocli is the main library used in the CookieTemple [cli-java template](https://cookietemple.readthedocs.io/en/latest/available_templates/available_templates.html#cli-java) for building GraalVM native CLI executables in Java. See [this preview](https://user-images.githubusercontent.com/21954664/86740903-474a3000-c037-11ea-9ae3-1a8f7bf1743f.gif).
 * Picocli is [mentioned](https://clig.dev/#the-basics) in [Command Line Interface Guidelines](https://clig.dev/).
 
-<img src="https://picocli.info/images/downloads-202006.png">
+<img src="https://picocli.info/images/downloads-202011.png">
 
 Glad to see more people are using picocli. We must be doing something right. :-) 
 
