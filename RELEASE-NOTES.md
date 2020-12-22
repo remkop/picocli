@@ -17,6 +17,7 @@ This release contains new features, bug fixes and other enhancements.
 * [Petr Hála](https://github.com/pehala) contributed a pull request to add a section on Mocking to user manual.
 * [Max Rydahl Andersen](https://github.com/maxandersen) contributed a pull request to include jbang in the Build Tools section of the user manual.
 * [David Phillips](https://github.com/electrum) contributed a section to the user manual on [Really Executable JARs](https://skife.org/java/unix/2011/06/20/really_executable_jars.html).
+* [Laurent Almeras](https://github.com/lalmeras) contributed a pull request to fix the user manual: `@ParentObject` should be `@ParentCommand`.
 * [Mattias Andersson](https://github.com/attiand) raised the idea of supporting subcommand methods in Groovy scripts.
 * [Adrian A.](https://github.com/aadrian) raised the idea of using closures in the picocli annotations in Groovy programs instead of specifying a class.
 * [Nick Cross](https://github.com/rnc) raised the idea of inheriting `@Command` attributes with `scope=INHERIT`.
@@ -332,8 +333,9 @@ class Dynamic {
 * [#1262] DOC: User manual: include jbang in the Build Tools section. Thanks to [Max Rydahl Andersen](https://github.com/maxandersen) for the pull request.
 * [#1263] DOC: User manual: show build scripts in tabs. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1264] DOC: Fix broken links to GraalVm native image build configuration. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-* [#1005] DOC: add link to the CookieTemple [cli-java template](https://cookietemple.readthedocs.io/en/latest/available_templates/available_templates.html#cli-java) README. Thanks to [Lukas Heumos](https://github.com/Zethson) for getting this added to CookieTemple.
+* [#1005] DOC: Add link to the CookieTemple [cli-java template](https://cookietemple.readthedocs.io/en/latest/available_templates/available_templates.html#cli-java) README. Thanks to [Lukas Heumos](https://github.com/Zethson) for getting this added to CookieTemple.
 * [#1276] DOC: User manual: add section for "really executable JARs". Thanks to [David Phillips](https://github.com/electrum) for the pull request.
+* [#1286] DOC: Fix: `@ParentObject` should be `@ParentCommand`. Thanks to [Laurent Almeras](https://github.com/lalmeras) for the pull request.
 * [#1270] TEST: Fix issue #1103 in `Issue1225UnmatchedArgBadIndex`. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 
 ## <a name="4.6.0-deprecated"></a> Deprecations
