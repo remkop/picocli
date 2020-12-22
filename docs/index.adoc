@@ -7002,7 +7002,7 @@ Subcommands referenced in a `subcommands` attribute need to have a public no-arg
 
 Prior to picocli 4.2, the declared subcommands were instantiated immediately when the top-level `CommandLine` (the `new CommandLine(new Git())` object in the above example) was constructed.
 
-From picocli 4.2, the declared subcommands are not instantiated until they are matched on the command line, unless they have a `@Spec` or `@ParentObject`-annotated field; these are injected during initialization, and in order to inject them the subcommand is instantiated during initialization.
+From picocli 4.2, the declared subcommands are not instantiated until they are matched on the command line, unless they have a `@Spec` or `@ParentCommand`-annotated field; these are injected during initialization, and in order to inject them the subcommand is instantiated during initialization.
 
 === Subcommands as Methods
 As of picocli 3.6 it is possible to register subcommands in a very compact manner by having a `@Command` class with `@Command`-annotated methods.
