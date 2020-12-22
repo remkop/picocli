@@ -60,6 +60,8 @@ image:checksum-usage-help.png[Screenshot of usage help with Ansi codes enabled]
 Another distinguishing feature of picocli is how it aims to let users run picocli-based applications without requiring picocli as an external dependency:
 all the source code lives in a single file, to encourage application authors to include it _in source form_.
 
+Picocli makes it easy to follow https://clig.dev/#guidelines[Command Line Interface Guidelines].
+
 How it works: annotate your class and picocli initializes it from the command line arguments, converting the input to strongly typed values in the fields of your class.
 
 TIP: Picocli also provides a <<Programmatic API,programmatic API>>, separately from the annotations API.
