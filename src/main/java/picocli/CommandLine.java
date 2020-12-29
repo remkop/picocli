@@ -3533,6 +3533,14 @@ public class CommandLine {
             return formatString;
         }
     }
+    private static <T> Map<T, T> mapOf(T key, T value, T... other) {
+        LinkedHashMap<T, T> result = new LinkedHashMap<T, T>();
+        result.put(key, value);
+        for (int i = 0; i < other.length - 1; i += 2) {
+            result.put(other[i], other[i + 1]);
+        }
+        return result;
+    }
 
     private static class NoCompletionCandidates implements Iterable<String> {
         public Iterator<String> iterator() { throw new UnsupportedOperationException(); }
@@ -3990,6 +3998,11 @@ public class CommandLine {
          * This may be useful when passing arguments through to another program.
          * @since 4.0 */
         Class<? extends IParameterConsumer> parameterConsumer() default NullParameterConsumer.class;
+
+        /** Returns the preprocessor for this option.
+         * @see IParameterPreprocessor
+         * @since 4.6 */
+        Class<? extends IParameterPreprocessor> preprocessor() default NoOpParameterPreprocessor.class;
     }
     /**
      * <p>
@@ -4231,6 +4244,11 @@ public class CommandLine {
          * @see ArgSpec#mapFallbackValue()
          * @since 4.6 */
         String mapFallbackValue() default ArgSpec.UNSPECIFIED;
+
+        /** Returns the preprocessor for this positional parameter.
+         * @see IParameterPreprocessor
+         * @since 4.6 */
+        Class<? extends IParameterPreprocessor> preprocessor() default NoOpParameterPreprocessor.class;
     }
 
     /**
@@ -4718,10 +4736,14 @@ public class CommandLine {
          * @since 4.6 */
         ScopeType scope() default ScopeType.LOCAL;
 
-
         /** Returns the model transformer for this command.
          * @since 4.6 */
         Class<? extends IModelTransformer> modelTransformer() default NoOpModelTransformer.class;
+
+        /** Returns the preprocessor for this command.
+         * @see IParameterPreprocessor
+         * @since 4.6 */
+        Class<? extends IParameterPreprocessor> preprocessor() default NoOpParameterPreprocessor.class;
     }
     /** A {@code Command} may define one or more {@code ArgGroups}: a group of options, positional parameters or a mixture of the two.
      * Groups can be used to:
@@ -4983,6 +5005,133 @@ public class CommandLine {
     }
     private static class NullParameterConsumer implements IParameterConsumer {
         public void consumeParameters(Stack<String> args, ArgSpec argSpec, CommandSpec commandSpec) { throw new UnsupportedOperationException(); }
+    }
+    /**
+     * Options, positional parameters and commands can be assigned a {@code IParameterPreprocessor} that
+     * implements custom logic to preprocess the parameters for this option, position or command.
+     * When an option, positional parameter or command with a custom {@code IParameterPreprocessor} is matched
+     * on the command line, picocli's internal parser is temporarily suspended, and this custom logic is invoked.
+     * <p>
+     * This custom logic may completely replace picocli's internal parsing for this option, positional parameter
+     * or command, or it may do some preprocessing before picocli's internal parsing is resumed for this option,
+     * positional parameter or command.
+     * </p><p>
+     * The "preprocessing" can include modifying the stack of command line parameters, or modifying the model.
+     * </p>
+     * <p>This may be useful when disambiguating input for commands that have both a positional parameter and an
+     * option with an optional parameter.</p>
+     * <p>Example usage:</p>
+     * <pre>
+     * &#064;Command(name = "edit")
+     * class Edit {
+     *     &#064;Parameters(index = "0", description = "The file to edit.")
+     *     File file;
+     *
+     *     enum Editor { defaultEditor, eclipse, idea, netbeans }
+     *
+     *     &#064;Option(names = "--open", arity = "0..1", preprocessor = Edit.MyPreprocessor.class,
+     *         description = {
+     *             "Optionally specify the editor to use; if omitted the default editor is used. ",
+     *             "Example: edit --open=idea FILE opens IntelliJ IDEA (notice the '=' separator)",
+     *             "         edit --open FILE opens the specified file in the default editor"
+     *         })
+     *     Editor editor = Editor.defaultEditor;
+     *
+     *     static class MyPreprocessor implements IParameterPreprocessor {
+     *         public boolean preprocess(Stack&lt;String&gt; args, CommandSpec commandSpec, ArgSpec argSpec, Map&lt;String, String&gt; info) {
+     *             Edit edit = commandSpec.commandLine().getCommand();
+     *             if (edit.file != null) { // positional parameter has already been populated
+     *                 return false; // any subsequent arg is not the positional parameter, so must be a param for --open
+     *             }
+     *             // we need to decide whether the next arg is the file to edit or the name of the editor to use...
+     *             if (" ".equals(info.get("separator"))) { // parameter was not attached to option
+     *                 args.push(Editor.defaultEditor.name()); // act as if the user specified --open=defaultEditor
+     *             }
+     *             return false; // picocli's internal parsing is resumed for this option
+     *         }
+     *     }
+     * }</pre>
+     * @see Option#preprocessor()
+     * @see Parameters#preprocessor()
+     * @since 4.6 */
+    interface IParameterPreprocessor {
+        /**
+         * Called when either the command, option or positional parameter that has this preprocessor configured was
+         * recognized by the picocli parser.
+         * <p>Implementors are free to modify one or more of the specified command line arguments before they are
+         * processed by the picocli parser (or by the option's {@link IParameterConsumer parameter consumer}, if one is specified).
+         * </p><p>
+         * Implementors may optionally <em>consume</em> one or more of the specified command line arguments:
+         * a return value of {@code true} signals that the preprocessor consumed the parameter:
+         * picocli should skip further processing of this option or positional parameter,
+         * and the preprocessor implementation takes responsibility for assigning the
+         * option or positional parameter a value. A return value of {@code false} means that picocli should
+         * process the stack as usual for this option or positional parameter, and picocli is responsible for
+         * assigning this option or positional parameter a value.
+         * </p><p>
+         * For a command, returning {@code true} signals that the preprocessor takes responsibility for parsing all
+         * options and positional parameters for this command, and takes responsibility for validating constraints like
+         * whether all required options and positional parameters were specified.
+         * A return value of {@code false} means that picocli should
+         * process the stack as usual for this command, and picocli is responsible for validation.
+         * Command preprocessors can signal back to the picocli parser when they detect that the user requested version
+         * information or usage help by putting a value of {@code true} in the specified
+         * {@code info} map for keys {@code versionHelpRequested} or {@code usageHelpRequested}, respectively.
+         * </p><p>
+         * If the user input is invalid, implementations should throw a {@link ParameterException}
+         * with a message to display to the user.
+         * </p>
+         * @param args the remaining command line arguments that follow the matched argument
+         *           (the matched argument is not on the stack anymore)
+         * @param commandSpec the command or subcommand that was matched (if the specified {@code argSpec} is
+         *            {@code null}), or the command that the matched option or positional parameter belongs to
+         * @param argSpec the option or positional parameter for which to pre-process command line arguments
+         *             (may be {@code null} when this method is called for a subcommand that was matched)
+         * @param info a map containing additional information on the current parser state,
+         *                including whether the option parameter was attached to the option name with
+         *                a `=` separator, whether quotes have already been stripped off the option, etc.
+         *             Implementations may modify this map to communicate back with the picocli parser.
+         *             Supported values:
+         *             <table>
+         *               <tr>
+         *                 <th>key</th><th>valid values</th><th>read-only or read-write</th>
+         *               </tr>
+         *               <tr>
+         *                 <td>separator</td><td>'' (empty string): attached without separator, ' ' (space): not attached, (any other string): option name was attached to option param with specified separator</td>
+         *                 <td>read-write</td>
+         *               </tr>
+         *               <tr>
+         *                 <td>negated</td>
+         *                 <td>{@code true} (case-insensitive): the option or positional parameter is a {@linkplain Option#negatable() negated} option/parameter, any other value: the option or positional parameter is not a negated option/parameter</td>
+         *                 <td>read-write</td>
+         *               </tr>
+         *               <tr>
+         *                 <td>unquoted</td>
+         *                 <td>{@code true} (case-insensitive): quotes surrounding the value have already been stripped off, any other value: quotes surrounding the value have not yet been stripped off</td>
+         *                 <td>read-write</td>
+         *               </tr>
+         *               <tr>
+         *                 <td>versionHelpRequested</td>
+         *                 <td>{@code true} (case-insensitive): version help was requested, any other value: version help was not requested</td>
+         *                 <td>read-write</td>
+         *               </tr>
+         *               <tr>
+         *                 <td>usageHelpRequested</td>
+         *                 <td>{@code true} (case-insensitive): usage help was requested, any other value: usage help was not requested</td>
+         *                 <td>read-write</td>
+         *               </tr>
+         *             </table>
+         * @returns true if the preprocessor consumed the parameter
+         *          and picocli should skip further processing of the stack for this option or positional parameter;
+         *          false if picocli should continue processing the stack for this option or positional parameter
+         * @throws ParameterException if the user input is invalid
+         */
+        boolean preprocess(Stack<String> args, CommandSpec commandSpec, ArgSpec argSpec, Map<String, String> info);
+    }
+    private static class NoOpParameterPreprocessor implements IParameterPreprocessor {
+        public boolean preprocess(Stack<String> args, CommandSpec commandSpec, ArgSpec argSpec, Map<String, String> info) { return false; }
+        public boolean equals(Object obj) { return obj instanceof NoOpParameterPreprocessor; }
+        public int hashCode() { return NoOpParameterPreprocessor.class.hashCode() + 7; }
     }
 
     /** Determines the option name transformation of {@linkplain Option#negatable() negatable} boolean options.
@@ -5967,6 +6116,7 @@ public class CommandLine {
             private Integer exitCodeOnExecutionException;
 
             private IModelTransformer modelTransformer = null;
+            private IParameterPreprocessor preprocessor = new NoOpParameterPreprocessor();
 
             private CommandSpec(CommandUserObject userObject) {
                 this.userObject = userObject;
@@ -6685,6 +6835,8 @@ public class CommandLine {
                 initHelpCommand(spec.helpCommand());
                 initVersionProvider(spec.versionProvider());
                 initDefaultValueProvider(spec.defaultValueProvider());
+                initModelTransformer(spec.modelTransformer());
+                initPreprocessor(spec.preprocessor());
                 usageMessage.initFromMixin(spec.usageMessage, this);
                 initSubcommandsRepeatable(spec.subcommandsRepeatable());
             }
@@ -6974,9 +7126,17 @@ public class CommandLine {
              * @since 4.6 */
             public IModelTransformer modelTransformer() { return modelTransformer; }
 
-            /** Sets the model transformer for the CommandSpec instance.
+            /** Sets the model transformer for this CommandSpec instance.
              * @since 4.6 */
             public CommandSpec modelTransformer(IModelTransformer modelTransformer) { this.modelTransformer = modelTransformer; return this; }
+
+            /** Returns the preprocessor for this CommandSpec instance.
+             * @since 4.6 */
+            public IParameterPreprocessor preprocessor() { return preprocessor; }
+
+            /** Sets the preprocessor for this CommandSpec instance.
+             * @since 4.6 */
+            public CommandSpec preprocessor(IParameterPreprocessor preprocessor) { this.preprocessor = Assert.notNull(preprocessor, "preprocessor"); return this; }
 
             /** Sets the {@code INegatableOptionTransformer} used to create the negative form of {@linkplain Option#negatable() negatable} options.
              * Note that {@link CommandSpec#optionsCaseInsensitive()} will also change the case sensitivity of {@linkplain Option#negatable() negatable} options:
@@ -7060,6 +7220,7 @@ public class CommandLine {
                     updateModelTransformer(cmd.modelTransformer(), factory);
                     updateVersionProvider(cmd.versionProvider(), factory);
                     initDefaultValueProvider(cmd.defaultValueProvider(), factory);
+                    updatePreprocessor(cmd.preprocessor(), factory);
                 }
             }
 
@@ -7078,8 +7239,13 @@ public class CommandLine {
             void initExitCodeOnInvalidInput(int exitCode)       { if (initializable(exitCodeOnInvalidInput, exitCode, ExitCode.USAGE)) { exitCodeOnInvalidInput = exitCode; } }
             void initExitCodeOnExecutionException(int exitCode) { if (initializable(exitCodeOnExecutionException, exitCode, ExitCode.SOFTWARE)) { exitCodeOnExecutionException = exitCode; } }
             void updateName(String value)                   { if (isNonDefault(value, DEFAULT_COMMAND_NAME))                {name = value;} }
+            void initModelTransformer(IModelTransformer value) { if (modelTransformer == null) {modelTransformer = value;}}
             void updateModelTransformer(Class<? extends IModelTransformer> value, IFactory factory) {
                 if (isNonDefault(value, NoOpModelTransformer.class)) { this.modelTransformer = DefaultFactory.create(factory, value); }
+            }
+            void initPreprocessor(IParameterPreprocessor value) { if (preprocessor instanceof NoOpParameterPreprocessor) {preprocessor = Assert.notNull(value, "preprocessor");}}
+            void updatePreprocessor(Class<? extends IParameterPreprocessor> value, IFactory factory) {
+                if (isNonDefault(value, NoOpParameterPreprocessor.class)) { this.preprocessor = DefaultFactory.create(factory, value); }
             }
             void updateHelpCommand(boolean value)           { if (isNonDefault(value, DEFAULT_IS_HELP_COMMAND))             {isHelpCommand = value;} }
             void updateSubcommandsRepeatable(boolean value) { if (isNonDefault(value, DEFAULT_SUBCOMMANDS_REPEATABLE))      {subcommandsRepeatable = value;} }
@@ -8337,6 +8503,7 @@ public class CommandLine {
             private final ITypeConverter<?>[] converters;
             private final Iterable<String> completionCandidates;
             private final IParameterConsumer parameterConsumer;
+            private final IParameterPreprocessor preprocessor;
             private final String mapFallbackValue;
             private final String defaultValue;
             private       Object initialValue;
@@ -8365,6 +8532,7 @@ public class CommandLine {
                 hideParamSyntax = builder.hideParamSyntax;
                 converters = builder.converters == null ? new ITypeConverter<?>[0] : builder.converters;
                 parameterConsumer = builder.parameterConsumer;
+                preprocessor = builder.preprocessor != null ? builder.preprocessor : new NoOpParameterPreprocessor();
                 showDefaultValue = builder.showDefaultValue == null ? Help.Visibility.ON_DEMAND : builder.showDefaultValue;
                 hidden = builder.hidden;
                 inherited = builder.inherited;
@@ -8694,6 +8862,11 @@ public class CommandLine {
              * @since 4.0 */
             public IParameterConsumer parameterConsumer() { return parameterConsumer; }
 
+            /** Returns a custom {@code IParameterPreprocessor} to either replace or complement picocli's parsing logic
+             * for the parameter(s) of this option or position.
+             * @since 4.6 */
+            public IParameterPreprocessor preprocessor() { return preprocessor; }
+
             /** Returns the {@link IGetter} that is responsible for supplying the value of this argument. */
             public IGetter getter()        { return getter; }
             /** Returns the {@link ISetter} that is responsible for modifying the value of this argument. */
@@ -8897,6 +9070,7 @@ public class CommandLine {
                         && Arrays.equals(this.description, other.description)
                         && Assert.equals(this.descriptionKey, other.descriptionKey)
                         && Assert.equals(this.parameterConsumer, other.parameterConsumer)
+                        && Assert.equals(this.preprocessor, other.preprocessor)
                         && this.typeInfo.equals(other.typeInfo)
                         && this.scopeType.equals(other.scopeType);
             }
@@ -8915,6 +9089,7 @@ public class CommandLine {
                         + 37 * Arrays.hashCode(description)
                         + 37 * Assert.hashCode(descriptionKey)
                         + 37 * Assert.hashCode(parameterConsumer)
+                        + 37 * Assert.hashCode(preprocessor)
                         + 37 * typeInfo.hashCode()
                         + 37 * scopeType.hashCode()
                         ;
@@ -8987,6 +9162,7 @@ public class CommandLine {
                 private Help.Visibility showDefaultValue;
                 private Iterable<String> completionCandidates;
                 private IParameterConsumer parameterConsumer;
+                private IParameterPreprocessor preprocessor;
                 private String toString;
                 private IGetter getter = new ObjectBinding();
                 private ISetter setter = (ISetter) getter;
@@ -9022,6 +9198,7 @@ public class CommandLine {
                     showDefaultValue = original.showDefaultValue;
                     completionCandidates = original.completionCandidates;
                     parameterConsumer = original.parameterConsumer;
+                    preprocessor = original.preprocessor;
                     toString = original.toString;
                     getter = original.getter;
                     setter = original.setter;
@@ -9071,6 +9248,9 @@ public class CommandLine {
                         if (!NullParameterConsumer.class.equals(option.parameterConsumer())) {
                             parameterConsumer = DefaultFactory.createParameterConsumer(factory, option.parameterConsumer());
                         }
+                        if (!NoOpParameterPreprocessor.class.equals(option.preprocessor())) {
+                            preprocessor = DefaultFactory.create(factory, option.preprocessor());
+                        }
                     }
                 }
                 Builder(Parameters parameters, IAnnotatedElement annotatedElement, IFactory factory) {
@@ -9105,6 +9285,9 @@ public class CommandLine {
                             }
                             if (!NullParameterConsumer.class.equals(parameters.parameterConsumer())) {
                                 parameterConsumer = DefaultFactory.createParameterConsumer(factory, parameters.parameterConsumer());
+                            }
+                            if (!NoOpParameterPreprocessor.class.equals(parameters.preprocessor())) {
+                                preprocessor = DefaultFactory.create(factory, parameters.preprocessor());
                             }
                         }
                     }
@@ -9247,6 +9430,11 @@ public class CommandLine {
                  * @since 4.0 */
                 public IParameterConsumer parameterConsumer() { return parameterConsumer; }
 
+                /** Returns the custom {@code IParameterPreprocessor} to either replace or complement picocli's parsing logic
+                 * for the parameter(s) of this option or position, or {@code null}.
+                 * @since 4.6 */
+                public IParameterPreprocessor preprocessor() { return preprocessor; }
+
                 /** Returns the {@link IGetter} that is responsible for supplying the value of this argument. */
                 public IGetter getter()        { return getter; }
                 /** Returns the {@link ISetter} that is responsible for modifying the value of this argument. */
@@ -9320,6 +9508,10 @@ public class CommandLine {
                 /** Sets the parameterConsumer for this option or positional parameter, and returns this builder.
                  * @since 4.0 */
                 public T parameterConsumer(IParameterConsumer parameterConsumer) { this.parameterConsumer = parameterConsumer; return self(); }
+
+                /** Sets the custom {@code IParameterPreprocessor} for this option or position, and returns this builder.
+                 * @since 4.6 */
+                public T preprocessor(IParameterPreprocessor preprocessor) { this.preprocessor = preprocessor; return self(); }
 
                 /** Sets whether this option should be excluded from the usage message, and returns this builder. */
                 public T hidden(boolean hidden)              { this.hidden = hidden; return self(); }
@@ -12636,6 +12828,17 @@ public class CommandLine {
         return result;
     }
     private enum LookBehind { SEPARATE, ATTACHED, ATTACHED_WITH_SEPARATOR;
+
+        static LookBehind parse(String separator) {
+            if ("".equals(separator)) { return LookBehind.ATTACHED; }
+            if (" ".equals(separator)) { return LookBehind.SEPARATE; }
+            return ATTACHED_WITH_SEPARATOR;
+        }
+
+        String toString(String separator) {
+            return this == LookBehind.ATTACHED ? "" : this == LookBehind.SEPARATE ? " " : separator;
+        }
+
         public boolean isAttached() { return this != LookBehind.SEPARATE; }
     }
     /**
@@ -12854,7 +13057,19 @@ public class CommandLine {
             List<ArgSpec> required = new ArrayList<ArgSpec>(commandSpec.requiredArgs());
             addPostponedRequiredArgs(inheritedRequired, required);
             Collections.sort(required, new PositionalParametersSorter());
+
+            // TODO Callback to preprocessor here? // https://github.com/remkop/picocli/issues/1217
+
             boolean continueOnError = commandSpec.parser().collectErrors();
+
+            Map<String, String> info = mapOf(
+                    "versionHelpRequested", String.valueOf(parseResultBuilder.versionHelpRequested),
+                    "usageHelpRequested", String.valueOf(parseResultBuilder.usageHelpRequested));
+            if (commandSpec.preprocessor().preprocess(argumentStack, commandSpec, null, info)) {
+                parseResultBuilder.versionHelpRequested = Boolean.parseBoolean(info.get("versionHelpRequested"));
+                parseResultBuilder.usageHelpRequested = Boolean.parseBoolean(info.get("usageHelpRequested"));
+                return;
+            }
             do {
                 int stackSize = argumentStack.size();
                 try {
@@ -13347,8 +13562,24 @@ public class CommandLine {
 
             parseResultBuilder.beforeMatchingGroupElement(argSpec); //#1004 ensure groups are initialized before calling parameter consumer
 
+            int originalSize = args.size();
+            Map<String, String> info = mapOf(
+                    "separator", lookBehind.toString(commandSpec.parser().separator()),
+                    "negated", String.valueOf(negated),
+                    "unquoted", String.valueOf(alreadyUnquoted),
+                    "versionHelpRequested", String.valueOf(parseResultBuilder.versionHelpRequested),
+                    "usageHelpRequested", String.valueOf(parseResultBuilder.usageHelpRequested));
+            boolean done = argSpec.preprocessor().preprocess(args, commandSpec, argSpec, info);
+            parseResultBuilder.versionHelpRequested = Boolean.parseBoolean(info.get("versionHelpRequested"));
+            parseResultBuilder.usageHelpRequested = Boolean.parseBoolean(info.get("usageHelpRequested"));
+            negated = Boolean.parseBoolean(info.get("negated"));
+            alreadyUnquoted = Boolean.parseBoolean(info.get("unquoted"));
+            lookBehind = LookBehind.parse(info.get("separator"));
+            if (done) {
+                return args.size() - originalSize;
+            }
+
             if (argSpec.parameterConsumer() != null) {
-                int originalSize = args.size();
                 argSpec.parameterConsumer().consumeParameters(args, argSpec, commandSpec);
                 return args.size() - originalSize;
             }
