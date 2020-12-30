@@ -5054,7 +5054,7 @@ public class CommandLine {
      * @see Option#preprocessor()
      * @see Parameters#preprocessor()
      * @since 4.6 */
-    interface IParameterPreprocessor {
+    public interface IParameterPreprocessor {
         /**
          * Called when either the command, option or positional parameter that has this preprocessor configured was
          * recognized by the picocli parser.
