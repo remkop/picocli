@@ -415,6 +415,7 @@ class Dynamic {
 * [#1005] DOC: Add link to the CookieTemple [cli-java template](https://cookietemple.readthedocs.io/en/latest/available_templates/available_templates.html#cli-java) README. Thanks to [Lukas Heumos](https://github.com/Zethson) for getting this added to CookieTemple.
 * [#1276] DOC: User manual: add section for "really executable JARs". Thanks to [David Phillips](https://github.com/electrum) for the pull request.
 * [#1286] DOC: Fix: `@ParentObject` should be `@ParentCommand`. Thanks to [Laurent Almeras](https://github.com/lalmeras) for the pull request.
+* [#1290] DOC: JLine: change keystroke syntax 'Ctl-D' to more common used syntax 'Ctrl-D'. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1270] TEST: Fix issue #1103 in `Issue1225UnmatchedArgBadIndex`. Thanks to [David Walluck](https://github.com/dwalluck) for the pull request.
 
 ## <a name="4.6.0-deprecated"></a> Deprecations
