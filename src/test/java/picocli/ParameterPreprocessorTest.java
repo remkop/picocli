@@ -53,7 +53,7 @@ public class ParameterPreprocessorTest {
         Editor editor = Editor.defaultEditor;
 
         static class MyPreprocessor implements CommandLine.IParameterPreprocessor {
-            public boolean preprocess(Stack<String> args, CommandSpec commandSpec, ArgSpec argSpec, Map<String, String> info) {
+            public boolean preprocess(Stack<String> args, CommandSpec commandSpec, ArgSpec argSpec, Map<String, Object> info) {
                 Edit edit = commandSpec.commandLine().getCommand();
                 if (edit.file != null) { // positional parameter has already been populated
                     return false; // any subsequent arg is not the positional parameter, so must be a param for --open
@@ -112,7 +112,7 @@ public class ParameterPreprocessorTest {
     }
 
     static class MyLazyPreProcessor implements CommandLine.IParameterPreprocessor {
-        public boolean preprocess(Stack<String> args, CommandSpec commandSpec, ArgSpec argSpec, Map<String, String> info) {
+        public boolean preprocess(Stack<String> args, CommandSpec commandSpec, ArgSpec argSpec, Map<String, Object> info) {
             Blah blah = commandSpec.commandLine().getCommand();
             //noinspection unchecked
             blah.args = (Stack<String>) args.clone();
@@ -169,7 +169,7 @@ public class ParameterPreprocessorTest {
         }
 
         static class TestPreprocessor implements CommandLine.IParameterPreprocessor {
-            public boolean preprocess(Stack<String> args, CommandSpec commandSpec, ArgSpec argSpec, Map<String, String> info) {
+            public boolean preprocess(Stack<String> args, CommandSpec commandSpec, ArgSpec argSpec, Map<String, Object> info) {
                 argSpec.setValue(args.pop());
                 return true;
             }

@@ -3533,11 +3533,11 @@ public class CommandLine {
             return formatString;
         }
     }
-    private static <T> Map<T, T> mapOf(T key, T value, T... other) {
-        LinkedHashMap<T, T> result = new LinkedHashMap<T, T>();
+    private static Map<String, Object> mapOf(String key, Object value, Object... other) {
+        LinkedHashMap<String, Object> result = new LinkedHashMap<String, Object>();
         result.put(key, value);
         for (int i = 0; i < other.length - 1; i += 2) {
-            result.put(other[i], other[i + 1]);
+            result.put(String.valueOf(other[i]), other[i + 1]);
         }
         return result;
     }
@@ -5090,35 +5090,35 @@ public class CommandLine {
          * @param info a map containing additional information on the current parser state,
          *                including whether the option parameter was attached to the option name with
          *                a `=` separator, whether quotes have already been stripped off the option, etc.
-         *             Implementations may modify this map to communicate back with the picocli parser.
+         *             Implementations may modify this map to communicate back to the picocli parser.
          *             Supported values:
          *             <table>
          *               <tr>
-         *                 <th>key</th><th>valid values</th><th>read-only or read-write</th>
+         *                 <th>key</th><th>valid values</th><th>type</th>
          *               </tr>
          *               <tr>
          *                 <td>separator</td><td>'' (empty string): attached without separator, ' ' (space): not attached, (any other string): option name was attached to option param with specified separator</td>
-         *                 <td>read-write</td>
+         *                 <td>java.lang.String</td>
          *               </tr>
          *               <tr>
          *                 <td>negated</td>
-         *                 <td>{@code true} (case-insensitive): the option or positional parameter is a {@linkplain Option#negatable() negated} option/parameter, any other value: the option or positional parameter is not a negated option/parameter</td>
-         *                 <td>read-write</td>
+         *                 <td>{@code true}: the option or positional parameter is a {@linkplain Option#negatable() negated} option/parameter, {@code false}: the option or positional parameter is not a negated option/parameter</td>
+         *                 <td>java.lang.Boolean</td>
          *               </tr>
          *               <tr>
          *                 <td>unquoted</td>
-         *                 <td>{@code true} (case-insensitive): quotes surrounding the value have already been stripped off, any other value: quotes surrounding the value have not yet been stripped off</td>
-         *                 <td>read-write</td>
+         *                 <td>{@code true}: quotes surrounding the value have already been stripped off, {@code false}: quotes surrounding the value have not yet been stripped off</td>
+         *                 <td>java.lang.Boolean</td>
          *               </tr>
          *               <tr>
          *                 <td>versionHelpRequested</td>
-         *                 <td>{@code true} (case-insensitive): version help was requested, any other value: version help was not requested</td>
-         *                 <td>read-write</td>
+         *                 <td>{@code true}: version help was requested, {@code false}: version help was not requested</td>
+         *                 <td>java.lang.Boolean</td>
          *               </tr>
          *               <tr>
          *                 <td>usageHelpRequested</td>
-         *                 <td>{@code true} (case-insensitive): usage help was requested, any other value: usage help was not requested</td>
-         *                 <td>read-write</td>
+         *                 <td>{@code true}: usage help was requested, {@code false}: usage help was not requested</td>
+         *                 <td>java.lang.Boolean</td>
          *               </tr>
          *             </table>
          * @returns true if the preprocessor consumed the parameter
@@ -5126,10 +5126,10 @@ public class CommandLine {
          *          false if picocli should continue processing the stack for this option or positional parameter
          * @throws ParameterException if the user input is invalid
          */
-        boolean preprocess(Stack<String> args, CommandSpec commandSpec, ArgSpec argSpec, Map<String, String> info);
+        boolean preprocess(Stack<String> args, CommandSpec commandSpec, ArgSpec argSpec, Map<String, Object> info);
     }
     private static class NoOpParameterPreprocessor implements IParameterPreprocessor {
-        public boolean preprocess(Stack<String> args, CommandSpec commandSpec, ArgSpec argSpec, Map<String, String> info) { return false; }
+        public boolean preprocess(Stack<String> args, CommandSpec commandSpec, ArgSpec argSpec, Map<String, Object> info) { return false; }
         public boolean equals(Object obj) { return obj instanceof NoOpParameterPreprocessor; }
         public int hashCode() { return NoOpParameterPreprocessor.class.hashCode() + 7; }
     }
@@ -13062,12 +13062,12 @@ public class CommandLine {
 
             boolean continueOnError = commandSpec.parser().collectErrors();
 
-            Map<String, String> info = mapOf(
-                    "versionHelpRequested", String.valueOf(parseResultBuilder.versionHelpRequested),
-                    "usageHelpRequested", String.valueOf(parseResultBuilder.usageHelpRequested));
+            Map<String, Object> info = mapOf(
+                    "versionHelpRequested", parseResultBuilder.versionHelpRequested,
+                    "usageHelpRequested", parseResultBuilder.usageHelpRequested);
             if (commandSpec.preprocessor().preprocess(argumentStack, commandSpec, null, info)) {
-                parseResultBuilder.versionHelpRequested = Boolean.parseBoolean(info.get("versionHelpRequested"));
-                parseResultBuilder.usageHelpRequested = Boolean.parseBoolean(info.get("usageHelpRequested"));
+                parseResultBuilder.versionHelpRequested = (Boolean) info.get("versionHelpRequested");
+                parseResultBuilder.usageHelpRequested = (Boolean) info.get("usageHelpRequested");
                 return;
             }
             do {
@@ -13563,18 +13563,18 @@ public class CommandLine {
             parseResultBuilder.beforeMatchingGroupElement(argSpec); //#1004 ensure groups are initialized before calling parameter consumer
 
             int originalSize = args.size();
-            Map<String, String> info = mapOf(
+            Map<String, Object> info = mapOf(
                     "separator", lookBehind.toString(commandSpec.parser().separator()),
-                    "negated", String.valueOf(negated),
-                    "unquoted", String.valueOf(alreadyUnquoted),
-                    "versionHelpRequested", String.valueOf(parseResultBuilder.versionHelpRequested),
-                    "usageHelpRequested", String.valueOf(parseResultBuilder.usageHelpRequested));
+                    "negated", negated,
+                    "unquoted", alreadyUnquoted,
+                    "versionHelpRequested", parseResultBuilder.versionHelpRequested,
+                    "usageHelpRequested", parseResultBuilder.usageHelpRequested);
             boolean done = argSpec.preprocessor().preprocess(args, commandSpec, argSpec, info);
-            parseResultBuilder.versionHelpRequested = Boolean.parseBoolean(info.get("versionHelpRequested"));
-            parseResultBuilder.usageHelpRequested = Boolean.parseBoolean(info.get("usageHelpRequested"));
-            negated = Boolean.parseBoolean(info.get("negated"));
-            alreadyUnquoted = Boolean.parseBoolean(info.get("unquoted"));
-            lookBehind = LookBehind.parse(info.get("separator"));
+            parseResultBuilder.versionHelpRequested = (Boolean) info.get("versionHelpRequested");
+            parseResultBuilder.usageHelpRequested = (Boolean) info.get("usageHelpRequested");
+            negated = (Boolean) info.get("negated");
+            alreadyUnquoted = (Boolean) info.get("unquoted");
+            lookBehind = LookBehind.parse(String.valueOf(info.get("separator")));
             if (done) {
                 return args.size() - originalSize;
             }
