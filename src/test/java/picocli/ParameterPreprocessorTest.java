@@ -54,10 +54,6 @@ public class ParameterPreprocessorTest {
 
         static class MyPreprocessor implements CommandLine.IParameterPreprocessor {
             public boolean preprocess(Stack<String> args, CommandSpec commandSpec, ArgSpec argSpec, Map<String, Object> info) {
-                Edit edit = commandSpec.commandLine().getCommand();
-                if (edit.file != null) { // positional parameter has already been populated
-                    return false; // any subsequent arg is not the positional parameter, so must be a param for --open
-                }
                 // we need to decide whether the next arg is the file to edit or the name of the editor to use...
                 if (" ".equals(info.get("separator"))) { // parameter was not attached to option
                     args.push(Editor.defaultEditor.name()); // act as if the user specified --open=defaultEditor
@@ -78,9 +74,9 @@ public class ParameterPreprocessorTest {
     @Test
     public void testArgSpecPositionalFirstWithoutSeparator() {
         Edit app = CommandLine.populateCommand(new Edit(), "file1 -o eclipse ignored".split(" "));
-        assertEquals(Edit.Editor.eclipse, app.editor);
+        assertEquals(Edit.Editor.defaultEditor, app.editor);
         assertEquals(new File("file1"), app.file);
-        assertEquals(Collections.singletonList("ignored"), app.unmatched);
+        assertEquals(Arrays.asList("eclipse", "ignored"), app.unmatched);
     }
 
     @Test

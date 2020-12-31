@@ -5038,11 +5038,7 @@ public class CommandLine {
      *     Editor editor = Editor.defaultEditor;
      *
      *     static class MyPreprocessor implements IParameterPreprocessor {
-     *         public boolean preprocess(Stack&lt;String&gt; args, CommandSpec commandSpec, ArgSpec argSpec, Map&lt;String, String&gt; info) {
-     *             Edit edit = commandSpec.commandLine().getCommand();
-     *             if (edit.file != null) { // positional parameter has already been populated
-     *                 return false; // any subsequent arg is not the positional parameter, so must be a param for --open
-     *             }
+     *         public boolean preprocess(Stack&lt;String&gt; args, CommandSpec commandSpec, ArgSpec argSpec, Map&lt;String, Object&gt; info) {
      *             // we need to decide whether the next arg is the file to edit or the name of the editor to use...
      *             if (" ".equals(info.get("separator"))) { // parameter was not attached to option
      *                 args.push(Editor.defaultEditor.name()); // act as if the user specified --open=defaultEditor
