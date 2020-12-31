@@ -403,6 +403,7 @@ class Dynamic {
 * [#1247] DOC: User manual: extended Spring Boot example. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1249] DOC: Added section on Mocking to user manual. Thanks to [Petr Hála](https://github.com/pehala) for the pull request.
 * [#1244] DEP: Bump `Spring-Boot-Starter` version to 2.3.5.RELEASE. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1289] DEP: Bump Spring boot dependency to 2.4.1. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1248] BUILD: Fix gradle warnings. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1280] BUILD: Remove trailing comment from gradle.properties to prevent build error. Thanks to [David Walluck](https://github.com/dwalluck) for raising this.
 * [#1253] DOC: Fix line endings to LF in documentation files. Thanks to [Daniel Gray](https://github.com/danielthegray) for the pull request.
