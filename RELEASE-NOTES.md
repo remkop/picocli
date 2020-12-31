@@ -6,7 +6,7 @@ The picocli community is pleased to announce picocli 4.6.0.
 
 This release contains new features, bug fixes and other enhancements.
 
-## Community Contributions
+## <a name="4.6.0-community-contributions"></a> Community Contributions
 
 * [Andreas Deininger](https://github.com/deining) has been contributing to the documentation and other areas for a long time, but recently went into overdrive :-) and contributed many, many new pull requests to improve the documentation. The user manual and Quick Guide now have a "foldable" table of contents, and examples in tabs, with many additional examples in Kotlin, Scala and Groovy. A lot of work went into this! Many thanks, Andreas!
 * [Marko Mackic](https://github.com/MarkoMackic) contributed a pull request to add `IModelTransformer` API for user-defined model transformations after initialization and before parsing.
@@ -23,7 +23,8 @@ This release contains new features, bug fixes and other enhancements.
 * [Nick Cross](https://github.com/rnc) raised the idea of inheriting `@Command` attributes with `scope=INHERIT`.
 * [Marko Mackic](https://github.com/MarkoMackic) raised the idea of adding a `CommandSpec::removeSubcommand` method.
 * [Max Rydahl Andersen](https://github.com/maxandersen) raised the idea of supporting `Optional<T>` type for options and positional parameters.
-* [Max Rydahl Andersen](https://github.com/maxandersen) and [David Walluck](https://github.com/dwalluck) raised the idea of supporting key-only Map options (to support `-Dkey` as well as `-Dkey=value`). 
+* [Max Rydahl Andersen](https://github.com/maxandersen) and [David Walluck](https://github.com/dwalluck) raised the idea of supporting key-only Map options (to support `-Dkey` as well as `-Dkey=value`).
+* [David Walluck](https://github.com/dwalluck) raised the idea of a "preprocessor" parser plugin.
 * [Jannick Hemelhof](https://github.com/clone1612) raised the idea of supporting `@Spec`-annotated members in `ArgGroup` classes.
 * [Vitaly Shukela](https://github.com/vi) raised a bug report: the error message for unmatched positional argument reports an incorrect index when value equals a previously matched argument.
 * [drkilikil](https://github.com/drkilikil) raised a bug report: `MissingParameterException` should not be thrown when subcommand has required options and help option is specified on parent command.
@@ -44,6 +45,8 @@ If the option or positional parameter was not specified on the command line, pic
 
 This release also adds support for commands with `scope = ScopeType.INHERIT`. Commands with this scope have their attributes copied to all subcommands (and sub-subcommands).
 
+New parser plugin: `IParameterPreprocessor` and new configuration plugin: `IModelTransformer`.
+
 From this release, `@Spec`-annotated elements can be used in `ArgGroup` classes, which can be convenient for validation.
 
 Interactive options and positional parameters can now set `echo = true` (for non-security sensitive data) so that user input is echoed to the console, and control the `prompt` text that is shown before asking the user for input.
@@ -63,6 +66,7 @@ Picocli follows [semantic versioning](http://semver.org/).
   * [System Properties](#4.6.0-system-properties)
   * [`java.util.Optional<T>`](#4.6.0-java-util-optional)
   * [Inherited Command Attributes](#4.6.0-inherited-command-attributes)
+  * [Preprocessor Parser Plugin](#4.6.0-preprocessor)
   * [Model Transformations](#4.6.0-model-transformations)
 * [Fixed issues](#4.6.0-fixes)
 * [Deprecations](#4.6.0-deprecated)
@@ -258,6 +262,79 @@ Attributes that are _not_ copied include:
 * subcommands
 * argument groups
 
+
+### <a name="4.6.0-preprocessor"></a> Preprocessor Parser Plugin
+
+Introduced in picocli 4.6, the `IParameterPreprocessor` is also a parser plugin, similar to `IParameterConsumer`, but more flexible.
+
+Options, positional parameters and commands can be assigned a `IParameterPreprocessor` that implements custom logic to preprocess the parameters for this option, position or command.
+When an option, positional parameter or command with a custom `IParameterPreprocessor` is matched on the command line, picocli's internal parser is temporarily suspended, and this custom logic is invoked.
+
+This custom logic may completely replace picocli's internal parsing for this option, positional parameter or command, or augment it by doing some preprocessing before picocli's internal parsing is resumed for this option, positional parameter or command.
+
+The "preprocessing" actions can include modifying the stack of command line parameters, or modifying the model.
+
+
+#### Example use case
+This may be useful when disambiguating input for commands that have both a positional parameter and an option with an optional parameter.
+For example, suppose we have a command with the following synopsis:
+
+```
+edit [--open[=<editor>]] <file>
+```
+
+One of the limitations of options with an optional parameter is that they are difficult to combine with positional parameters.
+
+With a custom parser plugin, we can customize the parser, such that `VALUE` in `--option=VALUE` is interpreted as the option parameter, and in `--option VALUE` (without the `=` separator), VALUE is interpreted as the positional parameter.
+The code below demonstrates:
+
+
+```java
+@Command(name = "edit")
+class Edit {
+
+    @Parameters(index = "0", description = "The file to edit.")
+    File file;
+
+    enum Editor { defaultEditor, eclipse, idea, netbeans }
+
+    @Option(names = "--open", arity = "0..1", preprocessor = Edit.MyPreprocessor.class,
+        description = {
+            "Optionally specify the editor to use; if omitted the default editor is used. ",
+            "Example: edit --open=idea FILE opens IntelliJ IDEA (notice the '=' separator)",
+            "         edit --open FILE opens the specified file in the default editor"
+        })
+    Editor editor = Editor.defaultEditor;
+    
+    static class MyPreprocessor implements IParameterPreprocessor {
+        public boolean preprocess(Stack<String> args,
+                                  CommandSpec commandSpec,
+                                  ArgSpec argSpec,
+                                  Map<String, Object> info) {
+            // we need to decide whether the next arg is the file to edit
+            // or the name of the editor to use...
+            if (" ".equals(info.get("separator"))) { // parameter was not attached to option
+
+                // act as if the user specified --open=defaultEditor
+                args.push(Editor.defaultEditor.name());
+            }
+            return false; // picocli's internal parsing is resumed for this option
+        }
+    }
+}
+```
+
+With this preprocessor, the following user input gives the following command state:
+
+```
+# User input # Command State
+# --------------------------
+--open A B   # editor: defaultEditor, file: A,    unmatched: [B]
+--open A     # editor: defaultEditor, file: A,    unmatched: []
+--open=A B   # editor: A,             file: B,    unmatched: []
+--open=A     # editor: A,             file: null, unmatched: []
+```
+
 ### <a name="4.6.0-model-transformations"></a> Model Transformations
 From picocli 4.6, it is possible to use the annotations API to modify the model (commands, options, subcommands, etc.) dynamically at runtime.
 The `@Command` annotation now has a `modelTransformer` attribute where applications can specify a class that implements the `IModelTransformer` interface:
@@ -288,6 +365,7 @@ class Dynamic {
 * [#1164] API: Add support for `@Command(scope=INHERIT)`. Thanks to [Nick Cross](https://github.com/rnc) for raising this.
 * [#1191] API: Add `@PicocliScript2` annotation to support subcommand methods in Groovy scripts. Thanks to [Mattias Andersson](https://github.com/attiand) for raising this.
 * [#1241] API: Add `mapFallbackValue` attribute to `@Options` and `@Parameters` annotations, and corresponding `ArgSpec.mapFallbackValue()`.
+* [#1217] API: Add `IParameterPreprocessor` parser plugin to invoke custom logic when a command, option or positional parameter is matched. Thanks to [David Walluck](https://github.com/dwalluck) for raising this.
 * [#1259][#1266] API: Add `IModelTransformer` to support user-defined model transformations after initialization and before parsing. Thanks to [Marko Mackic](https://github.com/MarkoMackic) for the pull request.
 * [#802][#1284] API: Add support for `echo` and `prompt` in for interactive options and positional parameters. Thanks to [H.Sakata](https://github.com/sakata1222) for the pull request.
 * [#1184] API: Added public methods `Help.Layout::colorScheme`, `Help.Layout::textTable`, `Help.Layout::optionRenderer`, `Help.Layout::parameterRenderer`, and `Help::calcLongOptionColumnWidth`.
@@ -301,7 +379,7 @@ class Dynamic {
 * [#1265] Enhancement in `picocli-shell-jline3`: add built-in `clear` command and improve `help` command. Thanks to [Sualeh Fatehi](https://github.com/sualeh) for the pull request.
 * [#1236] Enhancement/bugfix: Fix compiler warnings about `Annotation::getClass` and assignment in `if` condition. Thanks to [nveeser-google](https://github.com/nveeser-google) for the pull request.
 * [#1229] Bugfix: Fix compilation error introduced with fc5ef6de6 (#1184). Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
-* [#1225] Bugfix: Error message for unmatched positional argument reports incorrect index when value equals a previously matched argument. Thanks to [Vitaly Shukela](https://github.com/vi) for raising this.
+* [#1225] Bugfix: Error message for unmatched positional argument reports an incorrect index when value equals a previously matched argument. Thanks to [Vitaly Shukela](https://github.com/vi) for raising this.
 * [#1250] Bugfix: Inherited positional parameter should not be overridden by default value if placed after subcommand. Thanks to [Daniel Gray](https://github.com/danielthegray) for the pull request.
 * [#1183] Bugfix: Prevent `MissingParameterException` thrown when subcommand has required options and help option is specified on parent command. Thanks to [drkilikil](https://github.com/drkilikil) for raising this.
 * [#1273] Bugfix: The `Help.calcLongOptionColumnWidth` now calls `Help.createDefaultOptionRenderer`, so overriding `createDefaultOptionRenderer` uses the correct column width in the options and parameters list.

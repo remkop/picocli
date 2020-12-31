@@ -64,6 +64,23 @@ public class ParameterPreprocessorTest {
     }
 
     @Test
+    public void testEditorHelp() {
+        String actual = new CommandLine(new Edit()).getUsageMessage();
+
+        String expected = String.format("" +
+                "Usage: edit [-o[=<editor>]] <file>%n" +
+                "      <file>              The file to edit.%n" +
+                "  -o, --open[=<editor>]   Optionally specify the editor to use; if omitted the%n" +
+                "                            default editor is used.%n" +
+                "                          Example: edit --open=idea FILE opens IntelliJ IDEA%n" +
+                "                            (notice the '=' separator)%n" +
+                "                                   edit --open FILE opens the specified file in%n" +
+                "                            the default editor%n" +
+                "");
+        assertEquals(expected, actual);
+    }
+
+    @Test
     public void testArgSpecWithoutSeparator() {
         Edit app = CommandLine.populateCommand(new Edit(), "-o somefile ignored".split(" "));
         assertEquals(Edit.Editor.defaultEditor, app.editor);

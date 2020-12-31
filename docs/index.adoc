@@ -4707,6 +4707,8 @@ See the javadoc for details.
 
 === Custom Parameter Processing
 
+==== `IParameterConsumer` Parser Plugin
+
 Options or positional parameters can be assigned a `IParameterConsumer` that implements
 custom logic to process the parameters for this option or this position.
 When an option or positional parameter with a custom `IParameterConsumer`
@@ -4773,6 +4775,92 @@ class ExecParameterConsumer : IParameterConsumer {
     }
 }
 ----
+
+==== `IParameterPreprocessor` Parser Plugin
+
+Introduced in picocli 4.6, the `IParameterPreprocessor` is also a parser plugin, similar to `IParameterConsumer`, but more flexible.
+
+Options, positional parameters and commands can be assigned a `IParameterPreprocessor` that implements custom logic to preprocess the parameters for this option, position or command.
+When an option, positional parameter or command with a custom `IParameterPreprocessor` is matched on the command line, picocli's internal parser is temporarily suspended, and this custom logic is invoked.
+
+This custom logic may completely replace picocli's internal parsing for this option, positional parameter or command, or augment it by doing some preprocessing before picocli's internal parsing is resumed for this option, positional parameter or command.
+
+The "preprocessing" actions can include modifying the stack of command line parameters, or modifying the model.
+
+===== Example use case
+This may be useful when disambiguating input for commands that have both a positional parameter and an option with an optional parameter.
+For example, suppose we have a command with the following synopsis:
+
+----
+edit [--open[=<editor>]] <file>
+----
+
+One of the <<Optional Parameter Limitations, limitations of options with an optional parameter>> is that they are difficult to combine with positional parameters.
+
+With a custom parser plugin, we can customize the parser, such that `VALUE` in `--option=VALUE` is interpreted as the option parameter, and in `--option VALUE` (without the `=` separator), VALUE is interpreted as the positional parameter.
+The code below demonstrates:
+
+.Java
+[source,java,role="primary"]
+----
+@Command(name = "edit")
+class Edit {
+
+    @Parameters(index = "0", description = "The file to edit.")
+    File file;
+
+   enum Editor { defaultEditor, eclipse, idea, netbeans }
+
+   @Option(names = "--open", arity = "0..1", preprocessor = Edit.MyPreprocessor.class,
+       description = {
+           "Optionally specify the editor to use; if omitted the default editor is used. ",
+           "Example: edit --open=idea FILE opens IntelliJ IDEA (notice the '=' separator)",
+           "         edit --open FILE opens the specified file in the default editor"
+       })
+   Editor editor = Editor.defaultEditor;
+
+   static class MyPreprocessor implements IParameterPreprocessor {
+       public boolean preprocess(Stack<String> args,
+                                 CommandSpec commandSpec,
+                                 ArgSpec argSpec,
+                                 Map<String, Object> info) {
+           // we need to decide whether the next arg is the file to edit
+           // or the name of the editor to use...
+           if (" ".equals(info.get("separator"))) { // parameter was not attached to option
+
+               // act as if the user specified --open=defaultEditor
+               args.push(Editor.defaultEditor.name());
+           }
+           return false; // picocli's internal parsing is resumed for this option
+       }
+   }
+}
+----
+
+With this preprocessor, the following user input gives the following command state:
+
+----
+# User input # Command State
+# --------------------------
+--open A B   # editor: defaultEditor, file: A,    unmatched: [B]
+--open A     # editor: defaultEditor, file: A,    unmatched: []
+--open=A B   # editor: A,             file: B,    unmatched: []
+--open=A     # editor: A,             file: null, unmatched: []
+----
+
+==== Parser Plugin Comparison
+
+.Differences between the `IParameterPreprocessor` and `IParameterConsumer` parser plugins.
+[grid=cols,cols=2*,options="header"]
+|===
+| `IParameterPreprocessor` | `IParameterConsumer`
+| Either augment (return `false`) or replace (return `true`) picocli parsing logic for the matched element. | Replaces picocli parsing logic for the matched element.
+| Commands as well as options and positional parameters. | Options and positional parameters only.
+| Receives information on parser internal state (the `info` Map).| No equivalent.
+| May communicate back to parser (by modifying the `info` Map).| No equivalent.
+|===
+
+
 
 == Help
 
