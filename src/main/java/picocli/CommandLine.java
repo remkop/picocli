@@ -2100,7 +2100,7 @@ public class CommandLine {
     }
 
     /**
-     * Convert an {@code Throwable} to a {@code String} , with message and stack traces extracted and colored
+     * Convert a {@code Throwable} to a {@code String} , with message and stack traces extracted and colored
      * according to {@code ColorScheme}.
      * @param t the {@code Throwable} to be converted
      * @param existingColorScheme the {@code ColorScheme} to use
@@ -5644,7 +5644,7 @@ public class CommandLine {
             return Range.valueOf(arity.min * index.size() + ".." + arity.max * index.size());
         }
 
-        /** Leniently parses the specified String as an {@code Range} value and return the result. A range string can
+        /** Leniently parses the specified String as a {@code Range} value and return the result. A range string can
          * be a fixed integer value or a range of the form {@code MIN_VALUE + ".." + MAX_VALUE}. If the
          * {@code MIN_VALUE} string is not numeric, the minimum is zero. If the {@code MAX_VALUE} is not numeric, the
          * range is taken to be variable and the maximum is {@code Integer.MAX_VALUE}.

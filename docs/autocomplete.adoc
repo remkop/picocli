@@ -148,7 +148,7 @@ public class MyApp implements Runnable {
 }
 ----
 
-By default, the `generate-completion` command shows up as a subcommand in the usage help message of it parent command.
+By default, the `generate-completion` command shows up as a subcommand in the usage help message of its parent command.
 Applications that want the completion subcommand to be hidden in the usage help message, can do the following:
 
 [source,java]

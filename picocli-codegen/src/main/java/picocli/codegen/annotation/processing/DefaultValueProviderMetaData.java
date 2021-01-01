@@ -32,7 +32,7 @@ class DefaultValueProviderMetaData implements IDefaultValueProvider, ITypeMetaDa
     /**
      * Sets the specified {@code CommandSpec}'s
      * {@linkplain CommandSpec#defaultValueProvider(CommandLine.IDefaultValueProvider) default value provider}
-     * to an {@code DefaultValueProviderMetaData} instance if the annotation attribute was present on the
+     * to a {@code DefaultValueProviderMetaData} instance if the annotation attribute was present on the
      * specified {@code Command} annotation.
      *
      * @param result the command spec to initialize
