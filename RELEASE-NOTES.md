@@ -1,12 +1,14 @@
 # picocli Release Notes
 
 
-# <a name="4.6.0"></a> Picocli 4.6.0 (UNRELEASED)
+# <a name="4.6.0"></a> Picocli 4.6.0
 The picocli community is pleased to announce picocli 4.6.0.
 
 This release contains new features, bug fixes and other enhancements.
 
 ## <a name="4.6.0-community-contributions"></a> Community Contributions
+
+This release contains many, many community contributions, for which I am extremely grateful. Let's give them some credit!
 
 * [Andreas Deininger](https://github.com/deining) has been contributing to the documentation and other areas for a long time, but recently went into overdrive :-) and contributed many, many new pull requests to improve the documentation. The user manual and Quick Guide now have a "foldable" table of contents, and examples in tabs, with many additional examples in Kotlin, Scala and Groovy. A lot of work went into this! Many thanks, Andreas!
 * [Marko Mackic](https://github.com/MarkoMackic) contributed a pull request to add `IModelTransformer` API for user-defined model transformations after initialization and before parsing.

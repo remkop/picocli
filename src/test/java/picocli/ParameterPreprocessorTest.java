@@ -125,9 +125,9 @@ public class ParameterPreprocessorTest {
     }
 
     static class MyLazyPreProcessor implements CommandLine.IParameterPreprocessor {
+        @SuppressWarnings("unchecked")
         public boolean preprocess(Stack<String> args, CommandSpec commandSpec, ArgSpec argSpec, Map<String, Object> info) {
             Blah blah = commandSpec.commandLine().getCommand();
-            //noinspection unchecked
             blah.args = (Stack<String>) args.clone();
             for (String arg : blah.add) {
                 args.push(arg);

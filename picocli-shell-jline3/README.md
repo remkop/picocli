@@ -73,7 +73,7 @@ JLine [Wiki](https://github.com/jline/jline3/wiki) and some more [Demos](https:/
 <dependency>
     <groupId>info.picocli</groupId>
     <artifactId>picocli-shell-jline3</artifactId>
-    <version>4.5.2</version>
+    <version>4.6.0</version>
 </dependency>
 ```
 

@@ -346,9 +346,22 @@ task bumpVersion {
         ant.replaceregexp(match: "rev=\"$projectPreviousVersionRegex\"", replace: "rev=\\\"$version\\\"", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
         }
+        // Downloads section, Grape
+        ant.replaceregexp(match: "module='picocli', version=\'$projectPreviousVersionRegex\'\\)", replace: "module='picocli', version=\'$version\')", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
+        // Downloads section, Leiningen
+        ant.replaceregexp(match: "info.picocli/picocli \"$projectPreviousVersionRegex\"", replace: "info.picocli/picocli \"$version\"", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
+        // Downloads section, Buildr
+        ant.replaceregexp(match: "info.picocli:picocli:jar:$projectPreviousVersionRegex", replace: "info.picocli:picocli:jar:$version", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
         // Running the Application and Packaging sections
         ant.replaceregexp(match: "picocli-${projectPreviousVersionRegex}.jar", replace: "picocli-${version}.jar", flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')
+            fileset(dir: 'docs', includes: 'quick-guide.adoc')
         }
         ant.replaceregexp(match: releaseDatePreviousRegex, replace: releaseDate, flags: 'g', byline: true, encoding: 'UTF8') {
             fileset(dir: 'docs', includes: 'index.adoc')

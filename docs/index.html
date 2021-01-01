@@ -1708,163 +1708,88 @@ new ClipboardJS('.clipboard', {
 });
 </script>
 <style>
-
 .hidden {
-
     display: none;
-
 }
-
-
 
 .switch {
-
     border-width: 1px 1px 0 1px;
-
     border-style: solid;
-
     border-color: #7a2518;
-
     display: inline-block;
-
 }
-
-
 
 .switch--item {
-
     padding: 10px;
-
     background-color: #ffffff;
-
     color: #7a2518;
-
     display: inline-block;
-
     cursor: pointer;
-
 }
-
-
 
 .switch--item.selected {
-
     background-color: #7a2519;
-
     color: #ffffff;
-
 }
-
-
 
 </style>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
-
 <script type="text/javascript">
-
 function addBlockSwitches() {
-
     $('.primary').each(function() {
-
         primary = $(this);
-
         createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
-
         primary.children('.title').remove();
-
     });
-
     $('.secondary').each(function(idx, node) {
-
         secondary = $(node);
-
         primary = findPrimary(secondary);
-
         switchItem = createSwitchItem(secondary, primary.children('.switch'));
-
         switchItem.content.addClass('hidden');
-
         findPrimary(secondary).append(switchItem.content);
-
         secondary.remove();
-
     });
-
 }
-
-
 
 function createBlockSwitch(primary) {
-
     blockSwitch = $('<div class="switch"></div>');
-
     primary.prepend(blockSwitch);
-
     return blockSwitch;
-
 }
-
-
 
 function findPrimary(secondary) {
-
     candidate = secondary.prev();
-
     while (!candidate.is('.primary')) {
-
         candidate = candidate.prev();
-
     }
-
     return candidate;
-
 }
-
-
 
 function createSwitchItem(block, blockSwitch) {
-
     blockName = block.children('.title').text();
-
     content = block.children('.content').first().append(block.next('.colist'));
-
     item = $('<div class="switch--item">' + blockName + '</div>');
-
     item.on('click', '', content, function(e) {
-
         $(this).addClass('selected');
-
         $(this).siblings().removeClass('selected');
-
         e.data.siblings('.content').addClass('hidden');
-
         e.data.removeClass('hidden');
-
     });
-
     blockSwitch.append(item);
-
     return {'item': item, 'content': content};
-
 }
-
-
 
 $(addBlockSwitches);
 
-
-
 </script>
-
 
 </head>
 <body class="article toc2 toc-left">
 <div id="header">
 <h1>picocli - a mighty tiny command line interface</h1>
 <div class="details">
-<span id="revnumber">version 4.5.2,</span>
-<span id="revdate">2020-10-14</span>
+<span id="revnumber">version 4.6.0,</span>
+<span id="revdate">2021-01-01</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Features</div>
@@ -1903,8 +1828,9 @@ $(addBlockSwitches);
 <li><a href="#_handling_invalid_input">4.3. Handling Invalid Input</a></li>
 <li><a href="#_option_specific_type_converters">4.4. Option-specific Type Converters</a></li>
 <li><a href="#_arrays_collections_maps">4.5. Arrays, Collections, Maps</a></li>
-<li><a href="#_abstract_field_types">4.6. Abstract Field Types</a></li>
-<li><a href="#_enum_types">4.7. Enum Types</a></li>
+<li><a href="#_optionalt">4.6. Optional&lt;T&gt;</a></li>
+<li><a href="#_abstract_field_types">4.7. Abstract Field Types</a></li>
+<li><a href="#_enum_types">4.8. Enum Types</a></li>
 </ul>
 </li>
 <li><a href="#_default_values">5. Default Values</a>
@@ -2052,23 +1978,25 @@ $(addBlockSwitches);
 <li><a href="#_initialization_before_execution">17.6. Initialization Before Execution</a></li>
 <li><a href="#parentcommand-annotation">17.7. <code>@ParentCommand</code> Annotation</a></li>
 <li><a href="#_subcommand_aliases">17.8. Subcommand Aliases</a></li>
-<li><a href="#_inherited_options">17.9. Inherited Options</a></li>
-<li><a href="#_manually_parsing_subcommands">17.10. Manually Parsing Subcommands</a></li>
-<li><a href="#_nested_sub_subcommands">17.11. Nested sub-Subcommands</a></li>
-<li><a href="#_repeatable_subcommands">17.12. Repeatable Subcommands</a></li>
-<li><a href="#_usage_help_for_subcommands">17.13. Usage Help for Subcommands</a></li>
-<li><a href="#_hidden_subcommands">17.14. Hidden Subcommands</a></li>
-<li><a href="#_help_subcommands">17.15. Help Subcommands</a></li>
-<li><a href="#_required_subcommands">17.16. Required Subcommands</a></li>
+<li><a href="#_inherited_command_attributes">17.9. Inherited Command Attributes</a></li>
+<li><a href="#_inherited_options">17.10. Inherited Options</a></li>
+<li><a href="#_manually_parsing_subcommands">17.11. Manually Parsing Subcommands</a></li>
+<li><a href="#_nested_sub_subcommands">17.12. Nested sub-Subcommands</a></li>
+<li><a href="#_repeatable_subcommands">17.13. Repeatable Subcommands</a></li>
+<li><a href="#_usage_help_for_subcommands">17.14. Usage Help for Subcommands</a></li>
+<li><a href="#_hidden_subcommands">17.15. Hidden Subcommands</a></li>
+<li><a href="#_help_subcommands">17.16. Help Subcommands</a></li>
+<li><a href="#_required_subcommands">17.17. Required Subcommands</a></li>
 </ul>
 </li>
 <li><a href="#_reuse">18. Reuse</a>
 <ul class="sectlevel2">
 <li><a href="#_subclassing">18.1. Subclassing</a></li>
 <li><a href="#_mixins">18.2. Mixins</a></li>
-<li><a href="#_use_case_configure_log_level_with_a_global_option">18.3. Use Case: Configure Log Level with a Global Option</a></li>
-<li><a href="#_sharing_options_in_subcommands">18.4. Sharing Options in Subcommands</a></li>
-<li><a href="#_reuse_combinations">18.5. Reuse Combinations</a></li>
+<li><a href="#_inherited_scope">18.3. Inherited Scope</a></li>
+<li><a href="#_use_case_configure_log_level_with_a_global_option">18.4. Use Case: Configure Log Level with a Global Option</a></li>
+<li><a href="#_sharing_options_in_subcommands">18.5. Sharing Options in Subcommands</a></li>
+<li><a href="#_reuse_combinations">18.6. Reuse Combinations</a></li>
 </ul>
 </li>
 <li><a href="#_internationalization">19. Internationalization</a>
@@ -2098,13 +2026,14 @@ $(addBlockSwitches);
 <li><a href="#command-methods">21.3.  <code>@Command</code> Methods</a></li>
 <li><a href="#spec-annotation">21.4.  <code>@Spec</code> Annotation</a></li>
 <li><a href="#_custom_factory">21.5. Custom Factory</a></li>
-<li><a href="#_automatic_parameter_indexes">21.6. Automatic Parameter Indexes</a></li>
-<li><a href="#_improved_support_for_chinese_japanese_and_korean">21.7. Improved Support for Chinese, Japanese and Korean</a></li>
-<li><a href="#_boolean_options_with_parameters">21.8. Boolean Options with Parameters</a></li>
-<li><a href="#_hexadecimal_values">21.9. Hexadecimal Values</a></li>
-<li><a href="#_option_parameter_separators_2">21.10. Option-Parameter Separators</a></li>
-<li><a href="#_best_practices_for_command_line_interfaces">21.11. Best Practices for Command Line Interfaces</a></li>
-<li><a href="#_text_blocks_for_java_15">21.12. Text Blocks for Java 15</a></li>
+<li><a href="#_model_transformations">21.6. Model Transformations</a></li>
+<li><a href="#_automatic_parameter_indexes">21.7. Automatic Parameter Indexes</a></li>
+<li><a href="#_improved_support_for_chinese_japanese_and_korean">21.8. Improved Support for Chinese, Japanese and Korean</a></li>
+<li><a href="#_boolean_options_with_parameters">21.9. Boolean Options with Parameters</a></li>
+<li><a href="#_hexadecimal_values">21.10. Hexadecimal Values</a></li>
+<li><a href="#_option_parameter_separators_2">21.11. Option-Parameter Separators</a></li>
+<li><a href="#_best_practices_for_command_line_interfaces">21.12. Best Practices for Command Line Interfaces</a></li>
+<li><a href="#_text_blocks_for_java_15">21.13. Text Blocks for Java 15</a></li>
 </ul>
 </li>
 <li><a href="#_dependency_injection">22. Dependency Injection</a>
@@ -2139,11 +2068,12 @@ $(addBlockSwitches);
 <li><a href="#_alias">29.1. Alias</a></li>
 <li><a href="#_launcher_script">29.2.  Launcher Script</a></li>
 <li><a href="#_graalvm_native_image">29.3. GraalVM Native Image</a></li>
-<li><a href="#_launch4j">29.4. launch4j</a></li>
-<li><a href="#_javapackager_java_8">29.5. javapackager (Java 8)</a></li>
-<li><a href="#_jlink_java_9">29.6. jlink (Java 9+)</a></li>
-<li><a href="#_jpackage">29.7. jpackage</a></li>
-<li><a href="#_jbang">29.8. jbang</a></li>
+<li><a href="#_really_executable_jar">29.4. Really Executable JAR</a></li>
+<li><a href="#_launch4j">29.5. launch4j</a></li>
+<li><a href="#_javapackager_java_8">29.6. javapackager (Java 8)</a></li>
+<li><a href="#_jlink_java_9">29.7. jlink (Java 9+)</a></li>
+<li><a href="#_jpackage">29.8. jpackage</a></li>
+<li><a href="#_jbang">29.9. jbang</a></li>
 </ul>
 </li>
 <li><a href="#_picocli_in_other_languages">30. Picocli in Other Languages</a>
@@ -2222,6 +2152,9 @@ Picocli-based applications can be ahead-of-time compiled to a <span class="image
 all the source code lives in a single file, to encourage application authors to include it <em>in source form</em>.</p>
 </div>
 <div class="paragraph">
+<p>Picocli makes it easy to follow <a href="https://clig.dev/#guidelines">Command Line Interface Guidelines</a>.</p>
+</div>
+<div class="paragraph">
 <p>How it works: annotate your class and picocli initializes it from the command line arguments, converting the input to strongly typed values in the fields of your class.</p>
 </div>
 <div class="admonitionblock tip">
@@ -2286,7 +2219,7 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <div id="CheckSum-App-Groovy" class="listingblock secondary">
 <div class="title">Groovy</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.5.2'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.0'</span><span class="o">)</span>
 <span class="kn">import</span> <span class="nn">picocli.CommandLine</span>
 <span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.*</span>
 
@@ -2317,7 +2250,7 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <div id="CheckSum-App-Groovy-Script" class="listingblock secondary">
 <div class="title">Groovy script</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.5.2'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.0'</span><span class="o">)</span>
 <span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.*</span>
 <span class="kn">import</span> <span class="nn">groovy.transform.Field</span>
 <span class="kn">import</span> <span class="nn">java.security.MessageDigest</span>
@@ -2462,7 +2395,7 @@ The example <code>main</code> method calls <code>CommandLine.execute</code> to p
 <div class="title">Gradle</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="groovy"><span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.5.2'</span>
+    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.6.0'</span>
 <span class="o">}</span></code></pre>
 </div>
 </div>
@@ -2472,7 +2405,7 @@ The example <code>main</code> method calls <code>CommandLine.execute</code> to p
 <pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>picocli<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>4.5.2<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span>4.6.0<span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -2497,7 +2430,7 @@ The example <code>main</code> method calls <code>CommandLine.execute</code> to p
 <p><strong>Compile time error checking</strong>. The annotation processor shows errors for invalid annotations and attributes immediately when you compile, instead of during testing at runtime, resulting in shorter feedback cycles.</p>
 </li>
 <li>
-<p><strong><a href="#_graalvm_native_image">GraalVM native images</a></strong>. The annotation processor generates and updates <a href="https://github.com/oracle/graal/blob/master/substratevm/Configuration.md">GraalVM configuration</a> files under
+<p><strong><a href="#_graalvm_native_image">GraalVM native images</a></strong>. The annotation processor generates and updates <a href="https://github.com/oracle/graal/blob/master/substratevm/BuildConfiguration.md">GraalVM configuration</a> files under
 <code>META-INF/native-image/picocli-generated/$project</code> during compilation, to be included in the application jar.
 This includes configuration files for <a href="https://github.com/oracle/graal/blob/master/substratevm/Reflection.md">reflection</a>, <a href="https://github.com/oracle/graal/blob/master/substratevm/Resources.md">resources</a> and <a href="https://github.com/oracle/graal/blob/master/substratevm/DynamicProxy.md">dynamic proxies</a>.
 By embedding these configuration files, your jar is instantly Graal-enabled.
@@ -2528,8 +2461,8 @@ In most cases no further configuration is needed when generating a native image.
 <div class="title">Gradle</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="groovy"><span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.5.2'</span>
-    <span class="n">annotationProcessor</span> <span class="s1">'info.picocli:picocli-codegen:4.5.2'</span>
+    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.6.0'</span>
+    <span class="n">annotationProcessor</span> <span class="s1">'info.picocli:picocli-codegen:4.6.0'</span>
 <span class="o">}</span>
 
 
@@ -2551,7 +2484,7 @@ In most cases no further configuration is needed when generating a native image.
       <span class="nt">&lt;path&gt;</span>
         <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
         <span class="nt">&lt;artifactId&gt;</span>picocli-codegen<span class="nt">&lt;/artifactId&gt;</span>
-        <span class="nt">&lt;version&gt;</span>4.5.2<span class="nt">&lt;/version&gt;</span>
+        <span class="nt">&lt;version&gt;</span>4.6.0<span class="nt">&lt;/version&gt;</span>
       <span class="nt">&lt;/path&gt;</span>
     <span class="nt">&lt;/annotationProcessorPaths&gt;</span>
     <span class="nt">&lt;compilerArgs&gt;</span>
@@ -2576,7 +2509,7 @@ then replace <code>annotationProcessor</code> with <code>kapt</code>:</p>
 <pre class="rouge highlight"><code>apply plugin: 'kotlin-kapt' // required
 dependencies {
     // ...
-    kapt 'info.picocli:picocli-codegen:4.5.2'
+    kapt 'info.picocli:picocli-codegen:4.6.0'
 }</code></pre>
 </div>
 </div>
@@ -2619,7 +2552,7 @@ dependencies {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.5.2.jar:checksum.jar"</span> CheckSum <span class="nt">--algorithm</span> SHA-1 hello.txt</code></pre>
+<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.6.0.jar:checksum.jar"</span> CheckSum <span class="nt">--algorithm</span> SHA-1 hello.txt</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2742,6 +2675,9 @@ You may be interested in this <a href="http://catb.org/~esr/writings/taoup/html/
 <div class="paragraph">
 <p>Picocli 3.5 introduced password support: for options and positional parameters marked as <code>interactive</code>, the user is prompted to enter a value on the console.
 When running on Java 6 or higher, picocli will use the <a href="https://docs.oracle.com/javase/8/docs/api/java/io/Console.html#readPassword-java.lang.String-java.lang.Object&#8230;&#8203;-"><code>Console.readPassword</code></a> API so that user input is not echoed to the console.</p>
+</div>
+<div class="paragraph">
+<p>From picocli 4.6, applications can choose to echo user input to the console by setting <code>echo = true</code>, and set the <code>prompt</code> text to control what is shown on the console when asking the user for input.</p>
 </div>
 <div class="admonitionblock caution">
 <table>
@@ -4037,18 +3973,73 @@ See the <a href="#_split_regex">Split Regex</a> section for details.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_system_properties"><a class="anchor" href="#_system_properties"></a>4.5.3. System Properties</h4>
+<h4 id="_key_only_map_parameters"><a class="anchor" href="#_key_only_map_parameters"></a>4.5.3. Key-only map parameters</h4>
+<div class="paragraph">
+<p>By default, picocli expects Map options and positional parameters to look like <code>key=value</code>,
+that is, the option parameter or positional parameter is expected to have a key part and a value part, separated by a <code>=</code> character.
+If this is not the case, picocli shows a user-facing error message: <code>Value for &#8230;&#8203; should be in KEY=VALUE format but was &#8230;&#8203;</code>.</p>
+</div>
+<div class="paragraph">
+<p>From picocli 4.6, applications can specify a <code>mapFallbackValue</code> to allow end users to specify only the key part.
+The specified <code>mapFallbackValue</code> is put into the map when end users to specify only a key.
+The value type can be <a href="#_optionalt">wrapped in a <code>java.util.Optional</code></a>.
+For example:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">{</span><span class="s">"-P"</span><span class="o">,</span> <span class="s">"--properties"</span><span class="o">},</span> <span class="n">mapFallbackValue</span> <span class="o">=</span> <span class="nc">Option</span><span class="o">.</span><span class="na">NULL_VALUE</span><span class="o">)</span>
+<span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Optional</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">&gt;&gt;</span> <span class="n">properties</span><span class="o">;</span>
+
+<span class="nd">@Parameters</span><span class="o">(</span><span class="n">mapFallbackValue</span> <span class="o">=</span> <span class="s">"INFO"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"... ${MAP-FALLBACK-VALUE} ..."</span><span class="o">)</span>
+<span class="nc">Map</span><span class="o">&lt;</span><span class="nc">Class</span><span class="o">&lt;?&gt;,</span> <span class="nc">LogLevel</span><span class="o">&gt;</span> <span class="n">logLevels</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-P"</span><span class="p">,</span> <span class="s">"--properties"</span><span class="p">],</span> <span class="n">mapFallbackValue</span> <span class="p">=</span> <span class="nc">Option</span><span class="p">.</span><span class="nc">NULL_VALUE</span><span class="p">)</span>
+<span class="k">lateinit</span> <span class="kd">var</span> <span class="py">properties</span><span class="p">:</span> <span class="nc">Map</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">,</span> <span class="nc">Optional</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;&gt;</span>
+
+<span class="nd">@Parameters</span><span class="p">(</span><span class="n">mapFallbackValue</span> <span class="p">=</span> <span class="s">"INFO"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="s">"... ${MAP-FALLBACK-VALUE} ..."</span><span class="p">)</span>
+<span class="k">lateinit</span> <span class="kd">var</span> <span class="py">logLevels</span><span class="p">:</span> <span class="nc">Map</span><span class="p">&lt;</span><span class="nc">Class</span><span class="p">&lt;</span><span class="err">?</span><span class="p">&gt;,</span> <span class="nc">LogLevel</span><span class="p">&gt;</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This allows input like the following:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>&lt;cmd&gt; --properties=key1 -Pkey2 -Pkey3=3 org.myorg.MyClass org.myorg.OtherClass=DEBUG</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The above input would give the following results:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>properties = [key1: Optional.empty, key2: Optional.empty, key3: Optional[3]]
+logLevels  = [org.myorg.MyClass: INFO, org.myorg.OtherClass: DEBUG]</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that the option description may contain the <a href="#_predefined_variables"><code>${MAP-FALLBACK-VALUE}</code></a> variable which will be replaced with the actual map fallback value when the usage help is shown.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_system_properties"><a class="anchor" href="#_system_properties"></a>4.5.4. System Properties</h4>
 <div class="paragraph">
 <p>A common requirement for command line applications is to support the <code>-Dkey=value</code> syntax to allow end users to set system properties.</p>
 </div>
 <div class="paragraph">
-<p>The example below uses the <code>Map</code> type to define an <code>@Option</code>-<a href="#option-parameters-methods">annotated method</a> that delegates all key-value pairs to <code>System::setProperty</code>.</p>
+<p>The example below uses the <code>Map</code> type to define an <code>@Option</code>-<a href="#option-parameters-methods">annotated method</a> that delegates all key-value pairs to <code>System::setProperty</code>.
+Note the use of <code>mapFallbackValue = ""</code> to allow <a href="#_key_only_map_parameters">key-only option parameters</a>.</p>
 </div>
 <div class="listingblock primary">
 <div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="kd">class</span> <span class="nc">SystemPropertiesDemo</span> <span class="o">{</span>
-    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-D"</span><span class="o">)</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-D"</span><span class="o">,</span> <span class="n">mapFallbackValue</span> <span class="o">=</span> <span class="s">""</span><span class="o">)</span> <span class="c1">// allow -Dkey</span>
     <span class="kt">void</span> <span class="nf">setProperty</span><span class="o">(</span><span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">String</span><span class="o">&gt;</span> <span class="n">props</span><span class="o">)</span> <span class="o">{</span>
         <span class="n">props</span><span class="o">.</span><span class="na">forEach</span><span class="o">((</span><span class="n">k</span><span class="o">,</span> <span class="n">v</span><span class="o">)</span> <span class="o">-&gt;</span> <span class="nc">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="n">k</span><span class="o">,</span> <span class="n">v</span><span class="o">));</span>
     <span class="o">}</span>
@@ -4059,9 +4050,9 @@ See the <a href="#_split_regex">Split Regex</a> section for details.</p>
 <div class="title">Kotlin</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">SystemPropertiesDemo</span> <span class="p">{</span>
-    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-D"</span><span class="p">])</span>
-    <span class="k">fun</span> <span class="nf">setProperty</span><span class="p">(</span><span class="n">props</span><span class="p">:</span> <span class="nc">Map</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">,</span> <span class="nc">String</span><span class="err">?</span><span class="p">&gt;)</span> <span class="p">{</span>
-        <span class="n">props</span><span class="p">.</span><span class="nf">forEach</span> <span class="p">{</span> <span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nc">String</span><span class="p">?)</span> <span class="p">-&gt;</span> <span class="nc">System</span><span class="p">.</span><span class="nf">setProperty</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="p">}</span>
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-D"</span><span class="p">],</span> <span class="n">mapFallbackValue</span> <span class="p">=</span> <span class="s">""</span><span class="p">)</span> <span class="c1">// allow -Dkey</span>
+    <span class="k">fun</span> <span class="nf">setProperty</span><span class="p">(</span><span class="n">props</span><span class="p">:</span> <span class="nc">Map</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">,</span> <span class="nc">String</span><span class="p">&gt;)</span> <span class="p">{</span>
+        <span class="n">props</span><span class="p">.</span><span class="nf">forEach</span> <span class="p">{</span> <span class="p">(</span><span class="n">k</span><span class="p">:</span> <span class="nc">String</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="nc">String</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="nc">System</span><span class="p">.</span><span class="nf">setProperty</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">}</span></code></pre>
 </div>
@@ -4069,7 +4060,49 @@ See the <a href="#_split_regex">Split Regex</a> section for details.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_abstract_field_types"><a class="anchor" href="#_abstract_field_types"></a>4.6. Abstract Field Types</h3>
+<h3 id="_optionalt"><a class="anchor" href="#_optionalt"></a>4.6. Optional&lt;T&gt;</h3>
+<div class="paragraph">
+<p>From version 4.6, picocli supports single-value types wrapped in a <code>java.util.Optional</code> container object when running on Java 8 or higher.
+If the option or positional parameter was not specified on the command line, picocli assigns the value <code>Optional.empty()</code> instead of <code>null</code>.
+For example:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">)</span>
+<span class="nc">Optional</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">&gt;</span> <span class="n">x</span><span class="o">;</span>
+
+<span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-D"</span><span class="o">,</span> <span class="n">mapFallbackValue</span> <span class="o">=</span> <span class="nc">Option</span><span class="o">.</span><span class="na">NULL_VALUE</span><span class="o">)</span>
+<span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Optional</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">&gt;&gt;</span> <span class="n">map</span><span class="o">;</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-x"</span><span class="p">])</span>
+<span class="k">lateinit</span> <span class="kd">var</span> <span class="py">x</span><span class="p">:</span> <span class="nc">Optional</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;</span>
+
+<span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"-D"</span><span class="p">],</span> <span class="n">mapFallbackValue</span> <span class="p">=</span> <span class="nc">Option</span><span class="p">.</span><span class="nc">NULL_VALUE</span><span class="p">)</span>
+<span class="k">lateinit</span> <span class="kd">var</span> <span class="py">map</span><span class="p">:</span> <span class="nc">Map</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">,</span> <span class="nc">Optional</span><span class="p">&lt;</span><span class="nc">Int</span><span class="p">&gt;&gt;</span></code></pre>
+</div>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-warning" title="Warning"></i>
+</td>
+<td class="content">
+Picocli has only limited support for <code>java.util.Optional</code> types:
+only single-value types, and the values in a <code>Map</code> (but not the keys!) can be wrapped in an <code>Optional</code> container.
+<code>java.util.Optional</code> cannot be combined with arrays or other <code>Collection</code> classes.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_abstract_field_types"><a class="anchor" href="#_abstract_field_types"></a>4.7. Abstract Field Types</h3>
 <div class="paragraph">
 <p>The field&#8217;s type can be an interface or an abstract class.
 The <code>type</code> attribute can be used to control for each field what concrete class the string value should be converted to.
@@ -4106,7 +4139,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_maps_and_collections_with_abstract_elements"><a class="anchor" href="#_maps_and_collections_with_abstract_elements"></a>4.6.1. Maps and Collections with Abstract Elements</h4>
+<h4 id="_maps_and_collections_with_abstract_elements"><a class="anchor" href="#_maps_and_collections_with_abstract_elements"></a>4.7.1. Maps and Collections with Abstract Elements</h4>
 <div class="paragraph">
 <p>For raw maps and collections, or when using generics with unbounded wildcards like <code>Map&lt;?, ?&gt;</code>, or when the type parameters are themselves abstract classes like <code>List&lt;CharSequence&gt;</code> or <code>Map&lt;? extends Number, ? super Number&gt;</code>, there is not enough information to convert to a stronger type. By default, the raw String values are added as is to such collections.</p>
 </div>
@@ -4146,7 +4179,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_enum_types"><a class="anchor" href="#_enum_types"></a>4.7. Enum Types</h3>
+<h3 id="_enum_types"><a class="anchor" href="#_enum_types"></a>4.8. Enum Types</h3>
 <div class="paragraph">
 <p>It is encouraged to use <code>enum</code> types for options or positional parameters with a limited set of valid values.
 Not only will picocli validate the input, it allows you to <a href="#_show_default_values">show all values</a> in the usage help message with <code>@Option(description = "Valid values: ${COMPLETION-CANDIDATES}")</code>. It also allows command line completion to suggest completion candidates for the values of this option.</p>
@@ -8084,6 +8117,8 @@ See the javadoc for details.</p>
 </div>
 <div class="sect2">
 <h3 id="_custom_parameter_processing"><a class="anchor" href="#_custom_parameter_processing"></a>11.15. Custom Parameter Processing</h3>
+<div class="sect3">
+<h4 id="_iparameterconsumer_parser_plugin"><a class="anchor" href="#_iparameterconsumer_parser_plugin"></a>11.15.1. <code>IParameterConsumer</code> Parser Plugin</h4>
 <div class="paragraph">
 <p>Options or positional parameters can be assigned a <code>IParameterConsumer</code> that implements
 custom logic to process the parameters for this option or this position.
@@ -8154,6 +8189,126 @@ options for the <code>find</code> command itself, but are interpreted as a separ
     <span class="p">}</span>
 <span class="p">}</span></code></pre>
 </div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_iparameterpreprocessor_parser_plugin"><a class="anchor" href="#_iparameterpreprocessor_parser_plugin"></a>11.15.2. <code>IParameterPreprocessor</code> Parser Plugin</h4>
+<div class="paragraph">
+<p>Introduced in picocli 4.6, the <code>IParameterPreprocessor</code> is also a parser plugin, similar to <code>IParameterConsumer</code>, but more flexible.</p>
+</div>
+<div class="paragraph">
+<p>Options, positional parameters and commands can be assigned a <code>IParameterPreprocessor</code> that implements custom logic to preprocess the parameters for this option, position or command.
+When an option, positional parameter or command with a custom <code>IParameterPreprocessor</code> is matched on the command line, picocli&#8217;s internal parser is temporarily suspended, and this custom logic is invoked.</p>
+</div>
+<div class="paragraph">
+<p>This custom logic may completely replace picocli&#8217;s internal parsing for this option, positional parameter or command, or augment it by doing some preprocessing before picocli&#8217;s internal parsing is resumed for this option, positional parameter or command.</p>
+</div>
+<div class="paragraph">
+<p>The "preprocessing" actions can include modifying the stack of command line parameters, or modifying the model.</p>
+</div>
+<div class="sect4">
+<h5 id="_example_use_case"><a class="anchor" href="#_example_use_case"></a>Example use case</h5>
+<div class="paragraph">
+<p>This may be useful when disambiguating input for commands that have both a positional parameter and an option with an optional parameter.
+For example, suppose we have a command with the following synopsis:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>edit [--open[=&lt;editor&gt;]] &lt;file&gt;</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>One of the <a href="#_optional_parameter_limitations">limitations of options with an optional parameter</a> is that they are difficult to combine with positional parameters.</p>
+</div>
+<div class="paragraph">
+<p>With a custom parser plugin, we can customize the parser, such that <code>VALUE</code> in <code>--option=VALUE</code> is interpreted as the option parameter, and in <code>--option VALUE</code> (without the <code>=</code> separator), VALUE is interpreted as the positional parameter.
+The code below demonstrates:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"edit"</span><span class="o">)</span>
+<span class="kd">class</span> <span class="nc">Edit</span> <span class="o">{</span>
+
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"0"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"The file to edit."</span><span class="o">)</span>
+    <span class="nc">File</span> <span class="n">file</span><span class="o">;</span>
+
+   <span class="kd">enum</span> <span class="nc">Editor</span> <span class="o">{</span> <span class="n">defaultEditor</span><span class="o">,</span> <span class="n">eclipse</span><span class="o">,</span> <span class="n">idea</span><span class="o">,</span> <span class="n">netbeans</span> <span class="o">}</span>
+
+   <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--open"</span><span class="o">,</span> <span class="n">arity</span> <span class="o">=</span> <span class="s">"0..1"</span><span class="o">,</span> <span class="n">preprocessor</span> <span class="o">=</span> <span class="nc">Edit</span><span class="o">.</span><span class="na">MyPreprocessor</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>
+       <span class="n">description</span> <span class="o">=</span> <span class="o">{</span>
+           <span class="s">"Optionally specify the editor to use; if omitted the default editor is used. "</span><span class="o">,</span>
+           <span class="s">"Example: edit --open=idea FILE opens IntelliJ IDEA (notice the '=' separator)"</span><span class="o">,</span>
+           <span class="s">"         edit --open FILE opens the specified file in the default editor"</span>
+       <span class="o">})</span>
+   <span class="nc">Editor</span> <span class="n">editor</span> <span class="o">=</span> <span class="nc">Editor</span><span class="o">.</span><span class="na">defaultEditor</span><span class="o">;</span>
+
+   <span class="kd">static</span> <span class="kd">class</span> <span class="nc">MyPreprocessor</span> <span class="kd">implements</span> <span class="nc">IParameterPreprocessor</span> <span class="o">{</span>
+       <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">preprocess</span><span class="o">(</span><span class="nc">Stack</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">args</span><span class="o">,</span>
+                                 <span class="nc">CommandSpec</span> <span class="n">commandSpec</span><span class="o">,</span>
+                                 <span class="nc">ArgSpec</span> <span class="n">argSpec</span><span class="o">,</span>
+                                 <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Object</span><span class="o">&gt;</span> <span class="n">info</span><span class="o">)</span> <span class="o">{</span>
+           <span class="c1">// we need to decide whether the next arg is the file to edit</span>
+           <span class="c1">// or the name of the editor to use...</span>
+           <span class="k">if</span> <span class="o">(</span><span class="s">" "</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">info</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">"separator"</span><span class="o">)))</span> <span class="o">{</span> <span class="c1">// parameter was not attached to option</span>
+
+               <span class="c1">// act as if the user specified --open=defaultEditor</span>
+               <span class="n">args</span><span class="o">.</span><span class="na">push</span><span class="o">(</span><span class="nc">Editor</span><span class="o">.</span><span class="na">defaultEditor</span><span class="o">.</span><span class="na">name</span><span class="o">());</span>
+           <span class="o">}</span>
+           <span class="k">return</span> <span class="kc">false</span><span class="o">;</span> <span class="c1">// picocli's internal parsing is resumed for this option</span>
+       <span class="o">}</span>
+   <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With this preprocessor, the following user input gives the following command state:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre># User input # Command State
+# --------------------------
+--open A B   # editor: defaultEditor, file: A,    unmatched: [B]
+--open A     # editor: defaultEditor, file: A,    unmatched: []
+--open=A B   # editor: A,             file: B,    unmatched: []
+--open=A     # editor: A,             file: null, unmatched: []</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_parser_plugin_comparison"><a class="anchor" href="#_parser_plugin_comparison"></a>11.15.3. Parser Plugin Comparison</h4>
+<table class="tableblock frame-all grid-cols stretch">
+<caption class="title">Table 4. Differences between the <code>IParameterPreprocessor</code> and <code>IParameterConsumer</code> parser plugins.</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><code>IParameterPreprocessor</code></th>
+<th class="tableblock halign-left valign-top"><code>IParameterConsumer</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Either augment (return <code>false</code>) or replace (return <code>true</code>) picocli parsing logic for the matched element.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Replaces picocli parsing logic for the matched element.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Commands as well as options and positional parameters.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Options and positional parameters only.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Receives information on parser internal state (the <code>info</code> Map).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No equivalent.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">May communicate back to parser (by modifying the <code>info</code> Map).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No equivalent.</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
@@ -10037,7 +10192,7 @@ For example:</p>
 <p><span class="image"><img src="images/DescriptionWithColors.png" alt="Description with Ansi styles and colors"></span></p>
 </div>
 <table class="tableblock frame-all grid-cols stretch">
-<caption class="title">Table 4. Pre-defined styles and colors that can be used in descriptions and headers using the <code>@|STYLE1[,STYLE2]&#8230;&#8203; text|@</code> notation</caption>
+<caption class="title">Table 5. Pre-defined styles and colors that can be used in descriptions and headers using the <code>@|STYLE1[,STYLE2]&#8230;&#8203; text|@</code> notation</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -11593,7 +11748,122 @@ The <code>ListFiles</code> subcommand can use the <code>@ParentCommand</code> an
 </div>
 </div>
 <div class="sect2">
-<h3 id="_inherited_options"><a class="anchor" href="#_inherited_options"></a>17.9. Inherited Options</h3>
+<h3 id="_inherited_command_attributes"><a class="anchor" href="#_inherited_command_attributes"></a>17.9. Inherited Command Attributes</h3>
+<div class="paragraph">
+<p>Picocli 4.6 adds support for inheriting <code>@Command</code> attributes with the <code>scope = ScopeType.INHERIT</code> annotation.
+Commands with this scope have their <code>@Command</code> attributes copied to all subcommands (and sub-subcommands, to any level of depth).</p>
+</div>
+<div class="paragraph">
+<p>When a subcommand specifies an explicit value in its <code>@Command</code> annotation, this value is used instead of the inherited value.
+For example:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"app"</span><span class="o">,</span> <span class="n">scope</span> <span class="o">=</span> <span class="nc">ScopeType</span><span class="o">.</span><span class="na">INHERIT</span><span class="o">,</span>
+        <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="n">version</span> <span class="o">=</span> <span class="s">"app version 1.0"</span><span class="o">,</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="s">"App header"</span><span class="o">,</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="s">"App description"</span><span class="o">,</span>
+        <span class="n">footerHeading</span> <span class="o">=</span> <span class="s">"Copyright%n"</span><span class="o">,</span> <span class="n">footer</span> <span class="o">=</span> <span class="s">"(c) Copyright by the authors"</span><span class="o">,</span>
+        <span class="n">showAtFileInUsageHelp</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
+<span class="kd">class</span> <span class="nc">App</span> <span class="kd">implements</span> <span class="nc">Runnable</span> <span class="o">{</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-x"</span><span class="o">)</span> <span class="kt">int</span> <span class="n">x</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span> <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">"Hello from app %d%n!"</span><span class="o">,</span> <span class="n">x</span><span class="o">);</span> <span class="o">}</span>
+
+    <span class="nd">@Command</span><span class="o">(</span><span class="n">header</span> <span class="o">=</span> <span class="s">"Subcommand header"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"Subcommand description"</span><span class="o">)</span>
+    <span class="kt">void</span> <span class="nf">sub</span><span class="o">(</span><span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"-y"</span><span class="o">)</span> <span class="kt">int</span> <span class="n">y</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printf</span><span class="o">(</span><span class="s">"Hello app sub %d%n!"</span><span class="o">,</span> <span class="n">y</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>app</code> command in the above example has <code>scope = ScopeType.INHERIT</code>, so its <code>@Command</code> properties are inherited by the <code>sub</code> subcommand.</p>
+</div>
+<div class="paragraph">
+<p>The <code>sub</code> subcommand defines its own <code>header</code> and <code>description</code>, so these are not inherited from the parent command.
+The help message for the subcommand looks like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Subcommand header
+Usage: app sub [-hV] [-y=&lt;arg0&gt;] [@&lt;filename&gt;...]
+Subcommand description
+      [@&lt;filename&gt;...]   One or more argument files containing options.
+  -h, --help             Show this help message and exit.
+  -V, --version          Print version information and exit.
+  -y=&lt;arg0&gt;
+Copyright
+(c) Copyright by the authors</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that the subcommand has inherited the mixed-in standard help options (<code>--help</code> and <code>--version</code>), the <code>@file</code> usage help, and the footer and footer heading.
+It also inherited the version string, shown when the user invokes <code>app sub --version</code>.</p>
+</div>
+<div class="paragraph">
+<p>When a command has <code>scope = INHERIT</code>, the following attributes are copied to its subcommands:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>all usage help attributes: description, descriptionHeading, header, headerHeading, footer, footerHeading, customSynopsis, synopsisHeading, synopsisSubcommandLabel, abbreviateSynopsis, optionListHeading, parameterListHeading, commandListHeading, exitCodeList, exitCodeListHeading, requiredOptionMarker, showDefaultValues, sortOptions, autoWidth, width, showAtFileInUsageHelp, showEndOfOptionsDelimiterInUsageHelp, and hidden</p>
+</li>
+<li>
+<p>exit codes: exitCodeOnSuccess, exitCodeOnUsageHelp, exitCodeOnVersionHelp, exitCodeOnInvalidInput, exitCodeOnExecutionException</p>
+</li>
+<li>
+<p>the help and version options mixed in by <code>mixinStandardHelpOptions</code></p>
+</li>
+<li>
+<p>separator between option and option parameter</p>
+</li>
+<li>
+<p>version</p>
+</li>
+<li>
+<p>versionProvider</p>
+</li>
+<li>
+<p>defaultValueProvider</p>
+</li>
+<li>
+<p>subcommandsRepeatable</p>
+</li>
+<li>
+<p>whether this command is a <code>helpCommand</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Attributes that are <em>not</em> copied include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>command name</p>
+</li>
+<li>
+<p>command aliases</p>
+</li>
+<li>
+<p>options and parameters (other than the help and version options mixed in by <code>mixinStandardHelpOptions</code>)</p>
+</li>
+<li>
+<p>other mixins than <code>mixinStandardHelpOptions</code></p>
+</li>
+<li>
+<p>subcommands</p>
+</li>
+<li>
+<p>argument groups</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_inherited_options"><a class="anchor" href="#_inherited_options"></a>17.10. Inherited Options</h3>
 <div class="paragraph">
 <p>Picocli 4.3 adds support for "inherited" options.
 Options defined with <code>scope = ScopeType.INHERIT</code> are shared with all subcommands (and sub-subcommands, to any level of depth).
@@ -11726,7 +11996,7 @@ Alternatively, for such subcommands, sharing options via <a href="#_mixins">mixi
 </div>
 </div>
 <div class="sect2">
-<h3 id="_manually_parsing_subcommands"><a class="anchor" href="#_manually_parsing_subcommands"></a>17.10. Manually Parsing Subcommands</h3>
+<h3 id="_manually_parsing_subcommands"><a class="anchor" href="#_manually_parsing_subcommands"></a>17.11. Manually Parsing Subcommands</h3>
 <div class="paragraph">
 <p>For the following example, we assume we created an alias <code>git</code> that invokes our Java application. This could also be a script or a function that calls our Java program:</p>
 </div>
@@ -11842,7 +12112,7 @@ See also the previous section, <a href="#_executing_subcommands">Executing Subco
 </div>
 </div>
 <div class="sect2">
-<h3 id="_nested_sub_subcommands"><a class="anchor" href="#_nested_sub_subcommands"></a>17.11. Nested sub-Subcommands</h3>
+<h3 id="_nested_sub_subcommands"><a class="anchor" href="#_nested_sub_subcommands"></a>17.12. Nested sub-Subcommands</h3>
 <div class="paragraph">
 <p>When registering subcommands declaratively, subcommands can be nested by specifying the <code>subcommands</code> attribute on subcommand classes:</p>
 </div>
@@ -11949,12 +12219,12 @@ Usage: main cmd3 cmd3sub3 cmd3sub3sub1 <span class="o">[</span><span class="nt">
 </div>
 </div>
 <div class="sect2">
-<h3 id="_repeatable_subcommands"><a class="anchor" href="#_repeatable_subcommands"></a>17.12. Repeatable Subcommands</h3>
+<h3 id="_repeatable_subcommands"><a class="anchor" href="#_repeatable_subcommands"></a>17.13. Repeatable Subcommands</h3>
 <div class="paragraph">
 <p>From picocli 4.2, it is possible to specify that a command&#8217;s subcommands can be specified multiple times by marking it with <code>@Command(subcommandsRepeatable = true)</code>.</p>
 </div>
 <div class="sect3">
-<h4 id="_example_4"><a class="anchor" href="#_example_4"></a>17.12.1. Example</h4>
+<h4 id="_example_4"><a class="anchor" href="#_example_4"></a>17.13.1. Example</h4>
 <div class="paragraph">
 <p>Below is an example where the top-level command <code>myapp</code> is marked as <code>subcommandsRepeatable = true</code>.
 This command has three subcommands, <code>add</code>, <code>list</code> and <code>send-report</code>:</p>
@@ -12024,7 +12294,7 @@ This invocation is valid because <code>myapp</code> is marked with <code>subcomm
 </div>
 </div>
 <div class="sect3">
-<h4 id="_repeatable_subcommands_specification"><a class="anchor" href="#_repeatable_subcommands_specification"></a>17.12.2. Repeatable Subcommands Specification</h4>
+<h4 id="_repeatable_subcommands_specification"><a class="anchor" href="#_repeatable_subcommands_specification"></a>17.13.2. Repeatable Subcommands Specification</h4>
 <div class="paragraph">
 <p>Normally, <code>subcommandsRepeatable</code> is <code>false</code>, so for each command, only one of its subcommands can be specified, potentially followed by only one sub-subcommand of that subcommand, etc.
 In mathematical terms, a valid sequence of commands and subcommands can be represented by a <em>directed rooted tree</em> that starts at the top-level command. This is illustrated by the diagram below.</p>
@@ -12062,7 +12332,7 @@ myapp add <span class="nt">-x</span><span class="o">=</span>item1 <span class="n
 </div>
 </div>
 <div class="sect3">
-<h4 id="_repeatable_subcommands_execution"><a class="anchor" href="#_repeatable_subcommands_execution"></a>17.12.3. Repeatable Subcommands Execution</h4>
+<h4 id="_repeatable_subcommands_execution"><a class="anchor" href="#_repeatable_subcommands_execution"></a>17.13.3. Repeatable Subcommands Execution</h4>
 <div class="paragraph">
 <p>The default <a href="#_executing_commands_with_subcommands"><code>IExecutionStrategy</code></a> (<code>picocli.CommandLine.RunLast</code>) only executes the last subcommands <em>with the same parent</em>. For example, if</p>
 </div>
@@ -12077,7 +12347,7 @@ myapp add <span class="nt">-x</span><span class="o">=</span>item1 <span class="n
 </div>
 </div>
 <div class="sect2">
-<h3 id="_usage_help_for_subcommands"><a class="anchor" href="#_usage_help_for_subcommands"></a>17.13. Usage Help for Subcommands</h3>
+<h3 id="_usage_help_for_subcommands"><a class="anchor" href="#_usage_help_for_subcommands"></a>17.14. Usage Help for Subcommands</h3>
 <div class="paragraph">
 <p>After registering subcommands, calling the <code>commandLine.usage</code> method will show a usage help message that includes all registered subcommands. For example:</p>
 </div>
@@ -12238,7 +12508,7 @@ in <a href="#_expanded_example">Expanded Example</a>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hidden_subcommands"><a class="anchor" href="#_hidden_subcommands"></a>17.14. Hidden Subcommands</h3>
+<h3 id="_hidden_subcommands"><a class="anchor" href="#_hidden_subcommands"></a>17.15. Hidden Subcommands</h3>
 <div class="paragraph">
 <p>Commands with the <code>hidden</code> attribute set to <code>true</code> will not be shown in the usage help message of their parent command.</p>
 </div>
@@ -12283,7 +12553,7 @@ Commands:
 </div>
 </div>
 <div class="sect2">
-<h3 id="_help_subcommands"><a class="anchor" href="#_help_subcommands"></a>17.15. Help Subcommands</h3>
+<h3 id="_help_subcommands"><a class="anchor" href="#_help_subcommands"></a>17.16. Help Subcommands</h3>
 <div class="paragraph">
 <p>Commands with the <code>helpCommand</code> attribute set to <code>true</code> are treated as help commands.
 When picocli encounters a help command on the command line, required options and required positional parameters of the parent command
@@ -12299,7 +12569,7 @@ are not validated (similar to <a href="#_help_options">help options</a>).</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_required_subcommands"><a class="anchor" href="#_required_subcommands"></a>17.16. Required Subcommands</h3>
+<h3 id="_required_subcommands"><a class="anchor" href="#_required_subcommands"></a>17.17. Required Subcommands</h3>
 <div class="paragraph">
 <p>For some command suites, it does not make sense to invoke the top-level command by itself, and the user is required to specify a subcommand.</p>
 </div>
@@ -12892,7 +13162,24 @@ java Top sub -v</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_use_case_configure_log_level_with_a_global_option"><a class="anchor" href="#_use_case_configure_log_level_with_a_global_option"></a>18.3. Use Case: Configure Log Level with a Global Option</h3>
+<h3 id="_inherited_scope"><a class="anchor" href="#_inherited_scope"></a>18.3. Inherited Scope</h3>
+<div class="paragraph">
+<p>A third reuse mechanism is setting <code>scope = ScopeType.INHERIT</code>.</p>
+</div>
+<div class="paragraph">
+<p>When <code>scope = INHERIT</code> is used in the <code>@Command</code> annotation, all <code>@Command</code> attributes, except the command name and its subcommands, are copied to the subcommands.
+See <a href="#_inherited_command_attributes">Inherited Command Attributes</a> for details.</p>
+</div>
+<div class="paragraph">
+<p>When <code>scope = INHERIT</code> is used in the <code>@Option</code> annotation, that option is copied to the subcommands.
+See <a href="#_inherited_options">Inherited Options</a> for details.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_use_case_configure_log_level_with_a_global_option"><a class="anchor" href="#_use_case_configure_log_level_with_a_global_option"></a>18.4. Use Case: Configure Log Level with a Global Option</h3>
+<div class="paragraph">
+<p>This section shows a detailed example demonstrating Mixins.</p>
+</div>
 <div class="paragraph">
 <p>For mixins that need to be reusable across more than two levels in the command hierarchy,
 declaring a <a href="#spec-annotation"><code>@Spec(MIXEE)</code>-annotated</a> field gives the mixin access to the full command hierarchy.</p>
@@ -13114,14 +13401,14 @@ java MyApp sub subsubmethod -vv</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_sharing_options_in_subcommands"><a class="anchor" href="#_sharing_options_in_subcommands"></a>18.4. Sharing Options in Subcommands</h3>
+<h3 id="_sharing_options_in_subcommands"><a class="anchor" href="#_sharing_options_in_subcommands"></a>18.5. Sharing Options in Subcommands</h3>
 <div class="paragraph">
 <p>The above use case can also be accomplished (with less code) via <a href="#_inherited_options">Inherited Options</a>.
 Inherited options are another reuse mechanism where an application defines an option on one command, after which end users can specify this option on any of the subcommands, and it will set the value of the annotated field on the parent command.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_reuse_combinations"><a class="anchor" href="#_reuse_combinations"></a>18.5. Reuse Combinations</h3>
+<h3 id="_reuse_combinations"><a class="anchor" href="#_reuse_combinations"></a>18.6. Reuse Combinations</h3>
 <div class="paragraph">
 <p>The above mechanisms can be combined in any way. Mixins can be nested, and there is no limitation to how deeply mixins can be nested. A mixin may also inherit options, positional parameters and command attributes from a super class.</p>
 </div>
@@ -13516,6 +13803,12 @@ helpCommand.command = Shared description of COMMAND parameter of built-in help s
 <td class="tableblock halign-left valign-middle"><p class="tableblock">4.0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">the description for an option with optional parameter</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">replaced with the <a href="#fallbackValue-annotation">fallback value</a> for that option or positional parameter</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>${MAP-FALLBACK-VALUE}</code></p></td>
+<td class="tableblock halign-left valign-middle"><p class="tableblock">4.6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">the description for map option or positional parameter that allows key-only parameters</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">replaced with the <a href="#_key_only_map_parameters">map fallback value</a> for that option or positional parameter</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>${COMPLETION-CANDIDATES}</code></p></td>
@@ -14069,6 +14362,18 @@ All options and positional parameters defined in the mixin class are added to th
 <div class="paragraph">
 <p>Picocli 3.2 introduces a <code>@Spec</code> annotation for injecting the <code>CommandSpec</code> model of the command into a command field.</p>
 </div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+From picocli 4.6, <code>@Spec</code>-annotated elements can be used in <a href="#_argument_groups">ArgGroup classes</a>.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>This is useful when a command needs to use the picocli API, for example to walk the command hierarchy and iterate over its sibling commands.
 This complements the <code>@ParentCommand</code> annotation;  the <code>@ParentCommand</code> annotation injects a user-defined command object, whereas this annotation injects a picocli class.</p>
@@ -14190,9 +14495,64 @@ Previously, <code>Collection</code> objects were instantiated separately without
 </div>
 </div>
 <div class="sect2">
-<h3 id="_automatic_parameter_indexes"><a class="anchor" href="#_automatic_parameter_indexes"></a>21.6. Automatic Parameter Indexes</h3>
+<h3 id="_model_transformations"><a class="anchor" href="#_model_transformations"></a>21.6. Model Transformations</h3>
+<div class="paragraph">
+<p>From picocli 4.6, it is possible to use the annotations API to modify the model (commands, options, subcommands, etc.) dynamically at runtime.
+The <code>@Command</code> annotation now has a <code>modelTransformer</code> attribute where applications can specify a class that implements the <code>IModelTransformer</code> interface:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="kd">interface</span> <span class="nc">IModelTransformer</span> <span class="o">{</span>
+    <span class="cm">/**
+     * Given an original CommandSpec, return the object that should be used
+     * instead. Implementors may modify the specified CommandSpec and return it,
+     * or create a full or partial copy of the specified CommandSpec, and return
+     * that, or even return a completely new CommandSpec.
+     * &lt;p&gt;
+     * Implementors are free to add or remove options, positional parameters,
+     * subcommands or modify the command in any other way.
+     * &lt;/p&gt;&lt;p&gt;
+     * This method is called once, after the full command hierarchy is
+     * constructed, and before any command line arguments are parsed.
+     * &lt;/p&gt;
+     * @return the CommandSpec to use instead of the specified one
+     */</span>
+    <span class="nc">CommandSpec</span> <span class="nf">transform</span><span class="o">(</span><span class="nc">CommandSpec</span> <span class="n">commandSpec</span><span class="o">);</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This allows applications to dynamically add or remove options, positional parameters or subcommands, or modify the command in any other way, based on some runtime condition.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">modelTransformer</span> <span class="o">=</span> <span class="nc">Dynamic</span><span class="o">.</span><span class="na">SubCmdFilter</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">class</span> <span class="nc">Dynamic</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">SubCmdFilter</span> <span class="kd">implements</span> <span class="nc">IModelTransformer</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="nc">CommandSpec</span> <span class="nf">transform</span><span class="o">(</span><span class="nc">CommandSpec</span> <span class="n">commandSpec</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="nc">Boolean</span><span class="o">.</span><span class="na">getBoolean</span><span class="o">(</span><span class="s">"disable_sub"</span><span class="o">))</span> <span class="o">{</span>
+                <span class="n">commandSpec</span><span class="o">.</span><span class="na">removeSubcommand</span><span class="o">(</span><span class="s">"sub"</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="k">return</span> <span class="n">commandSpec</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Command</span>
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">sub</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// subcommand business logic</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>All transformers are called once, after the full command hierarchy is constructed, and before any command line arguments are parsed.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_automatic_parameter_indexes"><a class="anchor" href="#_automatic_parameter_indexes"></a>21.7. Automatic Parameter Indexes</h3>
 <div class="sect3">
-<h4 id="_automatic_indexes"><a class="anchor" href="#_automatic_indexes"></a>21.6.1. Automatic Indexes</h4>
+<h4 id="_automatic_indexes"><a class="anchor" href="#_automatic_indexes"></a>21.7.1. Automatic Indexes</h4>
 <div class="paragraph">
 <p><a href="#_positional_parameters">Positional parameters</a> have an <code>index</code> attribute that determines which command line argument(s) are captured.
 It is possible to omit the <code>index</code> attribute and let picocli automatically assign an index.</p>
@@ -14295,7 +14655,7 @@ For applications with <a href="#option-parameters-methods"><code>@Parameters</co
 </div>
 </div>
 <div class="sect3">
-<h4 id="_anchored_automatic_index"><a class="anchor" href="#_anchored_automatic_index"></a>21.6.2. Anchored Automatic Index</h4>
+<h4 id="_anchored_automatic_index"><a class="anchor" href="#_anchored_automatic_index"></a>21.7.2. Anchored Automatic Index</h4>
 <div class="paragraph">
 <p>The default automatic index (<code>index = "0+"</code>) for single-value positional parameters is "anchored at zero": it starts at zero, and is increased with each additional positional parameter.</p>
 </div>
@@ -14326,7 +14686,7 @@ This can be useful when defining <a href="#_mixins">Mixins</a> with positional p
 </div>
 </div>
 <div class="sect3">
-<h4 id="_combining_explicit_and_automatic_indexes"><a class="anchor" href="#_combining_explicit_and_automatic_indexes"></a>21.6.3. Combining Explicit and Automatic Indexes</h4>
+<h4 id="_combining_explicit_and_automatic_indexes"><a class="anchor" href="#_combining_explicit_and_automatic_indexes"></a>21.7.3. Combining Explicit and Automatic Indexes</h4>
 <div class="paragraph">
 <p>If a command defines a positional parameter with an explicit index at the anchor point, then automatic indexes anchored at that point will start from the explicit index plus 1.
 For example:</p>
@@ -14368,7 +14728,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_unanchored_automatic_index"><a class="anchor" href="#_unanchored_automatic_index"></a>21.6.4. Unanchored Automatic Index</h4>
+<h4 id="_unanchored_automatic_index"><a class="anchor" href="#_unanchored_automatic_index"></a>21.7.4. Unanchored Automatic Index</h4>
 <div class="paragraph">
 <p>Sometimes you want to have indexes assigned automatically to come at the end.
 This can be useful when defining <a href="#_mixins">Mixins</a> with positional parameters.</p>
@@ -14405,7 +14765,7 @@ For example:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_do_not_combine_unanchored_indexes_with_open_ended_indexes"><a class="anchor" href="#_do_not_combine_unanchored_indexes_with_open_ended_indexes"></a>21.6.5. Do Not Combine Unanchored Indexes with Open-ended Indexes</h4>
+<h4 id="_do_not_combine_unanchored_indexes_with_open_ended_indexes"><a class="anchor" href="#_do_not_combine_unanchored_indexes_with_open_ended_indexes"></a>21.7.5. Do Not Combine Unanchored Indexes with Open-ended Indexes</h4>
 <div class="paragraph">
 <p>It is not possible to combine unanchored indexes (<code>+</code>) with open-ended explicit indexes (<code>*</code>):
 the parameter with the open-ended index will capture all arguments, and there is no position "after the other indexes" that can be assigned.</p>
@@ -14434,7 +14794,7 @@ the parameter with the open-ended index will capture all arguments, and there is
 </div>
 </div>
 <div class="sect2">
-<h3 id="_improved_support_for_chinese_japanese_and_korean"><a class="anchor" href="#_improved_support_for_chinese_japanese_and_korean"></a>21.7. Improved Support for Chinese, Japanese and Korean</h3>
+<h3 id="_improved_support_for_chinese_japanese_and_korean"><a class="anchor" href="#_improved_support_for_chinese_japanese_and_korean"></a>21.8. Improved Support for Chinese, Japanese and Korean</h3>
 <div class="paragraph">
 <p>Picocli will align the usage help message to fit within some user-defined width (80 columns by default).
 A number of characters in Chinese, Japanese and Korean (CJK) are wider than others.
@@ -14448,7 +14808,7 @@ If those characters are treated to have the same width as other characters, the 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_boolean_options_with_parameters"><a class="anchor" href="#_boolean_options_with_parameters"></a>21.8. Boolean Options with Parameters</h3>
+<h3 id="_boolean_options_with_parameters"><a class="anchor" href="#_boolean_options_with_parameters"></a>21.9. Boolean Options with Parameters</h3>
 <div class="paragraph">
 <p>By default the value of a boolean field is set to the logical negative of its default value when the option is specified on the command line.</p>
 </div>
@@ -14495,7 +14855,7 @@ If those characters are treated to have the same width as other characters, the 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_hexadecimal_values"><a class="anchor" href="#_hexadecimal_values"></a>21.9. Hexadecimal Values</h3>
+<h3 id="_hexadecimal_values"><a class="anchor" href="#_hexadecimal_values"></a>21.10. Hexadecimal Values</h3>
 <div class="paragraph">
 <p>Numeric values are interpreted as decimal numbers by default. If you want picocli to be more flexible, you can
 register a custom type converter that delegates to the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Integer.html#decode-java.lang.String-">decode</a> method to convert strings to numbers.</p>
@@ -14570,9 +14930,9 @@ as octal numbers, and otherwise the number is interpreted as a decimal number.
 </div>
 </div>
 <div class="sect2">
-<h3 id="_option_parameter_separators_2"><a class="anchor" href="#_option_parameter_separators_2"></a>21.10. Option-Parameter Separators</h3>
+<h3 id="_option_parameter_separators_2"><a class="anchor" href="#_option_parameter_separators_2"></a>21.11. Option-Parameter Separators</h3>
 <div class="sect3">
-<h4 id="_default_separators"><a class="anchor" href="#_default_separators"></a>21.10.1. Default Separators</h4>
+<h4 id="_default_separators"><a class="anchor" href="#_default_separators"></a>21.11.1. Default Separators</h4>
 <div class="paragraph">
 <p>Options may take an <em>option parameter</em> (also called <em>option-argument</em>).
 For POSIX-style short options (like <code>-f</code> or <code>-c</code>), the option parameter may be attached to the option,
@@ -14602,7 +14962,7 @@ That is, all of the below are equivalent:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_custom_separators"><a class="anchor" href="#_custom_separators"></a>21.10.2. Custom Separators</h4>
+<h4 id="_custom_separators"><a class="anchor" href="#_custom_separators"></a>21.11.2. Custom Separators</h4>
 <div class="paragraph">
 <p>The separator string can be customized programmatically or declaratively.</p>
 </div>
@@ -14670,9 +15030,12 @@ For example:</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_best_practices_for_command_line_interfaces"><a class="anchor" href="#_best_practices_for_command_line_interfaces"></a>21.11. Best Practices for Command Line Interfaces</h3>
+<h3 id="_best_practices_for_command_line_interfaces"><a class="anchor" href="#_best_practices_for_command_line_interfaces"></a>21.12. Best Practices for Command Line Interfaces</h3>
 <div class="paragraph">
-<p>When designing your command line application,
+<p>Picocli makes it easy to follow this new and modern set of <a href="https://clig.dev/#guidelines">Command Line Interface Guidelines</a>.</p>
+</div>
+<div class="paragraph">
+<p>Slightly older, but a classic: when designing your command line application,
 the <a href="https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces">GNU recommendations</a> for command line interfaces and <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02">POSIX Utility Guidelines</a> may be useful.</p>
 </div>
 <div class="paragraph">
@@ -14681,7 +15044,7 @@ However, picocli lets you make options required if you want to, see <a href="#_r
 </div>
 </div>
 <div class="sect2">
-<h3 id="_text_blocks_for_java_15"><a class="anchor" href="#_text_blocks_for_java_15"></a>21.12. Text Blocks for Java 15</h3>
+<h3 id="_text_blocks_for_java_15"><a class="anchor" href="#_text_blocks_for_java_15"></a>21.13. Text Blocks for Java 15</h3>
 <div class="paragraph">
 <p>When writing your command line program, you can use Java 15&#8217;s new "Text Block" feature.
 Multi-line text blocks can be used in command and option descriptions, headers and footers.</p>
@@ -14858,7 +15221,7 @@ Extract the archive file to a directory of your choice and open a shell or comma
 <pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>picocli-spring-boot-starter<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>4.5.2<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span>4.6.0<span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
@@ -14866,7 +15229,7 @@ Extract the archive file to a directory of your choice and open a shell or comma
 <div class="title">Gradle (Groovy)</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="groovy"><span class="n">dependencies</span> <span class="o">{</span>
-    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli-spring-boot-starter:4.5.2'</span>
+    <span class="n">implementation</span> <span class="s1">'info.picocli:picocli-spring-boot-starter:4.6.0'</span>
 <span class="o">}</span></code></pre>
 </div>
 </div>
@@ -14874,7 +15237,7 @@ Extract the archive file to a directory of your choice and open a shell or comma
 <div class="title">Gradle (Kotlin)</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="nf">dependencies</span> <span class="p">{</span>
-    <span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli-spring-boot-starter:4.5.2"</span><span class="p">)</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli-spring-boot-starter:4.6.0"</span><span class="p">)</span>
 <span class="p">}</span></code></pre>
 </div>
 </div>
@@ -16200,7 +16563,7 @@ To mock commands with subcommands you will need to use <code>mock()</code> inste
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.5.2.jar;myapp.jar"</span> org.myorg.MyMainClass <span class="nt">--option</span><span class="o">=</span>value arg0 arg1</code></pre>
+<pre class="rouge highlight"><code data-lang="bash">java <span class="nt">-cp</span> <span class="s2">"picocli-4.6.0.jar;myapp.jar"</span> org.myorg.MyMainClass <span class="nt">--option</span><span class="o">=</span>value arg0 arg1</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -16224,7 +16587,7 @@ To mock commands with subcommands you will need to use <code>mock()</code> inste
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="bash"><span class="nb">alias </span><span class="nv">mycommand</span><span class="o">=</span><span class="s1">'java -cp "/path/to/picocli-4.5.2.jar:/path/to/myapp.jar" org.myorg.MainClass'</span></code></pre>
+<pre class="rouge highlight"><code data-lang="bash"><span class="nb">alias </span><span class="nv">mycommand</span><span class="o">=</span><span class="s1">'java -cp "/path/to/picocli-4.6.0.jar:/path/to/myapp.jar" org.myorg.MainClass'</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -16277,7 +16640,7 @@ The resulting executable includes the application, the libraries, and the JDK an
 The generated native image has faster startup time and lower runtime memory overhead compared to a Java VM.</p>
 </div>
 <div class="paragraph">
-<p>GraalVM native images have some limitations and require some extra <a href="https://github.com/oracle/graal/blob/master/substratevm/Configuration.md">configuration</a>
+<p>GraalVM native images have some limitations and require some extra <a href="https://github.com/oracle/graal/blob/master/substratevm/BuildConfiguration.md">configuration</a>
 to be able to use features like <a href="https://github.com/oracle/graal/blob/master/substratevm/Reflection.md">reflection</a>, <a href="https://github.com/oracle/graal/blob/master/substratevm/Resources.md">resources</a> (including resource bundles) and <a href="https://github.com/oracle/graal/blob/master/substratevm/DynamicProxy.md">dynamic proxies</a>.</p>
 </div>
 </div>
@@ -16301,7 +16664,7 @@ you can then create a native image by invoking the <code>native-image</code> com
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>path/to/native-image -cp picocli-4.5.2.jar --static -jar myapp.jar</pre>
+<pre>path/to/native-image -cp picocli-4.6.0.jar --static -jar myapp.jar</pre>
 </div>
 </div>
 <div class="admonitionblock caution">
@@ -16338,19 +16701,33 @@ It pays special attention to Windows, where setting up the compiler toolchain ca
 </div>
 </div>
 <div class="sect2">
-<h3 id="_launch4j"><a class="anchor" href="#_launch4j"></a>29.4. launch4j</h3>
+<h3 id="_really_executable_jar"><a class="anchor" href="#_really_executable_jar"></a>29.4. Really Executable JAR</h3>
+<div class="paragraph">
+<p>A <a href="https://skife.org/java/unix/2011/06/20/really_executable_jars.html">really executable JAR</a>
+is a JAR file that is also a shell script which executes the JAR by running it with <code>java</code>.
+It thus functions as an exectuable, is portable across operating systems and architectures,
+and is still a valid JAR file that can be executed explicitly or otherwise used as a JAR.</p>
+</div>
+<div class="paragraph">
+<p>The <a href="https://github.com/brianm/really-executable-jars-maven-plugin">Really Executable JAR Maven Plugin</a>
+can be used to create such a JAR, typically in combination with the shade plugin,
+as the JAR needs to be standalone, containing all of its dependencies.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_launch4j"><a class="anchor" href="#_launch4j"></a>29.5. launch4j</h3>
 <div class="paragraph">
 <p><a href="http://launch4j.sourceforge.net/docs.html">launch4j</a> can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_javapackager_java_8"><a class="anchor" href="#_javapackager_java_8"></a>29.5. javapackager (Java 8)</h3>
+<h3 id="_javapackager_java_8"><a class="anchor" href="#_javapackager_java_8"></a>29.6. javapackager (Java 8)</h3>
 <div class="paragraph">
 <p>JDK 8 <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/windows/javapackager.html">javapackager</a> can create a native launcher executable. It can bundle a JRE (~200MB) or use a pre-installed one.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jlink_java_9"><a class="anchor" href="#_jlink_java_9"></a>29.6. jlink (Java 9+)</h3>
+<h3 id="_jlink_java_9"><a class="anchor" href="#_jlink_java_9"></a>29.7. jlink (Java 9+)</h3>
 <div class="paragraph">
 <p>With the JPMS module system introduced in Java 9 it became possible to use <a href="https://docs.oracle.com/javase/9/tools/jlink.htm#JSWOR-GUID-CECAC52B-CFEE-46CB-8166-F17A8E9280E9">jlink</a> to create a custom light-weight JRE with only the necessary modules.
 This JRE may be as small as 30-40MB.
@@ -16361,7 +16738,7 @@ Use <code>jlink</code> with the <code>--launcher</code> option to generate launc
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jpackage"><a class="anchor" href="#_jpackage"></a>29.7. jpackage</h3>
+<h3 id="_jpackage"><a class="anchor" href="#_jpackage"></a>29.8. jpackage</h3>
 <div class="paragraph">
 <p>jpackage is a packaging tool according to <a href="https://openjdk.java.net/jeps/343">JEP 343</a> which ships with JDK 14.
 JPackage can take the custom light-weight JRE produced by <code>jlink</code> and create an installer and a native application launcher.
@@ -16377,7 +16754,7 @@ and <a href="https://badass-jlink-plugin.beryx.org/releases/latest/">org.beryx B
 </div>
 </div>
 <div class="sect2">
-<h3 id="_jbang"><a class="anchor" href="#_jbang"></a>29.8. jbang</h3>
+<h3 id="_jbang"><a class="anchor" href="#_jbang"></a>29.9. jbang</h3>
 <div class="paragraph">
 <p><a href="https://github.com/maxandersen/jbang">jbang</a> allows you to write scripts in Java that use external dependencies.
 You use it with a <code>//DEPS</code> comment, similar to the <a href="http://groovy-lang.org/grape.html"><code>@Grab</code></a> annotation in Groovy.</p>
@@ -16426,34 +16803,47 @@ This <a href="https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&am
 </div>
 <div class="sect3">
 <h4 id="_groovy_scripts"><a class="anchor" href="#_groovy_scripts"></a>30.1.2. Groovy Scripts</h4>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
 <div class="paragraph">
-<p>Picocli 2.0 introduced special support for Groovy scripts. (From picocli 4.0 this was moved into a separate module, <code>picocli-groovy</code>.)</p>
+<p>Picocli 2.0 introduced special support for Groovy scripts.
+From picocli 4.0 this was moved into a separate module, <code>picocli-groovy</code>.
+In picocli 4.6, <code>@PicocliScript</code> was deprecated in favor of <code>@PicocliScript2</code>.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
-<p>Scripts annotated with <code>@picocli.groovy.PicocliScript</code> are automatically transformed to use
-<code>picocli.groovy.PicocliBaseScript</code> as their base class and can also use the <code>@Command</code> annotation to
+<p>Scripts annotated with <code>@picocli.groovy.PicocliScript2</code> are automatically transformed to use
+<code>picocli.groovy.PicocliBaseScript2</code> as their base class and can also use the <code>@Command</code> annotation to
 customize parts of the usage message like command name, description, headers, footers etc.</p>
 </div>
 <div class="paragraph">
-<p>Before the script body is executed, the <code>PicocliBaseScript</code> base class parses the command line and initializes
+<p>Before the script body is executed, the <code>PicocliBaseScript2</code> base class parses the command line and initializes
 <code>@Field</code> variables annotated with <code>@Option</code> or <code>@Parameters</code>.
 The script body is executed if the user input was valid and did not request usage help or version information.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.5.2'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.0'</span><span class="o">)</span>
 <span class="nd">@GrabConfig</span><span class="o">(</span><span class="n">systemClassLoader</span><span class="o">=</span><span class="kc">true</span><span class="o">)</span>
 <span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"myScript"</span><span class="o">,</span>
         <span class="n">mixinStandardHelpOptions</span> <span class="o">=</span> <span class="kc">true</span><span class="o">,</span> <span class="c1">// add --help and --version options</span>
         <span class="n">description</span> <span class="o">=</span> <span class="s2">"@|bold Groovy script|@ @|underline picocli|@ example"</span><span class="o">)</span>
-<span class="nd">@picocli.groovy.PicocliScript</span>
+<span class="nd">@picocli.groovy.PicocliScript2</span>
 <span class="kn">import</span> <span class="nn">groovy.transform.Field</span>
 <span class="kn">import</span> <span class="nn">static</span> <span class="n">picocli</span><span class="o">.</span><span class="na">CommandLine</span><span class="o">.*</span>
 
 <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="o">[</span><span class="s2">"-c"</span><span class="o">,</span> <span class="s2">"--count"</span><span class="o">],</span> <span class="n">description</span> <span class="o">=</span> <span class="s2">"number of repetitions"</span><span class="o">)</span>
 <span class="nd">@Field</span> <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
 
-<span class="c1">// PicocliBaseScript prints usage help or version if requested by the user</span>
+<span class="c1">// PicocliBaseScript2 prints usage help or version if requested by the user</span>
 
 <span class="n">count</span><span class="o">.</span><span class="na">times</span> <span class="o">{</span>
    <span class="n">println</span> <span class="s2">"hi"</span>
@@ -16462,6 +16852,54 @@ The script body is executed if the user input was valid and did not request usag
 <span class="k">assert</span> <span class="k">this</span><span class="o">.</span><span class="na">commandLine</span><span class="o">.</span><span class="na">commandName</span> <span class="o">==</span> <span class="s2">"myScript"</span></code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>The older <code>@picocli.groovy.PicocliScript</code> annotation is deprecated from picocli 4.6.
+New scripts should use the <code>@picocli.groovy.PicocliScript2</code> annotation (and associated <code>picocli.groovy.PicocliBaseScript2</code> base class) instead.
+The table below lists the differences between these base classes.</p>
+</div>
+<table class="tableblock frame-all grid-cols stretch">
+<caption class="title">Table 6. Differences between the <code>PicocliBaseScript2</code> and <code>PicocliBaseScript</code> script base classes.</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><code>PicocliBaseScript2</code></th>
+<th class="tableblock halign-left valign-top"><code>PicocliBaseScript</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Subcommands can be defined as <code>@Command</code>-annotated methods in the script.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No support for <code>@Command</code>-annotated methods.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Support for <code>help</code> subcommands (both the built-in one and custom ones).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No support for <code>help</code> subcommands.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Exit code support: scripts can override <code>afterExecution(CommandLine, int, Exception)</code> to call <code>System.exit</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No support for exit code.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Invokes <a href="https://picocli.info/#execute"><code>CommandLine::execute</code></a>. Scripts can override <code>beforeParseArgs(CommandLine)</code> to install a custom  <code>IExecutionStrategy</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Execution after parsing is defined in <code>PicocliBaseScript::run</code> and is not easy to customize. Any subcommand <em>and</em> the main script are <em>both</em> executed.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Scripts can override <code>beforeParseArgs(CommandLine)</code> to install a custom <code>IParameterExceptionHandler</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Invalid input handling can be customized by overriding <code>PicocliBaseScript::handleParameterException</code>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Scripts can override <code>beforeParseArgs(CommandLine)</code> to install a custom <code>IExecutionExceptionHandler</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Runtime exception handling can be customized by overriding <code>PicocliBaseScript::handleExecutionException</code>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Implements <code>Callable&lt;Object&gt;</code>, script body is transformed to the <code>call</code> method.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Script body is transformed to the <code>runScriptBody</code> method.</p></td>
+</tr>
+</tbody>
+</table>
 <div class="admonitionblock warning">
 <table>
 <tr>
@@ -16469,8 +16907,8 @@ The script body is executed if the user input was valid and did not request usag
 <i class="fa icon-warning" title="Warning"></i>
 </td>
 <td class="content">
-When upgrading scripts to picocli 4.0, just changing the version number is not enough!
-Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.5.2')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.5.2')</code> will not work,
+When upgrading scripts from picocli versions older than 4.0, just changing the version number is not enough!
+Scripts should use <code>@Grab('info.picocli:picocli-groovy:4.6.0')</code>. The old artifact id <code>@Grab('info.picocli:picocli:4.6.0')</code> will not work,
 because the <code>@picocli.groovy.PicocliScript</code> annotation class and supporting classes have been moved into a separate module, <code>picocli-groovy</code>.
 </td>
 </tr>
@@ -16478,7 +16916,78 @@ because the <code>@picocli.groovy.PicocliScript</code> annotation class and supp
 </div>
 </div>
 <div class="sect3">
-<h4 id="_older_versions_of_groovy"><a class="anchor" href="#_older_versions_of_groovy"></a>30.1.3. Older Versions of Groovy</h4>
+<h4 id="_closures_in_annotations"><a class="anchor" href="#_closures_in_annotations"></a>30.1.3. Closures in Annotations</h4>
+<div class="paragraph">
+<p>From picocli 4.6, Groovy programs can use closures in the picocli annotations instead of specifying a class.
+This can be especially useful in Groovy scripts, where one cannot define a static inner class.</p>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"ClosureDemo"</span><span class="o">,</span>
+        <span class="n">versionProvider</span> <span class="o">=</span> <span class="o">{</span>
+            <span class="o">{</span> <span class="o">-&gt;</span> <span class="o">[</span><span class="s2">"line1"</span> <span class="o">,</span> <span class="s2">"line2"</span><span class="o">]</span> <span class="k">as</span> <span class="n">String</span><span class="o">[]</span> <span class="o">}</span> <span class="k">as</span> <span class="n">IVersionProvider</span> <i class="conum" data-value="1"></i><b>(1)</b>
+        <span class="o">},</span>
+        <span class="n">defaultValueProvider</span> <span class="o">=</span> <span class="o">{</span>
+            <span class="o">{</span> <span class="n">argSpec</span> <span class="o">-&gt;</span> <span class="s2">"some default"</span> <span class="o">}</span> <span class="k">as</span> <span class="n">IDefaultValueProvider</span> <i class="conum" data-value="2"></i><b>(2)</b>
+        <span class="o">})</span>
+<span class="kd">class</span> <span class="nc">ClosureDemo</span> <span class="o">{</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s1">'-x'</span><span class="o">,</span> <span class="n">completionCandidates</span> <span class="o">=</span> <span class="o">{[</span><span class="s2">"A"</span><span class="o">,</span> <span class="s2">"B"</span><span class="o">,</span> <span class="s2">"C"</span><span class="o">]})</span> <i class="conum" data-value="3"></i><b>(3)</b>
+    <span class="n">String</span> <span class="n">x</span>
+
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s1">'-y'</span><span class="o">,</span>
+            <span class="n">parameterConsumer</span> <span class="o">=</span> <span class="o">{</span>
+                <span class="o">{</span> <span class="n">args</span><span class="o">,</span> <span class="n">argSpec</span><span class="o">,</span> <span class="n">commandSpec</span> <span class="o">-&gt;</span>  <i class="conum" data-value="4"></i><b>(4)</b>
+                    <span class="n">argSpec</span><span class="o">.</span><span class="na">setValue</span><span class="o">(</span><span class="n">args</span><span class="o">.</span><span class="na">toString</span><span class="o">()</span> <span class="o">+</span> <span class="n">commandSpec</span><span class="o">.</span><span class="na">name</span><span class="o">())</span>
+                    <span class="n">args</span><span class="o">.</span><span class="na">clear</span><span class="o">()</span>
+                <span class="o">}</span> <span class="k">as</span> <span class="n">IParameterConsumer</span>
+            <span class="o">})</span>
+    <span class="n">String</span> <span class="n">y</span>
+
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s1">'-z'</span><span class="o">,</span> <span class="n">converter</span> <span class="o">=</span> <span class="o">[</span> <span class="c1">// requires Groovy 3.0.7</span>
+            <span class="o">{</span> <span class="o">{</span> <span class="n">str</span> <span class="o">-&gt;</span> <span class="n">MessageDigest</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">str</span><span class="o">)</span> <span class="o">}</span> <span class="k">as</span> <span class="n">ITypeConverter</span> <span class="o">}</span> <i class="conum" data-value="5"></i><b>(5)</b>
+    <span class="o">])</span>
+    <span class="n">MessageDigest</span> <span class="n">z</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When a class is specified, picocli creates an instance of the class.
+By contrast, when a closure is specified, picocli <em>calls the closure</em> to get an instance.
+(To be precise, both of these are delegated to the configured <a href="#_custom_factory">factory</a>, and the default factory implementation supports closures from picocli 4.6.)</p>
+</div>
+<div class="paragraph">
+<p>As you can see in the above example, each closure in the annotation should contain another closure that has the required type (<code>IVersionProvider</code>, <code>IDefaultValueProvider</code>, etc.)</p>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Command <code>versionProvider</code>: note the empty parameter list before the <code>&#8594;</code> arrow. This is needed to help the Groovy compiler. The closure must be cast to <code>IVersionProvider</code>.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Command <code>defaultProvider</code>: return a default value for the specified <code>ArgSpec</code> parameter. The closure must be cast to <code>IDefaultValueProvider</code>.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Option or Parameters <code>completionCandidates</code>: return a list of Strings. No parameter list or casting is required.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Option or Parameters <code>parameterConsumer</code>: given a <code>Stack</code>, <code>ArgSpec</code> and <code>CommandSpec</code>, process the remaining arguments. The closure must be cast to <code>IParameterConsumer</code>.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="5"></i><b>5</b></td>
+<td>Option or Parameters type <code>converter</code> takes an array of closures. Groovy 3.0.7 or greater is required: older versions of Groovy ignore closures in class array annotations. Each closure must have a parameter and be cast to <code>ITypeConverter</code>.</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_older_versions_of_groovy"><a class="anchor" href="#_older_versions_of_groovy"></a>30.1.4. Older Versions of Groovy</h4>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -16494,7 +17003,7 @@ When using a Groovy version older than 2.4.7, use this workaround for the <a hre
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.5.2'</span><span class="o">)</span>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="nd">@Grab</span><span class="o">(</span><span class="s1">'info.picocli:picocli-groovy:4.6.0'</span><span class="o">)</span>
 <span class="nd">@GrabExclude</span><span class="o">(</span><span class="s1">'org.codehaus.groovy:groovy-all'</span><span class="o">)</span> <span class="c1">// work around GROOVY-7613</span>
 <span class="o">...</span></code></pre>
 </div>
@@ -16685,14 +17194,14 @@ so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for t
 <div class="listingblock primary">
 <div class="title">Gradle</div>
 <div class="content">
-<pre class="rouge highlight"><code data-lang="groovy"><span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.5.2'</span></code></pre>
+<pre class="rouge highlight"><code data-lang="groovy"><span class="n">implementation</span> <span class="s1">'info.picocli:picocli:4.6.0'</span></code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Gradle (Kotlin)</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="kotlin"><span class="nf">dependencies</span> <span class="p">{</span>
-    <span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli-spring-boot-starter:4.5.2"</span><span class="p">)</span>
+    <span class="nf">implementation</span><span class="p">(</span><span class="s">"info.picocli:picocli-spring-boot-starter:4.6.0"</span><span class="p">)</span>
 <span class="p">}</span></code></pre>
 </div>
 </div>
@@ -16702,46 +17211,46 @@ so be aware that you will have to write <code>Array(&#8230;&#8203;)</code> for t
 <pre class="rouge highlight"><code data-lang="xml"><span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>info.picocli<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>picocli<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>4.5.2<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span>4.6.0<span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span></code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Scala SBT</div>
 <div class="content">
-<pre class="rouge highlight"><code>libraryDependencies += "info.picocli" % "picocli" % "4.5.2"</code></pre>
+<pre class="rouge highlight"><code>libraryDependencies += "info.picocli" % "picocli" % "4.6.0"</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Ivy</div>
 <div class="content">
-<pre class="rouge highlight"><code>&lt;dependency org="info.picocli" name="picocli" rev="4.5.2" /&gt;</code></pre>
+<pre class="rouge highlight"><code>&lt;dependency org="info.picocli" name="picocli" rev="4.6.0" /&gt;</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Grape</div>
 <div class="content">
 <pre class="rouge highlight"><code>@Grapes(
-    @Grab(group='info.picocli', module='picocli', version='4.5.2')
+    @Grab(group='info.picocli', module='picocli', version='4.6.0')
 )</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Leiningen</div>
 <div class="content">
-<pre class="rouge highlight"><code>[info.picocli/picocli "4.5.2"]</code></pre>
+<pre class="rouge highlight"><code>[info.picocli/picocli "4.6.0"]</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">Buildr</div>
 <div class="content">
-<pre class="rouge highlight"><code>'info.picocli:picocli:jar:4.5.2'</code></pre>
+<pre class="rouge highlight"><code>'info.picocli:picocli:jar:4.6.0'</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
 <div class="title">JBang</div>
 <div class="content">
-<pre class="rouge highlight"><code>//DEPS info.picocli:picocli:4.5.2</code></pre>
+<pre class="rouge highlight"><code>//DEPS info.picocli:picocli:4.6.0</code></pre>
 </div>
 </div>
 </div>
@@ -16758,8 +17267,8 @@ This facilitates including picocli in your project: simply copy and paste the co
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 4.5.2<br>
-Last updated 2020-11-22 08:38:58 +0900
+Version 4.6.0<br>
+Last updated 2021-01-01 17:44:57 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/3.0.7/tocbot.min.js"></script>

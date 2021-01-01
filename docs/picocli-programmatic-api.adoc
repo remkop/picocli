@@ -1,12 +1,12 @@
 = Programmatic API
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.5.3-SNAPSHOT
-:revdate: 2020-10-14
+:revnumber: 4.6.0
+:revdate: 2021-01-01
 :toc: left
 :numbered:
 :toclevels: 2
-:source-highlighter: coderay
+:source-highlighter: codefray
 :icons: font
 :imagesdir: images
 ifdef::env-github[]
