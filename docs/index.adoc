@@ -10443,7 +10443,9 @@ assertEquals("output.txt", optionArg.file)
 
 === Best Practices for Command Line Interfaces
 
-When designing your command line application,
+Picocli makes it easy to follow this new and modern set of https://clig.dev/#guidelines[Command Line Interface Guidelines].
+
+Slightly older, but a classic: when designing your command line application,
 the https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html#Command_002dLine-Interfaces[GNU recommendations] for command line interfaces and http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_02[POSIX Utility Guidelines] may be useful.
 
 Generally, many applications use options for optional values and parameters for mandatory values.
