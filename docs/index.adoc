@@ -1,7 +1,7 @@
 = picocli - a mighty tiny command line interface
 //:author: Remko Popma
 //:email: rpopma@apache.org
-:revnumber: 4.6.0
+:revnumber: 4.6.1-SNAPSHOT
 :revdate: 2021-01-01
 :toc: left
 :numbered:
@@ -120,7 +120,7 @@ class CheckSum implements Callable<Integer> {
 [[CheckSum-App-Groovy]]
 [source,groovy,role="secondary"]
 ----
-@Grab('info.picocli:picocli-groovy:4.6.0')
+@Grab('info.picocli:picocli-groovy:4.6.1-SNAPSHOT')
 import picocli.CommandLine
 import static picocli.CommandLine.*
 
@@ -152,7 +152,7 @@ class Checksum implements Callable<Integer> {
 [[CheckSum-App-Groovy-Script]]
 [source,groovy,role="secondary"]
 ----
-@Grab('info.picocli:picocli-groovy:4.6.0')
+@Grab('info.picocli:picocli-groovy:4.6.1-SNAPSHOT')
 import static picocli.CommandLine.*
 import groovy.transform.Field
 import java.security.MessageDigest
@@ -273,7 +273,7 @@ Below are examples of configuring Gradle or Maven to use picocli as an external 
 [source,groovy,role="primary"]
 ----
 dependencies {
-    implementation 'info.picocli:picocli:4.6.0'
+    implementation 'info.picocli:picocli:4.6.1-SNAPSHOT'
 }
 ----
 .Maven
@@ -282,7 +282,7 @@ dependencies {
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.6.0</version>
+  <version>4.6.1-SNAPSHOT</version>
 </dependency>
 ----
 
@@ -319,8 +319,8 @@ https://immutables.github.io/apt.html[This page] shows the steps to configure Ec
 [source,groovy,role="primary"]
 ----
 dependencies {
-    implementation 'info.picocli:picocli:4.6.0'
-    annotationProcessor 'info.picocli:picocli-codegen:4.6.0'
+    implementation 'info.picocli:picocli:4.6.1-SNAPSHOT'
+    annotationProcessor 'info.picocli:picocli-codegen:4.6.1-SNAPSHOT'
 }
 
 
@@ -342,7 +342,7 @@ compileJava {
       <path>
         <groupId>info.picocli</groupId>
         <artifactId>picocli-codegen</artifactId>
-        <version>4.6.0</version>
+        <version>4.6.1-SNAPSHOT</version>
       </path>
     </annotationProcessorPaths>
     <compilerArgs>
@@ -362,7 +362,7 @@ then replace `annotationProcessor` with `kapt`:
 apply plugin: 'kotlin-kapt' // required
 dependencies {
     // ...
-    kapt 'info.picocli:picocli-codegen:4.6.0'
+    kapt 'info.picocli:picocli-codegen:4.6.1-SNAPSHOT'
 }
 ```
 
@@ -393,7 +393,7 @@ Now, assuming we created a jar named `checksum.jar` containing our compiled `Che
 
 [source,bash]
 ----
-java -cp "picocli-4.6.0.jar:checksum.jar" CheckSum --algorithm SHA-1 hello.txt
+java -cp "picocli-4.6.1-SNAPSHOT.jar:checksum.jar" CheckSum --algorithm SHA-1 hello.txt
 ----
 
 You may want to package your application in such a way that end users can invoke it with a short command like this:
@@ -10614,21 +10614,21 @@ Since picocli dependencies are not available in the Spring Initializr, we have t
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli-spring-boot-starter</artifactId>
-  <version>4.6.0</version>
+  <version>4.6.1-SNAPSHOT</version>
 </dependency>
 ----
 .Gradle (Groovy)
 [source,groovy,role="secondary"]
 ----
 dependencies {
-    implementation 'info.picocli:picocli-spring-boot-starter:4.6.0'
+    implementation 'info.picocli:picocli-spring-boot-starter:4.6.1-SNAPSHOT'
 }
 ----
 .Gradle (Kotlin)
 [source,kotlin,role="secondary"]
 ----
 dependencies {
-    implementation("info.picocli:picocli-spring-boot-starter:4.6.0")
+    implementation("info.picocli:picocli-spring-boot-starter:4.6.1-SNAPSHOT")
 }
 ----
 
@@ -11661,7 +11661,7 @@ As mentioned in <<Running the Application>>, earlier in this manual, one way to 
 
 [source,bash]
 ----
-java -cp "picocli-4.6.0.jar;myapp.jar" org.myorg.MyMainClass --option=value arg0 arg1
+java -cp "picocli-4.6.1-SNAPSHOT.jar;myapp.jar" org.myorg.MyMainClass --option=value arg0 arg1
 ----
 
 That is quite verbose. You may want to package your application in such a way that end users can invoke it by its command name like this:
@@ -11680,7 +11680,7 @@ On unix-based operating systems, you can ask your users to define an alias. For 
 
 [source,bash]
 ----
-alias mycommand='java -cp "/path/to/picocli-4.6.0.jar:/path/to/myapp.jar" org.myorg.MainClass'
+alias mycommand='java -cp "/path/to/picocli-4.6.1-SNAPSHOT.jar:/path/to/myapp.jar" org.myorg.MainClass'
 ----
 
 Append the above line to your `~/.bashrc` file to make this alias available in every new shell session.
@@ -11729,7 +11729,7 @@ After installing GraalVM and installing the `native-image` generator utility (wi
 you can then create a native image by invoking the `native-image` command:
 
 ----
-path/to/native-image -cp picocli-4.6.0.jar --static -jar myapp.jar
+path/to/native-image -cp picocli-4.6.1-SNAPSHOT.jar --static -jar myapp.jar
 ----
 
 CAUTION: To create a native image, the compiler toolchain for your platform needs to be installed. See https://www.infoq.com/articles/java-native-cli-graalvm-picocli/[Build Great Native CLI Apps in Java with Graalvm and Picocli] for details.
@@ -11840,7 +11840,7 @@ The script body is executed if the user input was valid and did not request usag
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli-groovy:4.6.0')
+@Grab('info.picocli:picocli-groovy:4.6.1-SNAPSHOT')
 @GrabConfig(systemClassLoader=true)
 @Command(name = "myScript",
         mixinStandardHelpOptions = true, // add --help and --version options
@@ -11881,7 +11881,7 @@ The table below lists the differences between these base classes.
 
 
 WARNING: When upgrading scripts from picocli versions older than 4.0, just changing the version number is not enough!
-Scripts should use `@Grab('info.picocli:picocli-groovy:4.6.0')`. The old artifact id `@Grab('info.picocli:picocli:4.6.0')` will not work,
+Scripts should use `@Grab('info.picocli:picocli-groovy:4.6.1-SNAPSHOT')`. The old artifact id `@Grab('info.picocli:picocli:4.6.1-SNAPSHOT')` will not work,
 because the `@picocli.groovy.PicocliScript` annotation class and supporting classes have been moved into a separate module, `picocli-groovy`.
 
 ==== Closures in Annotations
@@ -11938,7 +11938,7 @@ NOTE: When using a Groovy version older than 2.4.7, use this workaround for the 
 
 [source,groovy]
 ----
-@Grab('info.picocli:picocli-groovy:4.6.0')
+@Grab('info.picocli:picocli-groovy:4.6.1-SNAPSHOT')
 @GrabExclude('org.codehaus.groovy:groovy-all') // work around GROOVY-7613
 ...
 ----
@@ -12081,14 +12081,14 @@ You can add picocli as an external dependency to your project, or you can includ
 .Gradle
 [source,groovy,role="primary"]
 ----
-implementation 'info.picocli:picocli:4.6.0'
+implementation 'info.picocli:picocli:4.6.1-SNAPSHOT'
 ----
 
 .Gradle (Kotlin)
 [source,kotlin,role="secondary"]
 ----
 dependencies {
-    implementation("info.picocli:picocli-spring-boot-starter:4.6.0")
+    implementation("info.picocli:picocli-spring-boot-starter:4.6.1-SNAPSHOT")
 }
 ----
 
@@ -12098,46 +12098,46 @@ dependencies {
 <dependency>
   <groupId>info.picocli</groupId>
   <artifactId>picocli</artifactId>
-  <version>4.6.0</version>
+  <version>4.6.1-SNAPSHOT</version>
 </dependency>
 ----
 
 .Scala SBT
 [source,role="secondary"]
 ----
-libraryDependencies += "info.picocli" % "picocli" % "4.6.0"
+libraryDependencies += "info.picocli" % "picocli" % "4.6.1-SNAPSHOT"
 ----
 
 .Ivy
 [source,role="secondary"]
 ----
-<dependency org="info.picocli" name="picocli" rev="4.6.0" />
+<dependency org="info.picocli" name="picocli" rev="4.6.1-SNAPSHOT" />
 ----
 
 .Grape
 [source,role="secondary"]
 ----
 @Grapes(
-    @Grab(group='info.picocli', module='picocli', version='4.6.0')
+    @Grab(group='info.picocli', module='picocli', version='4.6.1-SNAPSHOT')
 )
 ----
 
 .Leiningen
 [source,role="secondary"]
 ----
-[info.picocli/picocli "4.6.0"]
+[info.picocli/picocli "4.6.1-SNAPSHOT"]
 ----
 
 .Buildr
 [source,role="secondary"]
 ----
-'info.picocli:picocli:jar:4.6.0'
+'info.picocli:picocli:jar:4.6.1-SNAPSHOT'
 ----
 
 .JBang
 [source,role="secondary"]
 ----
-//DEPS info.picocli:picocli:4.6.0
+//DEPS info.picocli:picocli:4.6.1-SNAPSHOT
 ----
 
 === Source
