@@ -13,7 +13,7 @@ targetCompatibility = 1.8
 
 dependencies {
     implementation     rootProject
-    implementation     "org.jline:jline:$jline3Version"
+    api                "org.jline:jline:$jline3Version"
     implementation     "org.jline:jline-console:$jline3Version"
     testImplementation "junit:junit:$junitVersion"
 }
