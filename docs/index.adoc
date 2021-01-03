@@ -12088,7 +12088,7 @@ implementation 'info.picocli:picocli:4.6.2-SNAPSHOT'
 [source,kotlin,role="secondary"]
 ----
 dependencies {
-    implementation("info.picocli:picocli-spring-boot-starter:4.6.2-SNAPSHOT")
+    implementation("info.picocli:picocli:4.6.2-SNAPSHOT")
 }
 ----
 
