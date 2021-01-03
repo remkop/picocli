@@ -1,5 +1,49 @@
 # picocli Release Notes
 
+# <a name="4.6.1"></a> Picocli 4.6.1
+The picocli community is pleased to announce picocli 4.6.1.
+
+This release fixes a problem with dependency scope in the following sub-modules:
+
+* picocli-codegen
+* picocli-groovy
+* picocli-shell-jline2
+* picocli-shell-jline3
+* picocli-spring-boot-starter
+
+The problem was that these modules contained dependencies that were declared to have `implementation` scope instead of `api` scope.
+However, these were transitive dependencies, and necessary to compile any project that uses the above picocli modules.
+
+In this release, transitive dependencies are declared with `api` scope in the above modules.
+
+Special thanks to [Sualeh Fatehi](https://github.com/sualeh), [Dejan Stojadinović](https://github.com/dejan2609) and [Semyon Levin](https://github.com/remal) for the quick community feedback, pull request and reviews!
+
+
+This is the seventy-sixth public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.6.1-toc"></a> Table of Contents
+* [New and noteworthy](#4.6.1-new)
+* [Fixed issues](#4.6.1-fixes)
+* [Deprecations](#4.6.1-deprecated)
+* [Potential breaking changes](#4.6.1-breaking-changes)
+
+## <a name="4.6.1-new"></a> New and Noteworthy
+
+
+## <a name="4.6.1-fixes"></a> Fixed issues
+* [#1291] Fix dependency scope for `picocli-shell-jline3`. Thanks to [Sualeh Fatehi](https://github.com/sualeh) for raising this.
+* [#1292] PR to fix dependency scope for `picocli-shell-jline3`. Thanks to [Dejan Stojadinović](https://github.com/dejan2609) for the pull request, and [Semyon Levin](https://github.com/remal) for the review.
+* [#1294] Fix dependency scope for `picocli-spring-boot-starter`. Thanks to [Semyon Levin](https://github.com/remal) for raising this.
+
+
+## <a name="4.6.1-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.6.1-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
 
 # <a name="4.6.0"></a> Picocli 4.6.0
 The picocli community is pleased to announce picocli 4.6.0.
