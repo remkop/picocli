@@ -14,7 +14,7 @@ configurations {
     ivy
 }
 dependencies {
-    implementation rootProject
+    api                rootProject
     compileOnly        "org.codehaus.groovy:groovy-all:$groovyVersion"
     ivy                "org.apache.ivy:ivy:$ivyVersion" // for Gradle
     testImplementation "junit:junit:$junitVersion"

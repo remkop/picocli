@@ -10,8 +10,8 @@ description 'Picocli Shell JLine2 - easily build interactive shell applications 
 version "$projectVersion"
 
 dependencies {
-    implementation     rootProject
-    implementation     "jline:jline:$jlineVersion"
+    api rootProject
+    api "jline:jline:$jlineVersion"
     testImplementation "junit:junit:$junitVersion"
 }
 

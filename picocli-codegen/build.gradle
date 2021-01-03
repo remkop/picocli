@@ -15,7 +15,7 @@ if (org.gradle.api.JavaVersion.current().isJava8Compatible() && !org.gradle.api.
     targetCompatibility = 1.6
 }
 dependencies {
-    implementation rootProject
+    api rootProject
     testImplementation "junit:junit:$junitVersion"
 }
 
