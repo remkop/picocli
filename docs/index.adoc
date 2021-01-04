@@ -2346,6 +2346,7 @@ When `-x VALUE` is specified on the command line, this results in an error: `Mis
 Users can use the <<Double dash (`--`),end-of-options delimiter>> and disambiguate the input with
 `-x &dash;&dash; VALUE`, but this may not be obvious to many users.
 One idea is to <<Show End of Options,show the end-of-options>> delimiter in the usage help.
+Another idea is to make use of the <<IParameterPreprocessor Parser Plugin,IParameterPreprocessor Parser Plugin>> introduced with picocli 4.6.
 
 An alternative is to avoid the use of optional parameters and use the default arity in this scenario to eliminate the ambiguity altogether.
 
@@ -4776,7 +4777,7 @@ class ExecParameterConsumer : IParameterConsumer {
 }
 ----
 
-==== `IParameterPreprocessor` Parser Plugin
+==== IParameterPreprocessor Parser Plugin
 
 Introduced in picocli 4.6, the `IParameterPreprocessor` is also a parser plugin, similar to `IParameterConsumer`, but more flexible.
 
@@ -4798,7 +4799,7 @@ edit [--open[=<editor>]] <file>
 One of the <<Optional Parameter Limitations, limitations of options with an optional parameter>> is that they are difficult to combine with positional parameters.
 
 With a custom parser plugin, we can customize the parser, such that `VALUE` in `--option=VALUE` is interpreted as the option parameter, and in `--option VALUE` (without the `=` separator), VALUE is interpreted as the positional parameter.
-The code below demonstrates:
+The code below demonstrates this:
 
 .Java
 [source,java,role="primary"]
@@ -4806,18 +4807,19 @@ The code below demonstrates:
 @Command(name = "edit")
 class Edit {
 
-    @Parameters(index = "0", description = "The file to edit.")
+    @Parameters(index = "0", arity="0..1", description = "The file to edit.")
     File file;
 
-   enum Editor { defaultEditor, eclipse, idea, netbeans }
+   enum Editor { eclipse, idea, netbeans }
 
    @Option(names = "--open", arity = "0..1", preprocessor = Edit.MyPreprocessor.class,
        description = {
-           "Optionally specify the editor to use; if omitted the default editor is used. ",
+           "Optionally specify the editor to use (${COMPLETION-CANDIDATES}). " +
+           "If omitted eclipse is used as default. ",
            "Example: edit --open=idea FILE opens IntelliJ IDEA (notice the '=' separator)",
-           "         edit --open FILE opens the specified file in the default editor"
+           "         edit --open FILE opens the specified file in eclipse"
        })
-   Editor editor = Editor.defaultEditor;
+   static Editor editor = Editor.eclipse;
 
    static class MyPreprocessor implements IParameterPreprocessor {
        public boolean preprocess(Stack<String> args,
@@ -4828,8 +4830,8 @@ class Edit {
            // or the name of the editor to use...
            if (" ".equals(info.get("separator"))) { // parameter was not attached to option
 
-               // act as if the user specified --open=defaultEditor
-               args.push(Editor.defaultEditor.name());
+               // act as if the user specified --open=eclipse
+               args.push(editor.name());
            }
            return false; // picocli's internal parsing is resumed for this option
        }
@@ -4837,27 +4839,27 @@ class Edit {
 }
 ----
 
-With this preprocessor, the following user input gives the following command state:
+With this preprocessor in place the user can now specify his editor of choice (e.g. `--open=idea`). If no editor is given, the default editor (=`eclipse`) is used:
 
-----
-# User input # Command State
-# --------------------------
---open A B   # editor: defaultEditor, file: A,    unmatched: [B]
---open A     # editor: defaultEditor, file: A,    unmatched: []
---open=A B   # editor: A,             file: B,    unmatched: []
---open=A     # editor: A,             file: null, unmatched: []
-----
+[grid=cols,cols=4*,options="header"]
+|===
+| User input           | Option `Editor` | Parameter `File` | Unmatched input
+| `--open file1 file2` | `eclipse` (default)      | `file1` | `file2`
+| `--open file1`       | `eclipse` (default)      | `file1` | none
+| `--open=idea file1`  | `idea` (user specificed) | `file1` | none
+| `--open=idea`        | `idea` (user specificed) | `null`  | none
+|===
 
 ==== Parser Plugin Comparison
 
-.Differences between the `IParameterPreprocessor` and `IParameterConsumer` parser plugins.
-[grid=cols,cols=2*,options="header"]
+.Comparison of `IParameterPreprocessor` and `IParameterConsumer` parser plugins.
+[grid=cols,cols=3*,options="header"]
 |===
-| `IParameterPreprocessor` | `IParameterConsumer`
-| Either augment (return `false`) or replace (return `true`) picocli parsing logic for the matched element. | Replaces picocli parsing logic for the matched element.
-| Commands as well as options and positional parameters. | Options and positional parameters only.
-| Receives information on parser internal state (the `info` Map).| No equivalent.
-| May communicate back to parser (by modifying the `info` Map).| No equivalent.
+| | `IParameterPreprocessor` | `IParameterConsumer`
+| *Functionality* | Either augment (return `false`) or replace (return `true`) picocli parsing logic for the matched element. | Replaces picocli parsing logic for the matched element.
+| *Scope* | Commands as well as options and positional parameters. | Options and positional parameters only.
+| *Information on parser internal state* | Yes, information may received via the `info` Map | No
+| *Communication back to parser* | Yes, via modifying the `info` Map | No
 |===
 
 
