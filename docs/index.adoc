@@ -4891,7 +4891,7 @@ With this preprocessor in place the user can now specify his editor of choice (e
 [grid=cols,cols=3*,options="header"]
 |===
 | | `IParameterPreprocessor` | `IParameterConsumer`
-| *Functionality* | Either augment (return `false`) or replace (return `true`) picocli parsing logic for the matched element. | Replaces picocli parsing logic for the matched element.
+| *Principle* | Either augment (return `false`) or replace (return `true`) picocli parsing logic for the matched element. | Replaces picocli parsing logic for the matched element.
 | *Scope* | Commands as well as options and positional parameters. | Options and positional parameters only.
 | *Information on parser internal state* | Yes, information may received via the `info` Map | No
 | *Communication back to parser* | Yes, via modifying the `info` Map | No
@@ -5916,7 +5916,7 @@ Usage: <main class> <host> <port> [<files>...]
 
 === Show At Files
 
-From picocli 4.2, an entry for `@<filename>` can be shown in the options and parameters list of the usage help message of a command with the `@Command(showAtFileInUsageHelp = true)` annotation.
+As of picocli 4.2, an entry for `@<filename>` can be shown in the options and parameters list of the usage help message of a command with the `@Command(showAtFileInUsageHelp = true)` annotation.
 
 ==== Example
 
@@ -6478,7 +6478,7 @@ class GitCommit { /* ... */ }
 
 CAUTION: Markup styles cannot be nested, for example: `@|bold this @|underline that|@|@` will not work. You can achieve the same by combining styles, for example: `@|bold this|@ @|bold,underline that|@` will work fine.
 
-From picocli 4.2, custom markup like `@|bold mytext|@`, `@|italic mytext|@` etc. can also be converted to custom markup like `<b>mytext</b>` and `<i>mytext</i>` in HTML, or `pass:c[*mytext*]` and `pass:c[_mytext_]` in lightweight markup languages like AsciiDoc.
+As of picocli 4.2, custom markup like `@|bold mytext|@`, `@|italic mytext|@` etc. can also be converted to custom markup like `<b>mytext</b>` and `<i>mytext</i>` in HTML, or `pass:c[*mytext*]` and `pass:c[_mytext_]` in lightweight markup languages like AsciiDoc.
 Applications can control this by setting a `ColorScheme` with a custom markup map.
 This feature is used to generate man page documentation.
 
@@ -11923,19 +11923,19 @@ assert this.commandLine.commandName == "myScript"
 
 The older `@picocli.groovy.PicocliScript` annotation is deprecated from picocli 4.6.
 New scripts should use the `@picocli.groovy.PicocliScript2` annotation (and associated `picocli.groovy.PicocliBaseScript2` base class) instead.
-The table below lists the differences between these base classes.
+The table below compares these two base classes.
 
-.Differences between the `PicocliBaseScript2` and `PicocliBaseScript` script base classes.
-[grid=cols,cols=2*,options="header"]
+.Comparison of `PicocliBaseScript2` and `PicocliBaseScript` script base classes.
+[grid=cols,cols=3*,options="header"]
 |===
-| `PicocliBaseScript2` | `PicocliBaseScript`
-| Subcommands can be defined as `@Command`-annotated methods in the script. | No support for `@Command`-annotated methods.
-| Support for `help` subcommands (both the built-in one and custom ones). | No support for `help` subcommands.
-| Exit code support: scripts can override `afterExecution(CommandLine, int, Exception)` to call `System.exit`.| No support for exit code.
-| Invokes https://picocli.info/#execute[`CommandLine::execute`]. Scripts can override `beforeParseArgs(CommandLine)` to install a custom  `IExecutionStrategy`.| Execution after parsing is defined in `PicocliBaseScript::run` and is not easy to customize. Any subcommand _and_ the main script are _both_ executed.
-| Scripts can override `beforeParseArgs(CommandLine)` to install a custom `IParameterExceptionHandler`. | Invalid input handling can be customized by overriding `PicocliBaseScript::handleParameterException`.
-| Scripts can override `beforeParseArgs(CommandLine)` to install a custom `IExecutionExceptionHandler`. | Runtime exception handling can be customized by overriding `PicocliBaseScript::handleExecutionException`.
-| Implements `Callable<Object>`, script body is transformed to the `call` method. | Script body is transformed to the `runScriptBody` method.
+| | `PicocliBaseScript2` | `PicocliBaseScript`
+| *Subcommands as methods* | Supported, subcommands can be defined as `@Command`-annotated methods in the script. | Unsupported
+| *`help` subcommands* | Supported, both the built-in one and custom ones. | Unsupported
+| *Exit codes* | Supported: scripts can override `afterExecution(CommandLine, int, Exception)` to call `System.exit`.| Unsupported
+| *Command execution* | Via invocation of https://picocli.info/#execute[`CommandLine::execute`]. Scripts can override `beforeParseArgs(CommandLine)` to install a custom  `IExecutionStrategy`. | Execution after parsing is defined in `PicocliBaseScript::run` and is not easy to customize. Any subcommand _and_ the main script are _both_ executed.
+| *Custom handling of invalid user input* | Scripts can override `beforeParseArgs(CommandLine)` to install a custom `IParameterExceptionHandler`. | Invalid input handling can be customized by overriding `PicocliBaseScript::handleParameterException`.
+| *Custom error handling* | Scripts can override `beforeParseArgs(CommandLine)` to install a custom `IExecutionExceptionHandler`. | Runtime exception handling can be customized by overriding `PicocliBaseScript::handleExecutionException`.
+| *Principle* | Implements `Callable<Object>`, script body is transformed to the `call` method. | Script body is transformed to the `runScriptBody` method.
 |===
 
 
@@ -11945,7 +11945,7 @@ Scripts should use `@Grab('info.picocli:picocli-groovy:4.6.2-SNAPSHOT')`. The ol
 because the `@picocli.groovy.PicocliScript` annotation class and supporting classes have been moved into a separate module, `picocli-groovy`.
 
 ==== Closures in Annotations
-From picocli 4.6, Groovy programs can use closures in the picocli annotations instead of specifying a class.
+As of picocli 4.6, Groovy programs can use closures in the picocli annotations instead of specifying a class.
 This can be especially useful in Groovy scripts, where one cannot define a static inner class.
 
 Example:
