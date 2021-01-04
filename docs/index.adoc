@@ -4839,6 +4839,41 @@ class Edit {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class Edit : Runnable {
+
+    @Parameters(index = "0", arity = "0..1", description = ["The file to edit."])
+    var file: File? = null
+
+    enum class Editor { eclipse, idea, netbeans }
+
+    @Option(names = ["--open"], arity = "0..1", preprocessor = MyPreprocessor::class,
+        description = ["Optionally specify the editor to use (\${COMPLETION-CANDIDATES}). " +
+            "If omitted eclipse is used as default. ",
+            "Example: edit --open=idea FILE opens in IntelliJ IDEA (notice the '=' separator)",
+            "         edit --open FILE opens file in eclipse"])
+    var editor = Editor.eclipse
+
+    class MyPreprocessor : IParameterPreprocessor {
+        override fun preprocess(args: Stack<String>,
+                                commandSpec: CommandSpec,
+                                argSpec: ArgSpec,
+                                info: Map<String, Any>): Boolean {
+            // we need to decide whether the next arg is the file to edit
+            // or the name of the editor to use ...
+            if (" " == info["separator"]) { // parameter was not attached to option
+
+                // act as if the user specified --open=eclipse
+                args.push(argSpec.getValue<Editor>().name)
+            }
+            return false // picocli's internal parsing is resumed for this option
+        }
+    }
+}
+----
+
 With this preprocessor in place the user can now specify his editor of choice (e.g. `--open=idea`). If no editor is given, the default editor (=`eclipse`) is used:
 
 [grid=cols,cols=4*,options="header"]
