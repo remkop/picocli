@@ -10050,12 +10050,13 @@ interface IModelTransformer {
 
 This allows applications to dynamically add or remove options, positional parameters or subcommands, or modify the command in any other way, based on some runtime condition.
 
-[source,java]
+.Java
+[source,java,role="primary"]
 ----
 @Command(modelTransformer = Dynamic.SubCmdFilter.class)
 class Dynamic {
 
-    private static class SubCmdFilter implements IModelTransformer {
+    static class SubCmdFilter implements IModelTransformer {
         public CommandSpec transform(CommandSpec commandSpec) {
             if (Boolean.getBoolean("disable_sub")) {
                 commandSpec.removeSubcommand("sub");
@@ -10066,7 +10067,29 @@ class Dynamic {
 
     @Command
     private void sub() {
-        // subcommand business logic
+        // subcommand, business logic
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(modelTransformer = Dynamic.SubCmdFilter::class)
+class Dynamic {
+
+    class SubCmdFilter : CommandLine.IModelTransformer {
+        override fun transform(commandSpec: CommandSpec): CommandSpec {
+            if (Boolean.getBoolean("disable_sub")) {
+                commandSpec.removeSubcommand("sub")
+            }
+            return commandSpec
+        }
+    }
+
+    @Command
+    private fun sub() {
+        // subcommand, business logic
     }
 }
 ----
