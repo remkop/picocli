@@ -32,7 +32,9 @@ import picocli.CommandLine.UnmatchedArgumentException;
 import picocli.test.Execution;
 import picocli.test.Supplier;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -4005,5 +4007,42 @@ public class ArgGroupTest {
             assertEquals("X must be positive", pex.getMessage());
             assertSame(cmd, pex.getCommandLine());
         }
+    }
+
+    @Command(name = "list", version = "issue 1300 1.0",
+            mixinStandardHelpOptions = true,
+            description = "list all signals")
+    static class Issue1300 implements Runnable {
+
+        @ArgGroup(exclusive = true, multiplicity = "1")
+        SearchFilterArgs searchFilterArgs;
+
+        public void run() { }
+
+        static class SearchFilterArgs {
+            @Option(names = {"-A", "--all"}, required = true)
+            boolean getAllSignals;
+            @Option(names = {"-m", "--message-name"}, required = true)
+            String messageName;
+        }
+    }
+    @Test
+    public void testIssue1300BooleanInitialization() {
+        PrintStream err = System.err;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream capture = new PrintStream(baos, true);
+        System.setErr(capture);
+
+        //TestUtil.setTraceLevel("DEBUG");
+        CommandLine cmd = new CommandLine(new Issue1300());
+        cmd.getUsageMessage(); // this causes initial values of all options to be cached
+
+        //cmd.execute(); // this prints help, which also cause initial values to be cached
+        //System.err.println("===");
+
+        cmd.execute("-A");
+        capture.flush();
+        System.setErr(err);
+        assertEquals("", baos.toString());
     }
 }

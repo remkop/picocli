@@ -8788,8 +8788,10 @@ public class CommandLine {
             public Object initialValue()   {
                 // not not initialize if already CACHED, or UNAVAILABLE, or if annotatedElement==null
                 if (initialValueState == InitialValueState.POSTPONED && annotatedElement != null) {
-                    try { initialValue = annotatedElement.getter().get(); } catch (Exception ex) { }
-                    initialValueState = InitialValueState.CACHED;
+                    try {
+                        initialValue = annotatedElement.getter().get();
+                        initialValueState = InitialValueState.CACHED; // only if successfully initialized
+                    } catch (Exception ex) { } // #1300 if error: keep initialValueState == POSTPONED
                 }
                 return initialValue;
             }
