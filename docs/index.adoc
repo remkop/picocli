@@ -2346,7 +2346,7 @@ When `-x VALUE` is specified on the command line, this results in an error: `Mis
 Users can use the <<Double dash (`--`),end-of-options delimiter>> and disambiguate the input with
 `-x &dash;&dash; VALUE`, but this may not be obvious to many users.
 One idea is to <<Show End of Options,show the end-of-options>> delimiter in the usage help.
-Another idea is to make use of the <<IParameterPreprocessor Parser Plugin,IParameterPreprocessor Parser Plugin>> introduced with picocli 4.6.
+Another idea is to make use of the <<IParameterPreprocessor_Parser_Plugin,IParameterPreprocessor Parser Plugin>> introduced with picocli 4.6.
 
 An alternative is to avoid the use of optional parameters and use the default arity in this scenario to eliminate the ambiguity altogether.
 
@@ -4708,6 +4708,8 @@ See the javadoc for details.
 
 === Custom Parameter Processing
 
+As of version 4.6, picocli offers two different parser plugins for custom parameter processing: while the `IParameterPreprocessor` is a powerful and flexible tool, the `IParameterConsumer` serves as a simpler alternative.
+
 ==== `IParameterConsumer` Parser Plugin
 
 Options or positional parameters can be assigned a `IParameterConsumer` that implements
@@ -4777,7 +4779,8 @@ class ExecParameterConsumer : IParameterConsumer {
 }
 ----
 
-==== IParameterPreprocessor Parser Plugin
+[[IParameterPreprocessor_Parser_Plugin]]
+==== `IParameterPreprocessor` Parser Plugin
 
 Introduced in picocli 4.6, the `IParameterPreprocessor` is also a parser plugin, similar to `IParameterConsumer`, but more flexible.
 
@@ -4810,32 +4813,32 @@ class Edit {
     @Parameters(index = "0", arity="0..1", description = "The file to edit.")
     File file;
 
-   enum Editor { eclipse, idea, netbeans }
+    enum Editor { defaultEditor, eclipse, idea, netbeans }
 
-   @Option(names = "--open", arity = "0..1", preprocessor = Edit.MyPreprocessor.class,
-       description = {
+    @Option(names = "--open", arity = "0..1", preprocessor = Edit.MyPreprocessor.class,
+        description = {
            "Optionally specify the editor to use (${COMPLETION-CANDIDATES}). " +
-           "If omitted eclipse is used as default. ",
+           "If omitted the default editor is used. ",
            "Example: edit --open=idea FILE opens IntelliJ IDEA (notice the '=' separator)",
-           "         edit --open FILE opens the specified file in eclipse"
-       })
-   static Editor editor = Editor.eclipse;
+           "         edit --open FILE opens the specified file in the default editor"
+        })
+    Editor editor = Editor.defaultEditor;
 
-   static class MyPreprocessor implements IParameterPreprocessor {
-       public boolean preprocess(Stack<String> args,
-                                 CommandSpec commandSpec,
-                                 ArgSpec argSpec,
-                                 Map<String, Object> info) {
-           // we need to decide whether the next arg is the file to edit
-           // or the name of the editor to use...
-           if (" ".equals(info.get("separator"))) { // parameter was not attached to option
+    static class MyPreprocessor implements IParameterPreprocessor {
+        public boolean preprocess(Stack<String> args,
+                                  CommandSpec commandSpec,
+                                  ArgSpec argSpec,
+                                  Map<String, Object> info) {
+            // we need to decide whether the next arg is the file to edit
+            // or the name of the editor to use...
+            if (" ".equals(info.get("separator"))) { // parameter was not attached to option
 
-               // act as if the user specified --open=eclipse
-               args.push(editor.name());
-           }
-           return false; // picocli's internal parsing is resumed for this option
-       }
-   }
+                // act as if the user specified --open=defaultEditor
+                args.push(Editor.defaultEditor.name());
+            }
+            return false; // picocli's internal parsing is resumed for this option
+        }
+    }
 }
 ----
 
@@ -4847,14 +4850,16 @@ class Edit : Runnable {
     @Parameters(index = "0", arity = "0..1", description = ["The file to edit."])
     var file: File? = null
 
-    enum class Editor { eclipse, idea, netbeans }
+    enum class Editor { defaultEditor, eclipse, idea, netbeans }
 
     @Option(names = ["--open"], arity = "0..1", preprocessor = MyPreprocessor::class,
         description = ["Optionally specify the editor to use (\${COMPLETION-CANDIDATES}). " +
-            "If omitted eclipse is used as default. ",
-            "Example: edit --open=idea FILE opens in IntelliJ IDEA (notice the '=' separator)",
-            "         edit --open FILE opens file in eclipse"])
-    var editor = Editor.eclipse
+            "If omitted the default editor is used. ",
+            "Example: edit --open=idea FILE ",
+            "  opens file in IntelliJ IDEA (notice the '=' separator)",
+            "         edit --open FILE",
+            "  opens the specified file in the default editor"])
+    var editor = Editor.defaultEditor
 
     class MyPreprocessor : IParameterPreprocessor {
         override fun preprocess(args: Stack<String>,
@@ -4865,8 +4870,8 @@ class Edit : Runnable {
             // or the name of the editor to use ...
             if (" " == info["separator"]) { // parameter was not attached to option
 
-                // act as if the user specified --open=eclipse
-                args.push(argSpec.getValue<Editor>().name)
+                // act as if the user specified --open=defaultEditor
+                args.push(Editor.defaultEditor.name)
             }
             return false // picocli's internal parsing is resumed for this option
         }
@@ -4874,15 +4879,15 @@ class Edit : Runnable {
 }
 ----
 
-With this preprocessor in place the user can now specify his editor of choice (e.g. `--open=idea`). If no editor is given, the default editor (=`eclipse`) is used:
+With this preprocessor in place the user can now specify his editor of choice (e.g. `--open=idea`). If no editor is given, the default editor is used:
 
 [grid=cols,cols=4*,options="header"]
 |===
-| User input           | Option `Editor` | Parameter `File` | Unmatched input
-| `--open file1 file2` | `eclipse` (default)      | `file1` | `file2`
-| `--open file1`       | `eclipse` (default)      | `file1` | none
-| `--open=idea file1`  | `idea` (user specificed) | `file1` | none
-| `--open=idea`        | `idea` (user specificed) | `null`  | none
+| User input          | Option `Editor` | Parameter `File` | Unmatched input
+| `--open file1 file2` | `defaultEditor`         | `file1` | `file2`
+| `--open file1`       | `defaultEditor`         | `file1` | none
+| `--open=idea file1`  | `idea` (user specified) | `file1` | none
+| `--open=idea`        | `idea` (user specified) | `null`  | none
 |===
 
 ==== Parser Plugin Comparison
