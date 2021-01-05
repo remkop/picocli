@@ -4973,6 +4973,8 @@ public class CommandLine {
      *         }
      *     }
      * }</pre>
+     * <p>If this interface does not meet your requirements, you may have a look at the more powerful
+     * and flexible {@link IParameterPreprocessor} interface introduced with picocli 4.6.</p>
      * @see Option#parameterConsumer()
      * @see Parameters#parameterConsumer()
      * @since 4.0 */
