@@ -20,6 +20,8 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.6.2-fixes"></a> Fixed issues
 * [#1296] DOC: add Kotlin code samples to user manual; other user manual improvements. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1299] DOC: Link to `IParameterPreprocessor` from `IParameterConsumer` javadoc. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+
 
 
 ## <a name="4.6.2-deprecated"></a> Deprecations
