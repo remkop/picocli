@@ -1,5 +1,35 @@
 # picocli Release Notes
 
+# <a name="4.6.2"></a> Picocli 4.6.2 (UNRELEASED)
+The picocli community is pleased to announce picocli 4.6.2.
+
+This release includes bugfixes and enhancements.
+
+
+This is the seventy-seventh public release.
+Picocli follows [semantic versioning](http://semver.org/).
+
+## <a name="4.6.2-toc"></a> Table of Contents
+* [New and noteworthy](#4.6.2-new)
+* [Fixed issues](#4.6.2-fixes)
+* [Deprecations](#4.6.2-deprecated)
+* [Potential breaking changes](#4.6.2-breaking-changes)
+
+## <a name="4.6.2-new"></a> New and Noteworthy
+
+
+## <a name="4.6.2-fixes"></a> Fixed issues
+* [#1296] DOC: add Kotlin code samples to user manual; other user manual improvements. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+
+
+## <a name="4.6.2-deprecated"></a> Deprecations
+No features were deprecated in this release.
+
+## <a name="4.6.2-breaking-changes"></a> Potential breaking changes
+This release has no breaking changes.
+
+
+
 # <a name="4.6.1"></a> Picocli 4.6.1
 The picocli community is pleased to announce picocli 4.6.1.
 

@@ -5170,7 +5170,8 @@ the presence or absence of the option can be used like a boolean flag to trigger
 <div class="paragraph">
 <p>Users can use the <a href="#_double_dash">end-of-options delimiter</a> and disambiguate the input with
 <code>-x &dash;&dash; VALUE</code>, but this may not be obvious to many users.
-One idea is to <a href="#_show_end_of_options">show the end-of-options</a> delimiter in the usage help.</p>
+One idea is to <a href="#_show_end_of_options">show the end-of-options</a> delimiter in the usage help.
+Another idea is to make use of the <a href="#IParameterPreprocessor_Parser_Plugin">IParameterPreprocessor Parser Plugin</a> introduced with picocli 4.6.</p>
 </div>
 <div class="paragraph">
 <p>An alternative is to avoid the use of optional parameters and use the default arity in this scenario to eliminate the ambiguity altogether.</p>
@@ -8192,6 +8193,9 @@ See the javadoc for details.</p>
 </div>
 <div class="sect2">
 <h3 id="_custom_parameter_processing"><a class="anchor" href="#_custom_parameter_processing"></a>11.15. Custom Parameter Processing</h3>
+<div class="paragraph">
+<p>As of version 4.6, picocli offers two different parser plugins for custom parameter processing: while the <code>IParameterPreprocessor</code> is a powerful and flexible tool, the <code>IParameterConsumer</code> serves as a simpler alternative.</p>
+</div>
 <div class="sect3">
 <h4 id="_iparameterconsumer_parser_plugin"><a class="anchor" href="#_iparameterconsumer_parser_plugin"></a>11.15.1. <code>IParameterConsumer</code> Parser Plugin</h4>
 <div class="paragraph">
@@ -8267,7 +8271,7 @@ options for the <code>find</code> command itself, but are interpreted as a separ
 </div>
 </div>
 <div class="sect3">
-<h4 id="_iparameterpreprocessor_parser_plugin"><a class="anchor" href="#_iparameterpreprocessor_parser_plugin"></a>11.15.2. <code>IParameterPreprocessor</code> Parser Plugin</h4>
+<h4 id="IParameterPreprocessor_Parser_Plugin"><a class="anchor" href="#IParameterPreprocessor_Parser_Plugin"></a>11.15.2. <code>IParameterPreprocessor</code> Parser Plugin</h4>
 <div class="paragraph">
 <p>Introduced in picocli 4.6, the <code>IParameterPreprocessor</code> is also a parser plugin, similar to <code>IParameterConsumer</code>, but more flexible.</p>
 </div>
@@ -8297,7 +8301,7 @@ For example, suppose we have a command with the following synopsis:</p>
 </div>
 <div class="paragraph">
 <p>With a custom parser plugin, we can customize the parser, such that <code>VALUE</code> in <code>--option=VALUE</code> is interpreted as the option parameter, and in <code>--option VALUE</code> (without the <code>=</code> separator), VALUE is interpreted as the positional parameter.
-The code below demonstrates:</p>
+The code below demonstrates this:</p>
 </div>
 <div class="listingblock primary">
 <div class="title">Java</div>
@@ -8305,82 +8309,158 @@ The code below demonstrates:</p>
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"edit"</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">Edit</span> <span class="o">{</span>
 
-    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"0"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"The file to edit."</span><span class="o">)</span>
+    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="o">=</span> <span class="s">"0"</span><span class="o">,</span> <span class="n">arity</span><span class="o">=</span><span class="s">"0..1"</span><span class="o">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">"The file to edit."</span><span class="o">)</span>
     <span class="nc">File</span> <span class="n">file</span><span class="o">;</span>
 
-   <span class="kd">enum</span> <span class="nc">Editor</span> <span class="o">{</span> <span class="n">defaultEditor</span><span class="o">,</span> <span class="n">eclipse</span><span class="o">,</span> <span class="n">idea</span><span class="o">,</span> <span class="n">netbeans</span> <span class="o">}</span>
+    <span class="kd">enum</span> <span class="nc">Editor</span> <span class="o">{</span> <span class="n">defaultEditor</span><span class="o">,</span> <span class="n">eclipse</span><span class="o">,</span> <span class="n">idea</span><span class="o">,</span> <span class="n">netbeans</span> <span class="o">}</span>
 
-   <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--open"</span><span class="o">,</span> <span class="n">arity</span> <span class="o">=</span> <span class="s">"0..1"</span><span class="o">,</span> <span class="n">preprocessor</span> <span class="o">=</span> <span class="nc">Edit</span><span class="o">.</span><span class="na">MyPreprocessor</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>
-       <span class="n">description</span> <span class="o">=</span> <span class="o">{</span>
-           <span class="s">"Optionally specify the editor to use; if omitted the default editor is used. "</span><span class="o">,</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s">"--open"</span><span class="o">,</span> <span class="n">arity</span> <span class="o">=</span> <span class="s">"0..1"</span><span class="o">,</span> <span class="n">preprocessor</span> <span class="o">=</span> <span class="nc">Edit</span><span class="o">.</span><span class="na">MyPreprocessor</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="o">{</span>
+           <span class="s">"Optionally specify the editor to use (${COMPLETION-CANDIDATES}). "</span> <span class="o">+</span>
+           <span class="s">"If omitted the default editor is used. "</span><span class="o">,</span>
            <span class="s">"Example: edit --open=idea FILE opens IntelliJ IDEA (notice the '=' separator)"</span><span class="o">,</span>
            <span class="s">"         edit --open FILE opens the specified file in the default editor"</span>
-       <span class="o">})</span>
-   <span class="nc">Editor</span> <span class="n">editor</span> <span class="o">=</span> <span class="nc">Editor</span><span class="o">.</span><span class="na">defaultEditor</span><span class="o">;</span>
+        <span class="o">})</span>
+    <span class="nc">Editor</span> <span class="n">editor</span> <span class="o">=</span> <span class="nc">Editor</span><span class="o">.</span><span class="na">defaultEditor</span><span class="o">;</span>
 
-   <span class="kd">static</span> <span class="kd">class</span> <span class="nc">MyPreprocessor</span> <span class="kd">implements</span> <span class="nc">IParameterPreprocessor</span> <span class="o">{</span>
-       <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">preprocess</span><span class="o">(</span><span class="nc">Stack</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">args</span><span class="o">,</span>
-                                 <span class="nc">CommandSpec</span> <span class="n">commandSpec</span><span class="o">,</span>
-                                 <span class="nc">ArgSpec</span> <span class="n">argSpec</span><span class="o">,</span>
-                                 <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Object</span><span class="o">&gt;</span> <span class="n">info</span><span class="o">)</span> <span class="o">{</span>
-           <span class="c1">// we need to decide whether the next arg is the file to edit</span>
-           <span class="c1">// or the name of the editor to use...</span>
-           <span class="k">if</span> <span class="o">(</span><span class="s">" "</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">info</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">"separator"</span><span class="o">)))</span> <span class="o">{</span> <span class="c1">// parameter was not attached to option</span>
+    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">MyPreprocessor</span> <span class="kd">implements</span> <span class="nc">IParameterPreprocessor</span> <span class="o">{</span>
+        <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">preprocess</span><span class="o">(</span><span class="nc">Stack</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">args</span><span class="o">,</span>
+                                  <span class="nc">CommandSpec</span> <span class="n">commandSpec</span><span class="o">,</span>
+                                  <span class="nc">ArgSpec</span> <span class="n">argSpec</span><span class="o">,</span>
+                                  <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Object</span><span class="o">&gt;</span> <span class="n">info</span><span class="o">)</span> <span class="o">{</span>
+            <span class="c1">// we need to decide whether the next arg is the file to edit</span>
+            <span class="c1">// or the name of the editor to use...</span>
+            <span class="k">if</span> <span class="o">(</span><span class="s">" "</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">info</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">"separator"</span><span class="o">)))</span> <span class="o">{</span> <span class="c1">// parameter was not attached to option</span>
 
-               <span class="c1">// act as if the user specified --open=defaultEditor</span>
-               <span class="n">args</span><span class="o">.</span><span class="na">push</span><span class="o">(</span><span class="nc">Editor</span><span class="o">.</span><span class="na">defaultEditor</span><span class="o">.</span><span class="na">name</span><span class="o">());</span>
-           <span class="o">}</span>
-           <span class="k">return</span> <span class="kc">false</span><span class="o">;</span> <span class="c1">// picocli's internal parsing is resumed for this option</span>
-       <span class="o">}</span>
-   <span class="o">}</span>
+                <span class="c1">// act as if the user specified --open=defaultEditor</span>
+                <span class="n">args</span><span class="o">.</span><span class="na">push</span><span class="o">(</span><span class="nc">Editor</span><span class="o">.</span><span class="na">defaultEditor</span><span class="o">.</span><span class="na">name</span><span class="o">());</span>
+            <span class="o">}</span>
+            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span> <span class="c1">// picocli's internal parsing is resumed for this option</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
 <span class="o">}</span></code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p>With this preprocessor, the following user input gives the following command state:</p>
-</div>
-<div class="listingblock">
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
 <div class="content">
-<pre># User input # Command State
-# --------------------------
---open A B   # editor: defaultEditor, file: A,    unmatched: [B]
---open A     # editor: defaultEditor, file: A,    unmatched: []
---open=A B   # editor: A,             file: B,    unmatched: []
---open=A     # editor: A,             file: null, unmatched: []</pre>
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="kd">class</span> <span class="nc">Edit</span> <span class="p">:</span> <span class="nc">Runnable</span> <span class="p">{</span>
+
+    <span class="nd">@Parameters</span><span class="p">(</span><span class="n">index</span> <span class="p">=</span> <span class="s">"0"</span><span class="p">,</span> <span class="n">arity</span> <span class="p">=</span> <span class="s">"0..1"</span><span class="p">,</span> <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"The file to edit."</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">file</span><span class="p">:</span> <span class="nc">File</span><span class="p">?</span> <span class="p">=</span> <span class="k">null</span>
+
+    <span class="k">enum</span> <span class="kd">class</span> <span class="nc">Editor</span> <span class="p">{</span> <span class="n">defaultEditor</span><span class="p">,</span> <span class="n">eclipse</span><span class="p">,</span> <span class="n">idea</span><span class="p">,</span> <span class="n">netbeans</span> <span class="p">}</span>
+
+    <span class="nd">@Option</span><span class="p">(</span><span class="n">names</span> <span class="p">=</span> <span class="p">[</span><span class="s">"--open"</span><span class="p">],</span> <span class="n">arity</span> <span class="p">=</span> <span class="s">"0..1"</span><span class="p">,</span> <span class="n">preprocessor</span> <span class="p">=</span> <span class="nc">MyPreprocessor</span><span class="o">::</span><span class="k">class</span><span class="p">,</span>
+        <span class="n">description</span> <span class="p">=</span> <span class="p">[</span><span class="s">"Optionally specify the editor to use (\${COMPLETION-CANDIDATES}). "</span> <span class="p">+</span>
+            <span class="s">"If omitted the default editor is used. "</span><span class="p">,</span>
+            <span class="s">"Example: edit --open=idea FILE "</span><span class="p">,</span>
+            <span class="s">"  opens file in IntelliJ IDEA (notice the '=' separator)"</span><span class="p">,</span>
+            <span class="s">"         edit --open FILE"</span><span class="p">,</span>
+            <span class="s">"  opens the specified file in the default editor"</span><span class="p">])</span>
+    <span class="kd">var</span> <span class="py">editor</span> <span class="p">=</span> <span class="nc">Editor</span><span class="p">.</span><span class="n">defaultEditor</span>
+
+    <span class="kd">class</span> <span class="nc">MyPreprocessor</span> <span class="p">:</span> <span class="nc">IParameterPreprocessor</span> <span class="p">{</span>
+        <span class="k">override</span> <span class="k">fun</span> <span class="nf">preprocess</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nc">Stack</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">&gt;,</span>
+                                <span class="n">commandSpec</span><span class="p">:</span> <span class="nc">CommandSpec</span><span class="p">,</span>
+                                <span class="n">argSpec</span><span class="p">:</span> <span class="nc">ArgSpec</span><span class="p">,</span>
+                                <span class="n">info</span><span class="p">:</span> <span class="nc">Map</span><span class="p">&lt;</span><span class="nc">String</span><span class="p">,</span> <span class="nc">Any</span><span class="p">&gt;):</span> <span class="nc">Boolean</span> <span class="p">{</span>
+            <span class="c1">// we need to decide whether the next arg is the file to edit</span>
+            <span class="c1">// or the name of the editor to use ...</span>
+            <span class="k">if</span> <span class="p">(</span><span class="s">" "</span> <span class="p">==</span> <span class="n">info</span><span class="p">[</span><span class="s">"separator"</span><span class="p">])</span> <span class="p">{</span> <span class="c1">// parameter was not attached to option</span>
+
+                <span class="c1">// act as if the user specified --open=defaultEditor</span>
+                <span class="n">args</span><span class="p">.</span><span class="nf">push</span><span class="p">(</span><span class="nc">Editor</span><span class="p">.</span><span class="n">defaultEditor</span><span class="p">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="k">false</span> <span class="c1">// picocli's internal parsing is resumed for this option</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>With this preprocessor in place the user can now specify his editor of choice (e.g. <code>--open=idea</code>). If no editor is given, the default editor is used:</p>
+</div>
+<table class="tableblock frame-all grid-cols stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">User input</th>
+<th class="tableblock halign-left valign-top">Option <code>Editor</code></th>
+<th class="tableblock halign-left valign-top">Parameter <code>File</code></th>
+<th class="tableblock halign-left valign-top">Unmatched input</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--open file1 file2</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>defaultEditor</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>file1</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>file2</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--open file1</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>defaultEditor</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>file1</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--open=idea file1</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>idea</code> (user specified)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>file1</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>--open=idea</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>idea</code> (user specified)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="sect3">
 <h4 id="_parser_plugin_comparison"><a class="anchor" href="#_parser_plugin_comparison"></a>11.15.3. Parser Plugin Comparison</h4>
 <table class="tableblock frame-all grid-cols stretch">
-<caption class="title">Table 4. Differences between the <code>IParameterPreprocessor</code> and <code>IParameterConsumer</code> parser plugins.</caption>
+<caption class="title">Table 4. Comparison of <code>IParameterPreprocessor</code> and <code>IParameterConsumer</code> parser plugins.</caption>
 <colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
 </colgroup>
 <thead>
 <tr>
+<th class="tableblock halign-left valign-top"></th>
 <th class="tableblock halign-left valign-top"><code>IParameterPreprocessor</code></th>
 <th class="tableblock halign-left valign-top"><code>IParameterConsumer</code></th>
 </tr>
 </thead>
 <tbody>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Principle</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Either augment (return <code>false</code>) or replace (return <code>true</code>) picocli parsing logic for the matched element.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Replaces picocli parsing logic for the matched element.</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Scope</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Commands as well as options and positional parameters.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Options and positional parameters only.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Receives information on parser internal state (the <code>info</code> Map).</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No equivalent.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Information on parser internal state</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes, information may received via the <code>info</code> Map</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">May communicate back to parser (by modifying the <code>info</code> Map).</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No equivalent.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Communication back to parser</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes, via modifying the <code>info</code> Map</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
 </tr>
 </tbody>
 </table>
@@ -9639,7 +9719,7 @@ by default each of these fields would be shown in the usage message, which would
 <div class="sect2">
 <h3 id="_show_at_files"><a class="anchor" href="#_show_at_files"></a>14.17. Show At Files</h3>
 <div class="paragraph">
-<p>From picocli 4.2, an entry for <code>@&lt;filename&gt;</code> can be shown in the options and parameters list of the usage help message of a command with the <code>@Command(showAtFileInUsageHelp = true)</code> annotation.</p>
+<p>As of picocli 4.2, an entry for <code>@&lt;filename&gt;</code> can be shown in the options and parameters list of the usage help message of a command with the <code>@Command(showAtFileInUsageHelp = true)</code> annotation.</p>
 </div>
 <div class="sect3">
 <h4 id="_example_2"><a class="anchor" href="#_example_2"></a>14.17.1. Example</h4>
@@ -10367,7 +10447,7 @@ Markup styles cannot be nested, for example: <code>@|bold this @|underline that|
 </table>
 </div>
 <div class="paragraph">
-<p>From picocli 4.2, custom markup like <code>@|bold mytext|@</code>, <code>@|italic mytext|@</code> etc. can also be converted to custom markup like <code>&lt;b&gt;mytext&lt;/b&gt;</code> and <code>&lt;i&gt;mytext&lt;/i&gt;</code> in HTML, or <code>*mytext*</code> and <code>_mytext_</code> in lightweight markup languages like AsciiDoc.
+<p>As of picocli 4.2, custom markup like <code>@|bold mytext|@</code>, <code>@|italic mytext|@</code> etc. can also be converted to custom markup like <code>&lt;b&gt;mytext&lt;/b&gt;</code> and <code>&lt;i&gt;mytext&lt;/i&gt;</code> in HTML, or <code>*mytext*</code> and <code>_mytext_</code> in lightweight markup languages like AsciiDoc.
 Applications can control this by setting a <code>ColorScheme</code> with a custom markup map.
 This feature is used to generate man page documentation.</p>
 </div>
@@ -14599,12 +14679,13 @@ The <code>@Command</code> annotation now has a <code>modelTransformer</code> att
 <div class="paragraph">
 <p>This allows applications to dynamically add or remove options, positional parameters or subcommands, or modify the command in any other way, based on some runtime condition.</p>
 </div>
-<div class="listingblock">
+<div class="listingblock primary">
+<div class="title">Java</div>
 <div class="content">
 <pre class="rouge highlight"><code data-lang="java"><span class="nd">@Command</span><span class="o">(</span><span class="n">modelTransformer</span> <span class="o">=</span> <span class="nc">Dynamic</span><span class="o">.</span><span class="na">SubCmdFilter</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
 <span class="kd">class</span> <span class="nc">Dynamic</span> <span class="o">{</span>
 
-    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">SubCmdFilter</span> <span class="kd">implements</span> <span class="nc">IModelTransformer</span> <span class="o">{</span>
+    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">SubCmdFilter</span> <span class="kd">implements</span> <span class="nc">IModelTransformer</span> <span class="o">{</span>
         <span class="kd">public</span> <span class="nc">CommandSpec</span> <span class="nf">transform</span><span class="o">(</span><span class="nc">CommandSpec</span> <span class="n">commandSpec</span><span class="o">)</span> <span class="o">{</span>
             <span class="k">if</span> <span class="o">(</span><span class="nc">Boolean</span><span class="o">.</span><span class="na">getBoolean</span><span class="o">(</span><span class="s">"disable_sub"</span><span class="o">))</span> <span class="o">{</span>
                 <span class="n">commandSpec</span><span class="o">.</span><span class="na">removeSubcommand</span><span class="o">(</span><span class="s">"sub"</span><span class="o">);</span>
@@ -14615,9 +14696,31 @@ The <code>@Command</code> annotation now has a <code>modelTransformer</code> att
 
     <span class="nd">@Command</span>
     <span class="kd">private</span> <span class="kt">void</span> <span class="nf">sub</span><span class="o">()</span> <span class="o">{</span>
-        <span class="c1">// subcommand business logic</span>
+        <span class="c1">// subcommand, business logic</span>
     <span class="o">}</span>
 <span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Kotlin</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="kotlin"><span class="nd">@Command</span><span class="p">(</span><span class="n">modelTransformer</span> <span class="p">=</span> <span class="nc">Dynamic</span><span class="p">.</span><span class="nc">SubCmdFilter</span><span class="o">::</span><span class="k">class</span><span class="p">)</span>
+<span class="kd">class</span> <span class="nc">Dynamic</span> <span class="p">{</span>
+
+    <span class="kd">class</span> <span class="nc">SubCmdFilter</span> <span class="p">:</span> <span class="nc">CommandLine</span><span class="p">.</span><span class="nc">IModelTransformer</span> <span class="p">{</span>
+        <span class="k">override</span> <span class="k">fun</span> <span class="nf">transform</span><span class="p">(</span><span class="n">commandSpec</span><span class="p">:</span> <span class="nc">CommandSpec</span><span class="p">):</span> <span class="nc">CommandSpec</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nc">Boolean</span><span class="p">.</span><span class="nf">getBoolean</span><span class="p">(</span><span class="s">"disable_sub"</span><span class="p">))</span> <span class="p">{</span>
+                <span class="n">commandSpec</span><span class="p">.</span><span class="nf">removeSubcommand</span><span class="p">(</span><span class="s">"sub"</span><span class="p">)</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="n">commandSpec</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nd">@Command</span>
+    <span class="k">private</span> <span class="k">fun</span> <span class="nf">sub</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// subcommand, business logic</span>
+    <span class="p">}</span>
+<span class="p">}</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -16930,46 +17033,55 @@ The script body is executed if the user input was valid and did not request usag
 <div class="paragraph">
 <p>The older <code>@picocli.groovy.PicocliScript</code> annotation is deprecated from picocli 4.6.
 New scripts should use the <code>@picocli.groovy.PicocliScript2</code> annotation (and associated <code>picocli.groovy.PicocliBaseScript2</code> base class) instead.
-The table below lists the differences between these base classes.</p>
+The table below compares these two base classes.</p>
 </div>
 <table class="tableblock frame-all grid-cols stretch">
-<caption class="title">Table 6. Differences between the <code>PicocliBaseScript2</code> and <code>PicocliBaseScript</code> script base classes.</caption>
+<caption class="title">Table 6. Comparison of <code>PicocliBaseScript2</code> and <code>PicocliBaseScript</code> script base classes.</caption>
 <colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
 </colgroup>
 <thead>
 <tr>
+<th class="tableblock halign-left valign-top"></th>
 <th class="tableblock halign-left valign-top"><code>PicocliBaseScript2</code></th>
 <th class="tableblock halign-left valign-top"><code>PicocliBaseScript</code></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Subcommands can be defined as <code>@Command</code>-annotated methods in the script.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No support for <code>@Command</code>-annotated methods.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Subcommands as methods</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Supported, subcommands can be defined as <code>@Command</code>-annotated methods in the script.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unsupported</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Support for <code>help</code> subcommands (both the built-in one and custom ones).</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No support for <code>help</code> subcommands.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong><code>help</code> subcommands</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Supported, both the built-in one and custom ones.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unsupported</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Exit code support: scripts can override <code>afterExecution(CommandLine, int, Exception)</code> to call <code>System.exit</code>.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No support for exit code.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Exit codes</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Supported: scripts can override <code>afterExecution(CommandLine, int, Exception)</code> to call <code>System.exit</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unsupported</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Invokes <a href="https://picocli.info/#execute"><code>CommandLine::execute</code></a>. Scripts can override <code>beforeParseArgs(CommandLine)</code> to install a custom  <code>IExecutionStrategy</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Command execution</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Via invocation of <a href="https://picocli.info/#execute"><code>CommandLine::execute</code></a>. Scripts can override <code>beforeParseArgs(CommandLine)</code> to install a custom  <code>IExecutionStrategy</code>.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Execution after parsing is defined in <code>PicocliBaseScript::run</code> and is not easy to customize. Any subcommand <em>and</em> the main script are <em>both</em> executed.</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Custom handling of invalid user input</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Scripts can override <code>beforeParseArgs(CommandLine)</code> to install a custom <code>IParameterExceptionHandler</code>.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Invalid input handling can be customized by overriding <code>PicocliBaseScript::handleParameterException</code>.</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Custom error handling</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Scripts can override <code>beforeParseArgs(CommandLine)</code> to install a custom <code>IExecutionExceptionHandler</code>.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Runtime exception handling can be customized by overriding <code>PicocliBaseScript::handleExecutionException</code>.</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Principle</strong></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Implements <code>Callable&lt;Object&gt;</code>, script body is transformed to the <code>call</code> method.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Script body is transformed to the <code>runScriptBody</code> method.</p></td>
 </tr>
@@ -16993,7 +17105,7 @@ because the <code>@picocli.groovy.PicocliScript</code> annotation class and supp
 <div class="sect3">
 <h4 id="_closures_in_annotations"><a class="anchor" href="#_closures_in_annotations"></a>30.1.3. Closures in Annotations</h4>
 <div class="paragraph">
-<p>From picocli 4.6, Groovy programs can use closures in the picocli annotations instead of specifying a class.
+<p>As of picocli 4.6, Groovy programs can use closures in the picocli annotations instead of specifying a class.
 This can be especially useful in Groovy scripts, where one cannot define a static inner class.</p>
 </div>
 <div class="paragraph">
