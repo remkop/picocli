@@ -19,6 +19,7 @@ jdk:
 - openjdk13
 - openjdk14
 - openjdk15
+- openjdk16
 - openjdk-ea
 #  - oraclejdk7
 # $ jdk_switcher use oraclejdk7
@@ -46,6 +47,7 @@ matrix:
   - jdk: openjdk7
   - jdk: oraclejdk8
   - jdk: oraclejdk11
+  - jdk: openjdk16
   - jdk: openjdk-ea
     #  - openjdk7 # Disabled to avoid error java.security.NoSuchProviderException: no such provider: SunEC...
 
