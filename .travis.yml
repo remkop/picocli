@@ -7,10 +7,6 @@ os:
 - osx
 language: java
 jdk:
-- oraclejdk8
-- oraclejdk11
-- oraclejdk-ea
-- openjdk7
 - openjdk8
 - openjdk9
 - openjdk10
@@ -21,21 +17,9 @@ jdk:
 - openjdk15
 - openjdk16
 - openjdk-ea
-#  - oraclejdk7
-# $ jdk_switcher use oraclejdk7
-# Switching to Oracle JDK7 (java-7-oracle), JAVA_HOME will be set to /usr/lib/jvm/java-7-oracle
-# update-java-alternatives: directory does not exist: /usr/lib/jvm/java-7-oracle
-# ...
-# ERROR: JAVA_HOME is set to an invalid directory: /usr/lib/jvm/java-7-oracle
-#
-#  - openjdk6 # gradle 3.1 requires java 7
 
 matrix:
   exclude:
-  - os: macos
-    jdk: oraclejdk8
-  - os: macos
-    jdk: openjdk7
   - os: macos
     jdk: openjdk8
   - os: macos
@@ -43,10 +27,6 @@ matrix:
   - os: macos
     jdk: openjdk10
   allow_failures:
-  - jdk: oraclejdk-ea
-  - jdk: openjdk7
-  - jdk: oraclejdk8
-  - jdk: oraclejdk11
   - jdk: openjdk16
   - jdk: openjdk-ea
     #  - openjdk7 # Disabled to avoid error java.security.NoSuchProviderException: no such provider: SunEC...
