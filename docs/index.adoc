@@ -7717,19 +7717,40 @@ For example:
 [source,java,role="primary"]
 ----
 @Command(name = "app", scope = ScopeType.INHERIT,
-        mixinStandardHelpOptions = true, version = "app version 1.0",
-        header = "App header",
-        description = "App description",
-        footerHeading = "Copyright%n", footer = "(c) Copyright by the authors",
-        showAtFileInUsageHelp = true)
+         mixinStandardHelpOptions = true, version = "app version 1.0",
+         header = "App header",
+         description = "App description",
+         footerHeading = "Copyright%n", footer = "(c) Copyright by the authors",
+         showAtFileInUsageHelp = true)
 class App implements Runnable {
     @Option(names = "-x") int x;
 
-    public void run() { System.out.printf("Hello from app %d%n!", x); }
+    public void run() { System.out.printf("Hello from app!%nx = %d%n", x); }
 
     @Command(header = "Subcommand header", description = "Subcommand description")
     void sub(@Option(names = "-y") int y) {
-        System.out.printf("Hello app sub %d%n!", y);
+        System.out.printf("Hello app sub!%ny = %d", y);
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "app", scope = ScopeType.INHERIT,
+         mixinStandardHelpOptions = true, version = ["app version 1.0"],
+         header = ["App header"],
+         description = ["App description"],
+         footerHeading = "Copyright%n", footer = ["(c) Copyright by the authors"],
+         showAtFileInUsageHelp = true)
+class AppKt : Runnable {
+    @Option(names = ["-x"]) var x = 0
+
+    override fun run() { println("Hello from app!\nx = $x") }
+
+    @Command(header = ["Subcommand header"], description = ["Subcommand description"])
+    fun sub(@Option(names = ["-y"]) y: Int) {
+        println("Hello from sub!\ny = $y")
     }
 }
 ----
@@ -10699,7 +10720,7 @@ dependencies {
 
 This will bring in the `info.picocli:picocli` and the `info.picocli:picocli-spring-boot-starter` dependencies.
 
-Now open the pre-authored source file `SpringBootDemoApplication.java`, rename it to MySpringMailer.java and edit and extend it so that it looks like this:
+Now open the pre-authored source file `SpringBootDemoApplication.java`, rename it to `MySpringMailer.java` and edit and extend it so that it looks like this:
 
 .Java
 [source,java,role="primary"]
@@ -10810,7 +10831,7 @@ public class MailCommand implements Callable<Integer> {
     }
 }
 ----
-<1> We annotate our command with the `@org.springframework.stereotype.Component` annontation so that Spring can autodetect it for dependency injection.
+<1> We annotate our command with the `@org.springframework.stereotype.Component` annotation so that Spring can autodetect it for dependency injection.
 <2> The business logic of your command looks like any other picocli command with options and parameters.
 <3> The interface for our autowired `MailService` is very simple:
 
