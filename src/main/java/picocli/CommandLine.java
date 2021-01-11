@@ -6937,7 +6937,8 @@ public class CommandLine {
             public List<ArgSpec> args() { return Collections.unmodifiableList(args); }
             Object[] commandMethodParamValues() {
                 Object[] values = new Object[methodParams.length];
-                int argIndex = mixins.containsKey(AutoHelpMixin.KEY) ? 2 : 0;
+                CommandSpec autoHelpMixin = mixins.get(AutoHelpMixin.KEY);
+                int argIndex = autoHelpMixin == null || autoHelpMixin.inherited() ? 0 : 2;
                 for (int i = 0; i < methodParams.length; i++) {
                     if (methodParams[i].isAnnotationPresent(Mixin.class)) {
                         String name = methodParams[i].getAnnotation(Mixin.class).name();
@@ -7156,6 +7157,7 @@ public class CommandLine {
             public CommandSpec mixinStandardHelpOptions(boolean newValue) {
                 if (newValue) {
                     CommandSpec mixin = CommandSpec.forAnnotatedObject(new AutoHelpMixin(), new DefaultFactory());
+                    mixin.inherited = this.inherited();
                     addMixin(AutoHelpMixin.KEY, mixin);
                 } else {
                     CommandSpec helpMixin = mixins.remove(AutoHelpMixin.KEY);

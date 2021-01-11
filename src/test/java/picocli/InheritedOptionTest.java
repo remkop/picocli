@@ -525,4 +525,22 @@ public class InheritedOptionTest {
         assertFalse("Not matched on the parent command",
                 parseResult.hasMatchedOption("--xxx-yyy"));
     }
+
+
+    @Test
+    public void testIssue1303InheritCommandWithMethodSubcommands() {
+        @Command(scope = INHERIT, mixinStandardHelpOptions = true)
+        class InheritApp  {
+            int subCalled;
+
+            @Command()
+            void sub(@Option(names = "-foo") int foo) {
+                subCalled = foo;
+                //System.out.printf("Foo: %d", foo);
+            }
+        }
+        InheritApp app = new InheritApp();
+        new CommandLine(app).execute("sub", "-foo", "42" );
+        assertEquals(42, app.subCalled);
+    }
 }
