@@ -1117,6 +1117,7 @@ For example, invoking the program with `-Dpicocli.converters.excludes=java.sql.T
 === Custom Type Converters
 Register a custom type converter to handle data types other than the above built-in ones.
 
+==== Single Parameter Type Converters
 Custom converters need to implement the `picocli.CommandLine.ITypeConverter` interface:
 
 [source,java]
@@ -1218,6 +1219,39 @@ CAUTION: _Note on subcommands:_ the specified converter will be registered with 
 and all subcommands (and nested sub-subcommands) that were added _before_ the converter was registered.
 Subcommands added later will not have the converter added automatically.
 To ensure a custom type converter is available to all subcommands, register the type converter last, after adding subcommands.
+
+==== Multi Parameter Type Converters
+
+Some types take more than one parameter.
+The `IParameterConsumer` interface can be used to implement a multi-parameter type converter.
+
+.Java
+[source,java,role="primary"]
+----
+@Command(name = "set-position")
+class SetPositionCommand {
+    @Parameters(parameterConsumer = PointConverter.class)
+    private Point position;
+
+    static class PointConverter implements IParameterConsumer {
+        public void consumeParameters(Stack<String> args,
+                                      ArgSpec argSpec,
+                                      CommandSpec commandSpec) {
+            if (args.size() < 2) {
+                throw new ParameterException(commandSpec.commandLine(),
+                        "Missing coordinates for Point. Please specify 2 coordinates."));
+            }
+            int x = Integer.parseInt(args.pop());
+            int y = Integer.parseInt(args.pop());
+            argSpec.setValue(new Point(x, y));
+        }
+    }
+}
+----
+
+See the sections on <<Custom Parameter Processing>> for more details.
+
+CAUTION: Make sure any nested classes are `static`, or picocli will not be able to instantiate them without a <<Custom Factory>>.
 
 === Handling Invalid Input
 
@@ -4779,6 +4813,8 @@ class ExecParameterConsumer : IParameterConsumer {
 }
 ----
 
+CAUTION: Make sure any nested classes are `static`, or picocli will not be able to instantiate them without a <<Custom Factory>>.
+
 [[IParameterPreprocessor_Parser_Plugin]]
 ==== `IParameterPreprocessor` Parser Plugin
 
@@ -4879,27 +4915,31 @@ class Edit : Runnable {
 }
 ----
 
+CAUTION: Make sure any nested classes are `static`, or picocli will not be able to instantiate them without a <<Custom Factory>>.
+
 With this preprocessor in place the user can now specify his editor of choice (e.g. `--open=idea`). If no editor is given, the default editor is used:
 
-[grid=cols,cols=4*,options="header"]
-|===
-| User input          | Option `Editor` | Parameter `File` | Unmatched input
-| `--open file1 file2` | `defaultEditor`         | `file1` | `file2`
-| `--open file1`       | `defaultEditor`         | `file1` | none
-| `--open=idea file1`  | `idea` (user specified) | `file1` | none
-| `--open=idea`        | `idea` (user specified) | `null`  | none
-|===
+// We don't want to use a HTML table here: it suggests readers need to pay more attention to this than is really called for; while this is just an example.
+
+----
+# User input # Command State
+# --------------------------
+--open A B   # editor: defaultEditor, file: A,    unmatched: [B]
+--open A     # editor: defaultEditor, file: A,    unmatched: []
+--open=A B   # editor: A,             file: B,    unmatched: []
+--open=A     # editor: A,             file: null, unmatched: []
+----
 
 ==== Parser Plugin Comparison
 
 .Comparison of `IParameterPreprocessor` and `IParameterConsumer` parser plugins.
 [grid=cols,cols=3*,options="header"]
 |===
-| | `IParameterPreprocessor` | `IParameterConsumer`
-| *Principle* | Either augment (return `false`) or replace (return `true`) picocli parsing logic for the matched element. | Replaces picocli parsing logic for the matched element.
+| | *`IParameterPreprocessor`* | *`IParameterConsumer`*
+| *Summary* | Either augment (return `false`) or replace (return `true`) picocli parsing logic for the matched element. | Replaces picocli parsing logic for the matched element.
 | *Scope* | Commands as well as options and positional parameters. | Options and positional parameters only.
-| *Information on parser internal state* | Yes, information may received via the `info` Map | No
-| *Communication back to parser* | Yes, via modifying the `info` Map | No
+| *Read parser state* | Yes, information may received via the `info` Map | No
+| *Modify parser state* | Yes, via modifying the `info` Map | No
 |===
 
 
