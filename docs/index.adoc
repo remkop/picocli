@@ -1249,6 +1249,30 @@ class SetPositionCommand {
 }
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(name = "set-position")
+class SetPositionCommand {
+    @Parameters(parameterConsumer = PointConverter::class)
+    private lateinit var position: Point
+
+    class PointConverter : IParameterConsumer {
+        override fun consumeParameters(args: Stack<String>,
+                                       argSpec: ArgSpec,
+                                       commandSpec: CommandSpec) {
+            if (args.size < 2) {
+                throw ParameterException(commandSpec.commandLine(),
+                    "Missing coordinates for Point. Please specify 2 coordinates.")
+            }
+            val x = args.pop().toInt()
+            val y = args.pop().toInt()
+            argSpec.setValue(Point(x, y))
+        }
+    }
+}
+----
+
 See the sections on <<Custom Parameter Processing>> for more details.
 
 CAUTION: Make sure any nested classes are `static`, or picocli will not be able to instantiate them without a <<Custom Factory>>.
@@ -7783,7 +7807,7 @@ class App implements Runnable {
          description = ["App description"],
          footerHeading = "Copyright%n", footer = ["(c) Copyright by the authors"],
          showAtFileInUsageHelp = true)
-class AppKt : Runnable {
+class App : Runnable {
     @Option(names = ["-x"]) var x = 0
 
     override fun run() { println("Hello from app!\nx = $x") }
