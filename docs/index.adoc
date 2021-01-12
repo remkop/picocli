@@ -1404,6 +1404,8 @@ This may also be useful for applications that need a custom type converter but w
 
 Type converters declared with the `converter` attribute need to have a public no-argument constructor to be instantiated, unless a <<Custom Factory>> is installed to instantiate classes.
 
+CAUTION: If your type converter is declared as nested class, make sure you mark this class as `static`, or picocli will not be able to instantiate your nested converter class without a <<Custom Factory>>.
+
 === Arrays, Collections, Maps
 NOTE: Starting from picocli 2.0, the `type` attribute is no longer necessary for `Collection` and `Map` fields:
 picocli will infer the collection element type from the generic type.
@@ -10186,6 +10188,7 @@ class Dynamic {
 
 All transformers are called once, after the full command hierarchy is constructed, and before any command line arguments are parsed.
 
+CAUTION: If your model transformer is declared as nested class, make sure you mark this class as `static`, or picocli will not be able to instantiate your transformer class without a <<Custom Factory>>.
 
 === Automatic Parameter Indexes
 ==== Automatic Indexes
