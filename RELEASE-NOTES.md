@@ -25,7 +25,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1299] DOC: Link to `IParameterPreprocessor` from `IParameterConsumer` javadoc. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1304] DOC: Manual, chapter '17.9 Inherited Command Attributes': added Kotlin version of code sample. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1305] DOC: Document use of `IParameterConsumer` as n-ary type converter. Thanks to [Martin](https://github.com/martlin2cz) for raising this.
-
+* [#1307] DOC: Added CAUTION admonitions, Kotlin code sample. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 
 ## <a name="4.6.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
