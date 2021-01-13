@@ -1133,30 +1133,43 @@ public interface ITypeConverter<K> {
 }
 ----
 
-Custom type converters can be registered with the `CommandLine.registerConverter(Class<K> cls, ITypeConverter<K> converter)` method. All options and positional parameters with the specified type will be converted by the specified converter.
+For example:
 
+[source,java]
+----
+import javax.crypto.Cipher;
 
-NOTE: Java 8 lambdas make it easy to register custom converters:
+class CipherConverter implements ITypeConverter<Cipher> {
+    public Cipher convert(String value) throws Exception {
+        return Cipher.getInstance(value);
+    }
+}
+----
+
+Custom type converters can be specified for a specific option or positional parameter with the `converter` annotation attribute.
+This is described in more detail in the <<Option-specific Type Converters>> section, but here is a quick example:
 
 .Java
 [source,java,role="primary"]
 ----
-CommandLine cl = new CommandLine(app);
-cl.registerConverter(Locale.class, s -> new Locale.Builder().setLanguageTag(s).build());
-cl.registerConverter(Cipher.class, s -> Cipher.getInstance(s));
+class App {
+    @Option(names = "-a", converter = CipherConverter.class)
+    javax.crypto.Cipher cipher;
+}
 ----
 
 .Kotlin
-[source,java,role="secondary"]
+[source,kotlin,role="secondary"]
 ----
-val cl = CommandLine(app)
-cl.registerConverter(Locale::class.java) {
-    s: String? -> Locale.Builder().setLanguageTag(s).build()
-}
-cl.registerConverter(Cipher::class.java) {
-    Cipher.getInstance(it)
+class App {
+    @Option(names = ["-a"], converter = [CipherConverter::class])
+    lateinit var cipher: javax.crypto.Cipher
 }
 ----
+
+
+Alternatively, custom type converters can be registered _per type_ in each command with the `CommandLine.registerConverter(Class<K> cls, ITypeConverter<K> converter)` method.
+All options and positional parameters with the specified type will be converted by the specified converter.
 
 After registering custom converters, call the `execute(String...)` or `parseArgs(String...)` method on the `CommandLine` instance where the converters are registered. (The static `populateCommand` method cannot be used.) For example:
 
@@ -1184,6 +1197,8 @@ class App {
     lateinit var cipher: Cipher
 }
 ----
+
+NOTE: Java 8 lambdas make it easy to register custom converters:
 
 .Java
 [source,kotlin,role="primary"]
