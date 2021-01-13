@@ -3664,6 +3664,38 @@ This is described in more detail in the <a href="#_option_specific_type_converte
 <span class="p">}</span></code></pre>
 </div>
 </div>
+<div class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="groovy"><span class="kd">class</span> <span class="nc">App</span> <span class="o">{</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s2">"-a"</span><span class="o">,</span> <span class="n">converter</span> <span class="o">=</span> <span class="n">CipherConverter</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+    <span class="kt">def</span> <span class="n">cipher</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Groovy Script</div>
+<div class="content">
+<pre class="rouge highlight"><code data-lang="groovy"><span class="kd">class</span> <span class="nc">App</span> <span class="o">{</span>
+    <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="o">=</span> <span class="s2">"-a"</span><span class="o">,</span> <span class="n">converter</span> <span class="o">=</span> <span class="o">[</span> <span class="c1">// requires Groovy 3.0.7</span>
+            <span class="o">{</span> <span class="o">{</span> <span class="n">str</span> <span class="o">-&gt;</span> <span class="n">Cipher</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">str</span><span class="o">)</span> <span class="o">}</span> <span class="k">as</span> <span class="n">ITypeConverter</span> <span class="o">}</span>
+    <span class="o">])</span>
+    <span class="kt">def</span> <span class="n">cipher</span>
+<span class="o">}</span></code></pre>
+</div>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+Groovy programs can use <a href="#_closures_in_annotations">closures in the <code>converter</code> attribute of the annotation</a>.
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>Alternatively, custom type converters can be registered <em>per type</em> in each command with the <code>CommandLine.registerConverter(Class&lt;K&gt; cls, ITypeConverter&lt;K&gt; converter)</code> method.
 All options and positional parameters with the specified type will be converted by the specified converter.</p>

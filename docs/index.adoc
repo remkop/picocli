@@ -1167,6 +1167,28 @@ class App {
 }
 ----
 
+.Groovy
+[source,groovy,role="secondary"]
+----
+class App {
+    @Option(names = "-a", converter = CipherConverter.class)
+    def cipher
+}
+----
+
+.Groovy Script
+[source,groovy,role="secondary"]
+----
+class App {
+    @Option(names = "-a", converter = [ // requires Groovy 3.0.7
+            { { str -> Cipher.getInstance(str) } as ITypeConverter }
+    ])
+    def cipher
+}
+----
+
+TIP: Groovy programs can use <<Closures in Annotations,closures in the `converter` attribute of the annotation>>.
+
 
 Alternatively, custom type converters can be registered _per type_ in each command with the `CommandLine.registerConverter(Class<K> cls, ITypeConverter<K> converter)` method.
 All options and positional parameters with the specified type will be converted by the specified converter.
