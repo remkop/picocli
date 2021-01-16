@@ -1751,6 +1751,8 @@ Enum value matching is case-sensitive by default, but as of picocli 3.4 this can
 == Default Values
 It is possible to define a default value for an option or positional parameter, that is assigned when the user did not specify this option or positional parameter on the command line.
 
+Configuring a default value guarantees that the `@Option` or `@Parameters`-annotated field will get set, annotated method will get called, and, when using the programmatic API, that the https://picocli.info/apidocs/picocli/CommandLine.Model.ArgSpec.html#setValue-T-[`ArgSpec.setValue`] method will get invoked, even when the option or positional parameter was not specified on the command line.
+
 [#defaultValue-annotation]
 === `defaultValue` Annotation
 The recommended way to give an option or positional parameter a default value is to use the `defaultValue` annotation attribute. This works correctly with argument groups, `@Option` and `@Parameters`-annotated methods, and allows annotation processors to detect and use default values.

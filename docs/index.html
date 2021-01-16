@@ -4405,6 +4405,9 @@ Not only will picocli validate the input, it allows you to <a href="#_show_defau
 <div class="paragraph">
 <p>It is possible to define a default value for an option or positional parameter, that is assigned when the user did not specify this option or positional parameter on the command line.</p>
 </div>
+<div class="paragraph">
+<p>Configuring a default value guarantees that the <code>@Option</code> or <code>@Parameters</code>-annotated field will get set, annotated method will get called, and, when using the programmatic API, that the <a href="https://picocli.info/apidocs/picocli/CommandLine.Model.ArgSpec.html#setValue-T-"><code>ArgSpec.setValue</code></a> method will get invoked, even when the option or positional parameter was not specified on the command line.</p>
+</div>
 <div class="sect2">
 <h3 id="defaultValue-annotation"><a class="anchor" href="#defaultValue-annotation"></a>5.1. <code>defaultValue</code> Annotation</h3>
 <div class="paragraph">
