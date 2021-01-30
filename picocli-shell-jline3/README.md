@@ -57,6 +57,8 @@ The following versions of `jline` and `picocli-shell-jline3` are compatible:
 | 3.14.1  | 4.3.0 - 4.3.2 |
 | 3.15.0 -  | 4.4.0 -  |
 
+Note: JLine v3.17.1 is not compatible as it is affected by [this bug](https://github.com/jline/jline3/issues/640).
+
 See [examples for the older versions](https://github.com/remkop/picocli/wiki/JLine-3-Examples).
 
 ## Demo
