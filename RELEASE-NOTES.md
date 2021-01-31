@@ -27,6 +27,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1305] DOC: Document use of `IParameterConsumer` as n-ary type converter. Thanks to [Martin](https://github.com/martlin2cz) for raising this.
 * [#1307] DOC: Added CAUTION admonitions, Kotlin code sample. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1308] DOC: Add example for Option `converter`, improve text for default values. Thanks to [Abhijit Sarkar](https://github.com/asarkar) for raising this.
+* [#1313] DEP: Bump jline3Version in order to avoid stackoverflow error. Thanks to [Rupert Madden-Abbott](https://github.com/rupert-madden-abbott) for the pull request.
 
 ## <a name="4.6.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
