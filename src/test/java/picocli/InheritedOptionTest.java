@@ -543,4 +543,18 @@ public class InheritedOptionTest {
         new CommandLine(app).execute("sub", "-foo", "42" );
         assertEquals(42, app.subCalled);
     }
+
+    @Test
+    public void testIssue1316() {
+        @CommandLine.Command(
+                name = "example",
+                mixinStandardHelpOptions = true,
+                scope = CommandLine.ScopeType.INHERIT,
+                subcommands = AutoComplete.GenerateCompletion.class
+        )
+        class Example { }
+
+        // see also picocli-annotation-processing-tests/src/test/java/picocli/annotation/processing/tests/Issue1316Test.java
+        new CommandLine(new Example()); // succeeds without error
+    }
 }

@@ -7156,9 +7156,11 @@ public class CommandLine {
              * @see Command#mixinStandardHelpOptions() */
             public CommandSpec mixinStandardHelpOptions(boolean newValue) {
                 if (newValue) {
-                    CommandSpec mixin = CommandSpec.forAnnotatedObject(new AutoHelpMixin(), new DefaultFactory());
-                    mixin.inherited = this.inherited();
-                    addMixin(AutoHelpMixin.KEY, mixin);
+                    if (!mixins.containsKey(AutoHelpMixin.KEY)) { // #1316 avoid DuplicateOptionAnnotationsException
+                        CommandSpec mixin = CommandSpec.forAnnotatedObject(new AutoHelpMixin(), new DefaultFactory());
+                        mixin.inherited = this.inherited();
+                        addMixin(AutoHelpMixin.KEY, mixin);
+                    }
                 } else {
                     CommandSpec helpMixin = mixins.remove(AutoHelpMixin.KEY);
                     if (helpMixin != null) {
