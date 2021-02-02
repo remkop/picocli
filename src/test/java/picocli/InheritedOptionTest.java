@@ -557,4 +557,24 @@ public class InheritedOptionTest {
         // see also picocli-annotation-processing-tests/src/test/java/picocli/annotation/processing/tests/Issue1316Test.java
         new CommandLine(new Example()); // succeeds without error
     }
+
+    @Ignore("Needs fix for #1319")
+    @Test
+    public void testIssue1319() {
+        @Command(scope = CommandLine.ScopeType.INHERIT
+                , mixinStandardHelpOptions = true
+                , subcommands = { CommandLine.HelpCommand.class }
+                )
+        class InheritHelpApp  {
+            int subFoo;
+
+            @Command()
+            void sub(@Option(names = "-foo") int foo) {
+                subFoo = foo;
+            }
+        }
+        InheritHelpApp app = new InheritHelpApp();
+        new CommandLine(app).execute("sub", "-foo", "42" );
+        assertEquals(42, app.subFoo);
+    }
 }
