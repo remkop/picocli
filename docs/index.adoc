@@ -1312,7 +1312,7 @@ class SetPositionCommand {
 
 See the sections on <<Custom Parameter Processing>> for more details.
 
-CAUTION: Make sure any nested classes are `static`, or picocli will not be able to instantiate them without a <<Custom Factory>>.
+CAUTION: Make sure any nested classes are `static`, or picocli will not be able to instantiate them.
 
 === Handling Invalid Input
 
@@ -1441,7 +1441,7 @@ This may also be useful for applications that need a custom type converter but w
 
 Type converters declared with the `converter` attribute need to have a public no-argument constructor to be instantiated, unless a <<Custom Factory>> is installed to instantiate classes.
 
-CAUTION: If your type converter is declared as nested class, make sure you mark this class as `static`, or picocli will not be able to instantiate your nested converter class without a <<Custom Factory>>.
+CAUTION: If your type converter is declared as nested class, make sure you mark this class as `static`, or picocli will not be able to instantiate your nested converter class.
 
 === Arrays, Collections, Maps
 NOTE: Starting from picocli 2.0, the `type` attribute is no longer necessary for `Collection` and `Map` fields:
@@ -4878,7 +4878,7 @@ class ExecParameterConsumer : IParameterConsumer {
 }
 ----
 
-CAUTION: Make sure any nested classes are `static`, or picocli will not be able to instantiate them without a <<Custom Factory>>.
+CAUTION: Make sure any nested classes are `static`, or picocli will not be able to instantiate them.
 
 [[IParameterPreprocessor_Parser_Plugin]]
 ==== `IParameterPreprocessor` Parser Plugin
@@ -4980,7 +4980,7 @@ class Edit : Runnable {
 }
 ----
 
-CAUTION: Make sure any nested classes are `static`, or picocli will not be able to instantiate them without a <<Custom Factory>>.
+CAUTION: Make sure any nested classes are `static`, or picocli will not be able to instantiate them.
 
 With this preprocessor in place the user can now specify his editor of choice (e.g. `--open=idea`). If no editor is given, the default editor is used:
 
@@ -10227,7 +10227,7 @@ class Dynamic {
 
 All transformers are called once, after the full command hierarchy is constructed, and before any command line arguments are parsed.
 
-CAUTION: If your model transformer is declared as nested class, make sure you mark this class as `static`, or picocli will not be able to instantiate your transformer class without a <<Custom Factory>>.
+CAUTION: If your model transformer is declared as nested class, make sure you mark this class as `static`, or picocli will not be able to instantiate your transformer class.
 
 === Automatic Parameter Indexes
 ==== Automatic Indexes
