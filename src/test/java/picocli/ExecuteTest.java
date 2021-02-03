@@ -51,19 +51,8 @@ import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.*;
-import static picocli.CommandLine.Command;
-import static picocli.CommandLine.ExecutionException;
-import static picocli.CommandLine.Help;
-import static picocli.CommandLine.IExecutionStrategy;
+import static picocli.CommandLine.*;
 import static picocli.CommandLine.Model.UsageMessageSpec.keyValuesMap;
-import static picocli.CommandLine.Option;
-import static picocli.CommandLine.ParameterException;
-import static picocli.CommandLine.Parameters;
-import static picocli.CommandLine.ParseResult;
-import static picocli.CommandLine.RunAll;
-import static picocli.CommandLine.RunFirst;
-import static picocli.CommandLine.RunLast;
-import static picocli.CommandLine.Spec;
 
 public class ExecuteTest {
     @Rule
@@ -415,7 +404,7 @@ public class ExecuteTest {
     @Test
     public void testExecuteWithInvalidInput_Ansi_ON_CustomErr() {
         new CommandLine(new MyCallable())
-                .setErr(new PrintWriter(System.out, true))
+                .setErr(CommandLine.newPrintWriter(System.out, getStdoutEncoding()))
                 .setColorScheme(Help.defaultColorScheme(Help.Ansi.ON)).execute("invalid input");
         assertEquals("", systemErrRule.getLog());
         assertEquals(INVALID_INPUT_ANSI + MYCALLABLE_USAGE_ANSI, systemOutRule.getLog());

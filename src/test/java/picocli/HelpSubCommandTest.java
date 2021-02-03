@@ -168,8 +168,8 @@ public class HelpSubCommandTest {
 
         int exitCode = new CommandLine(new App())
                 .setExecutionStrategy(new RunLast())
-                .setOut(new PrintWriter(System.out, true))
-                .setErr(new PrintWriter(System.err, true))
+                .setOut(CommandLine.newPrintWriter(System.out, getStdoutEncoding()))
+                .setErr(CommandLine.newPrintWriter(System.err, getStderrEncoding()))
                 .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
                 .execute("customHelp");
 
@@ -206,8 +206,8 @@ public class HelpSubCommandTest {
 
         int exitCode = new CommandLine(new App())
                 .setExecutionStrategy(new RunLast())
-                .setOut(new PrintWriter(System.out, true))
-                .setErr(new PrintWriter(System.err, true))
+                .setOut(CommandLine.newPrintWriter(System.out, getStdoutEncoding()))
+                .setErr(CommandLine.newPrintWriter(System.err, getStderrEncoding()))
                 .setColorScheme(Help.defaultColorScheme(Help.Ansi.OFF))
                 .execute("newCustomHelp");
 

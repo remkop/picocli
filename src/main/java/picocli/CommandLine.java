@@ -1206,7 +1206,7 @@ public class CommandLine {
      * help with a {@code --help} or similar option, the usage help message is printed to the standard output stream so that it can be easily searched and paged.</p>
      * @since 4.0 */
     public PrintWriter getOut() {
-        if (out == null) { setOut(new PrintWriter(System.out, true)); }
+        if (out == null) { setOut(newPrintWriter(System.out, getStdoutEncoding())); }
         return out;
     }
 
@@ -1233,7 +1233,7 @@ public class CommandLine {
      * should use this writer to print error messages (which may include a usage help message) when an unexpected error occurs.</p>
      * @since 4.0 */
     public PrintWriter getErr() {
-        if (err == null) { setErr(new PrintWriter(System.err, true)); }
+        if (err == null) { setErr(newPrintWriter(System.err, getStderrEncoding())); }
         return err;
     }
 
@@ -1807,7 +1807,7 @@ public class CommandLine {
      * @since 2.0 */
     @Deprecated public static class DefaultExceptionHandler<R> extends AbstractHandler<R, DefaultExceptionHandler<R>> implements IExceptionHandler, IExceptionHandler2<R> {
         public List<Object> handleException(ParameterException ex, PrintStream out, Help.Ansi ansi, String... args) {
-            internalHandleParseException(ex, new PrintWriter(out, true), Help.defaultColorScheme(ansi)); return Collections.emptyList(); }
+            internalHandleParseException(ex, newPrintWriter(out, getStdoutEncoding()), Help.defaultColorScheme(ansi)); return Collections.emptyList(); }
 
         /** Prints the message of the specified exception, followed by the usage message for the command or subcommand
          * whose input was invalid, to the stream returned by {@link #err()}.
@@ -1817,7 +1817,7 @@ public class CommandLine {
          * @return the empty list
          * @since 3.0 */
         public R handleParseException(ParameterException ex, String[] args) {
-            internalHandleParseException(ex, new PrintWriter(err(), true), colorScheme()); return returnResultOrExit(null); }
+            internalHandleParseException(ex, newPrintWriter(err(), getStderrEncoding()), colorScheme()); return returnResultOrExit(null); }
 
         static void internalHandleParseException(ParameterException ex, PrintWriter writer, Help.ColorScheme colorScheme) {
             writer.println(colorScheme.errorText(ex.getMessage()));
@@ -1878,7 +1878,7 @@ public class CommandLine {
      * @since 3.6 */
     @Deprecated public static boolean printHelpIfRequested(List<CommandLine> parsedCommands, PrintStream out, PrintStream err, Help.ColorScheme colorScheme) {
         // for backwards compatibility
-        for (CommandLine cmd : parsedCommands) { cmd.setOut(new PrintWriter(out, true)).setErr(new PrintWriter(err, true)).setColorScheme(colorScheme); }
+        for (CommandLine cmd : parsedCommands) { cmd.setOut(newPrintWriter(out, getStdoutEncoding())).setErr(newPrintWriter(err, getStderrEncoding())).setColorScheme(colorScheme); }
         return executeHelpRequest(parsedCommands) != null;
     }
 
@@ -2134,8 +2134,8 @@ public class CommandLine {
         // and the application called #useOut, #useErr or #useAnsi on it
         if (obj instanceof AbstractHandler<?, ?>) {
             AbstractHandler<?, ?> handler = (AbstractHandler<?, ?>) obj;
-            if (handler.out()  != System.out)     { setOut(new PrintWriter(handler.out(), true)); }
-            if (handler.err()  != System.err)     { setErr(new PrintWriter(handler.err(), true)); }
+            if (handler.out()  != System.out)     { setOut(newPrintWriter(handler.out(), getStdoutEncoding())); }
+            if (handler.err()  != System.err)     { setErr(newPrintWriter(handler.err(), getStderrEncoding())); }
             if (handler.ansi() != Help.Ansi.AUTO) { setColorScheme(handler.colorScheme()); }
         }
         return obj;
@@ -14476,6 +14476,17 @@ public class CommandLine {
             new Tracer().warn("Could not close " + closeable + ": " + ex.toString());
         }
     }
+    static Charset getStdoutEncoding() {
+        String encoding = System.getProperty("sun.stdout.encoding");
+        return encoding != null ? Charset.forName(encoding) : Charset.defaultCharset();
+    }
+    static Charset getStderrEncoding() {
+        String encoding = System.getProperty("sun.stderr.encoding");
+        return encoding != null ? Charset.forName(encoding) : Charset.defaultCharset();
+    }
+    static PrintWriter newPrintWriter(OutputStream stream, Charset charset) {
+        return new PrintWriter(new BufferedWriter(new OutputStreamWriter(stream, charset)), true);
+    }
     static class PositionalParametersSorter implements Comparator<ArgSpec> {
         private static final Range OPTION_INDEX = new Range(0, 0, false, true, "0");
         public int compare(ArgSpec p1, ArgSpec p2) {
@@ -18015,7 +18026,7 @@ public class CommandLine {
         public boolean isUnknownOption() { return isUnknownOption(unmatched, getCommandLine()); }
         /** Returns {@code true} and prints suggested solutions to the specified stream if such solutions exist, otherwise returns {@code false}.
          * @since 3.3.0 */
-        public boolean printSuggestions(PrintStream out) { return printSuggestions(new PrintWriter(out, true)); }
+        public boolean printSuggestions(PrintStream out) { return printSuggestions(newPrintWriter(out, getStdoutEncoding())); }
         /** Returns {@code true} and prints suggested solutions to the specified stream if such solutions exist, otherwise returns {@code false}.
          * @since 4.0 */
         public boolean printSuggestions(PrintWriter writer) {
