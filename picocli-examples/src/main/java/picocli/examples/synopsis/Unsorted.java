@@ -25,11 +25,11 @@ public class Unsorted implements Runnable {
         throw new ParameterException(spec.commandLine(), "Specify a subcommand");
     }
 
-public static void main(String... args) {
-    new CommandLine(new Unsorted())
-            .setHelpFactory(new UnsortedSynopsisHelpFactory())
-            .execute("add", "-h");
-}
+    public static void main(String... args) {
+        new CommandLine(new Unsorted())
+                .setHelpFactory(new UnsortedSynopsisHelpFactory())
+                .execute("add", "-h");
+    }
 }
 
 @Command(name = "add", sortOptions = false)
