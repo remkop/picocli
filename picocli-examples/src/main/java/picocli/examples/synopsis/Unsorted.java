@@ -13,6 +13,9 @@ import picocli.CommandLine.Model.CommandSpec;
 import java.util.Collection;
 import java.util.Comparator;
 
+/**
+ * See https://stackoverflow.com/questions/66004574/picocli-options-order-in-usage-section
+ */
 @Command(name = "application", subcommands = { AddSubCommand.class })
 public class Unsorted implements Runnable {
     @Spec CommandSpec spec;
