@@ -5,6 +5,10 @@ The picocli community is pleased to announce picocli 4.6.2.
 
 This release includes bugfixes and enhancements.
 
+From this release, picocli uses system properties `sun.stdout.encoding` and `sun.stderr.encoding` when creating the `PrintWriters` returned by  `CommandLine::getOut` and `CommandLine::getErr`.
+When these system properties do not exist, picocli falls back to the default charset (determined by `file.encoding`).
+This addresses an issue on Windows, where the default charset is not the same as the encoding for its console (often the older `cp437` codepage on English-language versions of Windows).
+Note that these system properties [seem to have been](https://wrapper.tanukisoftware.com/doc/english/prop-jvm-encoding.html) introduced in Java 8 (although I cannot find it in the JDK 8 release notes) and may not exist on earlier JVMs or on JVMs other than the Oracle and OpenJDK implementations.
 
 This is the seventy-seventh public release.
 Picocli follows [semantic versioning](http://semver.org/).
@@ -22,6 +26,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1303] Bugfix: Prevent `IllegalArgumentException: argument type mismatch` error in method subcommands with inherited mixed-in standard help options. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#1300] Bugfix: Avoid spurious warning "Could not set initial value for field boolean" when reusing `CommandLine` with ArgGroup. Thanks to [Yashodhan Ghadge](https://github.com/codexetreme) for raising this.
 * [#1316] Bugfix: Avoid `DuplicateOptionAnnotationsException` thrown on `mixinStandardHelpOptions` for subcommands when parent has `scope = INHERIT` by `picocli-codegen` annotation processor. Thanks to [Philippe Charles](https://github.com/charphi) for raising this.
+* [#1320][#1321] Bugfix/Enhancement: Use system properties `sun.stdout.encoding` and `sun.stderr.encoding` when creating the `PrintWriters` returned by  `CommandLine::getOut` and `CommandLine::getErr`. Thanks to [Philippe Charles](https://github.com/charphi) for the investigation and the pull request.
 * [#1296] DOC: add Kotlin code samples to user manual; other user manual improvements. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1299] DOC: Link to `IParameterPreprocessor` from `IParameterConsumer` javadoc. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1304] DOC: Manual, chapter '17.9 Inherited Command Attributes': added Kotlin version of code sample. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
