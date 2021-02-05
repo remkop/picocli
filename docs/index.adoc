@@ -11662,7 +11662,6 @@ assertEquals("expectedValue1", app.getState1());
 assertEquals("expectedValue2", app.getState2());
 ----
 
-=== Testing the Output
 This assumes that the application uses the `PrintWriter` provided by https://picocli.info/apidocs/picocli/CommandLine.html#getOut--[`CommandLine.getOut`] or  https://picocli.info/apidocs/picocli/CommandLine.html#getErr--[`CommandLine.getErr`].
 Applications can get these writers via the <<#spec-annotation,`@Spec`>> annotation:
 
@@ -11679,7 +11678,72 @@ class MyApp implements Runnable {
 }
 ----
 
-Applications that use a version of picocli older than 4.0, or applications that print to `System.out` or `System.err` directly can be tested by capturing the standard output and error streams like this:
+=== Testing the Output
+Applications that print to `System.out` or `System.err` directly, or use a version of picocli older than 4.0, can be tested by capturing the standard output and error streams.
+There are various options for doing this, some of which are shown below.
+
+==== Java 8+ with System-Lambda
+Applications that use JUnit 5 or Java 8+ can use Stephan Birkner's https://github.com/stefanbirkner/system-lambda[System-Lambda] project for capturing output.
+This library has facilities for capturing the standard output and standard error streams separately or mixed together, and for normalizing line breaks.
+
+Example usage:
+
+[source,java]
+----
+import static com.github.stefanbirkner.systemlambda.SystemLambda.tapSystemErr;
+import static com.github.stefanbirkner.systemlambda.SystemLambda.tapSystemOutNormalized;
+// ...
+
+class MyTest {
+    @Test
+    void testMyApp() throws Exception {
+        String errText = tapSystemErr(() -> {
+            String outText = tapSystemOutNormalized(() -> {
+                new CommandLine(new MyApp()).execute("--option=value", "arg0", "arg1");
+            });
+            assertEquals("--option='value'\n" +
+                         "position[0]='arg0'\n" +
+                         "position[1]='arg1'\n", outText);
+        });
+        assertEquals("", errText);
+    }
+}
+----
+
+==== JUnit 4 with System-Rules
+Applications that use JUnit 4 can use Stephan Birkner's https://stefanbirkner.github.io/system-rules[System-Rules] project for capturing output.
+
+Example usage:
+
+[source,java]
+----
+import org.junit.contrib.java.lang.system.SystemErrRule;
+import org.junit.contrib.java.lang.system.SystemOutRule;
+// ...
+
+class MyTest {
+    @Rule
+    SystemErrRule systemErrRule = new SystemErrRule().enableLog().muteForSuccessfulTests();
+
+    @Rule
+    SystemOutRule systemOutRule = new SystemOutRule().enableLog().muteForSuccessfulTests();
+
+    @Test
+    void testMyApp() throws Exception {
+        new CommandLine(new MyApp()).execute("--option=value", "arg0", "arg1");
+        String expected = String.format("--option='value'%n" +
+                                        "position[0]='arg0'%n" +
+                                        "position[1]='arg1'%n");
+        assertEquals(expected, systemOutRule.getLog());
+        assertEquals("", systemErrRule.getLog());
+    }
+}
+----
+
+==== DIY Output Capturing
+It is also possible to capture output in the tests yourself without using a library.
+
+For example:
 
 [source,java]
 ----
@@ -11700,7 +11764,9 @@ assertEquals("MY COMMAND OUTPUT", out.toString()); // verify
 assertEquals("", err.toString());
 ----
 
-If you're testing with JUnit 4, you can do the setup in a `@org.junit.Before`-annotated method and teardown in an `@org.junit.After`-annotated method.
+This looks verbose, but can be simplified a lot by letting the test framework do the setup and cleanup.
+
+JUnit 4 lets you do setup in a `@org.junit.Before`-annotated method and teardown in an `@org.junit.After`-annotated method.
 The JUnit 5 equivalent annotations are `@org.junit.jupiter.api.BeforeEach` and `@org.junit.jupiter.api.AfterEach`, respectively.
 For example:
 
@@ -11746,8 +11812,40 @@ class TestOutput {
 === Testing the Exit Code
 Testing the exit code of applications that call `System.exit` can be tricky but is not impossible.
 
-Applications that use JUnit 4 can use Stephan Birkner's  https://stefanbirkner.github.io/system-rules[System-Rules] project for testing the  https://stefanbirkner.github.io/system-rules/#ExpectedSystemExit[exit code].
-(This library has many other nice features, including capturing the standard output and standard error https://stefanbirkner.github.io/system-rules/#SystemErrAndOutRule[streams], and more.)
+==== Java 8+ and `catchSystemExit`
+Applications that use JUnit 5 or Java 8+ can use Stephan Birkner's https://github.com/stefanbirkner/system-lambda[System-Lambda] project for testing the https://github.com/stefanbirkner/system-lambda#systemexit[exit code].
+For example:
+
+[source,java]
+----
+import static com.github.stefanbirkner.systemlambda.SystemLambda.catchSystemExit;
+// ...
+
+class MyTest {
+    @Command
+    static class MyApp implements Callable<Integer> {
+        public Integer call() {
+            System.out.println("Hi");
+            return 42;
+        }
+        public static void main(String[] args) {
+            System.exit(new CommandLine(new MyApp()).execute(args));
+        }
+    }
+
+    @Test
+    void testMyAppExit() throws Exception {
+        int exitCode = catchSystemExit(() -> {
+            MyApp.main();
+        });
+        assertEquals(42, exitCode);
+    }
+}
+----
+
+==== JUnit 4 and `ExpectedSystemExit`
+
+Applications that use JUnit 4 can use Stephan Birkner's https://stefanbirkner.github.io/system-rules[System-Rules] project for testing the https://stefanbirkner.github.io/system-rules/#ExpectedSystemExit[exit code].
 For example:
 
 [source,java]
@@ -11759,63 +11857,94 @@ import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 class MyTest {
     @Rule public final ExpectedSystemExit exit = ExpectedSystemExit.none();
 
+    @Command
+    static class MyApp implements Callable<Integer> {
+        public Integer call() {
+            System.out.println("Hi");
+            return 42;
+        }
+        public static void main(String[] args) {
+            System.exit(new CommandLine(new MyApp()).execute(args));
+        }
+    }
+
     @Test
     public void testExitCode() {
-        @Command class App implements Runnable {
-            public void run() {
-                System.exit(23);
-            }
-        }
-        exit.expectSystemExitWithStatus(23);
-        new CommandLine(new App()).execute();
+        exit.expectSystemExitWithStatus(42);
+        MyApp.main();
     }
 }
 ----
-
-JUnit 5 users may be interested in Todd Ginsberg's blog post https://todd.ginsberg.com/post/testing-system-exit/[Testing System.exit() with JUnit5].
 
 === Testing Environment Variables
 
 Since picocli offers support for using <<Variable Interpolation,environment variables>> in the annotations, you may want to test this.
 
-Applications that use JUnit 4 can use Stephan Birkner's  https://stefanbirkner.github.io/system-rules[System-Rules] project for https://stefanbirkner.github.io/system-rules/#EnvironmentVariables[testing environment variables].
+==== Java 8+ with `withEnvironmentVariable`
+Applications that use JUnit 5 or Java 8+ can use Stephan Birkner's https://github.com/stefanbirkner/system-lambda[System-Lambda] project for https://github.com/stefanbirkner/system-lambda#environment-variables[testing environment variables].
 
-JUnit 5 does not appear to provide an equivalent extension for testing environment variables.
-JUnit 5 users can use Stephan Birkner's `@Rule EnvironmentVariables ...` for testing environment variables, but there are some things to be aware of.
+Example usage:
 
-* Use `com.github.stefanbirkner:system-rules` version 1.17.2: the latest version, 1.18, has an https://github.com/stefanbirkner/system-rules/issues/70[issue] that means the Environment Variables rule will not work in JUnit 5.
-* https://github.com/remkop/picocli/issues/976#issuecomment-601200999[Apparently] the JUnit 5 https://junit.org/junit5/docs/current/user-guide/#migrating-from-junit4-rule-support[`@EnableRuleMigrationSupport` annotation] is not sufficient to reliably use `@Rule EnvironmentVariables` in a JUnit 5 test.
-* Instead, I recommend creating a separate JUnit 4 test class for the environment variable tests.
-
-In Gradle, use the following dependencies:
-
-[source]
+[source,java]
 ----
-dependencies {
-    implementation      "info.picocli:picocli:${picocliVersion}"
-    annotationProcessor "info.picocli:picocli-codegen:${picocliVersion}"
+import static com.github.stefanbirkner.systemlambda.SystemLambda.withEnvironmentVariable;
+// ...
 
-    testImplementation("com.github.stefanbirkner:system-rules:1.17.2") {
-        exclude group:"junit"
+@Test
+void testEnvVar() throws Exception {
+    class MyApp {
+        @Option(names = "--option", defaultValue = "${env:MYVAR}",
+                description = "Some option. Default: ${DEFAULT-VALUE}")
+        String option;
     }
-    testImplementation "junit:junit:${junit4Version}"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:${junit5Version}"
+    String actual = withEnvironmentVariable("MYVAR", "some-value")
+            .and("OTHER_VAR", "second value")
+            .execute(() -> new CommandLine(new MyApp())
+                            .getUsageMessage(CommandLine.Help.Ansi.OFF));
 
-    testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.6.0"
-    testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${junit5Version}"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junit5Version}"
-
-    // ...
-}
-
-test {
-    useJUnitPlatform {
-        includeEngines 'junit-jupiter', 'junit-vintage'
-    }
+    String expected = String.format("" +
+            "Usage: <main class> [--option=<option>]%n" +
+            "      --option=<option>   Some options. Default: some-value%n");
+    assertEquals(expected, actual);
 }
 ----
 
-For more details, see the https://github.com/remkop/picocli/files/4359943/bulk-scripts-public.zip[sample project] provided by David M. Carr.
+
+==== JUnit 4 with `EnvironmentVariables`
+Applications that use JUnit 4 can use Stephan Birkner's https://stefanbirkner.github.io/system-rules[System-Rules] project for https://stefanbirkner.github.io/system-rules/#EnvironmentVariables[testing environment variables].
+
+[source,java]
+----
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
+// ...
+
+class MyTest {
+    @Rule
+    public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
+
+    @Test
+    public void testEnvVar() {
+        class MyApp {
+            @Option(names = "--option", defaultValue = "${env:MYVAR}",
+                    description = "Some option. Default: ${DEFAULT-VALUE}")
+            String option;
+        }
+        environmentVariables.clear("MYVAR", "OTHER_VAR", "THIRD_VAR");
+        environmentVariables.set("MYVAR", "some-value");
+        environmentVariables.set("OTHER_VAR", "second value");
+
+        String actual = new CommandLine(new MyApp())
+                .getUsageMessage(CommandLine.Help.Ansi.OFF));
+
+        String expected = String.format("" +
+                "Usage: <main class> [--option=<option>]%n" +
+                "      --option=<option>   Some options. Default: some-value%n");
+        assertEquals(expected, actual);
+    }
+}
+----
+
+CAUTION: The latest versions of `com.github.stefanbirkner:system-rules`, 1.18 and 1.19, have an https://github.com/stefanbirkner/system-rules/issues/70[issue] that means the Environment Variables rule will not work in JUnit 5. Use System Rules version 1.17.2 instead when combining with JUnit 5.
 
 === Mocking
 
