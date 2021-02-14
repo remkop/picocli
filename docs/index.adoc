@@ -690,6 +690,14 @@ The following command line arguments are all equivalent and parsing them will gi
 ...
 ----
 
+[TIP]
+.POSIX short options and usability
+====
+Applications can give a subtle hint to end users that an option is common and encouraged by providing both a short and a long name for an option.
+Conversely, the absence of a short option can signal that the option is unusual or perhaps should be used with care.
+====
+
+
 === Boolean Options
 Boolean options usually don't need a parameter: it is enough to specify the option name on the command line.
 
@@ -5651,8 +5659,9 @@ class ParamLabels {
 
 NOTE: For demonstration purposes the above example mixes the all-uppercase (e.g., `NUM`) style label and the fish bracket (e.g., `<number>`) style labels. For real applications, mixing these label styles should be avoided. An application should consistently use only one style.
 
+=== Option List
 
-=== Unsorted Option List
+==== Unsorted Option List
 By default the options list displays options in alphabetical order. Use the `sortOptions = false` attribute to display options in the order they are declared in your class.
 
 .Java / Kotlin
@@ -5661,12 +5670,111 @@ By default the options list displays options in alphabetical order. Use the `sor
 @Command(sortOptions = false)
 ----
 
-=== Reordering Options
+==== Reordering Options
 When mixing `@Option` methods and `@Option` fields, options do not reliably appear in declaration order.
 
 The `@Option(order = <int>)` attribute can be used to explicitly control the position in the usage help message at which the option should be shown.
 Options with a lower number are shown before options with a higher number.
 
+==== Required-Option Marker
+Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with the <<Abbreviated Synopsis,`abbreviateSynopsis`>> attribute. For example:
+
+.Java
+[source,java,role="primary"]
+----
+@Command(requiredOptionMarker = '*', abbreviateSynopsis = true)
+class Example {
+    @Option(names = {"-a", "--alpha"}, description = "optional alpha") String alpha;
+    @Option(names = {"-b", "--beta"}, required = true, description = "mandatory beta") String beta;
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+@Command(requiredOptionMarker = '*', abbreviateSynopsis = true)
+class Example {
+    @Option(names = ["-a", "--alpha"], description = ["optional alpha"])
+    lateinit var alpha: String
+
+    @Option(names = ["-b", "--beta"], required = true, description = ["mandatory beta"])
+    lateinit var beta: String
+}
+----
+
+Produces the following usage help message:
+----
+Usage: <main class> [OPTIONS]
+  -a, --alpha=<alpha>   optional alpha
+* -b, --beta=<beta>     mandatory beta
+----
+
+==== Short and Long Option Columns
+
+The default layout shows short options and long options in separate columns, followed by the description column.
+
+Only <<Short (POSIX) Options,POSIX short options>> are shown in the first column, that is, options that start with a single `-` dash and are one character long.
+
+WARNING: Options with two characters are not considered short options and are shown in the long option column.
+
+This is a common layout for Unix utilities, and can enhance usability:
+applications can give a subtle hint to end users that an option is common and encouraged by providing both a short and a long name for the option.
+Conversely, the absence of a short option can signal that the option is unusual or perhaps should be used with care.
+
+TIP: It is possible to left-align all options by using a custom layout.
+See https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/leftalign/LeftAlignOptions.java[LeftAlignOptions.java] in the `picocli-examples` module for an example.
+
+
+==== Long Option Column Width
+The default layout shows short options and long options in separate columns, followed by the description column.
+The width of the long options column shrinks automatically if all long options are very short,
+but by default this column does not grow larger than 20 characters.
+
+If the long option with its option parameter is longer than 20 characters
+(for example: `--output=<outputFolder>`), the long option overflows into the description column, and the option description is shown on the next line.
+
+This (the default) looks like this:
+
+----
+Usage: myapp [-hV] [-o=<outputFolder>]
+  -h, --help      Show this help message and exit.
+  -o, --output=<outputFolder>
+                  Output location full path.
+  -V, --version   Print version information and exit.
+----
+
+As of picocli 4.2, there is programmatic API to change this via the `CommandLine::setLongOptionsMaxWidth` and `UsageMessageSpec::longOptionsMaxWidth` methods.
+
+In the above example, if we call `commandLine.setLongOptionsMaxWidth(23)` before printing the usage help, we get this result:
+
+----
+Usage: myapp [-hV] [-o=<outputFolder>]
+  -h, --help                    Show this help message and exit.
+  -o, --output=<outputFolder>   Output location full path.
+  -V, --version                 Print version information and exit.
+----
+
+The minimum value that can be specified for `longOptionsMaxWidth` is 20, the maximum value is the <<Usage Width,usage width>> minus `20`.
+
+
+=== Usage Width
+The default width of the usage help message is 80 characters.
+Commands defined with `@Command(usageHelpWidth = NUMBER)` in the annotations will use the specified width.
+
+Picocli 3.0 also introduced programmatic API for this via the `CommandLine::setUsageHelpWidth` and `UsageMessageSpec::width` methods.
+
+End users can use system property `picocli.usage.width` to specify a custom width that overrides the programmatically set value.
+
+The minimum width that can be configured is 55 characters.
+
+=== Auto (Terminal) Width
+
+As of picocli 4.0, commands defined with `@Command(usageHelpAutoWidth = true)` will try to adjust the usage message help layout to the terminal width.
+There is also programmatic API to control this via the `CommandLine::setUsageHelpAutoWidth` and `UsageMessageSpec::autoWidth` methods.
+
+End users may enable this by setting system property `picocli.usage.width` to `AUTO`, and may disable this by setting this system property to a numeric value.
+
+This feature requires Java 7.
 
 === Split Synopsis Label
 Options and parameters may have a <<Split Regex, `split`>> attribute to split each parameter into smaller substrings.
@@ -6413,89 +6521,6 @@ This attribute accepts three values:
 * `ON_DEMAND` - (this is the default) only show the default value for this option or positional parameter if `showDefaultValues` was specified on the command
 
 These legacy mechanisms still work but for maximum flexibility use the variables explained above.
-
-=== Required-Option Marker
-Required options can be marked in the option list by the character specified with the `requiredOptionMarker` attribute. By default options are not marked because the synopsis shows users which options are required and which are optional. This feature may be useful in combination with the <<Abbreviated Synopsis,`abbreviateSynopsis`>> attribute. For example:
-
-.Java
-[source,java,role="primary"]
-----
-@Command(requiredOptionMarker = '*', abbreviateSynopsis = true)
-class Example {
-    @Option(names = {"-a", "--alpha"}, description = "optional alpha") String alpha;
-    @Option(names = {"-b", "--beta"}, required = true, description = "mandatory beta") String beta;
-}
-----
-
-.Kotlin
-[source,kotlin,role="secondary"]
-----
-@Command(requiredOptionMarker = '*', abbreviateSynopsis = true)
-class Example {
-    @Option(names = ["-a", "--alpha"], description = ["optional alpha"])
-    lateinit var alpha: String
-
-    @Option(names = ["-b", "--beta"], required = true, description = ["mandatory beta"])
-    lateinit var beta: String
-}
-----
-
-Produces the following usage help message:
-----
-Usage: <main class> [OPTIONS]
-  -a, --alpha=<alpha>   optional alpha
-* -b, --beta=<beta>     mandatory beta
-----
-
-=== Usage Width
-The default width of the usage help message is 80 characters.
-Commands defined with `@Command(usageHelpWidth = NUMBER)` in the annotations will use the specified width.
-
-Picocli 3.0 also introduced programmatic API for this via the `CommandLine::setUsageHelpWidth` and `UsageMessageSpec::width` methods.
-
-End users can use system property `picocli.usage.width` to specify a custom width that overrides the programmatically set value.
-
-The minimum width that can be configured is 55 characters.
-
-=== Auto (Terminal) Width
-
-As of picocli 4.0, commands defined with `@Command(usageHelpAutoWidth = true)` will try to adjust the usage message help layout to the terminal width.
-There is also programmatic API to control this via the `CommandLine::setUsageHelpAutoWidth` and `UsageMessageSpec::autoWidth` methods.
-
-End users may enable this by setting system property `picocli.usage.width` to `AUTO`, and may disable this by setting this system property to a numeric value.
-
-This feature requires Java 7.
-
-=== Long Option Column Width
-The default layout shows short options and long options in separate columns, followed by the description column.
-The width of the long options column shrinks automatically if all long options are very short,
-but by default this column does not grow larger than 20 characters.
-
-If the long option with its option parameter is longer than 20 characters
-(for example: `--output=<outputFolder>`), the long option overflows into the description column, and the option description is shown on the next line.
-
-This (the default) looks like this:
-
-----
-Usage: myapp [-hV] [-o=<outputFolder>]
-  -h, --help      Show this help message and exit.
-  -o, --output=<outputFolder>
-                  Output location full path.
-  -V, --version   Print version information and exit.
-----
-
-As of picocli 4.2, there is programmatic API to change this via the `CommandLine::setLongOptionsMaxWidth` and `UsageMessageSpec::longOptionsMaxWidth` methods.
-
-In the above example, if we call `commandLine.setLongOptionsMaxWidth(23)` before printing the usage help, we get this result:
-
-----
-Usage: myapp [-hV] [-o=<outputFolder>]
-  -h, --help                    Show this help message and exit.
-  -o, --output=<outputFolder>   Output location full path.
-  -V, --version                 Print version information and exit.
-----
-
-The minimum value that can be specified for `longOptionsMaxWidth` is 20, the maximum value is the <<Usage Width,usage width>> minus `20`.
 
 == ANSI Colors and Styles
 Using colors in your command's output does not just look good: by *contrasting* important elements like option names from the rest of the message, it *reduces the cognitive load* on the user.

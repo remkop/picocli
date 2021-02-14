@@ -35,6 +35,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1308] DOC: Add example for Option `converter`, improve text for default values. Thanks to [Abhijit Sarkar](https://github.com/asarkar) for raising this.
 * [#1314] DOC: Fix use of deprecated Maven properties in README. Thanks to [Philippe Charles](https://github.com/charphi) for the pull request.
 * [#1323] DOC: Update Testing section of the user manual for Stefan Birkner's library [System-Lambda](https://github.com/stefanbirkner/system-lambda).
+* [#1325] DOC: Add section on Short and Long Option Columns to user manual. Thanks to [Andrei Ciobanu](https://github.com/nomemory) for raising this.
 * [#1313] DEP: Bump jline3Version in order to avoid stackoverflow error. Thanks to [Rupert Madden-Abbott](https://github.com/rupert-madden-abbott) for the pull request.
 
 ## <a name="4.6.2-deprecated"></a> Deprecations
