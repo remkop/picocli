@@ -25,10 +25,10 @@ jar {
     manifest {
         attributes 'Specification-Title': 'Picocli Annotation Processing Tests',
                 'Specification-Vendor'  : 'Remko Popma',
-                'Specification-Version' : archiveVersion,
+                'Specification-Version' : archiveVersion.get(),
                 'Implementation-Title'  : 'Picocli Annotation Processing Tests',
                 'Implementation-Vendor' : 'Remko Popma',
-                'Implementation-Version': archiveVersion,
+                'Implementation-Version': archiveVersion.get(),
                 'Automatic-Module-Name' : 'info.picocli.annotation.processing.tests'
     }
 }
