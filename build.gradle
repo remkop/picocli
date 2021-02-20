@@ -208,10 +208,10 @@ jar {
     manifest {
         attributes 'Specification-Title'   : 'picocli',
                    'Specification-Vendor'  : 'Remko Popma',
-                   'Specification-Version' : archiveVersion,
+                   'Specification-Version' : archiveVersion.get(),
                    'Implementation-Title'  : 'picocli',
                    'Implementation-Vendor' : 'Remko Popma',
-                   'Implementation-Version': archiveVersion,
+                   'Implementation-Version': archiveVersion.get(),
                    'Main-Class'            : 'picocli.AutoComplete'
     }
     // copy module-info.class to META-INF/versions/9
