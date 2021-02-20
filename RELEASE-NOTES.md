@@ -38,7 +38,8 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1325] DOC: Add section on Short and Long Option Columns to user manual. Thanks to [Andrei Ciobanu](https://github.com/nomemory) for raising this.
 * [#1313] DEP: Bump jline3Version in order to avoid stackoverflow error. Thanks to [Rupert Madden-Abbott](https://github.com/rupert-madden-abbott) for the pull request.
 * [#1327] BUILD: fix incorrect version in `MANIFEST.MF`. Thanks to [Fiouz](https://github.com/Fiouz) for the pull request.
-
+* [#1328] BUILD: Upgrade Gradle to 6.8.2 and enable official Gradle Wrapper Validation GitHub Action. Thanks to [Fiouz](https://github.com/Fiouz) for the pull request.
+  
 ## <a name="4.6.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
 
