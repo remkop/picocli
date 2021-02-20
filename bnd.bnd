@@ -1,3 +1,3 @@
-Import-Package: !org.fusesource.jansi, *
+Import-Package: !org.fusesource.jansi,!groovy.lang, *
 Export-Package: picocli
 -fixupmessages "^Classes found in the wrong directory: \\{META-INF/versions/9/module-info\\.class=module-info}$"
