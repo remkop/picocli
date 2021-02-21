@@ -7156,8 +7156,12 @@ public class CommandLine {
              * @see Command#mixinStandardHelpOptions() */
             public CommandSpec mixinStandardHelpOptions(boolean newValue) {
                 if (newValue) {
-                    if (!mixins.containsKey(AutoHelpMixin.KEY)) { // #1316 avoid DuplicateOptionAnnotationsException
-                        CommandSpec mixin = CommandSpec.forAnnotatedObject(new AutoHelpMixin(), new DefaultFactory());
+                    CommandSpec mixin = CommandSpec.forAnnotatedObject(new AutoHelpMixin(), new DefaultFactory());
+                    boolean overlap = false;
+                    for (String key : mixin.optionsMap().keySet()) {
+                        if (optionsMap().containsKey(key)) { overlap = true; break; }
+                    }
+                    if (!overlap) { // #1316, 1319 avoid DuplicateOptionAnnotationsException
                         mixin.inherited = this.inherited();
                         addMixin(AutoHelpMixin.KEY, mixin);
                     }

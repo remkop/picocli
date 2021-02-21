@@ -558,7 +558,6 @@ public class InheritedOptionTest {
         new CommandLine(new Example()); // succeeds without error
     }
 
-    @Ignore("Needs fix for #1319")
     @Test
     public void testIssue1319() {
         @Command(scope = CommandLine.ScopeType.INHERIT
