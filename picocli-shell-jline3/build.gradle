@@ -79,15 +79,14 @@ publishing {
             groupId 'info.picocli'
             artifactId bintrayPackage
             version "$projectVersion"
-            pom.withXml {
-                def root = asNode()
-                root.appendNode('packaging',     'jar')
-                root.appendNode('name',          bintrayPackage)
-                root.appendNode('description',   description)
-                root.appendNode('url',           'http://picocli.info')
-                root.appendNode('inceptionYear', '2018')
-                root.children().last() + pomConfig
+            pom {
+                packaging = 'jar'
+                name = bintrayPackage
+                description = project.description
+                url = 'http://picocli.info'
+                inceptionYear = '2018'
             }
+            pom pomConfig
         }
     }
 }
