@@ -41,6 +41,8 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1327] BUILD: fix incorrect version in `MANIFEST.MF`. Thanks to [Fiouz](https://github.com/Fiouz) for the pull request.
 * [#1328] BUILD: Upgrade Gradle to 6.8.2 and enable official Gradle Wrapper Validation GitHub Action. Thanks to [Fiouz](https://github.com/Fiouz) for the pull request.
 * [#1329] BUILD: OSGi manifest entry in picocli-4.6.0.jar should not require groovy. Thanks to [Fiouz](https://github.com/Fiouz) for raising this.
+* [#1330] BUILD: use type-safe DSL instead of direct XML manipulation to generate `pom.xml`. Thanks to [Fiouz](https://github.com/Fiouz) for the pull request.
+
 
 ## <a name="4.6.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
