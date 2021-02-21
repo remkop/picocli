@@ -166,26 +166,26 @@ allprojects {
         mavenOssUser      = System.getenv('MAVEN_OSS_USER')
         mavenOssPassword  = System.getenv('MAVEN_OSS_PASSWORD')
         
-        // pom configuration for MavenPublication
+        // pom configuration for MavenPublication, as per https://docs.gradle.org/current/userguide/publishing_maven.html#sec:modifying_the_generated_pom
         pomConfig = {
             licenses {
                 license {
-                    name "The Apache Software License, version 2.0"
-                    url "http://www.apache.org/licenses/LICENSE-2.0.txt"
-                    distribution "repo"
+                    name = "The Apache Software License, version 2.0"
+                    url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                    distribution = "repo"
                 }
             }
             developers {
                 developer {
-                    id "rpopma"
-                    name "Remko Popma"
-                    email "rpopma@apache.org"
+                    id = "rpopma"
+                    name = "Remko Popma"
+                    email = "rpopma@apache.org"
                 }
             }
             scm {
-                url "https://github.com/remkop/picocli/tree/master"
-                connection 'scm:git:https://github.com/remkop/picocli.git'
-                developerConnection 'scm:git:ssh://github.com:remkop/picocli.git'
+                url = "https://github.com/remkop/picocli/tree/master"
+                connection = 'scm:git:https://github.com/remkop/picocli.git'
+                developerConnection = 'scm:git:ssh://github.com:remkop/picocli.git'
             }
         }
     }
@@ -442,15 +442,14 @@ publishing {
             groupId 'info.picocli'
             artifactId bintrayPackage
             version "$projectVersion"
-            pom.withXml {
-                def root = asNode()
-                root.appendNode('packaging',     'jar')
-                root.appendNode('name',          'picocli - a mighty tiny Command Line Interface')
-                root.appendNode('description',   description)
-                root.appendNode('url',           'http://picocli.info')
-                root.appendNode('inceptionYear', '2017')
-                root.children().last() + pomConfig
+            pom {
+                packaging = 'jar'
+                name = 'picocli - a mighty tiny Command Line Interface'
+                description = project.description
+                url = 'http://picocli.info'
+                inceptionYear = '2017'
             }
+            pom pomConfig
         }
     }
 }
