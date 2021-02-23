@@ -1517,7 +1517,7 @@ NOTE: If a collection is returned from a type converter, the _contents_ of the c
 
 If the field or method parameter is `null`, picocli will instantiate it when the option or positional parameter is successfully matched.
 If the `Collection` type is not a concrete class, picocli will make a best effort to instantiate it based on the field type:
-`List -> ArrayList`, `OrderedSet -> TreeSet`, `Set -> LinkedHashSet`, `Queue -> LinkedList`, otherwise, `ArrayList`.
+`List -> ArrayList`, `SortedSet -> TreeSet`, `Set -> LinkedHashSet`, `Queue -> LinkedList`, otherwise, `ArrayList`.
 
 Multi-value options and positional parameters can be defined with a `split` regular expression to allow end users to specify multiple values in a single parameter.
 See the <<Split Regex>> section for details.
