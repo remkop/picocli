@@ -576,4 +576,21 @@ public class InheritedOptionTest {
         new CommandLine(app).execute("sub", "-foo", "42" );
         assertEquals(42, app.subFoo);
     }
+
+    @Test
+    public void testIssue1331() {
+        @Command(scope = CommandLine.ScopeType.INHERIT)
+        class InheritHelpApp  {
+            int subFoo;
+
+            @Command(mixinStandardHelpOptions = true)
+            void sub(@Option(names = "-foo") int foo) {
+                System.out.printf("Foo: %d", foo);
+                subFoo = foo;
+            }
+        }
+        InheritHelpApp app = new InheritHelpApp();
+        new CommandLine(app).execute("sub", "-foo", "42" );
+        assertEquals(42, app.subFoo);
+    }
 }

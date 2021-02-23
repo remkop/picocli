@@ -6425,8 +6425,8 @@ public class CommandLine {
                 updatedSubcommandsToInheritFrom(root);
             }
             private void updatedSubcommandsToInheritFrom(CommandSpec root) {
-                if (root != this) {
-                    mixinStandardHelpOptions(root.mixinStandardHelpOptions());
+                if (root != this && root.mixinStandardHelpOptions()) { // #1331 only add, don't remove
+                    mixinStandardHelpOptions(true);
                 }
                 Set<CommandLine> subcommands = new HashSet<CommandLine>(subcommands().values());
                 for (CommandLine sub : subcommands) {
@@ -7165,6 +7165,12 @@ public class CommandLine {
                         mixin.inherited = this.inherited();
                         addMixin(AutoHelpMixin.KEY, mixin);
                     }
+                    // #1331 if inherit(ed) we also add to subcommands
+                    if (scopeType() == ScopeType.INHERIT || inherited()) {
+                        for (CommandLine sub : new HashSet<CommandLine>(subcommands().values())) {
+                            sub.getCommandSpec().mixinStandardHelpOptions(newValue);
+                        }
+                    }
                 } else {
                     CommandSpec helpMixin = mixins.remove(AutoHelpMixin.KEY);
                     if (helpMixin != null) {
@@ -7176,11 +7182,7 @@ public class CommandLine {
                             }
                         }
                     }
-                }
-                if (scopeType() == ScopeType.INHERIT || inherited()) {
-                    for (CommandLine sub : new HashSet<CommandLine>(subcommands().values())) {
-                        sub.getCommandSpec().mixinStandardHelpOptions(newValue);
-                    }
+                    // #1331 we don't remove StandardHelpOptions from subcommands, even if they inherit from us
                 }
                 return this;
             }
