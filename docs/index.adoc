@@ -11669,7 +11669,8 @@ Additionally, you can do white box testing by keeping a reference to the applica
 
 For example:
 
-[source,java]
+.Java
+[source,java, role=primary]
 ----
 MyApp app = new MyApp();
 CommandLine cmd = new CommandLine(app);
@@ -11687,10 +11688,30 @@ assertEquals("expectedValue1", app.getState1());
 assertEquals("expectedValue2", app.getState2());
 ----
 
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+val app = MyApp()
+val cmd = CommandLine(app)
+
+val sw = StringWriter()
+cmd.out = PrintWriter(sw)
+
+// black box testing
+val exitCode = cmd.execute("-x", "-y=123")
+assertEquals(0, exitCode)
+assertEquals("Your output is abc...", sw.toString())
+
+// white box testing
+assertEquals("expectedValue1", app.state1)
+assertEquals("expectedValue2", app.state2)
+----
+
 This assumes that the application uses the `PrintWriter` provided by https://picocli.info/apidocs/picocli/CommandLine.html#getOut--[`CommandLine.getOut`] or  https://picocli.info/apidocs/picocli/CommandLine.html#getErr--[`CommandLine.getErr`].
 Applications can get these writers via the <<#spec-annotation,`@Spec`>> annotation:
 
-[source,java]
+.Java
+[source,java,role=primary]
 ----
 @Command
 class MyApp implements Runnable {
@@ -11703,8 +11724,22 @@ class MyApp implements Runnable {
 }
 ----
 
+.Kotlin
+[source,kotlin,role=secondary]
+----
+@Command
+class MyApp : Runnable {
+    @Spec lateinit var spec: CommandSpec
+    
+    override fun run() {
+        // make testing easier by printing to the Err and Out streams provided by picocli
+        spec.commandLine().out.println("Your output is abc...")
+    }
+}
+----
+
 === Testing the Output
-Applications that print to `System.out` or `System.err` directly, or use a version of picocli older than 4.0, can be tested by capturing the standard output and error streams.
+Applications that print to `System.out` or `System.err` directly, or use a version of picocli lower than 4.0, can be tested by capturing the standard output and error streams.
 There are various options for doing this, some of which are shown below.
 
 ==== Java 8+ with System-Lambda
