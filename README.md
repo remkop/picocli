@@ -72,7 +72,7 @@ Picocli-based applications can easily [integrate](https://picocli.info/#_depende
 The [Micronaut](https://micronaut.io/) microservices framework has [built-in support](https://docs.micronaut.io/latest/guide/index.html#commandLineApps) for picocli.
 Picocli ships with a [`picocli-spring-boot-starter` module](https://github.com/remkop/picocli/tree/master/picocli-spring-boot-starter) 
 that includes a `PicocliSpringFactory` and Spring Boot auto-configuration to use Spring dependency injection in your picocli command line application.
-The user manual has an [example](https://picocli.info/#_guice_example) of integrating with Guice.
+The user manual has examples of integrating with [Guice](https://picocli.info/#_guice_example), [Spring Boot](https://picocli.info/#_spring_boot_example), [Micronaut](https://picocli.info/#_micronaut_example), [Quarkus](https://picocli.info/#_quarkus_example) and with containers that comply to [CDI 2.0 specification](https://picocli.info/#_cdi_2_0_jsr_365) (JSR 365).
 
 ### Releases
 * [All Releases](https://github.com/remkop/picocli/releases)
@@ -106,7 +106,6 @@ The user manual has an [example](https://picocli.info/#_guice_example) of integr
 * [CLI applications with GraalVM Native Image](https://medium.com/graalvm/cli-applications-with-graalvm-native-image-d629a40aa0be) (2020-11-13) by [Oleg Šelajev](https://twitter.com/shelajev).
 * [Picocli subcommands - One program, many purposes](https://aragost.com/blog/java/picocli-subcommands.html) (2020-09-22) by [Jonas Andersen](https://twitter.com/PrimusAlgo).
 * [How to build a CLI app in Java using jbang and picocli](https://www.twilio.com/blog/cli-app-java-jbang-picocli) (2020-08-13) by [Matthew Gilliard](https://twitter.com/MaximumGilliard).
-* [VIDEO] [Tuesday Java Lunch & Learn. This week: picocli](https://m.twitch.tv/videos/706906131) (2020-08-11) by MaximumGilliard - twitch.tv.
 * [Building a GitHub Dependents Scraper with Quarkus and Picocli](https://blog.marcnuri.com/github-dependents-scraper-quarkus-picocli/) (2020-07-31) by [Marc Nuri](https://twitter.com/MarcNuri).
 * [Building a decent Java CLI](https://atextor.de/2020/07/27/building-a-decent-java-cli.html) (2020-07-27) by [Andreas Textor](https://twitter.com/atextor).
 * [VIDEO] (Another very well-produced video by Szymon Stepniak) [OAuth 2.0 in a Java command-line app | #micronaut #picocli #oauth2](https://www.youtube.com/watch?v=js5H9UbmmMY) (2020-07-23) by [Szymon Stepniak](https://e.printstacktrace.blog/) ([YouTube channel](https://www.youtube.com/channel/UCEf8e5YAYnowq-2deW4tpsw)).
