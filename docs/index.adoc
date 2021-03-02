@@ -11091,7 +11091,7 @@ class MailServiceImpl : IMailService {
 <1> The `JavaMailSender` is provided by the Spring framework.
 <2> Once a mail was successful sent, a log message will be emitted.
 
-Finally we have to configure our mail service. This can be done inside a file `application properties`, which we put in a `config` subdirectory of your project:
+Finally we have to configure our mail service. This can be done inside a file `application.properties`, which we put in a `config` subdirectory of your project:
 
 .application.properties
 ----
