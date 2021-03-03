@@ -503,6 +503,9 @@ public class ManPageGenerator implements Callable<Integer> {
         for (ArgGroupSpec group : groups) { options.removeAll(group.options()); }
 
         if (options.isEmpty() && !spec.usageMessage().showEndOfOptionsDelimiterInUsageHelp()) {
+            pw.printf("// tag::picocli-generated-man-section-options[]%n");
+            pw.printf("// end::picocli-generated-man-section-options[]%n");
+            pw.println();
             return;
         }
         pw.printf("// tag::picocli-generated-man-section-options[]%n");
@@ -604,6 +607,9 @@ public class ManPageGenerator implements Callable<Integer> {
         for (ArgGroupSpec group : groups) { positionals.removeAll(group.positionalParameters()); }
 
         if (positionals.isEmpty() && !spec.usageMessage().showAtFileInUsageHelp()) {
+            pw.printf("// tag::picocli-generated-man-section-arguments[]%n");
+            pw.printf("// end::picocli-generated-man-section-arguments[]%n");
+            pw.println();
             return;
         }
         pw.printf("// tag::picocli-generated-man-section-arguments[]%n");
@@ -637,6 +643,9 @@ public class ManPageGenerator implements Callable<Integer> {
         }
 
         if (spec.subcommands().isEmpty()) {
+            pw.printf("// tag::picocli-generated-man-section-commands[]%n");
+            pw.printf("// end::picocli-generated-man-section-commands[]%n");
+            pw.println();
             return;
         }
         pw.printf("// tag::picocli-generated-man-section-commands[]%n");
@@ -667,6 +676,9 @@ public class ManPageGenerator implements Callable<Integer> {
 
     static void genExitStatus(PrintWriter pw, CommandSpec spec) {
         if (spec.usageMessage().exitCodeList().isEmpty()) {
+            pw.printf("// tag::picocli-generated-man-section-exit-status[]%n");
+            pw.printf("// end::picocli-generated-man-section-exit-status[]%n");
+            pw.println();
             return;
         }
         String heading = makeHeading(spec.usageMessage().exitCodeListHeading(), "Exit status");
@@ -688,6 +700,9 @@ public class ManPageGenerator implements Callable<Integer> {
 
     static void genFooter(PrintWriter pw, CommandSpec spec) {
         if (spec.usageMessage().footerHeading().length() == 0 || spec.usageMessage().footer().length == 0) {
+            pw.printf("// tag::picocli-generated-man-section-footer[]%n");
+            pw.printf("// end::picocli-generated-man-section-footer[]%n");
+            pw.println();
             return;
         }
         String heading = makeHeading(spec.usageMessage().footerHeading(), "Footer");
