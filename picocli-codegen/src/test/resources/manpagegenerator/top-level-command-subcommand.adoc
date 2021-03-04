@@ -47,7 +47,7 @@ Example subcommand
 // tag::picocli-generated-man-section-commands[]
 == Commands
 
-*gen-manpage*::
+xref:top-level-command-subcommand-gen-manpage.adoc[*gen-manpage*]::
   Generates man pages for all commands in the specified directory.
 
 // end::picocli-generated-man-section-commands[]

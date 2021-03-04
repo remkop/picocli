@@ -44,7 +44,7 @@ _<file>_::
 // tag::picocli-generated-man-section-commands[]
 == Commands
 
-*gen-manpage*::
+xref:main_class-gen-manpage.adoc[*gen-manpage*]::
   Generates man pages for all commands in the specified directory.
 
 // end::picocli-generated-man-section-commands[]

@@ -50,10 +50,10 @@ example top-level command
 // tag::picocli-generated-man-section-commands[]
 == Commands
 
-*subcommand*::
+xref:top-level-command-subcommand.adoc[*subcommand*]::
   Example subcommand
 
-*visible*::
+xref:top-level-command-visible.adoc[*visible*]::
   Example visible subcommand
 
 // end::picocli-generated-man-section-commands[]

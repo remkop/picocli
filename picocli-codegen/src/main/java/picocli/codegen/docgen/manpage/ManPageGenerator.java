@@ -656,7 +656,8 @@ public class ManPageGenerator implements Callable<Integer> {
 
             Text namesText = subHelp.commandNamesText(", ");
             String names = namesText.toString();
-            pw.printf("%s::%n", names);
+            String xrefname = makeFileName(subHelp.commandSpec());
+            pw.printf("xref:%s[%s]::%n", xrefname, names);
 
             CommandLine.Model.UsageMessageSpec usage = subHelp.commandSpec().usageMessage();
             String header = !empty(usage.header())

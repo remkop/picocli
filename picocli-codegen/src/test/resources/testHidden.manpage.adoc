@@ -50,7 +50,7 @@ This app does great things.
 // tag::picocli-generated-man-section-commands[]
 == Commands
 
-*a-sub*::
+xref:testHidden-a-sub.adoc[*a-sub*]::
   A sub command
 
 // end::picocli-generated-man-section-commands[]
