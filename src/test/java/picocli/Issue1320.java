@@ -35,7 +35,7 @@ public class Issue1320 {
         @Spec
         CommandSpec spec;
 
-        @Override
+        //@Override
         public void run() {
             spec.commandLine().getOut().print(text);
             spec.commandLine().getOut().flush();
@@ -46,15 +46,16 @@ public class Issue1320 {
 
     @Test
     public void testIssue1320() {
-        String unmappable = "[abcµ]";
+        String unmappable  = "[abcµ]";
+        //String unmappable2 = "[abcμ]";
 
         resetLogs();
         System.clearProperty(SUN_STDOUT_ENCODING);
         System.clearProperty(SUN_STDERR_ENCODING);
         fixLogPrintStream(Charset.defaultCharset().name());
         assertEquals(CommandLine.ExitCode.OK, new CommandLine(new TestCommand()).execute(unmappable));
-        assertEquals(unmappable, systemOutRule.getLog());
-        assertEquals(unmappable, systemErrRule.getLog());
+        assertEquals(systemOutRule.getLog(), unmappable, systemOutRule.getLog());
+        assertEquals(systemErrRule.getLog(), unmappable, systemErrRule.getLog());
 
         resetLogs();
         System.setProperty(SUN_STDOUT_ENCODING, CP_437);
