@@ -23,6 +23,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.6.2-fixes"></a> Fixed issues
+* [#1337][#1338] Enhancement: prevent spurious `WARNING: tag not found in include file` messages when generating man pages. Thanks to [Philip Crotwell](https://github.com/crotwell) for the pull request.
 * [#1303] Bugfix: Prevent `IllegalArgumentException: argument type mismatch` error in method subcommands with inherited mixed-in standard help options. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#1300] Bugfix: Avoid spurious warning "Could not set initial value for field boolean" when reusing `CommandLine` with ArgGroup. Thanks to [Yashodhan Ghadge](https://github.com/codexetreme) for raising this.
 * [#1316] Bugfix: Avoid `DuplicateOptionAnnotationsException` thrown on `mixinStandardHelpOptions` for subcommands when parent has `scope = INHERIT` by `picocli-codegen` annotation processor. Thanks to [Philippe Charles](https://github.com/charphi) for raising this.
