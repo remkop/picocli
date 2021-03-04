@@ -9573,6 +9573,134 @@ Options with a <<Default Values,default value>> can use the `${DEFAULT-VALUE}` v
 userName=Specify the user name. The default is ${DEFAULT-VALUE}.
 ----
 
+=== Controlling the locale
+
+In your localized application, it may be desirable to specify the locale in order to determine the language of message texts and help output.
+One way of controlling the locale is to give `-Duser.language=desiredLocale` as VM argument when running the app.
+A more accessible and user-friendly approach is to to implement a command line parameter (e. g. `--locale`) inside your app which can be used to change the locale.
+The latter technique requires a two-phase approach to parsing in your application in order to get a valid load order.
+The minimal example below demonstrates how to implement this two phase approach:
+
+.Java
+[source,java,role="primary"]
+----
+class InitLocale {
+    @Option(names = { "-l", "--locale" }, description = "locale for message texts (phase 1)")
+    void setLocale(String locale) {
+        Locale.setDefault(new Locale(locale));
+    }
+
+    @Unmatched
+    List<String> remainder; // ignore any other parameters and options in the first parsing phase
+}
+
+@Command(name = "GreetingApp", resourceBundle = "mybundle", mixinStandardHelpOptions = true)
+public class GreetingApp implements Runnable {
+    @Option(names = { "-l", "--locale" }, paramLabel = "<locale>")
+    private String ignored;
+
+    @Parameters(arity = "1..", paramLabel = "<name1> <name2>")
+    private String[] names;
+
+    ResourceBundle bundle = ResourceBundle.getBundle("mybundle");
+
+    public void run() { // business logic here
+        for (String name : names) {
+            System.out.println(MessageFormat.format(bundle.getString("Hello"), name));
+        }
+    }
+
+    public static void main(String[] args) {
+        // first phase: configure locale
+        new CommandLine(new InitLocale()).parseArgs(args);
+
+        // second phase: parse all args (ignoring --locale) and run the app
+        new CommandLine(new GreetingApp()).execute(args);
+    }
+}
+----
+
+.Kotlin
+[source,kotlin,role="secondary"]
+----
+class InitLocale {
+    @Option(names = ["-l", "--locale"], description = ["locale for message texts (phase 1)"])
+    fun setLocale(locale: String?) {
+        Locale.setDefault(Locale(locale))
+    }
+
+    @Unmatched
+    lateinit var others : List<String> // ignore other parameters/options in first parsing phase
+}
+
+@Command(name = "GreetingApp", resourceBundle = "mybundle", mixinStandardHelpOptions = true)
+class GreetingApp : Runnable {
+    @Option(names = ["-l", "--locale"], paramLabel = "<locale>")
+    lateinit var ignored: String
+
+    @Parameters(arity = "1..", paramLabel = "<name1> <name2>")
+    lateinit var names: Array<String>
+
+    private var bundle = ResourceBundle.getBundle("mybundle")
+    
+    override fun run() { // business logic here
+        names.onEach {
+            println(MessageFormat.format(bundle.getString("Hello"), it))
+        }
+    }
+}
+
+fun main(args: Array<String>)  {
+    // first phase: configure locale
+    CommandLine(picocli.examples.kotlin.i18n.localecontrol.InitLocale()).parseArgs(*args)
+
+    // second phase: parse all args (ignoring --locale) and run the app
+    exitProcess(CommandLine(GreetingApp()).execute(*args))
+}
+----
+
+Now put the default properties file (`mybundle.properties`, in English) and the Spanish language variant (`mybundle_es.properties`) in place:
+
+.mybundle.properties
+----
+Hello = Hello {0}!
+----
+
+.mybundle_es.properties
+----
+Hello = ¡Hola {0}!
+----
+
+Eventually, we are ready to run our application:
+
+[source,bash]
+----
+java -cp "picocli-4.6.2-SNAPSHOT.jar;myapp.jar" org.myorg.GreetingApp Sarah Lea
+----
+
+With no command line parameter `--locale` given, the message texts are printed in the default language (here: English):
+
+----
+Hello Sarah!
+Hello Lea!
+----
+
+In order to control the locale choosen for our output, we have to make use of the command line parameter `--locale`:
+
+[source,bash]
+----
+java -cp "picocli-4.6.2-SNAPSHOT.jar;myapp.jar" org.myorg.GreetingApp --locale=es Sarah Lea
+----
+
+Now our message texts are printed in Spanish:
+
+----
+¡Hola Sarah!
+¡Hola Lea!
+----
+
+Using the command line parameter `--locale`, one can also determine the language of the help output of your application.
+The https://github.com/remkop/picocli/blob/master/picocli-examples[`picocli-examples`] module has examples with fully implemented, localized help output, coded both in https://github.com/remkop/picocli/blob/master/picocli-examples/src/main/java/picocli/examples/i18n/localecontrol/LocaleControl.java[Java] and https://github.com/remkop/picocli/tree/master/picocli-examples/src/main/kotlin/picocli/examples/kotlin/i18n/localecontrol/LocaleControl.kt[Kotlin].
 
 == Variable Interpolation
 
