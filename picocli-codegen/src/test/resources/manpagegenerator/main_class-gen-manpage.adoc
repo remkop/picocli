@@ -67,6 +67,12 @@ For example, `-v -v -v` or `-vvv`
 
 // end::picocli-generated-man-section-arguments[]
 
+// tag::picocli-generated-man-section-commands[]
+// end::picocli-generated-man-section-commands[]
+
+// tag::picocli-generated-man-section-exit-status[]
+// end::picocli-generated-man-section-exit-status[]
+
 // tag::picocli-generated-man-section-footer[]
 ==  Converting to Man Page Format 
 
