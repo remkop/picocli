@@ -52,6 +52,9 @@ This app does great things.
 
 // end::picocli-generated-man-section-arguments[]
 
+// tag::picocli-generated-man-section-commands[]
+// end::picocli-generated-man-section-commands[]
+
 // tag::picocli-generated-man-section-exit-status[]
 == Exit status
 
