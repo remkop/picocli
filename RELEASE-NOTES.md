@@ -38,7 +38,9 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1314] DOC: Fix use of deprecated Maven properties in README. Thanks to [Philippe Charles](https://github.com/charphi) for the pull request.
 * [#1323] DOC: Update Testing section of the user manual for Stefan Birkner's library [System-Lambda](https://github.com/stefanbirkner/system-lambda).
 * [#1325] DOC: Add section on Short and Long Option Columns to user manual. Thanks to [Andrei Ciobanu](https://github.com/nomemory) for raising this.
+* [#1336] DOC: Kotlin sample code, documentation improvements. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1313] DEP: Bump jline3Version in order to avoid stackoverflow error. Thanks to [Rupert Madden-Abbott](https://github.com/rupert-madden-abbott) for the pull request.
+* [#1336] BUILD: Bump Spring Boot, Gradle and Kotlin to latest version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1327] BUILD: fix incorrect version in `MANIFEST.MF`. Thanks to [Fiouz](https://github.com/Fiouz) for the pull request.
 * [#1328] BUILD: Upgrade Gradle to 6.8.2 and enable official Gradle Wrapper Validation GitHub Action. Thanks to [Fiouz](https://github.com/Fiouz) for the pull request.
 * [#1329] BUILD: OSGi manifest entry in picocli-4.6.0.jar should not require groovy. Thanks to [Fiouz](https://github.com/Fiouz) for raising this.
