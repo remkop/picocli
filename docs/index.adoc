@@ -11999,12 +11999,17 @@ class TestOutput {
 
 === Testing the Exit Code
 Testing the exit code of applications that call `System.exit` can be tricky but is not impossible.
+Depending on your programming language, your environment and your testing framework, you have several options: 
 
-==== Java 8+ and `catchSystemExit`
-Applications that use JUnit 5 or Java 8+ can use Stephan Birkner's https://github.com/stefanbirkner/system-lambda[System-Lambda] project for testing the https://github.com/stefanbirkner/system-lambda#systemexit[exit code].
-For example:
+* **Java 8**: You can use Stephan Birkner's https://github.com/stefanbirkner/system-lambda[System-Lambda] project for testing the https://github.com/stefanbirkner/system-lambda#systemexit[exit code]
+* **Java/Kotlin + Junit 5**: You can use Todd Ginsberg's https://github.com/tginsberg/junit5-system-exit[System.exit()] extension for Junit 5. The project README mentions common https://github.com/tginsberg/junit5-system-exit#use-cases[use cases].
+* **Java + Junit 4**: You can use Stephan Birkner's https://stefanbirkner.github.io/system-rules[System-Rules] project for testing the https://stefanbirkner.github.io/system-rules/#ExpectedSystemExit[exit code].
+* **Kotlin + Kotest**: Kotlin coders you may use the https://kotest.io/[Kotest] test framework which comes with https://kotest.io/docs/extensions/system_extensions.html#system-exit-extensions[System Exit extensions] that allow you to test the exit code.
 
-[source,java]
+The listing below provides code samples for all of the four options mentioned above:
+
+.Java 8
+[source,java,role=primary]
 ----
 import static com.github.stefanbirkner.systemlambda.SystemLambda.catchSystemExit;
 // ...
@@ -12031,12 +12036,36 @@ class MyTest {
 }
 ----
 
-==== JUnit 4 and `ExpectedSystemExit`
+.Java/Junit 5
+[source,java,role=secondary]
+----
+import com.ginsberg.junit.exit.ExpectSystemExitWithStatus;
+import org.junit.jupiter.api.Test;
+// ...
 
-Applications that use JUnit 4 can use Stephan Birkner's https://stefanbirkner.github.io/system-rules[System-Rules] project for testing the https://stefanbirkner.github.io/system-rules/#ExpectedSystemExit[exit code].
-For example:
+class MyTest {
+    @Command
+    static class MyApp implements Callable<Integer> {
+        @Override
+        public Integer call() throws Exception {
+            System.out.println("Hi");
+            return 42;
+        }
+        public static void main (String[] args) {
+            System.exit(new CommandLine(new MyApp()).execute(args));
+        }
+    }
 
-[source,java]
+    @Test
+    @ExpectSystemExitWithStatus(42)
+    void testMyAppExit() {
+        MyApp.main(new String[] {});
+    }
+}
+----
+
+.Java/Junit 4
+[source,java,role=secondary]
 ----
 import org.junit.Rule;
 import org.junit.Test;
@@ -12062,6 +12091,38 @@ class MyTest {
         MyApp.main();
     }
 }
+----
+
+.Kotlin/Kotest
+[source,kotlin,role=secondary]
+----
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.extensions.system.*
+import io.kotest.matchers.shouldBe
+// ...
+
+class SystemExitTest : StringSpec() {
+
+    override fun listeners() = listOf(SpecSystemExitListener)
+
+    init {
+        "Picocli app should exit process with return code 42" {
+            shouldThrow<SystemExitException> {
+                main(arrayOf())
+            }.exitCode shouldBe 42
+        }
+    }
+}
+
+@Command
+class PicocliApp : Callable<Int> {
+    override fun call(): Int {
+        return 42
+    }
+}
+
+fun main(args: Array<String>) : Unit = exitProcess(CommandLine(PicocliApp()).execute(*args))
 ----
 
 === Testing Environment Variables
