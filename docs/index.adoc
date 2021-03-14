@@ -12128,13 +12128,17 @@ fun main(args: Array<String>) : Unit = exitProcess(CommandLine(PicocliApp()).exe
 === Testing Environment Variables
 
 Since picocli offers support for using <<Variable Interpolation,environment variables>> in the annotations, you may want to test this.
+Depending on your programming language, your environment and your testing framework, you have several options: 
 
-==== Java 8+ with `withEnvironmentVariable`
-Applications that use JUnit 5 or Java 8+ can use Stephan Birkner's https://github.com/stefanbirkner/system-lambda[System-Lambda] project for https://github.com/stefanbirkner/system-lambda#environment-variables[testing environment variables].
+* **Java 8**: You can use Stephan Birkner's https://github.com/stefanbirkner/system-lambda[System-Lambda] project for testing https://github.com/stefanbirkner/system-lambda#environment-variables[environment variables]
 
-Example usage:
+* **Java + Junit 4**: You can use Stephan Birkner's https://stefanbirkner.github.io/system-rules[System-Rules] project for testing the https://stefanbirkner.github.io/system-rules/#EnvironmentVariables[environment variables].
+* **Kotlin + Kotest**: Kotlin coders you may use the https://kotest.io/[Kotest] test framework which comes with https://kotest.io/docs/extensions/system_extensions.html#system-environment[System Environment] extension that allow you to test environment variables.
 
-[source,java]
+The listing below provides code samples for the three options mentioned above:
+
+.Java 8
+[source,java,role=primary]
 ----
 import static com.github.stefanbirkner.systemlambda.SystemLambda.withEnvironmentVariable;
 // ...
@@ -12153,16 +12157,13 @@ void testEnvVar() throws Exception {
 
     String expected = String.format("" +
             "Usage: <main class> [--option=<option>]%n" +
-            "      --option=<option>   Some options. Default: some-value%n");
+            "      --option=<option>   Some option. Default: some-value%n");
     assertEquals(expected, actual);
 }
 ----
 
-
-==== JUnit 4 with `EnvironmentVariables`
-Applications that use JUnit 4 can use Stephan Birkner's https://stefanbirkner.github.io/system-rules[System-Rules] project for https://stefanbirkner.github.io/system-rules/#EnvironmentVariables[testing environment variables].
-
-[source,java]
+.Java/JUnit 4
+[source,java,role=secondary]
 ----
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 // ...
@@ -12183,13 +12184,42 @@ class MyTest {
         environmentVariables.set("OTHER_VAR", "second value");
 
         String actual = new CommandLine(new MyApp())
-                .getUsageMessage(CommandLine.Help.Ansi.OFF));
+                .getUsageMessage(CommandLine.Help.Ansi.OFF);
 
         String expected = String.format("" +
                 "Usage: <main class> [--option=<option>]%n" +
-                "      --option=<option>   Some options. Default: some-value%n");
+                "      --option=<option>   Some option. Default: some-value%n");
         assertEquals(expected, actual);
     }
+}
+----
+
+.Kotlin/Kotest
+[source,kotlin,role=secondary]
+----
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.extensions.system.withEnvironment
+import io.kotest.matchers.shouldBe
+import picocli.CommandLine
+import picocli.CommandLine.Command
+
+class EnvironmentVarTest : StringSpec() {
+    init {
+        "env var" {
+            withEnvironment(mapOf("MYVAR" to "some-value", "OTHER_VAR" to "second value")) {
+                CommandLine(MyApp()).getUsageMessage(CommandLine.Help.Ansi.OFF) shouldBe
+                "Usage: <main class> [--option=<option>]" + System.lineSeparator() +
+                "      --option=<option>   Some option. Default: some-value" + System.lineSeparator()
+            }
+        }
+    }
+}
+
+@Command
+class MyApp {
+    @CommandLine.Option(names = ["--option"], defaultValue = "\${env:MYVAR}",
+        description = ["Some option. Default: \${DEFAULT-VALUE}"])
+    lateinit var option: String
 }
 ----
 
