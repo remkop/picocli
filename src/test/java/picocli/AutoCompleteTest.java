@@ -15,6 +15,7 @@
  */
 package picocli;
 
+import java.util.regex.Pattern;
 import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -247,7 +248,8 @@ public class AutoCompleteTest {
 
     private static final String AUTO_COMPLETE_APP_USAGE = String.format("" +
             "Usage: picocli.AutoComplete [-fhVw] [-c=<factoryClass>] [-n=<commandName>]%n" +
-            "                            [-o=<autoCompleteScript>] [@<filename>...]%n" +
+            "                            [-o=<autoCompleteScript>] [-p=<pathCompletionTypes>%n" +
+            "                            [,<pathCompletionTypes>...]]... [@<filename>...]%n" +
             "                            <commandLineFQCN>%n" +
             "Generates a bash completion script for the specified command class.%n" +
             "      [@<filename>...]       One or more argument files containing options.%n" +
@@ -272,6 +274,10 @@ public class AutoCompleteTest {
             "                               the current directory.%n" +
             "  -w, --writeCommandScript   Write a '<commandName>' sample command script to%n" +
             "                               the same directory as the completion script.%n" +
+            "  -p, --pathCompletionTypes=<pathCompletionTypes>[,<pathCompletionTypes>...]%n" +
+            "                             Comma-separated list of fully qualified custom%n" +
+            "                               types for which to delegate to built-in path%n" +
+            "                               name completion.%n" +
             "  -f, --force                Overwrite existing script files.%n" +
             "  -h, --help                 Show this help message and exit.%n" +
             "  -V, --version              Print version information and exit.%n" +
@@ -761,7 +767,7 @@ public class AutoCompleteTest {
                 "\n" +
                 "  local commands=\"\"\n" +
                 "  local flag_opts=\"-w --writeCommandScript -f --force -h --help -V --version\"\n" +
-                "  local arg_opts=\"-c --factory -n --name -o --completionScript\"\n" +
+                "  local arg_opts=\"-c --factory -n --name -o --completionScript -p --pathCompletionTypes\"\n" +
                 "\n" +
                 "  compopt +o default\n" +
                 "\n" +
@@ -776,6 +782,9 @@ public class AutoCompleteTest {
                 "      compopt -o filenames\n" +
                 "      COMPREPLY=( $( compgen -f -- \"${curr_word}\" ) ) # files\n" +
                 "      return $?\n" +
+                "      ;;\n" +
+                "    -p|--pathCompletionTypes)\n" +
+                "      return\n" +
                 "      ;;\n" +
                 "  esac\n" +
                 "\n" +
@@ -1821,6 +1830,112 @@ public class AutoCompleteTest {
     @Command(name = "Level1", subcommands = {NestedLevel2.class})
     static class NestedLevel1 implements Runnable {
         public void run() {
+        }
+
+    }
+
+    @Test
+    public void testPathCompletionOnCustomTypes() throws IOException {
+        final String commandName = "bestCommandEver";
+        final File completionScript = new File(commandName + "_completion");
+        if (completionScript.exists()) {assertTrue(completionScript.delete());}
+        completionScript.deleteOnExit();
+
+        AutoComplete.main(String.format("--name=%s", commandName),
+                String.format("--pathCompletionTypes=%s,%s",
+                        PathCompletionCommand.CustomPath1.class.getName(),
+                        PathCompletionCommand.CustomPath2.class.getName()),
+                "picocli.AutoCompleteTest$PathCompletionCommand");
+
+        byte[] completion = readBytes(completionScript);
+        assertTrue(completionScript.delete());
+
+        String expected = expectedCommandCompletion(commandName,
+                "function _picocli_bestCommandEver() {\n" +
+                        "  # Get completion data\n" +
+                        "  local curr_word=${COMP_WORDS[COMP_CWORD]}\n" +
+                        "  local prev_word=${COMP_WORDS[COMP_CWORD-1]}\n" +
+                        "\n" +
+                        "  local commands=\"\"\n" +
+                        "  local flag_opts=\"\"\n" +
+                        "  local arg_opts=\"--file --custom-path-1 --custom-path-2 --custom-type\"\n" +
+                        "\n" +
+                        "  compopt +o default\n" +
+                        "\n" +
+                        "  case ${prev_word} in\n" +
+                        "    --file)\n" +
+                        "      compopt -o filenames\n" +
+                        "      COMPREPLY=( $( compgen -f -- \"${curr_word}\" ) ) # files\n" +
+                        "      return $?\n" +
+                        "      ;;\n" +
+                        "    --custom-path-1)\n" +
+                        "      compopt -o filenames\n" +
+                        "      COMPREPLY=( $( compgen -f -- \"${curr_word}\" ) ) # files\n" +
+                        "      return $?\n" +
+                        "      ;;\n" +
+                        "    --custom-path-2)\n" +
+                        "      compopt -o filenames\n" +
+                        "      COMPREPLY=( $( compgen -f -- \"${curr_word}\" ) ) # files\n" +
+                        "      return $?\n" +
+                        "      ;;\n" +
+                        "    --custom-type)\n" +
+                        "      return\n" +
+                        "      ;;\n" +
+                        "  esac\n" +
+                        "\n" +
+                        "  if [[ \"${curr_word}\" == -* ]]; then\n" +
+                        "    COMPREPLY=( $(compgen -W \"${flag_opts} ${arg_opts}\" -- \"${curr_word}\") )\n" +
+                        "  else\n" +
+                        "    local positionals=\"\"\n" +
+                        "    COMPREPLY=( $(compgen -W \"${commands} ${positionals}\" -- \"${curr_word}\") )\n" +
+                        "  fi\n" +
+                        "}\n");
+
+        assertEquals(expected, new String(completion, "UTF8"));
+    }
+
+    private String expectedCommandCompletion(String commandName, String autoCompleteFunctionContent) {
+        String expected = expectedCompletionScriptForAutoCompleteApp()
+                .replaceAll("picocli\\.AutoComplete", commandName);
+        expected = Pattern.compile("function _picocli_" + commandName + "\\(\\) \\{\n"
+                + "(.+)\n"
+                + "}\n"
+                + "\n"
+                + "# Define a completion specification \\(a compspec\\) for the", Pattern.DOTALL)
+                .matcher(expected)
+                .replaceFirst(autoCompleteFunctionContent.replace("$", "\\$") +
+                        "\n# Define a completion specification (a compspec) for the");
+        return expected;
+    }
+
+    @Command(name = "PathCompletion")
+    static class PathCompletionCommand implements Runnable {
+
+        @Option(names = "--file")
+        private File file;
+
+        @Option(names = "--custom-path-1")
+        private CustomPath1 customPath1;
+
+        @Option(names = "--custom-path-2")
+        private List<CustomPath2> customPath2;
+
+        @Option(names = "--custom-type")
+        private CustomType customType;
+
+        public void run() {
+        }
+
+        static class CustomPath1 {
+            String value;
+        }
+
+        static class CustomPath2 {
+            String value;
+        }
+
+        static class CustomType {
+            String value;
         }
     }
 }

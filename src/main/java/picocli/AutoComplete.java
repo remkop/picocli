@@ -149,7 +149,7 @@ public class AutoComplete {
                         "as the completion script.")
         boolean writeCommandScript;
 
-        @Option(names = {"-p", "--pathTypes"}, split=",", description = "Comma-separated list of fully "
+        @Option(names = {"-p", "--pathCompletionTypes"}, split=",", description = "Comma-separated list of fully "
                 + "qualified custom types for which to delegate to built-in path name completion.")
         List<String> pathCompletionTypes = new ArrayList<String>();
 
