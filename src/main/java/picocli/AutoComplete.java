@@ -149,6 +149,10 @@ public class AutoComplete {
                         "as the completion script.")
         boolean writeCommandScript;
 
+        @Option(names = {"-p", "--pathTypes"}, split=",", description = "Comma-separated list of fully "
+                + "qualified custom types for which to delegate to built-in path name completion.")
+        List<String> pathCompletionTypes = new ArrayList<String>();
+
         @Option(names = {"-f", "--force"}, description = "Overwrite existing script files.")
         boolean overwriteIfExists;
 
@@ -162,6 +166,11 @@ public class AutoComplete {
             Class<?> cls = Class.forName(commandLineFQCN);
             Object instance = factory.create(cls);
             CommandLine commandLine = new CommandLine(instance, factory);
+            for (String className : pathCompletionTypes) {
+                // TODO implement error handling if the class is not on the classpath
+                Class<?> pathCompletionClass = Class.forName(className);
+                commandLine.registerForPathCompletion(pathCompletionClass);
+            }
 
             if (commandName == null) {
                 commandName = commandLine.getCommandName(); //new CommandLine.Help(commandLine.commandDescriptor).commandName;
@@ -288,7 +297,7 @@ public class AutoComplete {
         final String commandName;
         final CommandLine commandLine;
         final CommandLine parent;
-        
+
         CommandDescriptor(String functionName, String commandName, CommandLine commandLine, CommandLine parent) {
             this.functionName = functionName;
             this.commandName = commandName;
@@ -651,7 +660,7 @@ public class AutoComplete {
         // sql.Types?
 
         // Now generate the "case" switches for the options whose arguments we can generate completions for
-        buff.append(generateOptionsSwitch(argOptionFields));
+        buff.append(generateOptionsSwitch(commandLine, argOptionFields));
 
         // Generate completion lists for positional params with a known set of valid values (including java enums)
         for (PositionalParamSpec f : commandSpec.positionalParameters()) {
@@ -660,7 +669,7 @@ public class AutoComplete {
             }
         }
 
-        String paramsCases = generatePositionalParamsCases(commandSpec.positionalParameters(), "", "${curr_word}");
+        String paramsCases = generatePositionalParamsCases(commandLine, commandSpec.positionalParameters(), "", "${curr_word}");
         String posParamsFooter = "";
         if (paramsCases.length() > 0) {
             String POSITIONAL_PARAMS_FOOTER = "" +
@@ -696,7 +705,8 @@ public class AutoComplete {
         return result;
     }
 
-    private static String generatePositionalParamsCases(List<PositionalParamSpec> posParams, String indent, String currWord) {
+    private static String generatePositionalParamsCases(
+            CommandLine commandLine, List<PositionalParamSpec> posParams, String indent, String currWord) {
         StringBuilder buff = new StringBuilder(1024);
         for (PositionalParamSpec param : posParams) {
             if (param.hidden()) { continue; } // #887 skip hidden params
@@ -711,7 +721,7 @@ public class AutoComplete {
             if (param.completionCandidates() != null) {
                 buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
                 buff.append(format("%s      positionals=$( compgen -W \"$%s_pos_param_args\" -- \"%s\" )\n", indent, paramName, currWord));
-            } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
+            } else if (commandLine.supportsPathCompletion(type)) {
                 buff.append(format("%s    %s (( currIndex >= %d && currIndex <= %d )); then\n", indent, ifOrElif, min, max));
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      positionals=$( compgen -f -- \"%s\" ) # files\n", indent, currWord));
@@ -727,8 +737,8 @@ public class AutoComplete {
         return buff.toString();
     }
 
-    private static String generateOptionsSwitch(List<OptionSpec> argOptions) {
-        String optionsCases = generateOptionsCases(argOptions, "", "${curr_word}");
+    private static String generateOptionsSwitch(CommandLine commandLine, List<OptionSpec> argOptions) {
+        String optionsCases = generateOptionsCases(commandLine, argOptions, "", "${curr_word}");
 
         if (optionsCases.length() == 0) {
             return "";
@@ -742,7 +752,8 @@ public class AutoComplete {
                 + "  esac\n";
     }
 
-    private static String generateOptionsCases(List<OptionSpec> argOptionFields, String indent, String currWord) {
+    private static String generateOptionsCases(
+            CommandLine commandLine, List<OptionSpec> argOptionFields, String indent, String currWord) {
         StringBuilder buff = new StringBuilder(1024);
         for (OptionSpec option : argOptionFields) {
             if (option.hidden()) { continue; } // #887 skip hidden options
@@ -755,7 +766,7 @@ public class AutoComplete {
                 buff.append(format("%s      COMPREPLY=( $( compgen -W \"${%s_option_args}\" -- \"%s\" ) )\n", indent, bashify(option.paramLabel()), currWord));
                 buff.append(format("%s      return $?\n", indent));
                 buff.append(format("%s      ;;\n", indent));
-            } else if (type.equals(File.class) || "java.nio.file.Path".equals(type.getName())) {
+            } else if (commandLine.supportsPathCompletion(type)) {
                 buff.append(format("%s    %s)\n", indent, concat("|", option.names()))); // "    -f|--file)\n"
                 buff.append(format("%s      compopt -o filenames\n", indent));
                 buff.append(format("%s      COMPREPLY=( $( compgen -f -- \"%s\" ) ) # files\n", indent, currWord));
