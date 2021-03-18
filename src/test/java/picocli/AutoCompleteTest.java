@@ -248,8 +248,11 @@ public class AutoCompleteTest {
 
     private static final String AUTO_COMPLETE_APP_USAGE = String.format("" +
             "Usage: picocli.AutoComplete [-fhVw] [-c=<factoryClass>] [-n=<commandName>]%n" +
-            "                            [-o=<autoCompleteScript>] [-p=<pathCompletionTypes>%n" +
-            "                            [,<pathCompletionTypes>...]]... [@<filename>...]%n" +
+            "                            [-o=<autoCompleteScript>]%n" +
+            "                            [--hostCompletionTypes=<hostCompletionTypes>[,%n" +
+            "                            <hostCompletionTypes>...]]...%n" +
+            "                            [--pathCompletionTypes=<pathCompletionTypes>[,%n" +
+            "                            <pathCompletionTypes>...]]... [@<filename>...]%n" +
             "                            <commandLineFQCN>%n" +
             "Generates a bash completion script for the specified command class.%n" +
             "      [@<filename>...]       One or more argument files containing options.%n" +
@@ -274,9 +277,13 @@ public class AutoCompleteTest {
             "                               the current directory.%n" +
             "  -w, --writeCommandScript   Write a '<commandName>' sample command script to%n" +
             "                               the same directory as the completion script.%n" +
-            "  -p, --pathCompletionTypes=<pathCompletionTypes>[,<pathCompletionTypes>...]%n" +
+            "      --pathCompletionTypes=<pathCompletionTypes>[,<pathCompletionTypes>...]%n" +
             "                             Comma-separated list of fully qualified custom%n" +
             "                               types for which to delegate to built-in path%n" +
+            "                               name completion.%n" +
+            "      --hostCompletionTypes=<hostCompletionTypes>[,<hostCompletionTypes>...]%n" +
+            "                             Comma-separated list of fully qualified custom%n" +
+            "                               types for which to delegate to built-in host%n" +
             "                               name completion.%n" +
             "  -f, --force                Overwrite existing script files.%n" +
             "  -h, --help                 Show this help message and exit.%n" +
@@ -767,7 +774,7 @@ public class AutoCompleteTest {
                 "\n" +
                 "  local commands=\"\"\n" +
                 "  local flag_opts=\"-w --writeCommandScript -f --force -h --help -V --version\"\n" +
-                "  local arg_opts=\"-c --factory -n --name -o --completionScript -p --pathCompletionTypes\"\n" +
+                "  local arg_opts=\"-c --factory -n --name -o --completionScript --pathCompletionTypes --hostCompletionTypes\"\n" +
                 "\n" +
                 "  compopt +o default\n" +
                 "\n" +
@@ -783,7 +790,10 @@ public class AutoCompleteTest {
                 "      COMPREPLY=( $( compgen -f -- \"${curr_word}\" ) ) # files\n" +
                 "      return $?\n" +
                 "      ;;\n" +
-                "    -p|--pathCompletionTypes)\n" +
+                "    --pathCompletionTypes)\n" +
+                "      return\n" +
+                "      ;;\n" +
+                "    --hostCompletionTypes)\n" +
                 "      return\n" +
                 "      ;;\n" +
                 "  esac\n" +
@@ -1835,7 +1845,7 @@ public class AutoCompleteTest {
     }
 
     @Test
-    public void testPathCompletionOnCustomTypes() throws IOException {
+    public void testCustomCompletionOnCustomTypes() throws IOException {
         final String commandName = "bestCommandEver";
         final File completionScript = new File(commandName + "_completion");
         if (completionScript.exists()) {assertTrue(completionScript.delete());}
@@ -1845,6 +1855,9 @@ public class AutoCompleteTest {
                 String.format("--pathCompletionTypes=%s,%s",
                         PathCompletionCommand.CustomPath1.class.getName(),
                         PathCompletionCommand.CustomPath2.class.getName()),
+                String.format("--hostCompletionTypes=%s,%s",
+                        PathCompletionCommand.CustomHost1.class.getName(),
+                        PathCompletionCommand.CustomHost2.class.getName()),
                 "picocli.AutoCompleteTest$PathCompletionCommand");
 
         byte[] completion = readBytes(completionScript);
@@ -1858,7 +1871,7 @@ public class AutoCompleteTest {
                         "\n" +
                         "  local commands=\"\"\n" +
                         "  local flag_opts=\"\"\n" +
-                        "  local arg_opts=\"--file --custom-path-1 --custom-path-2 --custom-type\"\n" +
+                        "  local arg_opts=\"--file --custom-path-1 --custom-path-2 --custom-type --host --custom-host-1 --custom-host-2\"\n" +
                         "\n" +
                         "  compopt +o default\n" +
                         "\n" +
@@ -1880,6 +1893,21 @@ public class AutoCompleteTest {
                         "      ;;\n" +
                         "    --custom-type)\n" +
                         "      return\n" +
+                        "      ;;\n" +
+                        "    --host)\n" +
+                        "      compopt -o filenames\n" +
+                        "      COMPREPLY=( $( compgen -A hostname -- \"${curr_word}\" ) )\n" +
+                        "      return $?\n" +
+                        "      ;;\n" +
+                        "    --custom-host-1)\n" +
+                        "      compopt -o filenames\n" +
+                        "      COMPREPLY=( $( compgen -A hostname -- \"${curr_word}\" ) )\n" +
+                        "      return $?\n" +
+                        "      ;;\n" +
+                        "    --custom-host-2)\n" +
+                        "      compopt -o filenames\n" +
+                        "      COMPREPLY=( $( compgen -A hostname -- \"${curr_word}\" ) )\n" +
+                        "      return $?\n" +
                         "      ;;\n" +
                         "  esac\n" +
                         "\n" +
@@ -1923,7 +1951,20 @@ public class AutoCompleteTest {
         @Option(names = "--custom-type")
         private CustomType customType;
 
+        @Option(names = "--host")
+        private InetAddress host;
+
+        @Option(names = "--custom-host-1")
+        private CustomHost1 customHost1;
+
+        @Option(names = "--custom-host-2")
+        private List<CustomHost2> customHost2;
+
         public void run() {
+        }
+
+        static class CustomType {
+            String value;
         }
 
         static class CustomPath1 {
@@ -1934,7 +1975,11 @@ public class AutoCompleteTest {
             String value;
         }
 
-        static class CustomType {
+        static class CustomHost1 {
+            String value;
+        }
+
+        static class CustomHost2 {
             String value;
         }
     }
