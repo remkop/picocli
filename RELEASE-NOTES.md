@@ -31,6 +31,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1319] Bugfix: Avoid `DuplicateOptionAnnotationsException` when parent has inherited mixed-in help options and the built-in `HelpCommand` subcommand. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#1331] Bugfix: Avoid `IllegalArgumentException` when parent has no standard help options and `scope = INHERIT`, while subcommand does have mixed-in standard help options. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#1320][#1321] Bugfix/Enhancement: Use system properties `sun.stdout.encoding` and `sun.stderr.encoding` when creating the `PrintWriters` returned by  `CommandLine::getOut` and `CommandLine::getErr`. Thanks to [Philippe Charles](https://github.com/charphi) for the investigation and the pull request.
+* [#1326][#1339] DOC: Added documentation and examples for controlling the locale. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1296] DOC: add Kotlin code samples to user manual; other user manual improvements. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1299] DOC: Link to `IParameterPreprocessor` from `IParameterConsumer` javadoc. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1304] DOC: Manual, chapter '17.9 Inherited Command Attributes': added Kotlin version of code sample. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
