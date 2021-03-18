@@ -150,7 +150,6 @@ public class CommandLine {
     private final Tracer tracer = new Tracer();
     private CommandSpec commandSpec;
     private final Interpreter interpreter;
-    private final Set<String> pathCompletionTypes = new HashSet<String>();
     private final IFactory factory;
 
     private Object executionResult;
@@ -230,12 +229,6 @@ public class CommandLine {
         if (userCalled) { this.applyModelTransformations(); }
         commandSpec.validate();
         if (commandSpec.unmatchedArgsBindings().size() > 0) { setUnmatchedArgumentsAllowed(true); }
-        registerDefaultPathCompletionTypes();
-    }
-
-    private void registerDefaultPathCompletionTypes() {
-        pathCompletionTypes.add("java.io.File");
-        pathCompletionTypes.add("java.nio.file.Path");
     }
 
     /** Apply transformers to command spec recursively. */
@@ -260,8 +253,6 @@ public class CommandLine {
 
         result.interpreter.converterRegistry.clear();
         result.interpreter.converterRegistry.putAll(interpreter.converterRegistry);
-        result.pathCompletionTypes.clear();
-        result.pathCompletionTypes.addAll(pathCompletionTypes);
         return result;
     }
 
@@ -3284,39 +3275,6 @@ public class CommandLine {
             command.registerConverter(cls, converter);
         }
         return this;
-    }
-
-    /**
-     * <p>Adds the type {@code type} to the list of supported type for path completion.</p>
-     * <p>Built-in supported types being:
-     * <ul>
-     *   <li>{@link java.io.File}</li>
-     *   <li>{@link java.nio.file.Path}</li>
-     * </ul>
-     * </p>
-     * type {@code type}.
-     * @param type the type to check if path completion is supported for
-     * @return this CommandLine object, to allow method chaining
-     * @see #supportsPathCompletion(Class)
-     */
-    public <K> CommandLine registerForPathCompletion(Class<K> cls) {
-        pathCompletionTypes.add(cls.getName());
-        for (CommandLine command : getCommandSpec().commands.values()) {
-            command.registerForPathCompletion(cls);
-        }
-        return this;
-    }
-
-    /**
-     * Returns {@code true} if the CommandLine supports path completion for {@link Option} and {@link Parameters} of
-     * type {@code type}.
-     * @param type the type to check if path completion is supported for
-     * @return {@code true} if the CommandLine supports path completion for {@link Option} and {@link Parameters} of
-     * type {@code type}.
-     * @see #registerForPathCompletion(Class)
-     */
-    public boolean supportsPathCompletion(Class<?> type) {
-        return pathCompletionTypes.contains(type.getName());
     }
 
     /** Returns the String that separates option names from option values when parsing command line options.
