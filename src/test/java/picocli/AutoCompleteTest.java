@@ -35,6 +35,7 @@ import picocli.CommandLine.Parameters;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -49,9 +50,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.ListResourceBundle;
+import java.util.PropertyResourceBundle;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 
 /**
@@ -1257,7 +1263,7 @@ public class AutoCompleteTest {
             @Option(names = "-B") Boolean object;
         }
         String actual = AutoComplete.bash("booltest", new CommandLine(new App()));
-        assertThat(actual, CoreMatchers.containsString("local flag_opts=\"-b -B\""));
+        assertThat(actual, containsString("local flag_opts=\"-b -B\""));
     }
 
     @Test
@@ -1823,4 +1829,71 @@ public class AutoCompleteTest {
         public void run() {
         }
     }
+
+    @Command(name = "${project.cli.command}", resourceBundle = "picocli.Issue1352ResourceBundle",
+            mixinStandardHelpOptions = true)
+    static class Issue1352CommandWithResourceBundle {}
+
+    @Test
+    public void testIssue1352_CommandNameResourceBundle() throws FileNotFoundException {
+        // AutoComplete.bash("scriptname", new CommandLine(new Issue1352CommandWithResourceBundle()));
+        File existingScript = new File("mycommandfromresourcebundle_completion");
+        if (existingScript.exists()) {
+            assertTrue(existingScript.delete());
+        }
+        try {
+            AutoComplete.main(Issue1352CommandWithResourceBundle.class.getName());
+
+            assertEquals("", systemErrRule.getLog());
+            assertEquals("", systemOutRule.getLog());
+
+            assertTrue("Expected file '" + existingScript.getAbsolutePath() + "' to exist",
+                    existingScript.exists());
+
+            Scanner scanner = new Scanner(existingScript);
+            scanner.useDelimiter("\\Z"); // end of file
+            String script = scanner.next();
+            scanner.close();
+            assertThat(script, containsString("mycommandfromresourcebundle"));
+            assertThat(script, not(containsString("${project.cli.command}")));
+        } finally {
+            existingScript.delete();
+        }
+    }
+
+    @Command(name = "parent", resourceBundle = "picocli.Issue1352ResourceBundle",
+            subcommands = Issue1352CommandWithResourceBundle.class,
+            mixinStandardHelpOptions = true)
+    static class Issue1352ParentCommand {}
+
+    @Test
+    public void testIssue1352_SubcommandNameResourceBundle() throws FileNotFoundException {
+        File existingScript = new File("parent_completion");
+        if (existingScript.exists()) {
+            assertTrue(existingScript.delete());
+        }
+        try {
+            AutoComplete.main(Issue1352ParentCommand.class.getName());
+
+            assertEquals("", systemErrRule.getLog());
+            assertEquals("", systemOutRule.getLog());
+
+            assertTrue("Expected file '" + existingScript.getAbsolutePath() + "' to exist",
+                    existingScript.exists());
+
+            Scanner scanner = new Scanner(existingScript);
+            scanner.useDelimiter("\\Z"); // end of file
+            String script = scanner.next();
+            scanner.close();
+            assertThat(script, containsString("_picocli_parent"));
+            assertThat(script, containsString("mycommandfromresourcebundle"));
+
+            // FIXME: the below assertion fails with picocli 4.6.1...
+            //assertThat(script, not(containsString("${project.cli.command}")));
+
+        } finally {
+            existingScript.delete();
+        }
+    }
+
 }
