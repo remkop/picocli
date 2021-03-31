@@ -13,7 +13,7 @@ import picocli.CommandLine.Spec;
 
 import java.nio.charset.Charset;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class Issue1320 {
 
@@ -47,15 +47,18 @@ public class Issue1320 {
     @Test
     public void testIssue1320() {
         String unmappable  = "[abcµ]";
-        //String unmappable2 = "[abcμ]";
+        String alt1 = "[abc\u00B5]";
+        String alt2 = "[abc\u03BC]";
 
         resetLogs();
         System.clearProperty(SUN_STDOUT_ENCODING);
         System.clearProperty(SUN_STDERR_ENCODING);
         fixLogPrintStream(Charset.defaultCharset().name());
         assertEquals(CommandLine.ExitCode.OK, new CommandLine(new TestCommand()).execute(unmappable));
-        assertEquals(systemOutRule.getLog(), unmappable, systemOutRule.getLog());
-        assertEquals(systemErrRule.getLog(), unmappable, systemErrRule.getLog());
+//        assertEquals(systemOutRule.getLog(), unmappable, systemOutRule.getLog());
+//        assertEquals(systemErrRule.getLog(), unmappable, systemErrRule.getLog());
+        assertTrue(systemOutRule.getLog(), alt1.equals(systemOutRule.getLog()) || alt2.equals(systemOutRule.getLog()));
+        assertTrue(systemErrRule.getLog(), alt1.equals(systemErrRule.getLog()) || alt2.equals(systemErrRule.getLog()));
 
         resetLogs();
         System.setProperty(SUN_STDOUT_ENCODING, CP_437);
