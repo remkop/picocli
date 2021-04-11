@@ -12392,6 +12392,14 @@ You use it with a `//DEPS` comment, similar to the http://groovy-lang.org/grape.
 Use `jbang --init=cli helloworld.java` to create an initial script with a picocli template.
 This https://asciinema.org/a/AVwA19yijKRNKEO0bJENN2ME3?autoplay=true&speed=2[asciinema presentation] shows what is possible.
 
+=== JReleaser
+
+https://jreleaser.org[JReleaser] enables several packaging options such as https://brew.sh/[Homebrew], https://chocolatey.org/[Chocolatey], 
+https://snapcraft.io/[Snapcraft], https://scoop.sh/[Scoop], https://www.jbang.dev/[jbang], https://www.docker.com/[Docker], among others. 
+Currently two different distribution  types are supported: jlink, and standard zip/tar distributions. The latter can be generated with a 
+combination of the https://www.mojohaus.org/appassembler/appassembler-maven-plugin/[appassembler-maven-plugin] and
+http://maven.apache.org/plugins/maven-assembly-plugin/[maven-assembly-plugin] plugins if using Maven, or the 
+https://docs.gradle.org/current/userguide/application_plugin.html[application] plugin if using Gradle.
 
 == Picocli in Other Languages
 Picocli may be used in other JVM languages that support annotations.
