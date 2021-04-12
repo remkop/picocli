@@ -44,6 +44,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1336] DOC: Kotlin sample code, documentation improvements. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1342] DOC: Improve user manual chapter 28.3 'Testing the Exit Code'. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1344] DOC: Documentation, chapter 'Testing environment variables:': add Kotlin test sample. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1360][#1359] DOC: add JReleaser as packaging option. Thanks to [Andres Almiray](https://github.com/aalmiray) for the pull request.
 * [#1313] DEP: Bump jline3Version in order to avoid stackoverflow error. Thanks to [Rupert Madden-Abbott](https://github.com/rupert-madden-abbott) for the pull request.
 * [#1336] BUILD: Bump Spring Boot, Gradle and Kotlin to latest version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1327] BUILD: fix incorrect version in `MANIFEST.MF`. Thanks to [Fiouz](https://github.com/Fiouz) for the pull request.
