@@ -8680,7 +8680,16 @@ public class CommandLine {
             private String[] expandVariables(String[] desc) {
                 if (desc.length == 0) { return desc; }
                 StringBuilder candidates = new StringBuilder();
-                if (completionCandidates() != null) {
+
+                boolean flag = false;
+                for (String s: desc) {
+                    if (s.contains(DESCRIPTION_VARIABLE_COMPLETION_CANDIDATES)) {
+                        flag = true;
+                        break;
+                    }
+                }
+
+                if (completionCandidates() != null && flag) {
                     for (String c : completionCandidates()) {
                         if (candidates.length() > 0) { candidates.append(", "); }
                         candidates.append(c);
