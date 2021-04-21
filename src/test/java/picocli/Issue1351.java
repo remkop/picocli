@@ -9,8 +9,7 @@ import java.util.NoSuchElementException;
 import static org.junit.Assert.assertEquals;
 
 public class Issue1351 {
-    static int flag = 0;
-
+    static boolean testUsed;
     static class MyIterator implements Iterator<String> {
         private int cursor;
         private final String[] a;
@@ -22,7 +21,7 @@ public class Issue1351 {
         @Override
         public boolean hasNext() {
             // Do something in the iterator, maybe talking to a server as was mentioned in issue 1351.
-            flag = flag + 1;
+            testUsed = true;
             return this.cursor < this.a.length;
         }
 
@@ -46,15 +45,30 @@ public class Issue1351 {
     }
 
     @CommandLine.Command
-    class TestCommand {
+    class TestCommandWithoutCompletion {
         @CommandLine.Option(names = "-o", completionCandidates = MyIterable.class,
                 description = "Candidates: A, B, C")
         String option;
     }
 
+    @CommandLine.Command
+    class TestCommandWithCompletion{
+        @CommandLine.Option(names = "-o", completionCandidates = MyIterable.class,
+                description = "Candidates: ${COMPLETION-CANDIDATES}")
+        String option;
+    }
+
     @Test
-    public void testIssue1351() {
-        CommandLine.usage(new TestCommand(), System.out);
-        assertEquals(0, flag);
+    public void testCompletionCandidatesUnused() {
+        testUsed = false;
+        CommandLine.usage(new TestCommandWithoutCompletion(), System.out);
+        assertEquals(false, testUsed);
+    }
+
+    @Test
+    public void testCompletionCandidatesUsed(){
+        testUsed = false;
+        CommandLine.usage(new TestCommandWithCompletion(), System.out);
+        assertEquals(true, testUsed);
     }
 }
