@@ -9752,6 +9752,7 @@ class Status {
     lateinit var directories: Array<String>
 }
 ----
+CAUTION: In Kotlin, the dollar sign ($) has to be escaped with a backslash (\) in order to prevent Kotlin string interpolation to occur: `\${DEFAULT-VALUE}`.
 
 === Predefined Variables
 
