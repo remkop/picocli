@@ -14751,9 +14751,9 @@ public class CommandLine {
                 description = "Show usage help for the help command and exit.")
         private boolean helpRequested;
 
-        @Parameters(paramLabel = "COMMAND", descriptionKey = "helpCommand.command",
+        @Parameters(paramLabel = "COMMAND", arity="0..1", descriptionKey = "helpCommand.command",
                 description = "The COMMAND to display the usage help message for.")
-        private String[] commands = new String[0];
+        private String command;
 
         private CommandLine self;
         private PrintStream out;
@@ -14768,9 +14768,9 @@ public class CommandLine {
             CommandLine parent = self == null ? null : self.getParent();
             if (parent == null) { return; }
             Help.ColorScheme colors = colorScheme != null ? colorScheme : Help.defaultColorScheme(ansi);
-            if (commands.length > 0) {
+            if (command != null) {
                 Map<String, CommandLine> parentSubcommands = parent.getCommandSpec().subcommands();
-                String fullName = commands[0];
+                String fullName = command;
                 if (parent.isAbbreviatedSubcommandsAllowed()) {
                     fullName = AbbreviationMatcher.match(parentSubcommands.keySet(), fullName,
                             parent.isSubcommandsCaseInsensitive(), self);
@@ -14783,7 +14783,7 @@ public class CommandLine {
                         subcommand.usage(out, colors); // for compatibility with pre-4.0 clients
                     }
                 } else {
-                    throw new ParameterException(parent, "Unknown subcommand '" + commands[0] + "'.", null, commands[0]);
+                    throw new ParameterException(parent, "Unknown subcommand '" + command + "'.", null, command);
                 }
             } else {
                 if (outWriter != null) {
