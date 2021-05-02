@@ -17,7 +17,7 @@
     "allDeclaredMethods" : true,
     "allPublicMethods" : true,
     "fields" : [
-      { "name" : "command" },
+      { "name" : "commands" },
       { "name" : "helpRequested" }
     ]
   },
