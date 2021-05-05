@@ -48,6 +48,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1360][#1359] DOC: add JReleaser as packaging option. Thanks to [Andres Almiray](https://github.com/aalmiray) for the pull request.
 * [#1363][#1364] DOC: Add caution on Variable interpolation in Kotlin. Thanks to [MagnusMG](https://github.com/MagnusMG) for the pull request.
 * [#1313] DEP: Bump jline3Version in order to avoid stackoverflow error. Thanks to [Rupert Madden-Abbott](https://github.com/rupert-madden-abbott) for the pull request.
+* [#1369][#1371] Upgrade jline3 to version 3.19.0 to avoid "ReadConsoleInputW failed: Incorrect function" error. Thanks to [auricgoldfinger](https://github.com/auricgoldfinger) for the pull request.
 * [#1336] BUILD: Bump Spring Boot, Gradle and Kotlin to latest version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1327] BUILD: fix incorrect version in `MANIFEST.MF`. Thanks to [Fiouz](https://github.com/Fiouz) for the pull request.
 * [#1328] BUILD: Upgrade Gradle to 6.8.2 and enable official Gradle Wrapper Validation GitHub Action. Thanks to [Fiouz](https://github.com/Fiouz) for the pull request.
