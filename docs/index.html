@@ -2396,7 +2396,7 @@ Picocli also provides a <a href="#_programmatic_api">programmatic API</a>, separ
 <span class="k">class</span> <span class="nc">Checksum</span> <span class="k">extends</span> <span class="nc">Callable</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="o">{</span>
 
   <span class="nd">@Parameters</span><span class="o">(</span><span class="n">index</span> <span class="k">=</span> <span class="s">"0"</span><span class="o">,</span> <span class="n">description</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"The file whose checksum to calculate."</span><span class="o">))</span>
-  <span class="k">private</span> <span class="k">val</span> <span class="nv">file</span><span class="k">:</span> <span class="kt">File</span> <span class="o">=</span> <span class="kc">null</span>
+  <span class="k">private</span> <span class="k">var</span> <span class="nv">file</span><span class="k">:</span> <span class="kt">File</span> <span class="o">=</span> <span class="kc">null</span>
 
   <span class="nd">@Option</span><span class="o">(</span><span class="n">names</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"-a"</span><span class="o">,</span> <span class="s">"--algorithm"</span><span class="o">),</span> <span class="n">description</span> <span class="k">=</span> <span class="nc">Array</span><span class="o">(</span><span class="s">"MD5, SHA-1, SHA-256, ..."</span><span class="o">))</span>
   <span class="k">private</span> <span class="k">var</span> <span class="n">algorithm</span> <span class="k">=</span> <span class="s">"MD5"</span>
