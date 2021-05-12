@@ -225,7 +225,7 @@ import java.util.concurrent.Callable
 class Checksum extends Callable[Int] {
 
   @Parameters(index = "0", description = Array("The file whose checksum to calculate."))
-  private val file: File = null
+   private var file: File = null
 
   @Option(names = Array("-a", "--algorithm"), description = Array("MD5, SHA-1, SHA-256, ..."))
   private var algorithm = "MD5"
