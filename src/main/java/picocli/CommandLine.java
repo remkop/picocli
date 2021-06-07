@@ -13287,12 +13287,14 @@ public class CommandLine {
                 if (commandSpec.parent() != null && commandSpec.parent().subcommandsRepeatable() && commandSpec.parent().subcommands().containsKey(arg)) {
                     tracer.debug("'%s' is a repeatable subcommand of %s%n", arg, commandSpec.parent().qualifiedName());// #454 repeatable subcommands
                     CommandLine subcommand = commandSpec.parent().subcommands().get(arg);
+                    Set<ArgSpec> inheritedInitialized = initialized;
                     if (subcommand.interpreter.parseResultBuilder != null) {
                         tracer.debug("Subcommand '%s' has been matched before. Making a copy...%n", subcommand.getCommandName());
                         subcommand = subcommand.copy();
                         subcommand.getCommandSpec().parent(commandSpec.parent()); // hook it up with its parent
+                        inheritedInitialized = new LinkedHashSet<>(inheritedInitialized);
                     }
-                    processSubcommand(subcommand, getParent().interpreter.parseResultBuilder, parsedCommands, args, required, initialized, originalArgs, nowProcessing, separator, arg);
+                    processSubcommand(subcommand, getParent().interpreter.parseResultBuilder, parsedCommands, args, required, inheritedInitialized, originalArgs, nowProcessing, separator, arg);
                     continue;
                 }
 
