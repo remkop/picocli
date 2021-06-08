@@ -13292,7 +13292,7 @@ public class CommandLine {
                         tracer.debug("Subcommand '%s' has been matched before. Making a copy...%n", subcommand.getCommandName());
                         subcommand = subcommand.copy();
                         subcommand.getCommandSpec().parent(commandSpec.parent()); // hook it up with its parent
-                        inheritedInitialized = new LinkedHashSet<>(inheritedInitialized);
+                        inheritedInitialized = new LinkedHashSet<ArgSpec>(inheritedInitialized);
                     }
                     processSubcommand(subcommand, getParent().interpreter.parseResultBuilder, parsedCommands, args, required, inheritedInitialized, originalArgs, nowProcessing, separator, arg);
                     continue;
