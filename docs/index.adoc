@@ -16,6 +16,8 @@
 :sectanchors:
 :linkattrs:
 :docinfo: shared-head,private
+:tabbed-code-js-path: /customTabbedCode.js
+:tabbed-code-css-path: /customTabbedCode.css
 ifdef::env-github[]
 :caution-caption: :fire:
 :important-caption: :heavy_exclamation_mark:
@@ -443,6 +445,7 @@ class Tar {
 .Kotlin
 [source,kotlin,role="secondary"]
 ----
+@Command(name = "tar")
 class Tar : Runnable {
     @Option(names = ["-c"], description = ["create a new archive"])
     var create: Boolean = false;
@@ -456,6 +459,22 @@ class Tar : Runnable {
     @Option(names = ["-h", "--help"], usageHelp = true, description = ["display a help message"])
     private var helpRequested: Boolean = false;
 }
+----
+
+.Invocation
+[source,role="secondary push-right"]
+----
+$ tar -c --file=new.zip file1.txt file2.txt
+----
+
+.Usage help
+[source,role="secondary"]
+----
+Usage: tar [-ch] [-f=ARCHIVE] [FILE...]
+      [FILE...]        one ore more files to archive
+  -c                   create a new archive
+  -f, --file=ARCHIVE   the archive file
+  -h, --help           display a help message
 ----
 
 Picocli matches the option names to set the field values.

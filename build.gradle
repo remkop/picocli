@@ -70,6 +70,7 @@ pluginManager.withPlugin('org.asciidoctor.jvm.convert') { // if plugin applied, 
     }
     dependencies {
         tabbedCodeExt "com.bmuschko:asciidoctorj-tabbed-code-extension:0.3"
+        tabbedCodeExt files('docs/tabbed-code')
     }
 }
 
