@@ -590,14 +590,14 @@ public class I18nTest {
                 "Shared header heading%n" +
                 "i18n-sub HELP command header%n" +
                 "%n" +
-                "Usage: i18n-top i18n-sub help [-h] [COMMAND...]%n" +
+                "Usage: i18n-top i18n-sub help [-h] [COMMAND]%n" +
                 "Shared description 0%n" +
                 "Shared description 1%n" +
                 "Shared description 2%n" +
-                "      [COMMAND...]   Shared description of COMMAND parameter of built-in help%n" +
-                "                       subcommand%n" +
-                "  -h, --help         Shared description of --help option of built-in help%n" +
-                "                       subcommand%n" +
+                "      [COMMAND]   Shared description of COMMAND parameter of built-in help%n" +
+                "                    subcommand%n" +
+                "  -h, --help      Shared description of --help option of built-in help%n" +
+                "                    subcommand%n" +
                 "Shared Exit Codes Heading%n" +
                 "These exit codes are blah blah etc.%n" +
                 "  00   (From shared bundle) Normal termination%n" +
@@ -625,14 +625,14 @@ public class I18nTest {
                 "Shared header heading%n" +
                 "i18n-top HELP command header%n" +
                 "%n" +
-                "Usage: i18n-top help [-h] [COMMAND...]%n" +
+                "Usage: i18n-top help [-h] [COMMAND]%n" +
                 "Shared description 0%n" +
                 "Shared description 1%n" +
                 "Shared description 2%n" +
-                "      [COMMAND...]   Specialized description of COMMAND parameter of i18-top%n" +
-                "                       help subcommand%n" +
-                "  -h, --help         Specialized description of --help option of i18-top help%n" +
-                "                       subcommand%n" +
+                "      [COMMAND]   Specialized description of COMMAND parameter of i18-top help%n" +
+                "                    subcommand%n" +
+                "  -h, --help      Specialized description of --help option of i18-top help%n" +
+                "                    subcommand%n" +
                 "Shared Exit Codes Heading%n" +
                 "These exit codes are blah blah etc.%n" +
                 "  00   (From shared bundle) Normal termination%n" +

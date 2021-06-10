@@ -346,13 +346,13 @@ public class HelpSubCommandTest {
         String expected = String.format("" +
                 "Displays help information about the specified command%n" +
                 "%n" +
-                "Usage: <main class> help [-h] [COMMAND...]%n" +
+                "Usage: <main class> help [-h] [COMMAND]%n" +
                 "%n" +
                 "When no COMMAND is given, the usage help for the main command is displayed.%n" +
                 "If a COMMAND is specified, the help for that command is shown.%n" +
                 "%n" +
-                "      [COMMAND...]   The COMMAND to display the usage help message for.%n" +
-                "  -h, --help         Show usage help for the help command and exit.%n");
+                "      [COMMAND]   The COMMAND to display the usage help message for.%n" +
+                "  -h, --help      Show usage help for the help command and exit.%n");
         assertEquals(expected, sw.toString());
 
         sw = new StringWriter();
