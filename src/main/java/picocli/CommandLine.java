@@ -4906,6 +4906,30 @@ public class CommandLine {
          */
         String[] getVersion() throws Exception;
     }
+
+    /**
+     * Converter which can be used in case when picocli should use default convert. For example this can be used in maps:
+     *
+     * <pre>
+     *   class App {
+     *       &#064;Option(names = "-D", converter = {UseDefaultConverter.class, GenericValueConverter.class})
+     *       Map&lt;String, GenericValue&lt;?&gt;&gt; values;
+     *  }
+     * </pre>
+     *
+     * Instances of this class will throw UnsupportedOperationException for {@link #convert(String)} method.
+     */
+    public static final class UseDefaultConverter implements ITypeConverter<Object> {
+
+        /**
+         * Always throws UnsupportedOperationException.
+         * @throws UnsupportedOperationException always
+         */
+        public Object convert(String value) throws Exception {
+            throw new UnsupportedOperationException("This convert should never be called.");
+        }
+    }
+
     private static class NoVersionProvider implements IVersionProvider {
         public String[] getVersion() throws Exception { throw new UnsupportedOperationException(); }
     }
@@ -10968,13 +10992,16 @@ public class CommandLine {
                     } else if (paramTypes[i] instanceof ParameterizedType) { // e.g. Optional<Integer>
                         ParameterizedType parameterizedParamType = (ParameterizedType) paramTypes[i];
                         Type raw = parameterizedParamType.getRawType();
-                        if (i == 1 && raw instanceof Class && CommandLine.isOptional((Class) raw)) { // #1108 and #1214
+                        if (raw instanceof Class) {
                             result.add((Class) raw);
-                            Class<?>[] aux = extractTypeParameters(parameterizedParamType);
-                            if (aux.length == 1) {
-                                result.add(aux[0]);
-                                continue;
+                            if (i == 1 && CommandLine.isOptional((Class) raw)) { // #1108 and #1214
+                                Class<?>[] aux = extractTypeParameters(parameterizedParamType);
+                                if (aux.length == 1) {
+                                    result.add(aux[0]);
+                                    continue;
+                                }
                             }
+                            continue;
                         }
                     } else if (paramTypes[i] instanceof WildcardType) { // e.g. ? extends Number
                         WildcardType wildcardType = (WildcardType) paramTypes[i];
@@ -14357,7 +14384,7 @@ public class CommandLine {
             return (Map<Object, Object>) factory.create(mapClass);
         }
         private ITypeConverter<?> getTypeConverter(Class<?>[] types, final ArgSpec argSpec, int index) {
-            if (argSpec.converters().length > index) { return argSpec.converters()[index]; } // use custom converters if defined
+            if (argSpec.converters().length > index && !argSpec.converters()[index].getClass().equals(UseDefaultConverter.class)) { return argSpec.converters()[index]; } // use custom converters if defined
             Class<?> type = types[index];
             if (isOptional(type)) { // #1214 #1108
                 if (types.length <= index + 1) { throw new PicocliException("Cannot create converter for types " + Arrays.asList(types) + " for " + argSpec); }
