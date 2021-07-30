@@ -155,6 +155,16 @@ public class Example {
     }
     
     public static void main(String[] args) {
+
+        // JLine 2 does not detect some terminal as not ANSI compatible (e.g  Eclipse Console)
+        // See : https://github.com/jline/jline2/issues/185
+        // This is an optional workaround which allow to use picocli heuristic instead :
+        if (!Help.Ansi.AUTO.enabled() && //
+                Configuration.getString(TerminalFactory.JLINE_TERMINAL, TerminalFactory.AUTO).toLowerCase()
+                        .equals(TerminalFactory.AUTO)) {
+            TerminalFactory.configure(Type.NONE);
+        }
+
         try {
             ConsoleReader reader = new ConsoleReader();
             IFactory factory = new CustomFactory(new InteractiveParameterConsumer(reader));
