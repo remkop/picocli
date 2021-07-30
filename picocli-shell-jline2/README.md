@@ -71,7 +71,7 @@ public class Example {
      * Top-level command that just prints help.
      */
     @Command(name = "", description = "Example interactive shell with completion",
-            footer = {"", "Press Ctrl-D to exit."},
+            footer = {"", "Press Ctrl-C to exit."},
             subcommands = {MyCommand.class, ClearScreen.class, ReadInteractive.class})
     static class CliCommands implements Runnable {
         final ConsoleReader reader;
