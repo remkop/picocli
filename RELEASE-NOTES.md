@@ -48,6 +48,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1344] DOC: Documentation, chapter 'Testing environment variables:': add Kotlin test sample. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1360][#1359] DOC: add JReleaser as packaging option. Thanks to [Andres Almiray](https://github.com/aalmiray) for the pull request.
 * [#1363][#1364] DOC: Add caution on Variable interpolation in Kotlin. Thanks to [MagnusMG](https://github.com/MagnusMG) for the pull request.
+* [#1397][#1399] DOC: Update Jline2 README.md to add some recommended workaround about ANSI incompatible terminals. Thanks to [Simon](https://github.com/sbernard31) for the pull request.
 * [#1313] DEP: Bump jline3Version in order to avoid stackoverflow error. Thanks to [Rupert Madden-Abbott](https://github.com/rupert-madden-abbott) for the pull request.
 * [#1369][#1371] Upgrade jline3 to version 3.19.0 to avoid "ReadConsoleInputW failed: Incorrect function" error. Thanks to [auricgoldfinger](https://github.com/auricgoldfinger) for the pull request.
 * [#1336] BUILD: Bump Spring Boot, Gradle and Kotlin to latest version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
