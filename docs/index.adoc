@@ -2347,7 +2347,7 @@ If no `arity` is specified, the number of parameters depends on the field's type
 [grid=cols,cols="30,5,65",options="header"]
 |===
 | @Option Field Type | Default Arity | Notes
-| boolean      | 0 |Boolean options by default don't require an option parameter. The field is set to the opposite of its default value when the option name is recognized. (This can be <<Toggle Boolean Flags,configured>>.)
+| boolean      | 0..1 | Boolean options by default don't require an option parameter. The field is set to the opposite of its default value when the option name is recognized. (This can be <<Toggle Boolean Flags,configured>>.)
 | Single-valued type (e.g., `int`, `String`, `File`) | 1 | The option name must be followed by a value.
 | Multi-valued type (arrays, collections or maps) | 1 | The option name must be followed by a value.
 |===

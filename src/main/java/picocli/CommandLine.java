@@ -3734,7 +3734,7 @@ public class CommandLine {
          * command line, a {@link MissingParameterException} is thrown by the {@link #parse(String...)} method.
          * <p>
          * In many cases picocli can deduce the number of required parameters from the field's type.
-         * By default, flags (boolean options) have arity zero,
+         * By default, flags (boolean options) have arity "0..1",
          * and single-valued type fields (String, int, Integer, double, Double, File, Date, etc) have arity one.
          * Generally, fields with types that cannot hold multiple values can omit the {@code arity} attribute.
          * </p><p>
@@ -3746,7 +3746,7 @@ public class CommandLine {
          * </p>
          * <b>A note on boolean options</b>
          * <p>
-         * By default picocli does not expect boolean options (also called "flags" or "switches") to have a parameter.
+         * By default picocli allows boolean options (also called "flags" or "switches") to have an optional parameter.
          * You can make a boolean option take a required parameter by annotating your field with {@code arity="1"}.
          * For example: </p>
          * <pre>&#064;Option(names = "-v", arity = "1") boolean verbose;</pre>
@@ -3756,12 +3756,11 @@ public class CommandLine {
          * on the command line, or a {@link MissingParameterException} is thrown by the {@link #parse(String...)}
          * method.
          * </p><p>
-         * To make the boolean parameter possible but optional, define the field with {@code arity = "0..1"}.
+         * To remove the optional parameter, define the field with {@code arity = "0"}.
          * For example: </p>
-         * <pre>&#064;Option(names="-v", arity="0..1") boolean verbose;</pre>
-         * <p>This will accept any of the below without throwing an exception:</p>
+         * <pre>&#064;Option(names="-v", arity="0") boolean verbose;</pre>
+         * <p>This will reject any of the below:</p>
          * <pre>
-         * -v
          * -v true
          * -v false
          * </pre>
@@ -5603,9 +5602,14 @@ public class CommandLine {
             return result.isUnspecified ? defaultArity(member) : result;
         }
         /** Returns the default arity {@code Range}: for interactive options/positional parameters,
-         * this is 0; for {@link Option options} this is 0 for booleans and 1 for
-         * other types, for {@link Parameters parameters} booleans have arity 0, arrays or Collections have
+         * this is 0; for {@link Option options} this is effectively "0..1" for booleans and 1 for
+         * other types, for {@link Parameters parameters} booleans have arity 1, arrays or Collections have
          * arity "0..*", and other types have arity 1.
+         * <p><b><em>Implementation Notes</em></b></p>
+         * <p>The returned {@code Range} for boolean options has an <em>effective</em> arity of "0..1".
+         * This is implemented by returning a {@code Range} with arity "0",
+         * and its {@code unspecified} property set to {@code true}.
+         * This implementation may change in the future.</p>
          * @param field the field whose default arity to return
          * @return a new {@code Range} indicating the default arity of the specified field
          * @since 2.0 */
