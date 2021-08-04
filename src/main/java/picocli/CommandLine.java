@@ -3746,7 +3746,8 @@ public class CommandLine {
          * </p>
          * <b>A note on boolean options</b>
          * <p>
-         * By default picocli allows boolean options (also called "flags" or "switches") to have an optional parameter.
+         * By default picocli allows boolean options (also called "flags" or "switches") to have an optional parameter,
+         * which must be either "true" or "false" (lowercase, other values are rejected).
          * You can make a boolean option take a required parameter by annotating your field with {@code arity="1"}.
          * For example: </p>
          * <pre>&#064;Option(names = "-v", arity = "1") boolean verbose;</pre>
