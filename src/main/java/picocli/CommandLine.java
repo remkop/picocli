@@ -14438,7 +14438,9 @@ public class CommandLine {
                 if (argSpec.arity().max > 1) {
                     desc += " at index " + optionParamIndex;
                 }
-                desc += " (" + argSpec.paramLabel() + ")";
+                if (argSpec.arity().max > 0) {
+                    desc += " (" + argSpec.paramLabel() + ")";
+                }
             }
         } else {
             desc = prefix + "positional parameter at index " + ((PositionalParamSpec) argSpec).index() + " (" + argSpec.paramLabel() + ")";
