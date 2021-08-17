@@ -19,6 +19,7 @@ jdk:
 - openjdk-ea
 
 matrix:
+  fast_finish: true
   exclude:
   - os: macos
     jdk: openjdk8
@@ -49,3 +50,7 @@ after_success:
     if [ "$TRAVIS_OS_NAME" = "linux" ]; then
       ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
     fi
+
+cache:
+  directories:
+  - $HOME/.m2
