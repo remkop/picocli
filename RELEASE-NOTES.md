@@ -58,6 +58,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1329] BUILD: OSGi manifest entry in picocli-4.6.0.jar should not require groovy. Thanks to [Fiouz](https://github.com/Fiouz) for raising this.
 * [#1330] BUILD: use type-safe DSL instead of direct XML manipulation to generate `pom.xml`. Thanks to [Fiouz](https://github.com/Fiouz) for the pull request.
 * [#1332] BUILD: Bumping asciidoctor + asciidoctor gradle plugin to latest versions. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1413] BUILD: Improve Travis CI build Performance. Thanks to [YunLemon](https://github.com/YunLemon) for the pull request.
 
 ## <a name="4.6.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
