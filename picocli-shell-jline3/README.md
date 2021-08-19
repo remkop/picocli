@@ -143,6 +143,10 @@ public class Example {
 
         CliCommands() {}
 
+        public void setReader(LineReader reader){
+            out = reader.getTerminal().writer();
+        }
+
         public void run() {
             out.println(new CommandLine(this).getUsageMessage());
         }
@@ -250,6 +254,7 @@ public class Example {
                         .variable(LineReader.LIST_MAX, 50)   // max tab completion candidates
                         .build();
                 builtins.setLineReader(reader);
+                commands.setReader(reader);
                 factory.setTerminal(terminal);
                 TailTipWidgets widgets = new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TailTipWidgets.TipType.COMPLETER);
                 widgets.enable();
