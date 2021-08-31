@@ -2228,6 +2228,9 @@ public class CommandLine {
      * For use by the {@link #execute(String...) execute} method.
      * @since 2.0 */
     public static class RunFirst extends AbstractParseResultHandler<List<Object>> implements IParseResultHandler {
+        /** {@inheritDoc} */
+        public int execute(ParseResult parseResult) throws ExecutionException { return super.execute(parseResult); }
+
         /** Prints help if requested, and otherwise executes the top-level {@code Runnable} or {@code Callable} command.
          * Finally, either a list of result objects is returned, or the JVM is terminated if an exit code {@linkplain #andExit(int) was set}.
          * If the top-level command does not implement either {@code Runnable} or {@code Callable}, an {@code ExecutionException}
@@ -2309,6 +2312,9 @@ public class CommandLine {
      * </p>
      * @since 2.0 */
     public static class RunLast extends AbstractParseResultHandler<List<Object>> implements IParseResultHandler {
+        /** {@inheritDoc} */
+        public int execute(ParseResult parseResult) throws ExecutionException { return super.execute(parseResult); }
+
         /** Prints help if requested, and otherwise executes the most specific {@code Runnable} or {@code Callable} subcommand.
          * <p>For {@linkplain Command#subcommandsRepeatable() repeatable subcommands}, this method
          * may execute multiple subcommands: the most deeply nested subcommands that have the same parent command.</p>
@@ -2381,6 +2387,9 @@ public class CommandLine {
      * For use by the {@link #execute(String...) execute} method.
      * @since 2.0 */
     public static class RunAll extends AbstractParseResultHandler<List<Object>> implements IParseResultHandler {
+        /** {@inheritDoc} */
+        public int execute(ParseResult parseResult) throws ExecutionException { return super.execute(parseResult); }
+
         /** Prints help if requested, and otherwise executes the top-level command and all subcommands as {@code Runnable},
          * {@code Callable} or {@code Method}. Finally, either a list of result objects is returned, or the JVM is terminated if an exit
          * code {@linkplain #andExit(int) was set}. If any of the {@code CommandLine} commands does not implement either

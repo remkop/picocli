@@ -34,6 +34,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1381][#1382] Bugfix: Default value of option in repeated subcommand was not applied correctly. Thanks to [sfeuerhahn](https://github.com/sfeuerhahn) for the pull request.
 * [#1320][#1321] Bugfix/Enhancement: Use system properties `sun.stdout.encoding` and `sun.stderr.encoding` when creating the `PrintWriters` returned by  `CommandLine::getOut` and `CommandLine::getErr`. Thanks to [Philippe Charles](https://github.com/charphi) for the investigation and the pull request.
 * [#1415] Bugfix/DOC: fix NullPointerException in README Example. Thanks to [shannonbay](https://github.com/shannonbay) for raising this.
+* [#1421] Bugfix/DOC: `execute` method in `RunAll`, `RunFirst` and `RunLast` should not be deprecated. Thanks to [Gamal DeWeever](https://github.com/gadeweever) for raising this.
 * [#1326][#1339] DOC: Added documentation and examples for controlling the locale. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1296] DOC: add Kotlin code samples to user manual; other user manual improvements. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1299] DOC: Link to `IParameterPreprocessor` from `IParameterConsumer` javadoc. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
