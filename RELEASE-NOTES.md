@@ -23,6 +23,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 
 ## <a name="4.6.2-fixes"></a> Fixed issues
+* [#1422] API: Un-deprecate the `@Option` `help` attribute; it is useful for custom help options. Thanks to [kaushalkumar](https://github.com/kaushalkumar) for raising this.
 * [#1337][#1338] Enhancement: prevent spurious `WARNING: tag not found in include file` messages when generating man pages. Thanks to [Philip Crotwell](https://github.com/crotwell) for the pull request.
 * [#1340] Enhancement: add xref to generated man page document to link to subcommands from the parent command page. Thanks to [Philip Crotwell](https://github.com/crotwell) for the pull request.
 * [#1351][#1362] Enhancement: avoid calling option `completionCandidates` when displaying usage help if `${COMPLETION-CANDIDATES}` is not specified in description. Thanks to [Wenhao ZHANG](https://github.com/wtd2), [sustc11810424](https://github.com/sustc11810424) and [Yining Tang](https://github.com/Lanninger08) for the pull request.

@@ -3656,22 +3656,33 @@ public class CommandLine {
         boolean required() default false;
 
         /**
-         * Set {@code help=true} if this option should disable validation of the remaining arguments:
-         * If the {@code help} option is specified, no error message is generated for missing required options.
-         * <p>
-         * This attribute is useful for special options like help ({@code -h} and {@code --help} on unix,
-         * {@code -?} and {@code -Help} on Windows) or version ({@code -V} and {@code --version} on unix,
-         * {@code -Version} on Windows).
+         * <p>This should rarely be used: the recommended attributes are {@link #usageHelp() usageHelp} and {@link #versionHelp() versionHelp}.
+         * </p><p>
+         * Only set {@code help=true} when this option should disable validation of the remaining
+         * arguments, and no error message should be generated for missing required options.
+         * </p><p>
+         * This is useful for custom help options that are in addition to the standard help and
+         * version options. For example if your application has many hidden options or
+         * subcommands, and there is a custom help option like {@code --detailed-help} that prints
+         * the usage help message for these hidden options and subcommands.
          * </p>
+         * <p><b>Note:</b></p>
          * <p>
-         * Note that the {@link #parse(String...)} method will not print help documentation. It will only set
-         * the value of the annotated field. It is the responsibility of the caller to inspect the annotated fields
-         * and take the appropriate action.
+         * Use the {@link #usageHelp() usageHelp} for "normal" help options (like {@code -h} and {@code --help} on unix,
+         * {@code -?} and {@code -Help} on Windows)
+         * and use {@link #versionHelp() versionHelp} for "normal" version help ({@code -V} and {@code --version} on unix,
+         * {@code -Version} on Windows):
+         * picocli has built-in logic so that options with {@code usageHelp=true} or {@code versionHelp=true}
+         * will automatically cause the requested help message to be printed in applications
+         * that use the {@link #execute(String...)} method, without any code in the application.
+         * </p><p>
+         * Note that there is no such automatic help printing for options with {@code help=true};
+         * applications need to check whether the end user specified this option and take appropriate action
+         * in the business logic of the application.
          * </p>
          * @return whether this option disables validation of the other arguments
-         * @deprecated Use {@link #usageHelp()} and {@link #versionHelp()} instead. See {@link #printHelpIfRequested(List, PrintStream, CommandLine.Help.Ansi)}
          */
-        @Deprecated boolean help() default false;
+        boolean help() default false;
 
         /**
          * Set {@code usageHelp=true} for the {@code --help} option that triggers display of the usage help message.
