@@ -54,6 +54,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1397][#1399] DOC: Update Jline2 README.md to add some recommended workaround about ANSI incompatible terminals. Thanks to [Simon](https://github.com/sbernard31) for the pull request.
 * [#1398][#1400] DOC: Arity of boolean options is now documented correctly. Thanks to [João Guerra](https://github.com/joca-bt) for the pull request.
 * [#1423] DOC: Fixed broken link in README.md to annotation processor documentation. Thanks to [Sevy007](https://github.com/Sevy007) for raising this.
+* [#1426] Fix README adoption logos. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#1313] DEP: Bump jline3Version in order to avoid stackoverflow error. Thanks to [Rupert Madden-Abbott](https://github.com/rupert-madden-abbott) for the pull request.
 * [#1369][#1371] Upgrade jline3 to version 3.19.0 to avoid "ReadConsoleInputW failed: Incorrect function" error. Thanks to [auricgoldfinger](https://github.com/auricgoldfinger) for the pull request.
 * [#1336] BUILD: Bump Spring Boot, Gradle and Kotlin to latest version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
