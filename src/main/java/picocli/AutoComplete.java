@@ -560,7 +560,7 @@ public class AutoComplete {
             int count = functionCalls.size();
             CommandSpec spec = descriptor.commandLine.getCommandSpec();
             String full = spec.qualifiedName(" ");
-            String withoutTopLevelCommand = full.substring(spec.root().name().length() + 1);
+            String withoutTopLevelCommand = full.substring(spec.root().name().length() + 1).replace(spec.name(), descriptor.commandName);
 
             functionCalls.add(format("  if CompWordsContainsArray \"${cmds%2$d[@]}\"; then %1$s; return $?; fi\n", descriptor.functionName, count));
             buff.append(      format("  local cmds%2$d=(%1$s)\n", withoutTopLevelCommand, count));

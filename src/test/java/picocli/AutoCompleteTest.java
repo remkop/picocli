@@ -1896,4 +1896,35 @@ public class AutoCompleteTest {
         }
     }
 
+    @CommandLine.Command(name = "aliases", aliases = {"a"})
+    static class Issue1388AliasesCommand {}
+
+    @CommandLine.Command(name = "aliases-parent", subcommands = {Issue1388AliasesCommand.class})
+    static class Issue1388AliasesParentCommand {}
+
+    @Test
+    public void testIssue1388_AliasesCommand() throws FileNotFoundException {
+        File existingScript = new File("aliases-parent_completion");
+        if (existingScript.exists()) {
+            assertTrue(existingScript.delete());
+        }
+        try {
+            AutoComplete.main(Issue1388AliasesParentCommand.class.getName());
+
+            assertEquals("", systemErrRule.getLog());
+            assertEquals("", systemOutRule.getLog());
+
+            assertTrue("Expected file '" + existingScript.getAbsolutePath() + "' to exist",
+                    existingScript.exists());
+
+            Scanner scanner = new Scanner(existingScript);
+            scanner.useDelimiter("\\Z"); // end of file
+            String script = scanner.next();
+            scanner.close();
+            assertThat(script, containsString("local cmds0=(aliases)"));
+            assertThat(script, containsString("local cmds1=(a)"));
+        } finally {
+            existingScript.delete();
+        }
+    }
 }
