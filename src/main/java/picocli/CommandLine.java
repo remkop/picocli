@@ -6412,7 +6412,7 @@ public class CommandLine {
              */
             public CommandSpec addSubcommand(String name, CommandLine subCommandLine) {
                 CommandSpec subSpec = subCommandLine.getCommandSpec();
-                String actualName = validateSubcommandName(name, subSpec);
+                String actualName = interpolator.interpolateCommandName(validateSubcommandName(name, subSpec));
                 Tracer t = new Tracer();
                 if (t.isDebug()) {t.debug("Adding subcommand '%s' to '%s'%n", actualName, this.qualifiedName());}
                 String previousName = commands.getCaseSensitiveKey(actualName);
@@ -6422,7 +6422,7 @@ public class CommandLine {
                 subSpec.parent(this);
                 for (String alias : subSpec.aliases()) {
                     if (t.isDebug()) {t.debug("Adding alias '%s' for '%s'%n", (parent == null ? "" : parent.qualifiedName() + " ") + alias, this.qualifiedName());}
-                    previous = commands.put(alias, subCommandLine);
+                    previous = commands.put(interpolator.interpolate(alias), subCommandLine);
                     if (previous != null && previous != subCommandLine) { throw new DuplicateNameException("Alias '" + alias + "' for subcommand '" + actualName + "' is already used by another subcommand of '" + this.name() + "'"); }
                 }
                 subSpec.initCommandHierarchyWithResourceBundle(resourceBundleBaseName(), resourceBundle());
