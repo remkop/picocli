@@ -62,7 +62,7 @@ public class Size implements Runnable {
         }
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         int exitCode = new CommandLine(new Size()).execute(args);
         System.exit(exitCode);
     }
