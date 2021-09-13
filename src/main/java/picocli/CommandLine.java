@@ -6412,7 +6412,7 @@ public class CommandLine {
              */
             public CommandSpec addSubcommand(String name, CommandLine subCommandLine) {
                 CommandSpec subSpec = subCommandLine.getCommandSpec();
-                String actualName = interpolator.interpolateCommandName(validateSubcommandName(name, subSpec));
+                String actualName = validateSubcommandName(interpolator.interpolateCommandName(name), subSpec);
                 Tracer t = new Tracer();
                 if (t.isDebug()) {t.debug("Adding subcommand '%s' to '%s'%n", actualName, this.qualifiedName());}
                 String previousName = commands.getCaseSensitiveKey(actualName);
