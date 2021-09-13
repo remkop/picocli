@@ -72,7 +72,7 @@ import static picocli.CommandLine.Help.Column.Overflow.WRAP;
  *
  *     // CheckSum implements Callable, so parsing, error handling and handling user
  *     // requests for usage help or version help can be done with one line of code.
- *     public static void main(String[] args) throws Exception {
+ *     public static void main(String[] args) {
  *         int exitCode = new CommandLine(new CheckSum()).execute(args);
  *         System.exit(exitCode);
  *     }
