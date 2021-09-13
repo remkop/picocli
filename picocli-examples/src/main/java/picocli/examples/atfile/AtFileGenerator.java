@@ -119,7 +119,7 @@ public class AtFileGenerator implements Callable<Integer> {
         return result;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         if (args.length > 0) {
             System.exit(new CommandLine(new AtFileGenerator()).execute(args));
         } else {
