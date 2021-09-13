@@ -41,7 +41,7 @@ class CheckSum implements Callable<Void> {
     @Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
     private String algorithm = "MD5";
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         // CheckSum implements Callable, so parsing, error handling and handling user
         // requests for usage help or version help can be done with one line of code.
         CommandLine.call(new CheckSum(), args);
@@ -939,7 +939,7 @@ public class MyMicronautApp implements Runnable {
     @Option(names = {"-x", "--option"}, description = "example option")
     boolean flag;
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         // let Micronaut instantiate and inject services
         PicocliRunner.run(MyMicronautApp.class, args);
     }
