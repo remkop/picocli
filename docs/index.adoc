@@ -11338,7 +11338,7 @@ public class GitStarsCommand implements Runnable {
                 defaultValue = "remkop/picocli")
     String slug;
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         PicocliRunner.execute(GitStarsCommand.class, args);
     }
 
