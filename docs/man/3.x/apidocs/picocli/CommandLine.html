@@ -173,7 +173,7 @@ extends java.lang.Object</pre>
      &#064;Option(names = {"-a", "--algorithm"}, description = "MD5, SHA-1, SHA-256, ...")
      private String algorithm = "MD5";
 
-     public static void main(String[] args) throws Exception {
+     public static void main(String[] args) {
          // CheckSum implements Callable, so parsing, error handling and handling user
          // requests for usage help or version help can be done with one line of code.
          CommandLine.call(new CheckSum(), args);
