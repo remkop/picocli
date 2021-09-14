@@ -1388,6 +1388,7 @@ public class ModelCommandSpecTest {
         spec.remove(old);
         spec.add(newOpenOption);
 
+        assertFalse(spec.args().contains(old));
         String expectAfter = String.format("" +
                 "Usage: <main class>%n");
         assertEquals(expectAfter, cmd.getUsageMessage(Ansi.OFF));
@@ -1410,6 +1411,7 @@ public class ModelCommandSpecTest {
         assertEquals(CommandLine.Range.valueOf("1"), second.index());
 
         spec.remove(second);
+        assertFalse(spec.args().contains(second));
         assertEquals(1, spec.positionalParameters().size());
         assertSame(first, spec.positionalParameters().get(0));
     }
