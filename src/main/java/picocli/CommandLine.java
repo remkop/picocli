@@ -6728,6 +6728,7 @@ public class CommandLine {
                 if (positionalParameters.remove(arg)) {
                     removed++;
                 }
+                args.remove(arg);
                 if (removed == 0) {
                     throw new NoSuchElementException(String.valueOf(arg));
                 }
