@@ -33,6 +33,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1319] Bugfix: Avoid `DuplicateOptionAnnotationsException` when parent has inherited mixed-in help options and the built-in `HelpCommand` subcommand. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#1331] Bugfix: Avoid `IllegalArgumentException` when parent has no standard help options and `scope = INHERIT`, while subcommand does have mixed-in standard help options. Thanks to [Andreas Deininger](https://github.com/deining) for raising this.
 * [#1381][#1382] Bugfix: Default value of option in repeated subcommand was not applied correctly. Thanks to [sfeuerhahn](https://github.com/sfeuerhahn) for the pull request.
+* [#1434][#1435] `CommandSpec.remove(arg)` should also remove the arg from the `args` collection in the CommandSpec. Thanks to [kaushalkumar](https://github.com/kaushalkumar) for the pull request.
 * [#1320][#1321] Bugfix/Enhancement: Use system properties `sun.stdout.encoding` and `sun.stderr.encoding` when creating the `PrintWriters` returned by  `CommandLine::getOut` and `CommandLine::getErr`. Thanks to [Philippe Charles](https://github.com/charphi) for the investigation and the pull request.
 * [#1415] Bugfix/DOC: fix NullPointerException in README Example. Thanks to [shannonbay](https://github.com/shannonbay) for raising this.
 * [#1421] Bugfix/DOC: `execute` method in `RunAll`, `RunFirst` and `RunLast` should not be deprecated. Thanks to [Gamal DeWeever](https://github.com/gadeweever) for raising this.
