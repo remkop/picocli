@@ -16,6 +16,7 @@
 *.properties    text
 *.txt           text
 *.yml           text
+*.html          text
 
 # These files are text and must be normalized to lf
 gradlew         text eol=lf
