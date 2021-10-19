@@ -5743,9 +5743,9 @@ Usage: myapp [-hV] [-o=<outputFolder>]
   -V, --version   Print version information and exit.
 ----
 
-As of picocli 4.2, there is programmatic API to change this via the `CommandLine::setLongOptionsMaxWidth` and `UsageMessageSpec::longOptionsMaxWidth` methods.
+As of picocli 4.2, there is programmatic API to change this via the `CommandLine::setUsageHelpLongOptionsMaxWidth` and `UsageMessageSpec::longOptionsMaxWidth` methods.
 
-In the above example, if we call `commandLine.setLongOptionsMaxWidth(23)` before printing the usage help, we get this result:
+In the above example, if we call `commandLine.setUsageHelpLongOptionsMaxWidth(23)` before printing the usage help, we get this result:
 
 ----
 Usage: myapp [-hV] [-o=<outputFolder>]

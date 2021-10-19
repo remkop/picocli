@@ -52,6 +52,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1336] DOC: Kotlin sample code, documentation improvements. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1342] DOC: Improve user manual chapter 28.3 'Testing the Exit Code'. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1344] DOC: Documentation, chapter 'Testing environment variables:': add Kotlin test sample. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
+* [#1443] DOC: Fix incorrect method name `setLongOptionsMaxWidth` to `setUsageHelpLongOptionsMaxWidth` in user manual section 'Long Option Column Width'. Thanks to [kunlk](https://github.com/kunlk) for raising this.
 * [#1360][#1359] DOC: add JReleaser as packaging option. Thanks to [Andres Almiray](https://github.com/aalmiray) for the pull request.
 * [#1363][#1364] DOC: Add caution on Variable interpolation in Kotlin. Thanks to [MagnusMG](https://github.com/MagnusMG) for the pull request.
 * [#1397][#1399] DOC: Update Jline2 README.md to add some recommended workaround about ANSI incompatible terminals. Thanks to [Simon](https://github.com/sbernard31) for the pull request.
