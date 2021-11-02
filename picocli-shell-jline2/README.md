@@ -223,7 +223,7 @@ public class InteractiveParameterConsumer implements IParameterConsumer {
                         .format("Enter %s: ", argSpec.paramLabel()), '\0'));
         } catch (IOException e) {
             throw new CommandLine.ParameterException(commandSpec.commandLine()
-                    , "Error while reading interactivly", e, argSpec, "");
+                    , "Error while reading interactively", e, argSpec, "");
         }
     }
 }
