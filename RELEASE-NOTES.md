@@ -61,6 +61,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1428][#1433] DOC: Add section about subcommands with the same name as option default value. Thanks to [cbcmg](https://github.com/cbcmg) for the pull request.
 * [#1390][#1432] DOC: Update examples to not throw Exception from main method. Thanks to [wenhoujx](https://github.com/wenhoujx) for the pull request.
 * [#1423] DOC: Fixed broken link in README.md to annotation processor documentation. Thanks to [Sevy007](https://github.com/Sevy007) for raising this.
+* [#1449] DOC: Fix typo in `picocli-shell-jline2/README.md`. Thanks to [Ahmed Ashour](https://github.com/asashour) for the pull request.
 * [#1426] Fix README adoption logos. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#1313] DEP: Bump jline3Version in order to avoid stackoverflow error. Thanks to [Rupert Madden-Abbott](https://github.com/rupert-madden-abbott) for the pull request.
 * [#1369][#1371] Upgrade jline3 to version 3.19.0 to avoid "ReadConsoleInputW failed: Incorrect function" error. Thanks to [auricgoldfinger](https://github.com/auricgoldfinger) for the pull request.
