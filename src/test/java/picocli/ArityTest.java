@@ -1662,7 +1662,7 @@ public class ArityTest {
             new CommandLine(new App()).parseArgs("--implicit=false --explicit=false".split(" "));
             fail("--explicit option should not accept parameters");
         } catch (ParameterException ex) {
-            assertEquals("option '--explicit' (<explicit>) should be specified without 'false' parameter", ex.getMessage());
+            assertEquals("option '--explicit' should be specified without 'false' parameter", ex.getMessage());
         }
     }
 

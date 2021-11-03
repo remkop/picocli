@@ -1916,7 +1916,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "-v", "-v");
             fail("expected exception");
         } catch (OverwrittenOptionException ex) {
-            assertEquals("option '-v' (<bool>) should be specified only once", ex.getMessage());
+            assertEquals("option '-v' should be specified only once", ex.getMessage());
         }
     }
 
@@ -1936,7 +1936,7 @@ public class CommandLineTest {
             CommandLine.populateCommand(new App(), "-v", "--verbose");
             fail("expected exception");
         } catch (OverwrittenOptionException ex) {
-            assertEquals("option '--verbose' (<bool>) should be specified only once", ex.getMessage());
+            assertEquals("option '--verbose' should be specified only once", ex.getMessage());
         }
     }
 
