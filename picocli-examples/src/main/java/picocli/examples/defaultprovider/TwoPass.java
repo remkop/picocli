@@ -60,7 +60,7 @@ public class TwoPass {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         File path = createExampleProfileFile();
 
         args = ("--profile=" + path.getAbsolutePath() + " -b123 --long-option USER-SPECIFIED").split(" ");
