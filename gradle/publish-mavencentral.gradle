@@ -1,0 +1,132 @@
+apply plugin: 'java'
+apply plugin: 'distribution'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    from javadoc.destinationDir
+    archiveClassifier.set('javadoc')
+}
+task sourcesJar(type: Jar) {
+    from sourceSets.main.java.srcDirs
+    archiveClassifier.set('sources')
+}
+task testJar(type: Jar, dependsOn: compileTestJava) {
+    from sourceSets.test.output
+    archiveClassifier.set('tests')
+}
+task testSourcesJar(type: Jar) {
+    from sourceSets.test.java.srcDirs
+    archiveClassifier.set('test-sources')
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+    archives testJar
+    archives testSourcesJar
+}
+tasks.withType(GenerateModuleMetadata) {
+    enabled = false // fix for https://github.com/remkop/picocli/issues/1152
+}
+distributions {
+    main {
+        distributionBaseName = "$archivesBaseName-all"
+        contents {
+            from jar
+            from javadocJar
+            from sourcesJar
+            from testJar
+            from testSourcesJar
+            from ('LICENSE')
+            from ("$rootDir/RELEASE-NOTES.md")
+        }
+    }
+}
+
+// different for each module
+group = PUBLISH_GROUP_ID
+version = PUBLISH_VERSION
+
+ext["signing.keyId"] = ''
+ext["signing.password"] = ''
+ext["signing.secretKeyRingFile"] = ''
+ext["ossrhUsername"] = ''
+ext["ossrhPassword"] = ''
+ext["sonatypeStagingProfileId"] = ''
+
+File secretPropsFile = project.rootProject.file('local.properties')
+if (secretPropsFile.exists()) {
+    Properties p = new Properties()
+    p.load(new FileInputStream(secretPropsFile))
+    p.each { name, value ->
+        ext[name] = value
+    }
+} else {
+    ext["signing.keyId"] = System.getenv('SIGNING_KEY_ID')
+    ext["signing.password"] = System.getenv('SIGNING_PASSWORD')
+    ext["signing.secretKeyRingFile"] = System.getenv('SIGNING_SECRET_KEY_RING_FILE')
+    ext["ossrhUsername"] = System.getenv('MAVEN_OSS_USER')
+    ext["ossrhPassword"] = System.getenv('MAVEN_OSS_PASSWORD')
+    ext["sonatypeStagingProfileId"] = System.getenv('SONATYPE_STAGING_PROFILE_ID')
+}
+
+publishing {
+    publications {
+        release(MavenPublication) {
+            from components.java
+            artifact javadocJar
+            artifact sourcesJar
+            artifact testJar
+            artifact testSourcesJar
+            groupId group
+            artifactId project.name
+            version PUBLISH_VERSION
+            //version "$projectVersion"
+            // pom configuration for MavenPublication, as per https://docs.gradle.org/current/userguide/publishing_maven.html#sec:modifying_the_generated_pom
+            pom {
+                packaging = 'jar'
+                name = project.name
+                description = project.description
+                url = 'http://picocli.info'
+                inceptionYear = '2018'
+                licenses {
+                    license {
+                        name = "The Apache Software License, version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                        distribution = "repo"
+                    }
+                }
+                developers {
+                    developer {
+                        id = "rpopma"
+                        name = "Remko Popma"
+                        email = "rpopma@apache.org"
+                    }
+                }
+                scm {
+                    url = "https://github.com/remkop/picocli/tree/master"
+                    connection = 'scm:git:https://github.com/remkop/picocli.git'
+                    developerConnection = 'scm:git:ssh://github.com:remkop/picocli.git'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+
+            credentials {
+                username ossrhUsername
+                password ossrhPassword
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications
+}

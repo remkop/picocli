@@ -1,0 +1,149 @@
+task bumpReadmeVersion {
+    doLast {
+        // README.md
+        ant.replaceregexp(match: "$projectPreviousPublishedVersion", replace: "$version", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: '.',                              includes: 'README.md')
+            fileset(dir: './picocli-codegen/',             includes: 'README.adoc')
+            fileset(dir: './picocli-groovy/',              includes: 'README.md')
+            fileset(dir: './picocli-shell-jline2/',        includes: 'README.md')
+            fileset(dir: './picocli-shell-jline3/',        includes: 'README.md')
+            fileset(dir: './picocli-spring-boot-starter/', includes: 'README.md')
+            fileset(dir: './picocli-examples/annotation-processing/') {
+                include(name: '**/pom.xml')
+                include(name: '**/build.gradle')
+            }
+            fileset(dir: './picocli-examples/generate-man-pages/') {
+                include(name: '**/pom.xml')
+                include(name: '**/build.gradle')
+            }
+            //fileset(dir: './picocli-examples/src/main/groovy/', includes: '**/*.groovy')
+        }
+    }
+}
+task bumpVersion {
+    doLast {
+        ant.replaceregexp(match: "$projectPreviousVersionRegex", replace: "$version", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'src/main/java/picocli', includes: 'CommandLine.java')
+            fileset(dir: 'src/test/java/picocli', includes: 'CommandLineTest.java')
+            fileset(dir: 'src/main/java/picocli', includes: 'AutoComplete.java')
+            fileset(dir: 'src/test/java/picocli', includes: 'AutoCompleteTest.java')
+            fileset(dir: 'picocli-codegen/src/main/java/picocli/codegen/aot/graalvm', includes: 'DynamicProxyConfigGenerator.java')
+            fileset(dir: 'picocli-codegen/src/main/java/picocli/codegen/aot/graalvm', includes: 'JniConfigGenerator.java')
+            fileset(dir: 'picocli-codegen/src/main/java/picocli/codegen/aot/graalvm', includes: 'ReflectionConfigGenerator.java')
+            fileset(dir: 'picocli-codegen/src/main/java/picocli/codegen/aot/graalvm', includes: 'ResourceConfigGenerator.java')
+            fileset(dir: 'picocli-codegen/src/main/java/picocli/codegen/docgen/manpage', includes: 'ManPageGenerator.java')
+        }
+        ant.replaceregexp(match: "version $projectPreviousVersionRegex", replace: "version $version", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'src/test/java/picocli', includes: 'AutoCompleteTest.java')
+        }
+        // Doc header
+        ant.replaceregexp(match: ":revnumber: $projectPreviousVersionRegex", replace: ":revnumber: $version", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+            fileset(dir: 'docs', includes: 'quick-guide.adoc')
+            fileset(dir: 'docs', includes: 'autocomplete.adoc')
+            fileset(dir: 'docs', includes: 'picocli-programmatic-api.adoc')
+        }
+        // Annotation Processor section
+        ant.replaceregexp(match: ":picocli-codegen:$projectPreviousVersionRegex", replace: ":picocli-codegen:$version", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
+        // Groovy section
+        ant.replaceregexp(match: ":picocli-groovy:$projectPreviousVersionRegex", replace: ":picocli-groovy:$version", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
+        // Spring Boot section
+        ant.replaceregexp(match: ":picocli-spring-boot-starter:$projectPreviousVersionRegex", replace: ":picocli-spring-boot-starter:$version", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
+        // Downloads section, Gradle
+        ant.replaceregexp(match: ":picocli:$projectPreviousVersionRegex", replace: ":picocli:$version", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
+        // Downloads section, Maven
+        ant.replaceregexp(match: "<version>$projectPreviousVersionRegex</version>", replace: "<version>$version</version>", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
+        // Downloads section, SBT
+        ant.replaceregexp(match: "\"picocli\" % \"$projectPreviousVersionRegex\"", replace: "\\\"picocli\\\" % \\\"$version\\\"", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
+        // Downloads section, Ivy
+        ant.replaceregexp(match: "rev=\"$projectPreviousVersionRegex\"", replace: "rev=\\\"$version\\\"", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
+        // Downloads section, Grape
+        ant.replaceregexp(match: "module='picocli', version=\'$projectPreviousVersionRegex\'\\)", replace: "module='picocli', version=\'$version\')", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
+        // Downloads section, Leiningen
+        ant.replaceregexp(match: "info.picocli/picocli \"$projectPreviousVersionRegex\"", replace: "info.picocli/picocli \"$version\"", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
+        // Downloads section, Buildr
+        ant.replaceregexp(match: "info.picocli:picocli:jar:$projectPreviousVersionRegex", replace: "info.picocli:picocli:jar:$version", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+        }
+        // Running the Application and Packaging sections
+        ant.replaceregexp(match: "picocli-${projectPreviousVersionRegex}.jar", replace: "picocli-${version}.jar", flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+            fileset(dir: 'docs', includes: 'quick-guide.adoc')
+        }
+        ant.replaceregexp(match: releaseDatePreviousRegex, replace: releaseDate, flags: 'g', byline: true, encoding: 'UTF8') {
+            fileset(dir: 'docs', includes: 'index.adoc')
+            fileset(dir: 'docs', includes: 'quick-guide.adoc')
+            fileset(dir: 'docs', includes: 'autocomplete.adoc')
+            fileset(dir: 'docs', includes: 'picocli-programmatic-api.adoc')
+            fileset(dir: 'picocli-codegen', includes: 'README.adoc')
+        }
+    }
+}
+task copyCodeGenDocs(type: Copy) {
+    from('build/docs/man/') { include 'index.html' }
+    from('picocli-codegen/build/docs/html5/') { include '*.html' }
+    into 'docs/man'
+}
+task copyDocs(type: Copy) {
+    dependsOn(copyCodeGenDocs)
+    from('build/docs/')
+    into 'docs'
+}
+
+
+/*
+Release procedure:
+1. edit version numbers: remove -SNAPSHOT classifier; edit releaseDate
+2. gradlew bumpVersion
+3. check modified files
+4. gradlew clean build
+5. gradlew copyDocs
+6. update RELEASE-NOTES.md
+7. gradlew bumpReadmeVersion
+7a update README.md (latest version, release notes)
+8. commit -m "Release picocli version ..."
+9. tag v$version
+10. gradlew bintrayUpload - to publish to bintray.com
+
+11. edit version numbers: increase minor version and add -SNAPSHOT classifier
+12. gradlew bumpVersion
+13. check modified files
+14. commit -m "Prepare for next development cycle"
+15. push (make sure that Push Tags is checked)
+
+16. Log in to GitHub, go to https://github.com/remkop/picocli/releases
+17. Click the new tag, click Edit button, update title and release notes (copy from RELEASE-NOTES.md)
+18. Upload picocli-$version.jar and picocli-all$version.zip to GitHub
+
+19. Log in to Bintray
+20. Navigate to the page for the new version
+21. Edit version: Publication Date, Description, VCS tag, GitHub release notes file (RELEASE-NOTES.md)
+22. On the version page, Release Notes tab, select GitHub File
+23. Publish artifacts to JCenter
+24. On the version page, Maven Central tab, sync to Maven (takes several minutes)
+
+(When releasing from branch)
+25. Switch to master
+26. cherry-pick the "Release picocli version ..." commit
+27. gradlew bumpVersion
+28. check modified files
+29. commit -m "Update master for next development cycle after release x.x (from branch x.x)"
+*/

@@ -1,0 +1,59 @@
+apply plugin: 'java'
+apply plugin: 'org.asciidoctor.jvm.convert'
+pluginManager.withPlugin('org.asciidoctor.jvm.convert') { // if plugin applied, execute this action
+    configurations {
+        tabbedCodeExt
+    }
+    dependencies {
+        tabbedCodeExt "com.bmuschko:asciidoctorj-tabbed-code-extension:0.3"
+    }
+}
+
+Map<org.gradle.api.JavaVersion, String> linkMap = org.gradle.api.JavaVersion.values().collectEntries { version ->
+    [(version) : 'https://docs.oracle.com/javase/8/docs/api/']
+}
+linkMap.remove(org.gradle.api.JavaVersion.VERSION_HIGHER)
+for (int i = 12; i < 20; i++) { try { linkMap.remove(org.gradle.api.JavaVersion.valueOf("VERSION_$i")); } catch (Exception ignored) {} }
+linkMap << [(org.gradle.api.JavaVersion.VERSION_1_9)  : 'https://docs.oracle.com/javase/9/docs/api/']
+linkMap << [(org.gradle.api.JavaVersion.VERSION_1_10) : 'https://docs.oracle.com/javase/10/docs/api/']
+linkMap << [(org.gradle.api.JavaVersion.VERSION_11)   : 'https://docs.oracle.com/en/java/javase/11/docs/api/']
+
+javadoc.options.overview = "src/main/java/overview.html"
+javadoc.options.links += [
+        linkMap.get(org.gradle.api.JavaVersion.current(), 'https://docs.oracle.com/en/java/javase/12/docs/api/'),
+]
+//javadoc.options.linksOffline linkMap.get(org.gradle.api.JavaVersion.current(), 'https://docs.oracle.com/en/java/javase/12/docs/api/'), 'gradle/javadocs/jdk/9/'
+
+javadoc {
+    options.encoding = 'UTF-8'
+    //logger.warn(sourceSets.main.allJava.sourceDirectories.files.toString())
+    File javadocExe = new File((String) System.getenv("JAVA_11_HOME@@@"), "bin/javadoc.exe")
+    if (javadocExe.exists()) {
+        executable = javadocExe
+        javadoc.options.links = [ 'https://docs.oracle.com/en/java/javase/11/docs/api/' ]
+        inputs.property("moduleName", moduleName)
+        options.addStringOption('-module', moduleName)
+        //source(sourceSets.main.java)
+        source = sourceSets.main.allJava
+        options.addStringsOption("-module-source-path", ";").setValue(["C:\\Users\\remko\\IdeaProjects\\picocli3\\src\\main\\java", "C:\\Users\\remko\\IdeaProjects\\picocli3\\src\\main\\java9"])
+        options.addStringOption('-module-path', classpath.asPath)
+        options.addBooleanOption('-frames')
+    }
+}
+javadoc.dependsOn(jar)
+javadoc.dependsOn('asciidoctor')
+asciidoctorj {
+    version = '2.4.3'
+}
+asciidoctor {
+    sourceDir = file('docs')
+    outputDir = file('build/docs')
+    logDocuments = true
+    configurations 'tabbedCodeExt'
+    baseDirFollowsSourceDir()
+//    backends 'pdf', 'html'
+//    attributes 'sourcedir': file('docs') //project.sourceSets.main.java.srcDirs[0]
+////    attributes 'pdf-stylesdir': 'theme',
+////               'pdf-style': 'custom',
+////               'sourcedir': file('docs') //project.sourceSets.main.java.srcDirs[0]
+}
