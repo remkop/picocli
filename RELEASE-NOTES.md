@@ -1,6 +1,6 @@
 # picocli Release Notes
 
-# <a name="4.6.2"></a> Picocli 4.6.2 (UNRELEASED)
+# <a name="4.6.2"></a> Picocli 4.6.2
 The picocli community is pleased to announce picocli 4.6.2.
 
 This release includes bugfixes and enhancements.
@@ -64,6 +64,7 @@ Picocli follows [semantic versioning](http://semver.org/).
 * [#1449] DOC: Fix typo in `picocli-shell-jline2/README.md`. Thanks to [Ahmed Ashour](https://github.com/asashour) for the pull request.
 * [#1426] Fix README adoption logos. Thanks to [NewbieOrange](https://github.com/NewbieOrange) for the pull request.
 * [#1313] DEP: Bump jline3Version in order to avoid stackoverflow error. Thanks to [Rupert Madden-Abbott](https://github.com/rupert-madden-abbott) for the pull request.
+* [#1455] DEP: Bump spring-boot version to 2.5.6.
 * [#1369][#1371] Upgrade jline3 to version 3.19.0 to avoid "ReadConsoleInputW failed: Incorrect function" error. Thanks to [auricgoldfinger](https://github.com/auricgoldfinger) for the pull request.
 * [#1336] BUILD: Bump Spring Boot, Gradle and Kotlin to latest version. Thanks to [Andreas Deininger](https://github.com/deining) for the pull request.
 * [#1327] BUILD: fix incorrect version in `MANIFEST.MF`. Thanks to [Fiouz](https://github.com/Fiouz) for the pull request.
@@ -76,6 +77,8 @@ Picocli follows [semantic versioning](http://semver.org/).
 
 ## <a name="4.6.2-deprecated"></a> Deprecations
 No features were deprecated in this release.
+
+The `@Option` `help` attribute is no longer deprecated from this release; it is useful for custom help options.
 
 ## <a name="4.6.2-breaking-changes"></a> Potential breaking changes
 This release has no breaking changes.
