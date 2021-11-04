@@ -13,6 +13,8 @@ command line applications with Spring and picocli.
 
 ## Dependency Management
 
+Picocli 4.6.2 has been tested with Spring Boot 2.4, 2.5 and 2.6-SNAPSHOT.
+
 Add the following dependency:
 
 Maven:
