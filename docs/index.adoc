@@ -3417,8 +3417,9 @@ assert(3 == CommandLine(Gesture()).execute())
 
 By default, the `execute` method returns `CommandLine.ExitCode.OK` (`0`) on success, `CommandLine.ExitCode.SOFTWARE` (`1`) when an exception occurred in the Runnable, Callable or command method, and `CommandLine.ExitCode.USAGE` (`2`) for invalid input. (These are common values according to https://stackoverflow.com/questions/1101957/are-there-any-standard-exit-status-codes-in-linux/40484670#40484670[this StackOverflow answer]). This can be customized with the `@Command` annotation. For example:
 
-.Java / Kotlin
-[source,java,role="primary"]
+//.Java / Kotlin
+//[source,java,role="primary"]
+[source,java]
 ----
 @Command(exitCodeOnInvalidInput = 123,
    exitCodeOnExecutionException = 456)
@@ -3944,7 +3945,7 @@ CommandLine(MyApp())
 Where the `IExecutionExceptionHandler` implementation could look something like this:
 
 .Java
-[source,java,role=primary]
+[source,java,role="primary"]
 ----
 class PrintExceptionMessageHandler implements IExecutionExceptionHandler {
     public int handleExecutionException(Exception ex,
@@ -5186,8 +5187,9 @@ myapp help
 === Custom Help Subcommands
 Custom help subcommands should mark themselves as a <<Help Subcommands,help command>> to tell picocli not to throw a `MissingParameterException` when required options are missing.
 
-.Java / Kotlin
-[source,java,role="primary"]
+//.Java / Kotlin
+//[source,java,role="primary"]
+[source,java]
 ----
 @Command(helpCommand = true)
 ----
@@ -5602,8 +5604,9 @@ class Cat {
 === Command Name
 In the above example, the program name is taken from the `name` attribute of the `Command` annotation:
 
-.Java / Kotlin
-[source,java,role="primary"]
+//.Java / Kotlin
+//[source,java,role="primary"]
+[source,java]
 ----
 @Command(name = "cat")
 ----
@@ -5664,8 +5667,9 @@ NOTE: For demonstration purposes the above example mixes the all-uppercase (e.g.
 ==== Unsorted Option List
 By default the options list displays options in alphabetical order. Use the `sortOptions = false` attribute to display options in the order they are declared in your class.
 
-.Java / Kotlin
-[source,java,role="primary"]
+//.Java / Kotlin
+//[source,java,role="primary"]
+[source,java]
 ----
 @Command(sortOptions = false)
 ----
@@ -5882,8 +5886,9 @@ As of picocli 4.0, this can be customized with the `synopsisSubcommandLabel` att
 
 For example, to clarify that a <<Required Subcommands,subcommand is mandatory>>, an application may specify `COMMAND`, without the `[` and `]` brackets:
 
-.Java / Kotlin
-[source,java,role="primary"]
+//.Java / Kotlin
+//[source,java,role="primary"]
+[source,java]
 ----
 @Command(name = "git", synopsisSubcommandLabel = "COMMAND")
 class Git { /* ... */ }
@@ -6078,8 +6083,9 @@ The annotated class that this usage help message is generated from is shown in <
 The separator displayed between options and option parameters (`=` by default)
 in the synopsis and the option list can be configured with the `separator` attribute.
 
-.Java / Kotlin
-[source,java,role="primary"]
+//.Java / Kotlin
+//[source,java,role="primary"]
+[source,java]
 ----
 @Command(separator = " ")
 ----
@@ -6249,8 +6255,9 @@ By setting the above variables in either system properties, environment variable
 
 For example, if we define these system properties:
 
-.Java / Kotlin
-[source,java,role="primary"]
+//.Java / Kotlin
+//[source,java,role="primary"]
+[source,java]
 ----
 System.setProperty("picocli.atfile.label", "my@@@@file");
 System.setProperty("picocli.atfile.description", "@files rock!");
@@ -6393,8 +6400,9 @@ By setting the above variable in either system properties, environment variables
 
 For example, if we define this system property:
 
-.Java / Kotlin
-[source,java,role="primary"]
+//.Java / Kotlin
+//[source,java,role="primary"]
+[source,java]
 ----
 System.setProperty("picocli.endofoptions.description", "End of options. Remainder are positional parameters.");
 ----
@@ -8601,7 +8609,7 @@ There are some scenarios where picocli can not parse an option with a default va
 
 
 .Kotlin
-[source,kotlin,role="secondary"]
+[source,kotlin,role="primary"]
 ----
 class MyParameterConsumer : CommandLine.IParameterConsumer {
   override fun consumeParameters(
@@ -9382,8 +9390,9 @@ In order to get you started quickly, the https://github.com/remkop/picocli/blob/
 
 Annotation example:
 
-.Java / Kotlin
-[source,java,role="primary"]
+//.Java / Kotlin
+//[source,java,role="primary"]
+[source,java]
 ----
 @Command(name = "i18n-demo", resourceBundle = "my.org.I18nDemo_Messages")
 class I18nDemo {}
@@ -10887,7 +10896,7 @@ public class GuiceFactory implements IFactory {
 ----
 
 .Kotlin
-[source,kotlin,role=secondary]
+[source,kotlin,role="secondary"]
 ----
 import com.google.inject.*
 import picocli.CommandLine
@@ -11824,7 +11833,7 @@ Additionally, you can do white box testing by keeping a reference to the applica
 For example:
 
 .Java
-[source,java, role=primary]
+[source,java, role="primary"]
 ----
 MyApp app = new MyApp();
 CommandLine cmd = new CommandLine(app);
@@ -11865,7 +11874,7 @@ This assumes that the application uses the `PrintWriter` provided by https://pic
 Applications can get these writers via the <<#spec-annotation,`@Spec`>> annotation:
 
 .Java
-[source,java,role=primary]
+[source,java,role="primary"]
 ----
 @Command
 class MyApp implements Runnable {
@@ -11879,7 +11888,7 @@ class MyApp implements Runnable {
 ----
 
 .Kotlin
-[source,kotlin,role=secondary]
+[source,kotlin,role="secondary"]
 ----
 @Command
 class MyApp : Runnable {
@@ -12035,7 +12044,7 @@ Depending on your programming language, your environment and your testing framew
 The listing below provides code samples for all of the four options mentioned above:
 
 .Java 8
-[source,java,role=primary]
+[source,java,role="primary"]
 ----
 import static com.github.stefanbirkner.systemlambda.SystemLambda.catchSystemExit;
 // ...
@@ -12063,7 +12072,7 @@ class MyTest {
 ----
 
 .Java/Junit 5
-[source,java,role=secondary]
+[source,java,role="secondary"]
 ----
 import com.ginsberg.junit.exit.ExpectSystemExitWithStatus;
 import org.junit.jupiter.api.Test;
@@ -12091,7 +12100,7 @@ class MyTest {
 ----
 
 .Java/Junit 4
-[source,java,role=secondary]
+[source,java,role="secondary"]
 ----
 import org.junit.Rule;
 import org.junit.Test;
@@ -12120,7 +12129,7 @@ class MyTest {
 ----
 
 .Kotlin/Kotest
-[source,kotlin,role=secondary]
+[source,kotlin,role="secondary"]
 ----
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
@@ -12164,7 +12173,7 @@ Depending on your programming language, your environment and your testing framew
 The listing below provides code samples for the three options mentioned above:
 
 .Java 8
-[source,java,role=primary]
+[source,java,role="primary"]
 ----
 import static com.github.stefanbirkner.systemlambda.SystemLambda.withEnvironmentVariable;
 // ...
@@ -12189,7 +12198,7 @@ void testEnvVar() throws Exception {
 ----
 
 .Java/JUnit 4
-[source,java,role=secondary]
+[source,java,role="secondary"]
 ----
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 // ...
@@ -12221,7 +12230,7 @@ class MyTest {
 ----
 
 .Kotlin/Kotest
-[source,kotlin,role=secondary]
+[source,kotlin,role="secondary"]
 ----
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.extensions.system.withEnvironment
